@@ -16,6 +16,9 @@ pub enum TokenKind {
     LBrace,   // {
     Pipe,     // |
     RBrace,   // }
+    Fragment,
+    Directive,
+    On,
     Eof,
 }
 
@@ -72,6 +75,15 @@ impl std::fmt::Debug for Token {
             }
             TokenKind::RBrace => {
                 write!(f, "R_BRACE@{}:{}", start, end)
+            }
+            TokenKind::Directive => {
+                write!(f, "DIRECTIVE@{}:{}", start, end)
+            }
+            TokenKind::Fragment => {
+                write!(f, "FRAGMENT@{}:{}", start, end)
+            }
+            TokenKind::On => {
+                write!(f, "ON@{}:{}", start, end)
             }
             TokenKind::Eof => {
                 write!(f, "EOF@{}:{}", start, end)
@@ -170,7 +182,12 @@ fn advance(input: &mut &str) -> Result<TokenKind, ()> {
                 }
             }
 
-            TokenKind::Node(buf)
+            match buf.as_str() {
+                "on" => TokenKind::On,
+                "directive" => TokenKind::Directive,
+                "fragment" => TokenKind::Fragment,
+                _ => TokenKind::Node(buf),
+            }
         }
         c @ '-' | c if is_digit_char(c) => {
             let mut buf = String::new();
@@ -283,7 +300,7 @@ mod test {
         let lexer = Lexer::new(gql);
         dbg!(lexer.tokens);
 
-        let gql = "fragment friend Fields on User {
+        let gql = "fragment friendFields on User {
             id name profilePic(size: 5.0)
         }";
         let lexer = Lexer::new(gql);
