@@ -83,15 +83,53 @@ fn advance(input: &mut &str) -> Result<TokenKind, ()> {
             let mut buf = String::new();
             buf.push(c);
 
+            let mut has_exponent = false;
+            let mut has_fractional = false;
+            let mut has_digit = is_digit_char(c);
+
             while let Some(c) = chars.clone().next() {
-                if is_digit_char(c) {
-                    buf.push(chars.next().unwrap());
-                } else {
-                    break;
+                match c {
+                    'e' | 'E' => {
+                        if !has_digit {
+                            panic!("Unexpected character in exponent");
+                        }
+                        if has_exponent {
+                            panic!("Unexpected character 'e'");
+                        }
+                        buf.push(chars.next().unwrap());
+                        has_exponent = true;
+                        if let Some(c) = chars.clone().next() {
+                            if matches!(c, '+' | '-') {
+                                buf.push(chars.next().unwrap());
+                            }
+                        }
+                    }
+                    '.' => {
+                        if !has_digit {
+                            panic!("unexpected . before a digit");
+                        }
+                        if has_fractional {
+                            panic!("Unexpected .");
+                        }
+                        if has_exponent {
+                            panic!("unexpected e");
+                        }
+                        buf.push(chars.next().unwrap());
+                        has_fractional = true;
+                    }
+                    c if is_digit_char(c) => {
+                        buf.push(chars.next().unwrap());
+                        has_digit = true;
+                    }
+                    _ => break,
                 }
             }
 
-            TokenKind::Int(buf.parse().unwrap())
+            if has_exponent || has_fractional {
+                TokenKind::Float(buf.parse().unwrap())
+            } else {
+                TokenKind::Int(buf.parse().unwrap())
+            }
         }
         '!' => TokenKind::Bang,
         '$' => TokenKind::Dollar,
@@ -152,7 +190,7 @@ mod test {
         let lexer = Lexer::new(gql);
         dbg!(lexer.tokens);
 
-        let gql = "fragment friend Fields on User { id name profilePic(size: 50) }";
+        let gql = "fragment friend Fields on User { id name profilePic(size: 5.0) }";
         let lexer = Lexer::new(gql);
         dbg!(lexer.tokens);
     }
