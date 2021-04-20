@@ -21,61 +21,60 @@ pub enum TokenKind {
 
 impl std::fmt::Debug for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let line = self.loc.line;
-        let column = self.loc.column;
-        // IDENT@3..6 "foo"
+        let start = self.loc.index;
+        let end = self.loc.index + self.loc.length;
 
         match &self.kind {
             TokenKind::Node(s) => {
-                write!(f, "NODE@{}:{} {:?}", line, column, s)
+                write!(f, "NODE@{}:{} {:?}", start, end, s)
             }
             TokenKind::Int(n) => {
-                write!(f, "INT@{}:{} {:?}", line, column, n)
+                write!(f, "INT@{}:{} {:?}", start, end, n)
             }
             TokenKind::Float(n) => {
-                write!(f, "FLOAT@{}:{} {:?}", line, column, n)
+                write!(f, "FLOAT@{}:{} {:?}", start, end, n)
             }
             TokenKind::Bang => {
-                write!(f, "BANG@{}:{}", line, column)
+                write!(f, "BANG@{}:{}", start, end)
             }
             TokenKind::Dollar => {
-                write!(f, "DOLLAR@{}:{}", line, column)
+                write!(f, "DOLLAR@{}:{}", start, end)
             }
             TokenKind::LParen => {
-                write!(f, "L_PAREN@{}:{}", line, column)
+                write!(f, "L_PAREN@{}:{}", start, end)
             }
             TokenKind::RParen => {
-                write!(f, "R_PAREN@{}:{}", line, column)
+                write!(f, "R_PAREN@{}:{}", start, end)
             }
             TokenKind::Ellipsis => {
-                write!(f, "ELLIPSIS@{}:{}", line, column)
+                write!(f, "ELLIPSIS@{}:{}", start, end)
             }
             TokenKind::Colon => {
-                write!(f, "COLON@{}:{}", line, column)
+                write!(f, "COLON@{}:{}", start, end)
             }
             TokenKind::Eq => {
-                write!(f, "EQ@{}:{}", line, column)
+                write!(f, "EQ@{}:{}", start, end)
             }
             TokenKind::At => {
-                write!(f, "AT@{}:{}", line, column)
+                write!(f, "AT@{}:{}", start, end)
             }
             TokenKind::LBracket => {
-                write!(f, "L_BRACKET@{}:{}", line, column)
+                write!(f, "L_BRACKET@{}:{}", start, end)
             }
             TokenKind::RBracket => {
-                write!(f, "R_BRACKET@{}:{}", line, column)
+                write!(f, "R_BRACKET@{}:{}", start, end)
             }
             TokenKind::LBrace => {
-                write!(f, "L_BRACE@{}:{}", line, column)
+                write!(f, "L_BRACE@{}:{}", start, end)
             }
             TokenKind::Pipe => {
-                write!(f, "PIPE@{}:{}", line, column)
+                write!(f, "PIPE@{}:{}", start, end)
             }
             TokenKind::RBrace => {
-                write!(f, "R_BRACE@{}:{}", line, column)
+                write!(f, "R_BRACE@{}:{}", start, end)
             }
             TokenKind::Eof => {
-                write!(f, "EOF@{}:{}", line, column)
+                write!(f, "EOF@{}:{}", start, end)
             }
         }
     }
@@ -87,31 +86,25 @@ pub struct Token {
     loc: Location,
 }
 
-#[derive(Copy, Clone, Default, Debug)]
+#[derive(Clone, Debug)]
 pub struct Location {
-    line: usize,
-    column: usize,
+    index: usize,
+    length: usize,
 }
 
 impl Location {
-    fn advance(&mut self, text: &str) {
-        match text.rfind('\n') {
-            Some(idx) => {
-                self.line += text.chars().filter(|&it| it == '\n').count();
-                self.column = text[idx + 1..].chars().count();
-            }
-            None => self.column += text.chars().count(),
-        }
+    pub fn new(index: usize, length: usize) -> Self {
+        Self { index, length }
     }
 
-    /// Get a reference to the location's line.
-    pub fn line(&self) -> &usize {
-        &self.line
+    /// Get a reference to the location's index.
+    pub fn index(&self) -> usize {
+        self.index
     }
 
-    /// Get a reference to the location's column.
-    pub fn column(&self) -> &usize {
-        &self.column
+    /// Get a reference to the location's length.
+    pub fn length(&self) -> usize {
+        self.length
     }
 }
 
@@ -122,21 +115,30 @@ pub struct Lexer {
 impl Lexer {
     pub fn new(mut input: &str) -> Self {
         let mut tokens = Vec::new();
-        let mut loc = Location::default();
+
+        let mut index = 0;
+        let mut length = 0;
 
         while !input.is_empty() {
             let old_input = input;
             skip_ws(&mut input);
             skip_comment(&mut input);
+
             if old_input.len() == input.len() {
-                match advance(&mut input) {
-                    Ok(kind) => tokens.push(Token { kind, loc }),
+                let res = advance(&mut input);
+                let consumed = old_input.len() - input.len();
+                length += consumed;
+
+                match res {
+                    Ok(kind) => {
+                        let loc = Location::new(index, length - 1);
+                        tokens.push(Token { kind, loc });
+                        index += length;
+                        length = 0;
+                    }
                     Err(_) => todo!(),
                 }
             }
-
-            let consumed = old_input.len() - input.len();
-            loc.advance(&old_input[..consumed]);
         }
 
         Self { tokens }
