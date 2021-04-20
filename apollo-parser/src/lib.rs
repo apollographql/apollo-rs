@@ -7,7 +7,7 @@ pub enum TokenKind {
     Dollar,   // $
     LParen,   // (
     RParen,   // )
-    Ellipsis, // ...
+    Spread,   // ...
     Colon,    // :
     Eq,       // =
     At,       // @
@@ -18,6 +18,7 @@ pub enum TokenKind {
     RBrace,   // }
     Fragment,
     Directive,
+    Query,
     On,
     Eof,
 }
@@ -49,8 +50,8 @@ impl std::fmt::Debug for Token {
             TokenKind::RParen => {
                 write!(f, "R_PAREN@{}:{}", start, end)
             }
-            TokenKind::Ellipsis => {
-                write!(f, "ELLIPSIS@{}:{}", start, end)
+            TokenKind::Spread => {
+                write!(f, "SPREAD@{}:{}", start, end)
             }
             TokenKind::Colon => {
                 write!(f, "COLON@{}:{}", start, end)
@@ -81,6 +82,9 @@ impl std::fmt::Debug for Token {
             }
             TokenKind::Fragment => {
                 write!(f, "FRAGMENT@{}:{}", start, end)
+            }
+            TokenKind::Query => {
+                write!(f, "QUERY@{}:{}", start, end)
             }
             TokenKind::On => {
                 write!(f, "ON@{}:{}", start, end)
@@ -186,6 +190,7 @@ fn advance(input: &mut &str) -> Result<TokenKind, ()> {
                 "on" => TokenKind::On,
                 "directive" => TokenKind::Directive,
                 "fragment" => TokenKind::Fragment,
+                "query" => TokenKind::Query,
                 _ => TokenKind::Node(buf),
             }
         }
@@ -246,12 +251,15 @@ fn advance(input: &mut &str) -> Result<TokenKind, ()> {
         '(' => TokenKind::LParen,
         ')' => TokenKind::RParen,
         '.' => match (chars.next(), chars.next()) {
-            (Some('.'), Some('.')) => TokenKind::Ellipsis,
+            (Some('.'), Some('.')) => TokenKind::Spread,
             (Some(a), Some(b)) => {
-                panic!("Unterminated ellipsis, expected `...`, found `.{}{}`", a, b)
+                panic!(
+                    "Unterminated spread operator, expected `...`, found `.{}{}`",
+                    a, b
+                )
             }
-            (Some(a), None) => panic!("Unterminated ellipsis, expected `...`, found `.{}`", a),
-            (_, _) => panic!("Unterminated ellipsis, expected `...`, found `.`"),
+            (Some(a), None) => panic!("Unterminated spread, expected `...`, found `.{}`", a),
+            (_, _) => panic!("Unterminated spread operator, expected `...`, found `.`"),
         },
         ':' => TokenKind::Colon,
         '=' => TokenKind::Eq,
@@ -303,6 +311,20 @@ mod test {
         let gql = "fragment friendFields on User {
             id name profilePic(size: 5.0)
         }";
+        let lexer = Lexer::new(gql);
+        dbg!(lexer.tokens);
+
+        let gql = "query withFragments {
+  user(id: 4) {
+    friends(first: 10) {
+      ...friendFields
+    }
+    mutualFriends(first: 10) {
+      ...friendFields
+    }
+  }
+}";
+
         let lexer = Lexer::new(gql);
         dbg!(lexer.tokens);
     }
