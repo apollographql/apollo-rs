@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "apollo-parser",
+    "apollo-ast",
+]
