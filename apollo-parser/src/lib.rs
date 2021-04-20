@@ -19,7 +19,69 @@ pub enum TokenKind {
     Eof,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+impl std::fmt::Debug for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let start = 0u8;
+        let end = 0u8;
+        // IDENT@3..6 "foo"
+
+        match &self.kind {
+            TokenKind::Node(s) => {
+                write!(f, "NODE@{}..{} {:?}", start, end, s)
+            }
+            TokenKind::Int(n) => {
+                write!(f, "INT@{}..{} {:?}", start, end, n)
+            }
+            TokenKind::Float(n) => {
+                write!(f, "FLOAT@{}..{} {:?}", start, end, n)
+            }
+            TokenKind::Bang => {
+                write!(f, "BANG@{}..{}", start, end)
+            }
+            TokenKind::Dollar => {
+                write!(f, "DOLLAR@{}..{}", start, end)
+            }
+            TokenKind::LParen => {
+                write!(f, "L_PAREN@{}..{}", start, end)
+            }
+            TokenKind::RParen => {
+                write!(f, "R_PAREN@{}..{}", start, end)
+            }
+            TokenKind::Ellipsis => {
+                write!(f, "ELLIPSIS@{}..{}", start, end)
+            }
+            TokenKind::Colon => {
+                write!(f, "COLON@{}..{}", start, end)
+            }
+            TokenKind::Eq => {
+                write!(f, "EQ@{}..{}", start, end)
+            }
+            TokenKind::At => {
+                write!(f, "AT@{}..{}", start, end)
+            }
+            TokenKind::LBracket => {
+                write!(f, "L_BRACKET@{}..{}", start, end)
+            }
+            TokenKind::RBracket => {
+                write!(f, "R_BRACKET@{}..{}", start, end)
+            }
+            TokenKind::LBrace => {
+                write!(f, "L_BRANCE@{}..{}", start, end)
+            }
+            TokenKind::Pipe => {
+                write!(f, "PIPE@{}..{}", start, end)
+            }
+            TokenKind::RBrace => {
+                write!(f, "R_BRACE@{}..{}", start, end)
+            }
+            TokenKind::Eof => {
+                write!(f, "EOF@{}..{}", start, end)
+            }
+        }
+    }
+}
+
+#[derive(Clone, PartialEq)]
 pub struct Token {
     kind: TokenKind,
 }
