@@ -21,69 +21,98 @@ pub enum TokenKind {
 
 impl std::fmt::Debug for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let start = 0u8;
-        let end = 0u8;
+        let line = self.loc.line;
+        let column = self.loc.column;
         // IDENT@3..6 "foo"
 
         match &self.kind {
             TokenKind::Node(s) => {
-                write!(f, "NODE@{}..{} {:?}", start, end, s)
+                write!(f, "NODE@{}:{} {:?}", line, column, s)
             }
             TokenKind::Int(n) => {
-                write!(f, "INT@{}..{} {:?}", start, end, n)
+                write!(f, "INT@{}:{} {:?}", line, column, n)
             }
             TokenKind::Float(n) => {
-                write!(f, "FLOAT@{}..{} {:?}", start, end, n)
+                write!(f, "FLOAT@{}:{} {:?}", line, column, n)
             }
             TokenKind::Bang => {
-                write!(f, "BANG@{}..{}", start, end)
+                write!(f, "BANG@{}:{}", line, column)
             }
             TokenKind::Dollar => {
-                write!(f, "DOLLAR@{}..{}", start, end)
+                write!(f, "DOLLAR@{}:{}", line, column)
             }
             TokenKind::LParen => {
-                write!(f, "L_PAREN@{}..{}", start, end)
+                write!(f, "L_PAREN@{}:{}", line, column)
             }
             TokenKind::RParen => {
-                write!(f, "R_PAREN@{}..{}", start, end)
+                write!(f, "R_PAREN@{}:{}", line, column)
             }
             TokenKind::Ellipsis => {
-                write!(f, "ELLIPSIS@{}..{}", start, end)
+                write!(f, "ELLIPSIS@{}:{}", line, column)
             }
             TokenKind::Colon => {
-                write!(f, "COLON@{}..{}", start, end)
+                write!(f, "COLON@{}:{}", line, column)
             }
             TokenKind::Eq => {
-                write!(f, "EQ@{}..{}", start, end)
+                write!(f, "EQ@{}:{}", line, column)
             }
             TokenKind::At => {
-                write!(f, "AT@{}..{}", start, end)
+                write!(f, "AT@{}:{}", line, column)
             }
             TokenKind::LBracket => {
-                write!(f, "L_BRACKET@{}..{}", start, end)
+                write!(f, "L_BRACKET@{}:{}", line, column)
             }
             TokenKind::RBracket => {
-                write!(f, "R_BRACKET@{}..{}", start, end)
+                write!(f, "R_BRACKET@{}:{}", line, column)
             }
             TokenKind::LBrace => {
-                write!(f, "L_BRANCE@{}..{}", start, end)
+                write!(f, "L_BRACE@{}:{}", line, column)
             }
             TokenKind::Pipe => {
-                write!(f, "PIPE@{}..{}", start, end)
+                write!(f, "PIPE@{}:{}", line, column)
             }
             TokenKind::RBrace => {
-                write!(f, "R_BRACE@{}..{}", start, end)
+                write!(f, "R_BRACE@{}:{}", line, column)
             }
             TokenKind::Eof => {
-                write!(f, "EOF@{}..{}", start, end)
+                write!(f, "EOF@{}:{}", line, column)
             }
         }
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone)]
 pub struct Token {
     kind: TokenKind,
+    loc: Location,
+}
+
+#[derive(Copy, Clone, Default, Debug)]
+pub struct Location {
+    line: usize,
+    column: usize,
+}
+
+impl Location {
+    fn advance(&mut self, text: &str) {
+        match text.rfind('\n') {
+            Some(idx) => {
+                self.line += text.chars().filter(|&it| it == '\n').count();
+                self.column = text[idx + 1..].chars().count();
+            }
+            None => self.column += text.chars().count(),
+        }
+    }
+
+    /// Get a reference to the location's line.
+    pub fn line(&self) -> &usize {
+        &self.line
+    }
+
+    /// Get a reference to the location's column.
+    pub fn column(&self) -> &usize {
+        &self.column
+    }
 }
 
 pub struct Lexer {
@@ -93,6 +122,7 @@ pub struct Lexer {
 impl Lexer {
     pub fn new(mut input: &str) -> Self {
         let mut tokens = Vec::new();
+        let mut loc = Location::default();
 
         while !input.is_empty() {
             let old_input = input;
@@ -100,25 +130,24 @@ impl Lexer {
             skip_comment(&mut input);
             if old_input.len() == input.len() {
                 match advance(&mut input) {
-                    Ok(kind) => tokens.push(Token { kind }),
+                    Ok(kind) => tokens.push(Token { kind, loc }),
                     Err(_) => todo!(),
                 }
             }
+
+            let consumed = old_input.len() - input.len();
+            loc.advance(&old_input[..consumed]);
         }
 
         Self { tokens }
     }
 
     pub fn next(&mut self) -> Token {
-        self.tokens.pop().unwrap_or(Token {
-            kind: TokenKind::Eof,
-        })
+        self.tokens.pop().expect("Unexpected EOF")
     }
 
-    pub fn peek(&mut self) -> Token {
-        self.tokens.last().cloned().unwrap_or(Token {
-            kind: TokenKind::Eof,
-        })
+    pub fn peek(&mut self) -> Option<Token> {
+        self.tokens.last().cloned()
     }
 }
 
@@ -252,7 +281,9 @@ mod test {
         let lexer = Lexer::new(gql);
         dbg!(lexer.tokens);
 
-        let gql = "fragment friend Fields on User { id name profilePic(size: 5.0) }";
+        let gql = "fragment friend Fields on User {
+            id name profilePic(size: 5.0)
+        }";
         let lexer = Lexer::new(gql);
         dbg!(lexer.tokens);
     }
