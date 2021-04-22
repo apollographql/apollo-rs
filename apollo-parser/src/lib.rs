@@ -1,8 +1,34 @@
+macro_rules! format_err {
+    ($data:expr, $($tt:tt)*) => {
+        $crate::TokenKind::Error {
+            message: format!($($tt)*),
+            data: $data.to_string(),
+        }
+    };
+}
+
+macro_rules! ensure {
+    ($cond:expr, $data:expr, $($tt:tt)*) => {
+        if !$cond {
+            return $crate::TokenKind::Error {
+                message: format!($($tt)*),
+                data: $data.to_string(),
+            }
+        }
+    };
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenKind {
     Node(String),
     Int(i64),
     Float(f64),
+    Error {
+        /// The raw data that's part of the error range.
+        data: String,
+        /// The corresponding error message.
+        message: String,
+    },
     Bang,     // !
     Dollar,   // $
     LParen,   // (
@@ -37,6 +63,9 @@ impl std::fmt::Debug for Token {
             }
             TokenKind::Float(n) => {
                 write!(f, "FLOAT@{}:{} {:?}", start, end, n)
+            }
+            TokenKind::Error { message, .. } => {
+                write!(f, "ERROR@{}:{} {:?}", start, end, message)
             }
             TokenKind::Bang => {
                 write!(f, "BANG@{}:{}", start, end)
@@ -102,7 +131,7 @@ pub struct Token {
     loc: Location,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Location {
     index: usize,
     length: usize,
@@ -141,19 +170,14 @@ impl Lexer {
             skip_comment(&mut input);
 
             if old_input.len() == input.len() {
-                let res = advance(&mut input);
+                let kind = advance(&mut input);
                 let consumed = old_input.len() - input.len();
                 length += consumed;
 
-                match res {
-                    Ok(kind) => {
-                        let loc = Location::new(index, length - 1);
-                        tokens.push(Token { kind, loc });
-                        index += length;
-                        length = 0;
-                    }
-                    Err(_) => todo!(),
-                }
+                let loc = Location::new(index, length - 1);
+                tokens.push(Token { kind, loc });
+                index += length;
+                length = 0;
             }
         }
 
@@ -169,7 +193,7 @@ impl Lexer {
     }
 }
 
-fn advance(input: &mut &str) -> Result<TokenKind, ()> {
+fn advance(input: &mut &str) -> TokenKind {
     let mut chars = input.chars();
     let c = chars.next().unwrap();
 
@@ -205,12 +229,8 @@ fn advance(input: &mut &str) -> Result<TokenKind, ()> {
             while let Some(c) = chars.clone().next() {
                 match c {
                     'e' | 'E' => {
-                        if !has_digit {
-                            panic!("Unexpected character in exponent");
-                        }
-                        if has_exponent {
-                            panic!("Unexpected character 'e'");
-                        }
+                        ensure!(!has_digit, c, "Unexpected character `{}` in exponent", c);
+                        ensure!(!has_exponent, c, "Unexpected character `{}`", c);
                         buf.push(chars.next().unwrap());
                         has_exponent = true;
                         if let Some(c) = chars.clone().next() {
@@ -220,15 +240,9 @@ fn advance(input: &mut &str) -> Result<TokenKind, ()> {
                         }
                     }
                     '.' => {
-                        if !has_digit {
-                            panic!("unexpected . before a digit");
-                        }
-                        if has_fractional {
-                            panic!("Unexpected .");
-                        }
-                        if has_exponent {
-                            panic!("unexpected e");
-                        }
+                        ensure!(has_digit, c, "Unexpected character `{}` before a digit", c);
+                        ensure!(!has_fractional, c, "Unexpected character `{}`", c);
+                        ensure!(!has_exponent, c, "Unexpected character `{}`", c);
                         buf.push(chars.next().unwrap());
                         has_fractional = true;
                     }
@@ -252,14 +266,19 @@ fn advance(input: &mut &str) -> Result<TokenKind, ()> {
         ')' => TokenKind::RParen,
         '.' => match (chars.next(), chars.next()) {
             (Some('.'), Some('.')) => TokenKind::Spread,
-            (Some(a), Some(b)) => {
-                panic!(
-                    "Unterminated spread operator, expected `...`, found `.{}{}`",
-                    a, b
-                )
+            (Some(a), Some(b)) => format_err!(
+                format!("{}{}", a, b),
+                "Unterminated spread operator, expected `...`, found `.{}{}`",
+                a,
+                b,
+            ),
+            (Some(a), None) => {
+                format_err!(a, "Unterminated spread, expected `...`, found `.{}`", a)
             }
-            (Some(a), None) => panic!("Unterminated spread, expected `...`, found `.{}`", a),
-            (_, _) => panic!("Unterminated spread operator, expected `...`, found `.`"),
+            (_, _) => format_err!(
+                "",
+                "Unterminated spread operator, expected `...`, found `.`"
+            ),
         },
         ':' => TokenKind::Colon,
         '=' => TokenKind::Eq,
@@ -269,11 +288,11 @@ fn advance(input: &mut &str) -> Result<TokenKind, ()> {
         '{' => TokenKind::LBrace,
         '|' => TokenKind::Pipe,
         '}' => TokenKind::RBrace,
-        c => panic!("Unexpected character: `{}`", c),
+        c => format_err!(c, "Unexpected character: {}", c),
     };
 
     *input = chars.as_str();
-    Ok(kind)
+    kind
 }
 
 fn skip_ws(input: &mut &str) {
@@ -319,7 +338,7 @@ mod test {
     friends(first: 10) {
       ...friendFields
     }
-    mutualFriends(first: 10) {
+    mutualFriends(first: 10)æ {
       ...friendFields
     }
   }
