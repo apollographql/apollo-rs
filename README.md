@@ -15,8 +15,8 @@ these libraries is specific to Apollo, and can freely be used by other
 projects which need standards-compliant GraphQL tooling written in Rust. The
 following crates currently exist:
 
-* [**`apollo-encoder`**](apollo-encoder) - a library to generate GraphQL code.
-* [**`apollo-parser`**](apollo-parser) - a library to parse the GraphQL
+* [**`apollo-encoder`**](crates/apollo-encoder) - a library to generate GraphQL code.
+* [**`apollo-parser`**](crates/apollo-parser) - a library to parse the GraphQL
   query language.
 
 # License

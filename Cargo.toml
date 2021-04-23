@@ -1,7 +1,7 @@
 [workspace]
-
 members = [
-    "apollo-parser",
-    "apollo-ast",
-    "apollo-encoder",
+    "crates/apollo-ast",
+    "crates/apollo-encoder",
+    "crates/apollo-parser",
+    "crates/apollo-smith",
 ]
