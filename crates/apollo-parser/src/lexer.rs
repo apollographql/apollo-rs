@@ -363,7 +363,7 @@ mod test {
     use super::*;
     #[test]
     fn tests() {
-        let gql = "directive @cacheControl";
+        let gql = "directive @example on FIELD";
         let lexer = Lexer::new(gql);
         dbg!(lexer.tokens);
 
