@@ -1,4 +1,6 @@
-use rowan::{GreenNode, GreenNodeBuilder};
+use std::fmt;
+
+use rowan::GreenNodeBuilder;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u16)]
@@ -53,10 +55,52 @@ impl rowan::Language for Language {
     }
 }
 
-#[derive(Debug)]
-pub struct ParseResult {
-    pub green_node: GreenNode,
-    pub errors: Vec<String>,
+pub struct SyntaxTree {
+    ast: rowan::SyntaxNode<Language>,
+    errors: Vec<String>,
+}
+
+impl SyntaxTree {
+    /// Get a reference to the syntax tree's errors.
+    pub fn errors(&self) -> &Vec<String> {
+        &self.errors
+    }
+}
+
+impl fmt::Debug for SyntaxTree {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        type SyntaxNode = rowan::SyntaxNode<Language>;
+        #[allow(unused)]
+        type SyntaxToken = rowan::SyntaxToken<Language>;
+        #[allow(unused)]
+        type SyntaxElement = rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
+
+        fn print(f: &mut fmt::Formatter<'_>, indent: usize, element: SyntaxElement) -> fmt::Result {
+            let kind: SyntaxKind = element.kind().into();
+            print!("{:indent$}", "", indent = indent);
+            match element {
+                rowan::NodeOrToken::Node(node) => {
+                    writeln!(f, "- {:?}@{:?}", kind, node.text_range())?;
+                    for child in node.children_with_tokens() {
+                        print(f, indent + 2, child)?;
+                    }
+                    Ok(())
+                }
+
+                rowan::NodeOrToken::Token(token) => {
+                    writeln!(
+                        f,
+                        "- {:?}@{:?} {:?}",
+                        kind,
+                        token.text_range(),
+                        token.text()
+                    )
+                }
+            }
+        }
+
+        print(f, 0, self.ast.clone().into())
+    }
 }
 
 #[derive(Debug)]
@@ -82,7 +126,7 @@ impl Parser {
         }
     }
 
-    pub fn parse(mut self) -> ParseResult {
+    pub fn parse(mut self) -> SyntaxTree {
         self.builder.start_node(SyntaxKind::Root.into());
 
         // Bang,     // !
@@ -120,8 +164,8 @@ impl Parser {
 
         self.builder.finish_node();
 
-        ParseResult {
-            green_node: self.builder.finish(),
+        SyntaxTree {
+            ast: rowan::SyntaxNode::new_root(self.builder.finish()),
             errors: self.errors,
         }
     }
@@ -192,31 +236,6 @@ mod test {
             (SyntaxKind::Node, "FIELD".to_string()),
         ]);
 
-        let ParseResult { green_node, .. } = parser.parse();
-        let ast = SyntaxNode::new_root(green_node);
-        print(0, ast.into());
-    }
-
-    type SyntaxNode = rowan::SyntaxNode<super::Language>;
-    #[allow(unused)]
-    type SyntaxToken = rowan::SyntaxToken<super::Language>;
-    #[allow(unused)]
-    type SyntaxElement = rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
-
-    fn print(indent: usize, element: SyntaxElement) {
-        let kind: SyntaxKind = element.kind().into();
-        print!("{:indent$}", "", indent = indent);
-        match element {
-            rowan::NodeOrToken::Node(node) => {
-                println!("- {:?}@{:?}", kind, node.text_range());
-                for child in node.children_with_tokens() {
-                    print(indent + 2, child);
-                }
-            }
-
-            rowan::NodeOrToken::Token(token) => {
-                println!("- {:?}@{:?} {:?}", kind, token.text_range(), token.text())
-            }
-        }
+        println!("{:?}", parser.parse());
     }
 }
