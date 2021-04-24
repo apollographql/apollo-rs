@@ -102,14 +102,16 @@ impl Parser {
         // Node,
         // Int,
         // Float
-        match self.peek() {
-            None => self.builder.finish_node(),
-            Some(SyntaxKind::Directive) => {
-                if self.parse_directive().is_err() {
-                    panic!("could not parse directive");
+        loop {
+            match self.peek() {
+                None => break,
+                Some(SyntaxKind::Directive) => {
+                    if self.parse_directive().is_err() {
+                        panic!("could not parse directive");
+                    }
                 }
+                Some(_) => break,
             }
-            Some(_) => {}
         }
 
         self.builder.finish_node();
@@ -124,39 +126,29 @@ impl Parser {
         self.builder.start_node(SyntaxKind::Directive.into());
         self.bump();
         match self.peek() {
-            Some(SyntaxKind::At) => {
-                self.builder.start_node(SyntaxKind::At.into());
-                self.bump();
-                self.builder.finish_node();
-            }
+            Some(kind @ SyntaxKind::At) => self.insert_node(kind),
             _ => return Err(()),
         }
         match self.peek() {
-            Some(SyntaxKind::Node) => {
-                self.builder.start_node(SyntaxKind::Node.into());
-                self.bump();
-                self.builder.finish_node();
-            }
+            Some(kind @ SyntaxKind::Node) => self.insert_node(kind),
             _ => return Err(()),
         }
         match self.peek() {
-            Some(SyntaxKind::On) => {
-                self.builder.start_node(SyntaxKind::On.into());
-                self.bump();
-                self.builder.finish_node();
-            }
+            Some(kind @ SyntaxKind::On) => self.insert_node(kind),
             _ => return Err(()),
         }
         match self.peek() {
-            Some(SyntaxKind::Node) => {
-                self.builder.start_node(SyntaxKind::Node.into());
-                self.bump();
-                self.builder.finish_node();
-            }
+            Some(kind @ SyntaxKind::Node) => self.insert_node(kind),
             _ => return Err(()),
         }
         self.builder.finish_node();
         Ok(())
+    }
+
+    pub fn insert_node(&mut self, kind: SyntaxKind) {
+        self.builder.start_node(kind.into());
+        self.bump();
+        self.builder.finish_node();
     }
 
     pub fn bump(&mut self) {
