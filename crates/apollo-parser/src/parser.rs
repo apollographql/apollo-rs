@@ -153,6 +153,11 @@ impl Parser {
         loop {
             match self.peek() {
                 None => break,
+                Some(SyntaxKind::Fragment) => {
+                    if self.parse_fragment().is_err() {
+                        panic!("could not parse fragment");
+                    }
+                }
                 Some(SyntaxKind::Directive) => {
                     if self.parse_directive().is_err() {
                         panic!("could not parse directive");
@@ -170,8 +175,51 @@ impl Parser {
         }
     }
 
+    // See: https://spec.graphql.org/June2018/#sec-Language.Fragments
+    // 
+    // ```txt
+    // FragmentDefinition
+    //     fragment FragmentName TypeCondition Directives(opt) SelectionSet
+    // ```
+    fn parse_fragment(&mut self) -> Result<(), ()> {
+        self.builder.start_node(SyntaxKind::Fragment.into());
+        self.bump();
+        self.parse_whitespace();
+        self.parse_fragment_name()?;
+
+        // TODO(lrlna): parse TypeCondition, Directives, SelectionSet
+
+        Ok(())
+    }
+
+    // See: https://spec.graphql.org/June2018/#FragmentName
+    //
+    // ```txt
+    // FragmentName
+    //     Name *but not* on
+    // ```
+    fn parse_fragment_name(&mut self) -> Result<(), ()> {
+        match self.peek() {
+            Some(SyntaxKind::Node) => {
+                if self.peek_data().unwrap() == "on" {
+                    return Err(());
+                }
+                self.bump();
+                Ok(())
+            },
+            _ => return Err(()),
+        }
+    }
+
+    // See: https://spec.graphql.org/June2018/#DirectiveDefinition
+    // 
+    // ```txt
+    // DirectiveDefinition
+    //     Description(opt) directive @ Name ArgumentsDefinition(opt) on DirectiveLocations
+    // ```
     fn parse_directive(&mut self) -> Result<(), ()> {
         self.builder.start_node(SyntaxKind::Directive.into());
+        // TODO(lrlna): parse Description
         self.bump();
         self.parse_whitespace();
 
@@ -216,6 +264,11 @@ impl Parser {
     pub fn peek(&self) -> Option<SyntaxKind> {
         self.tokens.last().map(|(kind, _)| *kind)
     }
+    
+    pub fn peek_data(&self) -> Option<&String> {
+        self.tokens.last().map(|(_, s)| s)
+    }
+
 }
 
 #[cfg(test)]
@@ -239,3 +292,4 @@ mod test {
         println!("{:?}", parser.parse());
     }
 }
+
