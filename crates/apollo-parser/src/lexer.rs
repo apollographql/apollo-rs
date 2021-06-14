@@ -1,87 +1,23 @@
-macro_rules! format_err {
+use crate::token_kind::TokenKind;
+
+macro_rules! bail {
     ($data:expr, $($tt:tt)*) => {
-        $crate::lexer::TokenKind::Error {
-            message: format!($($tt)*),
-            data: $data.to_string(),
-        }
+        return Err($crate::lexer::Error::new(
+            format!($($tt)*),
+            $data.to_string(),
+        ))
     };
 }
 
 macro_rules! ensure {
     ($cond:expr, $data:expr, $($tt:tt)*) => {
         if !$cond {
-            return $crate::lexer::TokenKind::Error {
-                message: format!($($tt)*),
-                data: $data.to_string(),
-            }
+            return Err($crate::lexer::Error::new(
+                format!($($tt)*),
+                $data.to_string(),
+            ))
         }
     };
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum TokenKind {
-    Root,
-    Bang,     // !
-    Dollar,   // $
-    LParen,   // (
-    RParen,   // )
-    Spread,   // ...
-    Colon,    // :
-    Eq,       // =
-    At,       // @
-    LBracket, // [
-    RBracket, // ]
-    LBrace,   // {
-    Pipe,     // |
-    RBrace,   // }
-    Fragment,
-    Directive,
-    Query,
-    On,
-    Eof,
-
-    // composite nodes
-    Node(String),
-    Int(i64),
-    Float(f64),
-    Error {
-        /// The raw data that's part of the error range.
-        data: String,
-        /// The corresponding error message.
-        message: String,
-    },
-}
-
-impl Into<u16> for TokenKind {
-    fn into(self) -> u16 {
-        match self {
-            TokenKind::Root => 0,
-            TokenKind::Bang => 1,
-            TokenKind::Dollar => 2,
-            TokenKind::LParen => 3,
-            TokenKind::RParen => 4,
-            TokenKind::Spread => 5,
-            TokenKind::Colon => 6,
-            TokenKind::Eq => 7,
-            TokenKind::At => 8,
-            TokenKind::LBracket => 9,
-            TokenKind::RBracket => 10,
-            TokenKind::LBrace => 11,
-            TokenKind::Pipe => 12,
-            TokenKind::RBrace => 13,
-            TokenKind::Fragment => 14,
-            TokenKind::Directive => 15,
-            TokenKind::Query => 16,
-            TokenKind::On => 17,
-            TokenKind::Eof => 18,
-
-            // composite nodes
-            TokenKind::Node(_) => 19,
-            TokenKind::Int(_) => 20,
-            TokenKind::Float(_) => 21,
-            TokenKind::Error { .. } => 22,
-        }
-    }
 }
 
 impl std::fmt::Debug for Token {
@@ -93,6 +29,9 @@ impl std::fmt::Debug for Token {
             TokenKind::Root => {
                 write!(f, "ROOT@{}:{}", start, end)
             }
+            TokenKind::Whitespace => {
+                write!(f, "WHITESPACE@{}:{}", start, end)
+            } 
             TokenKind::Bang => {
                 write!(f, "BANG@{}:{}", start, end)
             }
@@ -149,17 +88,14 @@ impl std::fmt::Debug for Token {
             }
 
             // composite nodes
-            TokenKind::Node(s) => {
-                write!(f, "NODE@{}:{} {:?}", start, end, s)
+            TokenKind::Node => {
+                write!(f, "NODE@{}:{} {:?}", start, end, self.data)
             }
-            TokenKind::Int(n) => {
-                write!(f, "INT@{}:{} {:?}", start, end, n)
+            TokenKind::Int => {
+                write!(f, "INT@{}:{} {:?}", start, end, self.data)
             }
-            TokenKind::Float(n) => {
-                write!(f, "FLOAT@{}:{} {:?}", start, end, n)
-            }
-            TokenKind::Error { message, .. } => {
-                write!(f, "ERROR@{}:{} {:?}", start, end, message)
+            TokenKind::Float => {
+                write!(f, "FLOAT@{}:{} {:?}", start, end, self.data)
             }
         }
     }
@@ -168,10 +104,52 @@ impl std::fmt::Debug for Token {
 #[derive(Clone)]
 pub struct Token {
     kind: TokenKind,
+    data: String,
     loc: Location,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+impl Token {
+    fn new(kind: TokenKind, data: String) -> Self {
+        Self { kind, data, loc: Location::new(0, 0) }
+    }
+
+    /// Get a reference to the token's kind.
+    pub fn kind(&self) -> TokenKind {
+        self.kind
+    }
+
+    /// Get a reference to the token's data.
+    pub fn data(&self) -> &str {
+        self.data.as_str()
+    }
+
+    /// Get a reference to the token's loc.
+    pub fn loc(&self) -> Location {
+        self.loc
+    }
+}
+
+#[derive(Clone)]
+pub struct Error {
+    message: String,
+    data: String,
+    loc: Location,
+}
+
+impl Error {
+    pub fn new(message: String, data: String) -> Self { Self { message, data, loc: Location::new(0, 0) } }
+}
+
+impl std::fmt::Debug for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let start = self.loc.index;
+        let end = self.loc.index + self.loc.length;
+
+        write!(f, "ERROR@{}:{} {:?}", start, end, self.message)
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Location {
     index: usize,
     length: usize,
@@ -194,7 +172,7 @@ impl Location {
 }
 
 pub struct Lexer {
-    tokens: Vec<Token>,
+    tokens: Vec<Result<Token, Error>>,
 }
 
 impl Lexer {
@@ -206,34 +184,53 @@ impl Lexer {
 
         while !input.is_empty() {
             let old_input = input;
-            skip_ws(&mut input);
+            // TODO: do not skip comment
+            // TODO: add comment to token kinds
+            // TODO: add parsing of comment to parser.rs
             skip_comment(&mut input);
 
             if old_input.len() == input.len() {
-                let kind = advance(&mut input);
+                let r = advance(&mut input);
                 let consumed = old_input.len() - input.len();
-                length += consumed;
-
                 let loc = Location::new(index, length - 1);
-                tokens.push(Token { kind, loc });
-                index += length;
-                length = 0;
+                length += consumed;
+                // Match on the Result type from the advance function and add
+                // location information before pushing a Result to tokens
+                // vector.
+                match r {
+                    Ok(mut t) => {
+                        t.loc = loc;
+                        tokens.push(Ok(t));
+                        index += length;
+                        length = 0;
+                    },
+                    Err(mut e) => {
+                        e.loc = loc;
+                        tokens.push(Err(e));
+                        length = 0;
+                    },
+                };
             }
         }
 
         Self { tokens }
     }
 
-    pub fn next(&mut self) -> Token {
+    pub fn next(&mut self) -> Result<Token, Error> {
         self.tokens.pop().expect("Unexpected EOF")
     }
 
-    pub fn peek(&mut self) -> Option<Token> {
+    pub fn peek(&mut self) -> Option<Result<Token, Error>> {
         self.tokens.last().cloned()
+    }
+
+    /// Get a reference to the lexer's tokens.
+    pub fn tokens(&self) -> &[Result<Token, Error>] {
+        self.tokens.as_slice()
     }
 }
 
-fn advance(input: &mut &str) -> TokenKind {
+fn advance(input: &mut &str) -> Result<Token, Error> {
     let mut chars = input.chars();
     let c = chars.next().unwrap();
 
@@ -251,12 +248,26 @@ fn advance(input: &mut &str) -> TokenKind {
             }
 
             match buf.as_str() {
-                "on" => TokenKind::On,
-                "directive" => TokenKind::Directive,
-                "fragment" => TokenKind::Fragment,
-                "query" => TokenKind::Query,
-                _ => TokenKind::Node(buf),
+                "on" => Ok(Token::new(TokenKind::On, buf)),
+                "directive" => Ok(Token::new(TokenKind::Directive, buf)),
+                "fragment" => Ok(Token::new(TokenKind::Fragment, buf)),
+                "query" => Ok(Token::new(TokenKind::Query, buf)),
+                _ => Ok(Token::new(TokenKind::Node, buf)),
             }
+        }
+        c if is_whitespace(c) => {
+            let mut buf = String::new();
+            buf.push(c);
+
+            while let Some(c) = chars.clone().next() {
+                if is_whitespace(c) {
+                    buf.push(chars.next().unwrap());
+                } else {
+                    break;
+                }
+            }
+
+            Ok(Token::new(TokenKind::Whitespace, buf))
         }
         c @ '-' | c if is_digit_char(c) => {
             let mut buf = String::new();
@@ -295,48 +306,44 @@ fn advance(input: &mut &str) -> TokenKind {
             }
 
             if has_exponent || has_fractional {
-                TokenKind::Float(buf.parse().unwrap())
+                Ok(Token::new(TokenKind::Float, buf))
             } else {
-                TokenKind::Int(buf.parse().unwrap())
+                Ok(Token::new(TokenKind::Int, buf))
             }
         }
-        '!' => TokenKind::Bang,
-        '$' => TokenKind::Dollar,
-        '(' => TokenKind::LParen,
-        ')' => TokenKind::RParen,
+        '!' => Ok(Token::new(TokenKind::Bang, c.into())),
+        '$' => Ok(Token::new(TokenKind::Dollar, c.into())),
+        '(' => Ok(Token::new(TokenKind::LParen, c.into())),
+        ')' => Ok(Token::new(TokenKind::RParen, c.into())),
         '.' => match (chars.next(), chars.next()) {
-            (Some('.'), Some('.')) => TokenKind::Spread,
-            (Some(a), Some(b)) => format_err!(
+            (Some('.'), Some('.')) => Ok(Token::new(TokenKind::Spread, "...".to_string())),
+            (Some(a), Some(b)) => bail!(
                 format!("{}{}", a, b),
                 "Unterminated spread operator, expected `...`, found `.{}{}`",
                 a,
                 b,
             ),
             (Some(a), None) => {
-                format_err!(a, "Unterminated spread, expected `...`, found `.{}`", a)
+                bail!(a, "Unterminated spread, expected `...`, found `.{}`", a)
             }
-            (_, _) => format_err!(
+            (_, _) => bail!(
                 "",
                 "Unterminated spread operator, expected `...`, found `.`"
             ),
         },
-        ':' => TokenKind::Colon,
-        '=' => TokenKind::Eq,
-        '@' => TokenKind::At,
-        '[' => TokenKind::LBracket,
-        ']' => TokenKind::RBracket,
-        '{' => TokenKind::LBrace,
-        '|' => TokenKind::Pipe,
-        '}' => TokenKind::RBrace,
-        c => format_err!(c, "Unexpected character: {}", c),
+        ':' => Ok(Token::new(TokenKind::Colon, c.into())),
+        '=' => Ok(Token::new(TokenKind::Eq, c.into())),
+        '@' => Ok(Token::new(TokenKind::At, c.into())),
+        '[' => Ok(Token::new(TokenKind::LBracket, c.into())),
+        ']' => Ok(Token::new(TokenKind::RBracket, c.into())),
+        '{' => Ok(Token::new(TokenKind::LBrace, c.into())),
+        '|' => Ok(Token::new(TokenKind::Pipe, c.into())),
+        '}' => Ok(Token::new(TokenKind::RBrace, c.into())),
+        c => bail!(c, "Unexpected character: {}", c),
     };
 
     *input = chars.as_str();
     kind
-}
-
-fn skip_ws(input: &mut &str) {
-    *input = input.trim_start_matches(is_whitespace)
 }
 
 fn skip_comment(input: &mut &str) {

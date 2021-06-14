@@ -1,0 +1,37 @@
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[repr(u16)]
+pub enum TokenKind {
+    Whitespace = 0,
+    Bang,     // !
+    Dollar,   // $
+    LParen,   // (
+    RParen,   // )
+    Spread,   // ...
+    Colon,    // :
+    Eq,       // =
+    At,       // @
+    LBracket, // [
+    RBracket, // ]
+    LBrace,   // {
+    Pipe,     // |
+    RBrace,   // }
+    Fragment,
+    Directive,
+    Query,
+    On,
+    Eof,
+
+    // composite nodes
+    Node,
+    Int,
+    Float,
+
+    // Root node
+    Root,
+}
+
+impl From<TokenKind> for rowan::SyntaxKind {
+    fn from(kind: TokenKind) -> Self {
+        Self(kind as u16)
+    }
+}

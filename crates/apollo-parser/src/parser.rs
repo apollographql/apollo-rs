@@ -2,53 +2,17 @@ use std::fmt;
 
 use rowan::GreenNodeBuilder;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[repr(u16)]
-pub enum SyntaxKind {
-    // Whitespace
-    Whitespace = 0,
-
-    // Symbols
-    Bang,     // !
-    Dollar,   // $
-    LParen,   // (
-    RParen,   // )
-    Spread,   // ...
-    Colon,    // :
-    Eq,       // =
-    At,       // @
-    LBracket, // [
-    RBracket, // ]
-    LBrace,   // {
-    Pipe,     // |
-    RBrace,   // }
-
-    // Keywords and types
-    Fragment,
-    Directive,
-    Query,
-    On,
-    Node,
-    Int,
-    Float,
-
-    // Root node
-    Root,
-}
-
-impl From<SyntaxKind> for rowan::SyntaxKind {
-    fn from(kind: SyntaxKind) -> Self {
-        Self(kind as u16)
-    }
-}
+use crate::lexer;
+use crate::lexer::Lexer;
+use crate::token_kind::TokenKind;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Language {}
 impl rowan::Language for Language {
-    type Kind = SyntaxKind;
+    type Kind = TokenKind;
     fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
-        assert!(raw.0 <= SyntaxKind::Root as u16);
-        unsafe { std::mem::transmute::<u16, SyntaxKind>(raw.0) }
+        assert!(raw.0 <= TokenKind::Root as u16);
+        unsafe { std::mem::transmute::<u16, TokenKind>(raw.0) }
     }
     fn kind_to_raw(kind: Self::Kind) -> rowan::SyntaxKind {
         kind.into()
@@ -57,12 +21,12 @@ impl rowan::Language for Language {
 
 pub struct SyntaxTree {
     ast: rowan::SyntaxNode<Language>,
-    errors: Vec<String>,
+    errors: Vec<lexer::Error>,
 }
 
 impl SyntaxTree {
     /// Get a reference to the syntax tree's errors.
-    pub fn errors(&self) -> &Vec<String> {
+    pub fn errors(&self) -> &Vec<lexer::Error> {
         &self.errors
     }
 }
@@ -76,7 +40,7 @@ impl fmt::Debug for SyntaxTree {
         type SyntaxElement = rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
 
         fn print(f: &mut fmt::Formatter<'_>, indent: usize, element: SyntaxElement) -> fmt::Result {
-            let kind: SyntaxKind = element.kind().into();
+            let kind: TokenKind = element.kind().into();
             print!("{:indent$}", "", indent = indent);
             match element {
                 rowan::NodeOrToken::Node(node) => {
@@ -107,27 +71,40 @@ impl fmt::Debug for SyntaxTree {
 pub struct Parser {
     /// input tokens, including whitespace,
     /// in *reverse* order.
-    tokens: Vec<(SyntaxKind, String)>,
+    tokens: Vec<lexer::Token>,
     /// the in-progress tree.
     builder: GreenNodeBuilder<'static>,
     /// the list of syntax errors we've accumulated
     /// so far.
-    errors: Vec<String>,
+    errors: Vec<lexer::Error>,
 }
 
 impl Parser {
-    pub fn new(mut tokens: Vec<(SyntaxKind, String)>) -> Self {
+    pub fn new(input: &str) -> Self {
+        let lexer = Lexer::new(&input);
+
+        let mut tokens = Vec::new();
+        let mut errors = Vec::new();
+        
+        for s in lexer.tokens().to_owned() {
+            match s {
+                Ok(t) => tokens.push(t),
+                Err(e) => errors.push(e),
+            }
+        }
+
         tokens.reverse();
+        errors.reverse();
 
         Self {
             tokens,
             builder: GreenNodeBuilder::new(),
-            errors: vec![],
+            errors,
         }
     }
 
     pub fn parse(mut self) -> SyntaxTree {
-        self.builder.start_node(SyntaxKind::Root.into());
+        self.builder.start_node(TokenKind::Root.into());
 
         // Bang,     // !
         // Dollar,   // $
@@ -153,12 +130,12 @@ impl Parser {
         loop {
             match self.peek() {
                 None => break,
-                Some(SyntaxKind::Fragment) => {
+                Some(TokenKind::Fragment) => {
                     if self.parse_fragment().is_err() {
                         panic!("could not parse fragment");
                     }
                 }
-                Some(SyntaxKind::Directive) => {
+                Some(TokenKind::Directive) => {
                     if self.parse_directive().is_err() {
                         panic!("could not parse directive");
                     }
@@ -182,7 +159,7 @@ impl Parser {
     //     fragment FragmentName TypeCondition Directives(opt) SelectionSet
     // ```
     fn parse_fragment(&mut self) -> Result<(), ()> {
-        self.builder.start_node(SyntaxKind::Fragment.into());
+        self.builder.start_node(TokenKind::Fragment.into());
         self.bump();
         self.parse_whitespace();
         self.parse_fragment_name()?;
@@ -200,7 +177,7 @@ impl Parser {
     // ```
     fn parse_fragment_name(&mut self) -> Result<(), ()> {
         match self.peek() {
-            Some(SyntaxKind::Node) => {
+            Some(TokenKind::Node) => {
                 if self.peek_data().unwrap() == "on" {
                     return Err(());
                 }
@@ -218,29 +195,29 @@ impl Parser {
     //     Description(opt) directive @ Name ArgumentsDefinition(opt) on DirectiveLocations
     // ```
     fn parse_directive(&mut self) -> Result<(), ()> {
-        self.builder.start_node(SyntaxKind::Directive.into());
+        self.builder.start_node(TokenKind::Directive.into());
         // TODO(lrlna): parse Description
         self.bump();
         self.parse_whitespace();
 
         match self.peek() {
-            Some(SyntaxKind::At) => self.bump(),
+            Some(TokenKind::At) => self.bump(),
             _ => return Err(()),
         }
         match self.peek() {
-            Some(SyntaxKind::Node) => self.bump(),
-            _ => return Err(()),
-        }
-
-        self.parse_whitespace();
-        match self.peek() {
-            Some(SyntaxKind::On) => self.bump(),
+            Some(TokenKind::Node) => self.bump(),
             _ => return Err(()),
         }
 
         self.parse_whitespace();
         match self.peek() {
-            Some(SyntaxKind::Node) => self.bump(),
+            Some(TokenKind::On) => self.bump(),
+            _ => return Err(()),
+        }
+
+        self.parse_whitespace();
+        match self.peek() {
+            Some(TokenKind::Node) => self.bump(),
             _ => return Err(()),
         }
         self.builder.finish_node();
@@ -249,24 +226,24 @@ impl Parser {
 
     pub fn parse_whitespace(&mut self) {
         let mut text = String::new();
-        while let Some(SyntaxKind::Whitespace) = self.peek() {
-            let (_, s) = self.tokens.pop().unwrap();
-            text.push_str(&s);
+        while let Some(TokenKind::Whitespace) = self.peek() {
+            let token = self.tokens.pop().unwrap();
+            text.push_str(token.data());
         }
-        self.builder.token(SyntaxKind::Whitespace.into(), &text);
+        self.builder.token(TokenKind::Whitespace.into(), &text);
     }
 
     pub fn bump(&mut self) {
-        let (kind, text) = self.tokens.pop().unwrap();
-        self.builder.token(kind.into(), &text);
+        let token = self.tokens.pop().unwrap();
+        self.builder.token(token.kind().into(), token.data());
     }
 
-    pub fn peek(&self) -> Option<SyntaxKind> {
-        self.tokens.last().map(|(kind, _)| *kind)
+    pub fn peek(&self) -> Option<TokenKind> {
+        self.tokens.last().map(|token| token.kind().into())
     }
     
-    pub fn peek_data(&self) -> Option<&String> {
-        self.tokens.last().map(|(_, s)| s)
+    pub fn peek_data(&self) -> Option<String> {
+        self.tokens.last().map(|token| token.data().to_string())
     }
 
 }
@@ -276,18 +253,29 @@ mod test {
     use super::*;
 
     #[test]
-    fn smoke() {
+    // fn smoke() {
+    //     // directive @example on FIELD
+    //     let parser = Parser::new(vec![
+    //         (TokenKind::Directive, "directive".to_string()),
+    //         (TokenKind::Whitespace, " ".to_string()),
+    //         (TokenKind::At, "@".to_string()),
+    //         (TokenKind::Node, "example".to_string()),
+    //         (TokenKind::Whitespace, " ".to_string()),
+    //         (TokenKind::On, "on".to_string()),
+    //         (TokenKind::Whitespace, " ".to_string()),
+    //         (TokenKind::Node, "FIELD".to_string()),
+    //     ]);
+
+    //     println!("{:?}", parser.parse());
+    // }
+
+    #[test]
+    fn smoke_2() {
         // directive @example on FIELD
-        let parser = Parser::new(vec![
-            (SyntaxKind::Directive, "directive".to_string()),
-            (SyntaxKind::Whitespace, " ".to_string()),
-            (SyntaxKind::At, "@".to_string()),
-            (SyntaxKind::Node, "example".to_string()),
-            (SyntaxKind::Whitespace, " ".to_string()),
-            (SyntaxKind::On, "on".to_string()),
-            (SyntaxKind::Whitespace, " ".to_string()),
-            (SyntaxKind::Node, "FIELD".to_string()),
-        ]);
+        let input = "fragment friendFields on User {
+            id name profilePic(size: 5.0)
+        }";
+        let parser = Parser::new(input);
 
         println!("{:?}", parser.parse());
     }
