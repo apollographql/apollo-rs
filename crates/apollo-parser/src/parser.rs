@@ -275,6 +275,7 @@ mod test {
         let input = "fragment friendFields on User {
             id name profilePic(size: 5.0)
         }";
+        // let input = "directive @example on FIELD";
         let parser = Parser::new(input);
 
         println!("{:?}", parser.parse());

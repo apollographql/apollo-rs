@@ -23,7 +23,7 @@ macro_rules! ensure {
 impl std::fmt::Debug for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let start = self.loc.index;
-        let end = self.loc.index + self.loc.length;
+        let end = self.loc.index + self.data.len();
 
         match &self.kind {
             TokenKind::Root => {
@@ -110,7 +110,7 @@ pub struct Token {
 
 impl Token {
     fn new(kind: TokenKind, data: String) -> Self {
-        Self { kind, data, loc: Location::new(0, 0) }
+        Self { kind, data, loc: Location::new(0) }
     }
 
     /// Get a reference to the token's kind.
@@ -137,13 +137,13 @@ pub struct Error {
 }
 
 impl Error {
-    pub fn new(message: String, data: String) -> Self { Self { message, data, loc: Location::new(0, 0) } }
+    pub fn new(message: String, data: String) -> Self { Self { message, data, loc: Location::new(0) } }
 }
 
 impl std::fmt::Debug for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let start = self.loc.index;
-        let end = self.loc.index + self.loc.length;
+        let end = self.loc.index + self.data.len();
 
         write!(f, "ERROR@{}:{} {:?}", start, end, self.message)
     }
@@ -152,22 +152,16 @@ impl std::fmt::Debug for Error {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Location {
     index: usize,
-    length: usize,
 }
 
 impl Location {
-    pub fn new(index: usize, length: usize) -> Self {
-        Self { index, length }
+    pub fn new(index: usize) -> Self {
+        Self { index }
     }
 
     /// Get a reference to the location's index.
     pub fn index(&self) -> usize {
         self.index
-    }
-
-    /// Get a reference to the location's length.
-    pub fn length(&self) -> usize {
-        self.length
     }
 }
 
@@ -180,7 +174,6 @@ impl Lexer {
         let mut tokens = Vec::new();
 
         let mut index = 0;
-        let mut length = 0;
 
         while !input.is_empty() {
             let old_input = input;
@@ -191,23 +184,20 @@ impl Lexer {
 
             if old_input.len() == input.len() {
                 let r = advance(&mut input);
-                let consumed = old_input.len() - input.len();
-                let loc = Location::new(index, length - 1);
-                length += consumed;
+                let loc = Location::new(index);
                 // Match on the Result type from the advance function and add
                 // location information before pushing a Result to tokens
                 // vector.
                 match r {
                     Ok(mut t) => {
                         t.loc = loc;
+                        index += t.data.len();
                         tokens.push(Ok(t));
-                        index += length;
-                        length = 0;
                     },
                     Err(mut e) => {
                         e.loc = loc;
+                        index += e.data.len();
                         tokens.push(Err(e));
-                        length = 0;
                     },
                 };
             }
