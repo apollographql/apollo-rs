@@ -356,8 +356,6 @@ mod test {
 
     #[test]
     fn smoke_directive() {
-        // directive @example on FIELD
-
         let input = "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION";
         let parser = Parser::new(input);
 

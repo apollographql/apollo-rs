@@ -1,0 +1,273 @@
+// Legend:
+//
+//   //          -- comment
+//   Name =      -- non-terminal definition
+//   'ident'     -- token (terminal)
+//   A B         -- sequence
+//   A | B       -- alternation
+//   A*          -- zero or more repetition
+//   A?          -- zero or one repetition
+//   (A)         -- same as A
+//   label:A     -- suggested name for field of AST node
+
+Name =
+  'ident'
+
+Document =
+  Definition
+
+Definition = 
+  ExecutableDefinition
+  | TypeSystemDefinition
+  | TypeSystemExtension
+
+
+ExecutableDefinition =
+  OperationDefinition
+  | FragmentDefinition
+
+Operation Definition = 
+  OperationType Name? VariableDefinitions? Directives? SelectionSet
+  | SelectionSet
+
+SelectionSet =
+  '{' Selection* '}'
+
+Selection = 
+  Field
+  | FragmentSpread
+  | InlineFragment
+
+Field =
+  Alias? Name Arguments? Directives? SelectionSet?
+
+Alias = 
+  Name ':'
+
+Arguments =
+  '(' Argument* ')'
+
+Argument =
+  Name ':' Value
+
+FragmentsSpread = 
+  '...' FragmentName Directives?
+
+InlineFragment =
+  '...' TypeCondition? Directives? SelectionSet
+
+FragmentDefinition =
+  'fragment' FragmentName TypeCondition Directives? SelectionSet
+
+FragmentName =
+  Name
+
+TypeCondition =
+  'on' NamedType
+
+Value = 
+  Variable
+  | IntValue
+  | FloatValue
+  | StringValue
+  | BooleanValue
+  | NullValue
+  | EnumValue
+  | ListValue
+  | ObjectValue
+
+BooleanValue =
+  'true'
+  | 'false'
+
+NullValue =
+  'null'
+
+EnumValue =
+  Name
+
+ListValue =
+  '[' ']'
+  '[' Value* ']'
+  
+ObjectValue =
+ '{' '}'
+ '{' ObjectField* '}'
+
+ObjectField
+  Name ':' Value
+
+VariableDefinitions
+  '(' VariableDefinition* ')'
+  
+VariableDefinition =
+  Variable ':' TypeDefaultValue?
+  
+Variable =
+  '$' Name
+
+DefaultValue =
+  '=' Value
+
+Type =
+  NamedType
+  | ListType
+  | NonNullType
+
+NamedType =
+  Name
+
+ListType =
+  '[' Type ']'
+  
+NonNullType =
+  NamedType '!'
+  | ListType '!'
+  
+DirectivesConst =
+  Directive*
+
+DirectiveConst = 
+  '@' Name Arguments?
+
+TypeSystemDefinition =
+  SchemaDefinition
+  | TypeDefinition
+  | DirectiveDefinition
+
+TypeSystemExtension =
+  SchemaExtension
+  | TypeExtension
+
+SchemaDefinition =
+  'schema' Directives? '{' OperationTypeDefinition* '}'
+
+SchemaExtension =
+  'extend' 'schema' Directives? '{' OperationTypeDefinition* '}'
+  | 'extend' 'schema' Directives
+
+OperationTypeDefinition =
+  OperationType ':' NamedType
+
+Description =
+  StringValue
+
+TypeDefinition =
+  ScalarTypeDefinition
+  | ObjectTypeDefinition
+  | InterfaceTypeDefinition
+  | UnionTypeDefinition
+  | EnumTypeDefinition
+  | InputObjectTypeDefinition
+
+TypeExtension =
+  ScalarTypeExtension
+  | ObjectTypeExtension
+  | InterfaceTypeExtension
+  | UnionTypeExtension
+  | EnumTypeExtension
+  | InputObjectTypeExtension
+
+ScalarTypeDefinition =
+  Description? 'scalar' Name Directives?
+
+ScalarTypeExtension =
+  'extend' 'scalar' Name Directives
+
+ObjectTypeDefinition =
+  Description? 'type' Name ImplementsInterfaces? Directives? FieldsDefinition?
+
+ObjectTypeExtension =
+  'extend' 'type' Name ImplementsInterfaces? Directives? FieldsDefinition
+  | 'extend' 'type' Name ImplementsInterfaces? Directives
+  | 'extend' 'type' Name ImplementsInterfaces
+
+ImplementsInterfaces =
+  'implements' '&'? NamedType
+  | ImplementsInterfaces '&' NamedType
+
+FieldsDefinition =
+  '{' FieldDefinition* '}'
+
+FieldDefinition = 
+  Description? Name ArgumentsDefinition? ':' Type Directives?
+
+ArgumentsDefinition =
+  '(' InputValueDefinition* ')'
+
+InputValueDefinition =
+  Description? Name ':' Type DefaultValue? Directives?
+
+InterfaceTypeDefinition =
+  Description? 'interface' Name Directives? FieldsDefinition?
+
+InterfaceTypeExtension =
+  'extend' 'interface' Name Directives? FieldsDefinition
+  | 'extend' 'interface' Name Directives
+
+UnionTypeDefinition =
+  Description? 'union' Name Directives? UnionMemberTypes?
+
+UnionMemberTypes =
+  '=' '|'? NamedType
+  | UnionMemberTypes '|' NamedType
+
+UnionTypeExtension =
+  'extend' 'union' Name Directives? UnionMemberTypes
+  | 'extend' 'union' Name Directives
+
+EnumTypeDefinition =
+  Description? 'enum' Name Directives? EnumValuesDefinition?
+
+EnumValuesDefinition =
+  '{' EnumValueDefinition* '}'
+
+EnumValueDefinition =
+  | Description? EnumValue Directives?
+
+EnumTypeExtension =
+  'extend' 'enum' Name Directives? EnumValuesDefinition
+  | 'extend' 'enum' Name Directives
+
+InputObjectTypeDefinition =
+  Description? 'input' Name Directives? InputFieldsDefinition?
+
+InputFieldsDefinition =
+  '{' InputValueDefinition* '}'
+
+InputObjectTypeExtension =
+  'extend' 'input' Name Directives? InputFieldsDefinition
+  | 'extend' 'input' Name Directives?
+
+DirectiveDefinition =
+  Description? 'directive' '@' Name ArgumentsDefinition? 'on' DirectiveLocations
+
+DirectiveLocations =
+  '|'? DirectiveLocation
+  | DirectiveLocations '|' DirectiveLocation
+
+DirectiveLocation =
+  ExecutableDirectiveLocation
+  TypeSystemDirectiveLocation
+
+ExecutableDirectiveLocation =
+  'QUERY'
+  | 'MUTATION'
+  | 'SUBSCRIPTION'
+  | 'FIELD'
+  | 'FRAGMENT_DEFINITION'
+  | 'FRAGMENT_SPREAD'
+  | 'INLINE_FRAGMENT'
+
+TypeSystemDirectiveLocation =
+  'SCHEMA'
+  | 'SCALAR'
+  | 'OBJECT'
+  | 'FIELD_DEFINITION'
+  | 'ARGUMENT_DEFINITION'
+  | 'INTERFACE'
+  | 'UNION'
+  | 'ENUM'
+  | 'ENUM_VALUE'
+  | 'INPUT_OBJECT'
+  | 'INPUT_FIELD_DEFINITION'
