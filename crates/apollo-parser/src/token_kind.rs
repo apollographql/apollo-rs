@@ -1,12 +1,12 @@
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u16)]
 pub enum TokenKind {
-    Whitespace = 0,
     Bang,     // !
     Dollar,   // $
     LParen,   // (
     RParen,   // )
     Spread,   // ...
+    Comma,
     Colon,    // :
     Eq,       // =
     At,       // @

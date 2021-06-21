@@ -29,9 +29,6 @@ impl std::fmt::Debug for Token {
             TokenKind::Root => {
                 write!(f, "ROOT@{}:{}", start, end)
             }
-            TokenKind::Whitespace => {
-                write!(f, "WHITESPACE@{}:{}", start, end)
-            } 
             TokenKind::Bang => {
                 write!(f, "BANG@{}:{}", start, end)
             }
@@ -49,6 +46,9 @@ impl std::fmt::Debug for Token {
             }
             TokenKind::Colon => {
                 write!(f, "COLON@{}:{}", start, end)
+            }
+            TokenKind::Comma => {
+                write!(f, "COMMA@{}:{}", start, end)
             }
             TokenKind::Eq => {
                 write!(f, "EQ@{}:{}", start, end)
@@ -137,7 +137,21 @@ pub struct Error {
 }
 
 impl Error {
-    pub fn new(message: String, data: String) -> Self { Self { message, data, loc: Location::new(0) } }
+    pub fn new(message: String, data: String) -> Self {
+        Self {
+            message,
+            data,
+            loc: Location::new(0)
+        }
+    }
+
+    pub fn with_loc(message: String, data: String, loc: Location) -> Self {
+        Self {
+            message,
+            data,
+            loc
+        }
+    }
 }
 
 impl std::fmt::Debug for Error {
@@ -180,6 +194,7 @@ impl Lexer {
             // TODO: do not skip comment
             // TODO: add comment to token kinds
             // TODO: add parsing of comment to parser.rs
+            skip_ws(&mut input);
             skip_comment(&mut input);
 
             if old_input.len() == input.len() {
@@ -245,20 +260,6 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
                 _ => Ok(Token::new(TokenKind::Node, buf)),
             }
         }
-        c if is_whitespace(c) => {
-            let mut buf = String::new();
-            buf.push(c);
-
-            while let Some(c) = chars.clone().next() {
-                if is_whitespace(c) {
-                    buf.push(chars.next().unwrap());
-                } else {
-                    break;
-                }
-            }
-
-            Ok(Token::new(TokenKind::Whitespace, buf))
-        }
         c @ '-' | c if is_digit_char(c) => {
             let mut buf = String::new();
             buf.push(c);
@@ -322,6 +323,7 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
             ),
         },
         ':' => Ok(Token::new(TokenKind::Colon, c.into())),
+        ',' => Ok(Token::new(TokenKind::Comma, c.into())),
         '=' => Ok(Token::new(TokenKind::Eq, c.into())),
         '@' => Ok(Token::new(TokenKind::At, c.into())),
         '[' => Ok(Token::new(TokenKind::LBracket, c.into())),
@@ -334,6 +336,10 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
 
     *input = chars.as_str();
     kind
+}
+
+fn skip_ws(input: &mut &str) {
+    *input = input.trim_start_matches(is_whitespace)
 }
 
 fn skip_comment(input: &mut &str) {
@@ -360,17 +366,17 @@ mod test {
     use super::*;
     #[test]
     fn tests() {
-        let gql = "directive @example on FIELD";
-        let lexer = Lexer::new(gql);
-        dbg!(lexer.tokens);
+        let gql_1 = "directive @example on FIELD";
+        let lexer_1 = Lexer::new(gql_1);
+        dbg!(lexer_1.tokens);
 
-        let gql = "fragment friendFields on User {
+        let gql_2 = "fragment friendFields on User {
             id name profilePic(size: 5.0)
         }";
-        let lexer = Lexer::new(gql);
-        dbg!(lexer.tokens);
+        let lexer_2 = Lexer::new(gql_2);
+        dbg!(lexer_2.tokens);
 
-        let gql = "query withFragments {
+        let gql_3 = "query withFragments {
   user(id: 4) {
     friends(first: 10) {
       ...friendFields
@@ -381,7 +387,7 @@ mod test {
   }
 }";
 
-        let lexer = Lexer::new(gql);
-        dbg!(lexer.tokens);
+        let lexer_3 = Lexer::new(gql_3);
+        dbg!(lexer_3.tokens);
     }
 }
