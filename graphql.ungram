@@ -16,24 +16,23 @@ Name =
 Document =
   Definition
 
-Definition = 
+Definition =
   ExecutableDefinition
   | TypeSystemDefinition
   | TypeSystemExtension
-
 
 ExecutableDefinition =
   OperationDefinition
   | FragmentDefinition
 
-Operation Definition = 
+Operation Definition =
   OperationType Name? VariableDefinitions? Directives? SelectionSet
   | SelectionSet
 
 SelectionSet =
   '{' Selection* '}'
 
-Selection = 
+Selection =
   Field
   | FragmentSpread
   | InlineFragment
@@ -41,7 +40,7 @@ Selection =
 Field =
   Alias? Name Arguments? Directives? SelectionSet?
 
-Alias = 
+Alias =
   Name ':'
 
 Arguments =
@@ -50,7 +49,7 @@ Arguments =
 Argument =
   Name ':' Value
 
-FragmentsSpread = 
+FragmentsSpread =
   '...' FragmentName Directives?
 
 InlineFragment =
@@ -65,7 +64,7 @@ FragmentName =
 TypeCondition =
   'on' NamedType
 
-Value = 
+Value =
   Variable
   | IntValue
   | FloatValue
@@ -94,10 +93,10 @@ ObjectValue =
  '{' '}'
  '{' ObjectField* '}'
 
-ObjectField
+ObjectField =
   Name ':' Value
 
-VariableDefinitions
+VariableDefinitions =
   '(' VariableDefinition* ')'
   
 VariableDefinition =
@@ -127,7 +126,7 @@ NonNullType =
 DirectivesConst =
   Directive*
 
-DirectiveConst = 
+DirectiveConst =
   '@' Name Arguments?
 
 TypeSystemDefinition =
@@ -189,7 +188,7 @@ ImplementsInterfaces =
 FieldsDefinition =
   '{' FieldDefinition* '}'
 
-FieldDefinition = 
+FieldDefinition =
   Description? Name ArgumentsDefinition? ':' Type Directives?
 
 ArgumentsDefinition =
