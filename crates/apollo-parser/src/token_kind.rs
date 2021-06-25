@@ -6,7 +6,7 @@ pub enum TokenKind {
     LParen,   // (
     RParen,   // )
     Spread,   // ...
-    Comma,
+    Comma,    // ,
     Colon,    // :
     Eq,       // =
     At,       // @

@@ -13,6 +13,66 @@
 Name =
   'ident'
 
+///////////////////////////
+//      INT LITERAL      //
+///////////////////////////
+IntValue =
+  IntegerPart
+
+IntegerPart =
+  NegativeSign? '0'
+  NegativeSign? NonZeroDigit Digit*
+
+NegativeSign =
+  '-'
+
+Digit =
+  'int_number'
+
+// parser needs to omit 'zero' from these digits
+NonZeroDigit =
+  Digit
+
+///////////////////////////
+//     FLOAT LITERAL     //
+///////////////////////////
+FloatValue =
+  IntegerPart FractionalPart
+  | IntegerPart ExponentPart
+  | IntegerPart FractionalPart ExponentPart
+
+FractionalPart =
+  '.' Digit*
+
+ExponentPart =
+  ExponentIndicator Sign? Digit*
+
+ExponentIndicator =
+  'e'
+  | 'E'
+
+Sign =
+  '+'
+  | '-'
+
+///////////////////////////
+//     STRING LITERAL    //
+///////////////////////////
+StringValue =
+  '"' StringCharacter* '"'
+  '"""' BlockStringCharacter* '"""'
+
+// parser needs to make sure string literal does not have " or line terminators
+StringCharacter =
+  'string'
+
+// parser should make sure we are not processing unicode and escape characters here
+BlockStringCharacter =
+  'raw_string'
+
+///////////////////////////
+//        DOCUMENT       //
+///////////////////////////
 Document =
   Definition
 
@@ -25,9 +85,15 @@ ExecutableDefinition =
   OperationDefinition
   | FragmentDefinition
 
-Operation Definition =
+OperationDefinition =
   OperationType Name? VariableDefinitions? Directives? SelectionSet
   | SelectionSet
+
+OperationType =
+  'query'
+  | 'mutation'
+  | 'subscription'
+
 
 SelectionSet =
   '{' Selection* '}'
@@ -49,7 +115,7 @@ Arguments =
 Argument =
   Name ':' Value
 
-FragmentsSpread =
+FragmentSpread =
   '...' FragmentName Directives?
 
 InlineFragment =
@@ -100,7 +166,7 @@ VariableDefinitions =
   '(' VariableDefinition* ')'
   
 VariableDefinition =
-  Variable ':' TypeDefaultValue?
+  Variable ':' Type DefaultValue?
   
 Variable =
   '$' Name
@@ -123,10 +189,10 @@ NonNullType =
   NamedType '!'
   | ListType '!'
   
-DirectivesConst =
+Directives =
   Directive*
 
-DirectiveConst =
+Directive =
   '@' Name Arguments?
 
 TypeSystemDefinition =
@@ -222,7 +288,7 @@ EnumValuesDefinition =
   '{' EnumValueDefinition* '}'
 
 EnumValueDefinition =
-  | Description? EnumValue Directives?
+  Description? EnumValue Directives?
 
 EnumTypeExtension =
   'extend' 'enum' Name Directives? EnumValuesDefinition

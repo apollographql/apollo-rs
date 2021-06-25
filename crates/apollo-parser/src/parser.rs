@@ -4,7 +4,6 @@ use rowan::GreenNodeBuilder;
 
 use crate::lexer;
 use crate::lexer::Lexer;
-use crate::lexer::Error;
 use crate::lexer::Location;
 use crate::token_kind::TokenKind;
 
@@ -87,7 +86,7 @@ impl Parser {
 
         let mut tokens = Vec::new();
         let mut errors = Vec::new();
-        
+
         for s in lexer.tokens().to_owned() {
             match s {
                 Ok(t) => tokens.push(t),
@@ -156,7 +155,7 @@ impl Parser {
     }
 
     // See: https://spec.graphql.org/June2018/#sec-Language.Fragments
-    // 
+    //
     // ```txt
     // FragmentDefinition
     //     fragment FragmentName TypeCondition Directives(opt) SelectionSet
@@ -187,14 +186,14 @@ impl Parser {
                 }
                 self.bump();
                 Ok(())
-            },
+            }
             // missing fragment name
             _ => return Err(()),
         }
     }
 
     // See: https://spec.graphql.org/June2018/#DirectiveDefinition
-    // 
+    //
     // ```txt
     // DirectiveDefinition
     //     Description(opt) directive @ Name ArgumentsDefinition(opt) on DirectiveLocations
@@ -252,22 +251,22 @@ impl Parser {
                 self.bump();
                 match self.peek_data() {
                     Some(_) => return self.parse_directive_locations(true),
-                    _ => return Ok(())
+                    _ => return Ok(()),
                 }
-            },
+            }
             _ => {
                 if !is_location {
                     // missing directive locations in directive definition
-                    return Err(())
+                    return Err(());
                 }
                 Ok(())
             }
         }
     }
-    // See: https://spec.graphql.org/June2018/#InputValueDefinition 
-    // 
+    // See: https://spec.graphql.org/June2018/#InputValueDefinition
+    //
     // ```txt
-    // InputValueDefinition 
+    // InputValueDefinition
     //     Description(opt) Name : Type DefaultValue(opt) Directives(const/opt)
     // ```
     fn parse_input_value_definitions(&mut self, is_input: bool) -> Result<(), ()> {
@@ -288,15 +287,15 @@ impl Parser {
                                 self.bump();
                                 match self.peek() {
                                     Some(_) => self.parse_input_value_definitions(true),
-                                    _ => Ok(()) 
+                                    _ => Ok(()),
                                 }
-                            } 
+                            }
                             _ => return Err(()),
                         }
                     }
-                    _ => return Err(()) 
+                    _ => return Err(()),
                 }
-            },
+            }
             Some(TokenKind::Comma) => {
                 self.bump();
                 self.parse_input_value_definitions(is_input)
@@ -307,10 +306,9 @@ impl Parser {
                     Ok(())
                 } else {
                     // if there is no input, and a LPAREN was supplied, send an error
-                    return Err(()) 
+                    return Err(());
                 }
-            },
-
+            }
         }
     }
 
@@ -331,7 +329,7 @@ impl Parser {
     pub fn peek(&self) -> Option<TokenKind> {
         self.tokens.last().map(|token| token.kind().into())
     }
-    
+
     pub fn peek_data(&self) -> Option<String> {
         self.tokens.last().map(|token| token.data().to_string())
     }
@@ -362,4 +360,3 @@ mod test {
         println!("{:?}", parser.parse());
     }
 }
-

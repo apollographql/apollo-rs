@@ -8,5 +8,8 @@ edition = "2018"
 
 [dependencies]
 ungrammar = "1.14"
+proc-macro2 = "1.0.8"
+quote = "1.0.2"
+xshell = "0.1"
 anyhow = "1"
 structopt = { version = "0.3", default-features = false }

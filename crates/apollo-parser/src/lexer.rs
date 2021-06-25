@@ -110,7 +110,11 @@ pub struct Token {
 
 impl Token {
     fn new(kind: TokenKind, data: String) -> Self {
-        Self { kind, data, loc: Location::new(0) }
+        Self {
+            kind,
+            data,
+            loc: Location::new(0),
+        }
     }
 
     /// Get a reference to the token's kind.
@@ -141,16 +145,12 @@ impl Error {
         Self {
             message,
             data,
-            loc: Location::new(0)
+            loc: Location::new(0),
         }
     }
 
     pub fn with_loc(message: String, data: String, loc: Location) -> Self {
-        Self {
-            message,
-            data,
-            loc
-        }
+        Self { message, data, loc }
     }
 }
 
@@ -208,12 +208,12 @@ impl Lexer {
                         t.loc = loc;
                         index += t.data.len();
                         tokens.push(Ok(t));
-                    },
+                    }
                     Err(mut e) => {
                         e.loc = loc;
                         index += e.data.len();
                         tokens.push(Err(e));
-                    },
+                    }
                 };
             }
         }
