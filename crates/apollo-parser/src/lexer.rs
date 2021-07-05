@@ -1,4 +1,5 @@
 use crate::token_kind::TokenKind;
+use crate::Error;
 
 macro_rules! bail {
     ($data:expr, $($tt:tt)*) => {
@@ -133,49 +134,15 @@ impl Token {
     }
 }
 
-#[derive(Clone)]
-pub struct Error {
-    message: String,
-    data: String,
-    loc: Location,
-}
-
-impl Error {
-    pub fn new(message: String, data: String) -> Self {
-        Self {
-            message,
-            data,
-            loc: Location::new(0),
-        }
-    }
-
-    pub fn with_loc(message: String, data: String, loc: Location) -> Self {
-        Self { message, data, loc }
-    }
-}
-
-impl std::fmt::Debug for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let start = self.loc.index;
-        let end = self.loc.index + self.data.len();
-
-        write!(f, "ERROR@{}:{} {:?}", start, end, self.message)
-    }
-}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Location {
-    index: usize,
+    pub(crate) index: usize,
 }
 
 impl Location {
     pub fn new(index: usize) -> Self {
         Self { index }
-    }
-
-    /// Get a reference to the location's index.
-    pub fn index(&self) -> usize {
-        self.index
     }
 }
 

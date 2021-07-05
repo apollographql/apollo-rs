@@ -22,12 +22,12 @@ impl rowan::Language for Language {
 
 pub struct SyntaxTree {
     ast: rowan::SyntaxNode<Language>,
-    errors: Vec<lexer::Error>,
+    errors: Vec<crate::Error>,
 }
 
 impl SyntaxTree {
     /// Get a reference to the syntax tree's errors.
-    pub fn errors(&self) -> &Vec<lexer::Error> {
+    pub fn errors(&self) -> &Vec<crate::Error> {
         &self.errors
     }
 }
@@ -77,7 +77,7 @@ pub struct Parser {
     builder: GreenNodeBuilder<'static>,
     /// the list of syntax errors we've accumulated
     /// so far.
-    errors: Vec<lexer::Error>,
+    errors: Vec<crate::Error>,
 }
 
 impl Parser {
