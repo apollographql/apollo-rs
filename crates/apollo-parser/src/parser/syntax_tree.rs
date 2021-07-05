@@ -15,6 +15,13 @@ impl SyntaxTree {
     pub fn errors(&self) -> &Vec<crate::Error> {
         &self.errors
     }
+
+    /// Return the root typed `Document` node.
+    // TODO: hook this up to the generated typed AST nodes.
+    // TODO: call `AstNode::cast`.unwrap into a `Document` node.
+    pub fn document() -> () {
+        todo!("Not yet implemented");
+    }
 }
 
 impl fmt::Debug for SyntaxTree {
