@@ -6,11 +6,20 @@ use crate::lexer::Location;
 use crate::TokenKind;
 
 pub use generated::syntax_kind::SyntaxKind;
-use language::Language;
 pub use syntax_tree::SyntaxTree;
+
+use language::Language;
+pub(crate) use parse_directive::parse_directive;
+pub(crate) use parse_fragment::parse_fragment;
+pub(crate) use parse_fragment_name::parse_fragment_name;
+pub(crate) use parse_input_value_definitions::parse_input_value_definitions;
 
 mod generated;
 mod language;
+mod parse_directive;
+mod parse_fragment;
+mod parse_fragment_name;
+mod parse_input_value_definitions;
 mod syntax_tree;
 
 /// Parse text into an AST.
@@ -57,13 +66,13 @@ impl Parser {
             match self.peek() {
                 None => break,
                 Some(TokenKind::Fragment) => {
-                    if self.parse_fragment().is_err() {
+                    if parse_fragment(&mut self).is_err() {
                         panic!("could not parse fragment")
                         // self.errors.push(Error::with_loc("could not parse fragment".into(), self.peek_data().unwrap(), self.peek_loc().unwrap()));
                     }
                 }
                 Some(TokenKind::Directive) => {
-                    if self.parse_directive().is_err() {
+                    if parse_directive(&mut self).is_err() {
                         panic!("could not parse directive");
                     }
                 }
@@ -77,93 +86,6 @@ impl Parser {
             ast: rowan::SyntaxNode::new_root(self.builder.finish()),
             errors: self.errors,
         }
-    }
-
-    // See: https://spec.graphql.org/June2018/#sec-Language.Fragments
-    //
-    // ```txt
-    // FragmentDefinition
-    //     fragment FragmentName TypeCondition Directives(opt) SelectionSet
-    // ```
-    fn parse_fragment(&mut self) -> Result<(), ()> {
-        self.builder.start_node(TokenKind::Fragment.into());
-        self.bump();
-        // self.parse_whitespace();
-        self.parse_fragment_name()?;
-
-        // TODO(lrlna): parse TypeCondition, Directives, SelectionSet
-        self.builder.finish_node();
-        Ok(())
-    }
-
-    // See: https://spec.graphql.org/June2018/#FragmentName
-    //
-    // ```txt
-    // FragmentName
-    //     Name *but not* on
-    // ```
-    fn parse_fragment_name(&mut self) -> Result<(), ()> {
-        match self.peek() {
-            Some(TokenKind::Node) => {
-                if self.peek_data().unwrap() == "on" {
-                    // fragment name cannot have "on" as part of its definition
-                    return Err(());
-                }
-                self.bump();
-                Ok(())
-            }
-            // missing fragment name
-            _ => return Err(()),
-        }
-    }
-
-    // See: https://spec.graphql.org/June2018/#DirectiveDefinition
-    //
-    // ```txt
-    // DirectiveDefinition
-    //     Description(opt) directive @ Name ArgumentsDefinition(opt) on DirectiveLocations
-    // ```
-    fn parse_directive(&mut self) -> Result<(), ()> {
-        self.builder.start_node(TokenKind::Directive.into());
-        // TODO(lrlna): parse Description
-        self.bump();
-        // self.parse_whitespace();
-
-        match self.peek() {
-            Some(TokenKind::At) => self.bump(),
-            // missing directive name
-            _ => return Err(()),
-        }
-        match self.peek() {
-            Some(TokenKind::Node) => self.bump(),
-            // missing directive name
-            _ => return Err(()),
-        }
-
-        match self.peek() {
-            Some(TokenKind::LParen) => {
-                self.bump();
-                self.parse_input_value_definitions(false)?;
-                match self.peek() {
-                    Some(TokenKind::RParen) => self.bump(),
-                    // missing a closing RParen
-                    _ => return Err(()),
-                }
-
-                match self.peek() {
-                    Some(TokenKind::On) => self.bump(),
-                    // missing directive locations in directive definition
-                    _ => return Err(()),
-                }
-            }
-            Some(TokenKind::On) => self.bump(),
-            // missing directive locations in directive definition
-            _ => return Err(()),
-        }
-
-        self.parse_directive_locations(false)?;
-        self.builder.finish_node();
-        Ok(())
     }
 
     fn parse_directive_locations(&mut self, is_location: bool) -> Result<(), ()> {
@@ -188,55 +110,6 @@ impl Parser {
             }
         }
     }
-    // See: https://spec.graphql.org/June2018/#InputValueDefinition
-    //
-    // ```txt
-    // InputValueDefinition
-    //     Description(opt) Name : Type DefaultValue(opt) Directives(const/opt)
-    // ```
-    fn parse_input_value_definitions(&mut self, is_input: bool) -> Result<(), ()> {
-        // TODO: parse description
-        // TODO: parse default value
-        // TODO: parse directives
-        match self.peek() {
-            // Name
-            Some(TokenKind::Node) => {
-                self.bump();
-                match self.peek() {
-                    // Colon
-                    Some(TokenKind::Colon) => {
-                        self.bump();
-                        match self.peek() {
-                            // Type
-                            Some(TokenKind::Node) => {
-                                self.bump();
-                                match self.peek() {
-                                    Some(_) => self.parse_input_value_definitions(true),
-                                    _ => Ok(()),
-                                }
-                            }
-                            _ => return Err(()),
-                        }
-                    }
-                    _ => return Err(()),
-                }
-            }
-            Some(TokenKind::Comma) => {
-                self.bump();
-                self.parse_input_value_definitions(is_input)
-            }
-            _ => {
-                // if we already have an input, can proceed without returning an error
-                if is_input {
-                    Ok(())
-                } else {
-                    // if there is no input, and a LPAREN was supplied, send an error
-                    return Err(());
-                }
-            }
-        }
-    }
-
     pub fn bump(&mut self) {
         let token = self.tokens.pop().unwrap();
         self.builder.token(token.kind().into(), token.data());
