@@ -26,6 +26,7 @@ struct Xtask {
 
 #[derive(Debug, StructOpt)]
 pub enum Command {
+    /// Perform code generation for the parser
     Codegen(commands::Codegen),
 }
 
