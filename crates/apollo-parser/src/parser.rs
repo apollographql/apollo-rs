@@ -5,7 +5,7 @@ use rowan::GreenNodeBuilder;
 use crate::lexer;
 use crate::lexer::Lexer;
 use crate::lexer::Location;
-use crate::token_kind::TokenKind;
+use crate::TokenKind;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum Language {}
@@ -107,27 +107,6 @@ impl Parser {
     pub fn parse(mut self) -> SyntaxTree {
         self.builder.start_node(TokenKind::Root.into());
 
-        // Bang,     // !
-        // Dollar,   // $
-        // LParen,   // (
-        // RParen,   // )
-        // Spread,   // ...
-        // Colon,    // :
-        // Eq,       // =
-        // At,       // @
-        // LBracket, // [
-        // RBracket, // ]
-        // LBrace,   // {
-        // Pipe,     // |
-        // RBrace,   // }
-
-        // Fragment,
-        // Directive,
-        // Query,
-        // On,
-        // Node,
-        // Int,
-        // Float
         loop {
             match self.peek() {
                 None => break,
@@ -311,15 +290,6 @@ impl Parser {
             }
         }
     }
-
-    // fn parse_whitespace(&mut self) {
-    //     let mut text = String::new();
-    //     while let Some(TokenKind::Whitespace) = self.peek() {
-    //         let token = self.tokens.pop().unwrap();
-    //         text.push_str(token.data());
-    //     }
-    //     self.builder.token(TokenKind::Whitespace.into(), &text);
-    // }
 
     pub fn bump(&mut self) {
         let token = self.tokens.pop().unwrap();

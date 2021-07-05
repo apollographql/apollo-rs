@@ -1,133 +1,13 @@
-use std::fmt;
-
-use crate::token_kind::TokenKind;
 use crate::Error;
 use crate::{bail, ensure};
 
-impl fmt::Debug for Token {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let start = self.loc.index;
-        let end = self.loc.index + self.data.len();
+pub use location::Location;
+pub use token::Token;
+pub use token_kind::TokenKind;
 
-        match &self.kind {
-            TokenKind::Root => {
-                write!(f, "ROOT@{}:{}", start, end)
-            }
-            TokenKind::Bang => {
-                write!(f, "BANG@{}:{}", start, end)
-            }
-            TokenKind::Dollar => {
-                write!(f, "DOLLAR@{}:{}", start, end)
-            }
-            TokenKind::LParen => {
-                write!(f, "L_PAREN@{}:{}", start, end)
-            }
-            TokenKind::RParen => {
-                write!(f, "R_PAREN@{}:{}", start, end)
-            }
-            TokenKind::Spread => {
-                write!(f, "SPREAD@{}:{}", start, end)
-            }
-            TokenKind::Colon => {
-                write!(f, "COLON@{}:{}", start, end)
-            }
-            TokenKind::Comma => {
-                write!(f, "COMMA@{}:{}", start, end)
-            }
-            TokenKind::Eq => {
-                write!(f, "EQ@{}:{}", start, end)
-            }
-            TokenKind::At => {
-                write!(f, "AT@{}:{}", start, end)
-            }
-            TokenKind::LBracket => {
-                write!(f, "L_BRACKET@{}:{}", start, end)
-            }
-            TokenKind::RBracket => {
-                write!(f, "R_BRACKET@{}:{}", start, end)
-            }
-            TokenKind::LBrace => {
-                write!(f, "L_BRACE@{}:{}", start, end)
-            }
-            TokenKind::Pipe => {
-                write!(f, "PIPE@{}:{}", start, end)
-            }
-            TokenKind::RBrace => {
-                write!(f, "R_BRACE@{}:{}", start, end)
-            }
-            TokenKind::Directive => {
-                write!(f, "DIRECTIVE@{}:{}", start, end)
-            }
-            TokenKind::Fragment => {
-                write!(f, "FRAGMENT@{}:{}", start, end)
-            }
-            TokenKind::Query => {
-                write!(f, "QUERY@{}:{}", start, end)
-            }
-            TokenKind::On => {
-                write!(f, "ON@{}:{}", start, end)
-            }
-            TokenKind::Eof => {
-                write!(f, "EOF@{}:{}", start, end)
-            }
-
-            // composite nodes
-            TokenKind::Node => {
-                write!(f, "NODE@{}:{} {:?}", start, end, self.data)
-            }
-            TokenKind::Int => {
-                write!(f, "INT@{}:{} {:?}", start, end, self.data)
-            }
-            TokenKind::Float => {
-                write!(f, "FLOAT@{}:{} {:?}", start, end, self.data)
-            }
-        }
-    }
-}
-
-#[derive(Clone)]
-pub struct Token {
-    kind: TokenKind,
-    data: String,
-    loc: Location,
-}
-
-impl Token {
-    fn new(kind: TokenKind, data: String) -> Self {
-        Self {
-            kind,
-            data,
-            loc: Location::new(0),
-        }
-    }
-
-    /// Get a reference to the token's kind.
-    pub fn kind(&self) -> TokenKind {
-        self.kind
-    }
-
-    /// Get a reference to the token's data.
-    pub fn data(&self) -> &str {
-        self.data.as_str()
-    }
-
-    /// Get a reference to the token's loc.
-    pub fn loc(&self) -> Location {
-        self.loc
-    }
-}
-
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Location {
-    pub(crate) index: usize,
-}
-
-impl Location {
-    pub fn new(index: usize) -> Self {
-        Self { index }
-    }
-}
+mod location;
+mod token;
+mod token_kind;
 
 pub struct Lexer {
     tokens: Vec<Result<Token, Error>>,

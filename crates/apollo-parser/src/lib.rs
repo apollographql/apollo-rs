@@ -1,15 +1,15 @@
 //! A parser for the GraphQL query language.
 
-pub mod lexer;
-pub mod parser;
+mod lexer;
+mod parser;
 
-mod token_kind;
 mod error;
 
 pub use lexer::*;
 pub use parser::*;
 pub use error::Error;
 
+/// Return early with an error.
 #[macro_export]
 macro_rules! bail {
     ($data:expr, $($tt:tt)*) => {
@@ -20,6 +20,7 @@ macro_rules! bail {
     };
 }
 
+/// Return early with an error if a condition is not satisfied.
 #[macro_export]
 macro_rules! ensure {
     ($cond:expr, $data:expr, $($tt:tt)*) => {
