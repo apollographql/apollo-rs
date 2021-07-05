@@ -1,28 +1,11 @@
+use std::fmt;
+
 use crate::token_kind::TokenKind;
 use crate::Error;
+use crate::{bail, ensure};
 
-macro_rules! bail {
-    ($data:expr, $($tt:tt)*) => {
-        return Err($crate::lexer::Error::new(
-            format!($($tt)*),
-            $data.to_string(),
-        ))
-    };
-}
-
-macro_rules! ensure {
-    ($cond:expr, $data:expr, $($tt:tt)*) => {
-        if !$cond {
-            return Err($crate::lexer::Error::new(
-                format!($($tt)*),
-                $data.to_string(),
-            ))
-        }
-    };
-}
-
-impl std::fmt::Debug for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Debug for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let start = self.loc.index;
         let end = self.loc.index + self.data.len();
 
