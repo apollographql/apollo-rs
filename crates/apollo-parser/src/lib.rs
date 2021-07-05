@@ -1,13 +1,13 @@
 //! A parser for the GraphQL query language.
 
+mod ast;
+mod error;
 mod lexer;
 mod parser;
 
-mod error;
-
+pub use error::Error;
 pub use lexer::*;
 pub use parser::*;
-pub use error::Error;
 
 /// Return early with an error.
 #[macro_export]

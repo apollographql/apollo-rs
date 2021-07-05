@@ -1,4 +1,4 @@
-use crate::TokenKind;
+use crate::{SyntaxKind, TokenKind};
 
 /// A node in the immutable tree. It has other nodes and tokens as children.
 pub type SyntaxNode = rowan::SyntaxNode<GraphQLLanguage>;
@@ -16,12 +16,12 @@ pub type SyntaxElementChildren = rowan::SyntaxElementChildren<GraphQLLanguage>;
 pub enum GraphQLLanguage {}
 
 impl rowan::Language for GraphQLLanguage {
-    type Kind = TokenKind;
+    type Kind = SyntaxKind;
     fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
         assert!(raw.0 <= TokenKind::Root as u16);
-        unsafe { std::mem::transmute::<u16, TokenKind>(raw.0) }
+        unsafe { std::mem::transmute::<u16, SyntaxKind>(raw.0) }
     }
     fn kind_to_raw(kind: Self::Kind) -> rowan::SyntaxKind {
-        kind.into()
+        rowan::SyntaxKind(kind.into())
     }
 }

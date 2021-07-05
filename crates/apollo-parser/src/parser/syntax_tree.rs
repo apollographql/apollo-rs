@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::TokenKind;
+use crate::{SyntaxKind, TokenKind};
 
 use super::GraphQLLanguage;
 
@@ -26,7 +26,7 @@ impl fmt::Debug for SyntaxTree {
         type SyntaxElement = rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
 
         fn print(f: &mut fmt::Formatter<'_>, indent: usize, element: SyntaxElement) -> fmt::Result {
-            let kind: TokenKind = element.kind().into();
+            let kind: SyntaxKind = element.kind().into();
             print!("{:indent$}", "", indent = indent);
             match element {
                 rowan::NodeOrToken::Node(node) => {
