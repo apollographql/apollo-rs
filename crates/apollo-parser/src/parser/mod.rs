@@ -6,9 +6,12 @@ use crate::lexer::Location;
 use crate::TokenKind;
 
 pub use generated::syntax_kind::SyntaxKind;
+pub use language::{
+    SyntaxElement, SyntaxElementChildren, SyntaxNode, SyntaxNodeChildren, SyntaxToken,
+};
 pub use syntax_tree::SyntaxTree;
 
-use language::Language;
+pub(crate) use language::GraphQLLanguage;
 pub(crate) use parse_directive::parse_directive;
 pub(crate) use parse_fragment::parse_fragment;
 pub(crate) use parse_fragment_name::parse_fragment_name;
