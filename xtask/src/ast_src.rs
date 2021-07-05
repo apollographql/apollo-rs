@@ -8,7 +8,7 @@ pub(crate) struct KindsSrc<'a> {
 
 pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
     punct: &[
-        (")", "BANG"),
+        ("!", "BANG"),
         ("(", "L_PAREN"),
         (")", "R_PAREN"),
         ("{", "L_CURLY"),

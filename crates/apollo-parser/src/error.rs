@@ -20,6 +20,7 @@ impl Error {
         }
     }
 
+    /// Create a new instance of `Error` with a `Location`.
     pub fn with_loc(message: String, data: String, loc: Location) -> Self {
         Self { message, data, loc }
     }

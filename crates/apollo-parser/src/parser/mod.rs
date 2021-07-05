@@ -5,7 +5,7 @@ use crate::lexer::Lexer;
 use crate::lexer::Location;
 use crate::TokenKind;
 
-pub(crate) use generated::syntax_kind::SyntaxKind;
+pub use generated::syntax_kind::SyntaxKind;
 use language::Language;
 pub use syntax_tree::SyntaxTree;
 
