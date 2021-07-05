@@ -16,7 +16,7 @@ impl Codegen {
         let grammar_src = include_str!("../../../../graphql.ungram");
         let _grammar: Grammar = grammar_src.parse().unwrap();
         let syntax_kind_path =
-            root_path().join("crates/apollo-parser/src/syntax_kind/generated.rs");
+            root_path().join("crates/apollo-parser/src/parser/generated/syntax_kind.rs");
         let syntax_kinds = Self::generate_syntax_kinds(KINDS_SRC);
         ensure_file_contents(syntax_kind_path.as_path(), &syntax_kinds?)?;
         // dbg!(&syntax_kinds.unwrap_or("unable to generate syntax kinds".to_string()));
