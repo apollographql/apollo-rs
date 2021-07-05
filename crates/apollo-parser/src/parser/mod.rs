@@ -1,5 +1,3 @@
-use std::fmt;
-
 use rowan::GreenNodeBuilder;
 
 use crate::lexer;
@@ -7,67 +5,13 @@ use crate::lexer::Lexer;
 use crate::lexer::Location;
 use crate::TokenKind;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum Language {}
-impl rowan::Language for Language {
-    type Kind = TokenKind;
-    fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
-        assert!(raw.0 <= TokenKind::Root as u16);
-        unsafe { std::mem::transmute::<u16, TokenKind>(raw.0) }
-    }
-    fn kind_to_raw(kind: Self::Kind) -> rowan::SyntaxKind {
-        kind.into()
-    }
-}
+use language::Language;
+pub use syntax_tree::SyntaxTree;
 
-pub struct SyntaxTree {
-    ast: rowan::SyntaxNode<Language>,
-    errors: Vec<crate::Error>,
-}
+mod language;
+mod syntax_tree;
 
-impl SyntaxTree {
-    /// Get a reference to the syntax tree's errors.
-    pub fn errors(&self) -> &Vec<crate::Error> {
-        &self.errors
-    }
-}
-
-impl fmt::Debug for SyntaxTree {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        type SyntaxNode = rowan::SyntaxNode<Language>;
-        #[allow(unused)]
-        type SyntaxToken = rowan::SyntaxToken<Language>;
-        #[allow(unused)]
-        type SyntaxElement = rowan::NodeOrToken<SyntaxNode, SyntaxToken>;
-
-        fn print(f: &mut fmt::Formatter<'_>, indent: usize, element: SyntaxElement) -> fmt::Result {
-            let kind: TokenKind = element.kind().into();
-            print!("{:indent$}", "", indent = indent);
-            match element {
-                rowan::NodeOrToken::Node(node) => {
-                    writeln!(f, "- {:?}@{:?}", kind, node.text_range())?;
-                    for child in node.children_with_tokens() {
-                        print(f, indent + 2, child)?;
-                    }
-                    Ok(())
-                }
-
-                rowan::NodeOrToken::Token(token) => {
-                    writeln!(
-                        f,
-                        "- {:?}@{:?} {:?}",
-                        kind,
-                        token.text_range(),
-                        token.text()
-                    )
-                }
-            }
-        }
-
-        print(f, 0, self.ast.clone().into())
-    }
-}
-
+/// Parse text into an AST.
 #[derive(Debug)]
 pub struct Parser {
     /// input tokens, including whitespace,

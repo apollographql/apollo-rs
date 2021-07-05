@@ -1,4 +1,5 @@
-
+/// A location in the stream.
+// TODO: Am I needed?
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Location {
     pub(crate) index: usize,

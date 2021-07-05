@@ -9,11 +9,13 @@ mod location;
 mod token;
 mod token_kind;
 
+/// Parse text into tokens.
 pub struct Lexer {
     tokens: Vec<Result<Token, Error>>,
 }
 
 impl Lexer {
+    /// Create a new instance of `Lexer`.
     pub fn new(mut input: &str) -> Self {
         let mut tokens = Vec::new();
 
@@ -51,10 +53,12 @@ impl Lexer {
         Self { tokens }
     }
 
+    /// Advance the cursor and get the next token.
     pub fn next(&mut self) -> Result<Token, Error> {
         self.tokens.pop().expect("Unexpected EOF")
     }
 
+    /// Parse the next token without advancing the cursor.
     pub fn peek(&mut self) -> Option<Result<Token, Error>> {
         self.tokens.last().cloned()
     }

@@ -2,14 +2,16 @@ use std::fmt;
 
 use crate::Location;
 
+/// An `Error` type for operations performed in this crate.
 #[derive(Clone)]
 pub struct Error {
-    message: String,
+    pub(crate) message: String,
     pub(crate) data: String,
     pub(crate) loc: Location,
 }
 
 impl Error {
+    /// Create a new instance of `Error`.
     pub fn new(message: String, data: String) -> Self {
         Self {
             message,
