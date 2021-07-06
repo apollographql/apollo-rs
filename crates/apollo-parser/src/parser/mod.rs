@@ -1,5 +1,3 @@
-use rowan::GreenNodeBuilder;
-
 use crate::lexer;
 use crate::lexer::Lexer;
 use crate::lexer::Location;
@@ -16,6 +14,7 @@ pub(crate) use parse_directive::parse_directive;
 pub(crate) use parse_fragment::parse_fragment;
 pub(crate) use parse_fragment_name::parse_fragment_name;
 pub(crate) use parse_input_value_definitions::parse_input_value_definitions;
+pub(crate) use syntax_tree::SyntaxTreeBuilder;
 
 mod generated;
 mod language;
@@ -32,7 +31,7 @@ pub struct Parser {
     /// in *reverse* order.
     tokens: Vec<lexer::Token>,
     /// the in-progress tree.
-    builder: GreenNodeBuilder<'static>,
+    builder: SyntaxTreeBuilder,
     /// the list of syntax errors we've accumulated
     /// so far.
     errors: Vec<crate::Error>,
@@ -57,13 +56,13 @@ impl Parser {
 
         Self {
             tokens,
-            builder: GreenNodeBuilder::new(),
+            builder: SyntaxTreeBuilder::new(),
             errors,
         }
     }
 
     pub fn parse(mut self) -> SyntaxTree {
-        self.builder.start_node(TokenKind::Root.into());
+        self.builder.start_node(SyntaxKind::DOCUMENT);
 
         loop {
             match self.peek() {
@@ -85,10 +84,7 @@ impl Parser {
 
         self.builder.finish_node();
 
-        SyntaxTree {
-            ast: rowan::SyntaxNode::new_root(self.builder.finish()),
-            errors: self.errors,
-        }
+        self.builder.finish(self.errors)
     }
 
     fn parse_directive_locations(&mut self, is_location: bool) -> Result<(), ()> {
@@ -115,7 +111,7 @@ impl Parser {
     }
     pub fn bump(&mut self) {
         let token = self.tokens.pop().unwrap();
-        self.builder.token(token.kind().into(), token.data());
+        self.builder.token(token.kind(), token.data());
     }
 
     pub fn peek(&self) -> Option<TokenKind> {
