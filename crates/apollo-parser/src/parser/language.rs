@@ -18,7 +18,7 @@ pub enum GraphQLLanguage {}
 impl rowan::Language for GraphQLLanguage {
     type Kind = SyntaxKind;
     fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
-        assert!(raw.0 <= TokenKind::Root as u16);
+        assert!(raw.0 <= (SyntaxKind::__LAST as u16));
         unsafe { std::mem::transmute::<u16, SyntaxKind>(raw.0) }
     }
     fn kind_to_raw(kind: Self::Kind) -> rowan::SyntaxKind {
