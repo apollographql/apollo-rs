@@ -1,4 +1,4 @@
-use crate::{parse_directive_locations, Parser, SyntaxKind, TokenKind};
+use crate::{parse_directive_locations, parse_name, Parser, SyntaxKind, TokenKind};
 
 use super::parse_input_value_definitions;
 
@@ -19,12 +19,7 @@ pub(crate) fn parse_directive(parser: &mut Parser) -> Result<(), ()> {
         // missing directive name
         _ => return Err(()),
     }
-    match parser.peek() {
-        // TODO lrlna: use parse name function
-        Some(TokenKind::Node) => parser.bump(SyntaxKind::NAME),
-        // missing directive name
-        _ => return Err(()),
-    }
+    parse_name(parser)?;
 
     match parser.peek() {
         Some(TokenKind::LParen) => {

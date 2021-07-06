@@ -15,6 +15,7 @@ pub(crate) use parse_directive_locations::parse_directive_locations;
 pub(crate) use parse_fragment::parse_fragment;
 pub(crate) use parse_fragment_name::parse_fragment_name;
 pub(crate) use parse_input_value_definitions::parse_input_value_definitions;
+pub(crate) use parse_name::parse_name;
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
 
 mod generated;
@@ -24,6 +25,7 @@ mod parse_directive_locations;
 mod parse_fragment;
 mod parse_fragment_name;
 mod parse_input_value_definitions;
+mod parse_name;
 mod syntax_tree;
 
 /// Parse text into an AST.
