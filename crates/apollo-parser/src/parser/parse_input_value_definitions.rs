@@ -1,4 +1,4 @@
-use crate::{Parser, TokenKind};
+use crate::{Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#InputValueDefinition
 ///
@@ -7,21 +7,23 @@ use crate::{Parser, TokenKind};
 ///     Description(opt) Name : Type DefaultValue(opt) Directives(const/opt)
 /// ```
 pub(crate) fn parse_input_value_definitions(parser: &mut Parser, is_input: bool) -> Result<(), ()> {
-    // TODO: parse description
-    // TODO: parse default value
-    // TODO: parse directives
+    // TODO lrlna: parse description
+    // TODO lrlna: parse default value
+    // TODO lrlna: parse directives
     match parser.peek() {
         // Name
         Some(TokenKind::Node) => {
-            parser.bump();
+            // TODO lrlna: use parse input value name function
+            parser.bump(SyntaxKind::NAME);
             match parser.peek() {
                 // Colon
                 Some(TokenKind::Colon) => {
-                    parser.bump();
+                    parser.bump(SyntaxKind::COLON);
                     match parser.peek() {
                         // Type
                         Some(TokenKind::Node) => {
-                            parser.bump();
+                            // TODO lrlna: use parse input value type function
+                            parser.bump(SyntaxKind::TYPE);
                             match parser.peek() {
                                 Some(_) => parse_input_value_definitions(parser, true),
                                 _ => Ok(()),
@@ -34,7 +36,7 @@ pub(crate) fn parse_input_value_definitions(parser: &mut Parser, is_input: bool)
             }
         }
         Some(TokenKind::Comma) => {
-            parser.bump();
+            parser.bump(SyntaxKind::COMMA);
             parse_input_value_definitions(parser, is_input)
         }
         _ => {

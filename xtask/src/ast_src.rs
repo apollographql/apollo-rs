@@ -15,6 +15,7 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
         ("}", "R_CURLY"),
         ("[", "L_BRACK"),
         ("]", "R_BRACK"),
+        (",", "COMMA"),
         ("@", "AT"),
         ("$", "DOLLAR"),
         ("|", "PIPE"),

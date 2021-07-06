@@ -1,4 +1,4 @@
-use crate::{Parser, TokenKind};
+use crate::{Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#FragmentName
 ///
@@ -13,7 +13,8 @@ pub(crate) fn parse_fragment_name(parser: &mut Parser) -> Result<(), ()> {
                 // fragment name cannot have "on" as part of its definition
                 return Err(());
             }
-            parser.bump();
+            // TODO lrlna: parse fragment name function
+            parser.bump(SyntaxKind::NAME);
             Ok(())
         }
         // missing fragment name

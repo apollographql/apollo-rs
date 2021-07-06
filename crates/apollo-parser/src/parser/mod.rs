@@ -11,6 +11,7 @@ pub use syntax_tree::SyntaxTree;
 
 pub(crate) use language::GraphQLLanguage;
 pub(crate) use parse_directive::parse_directive;
+pub(crate) use parse_directive_locations::parse_directive_locations;
 pub(crate) use parse_fragment::parse_fragment;
 pub(crate) use parse_fragment_name::parse_fragment_name;
 pub(crate) use parse_input_value_definitions::parse_input_value_definitions;
@@ -19,6 +20,7 @@ pub(crate) use syntax_tree::SyntaxTreeBuilder;
 mod generated;
 mod language;
 mod parse_directive;
+mod parse_directive_locations;
 mod parse_fragment;
 mod parse_fragment_name;
 mod parse_input_value_definitions;
@@ -86,32 +88,9 @@ impl Parser {
 
         self.builder.finish(self.errors)
     }
-
-    fn parse_directive_locations(&mut self, is_location: bool) -> Result<(), ()> {
-        match self.peek() {
-            Some(TokenKind::Pipe) => {
-                self.bump();
-                self.parse_directive_locations(is_location)
-            }
-            Some(TokenKind::Node) => {
-                self.bump();
-                match self.peek_data() {
-                    Some(_) => return self.parse_directive_locations(true),
-                    _ => return Ok(()),
-                }
-            }
-            _ => {
-                if !is_location {
-                    // missing directive locations in directive definition
-                    return Err(());
-                }
-                Ok(())
-            }
-        }
-    }
-    pub fn bump(&mut self) {
+    pub fn bump(&mut self, kind: SyntaxKind) {
         let token = self.tokens.pop().unwrap();
-        self.builder.token(token.kind(), token.data());
+        self.builder.token(kind, token.data());
     }
 
     pub fn peek(&self) -> Option<TokenKind> {

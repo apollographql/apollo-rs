@@ -30,7 +30,7 @@ impl SyntaxTreeBuilder {
     }
 
     /// Adds new token to the current branch.
-    pub(crate) fn token(&self, kind: SyntaxKind, text: &str) {
+    pub(crate) fn token(&mut self, kind: SyntaxKind, text: &str) {
         self.builder.token(rowan::SyntaxKind(kind as u16), text);
     }
 
