@@ -1,4 +1,4 @@
-use crate::{parse_name, Parser, SyntaxKind, TokenKind};
+use crate::{Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#InputValueDefinition
 ///
@@ -14,7 +14,8 @@ pub(crate) fn parse_input_value_definitions(parser: &mut Parser, is_input: bool)
         // Name
         Some(TokenKind::Node) => {
             // TODO lrlna: use parse input value name function
-            parse_name(parser)?;
+            let guard = parser.start_node(SyntaxKind::INPUT_VALUE_DEFINITION);
+            parser.bump(SyntaxKind::NAME);
             match parser.peek() {
                 // Colon
                 Some(TokenKind::Colon) => {
@@ -25,7 +26,10 @@ pub(crate) fn parse_input_value_definitions(parser: &mut Parser, is_input: bool)
                             // TODO lrlna: use parse input value type function
                             parser.bump(SyntaxKind::TYPE);
                             match parser.peek() {
-                                Some(_) => parse_input_value_definitions(parser, true),
+                                Some(_) => {
+                                    drop(guard);
+                                    parse_input_value_definitions(parser, true)
+                                }
                                 _ => Ok(()),
                             }
                         }

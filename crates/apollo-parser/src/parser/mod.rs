@@ -1,3 +1,6 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use crate::lexer;
 use crate::lexer::Lexer;
 use crate::lexer::Location;
@@ -35,7 +38,7 @@ pub struct Parser {
     /// in *reverse* order.
     tokens: Vec<lexer::Token>,
     /// the in-progress tree.
-    builder: SyntaxTreeBuilder,
+    builder: Rc<RefCell<SyntaxTreeBuilder>>,
     /// the list of syntax errors we've accumulated
     /// so far.
     errors: Vec<crate::Error>,
@@ -60,13 +63,13 @@ impl Parser {
 
         Self {
             tokens,
-            builder: SyntaxTreeBuilder::new(),
+            builder: Rc::new(RefCell::new(SyntaxTreeBuilder::new())),
             errors,
         }
     }
 
     pub fn parse(mut self) -> SyntaxTree {
-        self.builder.start_node(SyntaxKind::DOCUMENT);
+        let guard = self.start_node(SyntaxKind::DOCUMENT);
 
         loop {
             match self.peek() {
@@ -86,13 +89,22 @@ impl Parser {
             }
         }
 
-        self.builder.finish_node();
+        drop(guard);
 
-        self.builder.finish(self.errors)
+        let builder = Rc::try_unwrap(self.builder)
+            .expect("More than one reference to builder left")
+            .into_inner();
+        builder.finish(self.errors)
     }
+
     pub fn bump(&mut self, kind: SyntaxKind) {
         let token = self.tokens.pop().unwrap();
-        self.builder.token(kind, token.data());
+        self.builder.borrow_mut().token(kind, token.data());
+    }
+
+    pub fn start_node(&mut self, kind: SyntaxKind) -> NodeGuard {
+        self.builder.borrow_mut().start_node(kind);
+        NodeGuard::new(self.builder.clone())
     }
 
     pub fn peek(&self) -> Option<TokenKind> {
@@ -105,6 +117,23 @@ impl Parser {
 
     pub fn peek_loc(&self) -> Option<Location> {
         self.tokens.last().map(|token| token.loc())
+    }
+}
+
+#[must_use]
+pub struct NodeGuard {
+    builder: Rc<RefCell<SyntaxTreeBuilder>>,
+}
+
+impl NodeGuard {
+    fn new(builder: Rc<RefCell<SyntaxTreeBuilder>>) -> Self {
+        Self { builder }
+    }
+}
+
+impl Drop for NodeGuard {
+    fn drop(&mut self) {
+        self.builder.borrow_mut().finish_node();
     }
 }
 

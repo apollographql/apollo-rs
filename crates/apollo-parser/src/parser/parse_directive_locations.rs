@@ -7,8 +7,8 @@ pub(crate) fn parse_directive_locations(parser: &mut Parser, is_location: bool) 
             parser.bump(SyntaxKind::PIPE);
             parse_directive_locations(parser, is_location)
         }
-        // TODO lrlna: Syntax Kind here is wrong. This should encompass
-        // various types of Directive Locations.
+        // TODO lrlna: Syntax Kind here is wrong. This should match on either
+        // TypeSystemDirectiveLocation or ExecutableDirectiveLocation.
         Some(TokenKind::Node) => {
             parser.bump(SyntaxKind::DIRECTIVE_LOCATION);
             match parser.peek_data() {

@@ -9,7 +9,7 @@ use super::parse_input_value_definitions;
 ///     Description(opt) directive @ Name ArgumentsDefinition(opt) on DirectiveLocations
 /// ```
 pub(crate) fn parse_directive(parser: &mut Parser) -> Result<(), ()> {
-    parser.builder.start_node(SyntaxKind::DIRECTIVE_DEFINITION);
+    let _guard = parser.start_node(SyntaxKind::DIRECTIVE_DEFINITION);
     // TODO lrlna: parse Description
     parser.bump(SyntaxKind::directive_KW);
     // parser.parse_whitespace();
@@ -21,28 +21,27 @@ pub(crate) fn parse_directive(parser: &mut Parser) -> Result<(), ()> {
     }
     parse_name(parser)?;
 
-    match parser.peek() {
-        Some(TokenKind::LParen) => {
-            parser.bump(SyntaxKind::L_PAREN);
-            parse_input_value_definitions(parser, false)?;
-            match parser.peek() {
-                Some(TokenKind::RParen) => parser.bump(SyntaxKind::R_PAREN),
-                // missing a closing RParen
-                _ => return Err(()),
+    if let Some(TokenKind::LParen) = parser.peek() {
+        let guard = parser.start_node(SyntaxKind::ARGUMENTS_DEFINITION);
+        parser.bump(SyntaxKind::L_PAREN);
+        parse_input_value_definitions(parser, false)?;
+        match parser.peek() {
+            Some(TokenKind::RParen) => {
+                parser.bump(SyntaxKind::R_PAREN);
+                drop(guard);
             }
-
-            match parser.peek() {
-                Some(TokenKind::On) => parser.bump(SyntaxKind::on_KW),
-                // missing directive locations in directive definition
-                _ => return Err(()),
-            }
+            // missing a closing RParen
+            _ => return Err(()),
         }
+    }
+
+    match parser.peek() {
         Some(TokenKind::On) => parser.bump(SyntaxKind::on_KW),
         // missing directive locations in directive definition
         _ => return Err(()),
     }
 
+    let _guard = parser.start_node(SyntaxKind::DIRECTIVE_LOCATIONS);
     parse_directive_locations(parser, false)?;
-    parser.builder.finish_node();
     Ok(())
 }
