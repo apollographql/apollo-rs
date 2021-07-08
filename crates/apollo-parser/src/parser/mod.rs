@@ -89,7 +89,7 @@ impl Parser {
             }
         }
 
-        drop(guard);
+        guard.finish_node();
 
         let builder = Rc::try_unwrap(self.builder)
             .expect("More than one reference to builder left")
@@ -128,6 +128,10 @@ pub struct NodeGuard {
 impl NodeGuard {
     fn new(builder: Rc<RefCell<SyntaxTreeBuilder>>) -> Self {
         Self { builder }
+    }
+
+    pub(crate) fn finish_node(self) {
+        drop(self);
     }
 }
 

@@ -28,7 +28,7 @@ pub(crate) fn parse_directive(parser: &mut Parser) -> Result<(), ()> {
         match parser.peek() {
             Some(TokenKind::RParen) => {
                 parser.bump(SyntaxKind::R_PAREN);
-                drop(guard);
+                guard.finish_node();
             }
             // missing a closing RParen
             _ => return Err(()),

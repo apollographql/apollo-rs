@@ -27,7 +27,7 @@ pub(crate) fn parse_input_value_definitions(parser: &mut Parser, is_input: bool)
                             parser.bump(SyntaxKind::TYPE);
                             match parser.peek() {
                                 Some(_) => {
-                                    drop(guard);
+                                    guard.finish_node();
                                     parse_input_value_definitions(parser, true)
                                 }
                                 _ => Ok(()),
