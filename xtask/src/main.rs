@@ -1,5 +1,6 @@
 mod ast_src;
-mod commands;
+mod codegen;
+mod utils;
 
 use anyhow::{bail, Result};
 use std::{
@@ -27,7 +28,7 @@ struct Xtask {
 #[derive(Debug, StructOpt)]
 pub enum Command {
     /// Perform code generation for the parser
-    Codegen(commands::Codegen),
+    Codegen(codegen::Codegen),
 }
 
 impl Xtask {
