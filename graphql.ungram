@@ -14,66 +14,6 @@ Name =
   'ident'
 
 ///////////////////////////
-//      INT LITERAL      //
-///////////////////////////
-// TODO: remove me
-// IntValue =
-//   IntegerPart
-// 
-// IntegerPart =
-//   NegativeSign? '0'
-//   NegativeSign? NonZeroDigit Digit*
-// 
-// NegativeSign =
-//   '-'
-// 
-// Digit =
-//   'int_number'
-// 
-// // parser needs to omit 'zero' from these digits
-// NonZeroDigit =
-//   Digit
-
-///////////////////////////
-//     FLOAT LITERAL     //
-///////////////////////////
-// TODO: remove me
-// FloatValue =
-//   IntegerPart FractionalPart
-//   | IntegerPart ExponentPart
-//   | IntegerPart FractionalPart ExponentPart
-// 
-// FractionalPart =
-//   '.' Digit*
-// 
-// ExponentPart =
-//   ExponentIndicator Sign? Digit*
-// 
-// ExponentIndicator =
-//   'e'
-//   | 'E'
-// 
-// Sign =
-//   '+'
-//   | '-'
-
-///////////////////////////
-//     STRING LITERAL    //
-///////////////////////////
-// TODO: remove me
-// StringValue =
-//   '"' StringCharacter* '"'
-//   '"""' BlockStringCharacter* '"""'
-// 
-// // parser needs to make sure string literal does not have " or line terminators
-// StringCharacter =
-//   'string'
-// 
-// // parser should make sure we are not processing unicode and escape characters here
-// BlockStringCharacter =
-//   'raw_string'
-
-///////////////////////////
 //        DOCUMENT       //
 ///////////////////////////
 Document =
@@ -207,17 +147,11 @@ Directive =
   '@' Name Arguments?
 
 TypeSystemDefinition =
-  TypeSystemDefinitionKinds
-
-TypeSystemDefinitionKinds =
   SchemaDefinition
   | TypeDefinition
   | DirectiveDefinition
 
 TypeSystemExtension =
-  TypeSystemExtensionKinds
-
-TypeSystemExtensionKinds =
   SchemaExtension
   | TypeExtension
 
@@ -235,9 +169,6 @@ Description =
   StringValue
 
 TypeDefinition =
-  TypeDefinitionKinds
-
-TypeDefinitionKinds =
   ScalarTypeDefinition
   | ObjectTypeDefinition
   | InterfaceTypeDefinition
@@ -246,9 +177,6 @@ TypeDefinitionKinds =
   | InputObjectTypeDefinition
 
 TypeExtension =
-  TypeExtensionKinds
- 
-TypeExtensionKinds =
   ScalarTypeExtension
   | ObjectTypeExtension
   | InterfaceTypeExtension
