@@ -95,6 +95,15 @@ impl fmt::Debug for SyntaxTree {
             }
         }
 
-        print(f, 0, self.ast.clone().into())
+        fn print_err(f: &mut fmt::Formatter<'_>, errors: Vec<Error>) -> fmt::Result {
+            for err in errors {
+                writeln!(f, "- {:?}", err)?;
+            }
+
+            write!(f, "")
+        }
+
+        print(f, 0, self.ast.clone().into())?;
+        print_err(f, self.errors.clone())
     }
 }

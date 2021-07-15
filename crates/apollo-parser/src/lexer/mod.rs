@@ -1,5 +1,5 @@
 use crate::Error;
-use crate::{bail, ensure};
+use crate::{ensure, format_err};
 
 pub use location::Location;
 pub use token::Token;
@@ -142,16 +142,16 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
         ')' => Ok(Token::new(TokenKind::RParen, c.into())),
         '.' => match (chars.next(), chars.next()) {
             (Some('.'), Some('.')) => Ok(Token::new(TokenKind::Spread, "...".to_string())),
-            (Some(a), Some(b)) => bail!(
+            (Some(a), Some(b)) => format_err!(
                 format!("{}{}", a, b),
                 "Unterminated spread operator, expected `...`, found `.{}{}`",
                 a,
                 b,
             ),
             (Some(a), None) => {
-                bail!(a, "Unterminated spread, expected `...`, found `.{}`", a)
+                format_err!(a, "Unterminated spread, expected `...`, found `.{}`", a)
             }
-            (_, _) => bail!(
+            (_, _) => format_err!(
                 "",
                 "Unterminated spread operator, expected `...`, found `.`"
             ),
@@ -165,7 +165,7 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
         '{' => Ok(Token::new(TokenKind::LBrace, c.into())),
         '|' => Ok(Token::new(TokenKind::Pipe, c.into())),
         '}' => Ok(Token::new(TokenKind::RBrace, c.into())),
-        c => bail!(c, "Unexpected character: {}", c),
+        c => format_err!(c, "Unexpected character: {}", c),
     };
 
     *input = chars.as_str();
@@ -213,10 +213,10 @@ mod test {
         let gql_3 = "query withFragments {
   user(id: 4) {
     friends(first: 10) {
-      ...friendFields
+      ..friendFields
     }
-    mutualFriends(first: 10)æ {
-      ...friendFields
+    mutualFriends(first: 10)ö {
+      .friendFields
     }
   }
 }";

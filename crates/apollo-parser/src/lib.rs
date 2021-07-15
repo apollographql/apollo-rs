@@ -9,6 +9,16 @@ pub use error::Error;
 pub use lexer::*;
 pub use parser::*;
 
+#[macro_export]
+macro_rules! format_err {
+    ($data:expr, $($tt:tt)*) => {
+        Err($crate::lexer::Error::new(
+            format!($($tt)*),
+            $data.to_string(),
+        ))
+    };
+}
+
 /// Return early with an error.
 #[macro_export]
 macro_rules! bail {
