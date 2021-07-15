@@ -1,6 +1,6 @@
 //! A parser for the GraphQL query language.
 
-mod ast;
+pub mod ast;
 mod error;
 mod lexer;
 mod parser;

@@ -117,7 +117,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
                         fn syntax(&self) -> &SyntaxNode {
                             match self {
                                 #(
-                                #name::#variants(it) => &it.syntax,
+                                #name::#variants(it) => &it.syntax(),
                                 )*
                             }
                         }

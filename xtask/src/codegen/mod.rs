@@ -250,17 +250,17 @@ fn extract_enums(ast: &mut AstSrc) {
 
 fn extract_struct_traits(ast: &mut AstSrc) {
     let traits: &[(&str, &[&str])] = &[
-        ("AttrsOwner", &["attrs"]),
-        ("NameOwner", &["name"]),
-        ("VisibilityOwner", &["visibility"]),
-        (
-            "GenericParamsOwner",
-            &["generic_param_list", "where_clause"],
-        ),
-        ("TypeBoundsOwner", &["type_bound_list", "colon_token"]),
-        ("ModuleItemOwner", &["items"]),
-        ("LoopBodyOwner", &["label", "loop_body"]),
-        ("ArgListOwner", &["arg_list"]),
+        // ("AttrsOwner", &["attrs"]),
+        // ("NameOwner", &["name"]),
+        // ("VisibilityOwner", &["visibility"]),
+        // (
+        //     "GenericParamsOwner",
+        //     &["generic_param_list", "where_clause"],
+        // ),
+        // ("TypeBoundsOwner", &["type_bound_list", "colon_token"]),
+        // ("ModuleItemOwner", &["items"]),
+        // ("LoopBodyOwner", &["label", "loop_body"]),
+        // ("ArgListOwner", &["arg_list"]),
     ];
 
     for node in &mut ast.nodes {

@@ -3,6 +3,10 @@ use std::marker::PhantomData;
 use crate::{SyntaxKind, SyntaxNode, SyntaxNodeChildren, SyntaxToken};
 
 mod generated;
+mod traits;
+
+pub use generated::nodes::*;
+pub use traits::*;
 
 /// The main trait to go from untyped `SyntaxNode`  to a typed ast. The
 /// conversion itself has zero runtime cost: ast and syntax nodes have exactly

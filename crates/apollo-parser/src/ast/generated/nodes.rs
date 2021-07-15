@@ -23,9 +23,9 @@ impl Document {
 pub struct OperationDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for OperationDefinition {}
 impl OperationDefinition {
     pub fn operation_type(&self) -> Option<OperationType> { support::child(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn variable_definitions(&self) -> Option<VariableDefinitions> {
         support::child(&self.syntax)
     }
@@ -89,9 +89,9 @@ impl SelectionSet {
 pub struct Field {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for Field {}
 impl Field {
     pub fn alias(&self) -> Option<Alias> { support::child(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn arguments(&self) -> Option<Arguments> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn selection_set(&self) -> Option<SelectionSet> { support::child(&self.syntax) }
@@ -119,8 +119,8 @@ impl InlineFragment {
 pub struct Alias {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for Alias {}
 impl Alias {
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -136,8 +136,8 @@ impl Arguments {
 pub struct Argument {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for Argument {}
 impl Argument {
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
     pub fn value(&self) -> Option<Value> { support::child(&self.syntax) }
 }
@@ -145,8 +145,9 @@ impl Argument {
 pub struct FragmentName {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for FragmentName {}
-impl FragmentName {}
+impl FragmentName {
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+}
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TypeCondition {
     pub(crate) syntax: SyntaxNode,
@@ -159,15 +160,16 @@ impl TypeCondition {
 pub struct NamedType {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for NamedType {}
-impl NamedType {}
+impl NamedType {
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+}
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Variable {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for Variable {}
 impl Variable {
     pub fn dollar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![$]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct StringValue {
@@ -215,8 +217,9 @@ impl NullValue {
 pub struct EnumValue {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for EnumValue {}
-impl EnumValue {}
+impl EnumValue {
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+}
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ListValue {
     pub(crate) syntax: SyntaxNode,
@@ -239,8 +242,8 @@ impl ObjectValue {
 pub struct ObjectField {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for ObjectField {}
 impl ObjectField {
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
     pub fn value(&self) -> Option<Value> { support::child(&self.syntax) }
 }
@@ -284,9 +287,9 @@ impl NonNullType {
 pub struct Directive {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for Directive {}
 impl Directive {
     pub fn at_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![@]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn arguments(&self) -> Option<Arguments> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -306,13 +309,13 @@ impl SchemaDefinition {
 pub struct DirectiveDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for DirectiveDefinition {}
 impl DirectiveDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
     pub fn directive_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![directive])
     }
     pub fn at_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![@]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn arguments_definition(&self) -> Option<ArgumentsDefinition> {
         support::child(&self.syntax)
     }
@@ -353,20 +356,20 @@ impl Description {
 pub struct ScalarTypeDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for ScalarTypeDefinition {}
 impl ScalarTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
     pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![scalar]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ObjectTypeDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for ObjectTypeDefinition {}
 impl ObjectTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
     pub fn type_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![type]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn implements_interfaces(&self) -> Option<ImplementsInterfaces> {
         support::child(&self.syntax)
     }
@@ -377,12 +380,12 @@ impl ObjectTypeDefinition {
 pub struct InterfaceTypeDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for InterfaceTypeDefinition {}
 impl InterfaceTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
     pub fn interface_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![interface])
     }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn fields_definition(&self) -> Option<FieldsDefinition> { support::child(&self.syntax) }
 }
@@ -390,10 +393,10 @@ impl InterfaceTypeDefinition {
 pub struct UnionTypeDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for UnionTypeDefinition {}
 impl UnionTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
     pub fn union_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![union]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn union_member_types(&self) -> Option<UnionMemberTypes> { support::child(&self.syntax) }
 }
@@ -401,10 +404,10 @@ impl UnionTypeDefinition {
 pub struct EnumTypeDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for EnumTypeDefinition {}
 impl EnumTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
     pub fn enum_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![enum]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn enum_values_definition(&self) -> Option<EnumValuesDefinition> {
         support::child(&self.syntax)
@@ -414,10 +417,10 @@ impl EnumTypeDefinition {
 pub struct InputObjectTypeDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for InputObjectTypeDefinition {}
 impl InputObjectTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
     pub fn input_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![input]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn input_fields_definition(&self) -> Option<InputFieldsDefinition> {
         support::child(&self.syntax)
@@ -427,20 +430,20 @@ impl InputObjectTypeDefinition {
 pub struct ScalarTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for ScalarTypeExtension {}
 impl ScalarTypeExtension {
     pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
     pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![scalar]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ObjectTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for ObjectTypeExtension {}
 impl ObjectTypeExtension {
     pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
     pub fn type_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![type]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn implements_interfaces(&self) -> Option<ImplementsInterfaces> {
         support::child(&self.syntax)
     }
@@ -451,12 +454,12 @@ impl ObjectTypeExtension {
 pub struct InterfaceTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for InterfaceTypeExtension {}
 impl InterfaceTypeExtension {
     pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
     pub fn interface_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![interface])
     }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn fields_definition(&self) -> Option<FieldsDefinition> { support::child(&self.syntax) }
 }
@@ -464,10 +467,10 @@ impl InterfaceTypeExtension {
 pub struct UnionTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for UnionTypeExtension {}
 impl UnionTypeExtension {
     pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
     pub fn union_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![union]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn union_member_types(&self) -> Option<UnionMemberTypes> { support::child(&self.syntax) }
 }
@@ -475,10 +478,10 @@ impl UnionTypeExtension {
 pub struct EnumTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for EnumTypeExtension {}
 impl EnumTypeExtension {
     pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
     pub fn enum_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![enum]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn enum_values_definition(&self) -> Option<EnumValuesDefinition> {
         support::child(&self.syntax)
@@ -488,10 +491,10 @@ impl EnumTypeExtension {
 pub struct InputObjectTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for InputObjectTypeExtension {}
 impl InputObjectTypeExtension {
     pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
     pub fn input_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![input]) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn input_fields_definition(&self) -> Option<InputFieldsDefinition> {
         support::child(&self.syntax)
@@ -526,9 +529,9 @@ impl FieldsDefinition {
 pub struct FieldDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for FieldDefinition {}
 impl FieldDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn arguments_definition(&self) -> Option<ArgumentsDefinition> {
         support::child(&self.syntax)
     }
@@ -551,9 +554,9 @@ impl ArgumentsDefinition {
 pub struct InputValueDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl ast::NameOwner for InputValueDefinition {}
 impl InputValueDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
     pub fn ty(&self) -> Option<Type> { support::child(&self.syntax) }
     pub fn default_value(&self) -> Option<DefaultValue> { support::child(&self.syntax) }
@@ -1452,9 +1455,9 @@ impl AstNode for Definition {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            Definition::ExecutableDefinition(it) => &it.syntax,
-            Definition::TypeSystemDefinition(it) => &it.syntax,
-            Definition::TypeSystemExtension(it) => &it.syntax,
+            Definition::ExecutableDefinition(it) => &it.syntax(),
+            Definition::TypeSystemDefinition(it) => &it.syntax(),
+            Definition::TypeSystemExtension(it) => &it.syntax(),
         }
     }
 }
@@ -1489,8 +1492,8 @@ impl AstNode for ExecutableDefinition {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            ExecutableDefinition::OperationDefinition(it) => &it.syntax,
-            ExecutableDefinition::FragmentDefinition(it) => &it.syntax,
+            ExecutableDefinition::OperationDefinition(it) => &it.syntax(),
+            ExecutableDefinition::FragmentDefinition(it) => &it.syntax(),
         }
     }
 }
@@ -1531,9 +1534,9 @@ impl AstNode for TypeSystemDefinition {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            TypeSystemDefinition::SchemaDefinition(it) => &it.syntax,
-            TypeSystemDefinition::TypeDefinition(it) => &it.syntax,
-            TypeSystemDefinition::DirectiveDefinition(it) => &it.syntax,
+            TypeSystemDefinition::SchemaDefinition(it) => &it.syntax(),
+            TypeSystemDefinition::TypeDefinition(it) => &it.syntax(),
+            TypeSystemDefinition::DirectiveDefinition(it) => &it.syntax(),
         }
     }
 }
@@ -1562,8 +1565,8 @@ impl AstNode for TypeSystemExtension {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            TypeSystemExtension::SchemaExtension(it) => &it.syntax,
-            TypeSystemExtension::TypeExtension(it) => &it.syntax,
+            TypeSystemExtension::SchemaExtension(it) => &it.syntax(),
+            TypeSystemExtension::TypeExtension(it) => &it.syntax(),
         }
     }
 }
@@ -1594,9 +1597,9 @@ impl AstNode for Selection {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            Selection::Field(it) => &it.syntax,
-            Selection::FragmentSpread(it) => &it.syntax,
-            Selection::InlineFragment(it) => &it.syntax,
+            Selection::Field(it) => &it.syntax(),
+            Selection::FragmentSpread(it) => &it.syntax(),
+            Selection::InlineFragment(it) => &it.syntax(),
         }
     }
 }
@@ -1652,15 +1655,15 @@ impl AstNode for Value {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            Value::Variable(it) => &it.syntax,
-            Value::StringValue(it) => &it.syntax,
-            Value::FloatValue(it) => &it.syntax,
-            Value::IntValue(it) => &it.syntax,
-            Value::BooleanValue(it) => &it.syntax,
-            Value::NullValue(it) => &it.syntax,
-            Value::EnumValue(it) => &it.syntax,
-            Value::ListValue(it) => &it.syntax,
-            Value::ObjectValue(it) => &it.syntax,
+            Value::Variable(it) => &it.syntax(),
+            Value::StringValue(it) => &it.syntax(),
+            Value::FloatValue(it) => &it.syntax(),
+            Value::IntValue(it) => &it.syntax(),
+            Value::BooleanValue(it) => &it.syntax(),
+            Value::NullValue(it) => &it.syntax(),
+            Value::EnumValue(it) => &it.syntax(),
+            Value::ListValue(it) => &it.syntax(),
+            Value::ObjectValue(it) => &it.syntax(),
         }
     }
 }
@@ -1691,9 +1694,9 @@ impl AstNode for Type {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            Type::NamedType(it) => &it.syntax,
-            Type::ListType(it) => &it.syntax,
-            Type::NonNullType(it) => &it.syntax,
+            Type::NamedType(it) => &it.syntax(),
+            Type::ListType(it) => &it.syntax(),
+            Type::NonNullType(it) => &it.syntax(),
         }
     }
 }
@@ -1763,12 +1766,12 @@ impl AstNode for TypeDefinition {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            TypeDefinition::ScalarTypeDefinition(it) => &it.syntax,
-            TypeDefinition::ObjectTypeDefinition(it) => &it.syntax,
-            TypeDefinition::InterfaceTypeDefinition(it) => &it.syntax,
-            TypeDefinition::UnionTypeDefinition(it) => &it.syntax,
-            TypeDefinition::EnumTypeDefinition(it) => &it.syntax,
-            TypeDefinition::InputObjectTypeDefinition(it) => &it.syntax,
+            TypeDefinition::ScalarTypeDefinition(it) => &it.syntax(),
+            TypeDefinition::ObjectTypeDefinition(it) => &it.syntax(),
+            TypeDefinition::InterfaceTypeDefinition(it) => &it.syntax(),
+            TypeDefinition::UnionTypeDefinition(it) => &it.syntax(),
+            TypeDefinition::EnumTypeDefinition(it) => &it.syntax(),
+            TypeDefinition::InputObjectTypeDefinition(it) => &it.syntax(),
         }
     }
 }
@@ -1830,12 +1833,12 @@ impl AstNode for TypeExtension {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            TypeExtension::ScalarTypeExtension(it) => &it.syntax,
-            TypeExtension::ObjectTypeExtension(it) => &it.syntax,
-            TypeExtension::InterfaceTypeExtension(it) => &it.syntax,
-            TypeExtension::UnionTypeExtension(it) => &it.syntax,
-            TypeExtension::EnumTypeExtension(it) => &it.syntax,
-            TypeExtension::InputObjectTypeExtension(it) => &it.syntax,
+            TypeExtension::ScalarTypeExtension(it) => &it.syntax(),
+            TypeExtension::ObjectTypeExtension(it) => &it.syntax(),
+            TypeExtension::InterfaceTypeExtension(it) => &it.syntax(),
+            TypeExtension::UnionTypeExtension(it) => &it.syntax(),
+            TypeExtension::EnumTypeExtension(it) => &it.syntax(),
+            TypeExtension::InputObjectTypeExtension(it) => &it.syntax(),
         }
     }
 }
