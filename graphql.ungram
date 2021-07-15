@@ -16,59 +16,62 @@ Name =
 ///////////////////////////
 //      INT LITERAL      //
 ///////////////////////////
-IntValue =
-  IntegerPart
-
-IntegerPart =
-  NegativeSign? '0'
-  NegativeSign? NonZeroDigit Digit*
-
-NegativeSign =
-  '-'
-
-Digit =
-  'int_number'
-
-// parser needs to omit 'zero' from these digits
-NonZeroDigit =
-  Digit
+// TODO: remove me
+// IntValue =
+//   IntegerPart
+// 
+// IntegerPart =
+//   NegativeSign? '0'
+//   NegativeSign? NonZeroDigit Digit*
+// 
+// NegativeSign =
+//   '-'
+// 
+// Digit =
+//   'int_number'
+// 
+// // parser needs to omit 'zero' from these digits
+// NonZeroDigit =
+//   Digit
 
 ///////////////////////////
 //     FLOAT LITERAL     //
 ///////////////////////////
-FloatValue =
-  IntegerPart FractionalPart
-  | IntegerPart ExponentPart
-  | IntegerPart FractionalPart ExponentPart
-
-FractionalPart =
-  '.' Digit*
-
-ExponentPart =
-  ExponentIndicator Sign? Digit*
-
-ExponentIndicator =
-  'e'
-  | 'E'
-
-Sign =
-  '+'
-  | '-'
+// TODO: remove me
+// FloatValue =
+//   IntegerPart FractionalPart
+//   | IntegerPart ExponentPart
+//   | IntegerPart FractionalPart ExponentPart
+// 
+// FractionalPart =
+//   '.' Digit*
+// 
+// ExponentPart =
+//   ExponentIndicator Sign? Digit*
+// 
+// ExponentIndicator =
+//   'e'
+//   | 'E'
+// 
+// Sign =
+//   '+'
+//   | '-'
 
 ///////////////////////////
 //     STRING LITERAL    //
 ///////////////////////////
-StringValue =
-  '"' StringCharacter* '"'
-  '"""' BlockStringCharacter* '"""'
-
-// parser needs to make sure string literal does not have " or line terminators
-StringCharacter =
-  'string'
-
-// parser should make sure we are not processing unicode and escape characters here
-BlockStringCharacter =
-  'raw_string'
+// TODO: remove me
+// StringValue =
+//   '"' StringCharacter* '"'
+//   '"""' BlockStringCharacter* '"""'
+// 
+// // parser needs to make sure string literal does not have " or line terminators
+// StringCharacter =
+//   'string'
+// 
+// // parser should make sure we are not processing unicode and escape characters here
+// BlockStringCharacter =
+//   'raw_string'
 
 ///////////////////////////
 //        DOCUMENT       //
@@ -93,7 +96,6 @@ OperationType =
   'query'
   | 'mutation'
   | 'subscription'
-
 
 SelectionSet =
   '{' Selection* '}'
@@ -132,14 +134,23 @@ TypeCondition =
 
 Value =
   Variable
-  | IntValue
-  | FloatValue
   | StringValue
+  | FloatValue
+  | IntValue
   | BooleanValue
   | NullValue
   | EnumValue
   | ListValue
   | ObjectValue
+
+StringValue =
+  'string_value'
+
+FloatValue =
+  'float_value'
+
+IntValue =
+  'int_value'
 
 BooleanValue =
   'true'
