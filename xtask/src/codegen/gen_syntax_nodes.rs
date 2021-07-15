@@ -270,10 +270,9 @@ impl Field {
     }
 
     pub(crate) fn method_name(&self) -> proc_macro2::Ident {
-        dbg!(&self);
         match self {
             Field::Token(name) => {
-                let name = match dbg!(name.as_str()) {
+                let name = match name.as_str() {
                     "!" => "excl",
                     "'{'" => "l_curly",
                     "'}'" => "r_curly",

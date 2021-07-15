@@ -23,6 +23,7 @@ pub enum SyntaxKind {
     SPREAD,
     EQ,
     COLON,
+    AMP,
     query_KW,
     mutation_KW,
     subscription_KW,
@@ -38,6 +39,9 @@ pub enum SyntaxKind {
     enum_KW,
     input_KW,
     directive_KW,
+    type_KW,
+    true_KW,
+    false_KW,
     QUERY_KW,
     MUTATION_KW,
     SUBSCRIPTION_KW,
@@ -46,6 +50,7 @@ pub enum SyntaxKind {
     FRAGMENT_SPREAD_KW,
     INLINE_FRAGMENT_KW,
     SCHEMA_KW,
+    SCALAR_KW,
     OBJECT_KW,
     FIELD_DEFINITION_KW,
     ARGUMENT_DEFINITION_KW,
@@ -83,6 +88,7 @@ pub enum SyntaxKind {
     OPERATION_DEFINITION,
     FRAGMENT_DEFINITION,
     OPERATION_TYPE,
+    DIRECTIVE,
     DIRECTIVES,
     SELECTION_SET,
     SELECTION,
@@ -163,6 +169,9 @@ impl SyntaxKind {
             | enum_KW
             | input_KW
             | directive_KW
+            | type_KW
+            | true_KW
+            | false_KW
             | QUERY_KW
             | MUTATION_KW
             | SUBSCRIPTION_KW
@@ -171,6 +180,7 @@ impl SyntaxKind {
             | FRAGMENT_SPREAD_KW
             | INLINE_FRAGMENT_KW
             | SCHEMA_KW
+            | SCALAR_KW
             | OBJECT_KW
             | FIELD_DEFINITION_KW
             | ARGUMENT_DEFINITION_KW
@@ -186,7 +196,7 @@ impl SyntaxKind {
     pub fn is_punct(self) -> bool {
         match self {
             BANG | L_PAREN | R_PAREN | L_CURLY | R_CURLY | L_BRACK | R_BRACK | COMMA | AT
-            | DOLLAR | PIPE | SPREAD | EQ | COLON => true,
+            | DOLLAR | PIPE | SPREAD | EQ | COLON | AMP => true,
             _ => false,
         }
     }
@@ -213,6 +223,9 @@ impl SyntaxKind {
             "enum" => enum_KW,
             "input" => input_KW,
             "directive" => directive_KW,
+            "type" => type_KW,
+            "true" => true_KW,
+            "false" => false_KW,
             "QUERY" => QUERY_KW,
             "MUTATION" => MUTATION_KW,
             "SUBSCRIPTION" => SUBSCRIPTION_KW,
@@ -221,6 +234,7 @@ impl SyntaxKind {
             "FRAGMENT_SPREAD" => FRAGMENT_SPREAD_KW,
             "INLINE_FRAGMENT" => INLINE_FRAGMENT_KW,
             "SCHEMA" => SCHEMA_KW,
+            "SCALAR" => SCALAR_KW,
             "OBJECT" => OBJECT_KW,
             "FIELD_DEFINITION" => FIELD_DEFINITION_KW,
             "ARGUMENT_DEFINITION" => ARGUMENT_DEFINITION_KW,
@@ -249,6 +263,7 @@ impl SyntaxKind {
             '|' => PIPE,
             '=' => EQ,
             ':' => COLON,
+            '&' => AMP,
             _ => return None,
         };
         Some(tok)
@@ -256,4 +271,4 @@ impl SyntaxKind {
 }
 #[doc = r" Create a new `SyntaxKind`"]
 #[macro_export]
-macro_rules ! T { [!] => { $ crate :: SyntaxKind :: BANG } ; ['('] => { $ crate :: SyntaxKind :: L_PAREN } ; [')'] => { $ crate :: SyntaxKind :: R_PAREN } ; ['{'] => { $ crate :: SyntaxKind :: L_CURLY } ; ['}'] => { $ crate :: SyntaxKind :: R_CURLY } ; ['['] => { $ crate :: SyntaxKind :: L_BRACK } ; [']'] => { $ crate :: SyntaxKind :: R_BRACK } ; [,] => { $ crate :: SyntaxKind :: COMMA } ; [@] => { $ crate :: SyntaxKind :: AT } ; [$] => { $ crate :: SyntaxKind :: DOLLAR } ; [|] => { $ crate :: SyntaxKind :: PIPE } ; [...] => { $ crate :: SyntaxKind :: SPREAD } ; [=] => { $ crate :: SyntaxKind :: EQ } ; [:] => { $ crate :: SyntaxKind :: COLON } ; [query] => { $ crate :: SyntaxKind :: query_KW } ; [mutation] => { $ crate :: SyntaxKind :: mutation_KW } ; [subscription] => { $ crate :: SyntaxKind :: subscription_KW } ; [fragment] => { $ crate :: SyntaxKind :: fragment_KW } ; [on] => { $ crate :: SyntaxKind :: on_KW } ; [null] => { $ crate :: SyntaxKind :: null_KW } ; [extend] => { $ crate :: SyntaxKind :: extend_KW } ; [schema] => { $ crate :: SyntaxKind :: schema_KW } ; [scalar] => { $ crate :: SyntaxKind :: scalar_KW } ; [implements] => { $ crate :: SyntaxKind :: implements_KW } ; [interface] => { $ crate :: SyntaxKind :: interface_KW } ; [union] => { $ crate :: SyntaxKind :: union_KW } ; [enum] => { $ crate :: SyntaxKind :: enum_KW } ; [input] => { $ crate :: SyntaxKind :: input_KW } ; [directive] => { $ crate :: SyntaxKind :: directive_KW } ; [QUERY] => { $ crate :: SyntaxKind :: QUERY_KW } ; [MUTATION] => { $ crate :: SyntaxKind :: MUTATION_KW } ; [SUBSCRIPTION] => { $ crate :: SyntaxKind :: SUBSCRIPTION_KW } ; [FIELD] => { $ crate :: SyntaxKind :: FIELD_KW } ; [FRAGMENT_DEFINITION] => { $ crate :: SyntaxKind :: FRAGMENT_DEFINITION_KW } ; [FRAGMENT_SPREAD] => { $ crate :: SyntaxKind :: FRAGMENT_SPREAD_KW } ; [INLINE_FRAGMENT] => { $ crate :: SyntaxKind :: INLINE_FRAGMENT_KW } ; [SCHEMA] => { $ crate :: SyntaxKind :: SCHEMA_KW } ; [OBJECT] => { $ crate :: SyntaxKind :: OBJECT_KW } ; [FIELD_DEFINITION] => { $ crate :: SyntaxKind :: FIELD_DEFINITION_KW } ; [ARGUMENT_DEFINITION] => { $ crate :: SyntaxKind :: ARGUMENT_DEFINITION_KW } ; [INTERFACE] => { $ crate :: SyntaxKind :: INTERFACE_KW } ; [UNION] => { $ crate :: SyntaxKind :: UNION_KW } ; [ENUM] => { $ crate :: SyntaxKind :: ENUM_KW } ; [ENUM_VALUE] => { $ crate :: SyntaxKind :: ENUM_VALUE_KW } ; [INPUT_OBJECT] => { $ crate :: SyntaxKind :: INPUT_OBJECT_KW } ; [INPUT_FIELD_DEFINITION] => { $ crate :: SyntaxKind :: INPUT_FIELD_DEFINITION_KW } ; [lifetime_ident] => { $ crate :: SyntaxKind :: LIFETIME_IDENT } ; [ident] => { $ crate :: SyntaxKind :: IDENT } ; [shebang] => { $ crate :: SyntaxKind :: SHEBANG } ; }
+macro_rules ! T { [!] => { $ crate :: SyntaxKind :: BANG } ; ['('] => { $ crate :: SyntaxKind :: L_PAREN } ; [')'] => { $ crate :: SyntaxKind :: R_PAREN } ; ['{'] => { $ crate :: SyntaxKind :: L_CURLY } ; ['}'] => { $ crate :: SyntaxKind :: R_CURLY } ; ['['] => { $ crate :: SyntaxKind :: L_BRACK } ; [']'] => { $ crate :: SyntaxKind :: R_BRACK } ; [,] => { $ crate :: SyntaxKind :: COMMA } ; [@] => { $ crate :: SyntaxKind :: AT } ; [$] => { $ crate :: SyntaxKind :: DOLLAR } ; [|] => { $ crate :: SyntaxKind :: PIPE } ; [...] => { $ crate :: SyntaxKind :: SPREAD } ; [=] => { $ crate :: SyntaxKind :: EQ } ; [:] => { $ crate :: SyntaxKind :: COLON } ; [&] => { $ crate :: SyntaxKind :: AMP } ; [query] => { $ crate :: SyntaxKind :: query_KW } ; [mutation] => { $ crate :: SyntaxKind :: mutation_KW } ; [subscription] => { $ crate :: SyntaxKind :: subscription_KW } ; [fragment] => { $ crate :: SyntaxKind :: fragment_KW } ; [on] => { $ crate :: SyntaxKind :: on_KW } ; [null] => { $ crate :: SyntaxKind :: null_KW } ; [extend] => { $ crate :: SyntaxKind :: extend_KW } ; [schema] => { $ crate :: SyntaxKind :: schema_KW } ; [scalar] => { $ crate :: SyntaxKind :: scalar_KW } ; [implements] => { $ crate :: SyntaxKind :: implements_KW } ; [interface] => { $ crate :: SyntaxKind :: interface_KW } ; [union] => { $ crate :: SyntaxKind :: union_KW } ; [enum] => { $ crate :: SyntaxKind :: enum_KW } ; [input] => { $ crate :: SyntaxKind :: input_KW } ; [directive] => { $ crate :: SyntaxKind :: directive_KW } ; [type] => { $ crate :: SyntaxKind :: type_KW } ; [true] => { $ crate :: SyntaxKind :: true_KW } ; [false] => { $ crate :: SyntaxKind :: false_KW } ; [QUERY] => { $ crate :: SyntaxKind :: QUERY_KW } ; [MUTATION] => { $ crate :: SyntaxKind :: MUTATION_KW } ; [SUBSCRIPTION] => { $ crate :: SyntaxKind :: SUBSCRIPTION_KW } ; [FIELD] => { $ crate :: SyntaxKind :: FIELD_KW } ; [FRAGMENT_DEFINITION] => { $ crate :: SyntaxKind :: FRAGMENT_DEFINITION_KW } ; [FRAGMENT_SPREAD] => { $ crate :: SyntaxKind :: FRAGMENT_SPREAD_KW } ; [INLINE_FRAGMENT] => { $ crate :: SyntaxKind :: INLINE_FRAGMENT_KW } ; [SCHEMA] => { $ crate :: SyntaxKind :: SCHEMA_KW } ; [SCALAR] => { $ crate :: SyntaxKind :: SCALAR_KW } ; [OBJECT] => { $ crate :: SyntaxKind :: OBJECT_KW } ; [FIELD_DEFINITION] => { $ crate :: SyntaxKind :: FIELD_DEFINITION_KW } ; [ARGUMENT_DEFINITION] => { $ crate :: SyntaxKind :: ARGUMENT_DEFINITION_KW } ; [INTERFACE] => { $ crate :: SyntaxKind :: INTERFACE_KW } ; [UNION] => { $ crate :: SyntaxKind :: UNION_KW } ; [ENUM] => { $ crate :: SyntaxKind :: ENUM_KW } ; [ENUM_VALUE] => { $ crate :: SyntaxKind :: ENUM_VALUE_KW } ; [INPUT_OBJECT] => { $ crate :: SyntaxKind :: INPUT_OBJECT_KW } ; [INPUT_FIELD_DEFINITION] => { $ crate :: SyntaxKind :: INPUT_FIELD_DEFINITION_KW } ; [lifetime_ident] => { $ crate :: SyntaxKind :: LIFETIME_IDENT } ; [ident] => { $ crate :: SyntaxKind :: IDENT } ; [FLOAT_VALUE] => { $ crate :: SyntaxKind :: FLOAT_VALUE } ; [STRING_VALUE] => { $ crate :: SyntaxKind :: STRING_VALUE } ; [INT_VALUE] => { $ crate :: SyntaxKind :: INT_VALUE } ; }

@@ -7,6 +7,7 @@ pub(crate) fn pluralize(s: &str) -> String {
     format!("{}s", s)
 }
 
+#[allow(unused)]
 pub(crate) fn to_upper_snake_case(s: &str) -> String {
     let mut buf = String::with_capacity(s.len());
     let mut prev = false;
@@ -35,6 +36,7 @@ pub(crate) fn to_lower_snake_case(s: &str) -> String {
     buf
 }
 
+#[allow(unused)]
 pub(crate) fn to_pascal_case(s: &str) -> String {
     let mut buf = String::with_capacity(s.len());
     let mut prev_is_underscore = true;

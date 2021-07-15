@@ -85,6 +85,9 @@ Definition =
   | TypeSystemExtension
 
 ExecutableDefinition =
+  ExecutableDefinitionKinds
+
+ExecutableDefinitionKinds =
   OperationDefinition
   | FragmentDefinition
 
@@ -207,11 +210,17 @@ Directive =
   '@' Name Arguments?
 
 TypeSystemDefinition =
+  TypeSystemDefinitionKinds
+
+TypeSystemDefinitionKinds =
   SchemaDefinition
   | TypeDefinition
   | DirectiveDefinition
 
 TypeSystemExtension =
+  TypeSystemExtensionKinds
+
+TypeSystemExtensionKinds =
   SchemaExtension
   | TypeExtension
 
@@ -229,6 +238,9 @@ Description =
   StringValue
 
 TypeDefinition =
+  TypeDefinitionKinds
+
+TypeDefinitionKinds =
   ScalarTypeDefinition
   | ObjectTypeDefinition
   | InterfaceTypeDefinition
@@ -237,6 +249,9 @@ TypeDefinition =
   | InputObjectTypeDefinition
 
 TypeExtension =
+  TypeExtensionKinds
+ 
+TypeExtensionKinds =
   ScalarTypeExtension
   | ObjectTypeExtension
   | InterfaceTypeExtension
@@ -337,7 +352,7 @@ ExecutableDirectiveLocation =
 
 TypeSystemDirectiveLocation =
   'SCHEMA'
-  | 'SCALAR'
+  | 'scalar'
   | 'OBJECT'
   | 'FIELD_DEFINITION'
   | 'ARGUMENT_DEFINITION'

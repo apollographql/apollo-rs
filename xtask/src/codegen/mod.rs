@@ -75,7 +75,7 @@ fn lower(grammar: &Grammar) -> AstSrc {
     deduplicate_fields(&mut res);
     extract_enums(&mut res);
     extract_struct_traits(&mut res);
-    // extract_enum_traits(&mut res);
+    extract_enum_traits(&mut res);
     res
 }
 
@@ -293,7 +293,12 @@ fn extract_enum_traits(ast: &mut AstSrc) {
         let mut variant_traits = enm
             .variants
             .iter()
-            .map(|var| nodes.iter().find(|it| dbg!(&it.name) == dbg!(var)).unwrap())
+            .map(|var| {
+                nodes
+                    .iter()
+                    .find(|it| &it.name == var)
+                    .expect(&format!("Could not find a node kind for `{}`", var))
+            })
             .map(|node| node.traits.iter().cloned().collect::<BTreeSet<_>>());
 
         let mut enum_traits = match variant_traits.next() {

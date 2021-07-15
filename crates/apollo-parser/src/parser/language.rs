@@ -1,4 +1,4 @@
-use crate::{SyntaxKind, TokenKind};
+use crate::SyntaxKind;
 
 /// A node in the immutable tree. It has other nodes and tokens as children.
 pub type SyntaxNode = rowan::SyntaxNode<GraphQLLanguage>;
