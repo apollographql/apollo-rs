@@ -85,9 +85,6 @@ Definition =
   | TypeSystemExtension
 
 ExecutableDefinition =
-  ExecutableDefinitionKinds
-
-ExecutableDefinitionKinds =
   OperationDefinition
   | FragmentDefinition
 

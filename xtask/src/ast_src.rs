@@ -81,7 +81,7 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
         "SIGN",
         "STRING_VALUE",
         "STRING_CHARACTER",
-        "BLOACK_STRING_CHARACTER",
+        "BLOCK_STRING_CHARACTER",
         "DOCUMENT",
         "DEFINITION",
         "EXECUTABLE_DEFINITION",
@@ -183,7 +183,7 @@ pub(crate) enum Cardinality {
     Many,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct AstEnumSrc {
     pub(crate) doc: Vec<String>,
     pub(crate) name: String,

@@ -249,19 +249,8 @@ fn extract_enums(ast: &mut AstSrc) {
 }
 
 fn extract_struct_traits(ast: &mut AstSrc) {
-    let traits: &[(&str, &[&str])] = &[
-        // ("AttrsOwner", &["attrs"]),
-        // ("NameOwner", &["name"]),
-        // ("VisibilityOwner", &["visibility"]),
-        // (
-        //     "GenericParamsOwner",
-        //     &["generic_param_list", "where_clause"],
-        // ),
-        // ("TypeBoundsOwner", &["type_bound_list", "colon_token"]),
-        // ("ModuleItemOwner", &["items"]),
-        // ("LoopBodyOwner", &["label", "loop_body"]),
-        // ("ArgListOwner", &["arg_list"]),
-    ];
+    // TODO lrlna: add common accessor traits here.
+    let traits: &[(&str, &[&str])] = &[];
 
     for node in &mut ast.nodes {
         for (name, methods) in traits {
@@ -285,21 +274,37 @@ fn extract_struct_trait(node: &mut AstNodeSrc, trait_name: &str, methods: &[&str
 }
 
 fn extract_enum_traits(ast: &mut AstSrc) {
+    let enums = ast.enums.clone();
     for enm in &mut ast.enums {
         if enm.name == "Stmt" {
             continue;
         }
         let nodes = &ast.nodes;
-        let mut variant_traits = enm
-            .variants
-            .iter()
-            .map(|var| {
-                nodes
-                    .iter()
-                    .find(|it| &it.name == var)
-                    .expect(&format!("Could not find a node kind for `{}`", var))
-            })
-            .map(|node| node.traits.iter().cloned().collect::<BTreeSet<_>>());
+
+        let mut variant_traits = enm.variants.iter().map(|var| {
+            nodes
+                .iter()
+                .find_map(|node| {
+                    if &node.name != var {
+                        return None;
+                    }
+                    Some(node.traits.iter().cloned().collect::<BTreeSet<_>>())
+                })
+                .unwrap_or_else(|| {
+                    enums
+                        .iter()
+                        .find_map(|node| {
+                            if &node.name != var {
+                                return None;
+                            }
+                            Some(node.traits.iter().cloned().collect::<BTreeSet<_>>())
+                        })
+                        .expect(&format!(
+                            "Could not find a struct `{}` for enum `{}::{}`",
+                            var, enm.name, var
+                        ))
+                })
+        });
 
         let mut enum_traits = match variant_traits.next() {
             Some(it) => it,
