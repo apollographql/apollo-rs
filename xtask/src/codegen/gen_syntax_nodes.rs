@@ -270,36 +270,25 @@ impl Field {
     }
 
     pub(crate) fn method_name(&self) -> proc_macro2::Ident {
+        dbg!(&self);
         match self {
             Field::Token(name) => {
-                let name = match name.as_str() {
-                    ";" => "semicolon",
-                    "->" => "thin_arrow",
+                let name = match dbg!(name.as_str()) {
+                    "!" => "excl",
                     "'{'" => "l_curly",
                     "'}'" => "r_curly",
                     "'('" => "l_paren",
                     "')'" => "r_paren",
                     "'['" => "l_brack",
                     "']'" => "r_brack",
-                    "<" => "l_angle",
-                    ">" => "r_angle",
-                    "=" => "eq",
-                    "!" => "excl",
-                    "*" => "star",
-                    "&" => "amp",
-                    "_" => "underscore",
-                    "." => "dot",
-                    ".." => "dotdot",
-                    "..." => "dotdotdot",
-                    "..=" => "dotdoteq",
-                    "=>" => "fat_arrow",
-                    "@" => "at",
-                    ":" => "colon",
-                    "::" => "coloncolon",
-                    "#" => "pound",
-                    "?" => "question_mark",
                     "," => "comma",
+                    "@" => "at",
+                    "$" => "dollar",
+                    "&" => "amp",
                     "|" => "pipe",
+                    "=" => "eq",
+                    ":" => "colon",
+                    "..." => "dotdotdot",
                     _ => name,
                 };
                 format_ident!("{}_token", name)

@@ -29,7 +29,7 @@ impl Codegen {
         let syntax_kinds = generate_kinds(KINDS_SRC);
         ensure_file_contents(syntax_kind_path.as_path(), &syntax_kinds?)?;
 
-        let ast_nodes_file = project_root().join("crates/syntax/src/ast/generated/nodes.rs");
+        let ast_nodes_file = project_root().join("crates/apollo-parser/src/ast/generated/nodes.rs");
         let contents = generate_nodes(KINDS_SRC, &ast)?;
         ensure_file_contents(ast_nodes_file.as_path(), &contents)?;
         Ok(())
@@ -75,7 +75,7 @@ fn lower(grammar: &Grammar) -> AstSrc {
     deduplicate_fields(&mut res);
     extract_enums(&mut res);
     extract_struct_traits(&mut res);
-    extract_enum_traits(&mut res);
+    // extract_enum_traits(&mut res);
     res
 }
 
@@ -293,7 +293,7 @@ fn extract_enum_traits(ast: &mut AstSrc) {
         let mut variant_traits = enm
             .variants
             .iter()
-            .map(|var| nodes.iter().find(|it| &it.name == var).unwrap())
+            .map(|var| nodes.iter().find(|it| dbg!(&it.name) == dbg!(var)).unwrap())
             .map(|node| node.traits.iter().cloned().collect::<BTreeSet<_>>());
 
         let mut enum_traits = match variant_traits.next() {
