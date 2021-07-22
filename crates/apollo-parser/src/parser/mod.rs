@@ -164,7 +164,8 @@ mod test {
 
     #[test]
     fn smoke_directive_with_errors() {
-        let input = "directive ø @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION";
+        let input =
+            "directive ø @example(isTreat: ø Boolean, treatKind: String) on FIELD | MUTATION";
         let parser = Parser::new(input);
 
         println!("{:?}", parser.parse());

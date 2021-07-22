@@ -124,11 +124,10 @@ pub(crate) fn generate_kinds(kinds: KindsSrc<'_>) -> Result<String> {
         macro_rules! T {
             #([#punctuation_values] => { $crate::SyntaxKind::#punctuation };)*
             #([#all_keywords_idents] => { $crate::SyntaxKind::#all_keywords };)*
-            [lifetime_ident] => { $crate::SyntaxKind::LIFETIME_IDENT };
             [ident] => { $crate::SyntaxKind::IDENT };
-            [FLOAT_VALUE] => { $crate::SyntaxKind::FLOAT_VALUE };
-            [STRING_VALUE] => { $crate::SyntaxKind::STRING_VALUE };
-            [INT_VALUE] => { $crate::SyntaxKind::INT_VALUE };
+            [float_value] => { $crate::SyntaxKind::FLOAT_VALUE };
+            [string_value] => { $crate::SyntaxKind::STRING_VALUE };
+            [int_value] => { $crate::SyntaxKind::INT_VALUE };
         }
     };
 

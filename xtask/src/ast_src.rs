@@ -62,26 +62,23 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
         "INPUT_OBJECT",
         "INPUT_FIELD_DEFINITION",
     ],
-    literals: &["INT_NUMBER", "STRING", "RAW_STRING"],
+    literals: &["INT_VALUE", "FLOAT_VALUE", "STRING_VALUE"],
+    // NOTE @lrlna: IDENT is definitely a token we need, not entirely sure about
+    // WHITESPACE and COMMENT.
     tokens: &["IDENT", "WHITESPACE", "COMMENT"],
     // These are all the "DOCUMENT" items defined in the GraphQL spec --
     // https://spec.graphql.org/June2018/#sec-Appendix-Grammar-Summary.Document,
     // as well as items listed in the ungrammar file in the root directory.
     nodes: &[
         "NAME",
-        "INT_VALUE",
         "INTEGER_PART",
         "NEGATIVE_SIGN",
         "NON_ZERO_DIGIT",
         "DIGIT",
-        "FLOAT_VALUE",
         "FRACTIONAL_PART",
         "EXPONENT_PART",
         "EXPONENT_INDICATOR",
         "SIGN",
-        "STRING_VALUE",
-        "STRING_CHARACTER",
-        "BLOCK_STRING_CHARACTER",
         "DOCUMENT",
         "DEFINITION",
         "EXECUTABLE_DEFINITION",
