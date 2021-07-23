@@ -1,7 +1,7 @@
 //! This is a generated file, please do not edit.
 
 use crate::{
-    ast::{self, support, AstChildren, AstNode},
+    ast::{support, AstChildren, AstNode},
     SyntaxKind::{self, *},
     SyntaxNode, SyntaxToken, T,
 };
@@ -18,6 +18,33 @@ pub struct Document {
 }
 impl Document {
     pub fn definitions(&self) -> AstChildren<Definition> { support::children(&self.syntax) }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ExecutableDefinition {
+    pub(crate) syntax: SyntaxNode,
+}
+impl ExecutableDefinition {
+    pub fn executable_definition_kinds(&self) -> Option<ExecutableDefinitionKinds> {
+        support::child(&self.syntax)
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TypeSystemDefinition {
+    pub(crate) syntax: SyntaxNode,
+}
+impl TypeSystemDefinition {
+    pub fn type_system_definition_kinds(&self) -> Option<TypeSystemDefinitionKinds> {
+        support::child(&self.syntax)
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TypeSystemExtension {
+    pub(crate) syntax: SyntaxNode,
+}
+impl TypeSystemExtension {
+    pub fn type_system_extension_kinds(&self) -> Option<TypeSystemExtensionKinds> {
+        support::child(&self.syntax)
+    }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct OperationDefinition {
@@ -306,6 +333,15 @@ impl SchemaDefinition {
     pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['}']) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TypeDefinition {
+    pub(crate) syntax: SyntaxNode,
+}
+impl TypeDefinition {
+    pub fn type_definition_kinds(&self) -> Option<TypeDefinitionKinds> {
+        support::child(&self.syntax)
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DirectiveDefinition {
     pub(crate) syntax: SyntaxNode,
 }
@@ -335,6 +371,15 @@ impl SchemaExtension {
         support::children(&self.syntax)
     }
     pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['}']) }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TypeExtension {
+    pub(crate) syntax: SyntaxNode,
+}
+impl TypeExtension {
+    pub fn type_extension_kinds(&self) -> Option<TypeExtensionKinds> {
+        support::child(&self.syntax)
+    }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct OperationTypeDefinition {
@@ -629,21 +674,21 @@ pub struct ExecutableDirectiveLocation {
     pub(crate) syntax: SyntaxNode,
 }
 impl ExecutableDirectiveLocation {
-    pub fn QUERY_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![QUERY]) }
-    pub fn MUTATION_token(&self) -> Option<SyntaxToken> {
+    pub fn query_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![QUERY]) }
+    pub fn mutation_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![MUTATION])
     }
-    pub fn SUBSCRIPTION_token(&self) -> Option<SyntaxToken> {
+    pub fn subscription_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![SUBSCRIPTION])
     }
-    pub fn FIELD_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![FIELD]) }
-    pub fn FRAGMENT_DEFINITION_token(&self) -> Option<SyntaxToken> {
+    pub fn field_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![FIELD]) }
+    pub fn fragment_definition_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![FRAGMENT_DEFINITION])
     }
-    pub fn FRAGMENT_SPREAD_token(&self) -> Option<SyntaxToken> {
+    pub fn fragment_spread_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![FRAGMENT_SPREAD])
     }
-    pub fn INLINE_FRAGMENT_token(&self) -> Option<SyntaxToken> {
+    pub fn inline_fragment_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![INLINE_FRAGMENT])
     }
 }
@@ -652,27 +697,27 @@ pub struct TypeSystemDirectiveLocation {
     pub(crate) syntax: SyntaxNode,
 }
 impl TypeSystemDirectiveLocation {
-    pub fn SCHEMA_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![SCHEMA]) }
+    pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![SCHEMA]) }
     pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![scalar]) }
-    pub fn OBJECT_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![OBJECT]) }
-    pub fn FIELD_DEFINITION_token(&self) -> Option<SyntaxToken> {
+    pub fn object_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![OBJECT]) }
+    pub fn field_definition_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![FIELD_DEFINITION])
     }
-    pub fn ARGUMENT_DEFINITION_token(&self) -> Option<SyntaxToken> {
+    pub fn argument_definition_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![ARGUMENT_DEFINITION])
     }
-    pub fn INTERFACE_token(&self) -> Option<SyntaxToken> {
+    pub fn interface_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![INTERFACE])
     }
-    pub fn UNION_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![UNION]) }
-    pub fn ENUM_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![ENUM]) }
-    pub fn ENUM_VALUE_token(&self) -> Option<SyntaxToken> {
+    pub fn union_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![UNION]) }
+    pub fn enum_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![ENUM]) }
+    pub fn enum_value_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![ENUM_VALUE])
     }
-    pub fn INPUT_OBJECT_token(&self) -> Option<SyntaxToken> {
+    pub fn input_object_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![INPUT_OBJECT])
     }
-    pub fn INPUT_FIELD_DEFINITION_token(&self) -> Option<SyntaxToken> {
+    pub fn input_field_definition_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![INPUT_FIELD_DEFINITION])
     }
 }
@@ -683,20 +728,9 @@ pub enum Definition {
     TypeSystemExtension(TypeSystemExtension),
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ExecutableDefinition {
+pub enum ExecutableDefinitionKinds {
     OperationDefinition(OperationDefinition),
     FragmentDefinition(FragmentDefinition),
-}
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TypeSystemDefinition {
-    SchemaDefinition(SchemaDefinition),
-    TypeDefinition(TypeDefinition),
-    DirectiveDefinition(DirectiveDefinition),
-}
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TypeSystemExtension {
-    SchemaExtension(SchemaExtension),
-    TypeExtension(TypeExtension),
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Selection {
@@ -723,7 +757,18 @@ pub enum Type {
     NonNullType(NonNullType),
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TypeDefinition {
+pub enum TypeSystemDefinitionKinds {
+    SchemaDefinition(SchemaDefinition),
+    TypeDefinition(TypeDefinition),
+    DirectiveDefinition(DirectiveDefinition),
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum TypeSystemExtensionKinds {
+    SchemaExtension(SchemaExtension),
+    TypeExtension(TypeExtension),
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum TypeDefinitionKinds {
     ScalarTypeDefinition(ScalarTypeDefinition),
     ObjectTypeDefinition(ObjectTypeDefinition),
     InterfaceTypeDefinition(InterfaceTypeDefinition),
@@ -732,7 +777,7 @@ pub enum TypeDefinition {
     InputObjectTypeDefinition(InputObjectTypeDefinition),
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TypeExtension {
+pub enum TypeExtensionKinds {
     ScalarTypeExtension(ScalarTypeExtension),
     ObjectTypeExtension(ObjectTypeExtension),
     InterfaceTypeExtension(InterfaceTypeExtension),
@@ -753,6 +798,39 @@ impl AstNode for Name {
 }
 impl AstNode for Document {
     fn can_cast(kind: SyntaxKind) -> bool { kind == DOCUMENT }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for ExecutableDefinition {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == EXECUTABLE_DEFINITION }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for TypeSystemDefinition {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == TYPE_SYSTEM_DEFINITION }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for TypeSystemExtension {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == TYPE_SYSTEM_EXTENSION }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -1103,6 +1181,17 @@ impl AstNode for SchemaDefinition {
     }
     fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
+impl AstNode for TypeDefinition {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == TYPE_DEFINITION }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
 impl AstNode for DirectiveDefinition {
     fn can_cast(kind: SyntaxKind) -> bool { kind == DIRECTIVE_DEFINITION }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
@@ -1116,6 +1205,17 @@ impl AstNode for DirectiveDefinition {
 }
 impl AstNode for SchemaExtension {
     fn can_cast(kind: SyntaxKind) -> bool { kind == SCHEMA_EXTENSION }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for TypeExtension {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == TYPE_EXTENSION }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -1461,17 +1561,17 @@ impl AstNode for Definition {
         }
     }
 }
-impl From<OperationDefinition> for ExecutableDefinition {
-    fn from(node: OperationDefinition) -> ExecutableDefinition {
-        ExecutableDefinition::OperationDefinition(node)
+impl From<OperationDefinition> for ExecutableDefinitionKinds {
+    fn from(node: OperationDefinition) -> ExecutableDefinitionKinds {
+        ExecutableDefinitionKinds::OperationDefinition(node)
     }
 }
-impl From<FragmentDefinition> for ExecutableDefinition {
-    fn from(node: FragmentDefinition) -> ExecutableDefinition {
-        ExecutableDefinition::FragmentDefinition(node)
+impl From<FragmentDefinition> for ExecutableDefinitionKinds {
+    fn from(node: FragmentDefinition) -> ExecutableDefinitionKinds {
+        ExecutableDefinitionKinds::FragmentDefinition(node)
     }
 }
-impl AstNode for ExecutableDefinition {
+impl AstNode for ExecutableDefinitionKinds {
     fn can_cast(kind: SyntaxKind) -> bool {
         match kind {
             OPERATION_DEFINITION | FRAGMENT_DEFINITION => true,
@@ -1481,10 +1581,10 @@ impl AstNode for ExecutableDefinition {
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
             OPERATION_DEFINITION => {
-                ExecutableDefinition::OperationDefinition(OperationDefinition { syntax })
+                ExecutableDefinitionKinds::OperationDefinition(OperationDefinition { syntax })
             }
             FRAGMENT_DEFINITION => {
-                ExecutableDefinition::FragmentDefinition(FragmentDefinition { syntax })
+                ExecutableDefinitionKinds::FragmentDefinition(FragmentDefinition { syntax })
             }
             _ => return None,
         };
@@ -1492,81 +1592,8 @@ impl AstNode for ExecutableDefinition {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            ExecutableDefinition::OperationDefinition(it) => &it.syntax(),
-            ExecutableDefinition::FragmentDefinition(it) => &it.syntax(),
-        }
-    }
-}
-impl From<SchemaDefinition> for TypeSystemDefinition {
-    fn from(node: SchemaDefinition) -> TypeSystemDefinition {
-        TypeSystemDefinition::SchemaDefinition(node)
-    }
-}
-impl From<TypeDefinition> for TypeSystemDefinition {
-    fn from(node: TypeDefinition) -> TypeSystemDefinition {
-        TypeSystemDefinition::TypeDefinition(node)
-    }
-}
-impl From<DirectiveDefinition> for TypeSystemDefinition {
-    fn from(node: DirectiveDefinition) -> TypeSystemDefinition {
-        TypeSystemDefinition::DirectiveDefinition(node)
-    }
-}
-impl AstNode for TypeSystemDefinition {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        match kind {
-            SCHEMA_DEFINITION | TYPE_DEFINITION | DIRECTIVE_DEFINITION => true,
-            _ => false,
-        }
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        let res = match syntax.kind() {
-            SCHEMA_DEFINITION => {
-                TypeSystemDefinition::SchemaDefinition(SchemaDefinition { syntax })
-            }
-            TYPE_DEFINITION => TypeSystemDefinition::TypeDefinition(TypeDefinition { syntax }),
-            DIRECTIVE_DEFINITION => {
-                TypeSystemDefinition::DirectiveDefinition(DirectiveDefinition { syntax })
-            }
-            _ => return None,
-        };
-        Some(res)
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        match self {
-            TypeSystemDefinition::SchemaDefinition(it) => &it.syntax(),
-            TypeSystemDefinition::TypeDefinition(it) => &it.syntax(),
-            TypeSystemDefinition::DirectiveDefinition(it) => &it.syntax(),
-        }
-    }
-}
-impl From<SchemaExtension> for TypeSystemExtension {
-    fn from(node: SchemaExtension) -> TypeSystemExtension {
-        TypeSystemExtension::SchemaExtension(node)
-    }
-}
-impl From<TypeExtension> for TypeSystemExtension {
-    fn from(node: TypeExtension) -> TypeSystemExtension { TypeSystemExtension::TypeExtension(node) }
-}
-impl AstNode for TypeSystemExtension {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        match kind {
-            SCHEMA_EXTENSION | TYPE_EXTENSION => true,
-            _ => false,
-        }
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        let res = match syntax.kind() {
-            SCHEMA_EXTENSION => TypeSystemExtension::SchemaExtension(SchemaExtension { syntax }),
-            TYPE_EXTENSION => TypeSystemExtension::TypeExtension(TypeExtension { syntax }),
-            _ => return None,
-        };
-        Some(res)
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        match self {
-            TypeSystemExtension::SchemaExtension(it) => &it.syntax(),
-            TypeSystemExtension::TypeExtension(it) => &it.syntax(),
+            ExecutableDefinitionKinds::OperationDefinition(it) => &it.syntax(),
+            ExecutableDefinitionKinds::FragmentDefinition(it) => &it.syntax(),
         }
     }
 }
@@ -1700,35 +1727,114 @@ impl AstNode for Type {
         }
     }
 }
-impl From<ScalarTypeDefinition> for TypeDefinition {
-    fn from(node: ScalarTypeDefinition) -> TypeDefinition {
-        TypeDefinition::ScalarTypeDefinition(node)
+impl From<SchemaDefinition> for TypeSystemDefinitionKinds {
+    fn from(node: SchemaDefinition) -> TypeSystemDefinitionKinds {
+        TypeSystemDefinitionKinds::SchemaDefinition(node)
     }
 }
-impl From<ObjectTypeDefinition> for TypeDefinition {
-    fn from(node: ObjectTypeDefinition) -> TypeDefinition {
-        TypeDefinition::ObjectTypeDefinition(node)
+impl From<TypeDefinition> for TypeSystemDefinitionKinds {
+    fn from(node: TypeDefinition) -> TypeSystemDefinitionKinds {
+        TypeSystemDefinitionKinds::TypeDefinition(node)
     }
 }
-impl From<InterfaceTypeDefinition> for TypeDefinition {
-    fn from(node: InterfaceTypeDefinition) -> TypeDefinition {
-        TypeDefinition::InterfaceTypeDefinition(node)
+impl From<DirectiveDefinition> for TypeSystemDefinitionKinds {
+    fn from(node: DirectiveDefinition) -> TypeSystemDefinitionKinds {
+        TypeSystemDefinitionKinds::DirectiveDefinition(node)
     }
 }
-impl From<UnionTypeDefinition> for TypeDefinition {
-    fn from(node: UnionTypeDefinition) -> TypeDefinition {
-        TypeDefinition::UnionTypeDefinition(node)
+impl AstNode for TypeSystemDefinitionKinds {
+    fn can_cast(kind: SyntaxKind) -> bool {
+        match kind {
+            SCHEMA_DEFINITION | TYPE_DEFINITION | DIRECTIVE_DEFINITION => true,
+            _ => false,
+        }
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        let res = match syntax.kind() {
+            SCHEMA_DEFINITION => {
+                TypeSystemDefinitionKinds::SchemaDefinition(SchemaDefinition { syntax })
+            }
+            TYPE_DEFINITION => TypeSystemDefinitionKinds::TypeDefinition(TypeDefinition { syntax }),
+            DIRECTIVE_DEFINITION => {
+                TypeSystemDefinitionKinds::DirectiveDefinition(DirectiveDefinition { syntax })
+            }
+            _ => return None,
+        };
+        Some(res)
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        match self {
+            TypeSystemDefinitionKinds::SchemaDefinition(it) => &it.syntax(),
+            TypeSystemDefinitionKinds::TypeDefinition(it) => &it.syntax(),
+            TypeSystemDefinitionKinds::DirectiveDefinition(it) => &it.syntax(),
+        }
     }
 }
-impl From<EnumTypeDefinition> for TypeDefinition {
-    fn from(node: EnumTypeDefinition) -> TypeDefinition { TypeDefinition::EnumTypeDefinition(node) }
-}
-impl From<InputObjectTypeDefinition> for TypeDefinition {
-    fn from(node: InputObjectTypeDefinition) -> TypeDefinition {
-        TypeDefinition::InputObjectTypeDefinition(node)
+impl From<SchemaExtension> for TypeSystemExtensionKinds {
+    fn from(node: SchemaExtension) -> TypeSystemExtensionKinds {
+        TypeSystemExtensionKinds::SchemaExtension(node)
     }
 }
-impl AstNode for TypeDefinition {
+impl From<TypeExtension> for TypeSystemExtensionKinds {
+    fn from(node: TypeExtension) -> TypeSystemExtensionKinds {
+        TypeSystemExtensionKinds::TypeExtension(node)
+    }
+}
+impl AstNode for TypeSystemExtensionKinds {
+    fn can_cast(kind: SyntaxKind) -> bool {
+        match kind {
+            SCHEMA_EXTENSION | TYPE_EXTENSION => true,
+            _ => false,
+        }
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        let res = match syntax.kind() {
+            SCHEMA_EXTENSION => {
+                TypeSystemExtensionKinds::SchemaExtension(SchemaExtension { syntax })
+            }
+            TYPE_EXTENSION => TypeSystemExtensionKinds::TypeExtension(TypeExtension { syntax }),
+            _ => return None,
+        };
+        Some(res)
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        match self {
+            TypeSystemExtensionKinds::SchemaExtension(it) => &it.syntax(),
+            TypeSystemExtensionKinds::TypeExtension(it) => &it.syntax(),
+        }
+    }
+}
+impl From<ScalarTypeDefinition> for TypeDefinitionKinds {
+    fn from(node: ScalarTypeDefinition) -> TypeDefinitionKinds {
+        TypeDefinitionKinds::ScalarTypeDefinition(node)
+    }
+}
+impl From<ObjectTypeDefinition> for TypeDefinitionKinds {
+    fn from(node: ObjectTypeDefinition) -> TypeDefinitionKinds {
+        TypeDefinitionKinds::ObjectTypeDefinition(node)
+    }
+}
+impl From<InterfaceTypeDefinition> for TypeDefinitionKinds {
+    fn from(node: InterfaceTypeDefinition) -> TypeDefinitionKinds {
+        TypeDefinitionKinds::InterfaceTypeDefinition(node)
+    }
+}
+impl From<UnionTypeDefinition> for TypeDefinitionKinds {
+    fn from(node: UnionTypeDefinition) -> TypeDefinitionKinds {
+        TypeDefinitionKinds::UnionTypeDefinition(node)
+    }
+}
+impl From<EnumTypeDefinition> for TypeDefinitionKinds {
+    fn from(node: EnumTypeDefinition) -> TypeDefinitionKinds {
+        TypeDefinitionKinds::EnumTypeDefinition(node)
+    }
+}
+impl From<InputObjectTypeDefinition> for TypeDefinitionKinds {
+    fn from(node: InputObjectTypeDefinition) -> TypeDefinitionKinds {
+        TypeDefinitionKinds::InputObjectTypeDefinition(node)
+    }
+}
+impl AstNode for TypeDefinitionKinds {
     fn can_cast(kind: SyntaxKind) -> bool {
         match kind {
             SCALAR_TYPE_DEFINITION
@@ -1743,22 +1849,22 @@ impl AstNode for TypeDefinition {
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
             SCALAR_TYPE_DEFINITION => {
-                TypeDefinition::ScalarTypeDefinition(ScalarTypeDefinition { syntax })
+                TypeDefinitionKinds::ScalarTypeDefinition(ScalarTypeDefinition { syntax })
             }
             OBJECT_TYPE_DEFINITION => {
-                TypeDefinition::ObjectTypeDefinition(ObjectTypeDefinition { syntax })
+                TypeDefinitionKinds::ObjectTypeDefinition(ObjectTypeDefinition { syntax })
             }
             INTERFACE_TYPE_DEFINITION => {
-                TypeDefinition::InterfaceTypeDefinition(InterfaceTypeDefinition { syntax })
+                TypeDefinitionKinds::InterfaceTypeDefinition(InterfaceTypeDefinition { syntax })
             }
             UNION_TYPE_DEFINITION => {
-                TypeDefinition::UnionTypeDefinition(UnionTypeDefinition { syntax })
+                TypeDefinitionKinds::UnionTypeDefinition(UnionTypeDefinition { syntax })
             }
             ENUM_TYPE_DEFINITION => {
-                TypeDefinition::EnumTypeDefinition(EnumTypeDefinition { syntax })
+                TypeDefinitionKinds::EnumTypeDefinition(EnumTypeDefinition { syntax })
             }
             INPUT_OBJECT_TYPE_DEFINITION => {
-                TypeDefinition::InputObjectTypeDefinition(InputObjectTypeDefinition { syntax })
+                TypeDefinitionKinds::InputObjectTypeDefinition(InputObjectTypeDefinition { syntax })
             }
             _ => return None,
         };
@@ -1766,38 +1872,46 @@ impl AstNode for TypeDefinition {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            TypeDefinition::ScalarTypeDefinition(it) => &it.syntax(),
-            TypeDefinition::ObjectTypeDefinition(it) => &it.syntax(),
-            TypeDefinition::InterfaceTypeDefinition(it) => &it.syntax(),
-            TypeDefinition::UnionTypeDefinition(it) => &it.syntax(),
-            TypeDefinition::EnumTypeDefinition(it) => &it.syntax(),
-            TypeDefinition::InputObjectTypeDefinition(it) => &it.syntax(),
+            TypeDefinitionKinds::ScalarTypeDefinition(it) => &it.syntax(),
+            TypeDefinitionKinds::ObjectTypeDefinition(it) => &it.syntax(),
+            TypeDefinitionKinds::InterfaceTypeDefinition(it) => &it.syntax(),
+            TypeDefinitionKinds::UnionTypeDefinition(it) => &it.syntax(),
+            TypeDefinitionKinds::EnumTypeDefinition(it) => &it.syntax(),
+            TypeDefinitionKinds::InputObjectTypeDefinition(it) => &it.syntax(),
         }
     }
 }
-impl From<ScalarTypeExtension> for TypeExtension {
-    fn from(node: ScalarTypeExtension) -> TypeExtension { TypeExtension::ScalarTypeExtension(node) }
-}
-impl From<ObjectTypeExtension> for TypeExtension {
-    fn from(node: ObjectTypeExtension) -> TypeExtension { TypeExtension::ObjectTypeExtension(node) }
-}
-impl From<InterfaceTypeExtension> for TypeExtension {
-    fn from(node: InterfaceTypeExtension) -> TypeExtension {
-        TypeExtension::InterfaceTypeExtension(node)
+impl From<ScalarTypeExtension> for TypeExtensionKinds {
+    fn from(node: ScalarTypeExtension) -> TypeExtensionKinds {
+        TypeExtensionKinds::ScalarTypeExtension(node)
     }
 }
-impl From<UnionTypeExtension> for TypeExtension {
-    fn from(node: UnionTypeExtension) -> TypeExtension { TypeExtension::UnionTypeExtension(node) }
-}
-impl From<EnumTypeExtension> for TypeExtension {
-    fn from(node: EnumTypeExtension) -> TypeExtension { TypeExtension::EnumTypeExtension(node) }
-}
-impl From<InputObjectTypeExtension> for TypeExtension {
-    fn from(node: InputObjectTypeExtension) -> TypeExtension {
-        TypeExtension::InputObjectTypeExtension(node)
+impl From<ObjectTypeExtension> for TypeExtensionKinds {
+    fn from(node: ObjectTypeExtension) -> TypeExtensionKinds {
+        TypeExtensionKinds::ObjectTypeExtension(node)
     }
 }
-impl AstNode for TypeExtension {
+impl From<InterfaceTypeExtension> for TypeExtensionKinds {
+    fn from(node: InterfaceTypeExtension) -> TypeExtensionKinds {
+        TypeExtensionKinds::InterfaceTypeExtension(node)
+    }
+}
+impl From<UnionTypeExtension> for TypeExtensionKinds {
+    fn from(node: UnionTypeExtension) -> TypeExtensionKinds {
+        TypeExtensionKinds::UnionTypeExtension(node)
+    }
+}
+impl From<EnumTypeExtension> for TypeExtensionKinds {
+    fn from(node: EnumTypeExtension) -> TypeExtensionKinds {
+        TypeExtensionKinds::EnumTypeExtension(node)
+    }
+}
+impl From<InputObjectTypeExtension> for TypeExtensionKinds {
+    fn from(node: InputObjectTypeExtension) -> TypeExtensionKinds {
+        TypeExtensionKinds::InputObjectTypeExtension(node)
+    }
+}
+impl AstNode for TypeExtensionKinds {
     fn can_cast(kind: SyntaxKind) -> bool {
         match kind {
             SCALAR_TYPE_EXTENSION
@@ -1812,20 +1926,22 @@ impl AstNode for TypeExtension {
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
             SCALAR_TYPE_EXTENSION => {
-                TypeExtension::ScalarTypeExtension(ScalarTypeExtension { syntax })
+                TypeExtensionKinds::ScalarTypeExtension(ScalarTypeExtension { syntax })
             }
             OBJECT_TYPE_EXTENSION => {
-                TypeExtension::ObjectTypeExtension(ObjectTypeExtension { syntax })
+                TypeExtensionKinds::ObjectTypeExtension(ObjectTypeExtension { syntax })
             }
             INTERFACE_TYPE_EXTENSION => {
-                TypeExtension::InterfaceTypeExtension(InterfaceTypeExtension { syntax })
+                TypeExtensionKinds::InterfaceTypeExtension(InterfaceTypeExtension { syntax })
             }
             UNION_TYPE_EXTENSION => {
-                TypeExtension::UnionTypeExtension(UnionTypeExtension { syntax })
+                TypeExtensionKinds::UnionTypeExtension(UnionTypeExtension { syntax })
             }
-            ENUM_TYPE_EXTENSION => TypeExtension::EnumTypeExtension(EnumTypeExtension { syntax }),
+            ENUM_TYPE_EXTENSION => {
+                TypeExtensionKinds::EnumTypeExtension(EnumTypeExtension { syntax })
+            }
             INPUT_OBJECT_TYPE_EXTENSION => {
-                TypeExtension::InputObjectTypeExtension(InputObjectTypeExtension { syntax })
+                TypeExtensionKinds::InputObjectTypeExtension(InputObjectTypeExtension { syntax })
             }
             _ => return None,
         };
@@ -1833,12 +1949,12 @@ impl AstNode for TypeExtension {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            TypeExtension::ScalarTypeExtension(it) => &it.syntax(),
-            TypeExtension::ObjectTypeExtension(it) => &it.syntax(),
-            TypeExtension::InterfaceTypeExtension(it) => &it.syntax(),
-            TypeExtension::UnionTypeExtension(it) => &it.syntax(),
-            TypeExtension::EnumTypeExtension(it) => &it.syntax(),
-            TypeExtension::InputObjectTypeExtension(it) => &it.syntax(),
+            TypeExtensionKinds::ScalarTypeExtension(it) => &it.syntax(),
+            TypeExtensionKinds::ObjectTypeExtension(it) => &it.syntax(),
+            TypeExtensionKinds::InterfaceTypeExtension(it) => &it.syntax(),
+            TypeExtensionKinds::UnionTypeExtension(it) => &it.syntax(),
+            TypeExtensionKinds::EnumTypeExtension(it) => &it.syntax(),
+            TypeExtensionKinds::InputObjectTypeExtension(it) => &it.syntax(),
         }
     }
 }
@@ -1847,17 +1963,7 @@ impl std::fmt::Display for Definition {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for ExecutableDefinition {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
-impl std::fmt::Display for TypeSystemDefinition {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
-impl std::fmt::Display for TypeSystemExtension {
+impl std::fmt::Display for ExecutableDefinitionKinds {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -1877,12 +1983,22 @@ impl std::fmt::Display for Type {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for TypeDefinition {
+impl std::fmt::Display for TypeSystemDefinitionKinds {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for TypeExtension {
+impl std::fmt::Display for TypeSystemExtensionKinds {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for TypeDefinitionKinds {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for TypeExtensionKinds {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -1893,6 +2009,21 @@ impl std::fmt::Display for Name {
     }
 }
 impl std::fmt::Display for Document {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for ExecutableDefinition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for TypeSystemDefinition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for TypeSystemExtension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -2052,12 +2183,22 @@ impl std::fmt::Display for SchemaDefinition {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for TypeDefinition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for DirectiveDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
 impl std::fmt::Display for SchemaExtension {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for TypeExtension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

@@ -181,7 +181,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
     let ast = quote! {
         use crate::{
             SyntaxNode, SyntaxToken, SyntaxKind::{self, *},
-            ast::{self, AstNode, AstChildren, support},
+            ast::{AstNode, AstChildren, support},
             T,
         };
 
@@ -290,7 +290,7 @@ impl Field {
                     "..." => "dotdotdot",
                     _ => name,
                 };
-                format_ident!("{}_token", name)
+                format_ident!("{}_token", name.to_lowercase())
             }
             Field::Node { name, .. } => {
                 if name == "type" {
