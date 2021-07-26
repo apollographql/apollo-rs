@@ -12,7 +12,7 @@ pub use parser::*;
 #[macro_export]
 macro_rules! format_err {
     ($data:expr, $($tt:tt)*) => {
-        Err($crate::lexer::Error::new(
+        Err($crate::error::Error::new(
             format!($($tt)*),
             $data.to_string(),
         ))
@@ -23,7 +23,7 @@ macro_rules! format_err {
 #[macro_export]
 macro_rules! bail {
     ($data:expr, $($tt:tt)*) => {
-        return Err($crate::lexer::Error::new(
+        return Err($crate::error::Error::new(
             format!($($tt)*),
             $data.to_string(),
         ))

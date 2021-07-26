@@ -8,7 +8,7 @@ use super::parse_fragment_name;
 /// FragmentDefinition
 ///     fragment FragmentName TypeCondition Directives(opt) SelectionSet
 /// ```
-pub(crate) fn parse_fragment(parser: &mut Parser) -> Result<(), ()> {
+pub(crate) fn parse_fragment(parser: &mut Parser) -> Result<(), crate::Error> {
     let _guard = parser.start_node(SyntaxKind::FRAGMENT_DEFINITION);
     // TODO lrlna: parse description???
     parser.bump(SyntaxKind::fragment_KW);

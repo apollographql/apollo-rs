@@ -1,7 +1,11 @@
+use crate::format_err;
 use crate::{Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#DirectiveLocations
-pub(crate) fn parse_directive_locations(parser: &mut Parser, is_location: bool) -> Result<(), ()> {
+pub(crate) fn parse_directive_locations(
+    parser: &mut Parser,
+    is_location: bool,
+) -> Result<(), crate::Error> {
     match parser.peek() {
         Some(TokenKind::Pipe) => {
             parser.bump(SyntaxKind::PIPE);
@@ -19,7 +23,11 @@ pub(crate) fn parse_directive_locations(parser: &mut Parser, is_location: bool) 
         _ => {
             if !is_location {
                 // missing directive locations in directive definition
-                return Err(());
+                return format_err!(
+                    parser.peek_data().unwrap(),
+                    "Expected to have Directive locations in a directive definition, got {}",
+                    parser.peek_data().unwrap()
+                );
             }
             Ok(())
         }

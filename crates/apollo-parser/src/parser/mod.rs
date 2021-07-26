@@ -75,15 +75,10 @@ impl Parser {
             match self.peek() {
                 None => break,
                 Some(TokenKind::Fragment) => {
-                    if parse_fragment(&mut self).is_err() {
-                        panic!("could not parse fragment")
-                        // self.errors.push(Error::with_loc("could not parse fragment".into(), self.peek_data().unwrap(), self.peek_loc().unwrap()));
-                    }
+                    parse_fragment(&mut self).unwrap_or_else(|e| self.errors.push(e));
                 }
                 Some(TokenKind::Directive) => {
-                    if parse_directive(&mut self).is_err() {
-                        panic!("could not parse directive");
-                    }
+                    parse_directive(&mut self).unwrap_or_else(|e| self.errors.push(e));
                 }
                 Some(_) => break,
             }
@@ -97,31 +92,31 @@ impl Parser {
         builder.finish(self.errors)
     }
 
-    pub fn bump(&mut self, kind: SyntaxKind) {
+    pub(crate) fn bump(&mut self, kind: SyntaxKind) {
         let token = self.tokens.pop().unwrap();
         self.builder.borrow_mut().token(kind, token.data());
     }
 
-    pub fn start_node(&mut self, kind: SyntaxKind) -> NodeGuard {
+    pub(crate) fn start_node(&mut self, kind: SyntaxKind) -> NodeGuard {
         self.builder.borrow_mut().start_node(kind);
         NodeGuard::new(self.builder.clone())
     }
 
-    pub fn peek(&self) -> Option<TokenKind> {
+    pub(crate) fn peek(&self) -> Option<TokenKind> {
         self.tokens.last().map(|token| token.kind().into())
     }
 
-    pub fn peek_data(&self) -> Option<String> {
+    pub(crate) fn peek_data(&self) -> Option<String> {
         self.tokens.last().map(|token| token.data().to_string())
     }
 
-    pub fn peek_loc(&self) -> Option<Location> {
+    pub(crate) fn peek_loc(&self) -> Option<Location> {
         self.tokens.last().map(|token| token.loc())
     }
 }
 
 #[must_use]
-pub struct NodeGuard {
+pub(crate) struct NodeGuard {
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
 }
 

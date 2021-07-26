@@ -1,4 +1,4 @@
-use crate::{Parser, SyntaxKind, TokenKind};
+use crate::{format_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#InputValueDefinition
 ///
@@ -6,7 +6,10 @@ use crate::{Parser, SyntaxKind, TokenKind};
 /// InputValueDefinition
 ///     Description(opt) Name : Type DefaultValue(opt) Directives(const/opt)
 /// ```
-pub(crate) fn parse_input_value_definitions(parser: &mut Parser, is_input: bool) -> Result<(), ()> {
+pub(crate) fn parse_input_value_definitions(
+    parser: &mut Parser,
+    is_input: bool,
+) -> Result<(), crate::Error> {
     // TODO lrlna: parse description
     // TODO lrlna: parse default value
     // TODO lrlna: parse directives
@@ -33,10 +36,22 @@ pub(crate) fn parse_input_value_definitions(parser: &mut Parser, is_input: bool)
                                 _ => Ok(()),
                             }
                         }
-                        _ => return Err(()),
+                        _ => {
+                            return format_err!(
+                                parser.peek_data().unwrap(),
+                                "Expected InputValue definition to have a Type, got {}",
+                                parser.peek_data().unwrap()
+                            )
+                        }
                     }
                 }
-                _ => return Err(()),
+                _ => {
+                    return format_err!(
+                        parser.peek_data().unwrap(),
+                        "Expected InputValue definition to have a Name, got {}",
+                        parser.peek_data().unwrap()
+                    )
+                }
             }
         }
         Some(TokenKind::Comma) => {
@@ -49,7 +64,11 @@ pub(crate) fn parse_input_value_definitions(parser: &mut Parser, is_input: bool)
                 Ok(())
             } else {
                 // if there is no input, and a LPAREN was supplied, send an error
-                return Err(());
+                return format_err!(
+                    parser.peek_data().unwrap(),
+                    "Expected to have an InputValue definition, got {}",
+                    parser.peek_data().unwrap()
+                );
             }
         }
     }

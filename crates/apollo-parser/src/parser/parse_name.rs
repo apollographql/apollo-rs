@@ -1,3 +1,4 @@
+use crate::format_err;
 use crate::{Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#Name
@@ -6,7 +7,7 @@ use crate::{Parser, SyntaxKind, TokenKind};
 /// Name
 ///     [_A-Za-z][_0-9A-Za-z]*/
 /// ```
-pub(crate) fn parse_name(parser: &mut Parser) -> Result<(), ()> {
+pub(crate) fn parse_name(parser: &mut Parser) -> Result<(), crate::Error> {
     match parser.peek() {
         Some(TokenKind::Node) => {
             let data = parser.peek_data().unwrap();
@@ -19,7 +20,13 @@ pub(crate) fn parse_name(parser: &mut Parser) -> Result<(), ()> {
             Ok(())
         }
         // missing name
-        _ => return Err(()),
+        _ => {
+            return format_err!(
+                parser.peek_data().unwrap(),
+                "Expected a spec compliant Name, got {}",
+                parser.peek_data().unwrap()
+            )
+        }
     }
 }
 
