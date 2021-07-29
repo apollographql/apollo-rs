@@ -20,9 +20,9 @@ Document =
   Definition*
 
 Definition =
-  ExecutableDefinition
-  | TypeSystemDefinition
-  | TypeSystemExtension
+  OperationDefinition
+  | FragmentDefinition
+  | DirectiveDefinition
 
 // TODO lrlna: we are creating an extra type here to make it easier for codegen.
 // Ideally ExecutableDefinition neads to directly reference Operation and

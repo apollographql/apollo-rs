@@ -1,7 +1,7 @@
 use rowan::GreenNodeBuilder;
 use std::fmt;
 
-use crate::{Error, SyntaxElement, SyntaxKind};
+use crate::{ast::Document, Error, SyntaxElement, SyntaxKind};
 
 use super::GraphQLLanguage;
 
@@ -18,10 +18,8 @@ impl SyntaxTree {
     }
 
     /// Return the root typed `Document` node.
-    // TODO: hook this up to the generated typed AST nodes.
-    // TODO: call `AstNode::cast`.unwrap into a `Document` node.
-    pub fn document() {
-        todo!("Not yet implemented");
+    pub fn document(self) -> Document {
+        Document { syntax: self.ast }
     }
 }
 
@@ -98,7 +96,27 @@ impl SyntaxTreeBuilder {
         SyntaxTree {
             ast: rowan::SyntaxNode::new_root(self.builder.finish()),
             // TODO: keep the errors in the builder rather than pass it in here?
-            errors: errors,
+            errors,
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::ast::Definition;
+    use crate::Parser;
+
+    #[test]
+    fn smoke_directive() {
+        let input = "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION";
+        let parser = Parser::new(input);
+        let ast = parser.parse();
+        let doc = ast.document();
+
+        for def in doc.definitions() {
+            if let Definition::DirectiveDefinition(directive) = def {
+                println!("{:?}", directive.name());
+            }
         }
     }
 }
