@@ -108,15 +108,6 @@ impl TypeExtension {
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExecutableDefinition {
-    pub(crate) syntax: SyntaxNode,
-}
-impl ExecutableDefinition {
-    pub fn executable_definition_kinds(&self) -> Option<ExecutableDefinitionKinds> {
-        support::child(&self.syntax)
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct OperationType {
     pub(crate) syntax: SyntaxNode,
 }
@@ -714,11 +705,6 @@ pub enum Definition {
     TypeExtension(TypeExtension),
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ExecutableDefinitionKinds {
-    OperationDefinition(OperationDefinition),
-    FragmentDefinition(FragmentDefinition),
-}
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Selection {
     Field(Field),
     FragmentSpread(FragmentSpread),
@@ -850,17 +836,6 @@ impl AstNode for SchemaExtension {
 }
 impl AstNode for TypeExtension {
     fn can_cast(kind: SyntaxKind) -> bool { kind == TYPE_EXTENSION }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode { &self.syntax }
-}
-impl AstNode for ExecutableDefinition {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == EXECUTABLE_DEFINITION }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -1529,42 +1504,6 @@ impl AstNode for Definition {
         }
     }
 }
-impl From<OperationDefinition> for ExecutableDefinitionKinds {
-    fn from(node: OperationDefinition) -> ExecutableDefinitionKinds {
-        ExecutableDefinitionKinds::OperationDefinition(node)
-    }
-}
-impl From<FragmentDefinition> for ExecutableDefinitionKinds {
-    fn from(node: FragmentDefinition) -> ExecutableDefinitionKinds {
-        ExecutableDefinitionKinds::FragmentDefinition(node)
-    }
-}
-impl AstNode for ExecutableDefinitionKinds {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        match kind {
-            OPERATION_DEFINITION | FRAGMENT_DEFINITION => true,
-            _ => false,
-        }
-    }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        let res = match syntax.kind() {
-            OPERATION_DEFINITION => {
-                ExecutableDefinitionKinds::OperationDefinition(OperationDefinition { syntax })
-            }
-            FRAGMENT_DEFINITION => {
-                ExecutableDefinitionKinds::FragmentDefinition(FragmentDefinition { syntax })
-            }
-            _ => return None,
-        };
-        Some(res)
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        match self {
-            ExecutableDefinitionKinds::OperationDefinition(it) => &it.syntax(),
-            ExecutableDefinitionKinds::FragmentDefinition(it) => &it.syntax(),
-        }
-    }
-}
 impl From<Field> for Selection {
     fn from(node: Field) -> Selection { Selection::Field(node) }
 }
@@ -1854,11 +1793,6 @@ impl std::fmt::Display for Definition {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for ExecutableDefinitionKinds {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
 impl std::fmt::Display for Selection {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -1925,11 +1859,6 @@ impl std::fmt::Display for SchemaExtension {
     }
 }
 impl std::fmt::Display for TypeExtension {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
-impl std::fmt::Display for ExecutableDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
