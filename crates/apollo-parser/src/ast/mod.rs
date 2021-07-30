@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 use crate::{SyntaxKind, SyntaxNode, SyntaxNodeChildren, SyntaxToken};
 
 mod generated;
+mod node_ext;
 mod traits;
 
 pub use generated::nodes::*;

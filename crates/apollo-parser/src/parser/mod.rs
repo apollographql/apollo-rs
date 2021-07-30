@@ -3,16 +3,13 @@ use std::rc::Rc;
 
 use crate::lexer;
 use crate::lexer::Lexer;
-use crate::lexer::Location;
 use crate::TokenKind;
 
 pub use generated::syntax_kind::SyntaxKind;
-pub use language::{
-    SyntaxElement, SyntaxElementChildren, SyntaxNode, SyntaxNodeChildren, SyntaxToken,
-};
+pub use language::{SyntaxElement, SyntaxElementChildren, SyntaxNodeChildren, SyntaxToken};
 pub use syntax_tree::SyntaxTree;
 
-pub(crate) use language::GraphQLLanguage;
+pub(crate) use language::{GraphQLLanguage, SyntaxNode};
 pub(crate) use parse_directive::parse_directive;
 pub(crate) use parse_directive_locations::parse_directive_locations;
 pub(crate) use parse_fragment::parse_fragment;
@@ -20,6 +17,7 @@ pub(crate) use parse_fragment_name::parse_fragment_name;
 pub(crate) use parse_input_value_definitions::parse_input_value_definitions;
 pub(crate) use parse_name::parse_name;
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
+pub(crate) use token_text::TokenText;
 
 mod generated;
 mod language;
@@ -30,6 +28,7 @@ mod parse_fragment_name;
 mod parse_input_value_definitions;
 mod parse_name;
 mod syntax_tree;
+mod token_text;
 
 /// Parse text into an AST.
 #[derive(Debug)]
@@ -103,15 +102,11 @@ impl Parser {
     }
 
     pub(crate) fn peek(&self) -> Option<TokenKind> {
-        self.tokens.last().map(|token| token.kind().into())
+        self.tokens.last().map(|token| token.kind())
     }
 
     pub(crate) fn peek_data(&self) -> Option<String> {
         self.tokens.last().map(|token| token.data().to_string())
-    }
-
-    pub(crate) fn peek_loc(&self) -> Option<Location> {
-        self.tokens.last().map(|token| token.loc())
     }
 }
 

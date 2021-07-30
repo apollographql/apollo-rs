@@ -177,7 +177,7 @@ fn skip_ws(input: &mut &str) {
 }
 
 fn skip_comment(input: &mut &str) {
-    if input.starts_with("#") {
+    if input.starts_with('#') {
         let idx = input.find('\n').map_or(input.len(), |it| it + 1);
         *input = &input[idx..]
     }
