@@ -23,16 +23,10 @@ Definition =
   OperationDefinition
   | FragmentDefinition
   | DirectiveDefinition
-
-// TODO lrlna: we are creating an extra type here to make it easier for codegen.
-// Ideally ExecutableDefinition neads to directly reference Operation and
-// Fragment Definition.
-ExecutableDefinition =
-  ExecutableDefinitionKinds
-
-ExecutableDefinitionKinds =
-  OperationDefinition
-  | FragmentDefinition
+  | SchemaDefinition
+  | TypeDefinition
+  | SchemaExtension
+  | TypeExtension
 
 OperationDefinition =
   OperationType Name? VariableDefinitions? Directives? SelectionSet
@@ -151,23 +145,6 @@ Directives =
 
 Directive =
   '@' Name Arguments?
-
-// TODO lrlna: we are creating an extra type here to make it easier for codegen.
-TypeSystemDefinition =
-  TypeSystemDefinitionKinds
-
-TypeSystemDefinitionKinds =
-  SchemaDefinition
-  | TypeDefinition
-  | DirectiveDefinition
-
-// TODO lrlna: we are creating an extra type here to make it easier for codegen.
-TypeSystemExtension =
-  TypeSystemExtensionKinds
-
-TypeSystemExtensionKinds =
-  SchemaExtension
-  | TypeExtension
 
 SchemaDefinition =
   'schema' Directives? '{' OperationTypeDefinition* '}'

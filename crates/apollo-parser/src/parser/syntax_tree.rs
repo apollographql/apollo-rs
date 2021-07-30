@@ -26,7 +26,7 @@ impl SyntaxTree {
 impl fmt::Debug for SyntaxTree {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fn print(f: &mut fmt::Formatter<'_>, indent: usize, element: SyntaxElement) -> fmt::Result {
-            let kind: SyntaxKind = element.kind().into();
+            let kind: SyntaxKind = element.kind();
             print!("{:indent$}", "", indent = indent);
             match element {
                 rowan::NodeOrToken::Node(node) => {
