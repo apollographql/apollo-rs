@@ -8,6 +8,7 @@ use crate::{Parser, SyntaxKind, TokenKind};
 ///     [_A-Za-z][_0-9A-Za-z]*/
 /// ```
 pub(crate) fn parse_name(parser: &mut Parser) -> Result<(), crate::Error> {
+    let _guard = parser.start_node(SyntaxKind::NAME);
     match parser.peek() {
         Some(TokenKind::Node) => {
             let data = parser.peek_data().unwrap();
@@ -16,7 +17,7 @@ pub(crate) fn parse_name(parser: &mut Parser) -> Result<(), crate::Error> {
             if data.len() >= 2 {
                 assert!(data[1..].chars().all(is_remainder_char));
             }
-            parser.bump(SyntaxKind::NAME);
+            parser.bump(SyntaxKind::IDENT);
             Ok(())
         }
         // missing name

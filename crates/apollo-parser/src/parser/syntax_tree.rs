@@ -1,7 +1,7 @@
 use rowan::GreenNodeBuilder;
 use std::fmt;
 
-use crate::{ast::Document, Error, SyntaxElement, SyntaxKind};
+use crate::{ast::AstNode, ast::Document, Error, SyntaxElement, SyntaxKind};
 
 use super::GraphQLLanguage;
 
@@ -103,6 +103,7 @@ impl SyntaxTreeBuilder {
 
 #[cfg(test)]
 mod test {
+    use crate::ast::AstNode;
     use crate::ast::Definition;
     use crate::Parser;
 
@@ -115,7 +116,7 @@ mod test {
 
         for def in doc.definitions() {
             if let Definition::DirectiveDefinition(directive) = def {
-                println!("{:?}", directive.name());
+                println!("{:?}", directive.name().unwrap().ident_token());
             }
         }
     }
