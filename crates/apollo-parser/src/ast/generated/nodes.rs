@@ -635,18 +635,6 @@ pub struct DirectiveLocation {
     pub(crate) syntax: SyntaxNode,
 }
 impl DirectiveLocation {
-    pub fn executable_directive_location(&self) -> Option<ExecutableDirectiveLocation> {
-        support::child(&self.syntax)
-    }
-    pub fn type_system_directive_location(&self) -> Option<TypeSystemDirectiveLocation> {
-        support::child(&self.syntax)
-    }
-}
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExecutableDirectiveLocation {
-    pub(crate) syntax: SyntaxNode,
-}
-impl ExecutableDirectiveLocation {
     pub fn query_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![QUERY]) }
     pub fn mutation_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![MUTATION])
@@ -664,14 +652,8 @@ impl ExecutableDirectiveLocation {
     pub fn inline_fragment_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![INLINE_FRAGMENT])
     }
-}
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct TypeSystemDirectiveLocation {
-    pub(crate) syntax: SyntaxNode,
-}
-impl TypeSystemDirectiveLocation {
     pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![SCHEMA]) }
-    pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![scalar]) }
+    pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![SCALAR]) }
     pub fn object_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![OBJECT]) }
     pub fn field_definition_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, T![FIELD_DEFINITION])
@@ -1428,28 +1410,6 @@ impl AstNode for DirectiveLocation {
     }
     fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for ExecutableDirectiveLocation {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == EXECUTABLE_DIRECTIVE_LOCATION }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode { &self.syntax }
-}
-impl AstNode for TypeSystemDirectiveLocation {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == TYPE_SYSTEM_DIRECTIVE_LOCATION }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if Self::can_cast(syntax.kind()) {
-            Some(Self { syntax })
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode { &self.syntax }
-}
 impl From<OperationDefinition> for Definition {
     fn from(node: OperationDefinition) -> Definition { Definition::OperationDefinition(node) }
 }
@@ -2124,16 +2084,6 @@ impl std::fmt::Display for DirectiveLocations {
     }
 }
 impl std::fmt::Display for DirectiveLocation {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
-impl std::fmt::Display for ExecutableDirectiveLocation {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(self.syntax(), f)
-    }
-}
-impl std::fmt::Display for TypeSystemDirectiveLocation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

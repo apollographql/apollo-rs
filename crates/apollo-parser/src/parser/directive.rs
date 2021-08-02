@@ -74,13 +74,38 @@ pub(crate) fn directive_locations(
             parser.bump(SyntaxKind::PIPE);
             directive_locations(parser, is_location)
         }
-        // TODO lrlna: Syntax Kind here is wrong. This should match on either
-        // TypeSystemDirectiveLocation or ExecutableDirectiveLocation.
         Some(TokenKind::Node) => {
-            parser.bump(SyntaxKind::DIRECTIVE_LOCATION);
             match parser.peek_data() {
-                Some(_) => return directive_locations(parser, true),
-                _ => return Ok(()),
+                Some(loc) => {
+                    let _guard = parser.start_node(SyntaxKind::DIRECTIVE_LOCATION);
+                    match loc.as_str() {
+                        "MUTATION" => parser.bump(SyntaxKind::QUERY_KW),
+                        "SUBSCRIPTION" => parser.bump(SyntaxKind::SUBSCRIPTION_KW),
+                        "FIELD" => parser.bump(SyntaxKind::FIELD_KW),
+                        "FRAGMENT_DEFINITION" => parser.bump(SyntaxKind::FRAGMENT_DEFINITION_KW),
+                        "FRAGMENT_SPREAD" => parser.bump(SyntaxKind::FRAGMENT_DEFINITION_KW),
+                        "INLINE_FRAGMENT" => parser.bump(SyntaxKind::INLINE_FRAGMENT_KW),
+                        "SCHEMA" => parser.bump(SyntaxKind::SCHEMA_KW),
+                        "SCALAR" => parser.bump(SyntaxKind::SCALAR_KW),
+                        "OBJECT" => parser.bump(SyntaxKind::OBJECT_KW),
+                        "FIELD_DEFINITION" => parser.bump(SyntaxKind::FIELD_DEFINITION_KW),
+                        "ARGUMENT_DEFINITION" => parser.bump(SyntaxKind::ARGUMENT_DEFINITION_KW),
+                        "INTERFACE" => parser.bump(SyntaxKind::INTERFACE_KW),
+                        "UNION" => parser.bump(SyntaxKind::UNION_KW),
+                        "ENUM" => parser.bump(SyntaxKind::ENUM_KW),
+                        "ENUM_VALUE" => parser.bump(SyntaxKind::ENUM_VALUE_KW),
+                        "INPUT_OBJECT" => parser.bump(SyntaxKind::INPUT_OBJECT_KW),
+                        "INPUT_FIELD_DEFINITION" => {
+                            parser.bump(SyntaxKind::INPUT_FIELD_DEFINITION_KW)
+                        }
+                        _ => todo!(),
+                    }
+                }
+                None => todo!(),
+            }
+            match parser.peek_data() {
+                Some(_) => directive_locations(parser, true),
+                _ => Ok(()),
             }
         }
         _ => {

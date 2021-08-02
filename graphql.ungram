@@ -262,10 +262,6 @@ DirectiveLocations =
   | DirectiveLocations '|' DirectiveLocation
 
 DirectiveLocation =
-  ExecutableDirectiveLocation
-  TypeSystemDirectiveLocation
-
-ExecutableDirectiveLocation =
   'QUERY'
   | 'MUTATION'
   | 'SUBSCRIPTION'
@@ -273,10 +269,8 @@ ExecutableDirectiveLocation =
   | 'FRAGMENT_DEFINITION'
   | 'FRAGMENT_SPREAD'
   | 'INLINE_FRAGMENT'
-
-TypeSystemDirectiveLocation =
-  'SCHEMA'
-  | 'scalar'
+  | 'SCHEMA'
+  | 'SCALAR'
   | 'OBJECT'
   | 'FIELD_DEFINITION'
   | 'ARGUMENT_DEFINITION'
