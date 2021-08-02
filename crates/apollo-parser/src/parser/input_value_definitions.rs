@@ -1,4 +1,4 @@
-use crate::{format_err, parse_name, Parser, SyntaxKind, TokenKind};
+use crate::{format_err, name, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#InputValueDefinition
 ///
@@ -6,7 +6,7 @@ use crate::{format_err, parse_name, Parser, SyntaxKind, TokenKind};
 /// InputValueDefinition
 ///     Description(opt) Name : Type DefaultValue(opt) Directives(const/opt)
 /// ```
-pub(crate) fn parse_input_value_definitions(
+pub(crate) fn input_value_definitions(
     parser: &mut Parser,
     is_input: bool,
 ) -> Result<(), crate::Error> {
@@ -18,7 +18,7 @@ pub(crate) fn parse_input_value_definitions(
         Some(TokenKind::Node) => {
             // TODO lrlna: use parse input value name function
             let guard = parser.start_node(SyntaxKind::INPUT_VALUE_DEFINITION);
-            parse_name(parser)?;
+            name(parser)?;
             match parser.peek() {
                 // Colon
                 Some(TokenKind::Colon) => {
@@ -31,7 +31,7 @@ pub(crate) fn parse_input_value_definitions(
                             match parser.peek() {
                                 Some(_) => {
                                     guard.finish_node();
-                                    parse_input_value_definitions(parser, true)
+                                    input_value_definitions(parser, true)
                                 }
                                 _ => Ok(()),
                             }
@@ -56,7 +56,7 @@ pub(crate) fn parse_input_value_definitions(
         }
         Some(TokenKind::Comma) => {
             parser.bump(SyntaxKind::COMMA);
-            parse_input_value_definitions(parser, is_input)
+            input_value_definitions(parser, is_input)
         }
         _ => {
             // if we already have an input, can proceed without returning an error

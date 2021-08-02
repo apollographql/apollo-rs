@@ -7,7 +7,7 @@ use crate::{Parser, SyntaxKind, TokenKind};
 /// Name
 ///     [_A-Za-z][_0-9A-Za-z]*/
 /// ```
-pub(crate) fn parse_name(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn name(parser: &mut Parser) -> Result<(), crate::Error> {
     let _guard = parser.start_node(SyntaxKind::NAME);
     match parser.peek() {
         Some(TokenKind::Node) => {

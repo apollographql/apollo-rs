@@ -9,24 +9,20 @@ pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxElementChildren, SyntaxNodeChildren, SyntaxToken};
 pub use syntax_tree::SyntaxTree;
 
+pub(crate) use directive::directive;
+pub(crate) use fragment::fragment;
+pub(crate) use input_value_definitions::input_value_definitions;
 pub(crate) use language::{GraphQLLanguage, SyntaxNode};
-pub(crate) use parse_directive::parse_directive;
-pub(crate) use parse_directive_locations::parse_directive_locations;
-pub(crate) use parse_fragment::parse_fragment;
-pub(crate) use parse_fragment_name::parse_fragment_name;
-pub(crate) use parse_input_value_definitions::parse_input_value_definitions;
-pub(crate) use parse_name::parse_name;
+pub(crate) use name::name;
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
 pub(crate) use token_text::TokenText;
 
+mod directive;
+mod fragment;
 mod generated;
+mod input_value_definitions;
 mod language;
-mod parse_directive;
-mod parse_directive_locations;
-mod parse_fragment;
-mod parse_fragment_name;
-mod parse_input_value_definitions;
-mod parse_name;
+mod name;
 mod syntax_tree;
 mod token_text;
 
@@ -74,10 +70,10 @@ impl Parser {
             match self.peek() {
                 None => break,
                 Some(TokenKind::Fragment) => {
-                    parse_fragment(&mut self).unwrap_or_else(|e| self.errors.push(e));
+                    fragment(&mut self).unwrap_or_else(|e| self.errors.push(e));
                 }
                 Some(TokenKind::Directive) => {
-                    parse_directive(&mut self).unwrap_or_else(|e| self.errors.push(e));
+                    directive(&mut self).unwrap_or_else(|e| self.errors.push(e));
                 }
                 Some(_) => break,
             }
