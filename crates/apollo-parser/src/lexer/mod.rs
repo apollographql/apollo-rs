@@ -88,9 +88,6 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
 
             match buf.as_str() {
                 "on" => Ok(Token::new(TokenKind::On, buf)),
-                "directive" => Ok(Token::new(TokenKind::Directive, buf)),
-                "fragment" => Ok(Token::new(TokenKind::Fragment, buf)),
-                "query" => Ok(Token::new(TokenKind::Query, buf)),
                 _ => Ok(Token::new(TokenKind::Node, buf)),
             }
         }

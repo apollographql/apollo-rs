@@ -6,7 +6,7 @@ use crate::{format_err, name, Parser, SyntaxKind, TokenKind};
 /// InputValueDefinition
 ///     Description(opt) Name : Type DefaultValue(opt) Directives(const/opt)
 /// ```
-pub(crate) fn input_value_definitions(
+pub(crate) fn input_value_definition(
     parser: &mut Parser,
     is_input: bool,
 ) -> Result<(), crate::Error> {
@@ -31,7 +31,7 @@ pub(crate) fn input_value_definitions(
                             match parser.peek() {
                                 Some(_) => {
                                     guard.finish_node();
-                                    input_value_definitions(parser, true)
+                                    input_value_definition(parser, true)
                                 }
                                 _ => Ok(()),
                             }
@@ -56,7 +56,7 @@ pub(crate) fn input_value_definitions(
         }
         Some(TokenKind::Comma) => {
             parser.bump(SyntaxKind::COMMA);
-            input_value_definitions(parser, is_input)
+            input_value_definition(parser, is_input)
         }
         _ => {
             // if we already have an input, can proceed without returning an error

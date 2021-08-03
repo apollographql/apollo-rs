@@ -9,20 +9,24 @@ pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxElementChildren, SyntaxNodeChildren, SyntaxToken};
 pub use syntax_tree::SyntaxTree;
 
-pub(crate) use directive::directive;
-pub(crate) use fragment::fragment;
-pub(crate) use input_value_definitions::input_value_definitions;
+pub(crate) use argument::argument;
+pub(crate) use directive::{directive, directive_definition};
+pub(crate) use fragment::fragment_definition;
+pub(crate) use input_value_definition::input_value_definition;
 pub(crate) use language::{GraphQLLanguage, SyntaxNode};
 pub(crate) use name::name;
+pub(crate) use schema::schema_definition;
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
 pub(crate) use token_text::TokenText;
 
+mod argument;
 mod directive;
 mod fragment;
 mod generated;
-mod input_value_definitions;
+mod input_value_definition;
 mod language;
 mod name;
+mod schema;
 mod syntax_tree;
 mod token_text;
 
@@ -67,15 +71,20 @@ impl Parser {
         let guard = self.start_node(SyntaxKind::DOCUMENT);
 
         loop {
-            match self.peek() {
+            match self.peek_data() {
                 None => break,
-                Some(TokenKind::Fragment) => {
-                    fragment(&mut self).unwrap_or_else(|e| self.errors.push(e));
-                }
-                Some(TokenKind::Directive) => {
-                    directive(&mut self).unwrap_or_else(|e| self.errors.push(e));
-                }
-                Some(_) => break,
+                Some(node) => match node.as_str() {
+                    "fragment" => {
+                        fragment_definition(&mut self).unwrap_or_else(|e| self.errors.push(e))
+                    }
+                    "directive" => {
+                        directive_definition(&mut self).unwrap_or_else(|e| self.errors.push(e))
+                    }
+                    "schema" => {
+                        schema_definition(&mut self).unwrap_or_else(|e| self.errors.push(e))
+                    }
+                    _ => break,
+                },
             }
         }
 

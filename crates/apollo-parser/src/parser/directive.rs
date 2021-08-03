@@ -1,4 +1,4 @@
-use crate::{input_value_definitions, name, Parser, SyntaxKind, TokenKind};
+use crate::{argument, input_value_definition, name, Parser, SyntaxKind, TokenKind};
 
 use crate::format_err;
 
@@ -8,7 +8,7 @@ use crate::format_err;
 /// DirectiveDefinition
 ///     Description(opt) directive @ Name ArgumentsDefinition(opt) on DirectiveLocations
 /// ```
-pub(crate) fn directive(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn directive_definition(parser: &mut Parser) -> Result<(), crate::Error> {
     let _guard = parser.start_node(SyntaxKind::DIRECTIVE_DEFINITION);
     // TODO lrlna: parse Description
     parser.bump(SyntaxKind::directive_KW);
@@ -30,7 +30,7 @@ pub(crate) fn directive(parser: &mut Parser) -> Result<(), crate::Error> {
     if let Some(TokenKind::LParen) = parser.peek() {
         let guard = parser.start_node(SyntaxKind::ARGUMENTS_DEFINITION);
         parser.bump(SyntaxKind::L_PAREN);
-        input_value_definitions(parser, false)?;
+        input_value_definition(parser, false)?;
         match parser.peek() {
             Some(TokenKind::RParen) => {
                 parser.bump(SyntaxKind::R_PAREN);
@@ -120,4 +120,49 @@ pub(crate) fn directive_locations(
             Ok(())
         }
     }
+}
+
+/// See: https://spec.graphql.org/June2018/#Directive
+///
+/// ```txt
+/// Directive
+///     @ Name Arguments
+/// ```
+pub(crate) fn directive(parser: &mut Parser) -> Result<(), crate::Error> {
+    let _guard = parser.start_node(SyntaxKind::DIRECTIVE);
+
+    match parser.peek() {
+        Some(TokenKind::At) => parser.bump(SyntaxKind::AT),
+        _ => {
+            return format_err!(
+                parser.peek_data().unwrap(),
+                "Expected directive @ name, got {}",
+                parser.peek_data().unwrap()
+            );
+        }
+    }
+
+    name(parser)?;
+
+    if let Some(TokenKind::LParen) = parser.peek() {
+        let guard = parser.start_node(SyntaxKind::ARGUMENTS);
+        parser.bump(SyntaxKind::L_PAREN);
+        argument(parser, false)?;
+        match parser.peek() {
+            Some(TokenKind::RParen) => {
+                parser.bump(SyntaxKind::R_PAREN);
+                guard.finish_node();
+            }
+            // missing a closing RParen
+            _ => {
+                return format_err!(
+                    parser.peek_data().unwrap(),
+                    "Expected closing ')', got {}",
+                    parser.peek_data().unwrap()
+                )
+            }
+        }
+    }
+
+    Ok(())
 }

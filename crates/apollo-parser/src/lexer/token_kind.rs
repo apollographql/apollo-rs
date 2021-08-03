@@ -16,9 +16,6 @@ pub enum TokenKind {
     LBrace,   // {
     Pipe,     // |
     RBrace,   // }
-    Fragment,
-    Directive,
-    Query,
     On,
     Eof,
 

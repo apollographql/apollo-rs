@@ -1,12 +1,12 @@
 use crate::{format_err, Parser, SyntaxKind, TokenKind};
 
-/// See: https://spec.graphql.org/June2018/#sec-Language.Fragments
+/// See: https://spec.graphql.org/June2018/#FragmentDefinition
 ///
 /// ```txt
 /// FragmentDefinition
 ///     fragment FragmentName TypeCondition Directives(opt) SelectionSet
 /// ```
-pub(crate) fn fragment(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn fragment_definition(parser: &mut Parser) -> Result<(), crate::Error> {
     let _guard = parser.start_node(SyntaxKind::FRAGMENT_DEFINITION);
     // TODO lrlna: parse description???
     parser.bump(SyntaxKind::fragment_KW);
