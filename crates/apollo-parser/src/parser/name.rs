@@ -38,3 +38,9 @@ fn is_start_char(c: char) -> bool {
 fn is_remainder_char(c: char) -> bool {
     matches!(c, '_' | 'A'..='Z' | 'a'..='z' | '0'..='9')
 }
+
+pub(crate) fn named_type(parser: &mut Parser) -> Result<(), crate::Error> {
+    let _guard = parser.start_node(SyntaxKind::NAMED_TYPE);
+    name(parser)?;
+    Ok(())
+}

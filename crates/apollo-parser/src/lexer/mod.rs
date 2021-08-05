@@ -159,9 +159,9 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
         '@' => Ok(Token::new(TokenKind::At, c.into())),
         '[' => Ok(Token::new(TokenKind::LBracket, c.into())),
         ']' => Ok(Token::new(TokenKind::RBracket, c.into())),
-        '{' => Ok(Token::new(TokenKind::LBrace, c.into())),
+        '{' => Ok(Token::new(TokenKind::LCurly, c.into())),
         '|' => Ok(Token::new(TokenKind::Pipe, c.into())),
-        '}' => Ok(Token::new(TokenKind::RBrace, c.into())),
+        '}' => Ok(Token::new(TokenKind::RCurly, c.into())),
         c => format_err!(c, "Unexpected character: {}", c),
     };
 

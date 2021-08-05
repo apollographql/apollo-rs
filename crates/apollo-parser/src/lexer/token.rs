@@ -50,12 +50,6 @@ impl fmt::Debug for Token {
             TokenKind::Dollar => {
                 write!(f, "DOLLAR@{}:{}", start, end)
             }
-            TokenKind::LParen => {
-                write!(f, "L_PAREN@{}:{}", start, end)
-            }
-            TokenKind::RParen => {
-                write!(f, "R_PAREN@{}:{}", start, end)
-            }
             TokenKind::Spread => {
                 write!(f, "SPREAD@{}:{}", start, end)
             }
@@ -71,20 +65,26 @@ impl fmt::Debug for Token {
             TokenKind::At => {
                 write!(f, "AT@{}:{}", start, end)
             }
+            TokenKind::LParen => {
+                write!(f, "L_PAREN@{}:{}", start, end)
+            }
+            TokenKind::RParen => {
+                write!(f, "R_PAREN@{}:{}", start, end)
+            }
             TokenKind::LBracket => {
                 write!(f, "L_BRACKET@{}:{}", start, end)
             }
             TokenKind::RBracket => {
                 write!(f, "R_BRACKET@{}:{}", start, end)
             }
-            TokenKind::LBrace => {
-                write!(f, "L_BRACE@{}:{}", start, end)
+            TokenKind::LCurly => {
+                write!(f, "L_CURLY@{}:{}", start, end)
+            }
+            TokenKind::RCurly => {
+                write!(f, "R_CURLY@{}:{}", start, end)
             }
             TokenKind::Pipe => {
                 write!(f, "PIPE@{}:{}", start, end)
-            }
-            TokenKind::RBrace => {
-                write!(f, "R_BRACE@{}:{}", start, end)
             }
             TokenKind::On => {
                 write!(f, "ON@{}:{}", start, end)

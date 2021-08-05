@@ -4,18 +4,18 @@
 pub enum TokenKind {
     Bang,     // !
     Dollar,   // $
-    LParen,   // (
-    RParen,   // )
     Spread,   // ...
     Comma,    // ,
     Colon,    // :
     Eq,       // =
     At,       // @
+    LParen,   // (
+    RParen,   // )
     LBracket, // [
     RBracket, // ]
-    LBrace,   // {
+    LCurly,   // {
+    RCurly,   // }
     Pipe,     // |
-    RBrace,   // }
     On,
     Eof,
 
