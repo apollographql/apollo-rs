@@ -166,3 +166,62 @@ pub(crate) fn directive(parser: &mut Parser) -> Result<(), crate::Error> {
 
     Ok(())
 }
+
+// TODO @lrlna: inlined collapsed AST should live in a 'fixtures' dir for ease of testing
+#[cfg(test)]
+mod test {
+    use super::*;
+    use indoc::indoc;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn smoke_directive_definition() {
+        let input = "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION";
+        let parser = Parser::new(input);
+
+        println!("{:?}", parser.parse());
+    }
+
+    // TODO @lrlna: these tests need to check for indentation as part of the
+    // output, not just the nodes of the tree
+    #[test]
+    fn it_parses_directive_definition() {
+        let input = "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION";
+        let parser = Parser::new(input);
+        let output = parser.parse();
+
+        assert!(output.errors().is_empty());
+        assert_eq!(
+            format!("{:?}", output),
+            indoc! { r#"
+            - DOCUMENT@0..67
+            - DIRECTIVE_DEFINITION@0..67
+            - directive_KW@0..9 "directive"
+            - AT@9..10 "@"
+            - NAME@10..17
+            - IDENT@10..17 "example"
+            - ARGUMENTS_DEFINITION@17..51
+            - L_PAREN@17..18 "("
+            - INPUT_VALUE_DEFINITION@18..33
+            - NAME@18..25
+            - IDENT@18..25 "isTreat"
+            - COLON@25..26 ":"
+            - TYPE@26..33 "Boolean"
+            - COMMA@33..34 ","
+            - INPUT_VALUE_DEFINITION@34..50
+            - NAME@34..43
+            - IDENT@34..43 "treatKind"
+            - COLON@43..44 ":"
+            - TYPE@44..50 "String"
+            - R_PAREN@50..51 ")"
+            - on_KW@51..53 "on"
+            - DIRECTIVE_LOCATIONS@53..67
+            - DIRECTIVE_LOCATION@53..58
+            - FIELD_KW@53..58 "FIELD"
+            - PIPE@58..59 "|"
+            - DIRECTIVE_LOCATION@59..67
+            - QUERY_KW@59..67 "MUTATION"
+            "# }
+        );
+    }
+}

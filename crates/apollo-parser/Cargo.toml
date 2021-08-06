@@ -9,3 +9,7 @@ edition = "2018"
 
 [dependencies]
 rowan = "0.13.0-pre.7"
+
+[dev-dependencies]
+pretty_assertions = "0.7.1"
+indoc = "1.0.3"
