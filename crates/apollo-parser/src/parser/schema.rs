@@ -10,11 +10,24 @@ pub(crate) fn schema_definition(parser: &mut Parser) -> Result<(), crate::Error>
     let _guard = parser.start_node(SyntaxKind::SCHEMA_DEFINITION);
 
     parser.bump(SyntaxKind::schema_KW);
-    directive(parser)?;
+
+    if let Some(TokenKind::LParen) = parser.peek() {
+        parser.bump(SyntaxKind::L_PAREN);
+        directive(parser)?;
+        if let Some(TokenKind::RParen) = parser.peek() {
+            parser.bump(SyntaxKind::R_PAREN);
+        } else {
+            return format_err!(
+                parser.peek_data().unwrap(),
+                "Expected closing ')' parenthesis, got {}",
+                parser.peek_data().unwrap()
+            );
+        }
+    }
 
     if let Some(TokenKind::LCurly) = parser.peek() {
         parser.bump(SyntaxKind::L_CURLY);
-        operation_type_definition(parser)?;
+        operation_type_definition(parser, false)?;
         if let Some(TokenKind::RCurly) = parser.peek() {
             parser.bump(SyntaxKind::R_CURLY);
         } else {
@@ -33,4 +46,17 @@ pub(crate) fn schema_definition(parser: &mut Parser) -> Result<(), crate::Error>
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn smoke_schema_definition() {
+        let input = "schema { query: MyQueryRootType mutation: MyMutationRootType }";
+        let parser = Parser::new(input);
+
+        println!("{:?}", parser.parse());
+    }
 }

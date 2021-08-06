@@ -152,7 +152,7 @@ mod test {
     }
 
     #[test]
-    fn smoke_directive() {
+    fn smoke_directive_definition() {
         let input = "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION";
         let parser = Parser::new(input);
 
@@ -160,7 +160,7 @@ mod test {
     }
 
     #[test]
-    fn smoke_directive_with_errors() {
+    fn smoke_directive_definition_with_errors() {
         let input =
             "directive ø @example(isTreat: ø Boolean, treatKind: String) on FIELD | MUTATION";
         let parser = Parser::new(input);
