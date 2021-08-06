@@ -64,9 +64,13 @@ pub(crate) fn operation_type(parser: &mut Parser) -> Result<(), crate::Error> {
             "mutation" => parser.bump(SyntaxKind::mutation_KW),
             _ => {
                 return format_err!(
-                    parser.peek_data().unwrap(),
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data")),
                     "Operation Type must be either 'mutation', 'query' or 'subscription', got {}",
-                    parser.peek_data().unwrap()
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data"))
                 )
             }
         }

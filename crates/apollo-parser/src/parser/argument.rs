@@ -31,18 +31,26 @@ pub(crate) fn argument(parser: &mut Parser, is_argument: bool) -> Result<(), cra
                         }
                         _ => {
                             return format_err!(
-                                parser.peek_data().unwrap(),
+                                parser
+                                    .peek_data()
+                                    .unwrap_or_else(|| String::from("no further data")),
                                 "Expected Argument to have a Value, got {}",
-                                parser.peek_data().unwrap()
+                                parser
+                                    .peek_data()
+                                    .unwrap_or_else(|| String::from("no further data"))
                             )
                         }
                     }
                 }
                 _ => {
                     return format_err!(
-                        parser.peek_data().unwrap(),
+                        parser
+                            .peek_data()
+                            .unwrap_or_else(|| String::from("no further data")),
                         "Expected Argument to have a Name, got {}",
-                        parser.peek_data().unwrap()
+                        parser
+                            .peek_data()
+                            .unwrap_or_else(|| String::from("no further data"))
                     )
                 }
             }
@@ -58,9 +66,13 @@ pub(crate) fn argument(parser: &mut Parser, is_argument: bool) -> Result<(), cra
             } else {
                 // if there is no input, and a LPAREN was supplied, send an error
                 return format_err!(
-                    parser.peek_data().unwrap(),
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data")),
                     "Expected to have an Argument, got {}",
-                    parser.peek_data().unwrap()
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data"))
                 );
             }
         }

@@ -30,7 +30,9 @@ pub(crate) fn fragment_name(parser: &mut Parser) -> Result<(), crate::Error> {
             if parser.peek_data().unwrap() == "on" {
                 // fragment name cannot have "on" as part of its definition
                 return format_err!(
-                    parser.peek_data().unwrap(),
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data")),
                     "Fragment Name cannot have 'on' as part of its definition"
                 );
             }

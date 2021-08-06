@@ -39,9 +39,13 @@ pub(crate) fn directive_definition(parser: &mut Parser) -> Result<(), crate::Err
             // missing a closing RParen
             _ => {
                 return format_err!(
-                    parser.peek_data().unwrap(),
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data")),
                     "Expected closing ')', got {}",
-                    parser.peek_data().unwrap()
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data"))
                 )
             }
         }
@@ -52,9 +56,13 @@ pub(crate) fn directive_definition(parser: &mut Parser) -> Result<(), crate::Err
         // missing directive locations in directive definition
         _ => {
             return format_err!(
-                parser.peek_data().unwrap(),
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
                 "Expected to have Directive locations in a directive definition, got {}",
-                parser.peek_data().unwrap()
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data"))
             )
         }
     }
@@ -112,9 +120,13 @@ pub(crate) fn directive_locations(
             if !is_location {
                 // missing directive locations in directive definition
                 return format_err!(
-                    parser.peek_data().unwrap(),
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data")),
                     "Expected to have Directive locations in a directive definition, got {}",
-                    parser.peek_data().unwrap()
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data"))
                 );
             }
             Ok(())
@@ -156,9 +168,13 @@ pub(crate) fn directive(parser: &mut Parser) -> Result<(), crate::Error> {
             // missing a closing RParen
             _ => {
                 return format_err!(
-                    parser.peek_data().unwrap(),
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data")),
                     "Expected closing ')', got {}",
-                    parser.peek_data().unwrap()
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data"))
                 )
             }
         }
