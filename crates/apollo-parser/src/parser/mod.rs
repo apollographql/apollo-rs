@@ -15,7 +15,7 @@ pub(crate) use fragment::fragment_definition;
 pub(crate) use input_value_definition::input_value_definition;
 pub(crate) use language::{GraphQLLanguage, SyntaxNode};
 pub(crate) use name::{name, named_type};
-pub(crate) use operation::operation_type_definition;
+pub(crate) use operation::{operation_definition, operation_type_definition};
 pub(crate) use schema::schema_definition;
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
 pub(crate) use token_text::TokenText;
@@ -84,6 +84,12 @@ impl Parser {
                     }
                     "schema" => {
                         schema_definition(&mut self).unwrap_or_else(|e| self.errors.push(e))
+                    }
+                    // TODO @lrlna: this currently does not account for the fact
+                    // that an operation definition may be written as a query
+                    // shorthand, i.e. without a `query` keyword.
+                    "query" | "mutation" | "subscription" => {
+                        operation_definition(&mut self).unwrap_or_else(|e| self.errors.push(e))
                     }
                     _ => break,
                 },
