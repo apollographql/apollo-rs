@@ -19,6 +19,7 @@ pub(crate) use operation::{operation_definition, operation_type_definition};
 pub(crate) use schema::schema_definition;
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
 pub(crate) use token_text::TokenText;
+pub(crate) use variable::variable_definition;
 
 mod argument;
 mod directive;
@@ -31,6 +32,7 @@ mod operation;
 mod schema;
 mod syntax_tree;
 mod token_text;
+mod variable;
 
 /// Parse text into an AST.
 #[derive(Debug)]

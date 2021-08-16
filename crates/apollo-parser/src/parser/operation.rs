@@ -1,4 +1,4 @@
-use crate::{format_err, name, named_type, Parser, SyntaxKind, TokenKind};
+use crate::{format_err, name, named_type, variable_definition, Parser, SyntaxKind, TokenKind};
 
 /// OperationTypeDefinition is used in a SchemaDefinition. Not to be confused
 /// with OperationDefinition.
@@ -65,9 +65,13 @@ pub(crate) fn operation_definition(parser: &mut Parser) -> Result<(), crate::Err
     }
 
     if let Some(TokenKind::LParen) = parser.peek() {
+        parser.bump(SyntaxKind::L_PAREN);
         match parser.peek() {
             // variable definition
-            Some(TokenKind::Dollar) => todo!(),
+            Some(TokenKind::Dollar) => {
+                let _guard = parser.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
+                variable_definition(parser, false)?;
+            }
             // directive definition
             Some(TokenKind::At) => todo!(),
             // error: expected a vairable definition or a directive name to follow an opening brace

@@ -1,22 +1,19 @@
 use crate::{format_err, name, Parser, SyntaxKind, TokenKind};
 
-/// See: https://spec.graphql.org/June2018/#InputValueDefinition
+/// See: https://spec.graphql.org/June2018/#VariableDefinition
 ///
 /// ```txt
-/// InputValueDefinition
-///     Description(opt) Name : Type DefaultValue(opt) Directives(const/opt)
+/// VariableDefinition
+///     Variable : Type DefaultValue(opt)
 /// ```
-pub(crate) fn input_value_definition(
+pub(crate) fn variable_definition(
     parser: &mut Parser,
-    is_input: bool,
+    is_variable: bool,
 ) -> Result<(), crate::Error> {
-    // TODO @lrlna: parse description
-    // TODO @lrlna: parse default value
-    // TODO @lrlna: parse directives
-    if let Some(TokenKind::Node) = parser.peek() {
-        // TODO @lrlna: use parse input value name function
-        let guard = parser.start_node(SyntaxKind::INPUT_VALUE_DEFINITION);
-        name(parser)?;
+    // TODO @lrlna: parse optional default values
+    if let Some(TokenKind::Dollar) = parser.peek() {
+        let guard = parser.start_node(SyntaxKind::VARIABLE_DEFINITION);
+        variable(parser)?;
         if let Some(TokenKind::Colon) = parser.peek() {
             parser.bump(SyntaxKind::COLON);
             if let Some(TokenKind::Node) = parser.peek() {
@@ -24,36 +21,49 @@ pub(crate) fn input_value_definition(
                 parser.bump(SyntaxKind::TYPE);
                 if parser.peek().is_some() {
                     guard.finish_node();
-                    return input_value_definition(parser, true);
+                    return variable_definition(parser, true);
                 }
                 return Ok(());
             }
             return format_err!(
                 parser.peek_data().unwrap(),
-                "Expected InputValue definition to have a Type, got {}",
+                "Expected Variable Definition to have a Type, got {}",
                 parser.peek_data().unwrap()
             );
         } else {
             return format_err!(
                 parser.peek_data().unwrap(),
-                "Expected InputValue definition to have a Name, got {}",
+                "Expected Variable Definition to have a Name, got {}",
                 parser.peek_data().unwrap()
             );
         }
     }
     if let Some(TokenKind::Comma) = parser.peek() {
         parser.bump(SyntaxKind::COMMA);
-        return input_value_definition(parser, is_input);
+        return variable_definition(parser, is_variable);
     }
-    // if we already have an input, can proceed without returning an error
-    if is_input {
+    // if we already have a variable , can proceed without returning an error
+    if is_variable {
         Ok(())
     } else {
         // if there is no input, and a LPAREN was supplied, send an error
         return format_err!(
             parser.peek_data().unwrap(),
-            "Expected to have an InputValue definition, got {}",
+            "Expected to have an Variable Definition, got {}",
             parser.peek_data().unwrap()
         );
     }
+}
+
+/// See: https://spec.graphql.org/June2018/#Variable
+///
+/// ```txt
+/// Variable
+///     $ Name
+/// ```
+pub(crate) fn variable(parser: &mut Parser) -> Result<(), crate::Error> {
+    let _guard = parser.start_node(SyntaxKind::VARIABLE);
+    parser.bump(SyntaxKind::DOLLAR);
+    name(parser)?;
+    Ok(())
 }
