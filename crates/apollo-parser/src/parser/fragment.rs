@@ -8,7 +8,7 @@ use crate::{format_err, Parser, SyntaxKind, TokenKind};
 /// ```
 pub(crate) fn fragment_definition(parser: &mut Parser) -> Result<(), crate::Error> {
     let _guard = parser.start_node(SyntaxKind::FRAGMENT_DEFINITION);
-    // TODO lrlna: parse description???
+    // TODO @lrlna: parse description???
     parser.bump(SyntaxKind::fragment_KW);
     // parser.parse_whitespace();
     fragment_name(parser)?;
@@ -36,7 +36,7 @@ pub(crate) fn fragment_name(parser: &mut Parser) -> Result<(), crate::Error> {
                     "Fragment Name cannot have 'on' as part of its definition"
                 );
             }
-            // TODO lrlna: parse fragment name function
+            // TODO @lrlna: parse fragment name function
             parser.bump(SyntaxKind::NAME);
             Ok(())
         }

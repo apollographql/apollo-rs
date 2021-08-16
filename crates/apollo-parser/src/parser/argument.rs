@@ -19,7 +19,7 @@ pub(crate) fn argument(parser: &mut Parser, is_argument: bool) -> Result<(), cra
                     match parser.peek() {
                         // Type
                         Some(TokenKind::Node) => {
-                            // TODO lrlna: use value type function
+                            // TODO @lrlna: use value type function
                             parser.bump(SyntaxKind::VALUE);
                             match parser.peek() {
                                 Some(_) => {

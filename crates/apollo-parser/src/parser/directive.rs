@@ -10,7 +10,7 @@ use crate::format_err;
 /// ```
 pub(crate) fn directive_definition(parser: &mut Parser) -> Result<(), crate::Error> {
     let _guard = parser.start_node(SyntaxKind::DIRECTIVE_DEFINITION);
-    // TODO lrlna: parse Description
+    // TODO @lrlna: parse Description
     parser.bump(SyntaxKind::directive_KW);
     // parser.parse_whitespace();
 

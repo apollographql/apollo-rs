@@ -252,7 +252,7 @@ fn extract_enums(ast: &mut AstSrc) {
 }
 
 fn extract_struct_traits(ast: &mut AstSrc) {
-    // TODO lrlna: add common accessor traits here.
+    // TODO @lrlna: add common accessor traits here.
     let traits: &[(&str, &[&str])] = &[];
 
     for node in &mut ast.nodes {

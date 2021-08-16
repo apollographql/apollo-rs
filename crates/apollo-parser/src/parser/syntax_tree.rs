@@ -49,7 +49,7 @@ impl fmt::Debug for SyntaxTree {
             }
         }
 
-        // TODO lrlna: needs a more elegant way of formatting Debug of Errors.
+        // TODO @lrlna: needs a more elegant way of formatting Debug of Errors.
         // Perhaps a separate struct with its own Debug implementation.
         fn print_err(f: &mut fmt::Formatter<'_>, errors: Vec<Error>) -> fmt::Result {
             for err in errors {

@@ -12,7 +12,7 @@ pub(crate) fn name(parser: &mut Parser) -> Result<(), crate::Error> {
     match parser.peek() {
         Some(TokenKind::Node) => {
             let data = parser.peek_data().unwrap();
-            // TODO lrlna: remove assert as this panics, and we want to collect errors
+            // TODO @lrlna: remove assert as this panics, and we want to collect errors
             assert!(data.starts_with(is_start_char));
             if data.len() >= 2 {
                 assert!(data[1..].chars().all(is_remainder_char));
