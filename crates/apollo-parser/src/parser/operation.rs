@@ -1,4 +1,4 @@
-use crate::parser::{directive, name, variable};
+use crate::parser::{directive, name, selection, variable};
 use crate::{format_err, Parser, SyntaxKind, TokenKind};
 
 /// OperationTypeDefinition is used in a SchemaDefinition. Not to be confused
@@ -81,7 +81,9 @@ pub(crate) fn operation_definition(parser: &mut Parser) -> Result<(), crate::Err
         directive::directives(parser)?;
     }
     // TODO @lrlna: parse SelectionSet
-    if let Some(TokenKind::LCurly) = parser.peek() {}
+    if let Some(TokenKind::LCurly) = parser.peek() {
+        selection::selection_set(parser)?;
+    }
     Ok(())
 }
 
@@ -118,8 +120,6 @@ pub(crate) fn operation_type(parser: &mut Parser) -> Result<(), crate::Error> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use indoc::indoc;
-    use pretty_assertions::assert_eq;
 
     #[test]
     fn smoke_directive_definition() {

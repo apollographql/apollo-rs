@@ -22,6 +22,7 @@ mod language;
 mod name;
 mod operation;
 mod schema;
+mod selection;
 mod syntax_tree;
 mod token_text;
 mod variable;
@@ -41,7 +42,7 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(input: &str) -> Self {
-        let lexer = Lexer::new(&input);
+        let lexer = Lexer::new(input);
 
         let mut tokens = Vec::new();
         let mut errors = Vec::new();
