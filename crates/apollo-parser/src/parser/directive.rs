@@ -1,6 +1,5 @@
-use crate::{argument, input_value_definition, name, Parser, SyntaxKind, TokenKind};
-
-use crate::format_err;
+use crate::parser::{argument, input_value, name};
+use crate::{format_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#DirectiveDefinition
 ///
@@ -25,12 +24,12 @@ pub(crate) fn directive_definition(parser: &mut Parser) -> Result<(), crate::Err
             );
         }
     }
-    name(parser)?;
+    name::name(parser)?;
 
     if let Some(TokenKind::LParen) = parser.peek() {
         let guard = parser.start_node(SyntaxKind::ARGUMENTS_DEFINITION);
         parser.bump(SyntaxKind::L_PAREN);
-        input_value_definition(parser, false)?;
+        input_value::input_value_definition(parser, false)?;
         match parser.peek() {
             Some(TokenKind::RParen) => {
                 parser.bump(SyntaxKind::R_PAREN);
@@ -154,12 +153,12 @@ pub(crate) fn directive(parser: &mut Parser) -> Result<(), crate::Error> {
         }
     }
 
-    name(parser)?;
+    name::name(parser)?;
 
     if let Some(TokenKind::LParen) = parser.peek() {
         let guard = parser.start_node(SyntaxKind::ARGUMENTS);
         parser.bump(SyntaxKind::L_PAREN);
-        argument(parser, false)?;
+        argument::argument(parser, false)?;
         match parser.peek() {
             Some(TokenKind::RParen) => {
                 parser.bump(SyntaxKind::R_PAREN);
@@ -180,6 +179,14 @@ pub(crate) fn directive(parser: &mut Parser) -> Result<(), crate::Error> {
         }
     }
 
+    Ok(())
+}
+
+pub(crate) fn directives(parser: &mut Parser) -> Result<(), crate::Error> {
+    let _guard = parser.start_node(SyntaxKind::DIRECTIVES);
+    while let Some(TokenKind::At) = parser.peek() {
+        directive(parser)?;
+    }
     Ok(())
 }
 

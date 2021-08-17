@@ -1,4 +1,5 @@
-use crate::{directive, format_err, operation_type_definition, Parser, SyntaxKind, TokenKind};
+use crate::parser::{directive, operation};
+use crate::{format_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#SchemaDefinition
 ///
@@ -13,7 +14,7 @@ pub(crate) fn schema_definition(parser: &mut Parser) -> Result<(), crate::Error>
 
     if let Some(TokenKind::LParen) = parser.peek() {
         parser.bump(SyntaxKind::L_PAREN);
-        directive(parser)?;
+        directive::directive(parser)?;
         if let Some(TokenKind::RParen) = parser.peek() {
             parser.bump(SyntaxKind::R_PAREN);
         } else {
@@ -27,7 +28,7 @@ pub(crate) fn schema_definition(parser: &mut Parser) -> Result<(), crate::Error>
 
     if let Some(TokenKind::LCurly) = parser.peek() {
         parser.bump(SyntaxKind::L_CURLY);
-        operation_type_definition(parser, false)?;
+        operation::operation_type_definition(parser, false)?;
         if let Some(TokenKind::RCurly) = parser.peek() {
             parser.bump(SyntaxKind::R_CURLY);
         } else {

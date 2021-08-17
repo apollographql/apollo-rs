@@ -1,4 +1,4 @@
-use crate::{format_err, name, Parser, SyntaxKind, TokenKind};
+use crate::{format_err, parser::name, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#Argument
 ///
@@ -11,7 +11,7 @@ pub(crate) fn argument(parser: &mut Parser, is_argument: bool) -> Result<(), cra
         // Name
         Some(TokenKind::Node) => {
             let guard = parser.start_node(SyntaxKind::ARGUMENT);
-            name(parser)?;
+            name::name(parser)?;
             match parser.peek() {
                 // Colon
                 Some(TokenKind::Colon) => {

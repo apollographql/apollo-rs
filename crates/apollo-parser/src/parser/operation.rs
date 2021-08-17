@@ -1,4 +1,5 @@
-use crate::{format_err, name, named_type, variable_definition, Parser, SyntaxKind, TokenKind};
+use crate::parser::{directive, name, variable};
+use crate::{format_err, Parser, SyntaxKind, TokenKind};
 
 /// OperationTypeDefinition is used in a SchemaDefinition. Not to be confused
 /// with OperationDefinition.
@@ -23,7 +24,7 @@ pub(crate) fn operation_type_definition(
         operation_type(parser)?;
         if let Some(TokenKind::Colon) = parser.peek() {
             parser.bump(SyntaxKind::COLON);
-            named_type(parser)?;
+            name::named_type(parser)?;
             if parser.peek().is_some() {
                 guard.finish_node();
                 return operation_type_definition(parser, true);
@@ -61,24 +62,25 @@ pub(crate) fn operation_definition(parser: &mut Parser) -> Result<(), crate::Err
     let _guard = parser.start_node(SyntaxKind::OPERATION_DEFINITION);
     operation_type(parser)?;
     if let Some(TokenKind::Node) = parser.peek() {
-        name(parser)?;
+        name::name(parser)?;
     }
 
     if let Some(TokenKind::LParen) = parser.peek() {
+        let guard = parser.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
         parser.bump(SyntaxKind::L_PAREN);
-        match parser.peek() {
-            // variable definition
-            Some(TokenKind::Dollar) => {
-                let _guard = parser.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
-                variable_definition(parser, false)?;
-            }
-            // directive definition
-            Some(TokenKind::At) => todo!(),
-            // error: expected a vairable definition or a directive name to follow an opening brace
-            _ => todo!(),
+        if let Some(TokenKind::Dollar) = parser.peek() {
+            variable::variable_definition(parser, false)?;
         }
+        if let Some(TokenKind::RParen) = parser.peek() {
+            parser.bump(SyntaxKind::R_PAREN);
+            guard.finish_node();
+        }
+        // TODO @lrlna error: expected a variable definition to follow an opening brace
     }
-    // this is a selection set
+    if let Some(TokenKind::At) = parser.peek() {
+        directive::directives(parser)?;
+    }
+    // TODO @lrlna: parse SelectionSet
     if let Some(TokenKind::LCurly) = parser.peek() {}
     Ok(())
 }
@@ -111,4 +113,19 @@ pub(crate) fn operation_type(parser: &mut Parser) -> Result<(), crate::Error> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use indoc::indoc;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn smoke_directive_definition() {
+        let input = "query myQuery($var: Boolean, $variable: String) @example(reason: String, isTreat: Boolean){}";
+        let parser = Parser::new(input);
+
+        println!("{:?}", parser.parse());
+    }
 }

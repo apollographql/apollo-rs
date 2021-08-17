@@ -1,4 +1,4 @@
-use crate::{format_err, name, Parser, SyntaxKind, TokenKind};
+use crate::{format_err, parser::name, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#VariableDefinition
 ///
@@ -64,6 +64,6 @@ pub(crate) fn variable_definition(
 pub(crate) fn variable(parser: &mut Parser) -> Result<(), crate::Error> {
     let _guard = parser.start_node(SyntaxKind::VARIABLE);
     parser.bump(SyntaxKind::DOLLAR);
-    name(parser)?;
+    name::name(parser)?;
     Ok(())
 }
