@@ -120,12 +120,107 @@ pub(crate) fn operation_type(parser: &mut Parser) -> Result<(), crate::Error> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use indoc::indoc;
+    use pretty_assertions::assert_eq;
 
     #[test]
-    fn smoke_directive_definition() {
-        let input = "query myQuery($var: Boolean, $variable: String) @example(reason: String, isTreat: Boolean){ animal: cat }";
+    fn smoke_operation_definition() {
+        let input = "query myQuery { animal: cat dog { panda { anotherCat @deprecated } } lion }";
         let parser = Parser::new(input);
 
         println!("{:?}", parser.parse());
+    }
+
+    #[test]
+    fn it_parses_operation_definition() {
+        let input = "query myQuery($var: Boolean, $variable: String) @example(reason: String, isTreat: Boolean) { animal: cat dog { panda { anotherCat @deprecated } } lion }";
+        let parser = Parser::new(input);
+        let output = parser.parse();
+
+        assert!(output.errors().is_empty());
+        assert_eq!(
+            format!("{:?}", output),
+            indoc! { r#"
+            - DOCUMENT@0..131
+            - OPERATION_DEFINITION@0..131
+            - OPERATION_TYPE@0..5
+            - query_KW@0..5 "query"
+            - NAME@5..12
+            - IDENT@5..12 "myQuery"
+            - VARIABLE_DEFINITIONS@12..43
+            - L_PAREN@12..13 "("
+            - VARIABLE_DEFINITION@13..25
+            - VARIABLE@13..17
+            - DOLLAR@13..14 "$"
+            - NAME@14..17
+            - IDENT@14..17 "var"
+            - COLON@17..18 ":"
+            - TYPE@18..25 "Boolean"
+            - COMMA@25..26 ","
+            - VARIABLE_DEFINITION@26..42
+            - VARIABLE@26..35
+            - DOLLAR@26..27 "$"
+            - NAME@27..35
+            - IDENT@27..35 "variable"
+            - COLON@35..36 ":"
+            - TYPE@36..42 "String"
+            - R_PAREN@42..43 ")"
+            - DIRECTIVES@43..82
+            - DIRECTIVE@43..82
+            - AT@43..44 "@"
+            - NAME@44..51
+            - IDENT@44..51 "example"
+            - ARGUMENTS@51..82
+            - L_PAREN@51..52 "("
+            - ARGUMENT@52..65
+            - NAME@52..58
+            - IDENT@52..58 "reason"
+            - COLON@58..59 ":"
+            - VALUE@59..65 "String"
+            - COMMA@65..66 ","
+            - ARGUMENT@66..81
+            - NAME@66..73
+            - IDENT@66..73 "isTreat"
+            - COLON@73..74 ":"
+            - VALUE@74..81 "Boolean"
+            - R_PAREN@81..82 ")"
+            - SELECTION_SET@82..131
+            - L_CURLY@82..83 "{"
+            - SELECTION@83..130
+            - FIELD@83..93
+            - ALIAS@83..90
+            - NAME@83..89
+            - IDENT@83..89 "animal"
+            - COLON@89..90 ":"
+            - NAME@90..93
+            - IDENT@90..93 "cat"
+            - FIELD@93..126
+            - NAME@93..96
+            - IDENT@93..96 "dog"
+            - SELECTION_SET@96..126
+            - L_CURLY@96..97 "{"
+            - SELECTION@97..125
+            - FIELD@97..125
+            - NAME@97..102
+            - IDENT@97..102 "panda"
+            - SELECTION_SET@102..125
+            - L_CURLY@102..103 "{"
+            - SELECTION@103..124
+            - FIELD@103..124
+            - NAME@103..113
+            - IDENT@103..113 "anotherCat"
+            - DIRECTIVES@113..124
+            - DIRECTIVE@113..124
+            - AT@113..114 "@"
+            - NAME@114..124
+            - IDENT@114..124 "deprecated"
+            - R_CURLY@124..125 "}"
+            - R_CURLY@125..126 "}"
+            - FIELD@126..130
+            - NAME@126..130
+            - IDENT@126..130 "lion"
+            - R_CURLY@130..131 "}"
+            "# }
+        )
     }
 }

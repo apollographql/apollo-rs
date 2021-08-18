@@ -78,3 +78,34 @@ pub(crate) fn argument(parser: &mut Parser, is_argument: bool) -> Result<(), cra
         }
     }
 }
+
+/// See: https://spec.graphql.org/June2018/#Arguments
+///
+/// ```txt
+/// Arguments
+///    ( Argument(list) )
+/// ```
+pub(crate) fn arguments(parser: &mut Parser) -> Result<(), crate::Error> {
+    let guard = parser.start_node(SyntaxKind::ARGUMENTS);
+    parser.bump(SyntaxKind::L_PAREN);
+    argument(parser, false)?;
+    match parser.peek() {
+        Some(TokenKind::RParen) => {
+            parser.bump(SyntaxKind::R_PAREN);
+            guard.finish_node();
+        }
+        // missing a closing RParen
+        _ => {
+            return format_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected closing ')', got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data"))
+            )
+        }
+    }
+    Ok(())
+}

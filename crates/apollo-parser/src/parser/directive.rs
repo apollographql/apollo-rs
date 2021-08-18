@@ -156,27 +156,7 @@ pub(crate) fn directive(parser: &mut Parser) -> Result<(), crate::Error> {
     name::name(parser)?;
 
     if let Some(TokenKind::LParen) = parser.peek() {
-        let guard = parser.start_node(SyntaxKind::ARGUMENTS);
-        parser.bump(SyntaxKind::L_PAREN);
-        argument::argument(parser, false)?;
-        match parser.peek() {
-            Some(TokenKind::RParen) => {
-                parser.bump(SyntaxKind::R_PAREN);
-                guard.finish_node();
-            }
-            // missing a closing RParen
-            _ => {
-                return format_err!(
-                    parser
-                        .peek_data()
-                        .unwrap_or_else(|| String::from("no further data")),
-                    "Expected closing ')', got {}",
-                    parser
-                        .peek_data()
-                        .unwrap_or_else(|| String::from("no further data"))
-                )
-            }
-        }
+        argument::arguments(parser)?
     }
 
     Ok(())

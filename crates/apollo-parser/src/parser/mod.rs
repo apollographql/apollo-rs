@@ -82,7 +82,7 @@ impl Parser {
                     // TODO @lrlna: this currently does not account for the fact
                     // that an operation definition may be written as a query
                     // shorthand, i.e. without a `query` keyword.
-                    "query" | "mutation" | "subscription" => {
+                    "query" | "mutation" | "subscription" | "{" => {
                         operation::operation_definition(&mut self)
                             .unwrap_or_else(|e| self.errors.push(e))
                     }
@@ -111,6 +111,12 @@ impl Parser {
 
     pub(crate) fn peek(&self) -> Option<TokenKind> {
         self.tokens.last().map(|token| token.kind())
+    }
+
+    pub(crate) fn peek_n(&self, n: usize) -> Option<TokenKind> {
+        self.tokens
+            .get(self.tokens.len() - n)
+            .map(|token| token.kind())
     }
 
     pub(crate) fn peek_data(&self) -> Option<String> {
