@@ -123,7 +123,7 @@ mod test {
 
     #[test]
     fn smoke_directive_definition() {
-        let input = "query myQuery($var: Boolean, $variable: String) @example(reason: String, isTreat: Boolean){}";
+        let input = "query myQuery($var: Boolean, $variable: String) @example(reason: String, isTreat: Boolean){ animal: cat }";
         let parser = Parser::new(input);
 
         println!("{:?}", parser.parse());

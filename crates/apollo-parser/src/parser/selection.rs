@@ -1,3 +1,4 @@
+use crate::parser::field;
 use crate::{format_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#SelectionSet
@@ -33,10 +34,7 @@ pub(crate) fn selection(parser: &mut Parser) -> Result<(), crate::Error> {
                 // framgent::fragment_spread(parser)?;
             }
         }
-        Some(TokenKind::Node) => {
-            todo!();
-            // field::field(parser)?;
-        }
+        Some(TokenKind::Node) => field::field(parser)?,
         _ => {
             return format_err!(
                 parser
@@ -49,4 +47,6 @@ pub(crate) fn selection(parser: &mut Parser) -> Result<(), crate::Error> {
             )
         }
     }
+
+    Ok(())
 }

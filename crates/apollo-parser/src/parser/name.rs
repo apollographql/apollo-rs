@@ -31,16 +31,35 @@ pub(crate) fn name(parser: &mut Parser) -> Result<(), crate::Error> {
     }
 }
 
+/// See: https://spec.graphql.org/June2018/#NamedType
+///
+/// ```txt
+/// NamedType
+///     Name
+/// ```
+pub(crate) fn named_type(parser: &mut Parser) -> Result<(), crate::Error> {
+    let _guard = parser.start_node(SyntaxKind::NAMED_TYPE);
+    name(parser)?;
+    Ok(())
+}
+
+/// See: https://spec.graphql.org/June2018/#Alias
+///
+/// ```txt
+/// Alias
+///     Name :
+/// ```
+pub(crate) fn alias(parser: &mut Parser) -> Result<(), crate::Error> {
+    let _guard = parser.start_node(SyntaxKind::ALIAS);
+    name(parser)?;
+    parser.bump(SyntaxKind::COLON);
+    Ok(())
+}
+
 fn is_start_char(c: char) -> bool {
     matches!(c, '_' | 'A'..='Z' | 'a'..='z')
 }
 
 fn is_remainder_char(c: char) -> bool {
     matches!(c, '_' | 'A'..='Z' | 'a'..='z' | '0'..='9')
-}
-
-pub(crate) fn named_type(parser: &mut Parser) -> Result<(), crate::Error> {
-    let _guard = parser.start_node(SyntaxKind::NAMED_TYPE);
-    name(parser)?;
-    Ok(())
 }

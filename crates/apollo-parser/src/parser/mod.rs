@@ -15,6 +15,7 @@ pub(crate) use token_text::TokenText;
 
 mod argument;
 mod directive;
+mod field;
 mod fragment;
 mod generated;
 mod input_value;
