@@ -1,4 +1,5 @@
-use crate::{format_err, parser::name, Parser, SyntaxKind, TokenKind};
+use crate::parser::{name, ty};
+use crate::{format_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#InputValueDefinition
 ///
@@ -14,25 +15,27 @@ pub(crate) fn input_value_definition(
     // TODO @lrlna: parse default value
     // TODO @lrlna: parse directives
     if let Some(TokenKind::Node) = parser.peek() {
-        // TODO @lrlna: use parse input value name function
         let guard = parser.start_node(SyntaxKind::INPUT_VALUE_DEFINITION);
         name::name(parser)?;
         if let Some(TokenKind::Colon) = parser.peek() {
             parser.bump(SyntaxKind::COLON);
-            if let Some(TokenKind::Node) = parser.peek() {
-                // TODO @lrlna: type is a node, and needs its own parsing rules
-                parser.bump(SyntaxKind::TYPE);
-                if parser.peek().is_some() {
-                    guard.finish_node();
-                    return input_value_definition(parser, true);
+            match parser.peek() {
+                Some(TokenKind::Node) | Some(TokenKind::LBracket) => {
+                    ty::ty(parser)?;
+                    if parser.peek().is_some() {
+                        guard.finish_node();
+                        return input_value_definition(parser, true);
+                    }
+                    return Ok(());
                 }
-                return Ok(());
+                _ => {
+                    return format_err!(
+                        parser.peek_data().unwrap(),
+                        "Expected InputValue definition to have a Type, got {}",
+                        parser.peek_data().unwrap()
+                    );
+                }
             }
-            return format_err!(
-                parser.peek_data().unwrap(),
-                "Expected InputValue definition to have a Type, got {}",
-                parser.peek_data().unwrap()
-            );
         } else {
             return format_err!(
                 parser.peek_data().unwrap(),

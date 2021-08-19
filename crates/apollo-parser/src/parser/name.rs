@@ -31,18 +31,6 @@ pub(crate) fn name(parser: &mut Parser) -> Result<(), crate::Error> {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#NamedType
-///
-/// ```txt
-/// NamedType
-///     Name
-/// ```
-pub(crate) fn named_type(parser: &mut Parser) -> Result<(), crate::Error> {
-    let _guard = parser.start_node(SyntaxKind::NAMED_TYPE);
-    name(parser)?;
-    Ok(())
-}
-
 /// See: https://spec.graphql.org/June2018/#Alias
 ///
 /// ```txt

@@ -1,4 +1,4 @@
-use crate::parser::{directive, name, selection, variable};
+use crate::parser::{directive, name, selection, ty, variable};
 use crate::{format_err, Parser, SyntaxKind, TokenKind};
 
 /// OperationTypeDefinition is used in a SchemaDefinition. Not to be confused
@@ -24,7 +24,7 @@ pub(crate) fn operation_type_definition(
         operation_type(parser)?;
         if let Some(TokenKind::Colon) = parser.peek() {
             parser.bump(SyntaxKind::COLON);
-            name::named_type(parser)?;
+            ty::named_type(parser)?;
             if parser.peek().is_some() {
                 guard.finish_node();
                 return operation_type_definition(parser, true);
@@ -80,7 +80,6 @@ pub(crate) fn operation_definition(parser: &mut Parser) -> Result<(), crate::Err
     if let Some(TokenKind::At) = parser.peek() {
         directive::directives(parser)?;
     }
-    // TODO @lrlna: parse SelectionSet
     if let Some(TokenKind::LCurly) = parser.peek() {
         selection::selection_set(parser)?;
     }

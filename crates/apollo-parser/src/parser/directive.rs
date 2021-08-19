@@ -15,7 +15,6 @@ pub(crate) fn directive_definition(parser: &mut Parser) -> Result<(), crate::Err
 
     match parser.peek() {
         Some(TokenKind::At) => parser.bump(SyntaxKind::AT),
-        // missing directive name
         _ => {
             return format_err!(
                 parser.peek_data().unwrap(),
@@ -35,7 +34,6 @@ pub(crate) fn directive_definition(parser: &mut Parser) -> Result<(), crate::Err
                 parser.bump(SyntaxKind::R_PAREN);
                 guard.finish_node();
             }
-            // missing a closing RParen
             _ => {
                 return format_err!(
                     parser
@@ -52,13 +50,12 @@ pub(crate) fn directive_definition(parser: &mut Parser) -> Result<(), crate::Err
 
     match parser.peek() {
         Some(TokenKind::On) => parser.bump(SyntaxKind::on_KW),
-        // missing directive locations in directive definition
         _ => {
             return format_err!(
                 parser
                     .peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
-                "Expected to have Directive locations in a directive definition, got {}",
+                "Expected to have Directive Locations in a Directive Definition, got {}",
                 parser
                     .peek_data()
                     .unwrap_or_else(|| String::from("no further data"))
@@ -117,12 +114,11 @@ pub(crate) fn directive_locations(
         }
         _ => {
             if !is_location {
-                // missing directive locations in directive definition
                 return format_err!(
                     parser
                         .peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
-                    "Expected to have Directive locations in a directive definition, got {}",
+                    "Expected to have Directive Locations in a Directive Definition, got {}",
                     parser
                         .peek_data()
                         .unwrap_or_else(|| String::from("no further data"))
@@ -147,7 +143,7 @@ pub(crate) fn directive(parser: &mut Parser) -> Result<(), crate::Error> {
         _ => {
             return format_err!(
                 parser.peek_data().unwrap(),
-                "Expected directive @ name, got {}",
+                "Expected directive @ definition, got {}",
                 parser.peek_data().unwrap()
             );
         }
@@ -179,7 +175,7 @@ mod test {
 
     #[test]
     fn smoke_directive_definition() {
-        let input = "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION";
+        let input = "directive @example(isTreat: [[[[Boolean!]!]!]!]!) on FIELD";
         let parser = Parser::new(input);
 
         println!("{:?}", parser.parse());

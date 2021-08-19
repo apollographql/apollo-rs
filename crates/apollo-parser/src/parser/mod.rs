@@ -1,9 +1,9 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::lexer;
 use crate::lexer::Lexer;
 use crate::TokenKind;
+use crate::{lexer, Token};
 
 pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxElementChildren, SyntaxNodeChildren, SyntaxToken};
@@ -26,6 +26,7 @@ mod schema;
 mod selection;
 mod syntax_tree;
 mod token_text;
+mod ty;
 mod variable;
 
 /// Parse text into an AST.
@@ -99,9 +100,20 @@ impl Parser {
         builder.finish(self.errors)
     }
 
+    /// Consume a token from the lexer and insert it into the AST.
     pub(crate) fn bump(&mut self, kind: SyntaxKind) {
         let token = self.tokens.pop().unwrap();
         self.builder.borrow_mut().token(kind, token.data());
+    }
+
+    /// Consume a token from the lexer.
+    pub(crate) fn pop(&mut self) -> Token {
+        self.tokens.pop().unwrap()
+    }
+
+    /// Insert a token into the AST.
+    pub(crate) fn push_ast(&mut self, kind: SyntaxKind, token: Token) {
+        self.builder.borrow_mut().token(kind, token.data())
     }
 
     pub(crate) fn start_node(&mut self, kind: SyntaxKind) -> NodeGuard {

@@ -26,19 +26,14 @@ pub(crate) fn field(parser: &mut Parser) -> Result<(), crate::Error> {
         );
     }
     match parser.peek() {
-        // arguments
         Some(TokenKind::LParen) => argument::arguments(parser)?,
-        // directives
         Some(TokenKind::At) => directive::directives(parser)?,
-        // Selection Set
         Some(TokenKind::LCurly) => selection::selection_set(parser)?,
-        // Selection Set
         Some(TokenKind::Comma) => {
             guard.finish_node();
             parser.bump(SyntaxKind::COMMA);
             field(parser)?
         }
-        // Another Field
         Some(TokenKind::Node) => {
             guard.finish_node();
             field(parser)?
