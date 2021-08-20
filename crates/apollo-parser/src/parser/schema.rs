@@ -1,5 +1,5 @@
 use crate::parser::{directive, operation};
-use crate::{format_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#SchemaDefinition
 ///
@@ -7,46 +7,44 @@ use crate::{format_err, Parser, SyntaxKind, TokenKind};
 /// SchemaDefinition
 ///    schema Directives { OperationTypeDefinition }
 /// ```
-pub(crate) fn schema_definition(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn schema_definition(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::SCHEMA_DEFINITION);
 
     parser.bump(SyntaxKind::schema_KW);
 
     if let Some(TokenKind::LParen) = parser.peek() {
         parser.bump(SyntaxKind::L_PAREN);
-        directive::directive(parser)?;
+        directive::directive(parser);
         if let Some(TokenKind::RParen) = parser.peek() {
             parser.bump(SyntaxKind::R_PAREN);
         } else {
-            return format_err!(
+            parser.push_err(create_err!(
                 parser.peek_data().unwrap(),
                 "Expected closing ')' parenthesis, got {}",
                 parser.peek_data().unwrap()
-            );
+            ));
         }
     }
 
     if let Some(TokenKind::LCurly) = parser.peek() {
         parser.bump(SyntaxKind::L_CURLY);
-        operation::operation_type_definition(parser, false)?;
+        operation::operation_type_definition(parser, false);
         if let Some(TokenKind::RCurly) = parser.peek() {
             parser.bump(SyntaxKind::R_CURLY);
         } else {
-            return format_err!(
+            parser.push_err(create_err!(
                 parser.peek_data().unwrap(),
                 "Expected Schema Definition to have a closing curly bracket, got {}",
                 parser.peek_data().unwrap()
-            );
+            ));
         }
     } else {
-        return format_err!(
+        parser.push_err(create_err!(
             parser.peek_data().unwrap(),
             "Expected Schema Definition to define a root operation, got {}",
             parser.peek_data().unwrap()
-        );
+        ));
     }
-
-    Ok(())
 }
 
 // TODO @lrlna: inlined collapsed AST should live in a 'fixtures' dir for ease of testing

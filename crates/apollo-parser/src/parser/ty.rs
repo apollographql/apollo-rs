@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::{bail, format_err, Parser, SyntaxKind, Token, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, Token, TokenKind};
 
 use crate::parser::name;
 
@@ -23,12 +23,12 @@ use crate::parser::name;
 // To make this work, we first collect all types in a double ended queue, and
 // unwrap them once the last possible child has been parsed. Nodes are then
 // created in the processing stage of this parsing rule.
-pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn ty(parser: &mut Parser) {
     let mut types = parse(parser);
 
-    process(&mut types, parser)?;
+    process(&mut types, parser);
 
-    return Ok(());
+    return;
 
     fn parse(parser: &mut Parser) -> VecDeque<(SyntaxKind, Token)> {
         let token = parser.pop();
@@ -57,24 +57,21 @@ pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
         types
     }
 
-    fn process(
-        types: &mut VecDeque<(SyntaxKind, Token)>,
-        parser: &mut Parser,
-    ) -> Result<(), crate::Error> {
+    fn process(types: &mut VecDeque<(SyntaxKind, Token)>, parser: &mut Parser) {
         match types.pop_front() {
             Some((kind @ SyntaxKind::L_BRACK, token)) => {
                 let _ty_guard = parser.start_node(SyntaxKind::TYPE);
                 let _list_guard = parser.start_node(SyntaxKind::LIST_TYPE);
                 parser.push_ast(kind, token);
-                process(types, parser)?;
+                process(types, parser);
                 if let Some((_kind @ SyntaxKind::R_BRACK, _token)) = peek(types) {
-                    process(types, parser)?;
+                    process(types, parser);
                 }
             }
             Some((kind @ SyntaxKind::NON_NULL_TYPE, _)) => {
                 let _ty_guard = parser.start_node(SyntaxKind::TYPE);
                 let _non_null_guard = parser.start_node(kind);
-                process(types, parser)?;
+                process(types, parser);
             }
             Some((SyntaxKind::NAMED_TYPE, _)) => {
                 let _ty_guard = parser.start_node(SyntaxKind::TYPE);
@@ -84,7 +81,7 @@ pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
                 parser.push_ast(kind, token);
             }
             _ => {
-                bail!(
+                parser.push_err(create_err!(
                     parser
                         .peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
@@ -92,10 +89,9 @@ pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
                     parser
                         .peek_data()
                         .unwrap_or_else(|| String::from("no further data"))
-                );
+                ));
             }
         }
-        Ok(())
     }
 }
 
@@ -107,7 +103,7 @@ pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
 /// ```
 pub(crate) fn named_type(parser: &mut Parser) -> Result<(), crate::Error> {
     let _guard = parser.start_node(SyntaxKind::NAMED_TYPE);
-    name::name(parser)?;
+    name::name(parser);
     Ok(())
 }
 

@@ -1,5 +1,5 @@
 use crate::parser::field;
-use crate::{format_err, Parser, SyntaxKind, TokenKind};
+use crate::{Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#SelectionSet
 ///
@@ -7,17 +7,16 @@ use crate::{format_err, Parser, SyntaxKind, TokenKind};
 /// SelectionSet
 ///     { Selection }
 /// ```
-pub(crate) fn selection_set(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn selection_set(parser: &mut Parser) {
     if let Some(TokenKind::LCurly) = parser.peek() {
         let guard = parser.start_node(SyntaxKind::SELECTION_SET);
         parser.bump(SyntaxKind::L_CURLY);
-        selection(parser)?;
+        selection(parser);
         if let Some(TokenKind::RCurly) = parser.peek() {
             parser.bump(SyntaxKind::R_CURLY);
             guard.finish_node()
         }
     }
-    Ok(())
 }
 
 /// See: https://spec.graphql.org/June2018/#Selection
@@ -28,7 +27,7 @@ pub(crate) fn selection_set(parser: &mut Parser) -> Result<(), crate::Error> {
 ///     FragmentSpread
 ///     InlineFragment
 /// ```
-pub(crate) fn selection(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn selection(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::SELECTION);
     if let Some(TokenKind::Spread) = parser.peek() {
         if let Some(TokenKind::On) = parser.peek() {
@@ -40,10 +39,9 @@ pub(crate) fn selection(parser: &mut Parser) -> Result<(), crate::Error> {
         }
     }
     while let Some(TokenKind::Node) = parser.peek() {
-        field::field(parser)?
+        field::field(parser)
     }
-    Ok(())
-    // return format_err!(
+    // return create_err!(
     //     parser
     //         .peek_data()
     //         .unwrap_or_else(|| String::from("no further data")),

@@ -27,6 +27,7 @@ mod selection;
 mod syntax_tree;
 mod token_text;
 mod ty;
+mod utils;
 mod variable;
 
 /// Parse text into an AST.
@@ -73,19 +74,11 @@ impl Parser {
             match self.peek_data() {
                 None => break,
                 Some(node) => match node.as_str() {
-                    "fragment" => fragment::fragment_definition(&mut self)
-                        .unwrap_or_else(|e| self.errors.push(e)),
-                    "directive" => directive::directive_definition(&mut self)
-                        .unwrap_or_else(|e| self.errors.push(e)),
-                    "schema" => {
-                        schema::schema_definition(&mut self).unwrap_or_else(|e| self.errors.push(e))
-                    }
-                    // TODO @lrlna: this currently does not account for the fact
-                    // that an operation definition may be written as a query
-                    // shorthand, i.e. without a `query` keyword.
+                    "fragment" => fragment::fragment_definition(&mut self),
+                    "directive" => directive::directive_definition(&mut self),
+                    "schema" => schema::schema_definition(&mut self),
                     "query" | "mutation" | "subscription" | "{" => {
                         operation::operation_definition(&mut self)
-                            .unwrap_or_else(|e| self.errors.push(e))
                     }
                     _ => break,
                 },
@@ -114,6 +107,10 @@ impl Parser {
     /// Insert a token into the AST.
     pub(crate) fn push_ast(&mut self, kind: SyntaxKind, token: Token) {
         self.builder.borrow_mut().token(kind, token.data())
+    }
+
+    pub(crate) fn push_err(&mut self, err: crate::error::Error) {
+        self.errors.push(err);
     }
 
     pub(crate) fn start_node(&mut self, kind: SyntaxKind) -> NodeGuard {

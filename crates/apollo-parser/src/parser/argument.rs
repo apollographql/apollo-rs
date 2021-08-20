@@ -1,4 +1,4 @@
-use crate::{format_err, parser::name, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, parser::name, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#Argument
 ///
@@ -6,10 +6,10 @@ use crate::{format_err, parser::name, Parser, SyntaxKind, TokenKind};
 /// Argument
 ///    Name : Value
 /// ```
-pub(crate) fn argument(parser: &mut Parser, is_argument: bool) -> Result<(), crate::Error> {
+pub(crate) fn argument(parser: &mut Parser, is_argument: bool) {
     if let Some(TokenKind::Node) = parser.peek() {
         let guard = parser.start_node(SyntaxKind::ARGUMENT);
-        name::name(parser)?;
+        name::name(parser);
         if let Some(TokenKind::Colon) = parser.peek() {
             parser.bump(SyntaxKind::COLON);
             if let Some(TokenKind::Node) = parser.peek() {
@@ -19,9 +19,8 @@ pub(crate) fn argument(parser: &mut Parser, is_argument: bool) -> Result<(), cra
                     guard.finish_node();
                     return argument(parser, true);
                 }
-                return Ok(());
             }
-            return format_err!(
+            parser.push_err(create_err!(
                 parser
                     .peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
@@ -29,10 +28,10 @@ pub(crate) fn argument(parser: &mut Parser, is_argument: bool) -> Result<(), cra
                 parser
                     .peek_data()
                     .unwrap_or_else(|| String::from("no further data"))
-            );
+            ));
         }
     } else {
-        return format_err!(
+        parser.push_err(create_err!(
             parser
                 .peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
@@ -40,16 +39,14 @@ pub(crate) fn argument(parser: &mut Parser, is_argument: bool) -> Result<(), cra
             parser
                 .peek_data()
                 .unwrap_or_else(|| String::from("no further data"))
-        );
+        ));
     }
     if let Some(TokenKind::Comma) = parser.peek() {
         parser.bump(SyntaxKind::COMMA);
         return argument(parser, is_argument);
     }
-    if is_argument {
-        Ok(())
-    } else {
-        return format_err!(
+    if !is_argument {
+        parser.push_err(create_err!(
             parser
                 .peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
@@ -57,7 +54,7 @@ pub(crate) fn argument(parser: &mut Parser, is_argument: bool) -> Result<(), cra
             parser
                 .peek_data()
                 .unwrap_or_else(|| String::from("no further data"))
-        );
+        ));
     }
 }
 
@@ -67,27 +64,24 @@ pub(crate) fn argument(parser: &mut Parser, is_argument: bool) -> Result<(), cra
 /// Arguments
 ///    ( Argument(list) )
 /// ```
-pub(crate) fn arguments(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn arguments(parser: &mut Parser) {
     let guard = parser.start_node(SyntaxKind::ARGUMENTS);
     parser.bump(SyntaxKind::L_PAREN);
-    argument(parser, false)?;
+    argument(parser, false);
     match parser.peek() {
         Some(TokenKind::RParen) => {
             parser.bump(SyntaxKind::R_PAREN);
             guard.finish_node();
         }
         // missing a closing RParen
-        _ => {
-            return format_err!(
-                parser
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected closing ')', got {}",
-                parser
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data"))
-            )
-        }
+        _ => parser.push_err(create_err!(
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data")),
+            "Expected closing ')', got {}",
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data"))
+        )),
     }
-    Ok(())
 }

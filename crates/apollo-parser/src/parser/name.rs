@@ -1,4 +1,4 @@
-use crate::format_err;
+use crate::create_err;
 use crate::{Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#Name
@@ -7,7 +7,7 @@ use crate::{Parser, SyntaxKind, TokenKind};
 /// Name
 ///     [_A-Za-z][_0-9A-Za-z]*/
 /// ```
-pub(crate) fn name(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn name(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::NAME);
     match parser.peek() {
         Some(TokenKind::Node) => {
@@ -18,16 +18,13 @@ pub(crate) fn name(parser: &mut Parser) -> Result<(), crate::Error> {
                 assert!(data[1..].chars().all(is_remainder_char));
             }
             parser.bump(SyntaxKind::IDENT);
-            Ok(())
         }
         // missing name
-        _ => {
-            return format_err!(
-                parser.peek_data().unwrap(),
-                "Expected a spec compliant Name, got {}",
-                parser.peek_data().unwrap()
-            )
-        }
+        _ => parser.push_err(create_err!(
+            parser.peek_data().unwrap(),
+            "Expected a spec compliant Name, got {}",
+            parser.peek_data().unwrap()
+        )),
     }
 }
 
@@ -37,11 +34,10 @@ pub(crate) fn name(parser: &mut Parser) -> Result<(), crate::Error> {
 /// Alias
 ///     Name :
 /// ```
-pub(crate) fn alias(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn alias(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::ALIAS);
-    name(parser)?;
+    name(parser);
     parser.bump(SyntaxKind::COLON);
-    Ok(())
 }
 
 fn is_start_char(c: char) -> bool {

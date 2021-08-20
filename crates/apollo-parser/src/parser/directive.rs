@@ -1,5 +1,5 @@
 use crate::parser::{argument, input_value, name};
-use crate::{bail, format_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#DirectiveDefinition
 ///
@@ -7,7 +7,7 @@ use crate::{bail, format_err, Parser, SyntaxKind, TokenKind};
 /// DirectiveDefinition
 ///     Description(opt) directive @ Name ArgumentsDefinition(opt) on DirectiveLocations
 /// ```
-pub(crate) fn directive_definition(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn directive_definition(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::DIRECTIVE_DEFINITION);
     // TODO @lrlna: parse Description
     parser.bump(SyntaxKind::directive_KW);
@@ -16,63 +16,55 @@ pub(crate) fn directive_definition(parser: &mut Parser) -> Result<(), crate::Err
     match parser.peek() {
         Some(TokenKind::At) => parser.bump(SyntaxKind::AT),
         _ => {
-            return format_err!(
+            parser.push_err(create_err!(
                 parser.peek_data().unwrap(),
                 "Expected directive @ definition, got {}",
                 parser.peek_data().unwrap()
-            );
+            ));
         }
     }
-    name::name(parser)?;
+    name::name(parser);
 
     if let Some(TokenKind::LParen) = parser.peek() {
         let guard = parser.start_node(SyntaxKind::ARGUMENTS_DEFINITION);
         parser.bump(SyntaxKind::L_PAREN);
-        input_value::input_value_definition(parser, false)?;
+        input_value::input_value_definition(parser, false);
         match parser.peek() {
             Some(TokenKind::RParen) => {
                 parser.bump(SyntaxKind::R_PAREN);
                 guard.finish_node();
             }
-            _ => {
-                return format_err!(
-                    parser
-                        .peek_data()
-                        .unwrap_or_else(|| String::from("no further data")),
-                    "Expected closing ')', got {}",
-                    parser
-                        .peek_data()
-                        .unwrap_or_else(|| String::from("no further data"))
-                )
-            }
+            _ => parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected closing ')', got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data"))
+            )),
         }
     }
 
     match parser.peek() {
         Some(TokenKind::On) => parser.bump(SyntaxKind::on_KW),
-        _ => {
-            return format_err!(
-                parser
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected to have Directive Locations in a Directive Definition, got {}",
-                parser
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data"))
-            )
-        }
+        _ => parser.push_err(create_err!(
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data")),
+            "Expected to have Directive Locations in a Directive Definition, got {}",
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data"))
+        )),
     }
 
     let _guard = parser.start_node(SyntaxKind::DIRECTIVE_LOCATIONS);
-    directive_locations(parser, false)?;
-    Ok(())
+    directive_locations(parser, false);
 }
 
 /// See: https://spec.graphql.org/June2018/#DirectiveLocations
-pub(crate) fn directive_locations(
-    parser: &mut Parser,
-    is_location: bool,
-) -> Result<(), crate::Error> {
+pub(crate) fn directive_locations(parser: &mut Parser, is_location: bool) {
     match parser.peek() {
         Some(TokenKind::Pipe) => {
             parser.bump(SyntaxKind::PIPE);
@@ -107,14 +99,13 @@ pub(crate) fn directive_locations(
                 }
                 None => todo!(),
             }
-            match parser.peek_data() {
-                Some(_) => directive_locations(parser, true),
-                _ => Ok(()),
+            if parser.peek_data().is_some() {
+                directive_locations(parser, true)
             }
         }
         _ => {
             if !is_location {
-                bail!(
+                parser.push_err(create_err!(
                     parser
                         .peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
@@ -122,9 +113,8 @@ pub(crate) fn directive_locations(
                     parser
                         .peek_data()
                         .unwrap_or_else(|| String::from("no further data"))
-                );
+                ));
             }
-            Ok(())
         }
     }
 }
@@ -135,43 +125,39 @@ pub(crate) fn directive_locations(
 /// Directive
 ///     @ Name Arguments
 /// ```
-pub(crate) fn directive(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn directive(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::DIRECTIVE);
 
     match parser.peek() {
         Some(TokenKind::At) => parser.bump(SyntaxKind::AT),
         _ => {
-            bail!(
+            parser.push_err(create_err!(
                 parser.peek_data().unwrap(),
                 "Expected directive @ definition, got {}",
                 parser.peek_data().unwrap()
-            );
+            ));
         }
     }
 
-    name::name(parser)?;
+    name::name(parser);
 
     if let Some(TokenKind::LParen) = parser.peek() {
-        argument::arguments(parser)?
+        argument::arguments(parser);
     }
-
-    Ok(())
 }
 
-pub(crate) fn directives(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn directives(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::DIRECTIVES);
     while let Some(TokenKind::At) = parser.peek() {
-        directive(parser)?;
+        directive(parser);
     }
-    Ok(())
 }
 
 // TODO @lrlna: inlined collapsed AST should live in a 'fixtures' dir for ease of testing
 #[cfg(test)]
 mod test {
     use super::*;
-    use indoc::indoc;
-    use pretty_assertions::assert_eq;
+    use crate::parser::utils;
 
     #[test]
     fn smoke_directive_definition() {
@@ -181,46 +167,62 @@ mod test {
         println!("{:?}", parser.parse());
     }
 
+    #[test]
+    fn it_returns_errors_and_full_ast_when_name_is_missing() {
+        utils::check_ast(
+            "directive @ on FIELD",
+            r#"
+- DOCUMENT@0..17
+- DIRECTIVE_DEFINITION@0..17
+- directive_KW@0..9 "directive"
+- AT@9..10 "@"
+- NAME@10..10
+- on_KW@10..12 "on"
+- DIRECTIVE_LOCATIONS@12..17
+- DIRECTIVE_LOCATION@12..17
+- FIELD_KW@12..17 "FIELD"
+- ERROR@0:2 "Expected a spec compliant Name, got on"
+"#,
+        );
+    }
+
     // TODO @lrlna: these tests need to check for indentation as part of the
     // output, not just the nodes of the tree
     #[test]
     fn it_parses_directive_definition() {
-        let input = "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION";
-        let parser = Parser::new(input);
-        let output = parser.parse();
-
-        assert!(output.errors().is_empty());
-        assert_eq!(
-            format!("{:?}", output),
-            indoc! { r#"
-            - DOCUMENT@0..67
-            - DIRECTIVE_DEFINITION@0..67
-            - directive_KW@0..9 "directive"
-            - AT@9..10 "@"
-            - NAME@10..17
-            - IDENT@10..17 "example"
-            - ARGUMENTS_DEFINITION@17..51
-            - L_PAREN@17..18 "("
-            - INPUT_VALUE_DEFINITION@18..33
-            - NAME@18..25
-            - IDENT@18..25 "isTreat"
-            - COLON@25..26 ":"
-            - TYPE@26..33 "Boolean"
-            - COMMA@33..34 ","
-            - INPUT_VALUE_DEFINITION@34..50
-            - NAME@34..43
-            - IDENT@34..43 "treatKind"
-            - COLON@43..44 ":"
-            - TYPE@44..50 "String"
-            - R_PAREN@50..51 ")"
-            - on_KW@51..53 "on"
-            - DIRECTIVE_LOCATIONS@53..67
-            - DIRECTIVE_LOCATION@53..58
-            - FIELD_KW@53..58 "FIELD"
-            - PIPE@58..59 "|"
-            - DIRECTIVE_LOCATION@59..67
-            - QUERY_KW@59..67 "MUTATION"
-            "# }
+        utils::check_ast(
+            "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION",
+            r#"
+- DOCUMENT@0..54
+- DIRECTIVE_DEFINITION@0..54
+- directive_KW@0..9 "directive"
+- AT@9..10 "@"
+- NAME@10..17
+- IDENT@10..17 "example"
+- ARGUMENTS_DEFINITION@17..38
+- L_PAREN@17..18 "("
+- INPUT_VALUE_DEFINITION@18..26
+- NAME@18..25
+- IDENT@18..25 "isTreat"
+- COLON@25..26 ":"
+- TYPE@26..26
+- NAMED_TYPE@26..26
+- COMMA@26..27 ","
+- INPUT_VALUE_DEFINITION@27..37
+- NAME@27..36
+- IDENT@27..36 "treatKind"
+- COLON@36..37 ":"
+- TYPE@37..37
+- NAMED_TYPE@37..37
+- R_PAREN@37..38 ")"
+- on_KW@38..40 "on"
+- DIRECTIVE_LOCATIONS@40..54
+- DIRECTIVE_LOCATION@40..45
+- FIELD_KW@40..45 "FIELD"
+- PIPE@45..46 "|"
+- DIRECTIVE_LOCATION@46..54
+- QUERY_KW@46..54 "MUTATION"
+"#,
         );
     }
 }

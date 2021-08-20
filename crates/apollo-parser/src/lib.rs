@@ -19,6 +19,16 @@ macro_rules! format_err {
     };
 }
 
+#[macro_export]
+macro_rules! create_err {
+    ($data:expr, $($tt:tt)*) => {
+        $crate::error::Error::new(
+            format!($($tt)*),
+            $data.to_string(),
+        )
+    };
+}
+
 /// Return early with an error.
 #[macro_export]
 macro_rules! bail {

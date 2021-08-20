@@ -1,5 +1,5 @@
 use crate::parser::{directive, name, selection, ty, variable};
-use crate::{format_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// OperationTypeDefinition is used in a SchemaDefinition. Not to be confused
 /// with OperationDefinition.
@@ -10,10 +10,7 @@ use crate::{format_err, Parser, SyntaxKind, TokenKind};
 /// OperationTypeDefinition
 ///    OperationType : NamedType
 /// ```
-pub(crate) fn operation_type_definition(
-    parser: &mut Parser,
-    is_operation_type: bool,
-) -> Result<(), crate::Error> {
+pub(crate) fn operation_type_definition(parser: &mut Parser, is_operation_type: bool) {
     if let Some(TokenKind::Comma) = parser.peek() {
         parser.bump(SyntaxKind::COMMA);
         return operation_type_definition(parser, is_operation_type);
@@ -21,32 +18,29 @@ pub(crate) fn operation_type_definition(
 
     if let Some(TokenKind::Node) = parser.peek() {
         let guard = parser.start_node(SyntaxKind::OPERATION_TYPE_DEFINITION);
-        operation_type(parser)?;
+        operation_type(parser);
         if let Some(TokenKind::Colon) = parser.peek() {
             parser.bump(SyntaxKind::COLON);
-            ty::named_type(parser)?;
+            ty::named_type(parser);
             if parser.peek().is_some() {
                 guard.finish_node();
                 return operation_type_definition(parser, true);
             }
-            return Ok(());
         } else {
-            return format_err!(
+            parser.push_err(create_err!(
                 parser.peek_data().unwrap(),
                 "Expected Operation Type to have a Name Type, got {}",
                 parser.peek_data().unwrap()
-            );
+            ));
         }
     }
 
-    if is_operation_type {
-        Ok(())
-    } else {
-        return format_err!(
+    if !is_operation_type {
+        parser.push_err(create_err!(
             parser.peek_data().unwrap(),
             "Expected Schema Definition to have an Operation Type, got {}",
             parser.peek_data().unwrap()
-        );
+        ));
     }
 }
 
@@ -58,18 +52,18 @@ pub(crate) fn operation_type_definition(
 ///    Selection Set (TODO)
 /// ```
 
-pub(crate) fn operation_definition(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn operation_definition(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::OPERATION_DEFINITION);
-    operation_type(parser)?;
+    operation_type(parser);
     if let Some(TokenKind::Node) = parser.peek() {
-        name::name(parser)?;
+        name::name(parser);
     }
 
     if let Some(TokenKind::LParen) = parser.peek() {
         let guard = parser.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
         parser.bump(SyntaxKind::L_PAREN);
         if let Some(TokenKind::Dollar) = parser.peek() {
-            variable::variable_definition(parser, false)?;
+            variable::variable_definition(parser, false);
         }
         if let Some(TokenKind::RParen) = parser.peek() {
             parser.bump(SyntaxKind::R_PAREN);
@@ -78,12 +72,11 @@ pub(crate) fn operation_definition(parser: &mut Parser) -> Result<(), crate::Err
         // TODO @lrlna error: expected a variable definition to follow an opening brace
     }
     if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser)?;
+        directive::directives(parser);
     }
     if let Some(TokenKind::LCurly) = parser.peek() {
-        selection::selection_set(parser)?;
+        selection::selection_set(parser);
     }
-    Ok(())
 }
 
 /// See: https://spec.graphql.org/June2018/#OperationType
@@ -92,28 +85,24 @@ pub(crate) fn operation_definition(parser: &mut Parser) -> Result<(), crate::Err
 /// OperationType : one of
 ///    query    mutation    subscription
 /// ```
-pub(crate) fn operation_type(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn operation_type(parser: &mut Parser) {
     if let Some(node) = parser.peek_data() {
         let _guard = parser.start_node(SyntaxKind::OPERATION_TYPE);
         match node.as_str() {
             "query" => parser.bump(SyntaxKind::query_KW),
             "subscription" => parser.bump(SyntaxKind::subscription_KW),
             "mutation" => parser.bump(SyntaxKind::mutation_KW),
-            _ => {
-                return format_err!(
-                    parser
-                        .peek_data()
-                        .unwrap_or_else(|| String::from("no further data")),
-                    "Operation Type must be either 'mutation', 'query' or 'subscription', got {}",
-                    parser
-                        .peek_data()
-                        .unwrap_or_else(|| String::from("no further data"))
-                )
-            }
+            _ => parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Operation Type must be either 'mutation', 'query' or 'subscription', got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data"))
+            )),
         }
     }
-
-    Ok(())
 }
 
 #[cfg(test)]
