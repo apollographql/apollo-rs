@@ -158,8 +158,6 @@ pub(crate) fn directives(parser: &mut Parser) {
 mod test {
     use super::*;
     use crate::parser::utils;
-    use pretty_assertions::assert_eq;
-    use std::io::Write;
 
     #[test]
     fn smoke_directive_definition() {
@@ -167,23 +165,6 @@ mod test {
         let output = parser.parse();
 
         println!("{:?}", output); // indentation is kept
-        let actual = format!("{:?}", output); // indentation is stripped
-        println!("\n{}", actual);
-        write!(std::io::stdout(), "{:?}", output).unwrap(); //indentation is kept
-
-        let expected = r#"- DOCUMENT@0..22
-- DIRECTIVE_DEFINITION@0..22
-  - directive_KW@0..9 "directive"
-  - AT@9..10 "@"
-  - NAME@10..17
-    - IDENT@10..17 "example"
-  - DIRECTIVE_LOCATIONS@17..22
-    - DIRECTIVE_LOCATION@17..22
-      - FIELD_KW@17..22 "FIELD"
-- ERROR@0:5 "Expected to have Directive Locations in a Directive Definition, got FIELD"
-"#;
-
-        assert_eq!(actual, expected);
     }
 
     #[test]
@@ -191,17 +172,17 @@ mod test {
         utils::check_ast(
             "directive @ on FIELD",
             r#"
-- DOCUMENT@0..17
-- DIRECTIVE_DEFINITION@0..17
-- directive_KW@0..9 "directive"
-- AT@9..10 "@"
-- NAME@10..10
-- on_KW@10..12 "on"
-- DIRECTIVE_LOCATIONS@12..17
-- DIRECTIVE_LOCATION@12..17
-- FIELD_KW@12..17 "FIELD"
-- ERROR@0:2 "Expected a spec compliant Name, got on"
-"#,
+            - DOCUMENT@0..17
+              - DIRECTIVE_DEFINITION@0..17
+                - directive_KW@0..9 "directive"
+                - AT@9..10 "@"
+                - NAME@10..10
+                - on_KW@10..12 "on"
+                - DIRECTIVE_LOCATIONS@12..17
+                  - DIRECTIVE_LOCATION@12..17
+                    - FIELD_KW@12..17 "FIELD"
+            - ERROR@0:2 "Expected a spec compliant Name, got on"
+            "#,
         );
     }
 
@@ -212,35 +193,35 @@ mod test {
         utils::check_ast(
             "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION",
             r#"
-- DOCUMENT@0..54
-- DIRECTIVE_DEFINITION@0..54
-- directive_KW@0..9 "directive"
-- AT@9..10 "@"
-- NAME@10..17
-- IDENT@10..17 "example"
-- ARGUMENTS_DEFINITION@17..38
-- L_PAREN@17..18 "("
-- INPUT_VALUE_DEFINITION@18..26
-- NAME@18..25
-- IDENT@18..25 "isTreat"
-- COLON@25..26 ":"
-- TYPE@26..26
-- NAMED_TYPE@26..26
-- COMMA@26..27 ","
-- INPUT_VALUE_DEFINITION@27..37
-- NAME@27..36
-- IDENT@27..36 "treatKind"
-- COLON@36..37 ":"
-- TYPE@37..37
-- NAMED_TYPE@37..37
-- R_PAREN@37..38 ")"
-- on_KW@38..40 "on"
-- DIRECTIVE_LOCATIONS@40..54
-- DIRECTIVE_LOCATION@40..45
-- FIELD_KW@40..45 "FIELD"
-- PIPE@45..46 "|"
-- DIRECTIVE_LOCATION@46..54
-- QUERY_KW@46..54 "MUTATION"
+            - DOCUMENT@0..54
+                - DIRECTIVE_DEFINITION@0..54
+                    - directive_KW@0..9 "directive"
+                    - AT@9..10 "@"
+                    - NAME@10..17
+                        - IDENT@10..17 "example"
+                    - ARGUMENTS_DEFINITION@17..38
+                        - L_PAREN@17..18 "("
+                        - INPUT_VALUE_DEFINITION@18..26
+                            - NAME@18..25
+                                - IDENT@18..25 "isTreat"
+                            - COLON@25..26 ":"
+                            - TYPE@26..26
+                                - NAMED_TYPE@26..26
+                        - COMMA@26..27 ","
+                        - INPUT_VALUE_DEFINITION@27..37
+                            - NAME@27..36
+                                - IDENT@27..36 "treatKind"
+                            - COLON@36..37 ":"
+                            - TYPE@37..37
+                                - NAMED_TYPE@37..37
+                        - R_PAREN@37..38 ")"
+                    - on_KW@38..40 "on"
+                    - DIRECTIVE_LOCATIONS@40..54
+                        - DIRECTIVE_LOCATION@40..45
+                            - FIELD_KW@40..45 "FIELD"
+                        - PIPE@45..46 "|"
+                        - DIRECTIVE_LOCATION@46..54
+                            - QUERY_KW@46..54 "MUTATION"
 "#,
         );
     }

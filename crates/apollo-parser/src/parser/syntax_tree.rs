@@ -27,12 +27,12 @@ impl fmt::Debug for SyntaxTree {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fn print(f: &mut fmt::Formatter<'_>, indent: usize, element: SyntaxElement) -> fmt::Result {
             let kind: SyntaxKind = element.kind();
-            print!("{:indent$}", "", indent = indent);
+            write!(f, "{:indent$}", "", indent = indent)?;
             match element {
                 rowan::NodeOrToken::Node(node) => {
                     writeln!(f, "- {:?}@{:?}", kind, node.text_range())?;
                     for child in node.children_with_tokens() {
-                        print(f, indent + 2, child)?;
+                        print(f, indent + 4, child)?;
                     }
                     Ok(())
                 }

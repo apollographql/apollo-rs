@@ -51,58 +51,45 @@ pub(crate) fn schema_definition(parser: &mut Parser) {
 #[cfg(test)]
 mod test {
     use super::*;
-    use indoc::indoc;
-    use pretty_assertions::assert_eq;
+    use crate::parser::utils;
 
-    #[test]
-    fn smoke_schema_definition() {
-        let input = "schema { query: MyQueryRootType mutation: MyMutationRootType }";
-        let parser = Parser::new(input);
-
-        println!("{:?}", parser.parse());
-    }
-
-    // TODO @lrlna: these tests need to check for indentation as part of the
-    // output, not just the nodes of the tree
     #[test]
     fn it_parses_schema_definition() {
-        let input = "schema { query: MyQueryRootType, mutation: MyMutationRootType, subscription: MySubscriptionRootType }";
-        let parser = Parser::new(input);
-        let output = parser.parse();
-
-        assert!(output.errors().is_empty());
-        assert_eq!(
-            format!("{:?}", output),
-            indoc! { r#"
-            - DOCUMENT@0..93
-            - SCHEMA_DEFINITION@0..93
-            - schema_KW@0..6 "schema"
-            - L_CURLY@6..7 "{"
-            - OPERATION_TYPE_DEFINITION@7..28
-            - OPERATION_TYPE@7..12
-            - query_KW@7..12 "query"
-            - COLON@12..13 ":"
-            - NAMED_TYPE@13..28
-            - NAME@13..28
-            - IDENT@13..28 "MyQueryRootType"
-            - COMMA@28..29 ","
-            - OPERATION_TYPE_DEFINITION@29..56
-            - OPERATION_TYPE@29..37
-            - mutation_KW@29..37 "mutation"
-            - COLON@37..38 ":"
-            - NAMED_TYPE@38..56
-            - NAME@38..56
-            - IDENT@38..56 "MyMutationRootType"
-            - COMMA@56..57 ","
-            - OPERATION_TYPE_DEFINITION@57..92
-            - OPERATION_TYPE@57..69
-            - subscription_KW@57..69 "subscription"
-            - COLON@69..70 ":"
-            - NAMED_TYPE@70..92
-            - NAME@70..92
-            - IDENT@70..92 "MySubscriptionRootType"
-            - R_CURLY@92..93 "}"
-            "# }
+        utils::check_ast(
+            "schema {
+                query: MyQueryRootType
+                mutation: MyMutationRootType,
+                subscription: MySubscriptionRootType
+            }",
+            r#"
+            - DOCUMENT@0..92
+                - SCHEMA_DEFINITION@0..92
+                    - schema_KW@0..6 "schema"
+                    - L_CURLY@6..7 "{"
+                    - OPERATION_TYPE_DEFINITION@7..28
+                        - OPERATION_TYPE@7..12
+                            - query_KW@7..12 "query"
+                        - COLON@12..13 ":"
+                        - NAMED_TYPE@13..28
+                            - NAME@13..28
+                                - IDENT@13..28 "MyQueryRootType"
+                    - OPERATION_TYPE_DEFINITION@28..55
+                        - OPERATION_TYPE@28..36
+                            - mutation_KW@28..36 "mutation"
+                        - COLON@36..37 ":"
+                        - NAMED_TYPE@37..55
+                            - NAME@37..55
+                                - IDENT@37..55 "MyMutationRootType"
+                    - COMMA@55..56 ","
+                    - OPERATION_TYPE_DEFINITION@56..91
+                        - OPERATION_TYPE@56..68
+                            - subscription_KW@56..68 "subscription"
+                        - COLON@68..69 ":"
+                        - NAMED_TYPE@69..91
+                            - NAME@69..91
+                                - IDENT@69..91 "MySubscriptionRootType"
+                    - R_CURLY@91..92 "}"
+            "#,
         );
     }
 }
