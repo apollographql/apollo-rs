@@ -1,5 +1,5 @@
 use crate::parser::{argument, input_value, name};
-use crate::{format_err, Parser, SyntaxKind, TokenKind};
+use crate::{bail, format_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#DirectiveDefinition
 ///
@@ -114,7 +114,7 @@ pub(crate) fn directive_locations(
         }
         _ => {
             if !is_location {
-                return format_err!(
+                bail!(
                     parser
                         .peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
@@ -141,7 +141,7 @@ pub(crate) fn directive(parser: &mut Parser) -> Result<(), crate::Error> {
     match parser.peek() {
         Some(TokenKind::At) => parser.bump(SyntaxKind::AT),
         _ => {
-            return format_err!(
+            bail!(
                 parser.peek_data().unwrap(),
                 "Expected directive @ definition, got {}",
                 parser.peek_data().unwrap()
@@ -175,7 +175,7 @@ mod test {
 
     #[test]
     fn smoke_directive_definition() {
-        let input = "directive @example(isTreat: [[Boolean]!]) on FIELD";
+        let input = "directive @example(isTreat: [[Boolean]!]) on";
         let parser = Parser::new(input);
 
         println!("{:?}", parser.parse());

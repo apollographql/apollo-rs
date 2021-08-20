@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::{format_err, Parser, SyntaxKind, Token, TokenKind};
+use crate::{bail, format_err, Parser, SyntaxKind, Token, TokenKind};
 
 use crate::parser::name;
 
@@ -26,7 +26,7 @@ use crate::parser::name;
 pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
     let mut types = parse(parser);
 
-    process(&mut types, parser);
+    process(&mut types, parser)?;
 
     return Ok(());
 
@@ -57,21 +57,24 @@ pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
         types
     }
 
-    fn process(types: &mut VecDeque<(SyntaxKind, Token)>, parser: &mut Parser) {
+    fn process(
+        types: &mut VecDeque<(SyntaxKind, Token)>,
+        parser: &mut Parser,
+    ) -> Result<(), crate::Error> {
         match types.pop_front() {
             Some((kind @ SyntaxKind::L_BRACK, token)) => {
                 let _ty_guard = parser.start_node(SyntaxKind::TYPE);
                 let _list_guard = parser.start_node(SyntaxKind::LIST_TYPE);
                 parser.push_ast(kind, token);
-                process(types, parser);
+                process(types, parser)?;
                 if let Some((_kind @ SyntaxKind::R_BRACK, _token)) = peek(types) {
-                    process(types, parser);
+                    process(types, parser)?;
                 }
             }
             Some((kind @ SyntaxKind::NON_NULL_TYPE, _)) => {
                 let _ty_guard = parser.start_node(SyntaxKind::TYPE);
                 let _non_null_guard = parser.start_node(kind);
-                process(types, parser);
+                process(types, parser)?;
             }
             Some((SyntaxKind::NAMED_TYPE, _)) => {
                 let _ty_guard = parser.start_node(SyntaxKind::TYPE);
@@ -81,7 +84,7 @@ pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
                 parser.push_ast(kind, token);
             }
             _ => {
-                return format_err!(
+                bail!(
                     parser
                         .peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
@@ -92,6 +95,7 @@ pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
                 );
             }
         }
+        Ok(())
     }
 }
 
