@@ -46,17 +46,8 @@ pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
                 types.push_back((SyntaxKind::NAMED_TYPE, token));
                 types
             }
-            token => {
-                return format_err!(
-                    parser
-                        .peek_data()
-                        .unwrap_or_else(|| String::from("no further data")),
-                    "Type can only be a NamedType, a NonNullType or a ListType, got {}",
-                    parser
-                        .peek_data()
-                        .unwrap_or_else(|| String::from("no further data"))
-                );
-            }
+            // TODO(@lrlna): this should not panic
+            token => panic!("unexpected token, {:?}", token),
         };
 
         if let Some(TokenKind::Bang) = parser.peek() {
