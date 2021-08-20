@@ -6,6 +6,9 @@ pub(crate) fn check_ast(input: &str, expected: &str) {
     let ast = parser.parse();
     let expected = expected.trim();
     let actual = format!("{:?}", ast);
+
+    // write!(std::io::stdout(), "{:?}", ast).unwrap();
+
     let actual = actual.trim();
     if actual != expected {
         println!("\nACTUAL:\n{}", actual);
