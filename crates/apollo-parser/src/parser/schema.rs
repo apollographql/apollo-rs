@@ -50,7 +50,6 @@ pub(crate) fn schema_definition(parser: &mut Parser) {
 // TODO @lrlna: inlined collapsed AST should live in a 'fixtures' dir for ease of testing
 #[cfg(test)]
 mod test {
-    use super::*;
     use crate::parser::utils;
 
     #[test]

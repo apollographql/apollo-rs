@@ -107,7 +107,6 @@ pub(crate) fn operation_type(parser: &mut Parser) {
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use crate::parser::utils;
 
     #[test]

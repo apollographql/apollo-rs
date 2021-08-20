@@ -101,10 +101,9 @@ pub(crate) fn ty(parser: &mut Parser) {
 /// NamedType
 ///     Name
 /// ```
-pub(crate) fn named_type(parser: &mut Parser) -> Result<(), crate::Error> {
+pub(crate) fn named_type(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::NAMED_TYPE);
     name::name(parser);
-    Ok(())
 }
 
 fn peek<T>(target: &VecDeque<T>) -> Option<&T> {
