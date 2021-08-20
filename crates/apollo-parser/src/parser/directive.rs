@@ -158,13 +158,32 @@ pub(crate) fn directives(parser: &mut Parser) {
 mod test {
     use super::*;
     use crate::parser::utils;
+    use pretty_assertions::assert_eq;
+    use std::io::Write;
 
     #[test]
     fn smoke_directive_definition() {
-        let input = "directive @example(isTreat: [[Boolean]!]) on";
-        let parser = Parser::new(input);
+        let parser = Parser::new("directive @ example FIELD");
+        let output = parser.parse();
 
-        println!("{:?}", parser.parse());
+        println!("{:?}", output); // indentation is kept
+        let actual = format!("{:?}", output); // indentation is stripped
+        println!("\n{}", actual);
+        write!(std::io::stdout(), "{:?}", output).unwrap(); //indentation is kept
+
+        let expected = r#"- DOCUMENT@0..22
+- DIRECTIVE_DEFINITION@0..22
+  - directive_KW@0..9 "directive"
+  - AT@9..10 "@"
+  - NAME@10..17
+    - IDENT@10..17 "example"
+  - DIRECTIVE_LOCATIONS@17..22
+    - DIRECTIVE_LOCATION@17..22
+      - FIELD_KW@17..22 "FIELD"
+- ERROR@0:5 "Expected to have Directive Locations in a Directive Definition, got FIELD"
+"#;
+
+        assert_eq!(actual, expected);
     }
 
     #[test]
