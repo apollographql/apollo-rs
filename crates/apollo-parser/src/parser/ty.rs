@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::{format_err, NodeGuard, Parser, SyntaxKind, Token, TokenKind};
+use crate::{format_err, Parser, SyntaxKind, Token, TokenKind};
 
 use crate::parser::name;
 
@@ -15,11 +15,18 @@ use crate::parser::name;
 ///         NamedType!
 ///         ListType!
 /// ```
+// NOTE(lrlna): Because Type cannot be parsed in a typical LR fashion, the
+// following parsing rule does not follow the same pattern as all other parsing
+// rules in this library. The parent node type is determined based on what its
+// last possible is a NonNullType.
+//
+// To make this work, we first collect all types in a double ended queue, and
+// unwrap them once the last possible child has been parsed. Nodes are then
+// created in the processing stage of this parsing rule.
 pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
     let mut types = parse(parser);
 
     process(&mut types, parser);
-    debug_assert_eq!(types.len(), 0);
 
     return Ok(());
 
@@ -39,7 +46,17 @@ pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
                 types.push_back((SyntaxKind::NAMED_TYPE, token));
                 types
             }
-            token => panic!("unexpected token {:?}", token),
+            token => {
+                return format_err!(
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data")),
+                    "Type can only be a NamedType, a NonNullType or a ListType, got {}",
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data"))
+                );
+            }
         };
 
         if let Some(TokenKind::Bang) = parser.peek() {
@@ -49,29 +66,40 @@ pub(crate) fn ty(parser: &mut Parser) -> Result<(), crate::Error> {
         types
     }
 
-    fn process(mut types: &mut VecDeque<(SyntaxKind, Token)>, parser: &mut Parser) {
+    fn process(types: &mut VecDeque<(SyntaxKind, Token)>, parser: &mut Parser) {
         match types.pop_front() {
             Some((kind @ SyntaxKind::L_BRACK, token)) => {
-                let guard = parser.start_node(SyntaxKind::LIST_TYPE);
+                let _ty_guard = parser.start_node(SyntaxKind::TYPE);
+                let _list_guard = parser.start_node(SyntaxKind::LIST_TYPE);
                 parser.push_ast(kind, token);
                 process(types, parser);
-                if let Some((kind @ SyntaxKind::R_BRACK, token)) = peek(types) {
+                if let Some((_kind @ SyntaxKind::R_BRACK, _token)) = peek(types) {
                     process(types, parser);
                 }
-                guard.finish_node();
             }
             Some((kind @ SyntaxKind::NON_NULL_TYPE, _)) => {
-                let guard = parser.start_node(kind);
+                let _ty_guard = parser.start_node(SyntaxKind::TYPE);
+                let _non_null_guard = parser.start_node(kind);
                 process(types, parser);
-                guard.finish_node();
             }
             Some((SyntaxKind::NAMED_TYPE, _)) => {
+                let _ty_guard = parser.start_node(SyntaxKind::TYPE);
                 parser.start_node(SyntaxKind::NAMED_TYPE).finish_node();
             }
             Some((kind @ SyntaxKind::R_BRACK, token)) => {
                 parser.push_ast(kind, token);
             }
-            _ => unreachable!(),
+            _ => {
+                return format_err!(
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data")),
+                    "Internal apollo-parser error, {} token was not expected when creating a Type",
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data"))
+                );
+            }
         }
     }
 }

@@ -175,7 +175,7 @@ mod test {
 
     #[test]
     fn smoke_directive_definition() {
-        let input = "directive @example(isTreat: [[[[Boolean!]!]!]!]!) on FIELD";
+        let input = "directive @example(isTreat: [[Boolean]!]) on FIELD";
         let parser = Parser::new(input);
 
         println!("{:?}", parser.parse());
