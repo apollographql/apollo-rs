@@ -42,14 +42,14 @@ pub(crate) fn value(parser: &mut Parser) {
 }
 
 pub(crate) fn list_value(parser: &mut Parser) {
-    let list_guard = parser.start_node(SyntaxKind::LIST_VALUE);
+    let guard = parser.start_node(SyntaxKind::LIST_VALUE);
     parser.bump(SyntaxKind::L_BRACK);
     match parser.peek() {
         Some(TokenKind::Node) => {
             value(parser);
             if let Some(TokenKind::RBracket) = parser.peek() {
                 parser.bump(SyntaxKind::R_BRACK);
-                list_guard.finish_node()
+                guard.finish_node()
             } else {
                 parser.push_err(create_err!(
                     parser
@@ -75,4 +75,11 @@ pub(crate) fn list_value(parser: &mut Parser) {
             ));
         }
     }
+}
+/// ObjectValueConst
+///     { }
+///     { ObjectField [Const][list] }
+pub(crate) fn object_value(parser: &mut Parser) {
+    let guard = parser.start_node(SyntaxKind::OBJECT_VALUE);
+    parser.bump(SyntaxKind::L_CURLY);
 }
