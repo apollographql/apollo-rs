@@ -1,3 +1,5 @@
+use std::str::Chars;
+
 use crate::Error;
 use crate::{ensure, format_err};
 
@@ -54,17 +56,17 @@ impl Lexer {
     }
 
     /// Advance the cursor and get the next token.
-    pub fn next(&mut self) -> Result<Token, Error> {
-        self.tokens.pop().expect("Unexpected EOF")
-    }
+    // pub(crate) fn next(&mut self) -> Result<Token, Error> {
+    //     self.tokens.pop().expect("Unexpected EOF")
+    // }
 
     /// Parse the next token without advancing the cursor.
-    pub fn peek(&mut self) -> Option<Result<Token, Error>> {
-        self.tokens.last().cloned()
-    }
+    // pub(crate) fn peek(&mut self) -> Option<Result<Token, Error>> {
+    //     self.tokens.last().cloned()
+    // }
 
     /// Get a reference to the lexer's tokens.
-    pub fn tokens(&self) -> &[Result<Token, Error>] {
+    pub(crate) fn tokens(&self) -> &[Result<Token, Error>] {
         self.tokens.as_slice()
     }
 }
@@ -74,6 +76,23 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
     let c = chars.next().unwrap();
 
     let kind = match c {
+        '"' => {
+            let mut buf = String::new();
+            buf.push(c);
+
+            while let Some(c) = chars.clone().next() {
+                if is_ident_char(c) || is_whitespace(c) {
+                    buf.push(chars.next().unwrap());
+                } else if c == '"' {
+                    buf.push(chars.next().unwrap());
+                    break;
+                } else {
+                    break;
+                }
+            }
+
+            Ok(Token::new(TokenKind::StringValue, buf))
+        }
         c if is_ident_char(c) => {
             let mut buf = String::new();
             buf.push(c);
@@ -88,6 +107,8 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
 
             match buf.as_str() {
                 "on" => Ok(Token::new(TokenKind::On, buf)),
+                "null" => Ok(Token::new(TokenKind::Null, buf)),
+                "true" | "false" => Ok(Token::new(TokenKind::Boolean, buf)),
                 _ => Ok(Token::new(TokenKind::Node, buf)),
             }
         }
@@ -192,33 +213,27 @@ fn is_digit_char(c: char) -> bool {
     matches!(c, '0'..='9')
 }
 
+/// EscapedCharacter
+///     "  \  /  b  f  n  r  t
+fn is_escaped_char(c: char) -> bool {
+    matches!(c, '"' | '\\' | '/' | 'b' | 'f' | 'n' | 'r' | 't')
+}
+
+/// SourceCharacter
+///     /[\u0009\u000A\u000D\u0020-\uFFFF]/
+fn is_source_char(c: char) -> bool {
+    matches!(c, '\t' | '\r' | '\n' | '\u{0020}'..='\u{FFFF}')
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     #[test]
     fn tests() {
-        let gql_1 = "directive @example on FIELD";
+        let gql_1 = r#"
+"description"
+directive @example("another description" field: value) on FIELD"#;
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
-
-        let gql_2 = "fragment friendFields on User {
-            id name profilePic(size: 5.0)
-        }";
-        let lexer_2 = Lexer::new(gql_2);
-        dbg!(lexer_2.tokens);
-
-        let gql_3 = "query withFragments {
-  user(id: 4) {
-    friends(first: 10) {
-      ..friendFields
-    }
-    mutualFriends(first: 10)ö {
-      .friendFields
-    }
-  }
-}";
-
-        let lexer_3 = Lexer::new(gql_3);
-        dbg!(lexer_3.tokens);
     }
 }
