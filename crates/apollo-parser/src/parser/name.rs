@@ -11,12 +11,7 @@ pub(crate) fn name(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::NAME);
     match parser.peek() {
         Some(TokenKind::Node) => {
-            let data = parser.peek_data().unwrap();
-            // TODO @lrlna: remove assert as this panics, and we want to collect errors
-            assert!(data.starts_with(is_start_char));
-            if data.len() >= 2 {
-                assert!(data[1..].chars().all(is_remainder_char));
-            }
+            validate_name(parser);
             parser.bump(SyntaxKind::IDENT);
         }
         // missing name
@@ -25,6 +20,24 @@ pub(crate) fn name(parser: &mut Parser) {
             "Expected a spec compliant Name, got {}",
             parser.peek_data().unwrap()
         )),
+    }
+}
+
+pub(crate) fn validate_name(parser: &mut Parser) {
+    let data = parser.peek_data().unwrap();
+    if !data.starts_with(is_start_char) {
+        parser.push_err(create_err!(
+            parser.peek_data().unwrap(),
+            "Expected Name to start with a letter or an _, got {}",
+            parser.peek_data().unwrap()
+        ));
+    }
+    if data.len() >= 2 && !data[1..].chars().all(is_remainder_char) {
+        parser.push_err(create_err!(
+            parser.peek_data().unwrap(),
+            "Name can only be composed of letters, numbers and _, got {}",
+            parser.peek_data().unwrap()
+        ));
     }
 }
 

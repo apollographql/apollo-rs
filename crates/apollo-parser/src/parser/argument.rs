@@ -1,6 +1,7 @@
-use crate::{create_err, parser::name, Parser, SyntaxKind, TokenKind};
+use crate::parser::{name, value};
+use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
-/// See: https://spec.graphql.org/June2018/#Argument
+/// See: https://spec.graphql.org/June2018/#Valuehttps://spec.graphql.org/June2018/#Argument
 ///
 /// ```txt
 /// Argument
@@ -12,23 +13,26 @@ pub(crate) fn argument(parser: &mut Parser, is_argument: bool) {
         name::name(parser);
         if let Some(TokenKind::Colon) = parser.peek() {
             parser.bump(SyntaxKind::COLON);
-            if let Some(TokenKind::Node) = parser.peek() {
-                // TODO @lrlna: use value type function
-                parser.bump(SyntaxKind::VALUE);
-                if parser.peek().is_some() {
-                    guard.finish_node();
-                    return argument(parser, true);
+            match parser.peek() {
+                Some(TokenKind::Node) | Some(TokenKind::Dollar) => {
+                    value::value(parser);
+                    if parser.peek().is_some() {
+                        guard.finish_node();
+                        argument(parser, true);
+                    }
+                }
+                _ => {
+                    parser.push_err(create_err!(
+                        parser
+                            .peek_data()
+                            .unwrap_or_else(|| String::from("no further data")),
+                        "Expected Argument to have a Value, got {}",
+                        parser
+                            .peek_data()
+                            .unwrap_or_else(|| String::from("no further data"))
+                    ));
                 }
             }
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Argument to have a Value, got {}",
-                parser
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data"))
-            ));
         }
     } else {
         parser.push_err(create_err!(

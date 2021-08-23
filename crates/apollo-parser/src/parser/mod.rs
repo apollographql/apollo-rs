@@ -28,6 +28,7 @@ mod syntax_tree;
 mod token_text;
 mod ty;
 mod utils;
+mod value;
 mod variable;
 
 /// Parse text into an AST.
@@ -169,7 +170,7 @@ mod test {
 
     #[test]
     fn smoke_directive_definition_with_errors() {
-        let input = "directive ø @example(isTreat: Boolean, treatKind: String)";
+        let input = "\"Description\"directive @example(isTreat: Boolean, treatKind: String)";
         let parser = Parser::new(input);
 
         println!("{:?}", parser.parse());
