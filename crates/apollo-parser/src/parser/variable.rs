@@ -8,7 +8,6 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 ///     Variable : Type DefaultValue(opt)
 /// ```
 pub(crate) fn variable_definition(parser: &mut Parser, is_variable: bool) {
-    // TODO @lrlna: parse optional default values
     if let Some(TokenKind::Dollar) = parser.peek() {
         let guard = parser.start_node(SyntaxKind::VARIABLE_DEFINITION);
         variable(parser);

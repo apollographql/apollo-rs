@@ -1,5 +1,3 @@
-use std::str::Chars;
-
 use crate::Error;
 use crate::{ensure, format_err};
 
@@ -106,7 +104,6 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
             }
 
             match buf.as_str() {
-                "on" => Ok(Token::new(TokenKind::On, buf)),
                 "null" => Ok(Token::new(TokenKind::Null, buf)),
                 "true" | "false" => Ok(Token::new(TokenKind::Boolean, buf)),
                 _ => Ok(Token::new(TokenKind::Node, buf)),

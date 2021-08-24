@@ -8,9 +8,6 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 ///     Description(opt) Name : Type DefaultValue(opt) Directives(const/opt)
 /// ```
 pub(crate) fn input_value_definition(parser: &mut Parser, is_input: bool) {
-    // TODO @lrlna: parse description
-    // TODO @lrlna: parse default value
-    // TODO @lrlna: parse directives
     if let Some(TokenKind::Node) = parser.peek() {
         let guard = parser.start_node(SyntaxKind::INPUT_VALUE_DEFINITION);
         name::name(parser);

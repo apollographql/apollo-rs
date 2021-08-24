@@ -86,9 +86,6 @@ impl fmt::Debug for Token {
             TokenKind::Pipe => {
                 write!(f, "PIPE@{}:{}", start, end)
             }
-            TokenKind::On => {
-                write!(f, "ON@{}:{}", start, end)
-            }
             TokenKind::Eof => {
                 write!(f, "EOF@{}:{}", start, end)
             }

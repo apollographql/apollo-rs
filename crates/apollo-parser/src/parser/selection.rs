@@ -30,12 +30,11 @@ pub(crate) fn selection_set(parser: &mut Parser) {
 pub(crate) fn selection(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::SELECTION);
     if let Some(TokenKind::Spread) = parser.peek() {
-        if let Some(TokenKind::On) = parser.peek() {
-            todo!();
-            // fragment::inline_fragment(parser)?;
-        } else {
-            todo!();
-            // framgent::fragment_spread(parser)?;
+        if let Some(node) = parser.peek_data() {
+            match node.as_str() {
+                "on" => todo!(), // fragment::inline_fragment(parser)
+                _ => todo!(),    // fragment::fragment_spread(parser)
+            }
         }
     }
     while let Some(TokenKind::Node) = parser.peek() {

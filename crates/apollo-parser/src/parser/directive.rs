@@ -11,8 +11,6 @@ pub(crate) fn directive_definition(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::DIRECTIVE_DEFINITION);
     // TODO @lrlna: parse Description
     parser.bump(SyntaxKind::directive_KW);
-    // parser.parse_whitespace();
-
     match parser.peek() {
         Some(TokenKind::At) => parser.bump(SyntaxKind::AT),
         _ => {
@@ -46,17 +44,19 @@ pub(crate) fn directive_definition(parser: &mut Parser) {
         }
     }
 
-    match parser.peek() {
-        Some(TokenKind::On) => parser.bump(SyntaxKind::on_KW),
-        _ => parser.push_err(create_err!(
-            parser
-                .peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected to have Directive Locations in a Directive Definition, got {}",
-            parser
-                .peek_data()
-                .unwrap_or_else(|| String::from("no further data"))
-        )),
+    if let Some(node) = parser.peek_data() {
+        match node.as_str() {
+            "on" => parser.bump(SyntaxKind::on_KW),
+            _ => parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected to have Directive Locations in a Directive Definition, got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data"))
+            )),
+        }
     }
 
     let _guard = parser.start_node(SyntaxKind::DIRECTIVE_LOCATIONS);

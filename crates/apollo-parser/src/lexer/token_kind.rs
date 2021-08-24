@@ -16,7 +16,6 @@ pub enum TokenKind {
     LCurly,   // {
     RCurly,   // }
     Pipe,     // |
-    On,
     Eof,
 
     // composite nodes
