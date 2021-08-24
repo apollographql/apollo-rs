@@ -54,7 +54,19 @@ pub(crate) fn operation_type_definition(parser: &mut Parser, is_operation_type: 
 
 pub(crate) fn operation_definition(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::OPERATION_DEFINITION);
-    operation_type(parser);
+    match parser.peek() {
+        Some(TokenKind::Node) => operation_type(parser),
+        Some(TokenKind::LCurly) => selection::selection_set(parser),
+        _ => parser.push_err(create_err!(
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data")),
+            "Expected an Operation Type or a Selection Set, got {}",
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data"))
+        )),
+    }
     if let Some(TokenKind::Node) = parser.peek() {
         name::name(parser);
     }
@@ -75,7 +87,7 @@ pub(crate) fn operation_definition(parser: &mut Parser) {
         directive::directives(parser);
     }
     if let Some(TokenKind::LCurly) = parser.peek() {
-        selection::selection_set(parser);
+        selection::selection_set(parser)
     }
 }
 
