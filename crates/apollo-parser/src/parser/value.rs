@@ -134,6 +134,12 @@ pub(crate) fn object_field(parser: &mut Parser) {
     }
 }
 
+pub(crate) fn default_value(parser: &mut Parser) {
+    let _guard = parser.start_node(SyntaxKind::DEFAULT_VALUE);
+    parser.bump(SyntaxKind::EQ);
+    value(parser);
+}
+
 #[cfg(test)]
 mod test {
     use crate::parser::utils;

@@ -156,16 +156,7 @@ pub(crate) fn directives(parser: &mut Parser) {
 // TODO @lrlna: inlined collapsed AST should live in a 'fixtures' dir for ease of testing
 #[cfg(test)]
 mod test {
-    use super::*;
     use crate::parser::utils;
-
-    #[test]
-    fn smoke_directive_definition() {
-        let parser = Parser::new("directive @ example FIELD");
-        let output = parser.parse();
-
-        println!("{:?}", output); // indentation is kept
-    }
 
     #[test]
     fn it_returns_errors_and_full_ast_when_name_is_missing() {
@@ -173,14 +164,14 @@ mod test {
             "directive @ on FIELD",
             r#"
             - DOCUMENT@0..17
-              - DIRECTIVE_DEFINITION@0..17
-                - directive_KW@0..9 "directive"
-                - AT@9..10 "@"
-                - NAME@10..10
-                - on_KW@10..12 "on"
-                - DIRECTIVE_LOCATIONS@12..17
-                  - DIRECTIVE_LOCATION@12..17
-                    - FIELD_KW@12..17 "FIELD"
+                - DIRECTIVE_DEFINITION@0..17
+                    - directive_KW@0..9 "directive"
+                    - AT@9..10 "@"
+                    - NAME@10..10
+                    - on_KW@10..12 "on"
+                    - DIRECTIVE_LOCATIONS@12..17
+                        - DIRECTIVE_LOCATION@12..17
+                            - FIELD_KW@12..17 "FIELD"
             - ERROR@0:2 "Expected a spec compliant Name, got on"
             "#,
         );

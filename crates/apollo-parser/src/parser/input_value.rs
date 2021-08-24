@@ -1,4 +1,4 @@
-use crate::parser::{name, ty};
+use crate::parser::{name, ty, value};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#InputValueDefinition
@@ -19,6 +19,9 @@ pub(crate) fn input_value_definition(parser: &mut Parser, is_input: bool) {
             match parser.peek() {
                 Some(TokenKind::Node) | Some(TokenKind::LBracket) => {
                     ty::ty(parser);
+                    if let Some(TokenKind::Eq) = parser.peek() {
+                        value::default_value(parser);
+                    }
                     if parser.peek().is_some() {
                         guard.finish_node();
                         return input_value_definition(parser, true);
