@@ -18,18 +18,19 @@ pub(crate) fn fragment_definition(parser: &mut Parser) {
         directive::directives(parser);
     }
 
-    if let Some(TokenKind::LCurly) = parser.peek() {
-        selection::selection_set(parser)
-    } else {
-        parser.push_err(create_err!(
-            parser
-                .peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected Fragment Definition to have a Selection Set, got {}",
-            parser
-                .peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-        ));
+    match parser.peek() {
+        Some(TokenKind::LCurly) => selection::selection_set(parser),
+        _ => {
+            parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected Fragment Definition to have a Selection Set, got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+            ));
+        }
     }
 }
 
@@ -91,6 +92,66 @@ pub(crate) fn type_condition(parser: &mut Parser) {
             "Expected Type Condition in a Fragment, got {}",
             parser.peek_data().unwrap()
         )),
+    }
+}
+
+/// See: https://spec.graphql.org/June2018/#InlineFragment
+///
+/// ```txt
+/// InlineFragment
+///     ... TypeCondition[opt] Directives[opt] SelectionSet
+/// ```
+pub(crate) fn inline_fragment(parser: &mut Parser) {
+    let _guard = parser.start_node(SyntaxKind::INLINE_FRAGMENT);
+    if let Some(TokenKind::Node) = parser.peek() {
+        type_condition(parser);
+    }
+    if let Some(TokenKind::At) = parser.peek() {
+        directive::directives(parser);
+    }
+    match parser.peek() {
+        Some(TokenKind::LCurly) => selection::selection_set(parser),
+        _ => {
+            parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected Inline Fragment to have a Selection Set, got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+            ));
+        }
+    }
+}
+
+/// See: https://spec.graphql.org/June2018/#FragmentSpread
+///
+/// ```txt
+/// FragmentSpread
+///     ... FragmentName Directives[opt]
+/// ```
+pub(crate) fn fragment_spread(parser: &mut Parser) {
+    let _guard = parser.start_node(SyntaxKind::FRAGMENT_SPREAD);
+    match parser.peek() {
+        Some(TokenKind::Node) => {
+            fragment_name(parser);
+        }
+        _ => {
+            parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected Fragment Spread to have a Name, got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+            ));
+        }
+    }
+
+    if let Some(TokenKind::At) = parser.peek() {
+        directive::directives(parser);
     }
 }
 

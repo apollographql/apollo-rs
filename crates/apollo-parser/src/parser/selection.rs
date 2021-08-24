@@ -1,4 +1,4 @@
-use crate::parser::field;
+use crate::parser::{field, fragment};
 use crate::{Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#SelectionSet
@@ -32,8 +32,8 @@ pub(crate) fn selection(parser: &mut Parser) {
     if let Some(TokenKind::Spread) = parser.peek() {
         if let Some(node) = parser.peek_data() {
             match node.as_str() {
-                "on" => todo!(), // fragment::inline_fragment(parser)
-                _ => todo!(),    // fragment::fragment_spread(parser)
+                "on" | "{" => fragment::inline_fragment(parser),
+                _ => fragment::fragment_spread(parser),
             }
         }
     }
