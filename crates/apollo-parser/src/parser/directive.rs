@@ -159,20 +159,20 @@ mod test {
     use crate::parser::utils;
 
     #[test]
-    fn it_returns_errors_and_full_ast_when_name_is_missing() {
+    fn it_returns_errors_and_full_ast_when_location_is_missing() {
         utils::check_ast(
-            "directive @ on FIELD",
+            "directive @example on",
             r#"
-            - DOCUMENT@0..17
-                - DIRECTIVE_DEFINITION@0..17
+            - DOCUMENT@0..19
+                - DIRECTIVE_DEFINITION@0..19
                     - directive_KW@0..9 "directive"
                     - AT@9..10 "@"
-                    - NAME@10..10
-                    - on_KW@10..12 "on"
-                    - DIRECTIVE_LOCATIONS@12..17
-                        - DIRECTIVE_LOCATION@12..17
-                            - FIELD_KW@12..17 "FIELD"
-            - ERROR@0:2 "Expected a spec compliant Name, got on"
+                    - NAME@10..17
+                        - IDENT@10..17 "example"
+                    - on_KW@17..19 "on"
+                    - DIRECTIVE_LOCATIONS@19..19
+            - ERROR@0:15 "Expected to have Directive Locations in a Directive Definition, got no
+            further data"
             "#,
         );
     }

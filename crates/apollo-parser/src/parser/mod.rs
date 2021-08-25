@@ -132,6 +132,12 @@ impl Parser {
     pub(crate) fn peek_data(&self) -> Option<String> {
         self.tokens.last().map(|token| token.data().to_string())
     }
+
+    pub(crate) fn peek_data_n(&self, n: usize) -> Option<String> {
+        self.tokens
+            .get(self.tokens.len() - n)
+            .map(|token| token.data().to_string())
+    }
 }
 
 #[must_use]
@@ -158,15 +164,6 @@ impl Drop for NodeGuard {
 #[cfg(test)]
 mod test {
     use super::*;
-
-    #[test]
-    fn smoke_fragment() {
-        let input = "fragment friendFields on User {
-            id name profilePic(size: 5.0)
-        }";
-        let parser = Parser::new(input);
-        println!("{:?}", parser.parse());
-    }
 
     #[test]
     fn smoke_directive_definition_with_errors() {

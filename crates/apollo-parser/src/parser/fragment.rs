@@ -103,6 +103,7 @@ pub(crate) fn type_condition(parser: &mut Parser) {
 /// ```
 pub(crate) fn inline_fragment(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::INLINE_FRAGMENT);
+    parser.bump(SyntaxKind::SPREAD);
     if let Some(TokenKind::Node) = parser.peek() {
         type_condition(parser);
     }
@@ -133,6 +134,7 @@ pub(crate) fn inline_fragment(parser: &mut Parser) {
 /// ```
 pub(crate) fn fragment_spread(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::FRAGMENT_SPREAD);
+    parser.bump(SyntaxKind::SPREAD);
     match parser.peek() {
         Some(TokenKind::Node) => {
             fragment_name(parser);
@@ -207,6 +209,45 @@ mod test {
                                             - INT_VALUE@57..59 "50"
                                     - R_PAREN@59..60 ")"
                         - R_CURLY@60..61 "}"
+            "#,
+        );
+    }
+
+    #[test]
+    fn it_parses_fragment_definition_with_fragment_spread() {
+        utils::check_ast(
+            "fragment friendFields on User {
+                id
+                name
+                ...standardProfilePic
+            }",
+            r#"
+            - DOCUMENT@0..55
+                - FRAGMENT_DEFINITION@0..55
+                    - fragment_KW@0..8 "fragment"
+                    - FRAGMENT_NAME@8..20
+                        - NAME@8..20
+                            - IDENT@8..20 "friendFields"
+                    - TYPE_CONDITION@20..26
+                        - on_KW@20..22 "on"
+                        - NAMED_TYPE@22..26
+                            - NAME@22..26
+                                - IDENT@22..26 "User"
+                    - SELECTION_SET@26..55
+                        - L_CURLY@26..27 "{"
+                        - SELECTION@27..54
+                            - FIELD@27..29
+                                - NAME@27..29
+                                    - IDENT@27..29 "id"
+                            - FIELD@29..33
+                                - NAME@29..33
+                                    - IDENT@29..33 "name"
+                            - FRAGMENT_SPREAD@33..54
+                                - SPREAD@33..36 "..."
+                                - FRAGMENT_NAME@36..54
+                                    - NAME@36..54
+                                        - IDENT@36..54 "standardProfilePic"
+                        - R_CURLY@54..55 "}"
             "#,
         );
     }
