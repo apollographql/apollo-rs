@@ -44,3 +44,14 @@ pub(crate) fn field(parser: &mut Parser) {
         _ => guard.finish_node(),
     }
 }
+
+/// See: https://spec.graphql.org/June2018/#FieldsDefinition
+///
+/// ```txt
+/// FieldsDefinition
+///     { FieldDefinition[list] }
+/// ```
+pub(crate) fn fields_definition(parser: &mut Parser) {
+    let _guard = parser.start_node(SyntaxKind::FIELDS_DEFINITION);
+    parser.bump(SyntaxKind::L_CURLY);
+}

@@ -1,4 +1,4 @@
-use crate::parser::{directive, name};
+use crate::parser::{directive, field, name};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#ScalarTypeDefinition
@@ -7,7 +7,7 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 /// ScalarTypeDefinition
 ///     Description[opt] scalar Name Directives[Const][opt]
 /// ```
-pub(crate) fn scalar_definition(parser: &mut Parser) {
+pub(crate) fn scalar_type_definition(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::SCALAR_TYPE_DEFINITION);
     parser.bump(SyntaxKind::scalar_KW);
     match parser.peek() {
@@ -27,6 +27,93 @@ pub(crate) fn scalar_definition(parser: &mut Parser) {
 
     if let Some(TokenKind::At) = parser.peek() {
         directive::directives(parser);
+    }
+}
+
+/// See: https://spec.graphql.org/June2018/#ObjectTypeDefinition
+///
+/// ```txt
+/// ObjectTypeDefinition
+///     Description[opt] type Name ImplementsInterfaces[opt] Directives[Const][opt] FieldsDefinition[opt]
+/// ```
+pub(crate) fn object_type_definition(parser: &mut Parser) {
+    let _guard = parser.start_node(SyntaxKind::OBJECT_TYPE_DEFINITION);
+    parser.bump(SyntaxKind::type_KW);
+
+    match parser.peek() {
+        Some(TokenKind::Node) => name::name(parser),
+        _ => {
+            parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected Object Type Definition to have a Name, got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+            ));
+        }
+    }
+    if let Some(TokenKind::Node) = parser.peek() {
+        if parser.peek_data().unwrap() == "implements" {
+            implements_interfaces(parser, false);
+        } else {
+            parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Unexpected Name in Object Type Definition, {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+            ));
+        }
+    }
+
+    if let Some(TokenKind::At) = parser.peek() {
+        directive::directives(parser);
+    }
+
+    if let Some(TokenKind::LCurly) = parser.peek() {
+        field::fields_definition(parser);
+    }
+}
+
+/// See: https://spec.graphql.org/June2018/#ImplementsInterfaces
+///
+/// ```txt
+/// ImplementsInterfaces
+///     implements &[opt] NamedType
+///     ImplementsInterfaces & NamedType
+/// ```
+pub(crate) fn implements_interfaces(parser: &mut Parser, is_interfaces: bool) {
+    let _guard = parser.start_node(SyntaxKind::IMPLEMENTS_INTERFACES);
+    parser.bump(SyntaxKind::implements_KW);
+
+    match parser.peek() {
+        Some(TokenKind::Node) => {
+            let node = parser.peek_data().unwrap();
+            match node.as_str() {
+                "&" => {
+                    parser.bump(SyntaxKind::AMP);
+                    implements_interfaces(parser, is_interfaces)
+                }
+                _ => name::name(parser),
+            }
+        }
+        _ => {
+            if !is_interfaces {
+                parser.push_err(create_err!(
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data")),
+                    "Expected to have Directive Locations in a Directive Definition, got {}",
+                    parser
+                        .peek_data()
+                        .unwrap_or_else(|| String::from("no further data"))
+                ));
+            }
+        }
     }
 }
 

@@ -71,33 +71,37 @@ pub(crate) fn directive_locations(parser: &mut Parser, is_location: bool) {
             directive_locations(parser, is_location)
         }
         Some(TokenKind::Node) => {
-            match parser.peek_data() {
-                Some(loc) => {
-                    let _guard = parser.start_node(SyntaxKind::DIRECTIVE_LOCATION);
-                    match loc.as_str() {
-                        "MUTATION" => parser.bump(SyntaxKind::QUERY_KW),
-                        "SUBSCRIPTION" => parser.bump(SyntaxKind::SUBSCRIPTION_KW),
-                        "FIELD" => parser.bump(SyntaxKind::FIELD_KW),
-                        "FRAGMENT_DEFINITION" => parser.bump(SyntaxKind::FRAGMENT_DEFINITION_KW),
-                        "FRAGMENT_SPREAD" => parser.bump(SyntaxKind::FRAGMENT_DEFINITION_KW),
-                        "INLINE_FRAGMENT" => parser.bump(SyntaxKind::INLINE_FRAGMENT_KW),
-                        "SCHEMA" => parser.bump(SyntaxKind::SCHEMA_KW),
-                        "SCALAR" => parser.bump(SyntaxKind::SCALAR_KW),
-                        "OBJECT" => parser.bump(SyntaxKind::OBJECT_KW),
-                        "FIELD_DEFINITION" => parser.bump(SyntaxKind::FIELD_DEFINITION_KW),
-                        "ARGUMENT_DEFINITION" => parser.bump(SyntaxKind::ARGUMENT_DEFINITION_KW),
-                        "INTERFACE" => parser.bump(SyntaxKind::INTERFACE_KW),
-                        "UNION" => parser.bump(SyntaxKind::UNION_KW),
-                        "ENUM" => parser.bump(SyntaxKind::ENUM_KW),
-                        "ENUM_VALUE" => parser.bump(SyntaxKind::ENUM_VALUE_KW),
-                        "INPUT_OBJECT" => parser.bump(SyntaxKind::INPUT_OBJECT_KW),
-                        "INPUT_FIELD_DEFINITION" => {
-                            parser.bump(SyntaxKind::INPUT_FIELD_DEFINITION_KW)
-                        }
-                        _ => todo!(),
-                    }
+            let loc = parser.peek_data().unwrap();
+            let _guard = parser.start_node(SyntaxKind::DIRECTIVE_LOCATION);
+            match loc.as_str() {
+                "MUTATION" => parser.bump(SyntaxKind::QUERY_KW),
+                "SUBSCRIPTION" => parser.bump(SyntaxKind::SUBSCRIPTION_KW),
+                "FIELD" => parser.bump(SyntaxKind::FIELD_KW),
+                "FRAGMENT_DEFINITION" => parser.bump(SyntaxKind::FRAGMENT_DEFINITION_KW),
+                "FRAGMENT_SPREAD" => parser.bump(SyntaxKind::FRAGMENT_DEFINITION_KW),
+                "INLINE_FRAGMENT" => parser.bump(SyntaxKind::INLINE_FRAGMENT_KW),
+                "SCHEMA" => parser.bump(SyntaxKind::SCHEMA_KW),
+                "SCALAR" => parser.bump(SyntaxKind::SCALAR_KW),
+                "OBJECT" => parser.bump(SyntaxKind::OBJECT_KW),
+                "FIELD_DEFINITION" => parser.bump(SyntaxKind::FIELD_DEFINITION_KW),
+                "ARGUMENT_DEFINITION" => parser.bump(SyntaxKind::ARGUMENT_DEFINITION_KW),
+                "INTERFACE" => parser.bump(SyntaxKind::INTERFACE_KW),
+                "UNION" => parser.bump(SyntaxKind::UNION_KW),
+                "ENUM" => parser.bump(SyntaxKind::ENUM_KW),
+                "ENUM_VALUE" => parser.bump(SyntaxKind::ENUM_VALUE_KW),
+                "INPUT_OBJECT" => parser.bump(SyntaxKind::INPUT_OBJECT_KW),
+                "INPUT_FIELD_DEFINITION" => parser.bump(SyntaxKind::INPUT_FIELD_DEFINITION_KW),
+                _ => {
+                    parser.push_err(create_err!(
+                        parser
+                            .peek_data()
+                            .unwrap_or_else(|| String::from("no further data")),
+                        "Expected to have a valid Directive Location in a Directive Definition, got {}",
+                        parser
+                            .peek_data()
+                            .unwrap_or_else(|| String::from("no further data"))
+                    ));
                 }
-                None => todo!(),
             }
             if parser.peek_data().is_some() {
                 directive_locations(parser, true)

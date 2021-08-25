@@ -79,7 +79,8 @@ impl Parser {
                     "fragment" => fragment::fragment_definition(&mut self),
                     "directive" => directive::directive_definition(&mut self),
                     "schema" => schema::schema_definition(&mut self),
-                    "scalar" => ty_definition::scalar_definition(&mut self),
+                    "scalar" => ty_definition::scalar_type_definition(&mut self),
+                    "type" => ty_definition::object_type_definition(&mut self),
                     "query" | "mutation" | "subscription" | "{" => {
                         operation::operation_definition(&mut self)
                     }
