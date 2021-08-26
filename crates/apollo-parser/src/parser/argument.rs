@@ -1,4 +1,4 @@
-use crate::parser::{name, value};
+use crate::parser::{input_value, name, value};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#Argument
@@ -48,6 +48,33 @@ pub(crate) fn arguments(parser: &mut Parser) {
     let guard = parser.start_node(SyntaxKind::ARGUMENTS);
     parser.bump(SyntaxKind::L_PAREN);
     argument(parser, false);
+    match parser.peek() {
+        Some(TokenKind::RParen) => {
+            parser.bump(SyntaxKind::R_PAREN);
+            guard.finish_node();
+        }
+        _ => parser.push_err(create_err!(
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data")),
+            "Expected closing ')', got {}",
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data"))
+        )),
+    }
+}
+
+/// See: https://spec.graphql.org/June2018/#ArgumentsDefinition
+///
+/// ```txt
+/// ArgumentsDefinition
+///     ( InputValueDefinition[list] )
+/// ```
+pub(crate) fn arguments_definition(parser: &mut Parser) {
+    let guard = parser.start_node(SyntaxKind::ARGUMENTS);
+    parser.bump(SyntaxKind::L_PAREN);
+    input_value::input_value_definition(parser, false);
     match parser.peek() {
         Some(TokenKind::RParen) => {
             parser.bump(SyntaxKind::R_PAREN);
