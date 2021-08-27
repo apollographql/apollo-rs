@@ -175,8 +175,7 @@ mod test {
                         - IDENT@10..17 "example"
                     - on_KW@17..19 "on"
                     - DIRECTIVE_LOCATIONS@19..19
-            - ERROR@0:15 "Expected to have Directive Locations in a Directive Definition, got no
-            further data"
+            - ERROR@0:15 "Expected to have Directive Locations in a Directive Definition, got no further data"
             "#,
         );
     }
@@ -212,12 +211,12 @@ mod test {
                         - R_PAREN@37..38 ")"
                     - on_KW@38..40 "on"
                     - DIRECTIVE_LOCATIONS@40..54
-                        - DIRECTIVE_LOCATION@40..45
+                        - DIRECTIVE_LOCATION@40..54
                             - FIELD_KW@40..45 "FIELD"
-                        - PIPE@45..46 "|"
-                        - DIRECTIVE_LOCATION@46..54
-                            - QUERY_KW@46..54 "MUTATION"
-"#,
+                            - PIPE@45..46 "|"
+                            - DIRECTIVE_LOCATION@46..54
+                                - QUERY_KW@46..54 "MUTATION"
+            "#,
         );
     }
 }

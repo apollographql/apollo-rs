@@ -35,6 +35,58 @@ pub(crate) fn input_object_type_definition(parser: &mut Parser) {
     }
 }
 
+/// See: https://spec.graphql.org/June2018/#InputObjectTypeExtension
+///
+/// ```txt
+/// InputObjectTypeExtension
+///     extend input Name Directives[Const][opt] InputFieldsDefinition
+///     extend input Name Directives[Const]
+/// ```
+pub(crate) fn input_object_type_extension(parser: &mut Parser) {
+    let _guard = parser.start_node(SyntaxKind::INPUT_OBJECT_TYPE_EXTENSION);
+    parser.bump(SyntaxKind::extend_KW);
+    parser.bump(SyntaxKind::input_KW);
+
+    let mut meets_requirements = false;
+
+    match parser.peek() {
+        Some(TokenKind::Node) => name::name(parser),
+        _ => {
+            parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected Input Object Type Definition to have a Name, got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+            ));
+        }
+    }
+
+    if let Some(TokenKind::At) = parser.peek() {
+        meets_requirements = true;
+        directive::directives(parser);
+    }
+
+    if let Some(TokenKind::LCurly) = parser.peek() {
+        meets_requirements = true;
+        input_fields_definition(parser);
+    }
+
+    if !meets_requirements {
+        parser.push_err(create_err!(
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data")),
+            "Expected Input Object Type Extension to have Directives or Input Fields Definition, got {}",
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data")),
+        ));
+    }
+}
+
 /// See: https://spec.graphql.org/June2018/#InputFieldsDefinition
 ///
 /// ```txt
@@ -118,7 +170,7 @@ mod test {
     use crate::parser::utils;
 
     #[test]
-    fn it_parses_input_object_type_definition() {
+    fn it_parses_definition() {
         utils::check_ast(
             "input ExampleInputObject {
               a: String
@@ -152,7 +204,7 @@ mod test {
     }
 
     #[test]
-    fn it_creates_an_error_when_name_is_missing() {
+    fn it_creates_an_error_when_name_is_missing_in_definition() {
         utils::check_ast(
             "input {
               a: String
@@ -185,7 +237,7 @@ mod test {
     }
 
     #[test]
-    fn it_creates_an_error_when_enum_values_are_missing() {
+    fn it_creates_an_error_when_enum_values_are_missing_in_definition() {
         utils::check_ast(
             "input ExampleInputObject {}",
             r#"
@@ -198,6 +250,78 @@ mod test {
                         - L_CURLY@23..24 "{"
                         - R_CURLY@24..25 "}"
             - ERROR@0:1 "Expected to have an InputValue definition, got }"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_parses_extension() {
+        utils::check_ast(
+            "extend input ExampleInputObject @skip {
+              a: String
+            }",
+            r#"
+            - DOCUMENT@0..38
+                - INPUT_OBJECT_TYPE_EXTENSION@0..38
+                    - extend_KW@0..6 "extend"
+                    - input_KW@6..11 "input"
+                    - NAME@11..29
+                        - IDENT@11..29 "ExampleInputObject"
+                    - DIRECTIVES@29..34
+                        - DIRECTIVE@29..34
+                            - AT@29..30 "@"
+                            - NAME@30..34
+                                - IDENT@30..34 "skip"
+                    - INPUT_FIELDS_DEFINITION@34..38
+                        - L_CURLY@34..35 "{"
+                        - INPUT_VALUE_DEFINITION@35..37
+                            - NAME@35..36
+                                - IDENT@35..36 "a"
+                            - COLON@36..37 ":"
+                            - TYPE@37..37
+                                - NAMED_TYPE@37..37
+                        - R_CURLY@37..38 "}"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_creates_an_error_when_name_is_missing_in_extension() {
+        utils::check_ast(
+            "extend input {
+              a: String
+            }",
+            r#"
+            - DOCUMENT@0..15
+                - INPUT_OBJECT_TYPE_EXTENSION@0..15
+                    - extend_KW@0..6 "extend"
+                    - input_KW@6..11 "input"
+                    - INPUT_FIELDS_DEFINITION@11..15
+                        - L_CURLY@11..12 "{"
+                        - INPUT_VALUE_DEFINITION@12..14
+                            - NAME@12..13
+                                - IDENT@12..13 "a"
+                            - COLON@13..14 ":"
+                            - TYPE@14..14
+                                - NAMED_TYPE@14..14
+                        - R_CURLY@14..15 "}"
+            - ERROR@0:1 "Expected Input Object Type Definition to have a Name, got {"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_creates_an_error_when_syntax_is_missing_in_extension() {
+        utils::check_ast(
+            "extend input ExampleInputObject",
+            r#"
+            - DOCUMENT@0..29
+                - INPUT_OBJECT_TYPE_EXTENSION@0..29
+                    - extend_KW@0..6 "extend"
+                    - input_KW@6..11 "input"
+                    - NAME@11..29
+                        - IDENT@11..29 "ExampleInputObject"
+            - ERROR@0:15 "Expected Input Object Type Extension to have Directives or Input Fields Definition, got no further data"
             "#,
         )
     }

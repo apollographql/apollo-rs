@@ -307,7 +307,7 @@ mod test {
                     - type_KW@6..10 "type"
                     - NAME@10..16
                         - IDENT@10..16 "Person"
-            - ERROR@0:15 "Expected Object Type Extension to define an Implements Interface, Directives, or Fields definition, got no further data"
+            - ERROR@0:15 "Expected Object Type Extension to have an Implements Interface, Directives, or Fields definition, got no further data"
             "#,
         )
     }
