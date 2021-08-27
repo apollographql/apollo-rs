@@ -81,6 +81,7 @@ impl Parser {
                     "schema" => schema::schema_definition(&mut self),
                     "scalar" => ty_definition::scalar_type_definition(&mut self),
                     "type" => ty_definition::object_type_definition(&mut self),
+                    "interface" => ty_definition::interface_definition(&mut self),
                     "query" | "mutation" | "subscription" | "{" => {
                         operation::operation_definition(&mut self)
                     }
