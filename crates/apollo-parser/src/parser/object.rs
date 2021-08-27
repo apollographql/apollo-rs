@@ -65,7 +65,7 @@ pub(crate) fn object_type_extension(parser: &mut Parser) {
 
     // Use this variable to see if any of ImplementsInterfacs, Directives or
     // FieldsDefinitions is provided. If none are present, we push an error.
-    let mut has_one_of_requirements = false;
+    let mut meets_requirements = false;
 
     match parser.peek() {
         Some(TokenKind::Node) => name::name(parser),
@@ -83,7 +83,7 @@ pub(crate) fn object_type_extension(parser: &mut Parser) {
     }
     if let Some(TokenKind::Node) = parser.peek() {
         if parser.peek_data().unwrap() == "implements" {
-            has_one_of_requirements = true;
+            meets_requirements = true;
             implements_interfaces(parser, false);
         } else {
             parser.push_err(create_err!(
@@ -98,21 +98,21 @@ pub(crate) fn object_type_extension(parser: &mut Parser) {
         }
     }
     if let Some(TokenKind::At) = parser.peek() {
-        has_one_of_requirements = true;
+        meets_requirements = true;
         directive::directives(parser)
     }
     if let Some(TokenKind::LCurly) = parser.peek() {
-        has_one_of_requirements = true;
+        meets_requirements = true;
         field::fields_definition(parser)
     }
 
-    if !has_one_of_requirements {
+    if !meets_requirements {
         parser.push_err(
             create_err!(
                 parser
                     .peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
-                "Expected Object Type Extension to define an Implements Interface, Directives, or Fields definition, got {}",
+                "Expected Object Type Extension to have an Implements Interface, Directives, or Fields definition, got {}",
                 parser
                     .peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
