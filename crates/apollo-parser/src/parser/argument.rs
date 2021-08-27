@@ -1,4 +1,4 @@
-use crate::parser::{input_value, name, value};
+use crate::parser::{input, name, value};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#Argument
@@ -74,7 +74,7 @@ pub(crate) fn arguments(parser: &mut Parser) {
 pub(crate) fn arguments_definition(parser: &mut Parser) {
     let guard = parser.start_node(SyntaxKind::ARGUMENTS);
     parser.bump(SyntaxKind::L_PAREN);
-    input_value::input_value_definition(parser, false);
+    input::input_value_definition(parser, false);
     match parser.peek() {
         Some(TokenKind::RParen) => {
             parser.bump(SyntaxKind::R_PAREN);

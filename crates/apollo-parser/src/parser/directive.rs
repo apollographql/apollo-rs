@@ -1,4 +1,4 @@
-use crate::parser::{argument, input_value, name};
+use crate::parser::{argument, input, name};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#DirectiveDefinition
@@ -26,7 +26,7 @@ pub(crate) fn directive_definition(parser: &mut Parser) {
     if let Some(TokenKind::LParen) = parser.peek() {
         let guard = parser.start_node(SyntaxKind::ARGUMENTS_DEFINITION);
         parser.bump(SyntaxKind::L_PAREN);
-        input_value::input_value_definition(parser, false);
+        input::input_value_definition(parser, false);
         match parser.peek() {
             Some(TokenKind::RParen) => {
                 parser.bump(SyntaxKind::R_PAREN);

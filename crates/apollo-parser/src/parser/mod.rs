@@ -19,7 +19,7 @@ mod enum_;
 mod field;
 mod fragment;
 mod generated;
-mod input_value;
+mod input;
 mod interface;
 mod language;
 mod name;
@@ -88,6 +88,7 @@ impl Parser {
                     "interface" => interface::interface_type_definition(&mut self),
                     "union" => union_::union_type_definition(&mut self),
                     "enum" => enum_::enum_type_definition(&mut self),
+                    "input" => input::input_object_type_definition(&mut self),
                     "query" | "mutation" | "subscription" | "{" => {
                         operation::operation_definition(&mut self)
                     }
