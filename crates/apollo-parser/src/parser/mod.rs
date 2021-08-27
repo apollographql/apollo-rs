@@ -16,6 +16,7 @@ pub(crate) use token_text::TokenText;
 mod argument;
 mod directive;
 mod enum_;
+mod extensions;
 mod field;
 mod fragment;
 mod generated;
@@ -89,6 +90,7 @@ impl Parser {
                     "union" => union_::union_type_definition(&mut self),
                     "enum" => enum_::enum_type_definition(&mut self),
                     "input" => input::input_object_type_definition(&mut self),
+                    "extend" => extensions::extensions(&mut self),
                     "query" | "mutation" | "subscription" | "{" => {
                         operation::operation_definition(&mut self)
                     }

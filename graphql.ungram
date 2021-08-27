@@ -31,8 +31,15 @@ Definition =
   | UnionTypeDefinition
   | EnumTypeDefinition
   | InputObjectTypeDefinition
+  // Type System Extensions: we may possible want to group those in an enum outside of 'Definition'
   | SchemaExtension
-  | TypeExtension
+  // Type Extensions
+  | ScalarTypeExtension
+  | ObjectTypeExtension
+  | InterfaceTypeExtension
+  | UnionTypeExtension
+  | EnumTypeExtension
+  | InputObjectTypeExtension
 
 OperationDefinition =
   OperationType Name? VariableDefinitions? Directives? SelectionSet
@@ -164,18 +171,6 @@ OperationTypeDefinition =
 
 Description =
   StringValue
-
-// TODO @lrlna: we are creating an extra type here to make it easier for codegen.
-TypeExtension =
-  TypeExtensionKinds
-
-TypeExtensionKinds =
-  ScalarTypeExtension
-  | ObjectTypeExtension
-  | InterfaceTypeExtension
-  | UnionTypeExtension
-  | EnumTypeExtension
-  | InputObjectTypeExtension
 
 ScalarTypeDefinition =
   Description? 'scalar' Name Directives?
