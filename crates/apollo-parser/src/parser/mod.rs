@@ -19,15 +19,18 @@ mod field;
 mod fragment;
 mod generated;
 mod input_value;
+mod interface;
 mod language;
 mod name;
+mod object;
 mod operation;
+mod scalar;
 mod schema;
 mod selection;
 mod syntax_tree;
 mod token_text;
 mod ty;
-mod ty_definition;
+mod union;
 mod utils;
 mod value;
 mod variable;
@@ -79,9 +82,10 @@ impl Parser {
                     "fragment" => fragment::fragment_definition(&mut self),
                     "directive" => directive::directive_definition(&mut self),
                     "schema" => schema::schema_definition(&mut self),
-                    "scalar" => ty_definition::scalar_type_definition(&mut self),
-                    "type" => ty_definition::object_type_definition(&mut self),
-                    "interface" => ty_definition::interface_definition(&mut self),
+                    "scalar" => scalar::scalar_type_definition(&mut self),
+                    "type" => object::object_type_definition(&mut self),
+                    "interface" => interface::interface_type_definition(&mut self),
+                    "union" => union::union_type_definition(&mut self),
                     "query" | "mutation" | "subscription" | "{" => {
                         operation::operation_definition(&mut self)
                     }
@@ -100,6 +104,7 @@ impl Parser {
 
     /// Consume a token from the lexer and insert it into the AST.
     pub(crate) fn bump(&mut self, kind: SyntaxKind) {
+        dbg!(kind);
         let token = self.tokens.pop().unwrap();
         self.builder.borrow_mut().token(kind, token.data());
     }

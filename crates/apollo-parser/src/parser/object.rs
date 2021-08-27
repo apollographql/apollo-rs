@@ -1,35 +1,6 @@
 use crate::parser::{directive, field, name};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
-/// See: https://spec.graphql.org/June2018/#ScalarTypeDefinition
-///
-/// ```txt
-/// ScalarTypeDefinition
-///     Description[opt] scalar Name Directives[Const][opt]
-/// ```
-pub(crate) fn scalar_type_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::SCALAR_TYPE_DEFINITION);
-    parser.bump(SyntaxKind::scalar_KW);
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
-        _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Scalar Type Definition to have a Name, got {}",
-                parser
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
-    }
-
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
-    }
-}
-
 /// See: https://spec.graphql.org/June2018/#ObjectTypeDefinition
 ///
 /// ```txt
@@ -79,40 +50,6 @@ pub(crate) fn object_type_definition(parser: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#InterfaceTypeDefinition
-///
-/// ```txt
-/// InterfaceTypeDefinition
-///     Description[opt] interface Name Directives[Const][opt] FieldsDefinition[opt]
-/// ```
-pub(crate) fn interface_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::INTERFACE_TYPE_DEFINITION);
-    parser.bump(SyntaxKind::interface_KW);
-
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
-        _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Interface Type Definition to have a Name, got {}",
-                parser
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
-    }
-
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
-    }
-
-    if let Some(TokenKind::LCurly) = parser.peek() {
-        field::fields_definition(parser);
-    }
-}
-
 /// See: https://spec.graphql.org/June2018/#ImplementsInterfaces
 ///
 /// ```txt
@@ -141,7 +78,7 @@ pub(crate) fn implements_interfaces(parser: &mut Parser, is_interfaces: bool) {
                     parser
                         .peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
-                    "Expected to have Directive Locations in a Directive Definition, got {}",
+                    "Expected to have Implements Interfaces in a Object Type Definition, got {}",
                     parser
                         .peek_data()
                         .unwrap_or_else(|| String::from("no further data"))
@@ -154,47 +91,6 @@ pub(crate) fn implements_interfaces(parser: &mut Parser, is_interfaces: bool) {
 #[cfg(test)]
 mod test {
     use crate::parser::utils;
-
-    #[test]
-    fn it_parses_scalar_type_definitions() {
-        utils::check_ast(
-            "
-            scalar Time @deprecated
-            ",
-            r#"
-            - DOCUMENT@0..21
-                - SCALAR_TYPE_DEFINITION@0..21
-                    - scalar_KW@0..6 "scalar"
-                    - NAME@6..10
-                        - IDENT@6..10 "Time"
-                    - DIRECTIVES@10..21
-                        - DIRECTIVE@10..21
-                            - AT@10..11 "@"
-                            - NAME@11..21
-                                - IDENT@11..21 "deprecated"
-            "#,
-        )
-    }
-
-    #[test]
-    fn it_errors_scalars_with_no_name() {
-        utils::check_ast(
-            "
-            scalar @deprecated
-            ",
-            r#"
-            - DOCUMENT@0..17
-                - SCALAR_TYPE_DEFINITION@0..17
-                    - scalar_KW@0..6 "scalar"
-                    - DIRECTIVES@6..17
-                        - DIRECTIVE@6..17
-                            - AT@6..7 "@"
-                            - NAME@7..17
-                                - IDENT@7..17 "deprecated"
-            - ERROR@0:1 "Expected Scalar Type Definition to have a Name, got @"
-            "#,
-        )
-    }
 
     #[test]
     fn it_parses_object_type_definition() {
@@ -236,32 +132,6 @@ mod test {
                             - TYPE@43..43
                                 - NAMED_TYPE@43..43
                         - L_CURLY@43..44 "}"
-            "#,
-        )
-    }
-
-    #[test]
-    fn it_parses_interface_type_definition() {
-        utils::check_ast(
-            "
-            interface ValuedEntity {
-              value: Int
-            }",
-            r#"
-            - DOCUMENT@0..29
-                - INTERFACE_TYPE_DEFINITION@0..29
-                    - interface_KW@0..9 "interface"
-                    - NAME@9..21
-                        - IDENT@9..21 "ValuedEntity"
-                    - FIELDS_DEFINITION@21..29
-                        - L_CURLY@21..22 "{"
-                        - FIELD_DEFINITION@22..28
-                            - NAME@22..27
-                                - IDENT@22..27 "value"
-                            - COLON@27..28 ":"
-                            - TYPE@28..28
-                                - NAMED_TYPE@28..28
-                        - L_CURLY@28..29 "}"
             "#,
         )
     }
