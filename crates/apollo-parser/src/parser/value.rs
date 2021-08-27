@@ -24,7 +24,7 @@ pub(crate) fn value(parser: &mut Parser) {
         Some(TokenKind::StringValue) => parser.bump(SyntaxKind::STRING_VALUE),
         Some(TokenKind::Boolean) => parser.bump(SyntaxKind::BOOLEAN_VALUE),
         Some(TokenKind::Null) => parser.bump(SyntaxKind::NULL_VALUE),
-        Some(TokenKind::Node) => name::name(parser),
+        Some(TokenKind::Node) => enum_value(parser),
         Some(TokenKind::LBracket) => list_value(parser),
         Some(TokenKind::LCurly) => object_value(parser),
         _ => {
@@ -40,10 +40,32 @@ pub(crate) fn value(parser: &mut Parser) {
         }
     }
 }
+/// See: https://spec.graphql.org/June2018/#EnumValue
+/// ```txt
+/// EnumValue
+/// Name but not true or false or null
+/// ```
+pub(crate) fn enum_value(parser: &mut Parser) {
+    let _guard = parser.start_node(SyntaxKind::ENUM_VALUE);
+    let name = parser.peek_data().unwrap();
+
+    if matches!(name.as_str(), "true" | "false" | "null") {
+        parser.push_err(create_err!(
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data")),
+            "Enum Value cannot be {}",
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data"))
+        ));
+    }
+    name::name(parser);
+}
 
 /// See: https://spec.graphql.org/June2018/#ListValue
 /// ```txt
-/// ListValueConst
+/// ListValue[Const]
 ///     [ ]
 ///     [ Value [?const][list] ]
 /// ```

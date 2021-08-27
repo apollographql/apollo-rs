@@ -131,7 +131,7 @@ mod test {
                             - COLON@42..43 ":"
                             - TYPE@43..43
                                 - NAMED_TYPE@43..43
-                        - L_CURLY@43..44 "}"
+                        - R_CURLY@43..44 "}"
             "#,
         )
     }

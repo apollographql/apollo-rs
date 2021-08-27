@@ -15,6 +15,7 @@ pub(crate) use token_text::TokenText;
 
 mod argument;
 mod directive;
+mod enum_;
 mod field;
 mod fragment;
 mod generated;
@@ -30,7 +31,7 @@ mod selection;
 mod syntax_tree;
 mod token_text;
 mod ty;
-mod union;
+mod union_;
 mod utils;
 mod value;
 mod variable;
@@ -85,7 +86,8 @@ impl Parser {
                     "scalar" => scalar::scalar_type_definition(&mut self),
                     "type" => object::object_type_definition(&mut self),
                     "interface" => interface::interface_type_definition(&mut self),
-                    "union" => union::union_type_definition(&mut self),
+                    "union" => union_::union_type_definition(&mut self),
+                    "enum" => enum_::enum_type_definition(&mut self),
                     "query" | "mutation" | "subscription" | "{" => {
                         operation::operation_definition(&mut self)
                     }
@@ -104,7 +106,6 @@ impl Parser {
 
     /// Consume a token from the lexer and insert it into the AST.
     pub(crate) fn bump(&mut self, kind: SyntaxKind) {
-        dbg!(kind);
         let token = self.tokens.pop().unwrap();
         self.builder.borrow_mut().token(kind, token.data());
     }

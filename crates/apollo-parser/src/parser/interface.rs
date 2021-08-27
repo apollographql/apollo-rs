@@ -60,7 +60,7 @@ mod test {
                             - COLON@27..28 ":"
                             - TYPE@28..28
                                 - NAMED_TYPE@28..28
-                        - L_CURLY@28..29 "}"
+                        - R_CURLY@28..29 "}"
             "#,
         )
     }

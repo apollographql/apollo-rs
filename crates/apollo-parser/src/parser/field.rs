@@ -56,7 +56,7 @@ pub(crate) fn fields_definition(parser: &mut Parser) {
     parser.bump(SyntaxKind::L_CURLY);
     field_definition(parser);
     if let Some(TokenKind::RCurly) = parser.peek() {
-        parser.bump(SyntaxKind::L_CURLY)
+        parser.bump(SyntaxKind::R_CURLY)
     } else {
         parser.push_err(create_err!(
             parser
