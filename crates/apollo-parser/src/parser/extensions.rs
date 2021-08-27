@@ -7,7 +7,7 @@ pub(crate) fn extensions(parser: &mut Parser) {
     match parser.peek_data_n(2) {
         Some(node) => match node.as_str() {
             "schema" => schema::schema_extension(parser),
-            // "scalar" => scalar::scalar_type_definition(parser),
+            "scalar" => scalar::scalar_type_extension(parser),
             // "type" => object::object_type_definition(parser),
             // "interface" => interface::interface_type_definition(parser),
             // "union" => union_::union_type_definition(parser),

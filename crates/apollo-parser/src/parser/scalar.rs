@@ -30,12 +30,53 @@ pub(crate) fn scalar_type_definition(parser: &mut Parser) {
     }
 }
 
+/// See: https://spec.graphql.org/June2018/#ScalarTypeExtension
+///
+/// ```txt
+/// ScalarTypeExtension
+///     extend scalar Name Directives[const]
+/// ```
+pub(crate) fn scalar_type_extension(parser: &mut Parser) {
+    let _guard = parser.start_node(SyntaxKind::SCALAR_TYPE_EXTENSION);
+    parser.bump(SyntaxKind::extend_KW);
+    parser.bump(SyntaxKind::scalar_KW);
+    match parser.peek() {
+        Some(TokenKind::Node) => name::name(parser),
+        _ => {
+            parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected Scalar Type Extension to have a Name, got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+            ));
+        }
+    }
+
+    match parser.peek() {
+        Some(TokenKind::At) => directive::directives(parser),
+        _ => {
+            parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected Scalar Type Extension to have directives, got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+            ));
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::parser::utils;
 
     #[test]
-    fn it_parses_scalar_type_definitions() {
+    fn it_parses_scalar_type_definition() {
         utils::check_ast(
             "
             scalar Time @deprecated
@@ -71,6 +112,49 @@ mod test {
                             - NAME@7..17
                                 - IDENT@7..17 "deprecated"
             - ERROR@0:1 "Expected Scalar Type Definition to have a Name, got @"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_parses_extension() {
+        utils::check_ast(
+            "
+            extend scalar Time @deprecated
+            ",
+            r#"
+            - DOCUMENT@0..27
+                - SCALAR_TYPE_EXTENSION@0..27
+                    - extend_KW@0..6 "extend"
+                    - scalar_KW@6..12 "scalar"
+                    - NAME@12..16
+                        - IDENT@12..16 "Time"
+                    - DIRECTIVES@16..27
+                        - DIRECTIVE@16..27
+                            - AT@16..17 "@"
+                            - NAME@17..27
+                                - IDENT@17..27 "deprecated"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_errors_extension_with_no_name() {
+        utils::check_ast(
+            "
+            extend scalar @deprecated
+            ",
+            r#"
+            - DOCUMENT@0..23
+                - SCALAR_TYPE_EXTENSION@0..23
+                    - extend_KW@0..6 "extend"
+                    - scalar_KW@6..12 "scalar"
+                    - DIRECTIVES@12..23
+                        - DIRECTIVE@12..23
+                            - AT@12..13 "@"
+                            - NAME@13..23
+                                - IDENT@13..23 "deprecated"
+            - ERROR@0:1 "Expected Scalar Type Extension to have a Name, got @"
             "#,
         )
     }
