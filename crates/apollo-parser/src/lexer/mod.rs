@@ -212,15 +212,15 @@ fn is_digit_char(c: char) -> bool {
 
 /// EscapedCharacter
 ///     "  \  /  b  f  n  r  t
-fn is_escaped_char(c: char) -> bool {
-    matches!(c, '"' | '\\' | '/' | 'b' | 'f' | 'n' | 'r' | 't')
-}
+// fn is_escaped_char(c: char) -> bool {
+//     matches!(c, '"' | '\\' | '/' | 'b' | 'f' | 'n' | 'r' | 't')
+// }
 
 /// SourceCharacter
 ///     /[\u0009\u000A\u000D\u0020-\uFFFF]/
-fn is_source_char(c: char) -> bool {
-    matches!(c, '\t' | '\r' | '\n' | '\u{0020}'..='\u{FFFF}')
-}
+// fn is_source_char(c: char) -> bool {
+//     matches!(c, '\t' | '\r' | '\n' | '\u{0020}'..='\u{FFFF}')
+// }
 
 #[cfg(test)]
 mod test {

@@ -11,7 +11,7 @@ pub(crate) fn extensions(parser: &mut Parser) {
             "type" => object::object_type_extension(parser),
             "interface" => interface::interface_type_extension(parser),
             "union" => union_::union_type_extension(parser),
-            // "enum" => enum_::enum_type_definition(parser),
+            "enum" => enum_::enum_type_extension(parser),
             // "input" => input::input_object_type_definition(parser),
             _ => {
                 parser.push_err(create_err!(

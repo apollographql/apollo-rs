@@ -35,6 +35,58 @@ pub(crate) fn enum_type_definition(parser: &mut Parser) {
     }
 }
 
+/// See: https://spec.graphql.org/June2018/#EnumTypeExtension
+///
+/// ```txt
+// EnumTypeExtension
+///    extend enum Name Directives[Const][opt] EnumValuesDefinition
+///    extend enum Name Directives[Const]
+/// ```
+pub(crate) fn enum_type_extension(parser: &mut Parser) {
+    let _guard = parser.start_node(SyntaxKind::ENUM_TYPE_EXTENSION);
+    parser.bump(SyntaxKind::extend_KW);
+    parser.bump(SyntaxKind::enum_KW);
+
+    let mut meets_requirements = false;
+
+    match parser.peek() {
+        Some(TokenKind::Node) => name::name(parser),
+        _ => {
+            parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected Union Type Extension to have a Name, got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+            ));
+        }
+    }
+
+    if let Some(TokenKind::At) = parser.peek() {
+        meets_requirements = true;
+        directive::directives(parser);
+    }
+
+    if let Some(TokenKind::LCurly) = parser.peek() {
+        meets_requirements = true;
+        enum_values_definition(parser);
+    }
+
+    if !meets_requirements {
+        parser.push_err(create_err!(
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data")),
+            "Expected Enum Type Extension to have Directives or Enum Values Definition, got {}",
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data")),
+        ));
+    }
+}
+
 /// See: https://spec.graphql.org/June2018/#EnumValuesDefinition
 ///
 /// ```txt
@@ -199,6 +251,84 @@ mod test {
                         - L_CURLY@13..14 "{"
                         - R_CURLY@14..15 "}"
             - ERROR@0:1 "Expected Enum Value Definition to follow, got }"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_parses_extension() {
+        utils::check_ast(
+            "extend enum Direction @deprecated {
+              SOUTH
+              WEST
+            }",
+            r#"
+            - DOCUMENT@0..41
+                - ENUM_TYPE_EXTENSION@0..41
+                    - extend_KW@0..6 "extend"
+                    - enum_KW@6..10 "enum"
+                    - NAME@10..19
+                        - IDENT@10..19 "Direction"
+                    - DIRECTIVES@19..30
+                        - DIRECTIVE@19..30
+                            - AT@19..20 "@"
+                            - NAME@20..30
+                                - IDENT@20..30 "deprecated"
+                    - ENUM_VALUES_DEFINITION@30..41
+                        - L_CURLY@30..31 "{"
+                        - ENUM_VALUE_DEFINITION@31..36
+                            - ENUM_VALUE@31..36
+                                - NAME@31..36
+                                    - IDENT@31..36 "SOUTH"
+                        - ENUM_VALUE_DEFINITION@36..40
+                            - ENUM_VALUE@36..40
+                                - NAME@36..40
+                                    - IDENT@36..40 "WEST"
+                        - R_CURLY@40..41 "}"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_creates_an_error_when_name_is_missing_in_extension() {
+        utils::check_ast(
+            "extend enum {
+              NORTH
+              EAST
+            }",
+            r#"
+            - DOCUMENT@0..21
+                - ENUM_TYPE_EXTENSION@0..21
+                    - extend_KW@0..6 "extend"
+                    - enum_KW@6..10 "enum"
+                    - ENUM_VALUES_DEFINITION@10..21
+                        - L_CURLY@10..11 "{"
+                        - ENUM_VALUE_DEFINITION@11..16
+                            - ENUM_VALUE@11..16
+                                - NAME@11..16
+                                    - IDENT@11..16 "NORTH"
+                        - ENUM_VALUE_DEFINITION@16..20
+                            - ENUM_VALUE@16..20
+                                - NAME@16..20
+                                    - IDENT@16..20 "EAST"
+                        - R_CURLY@20..21 "}"
+            - ERROR@0:1 "Expected Union Type Extension to have a Name, got {"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_creates_an_error_when_requirements_are_missing_in_extension() {
+        utils::check_ast(
+            "extend enum Direction",
+            r#"
+            - DOCUMENT@0..19
+                - ENUM_TYPE_EXTENSION@0..19
+                    - extend_KW@0..6 "extend"
+                    - enum_KW@6..10 "enum"
+                    - NAME@10..19
+                        - IDENT@10..19 "Direction"
+            - ERROR@0:15 "Expected Enum Type Extension to have Directives or Enum Values Definition, got no further data"
             "#,
         )
     }
