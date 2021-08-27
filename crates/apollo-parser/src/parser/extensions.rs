@@ -10,7 +10,7 @@ pub(crate) fn extensions(parser: &mut Parser) {
             "scalar" => scalar::scalar_type_extension(parser),
             "type" => object::object_type_extension(parser),
             "interface" => interface::interface_type_extension(parser),
-            // "union" => union_::union_type_definition(parser),
+            "union" => union_::union_type_extension(parser),
             // "enum" => enum_::enum_type_definition(parser),
             // "input" => input::input_object_type_definition(parser),
             _ => {

@@ -35,6 +35,58 @@ pub(crate) fn union_type_definition(parser: &mut Parser) {
     }
 }
 
+/// See: https://spec.graphql.org/June2018/#UnionTypeExtension
+///
+/// ```txt
+/// UnionTypeExtension
+///     extend union Name Directives[Const][opt] UnionMemberTypes
+///     extend union Name Directives[Const]
+/// ```
+pub(crate) fn union_type_extension(parser: &mut Parser) {
+    let _guard = parser.start_node(SyntaxKind::UNION_TYPE_EXTENSION);
+    parser.bump(SyntaxKind::extend_KW);
+    parser.bump(SyntaxKind::union_KW);
+
+    let mut meets_requirements = false;
+
+    match parser.peek() {
+        Some(TokenKind::Node) => name::name(parser),
+        _ => {
+            parser.push_err(create_err!(
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+                "Expected Union Type Extension to have a Name, got {}",
+                parser
+                    .peek_data()
+                    .unwrap_or_else(|| String::from("no further data")),
+            ));
+        }
+    }
+
+    if let Some(TokenKind::At) = parser.peek() {
+        meets_requirements = true;
+        directive::directives(parser);
+    }
+
+    if let Some(TokenKind::Eq) = parser.peek() {
+        meets_requirements = true;
+        union_member_types(parser, false);
+    }
+
+    if !meets_requirements {
+        parser.push_err(create_err!(
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data")),
+            "Expected Union Type Extension to have Directives or Union Member Types, got {}",
+            parser
+                .peek_data()
+                .unwrap_or_else(|| String::from("no further data")),
+        ));
+    }
+}
+
 /// See: https://spec.graphql.org/June2018/#UnionMemberTypes
 ///
 /// ```txt
@@ -102,7 +154,7 @@ mod test {
     }
 
     #[test]
-    fn it_creates_an_error_when_name_is_missing() {
+    fn it_creates_an_error_when_name_is_missing_in_definition() {
         utils::check_ast(
             "union = Photo | Person",
             r#"
@@ -125,7 +177,7 @@ mod test {
     }
 
     #[test]
-    fn it_creates_an_error_when_union_definition_is_missing() {
+    fn it_creates_an_error_when_union_definition_is_missing_in_definition() {
         utils::check_ast(
             "union = ",
             r#"
@@ -136,6 +188,76 @@ mod test {
                         - EQ@5..6 "="
             - ERROR@0:1 "Expected Union Type Definition to have a Name, got ="
             - ERROR@0:15 "Expected to have Union Member Types in a Union Type Definition, got no further data"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_parses_extension() {
+        utils::check_ast(
+            "extend union SearchResult @deprecated = Photo | Person",
+            r#"
+            - DOCUMENT@0..47
+                - UNION_TYPE_EXTENSION@0..47
+                    - extend_KW@0..6 "extend"
+                    - union_KW@6..11 "union"
+                    - NAME@11..23
+                        - IDENT@11..23 "SearchResult"
+                    - DIRECTIVES@23..34
+                        - DIRECTIVE@23..34
+                            - AT@23..24 "@"
+                            - NAME@24..34
+                                - IDENT@24..34 "deprecated"
+                    - UNION_MEMBER_TYPES@34..47
+                        - EQ@34..35 "="
+                        - NAMED_TYPE@35..40
+                            - NAME@35..40
+                                - IDENT@35..40 "Photo"
+                        - UNION_MEMBER_TYPES@40..47
+                            - EQ@40..41 "|"
+                            - NAMED_TYPE@41..47
+                                - NAME@41..47
+                                    - IDENT@41..47 "Person"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_creates_an_error_when_name_is_missing_in_extension() {
+        utils::check_ast(
+            "extend union = Photo | Person",
+            r#"
+            - DOCUMENT@0..24
+                - UNION_TYPE_EXTENSION@0..24
+                    - extend_KW@0..6 "extend"
+                    - union_KW@6..11 "union"
+                    - UNION_MEMBER_TYPES@11..24
+                        - EQ@11..12 "="
+                        - NAMED_TYPE@12..17
+                            - NAME@12..17
+                                - IDENT@12..17 "Photo"
+                        - UNION_MEMBER_TYPES@17..24
+                            - EQ@17..18 "|"
+                            - NAMED_TYPE@18..24
+                                - NAME@18..24
+                                    - IDENT@18..24 "Person"
+            - ERROR@0:1 "Expected Union Type Extension to have a Name, got ="
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_creates_an_error_when_requirements_are_missing_in_extension() {
+        utils::check_ast(
+            "extend union SearchResult",
+            r#"
+            - DOCUMENT@0..23
+                - UNION_TYPE_EXTENSION@0..23
+                    - extend_KW@0..6 "extend"
+                    - union_KW@6..11 "union"
+                    - NAME@11..23
+                        - IDENT@11..23 "SearchResult"
+            - ERROR@0:15 "Expected Union Type Extension to have Directives or Union Member Types, got no further data"
             "#,
         )
     }
