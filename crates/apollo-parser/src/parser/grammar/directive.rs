@@ -5,7 +5,7 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 ///
 /// ```txt
 /// DirectiveDefinition
-///     Description(opt) directive @ Name ArgumentsDefinition(opt) on DirectiveLocations
+///     Description(opt) directive @ Name ArgumentsDefinition(opt) repeatable(opt) on DirectiveLocations
 /// ```
 pub(crate) fn directive_definition(parser: &mut Parser) {
     let _guard = parser.start_node(SyntaxKind::DIRECTIVE_DEFINITION);
@@ -41,6 +41,12 @@ pub(crate) fn directive_definition(parser: &mut Parser) {
                     .peek_data()
                     .unwrap_or_else(|| String::from("no further data"))
             )),
+        }
+    }
+
+    if let Some(node) = parser.peek_data() {
+        if node.as_str() == "repeatable" {
+            parser.bump(SyntaxKind::repeatable_KW);
         }
     }
 

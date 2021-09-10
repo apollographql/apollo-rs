@@ -1421,26 +1421,26 @@ impl From<InputObjectTypeExtension> for Definition {
 }
 impl AstNode for Definition {
     fn can_cast(kind: SyntaxKind) -> bool {
-        match kind {
+        matches!(
+            kind,
             OPERATION_DEFINITION
-            | FRAGMENT_DEFINITION
-            | DIRECTIVE_DEFINITION
-            | SCHEMA_DEFINITION
-            | SCALAR_TYPE_DEFINITION
-            | OBJECT_TYPE_DEFINITION
-            | INTERFACE_TYPE_DEFINITION
-            | UNION_TYPE_DEFINITION
-            | ENUM_TYPE_DEFINITION
-            | INPUT_OBJECT_TYPE_DEFINITION
-            | SCHEMA_EXTENSION
-            | SCALAR_TYPE_EXTENSION
-            | OBJECT_TYPE_EXTENSION
-            | INTERFACE_TYPE_EXTENSION
-            | UNION_TYPE_EXTENSION
-            | ENUM_TYPE_EXTENSION
-            | INPUT_OBJECT_TYPE_EXTENSION => true,
-            _ => false,
-        }
+                | FRAGMENT_DEFINITION
+                | DIRECTIVE_DEFINITION
+                | SCHEMA_DEFINITION
+                | SCALAR_TYPE_DEFINITION
+                | OBJECT_TYPE_DEFINITION
+                | INTERFACE_TYPE_DEFINITION
+                | UNION_TYPE_DEFINITION
+                | ENUM_TYPE_DEFINITION
+                | INPUT_OBJECT_TYPE_DEFINITION
+                | SCHEMA_EXTENSION
+                | SCALAR_TYPE_EXTENSION
+                | OBJECT_TYPE_EXTENSION
+                | INTERFACE_TYPE_EXTENSION
+                | UNION_TYPE_EXTENSION
+                | ENUM_TYPE_EXTENSION
+                | INPUT_OBJECT_TYPE_EXTENSION
+        )
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
@@ -1485,23 +1485,23 @@ impl AstNode for Definition {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            Definition::OperationDefinition(it) => &it.syntax(),
-            Definition::FragmentDefinition(it) => &it.syntax(),
-            Definition::DirectiveDefinition(it) => &it.syntax(),
-            Definition::SchemaDefinition(it) => &it.syntax(),
-            Definition::ScalarTypeDefinition(it) => &it.syntax(),
-            Definition::ObjectTypeDefinition(it) => &it.syntax(),
-            Definition::InterfaceTypeDefinition(it) => &it.syntax(),
-            Definition::UnionTypeDefinition(it) => &it.syntax(),
-            Definition::EnumTypeDefinition(it) => &it.syntax(),
-            Definition::InputObjectTypeDefinition(it) => &it.syntax(),
-            Definition::SchemaExtension(it) => &it.syntax(),
-            Definition::ScalarTypeExtension(it) => &it.syntax(),
-            Definition::ObjectTypeExtension(it) => &it.syntax(),
-            Definition::InterfaceTypeExtension(it) => &it.syntax(),
-            Definition::UnionTypeExtension(it) => &it.syntax(),
-            Definition::EnumTypeExtension(it) => &it.syntax(),
-            Definition::InputObjectTypeExtension(it) => &it.syntax(),
+            Definition::OperationDefinition(it) => it.syntax(),
+            Definition::FragmentDefinition(it) => it.syntax(),
+            Definition::DirectiveDefinition(it) => it.syntax(),
+            Definition::SchemaDefinition(it) => it.syntax(),
+            Definition::ScalarTypeDefinition(it) => it.syntax(),
+            Definition::ObjectTypeDefinition(it) => it.syntax(),
+            Definition::InterfaceTypeDefinition(it) => it.syntax(),
+            Definition::UnionTypeDefinition(it) => it.syntax(),
+            Definition::EnumTypeDefinition(it) => it.syntax(),
+            Definition::InputObjectTypeDefinition(it) => it.syntax(),
+            Definition::SchemaExtension(it) => it.syntax(),
+            Definition::ScalarTypeExtension(it) => it.syntax(),
+            Definition::ObjectTypeExtension(it) => it.syntax(),
+            Definition::InterfaceTypeExtension(it) => it.syntax(),
+            Definition::UnionTypeExtension(it) => it.syntax(),
+            Definition::EnumTypeExtension(it) => it.syntax(),
+            Definition::InputObjectTypeExtension(it) => it.syntax(),
         }
     }
 }
@@ -1516,10 +1516,7 @@ impl From<InlineFragment> for Selection {
 }
 impl AstNode for Selection {
     fn can_cast(kind: SyntaxKind) -> bool {
-        match kind {
-            FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT => true,
-            _ => false,
-        }
+        matches!(kind, FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT)
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
@@ -1532,9 +1529,9 @@ impl AstNode for Selection {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            Selection::Field(it) => &it.syntax(),
-            Selection::FragmentSpread(it) => &it.syntax(),
-            Selection::InlineFragment(it) => &it.syntax(),
+            Selection::Field(it) => it.syntax(),
+            Selection::FragmentSpread(it) => it.syntax(),
+            Selection::InlineFragment(it) => it.syntax(),
         }
     }
 }
@@ -1567,11 +1564,18 @@ impl From<ObjectValue> for Value {
 }
 impl AstNode for Value {
     fn can_cast(kind: SyntaxKind) -> bool {
-        match kind {
-            VARIABLE | STRING_VALUE | FLOAT_VALUE | INT_VALUE | BOOLEAN_VALUE | NULL_VALUE
-            | ENUM_VALUE | LIST_VALUE | OBJECT_VALUE => true,
-            _ => false,
-        }
+        matches!(
+            kind,
+            VARIABLE
+                | STRING_VALUE
+                | FLOAT_VALUE
+                | INT_VALUE
+                | BOOLEAN_VALUE
+                | NULL_VALUE
+                | ENUM_VALUE
+                | LIST_VALUE
+                | OBJECT_VALUE
+        )
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
@@ -1590,15 +1594,15 @@ impl AstNode for Value {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            Value::Variable(it) => &it.syntax(),
-            Value::StringValue(it) => &it.syntax(),
-            Value::FloatValue(it) => &it.syntax(),
-            Value::IntValue(it) => &it.syntax(),
-            Value::BooleanValue(it) => &it.syntax(),
-            Value::NullValue(it) => &it.syntax(),
-            Value::EnumValue(it) => &it.syntax(),
-            Value::ListValue(it) => &it.syntax(),
-            Value::ObjectValue(it) => &it.syntax(),
+            Value::Variable(it) => it.syntax(),
+            Value::StringValue(it) => it.syntax(),
+            Value::FloatValue(it) => it.syntax(),
+            Value::IntValue(it) => it.syntax(),
+            Value::BooleanValue(it) => it.syntax(),
+            Value::NullValue(it) => it.syntax(),
+            Value::EnumValue(it) => it.syntax(),
+            Value::ListValue(it) => it.syntax(),
+            Value::ObjectValue(it) => it.syntax(),
         }
     }
 }
@@ -1612,12 +1616,7 @@ impl From<NonNullType> for Type {
     fn from(node: NonNullType) -> Type { Type::NonNullType(node) }
 }
 impl AstNode for Type {
-    fn can_cast(kind: SyntaxKind) -> bool {
-        match kind {
-            NAMED_TYPE | LIST_TYPE | NON_NULL_TYPE => true,
-            _ => false,
-        }
-    }
+    fn can_cast(kind: SyntaxKind) -> bool { matches!(kind, NAMED_TYPE | LIST_TYPE | NON_NULL_TYPE) }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
             NAMED_TYPE => Type::NamedType(NamedType { syntax }),
@@ -1629,9 +1628,9 @@ impl AstNode for Type {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            Type::NamedType(it) => &it.syntax(),
-            Type::ListType(it) => &it.syntax(),
-            Type::NonNullType(it) => &it.syntax(),
+            Type::NamedType(it) => it.syntax(),
+            Type::ListType(it) => it.syntax(),
+            Type::NonNullType(it) => it.syntax(),
         }
     }
 }

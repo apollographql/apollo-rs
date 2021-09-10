@@ -100,10 +100,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
                 quote! {
                     impl AstNode for #name {
                         fn can_cast(kind: SyntaxKind) -> bool {
-                            match kind {
-                                #(#kinds)|* => true,
-                                _ => false,
-                            }
+                            matches!(kind, #(#kinds)|*)
                         }
                         fn cast(syntax: SyntaxNode) -> Option<Self> {
                             let res = match syntax.kind() {
@@ -117,7 +114,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
                         fn syntax(&self) -> &SyntaxNode {
                             match self {
                                 #(
-                                #name::#variants(it) => &it.syntax(),
+                                #name::#variants(it) => it.syntax(),
                                 )*
                             }
                         }

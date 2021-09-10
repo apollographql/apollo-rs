@@ -302,10 +302,14 @@ fn extract_enum_traits(ast: &mut AstSrc) {
                             }
                             Some(node.traits.iter().cloned().collect::<BTreeSet<_>>())
                         })
-                        .expect(&format!(
-                            "Could not find a struct `{}` for enum `{}::{}`",
-                            var, enm.name, var
-                        ))
+                        .unwrap_or_else(|| {
+                            panic!("{}", {
+                                &format!(
+                                    "Could not find a struct `{}` for enum `{}::{}`",
+                                    var, enm.name, var
+                                )
+                            })
+                        })
                 })
         });
 

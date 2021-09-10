@@ -27,6 +27,7 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
     keywords: &[
         "query",
         "mutation",
+        "repeatable",
         "subscription",
         "fragment",
         "on",
