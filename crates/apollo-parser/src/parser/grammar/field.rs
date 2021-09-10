@@ -1,4 +1,4 @@
-use crate::parser::{argument, directive, name, selection, ty};
+use crate::parser::grammar::{argument, directive, name, selection, ty};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#Field

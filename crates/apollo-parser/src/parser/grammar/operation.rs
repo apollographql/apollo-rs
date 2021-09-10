@@ -1,4 +1,4 @@
-use crate::parser::{directive, name, selection, ty, variable};
+use crate::parser::grammar::{directive, name, selection, ty, variable};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// OperationTypeDefinition is used in a SchemaDefinition. Not to be confused

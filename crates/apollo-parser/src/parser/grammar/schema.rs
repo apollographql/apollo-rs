@@ -1,4 +1,4 @@
-use crate::parser::{directive, operation};
+use crate::parser::grammar::{directive, operation};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#SchemaDefinition

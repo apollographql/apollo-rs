@@ -1,4 +1,4 @@
-use crate::parser::{enum_, input, interface, object, scalar, schema, union_};
+use crate::parser::grammar::{enum_, input, interface, object, scalar, schema, union_};
 use crate::{create_err, Parser};
 
 pub(crate) fn extensions(parser: &mut Parser) {

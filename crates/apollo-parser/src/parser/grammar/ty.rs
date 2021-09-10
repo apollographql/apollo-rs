@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use crate::{create_err, Parser, SyntaxKind, Token, TokenKind};
 
-use crate::parser::name;
+use crate::parser::grammar::name;
 
 /// See: https://spec.graphql.org/June2018/#InputValueDefinition
 ///

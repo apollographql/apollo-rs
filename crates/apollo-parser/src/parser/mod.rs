@@ -13,30 +13,12 @@ pub(crate) use language::{GraphQLLanguage, SyntaxNode};
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
 pub(crate) use token_text::TokenText;
 
-mod argument;
-mod directive;
-mod enum_;
-mod extensions;
-mod field;
-mod fragment;
 mod generated;
-mod input;
-mod interface;
+pub(crate) mod grammar;
 mod language;
-mod name;
-mod object;
-mod operation;
-mod scalar;
-mod schema;
-mod selection;
 mod syntax_tree;
 mod token_text;
-mod ty;
-mod union_;
-mod utils;
-mod value;
-mod variable;
-
+pub(crate) mod utils;
 /// Parse text into an AST.
 #[derive(Debug)]
 pub struct Parser {
@@ -79,18 +61,18 @@ impl Parser {
 
         while let Some(node) = self.peek_data() {
             match node.as_str() {
-                "fragment" => fragment::fragment_definition(&mut self),
-                "directive" => directive::directive_definition(&mut self),
-                "schema" => schema::schema_definition(&mut self),
-                "scalar" => scalar::scalar_type_definition(&mut self),
-                "type" => object::object_type_definition(&mut self),
-                "interface" => interface::interface_type_definition(&mut self),
-                "union" => union_::union_type_definition(&mut self),
-                "enum" => enum_::enum_type_definition(&mut self),
-                "input" => input::input_object_type_definition(&mut self),
-                "extend" => extensions::extensions(&mut self),
+                "fragment" => grammar::fragment::fragment_definition(&mut self),
+                "directive" => grammar::directive::directive_definition(&mut self),
+                "schema" => grammar::schema::schema_definition(&mut self),
+                "scalar" => grammar::scalar::scalar_type_definition(&mut self),
+                "type" => grammar::object::object_type_definition(&mut self),
+                "interface" => grammar::interface::interface_type_definition(&mut self),
+                "union" => grammar::union_::union_type_definition(&mut self),
+                "enum" => grammar::enum_::enum_type_definition(&mut self),
+                "input" => grammar::input::input_object_type_definition(&mut self),
+                "extend" => grammar::extensions::extensions(&mut self),
                 "query" | "mutation" | "subscription" | "{" => {
-                    operation::operation_definition(&mut self)
+                    grammar::operation::operation_definition(&mut self)
                 }
                 _ => break,
             }

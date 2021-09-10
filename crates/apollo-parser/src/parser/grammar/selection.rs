@@ -1,4 +1,4 @@
-use crate::parser::{field, fragment};
+use crate::parser::grammar::{field, fragment};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#SelectionSet

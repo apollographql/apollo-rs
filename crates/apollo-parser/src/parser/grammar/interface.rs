@@ -1,4 +1,4 @@
-use crate::parser::{directive, field, name};
+use crate::parser::grammar::{directive, field, name};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#InterfaceTypeDefinition

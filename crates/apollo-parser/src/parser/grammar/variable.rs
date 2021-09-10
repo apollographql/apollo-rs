@@ -1,4 +1,4 @@
-use crate::parser::{name, ty, value};
+use crate::parser::grammar::{name, ty, value};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#VariableDefinition

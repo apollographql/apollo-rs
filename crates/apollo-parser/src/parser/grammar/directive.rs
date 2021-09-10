@@ -1,4 +1,4 @@
-use crate::parser::{argument, input, name};
+use crate::parser::grammar::{argument, input, name};
 use crate::{create_err, Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/June2018/#DirectiveDefinition
