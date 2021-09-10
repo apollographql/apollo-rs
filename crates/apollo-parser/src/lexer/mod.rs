@@ -79,7 +79,7 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
             buf.push(c);
 
             while let Some(c) = chars.clone().next() {
-                if is_ident_char(c) || is_whitespace(c) {
+                if c != '"' {
                     buf.push(chars.next().unwrap());
                 } else if c == '"' {
                     buf.push(chars.next().unwrap());
@@ -203,7 +203,7 @@ fn is_whitespace(c: char) -> bool {
 }
 
 fn is_ident_char(c: char) -> bool {
-    matches!(c, 'a'..='z' | 'A'..='Z')
+    matches!(c, 'a'..='z' | 'A'..='Z' | '_')
 }
 
 fn is_digit_char(c: char) -> bool {

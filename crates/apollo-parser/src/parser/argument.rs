@@ -17,7 +17,7 @@ pub(crate) fn argument(parser: &mut Parser, mut is_argument: bool) {
             is_argument = true;
             if parser.peek().is_some() {
                 guard.finish_node();
-                argument(parser, is_argument);
+                return argument(parser, is_argument);
             }
         }
     }

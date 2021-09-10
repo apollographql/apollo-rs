@@ -77,25 +77,22 @@ impl Parser {
     pub fn parse(mut self) -> SyntaxTree {
         let guard = self.start_node(SyntaxKind::DOCUMENT);
 
-        loop {
-            match self.peek_data() {
-                None => break,
-                Some(node) => match node.as_str() {
-                    "fragment" => fragment::fragment_definition(&mut self),
-                    "directive" => directive::directive_definition(&mut self),
-                    "schema" => schema::schema_definition(&mut self),
-                    "scalar" => scalar::scalar_type_definition(&mut self),
-                    "type" => object::object_type_definition(&mut self),
-                    "interface" => interface::interface_type_definition(&mut self),
-                    "union" => union_::union_type_definition(&mut self),
-                    "enum" => enum_::enum_type_definition(&mut self),
-                    "input" => input::input_object_type_definition(&mut self),
-                    "extend" => extensions::extensions(&mut self),
-                    "query" | "mutation" | "subscription" | "{" => {
-                        operation::operation_definition(&mut self)
-                    }
-                    _ => break,
-                },
+        while let Some(node) = self.peek_data() {
+            match node.as_str() {
+                "fragment" => fragment::fragment_definition(&mut self),
+                "directive" => directive::directive_definition(&mut self),
+                "schema" => schema::schema_definition(&mut self),
+                "scalar" => scalar::scalar_type_definition(&mut self),
+                "type" => object::object_type_definition(&mut self),
+                "interface" => interface::interface_type_definition(&mut self),
+                "union" => union_::union_type_definition(&mut self),
+                "enum" => enum_::enum_type_definition(&mut self),
+                "input" => input::input_object_type_definition(&mut self),
+                "extend" => extensions::extensions(&mut self),
+                "query" | "mutation" | "subscription" | "{" => {
+                    operation::operation_definition(&mut self)
+                }
+                _ => break,
             }
         }
 
@@ -179,8 +176,26 @@ mod test {
     use super::*;
 
     #[test]
-    fn smoke_directive_definition_with_errors() {
-        let input = "\"Description\"directive @example(isTreat: Boolean, treatKind: String)";
+    fn smoke_subgraph_test() {
+        let input = "
+        directive @tag(name: String!) on FIELD_DEFINITION
+
+        extend type Product @key(fields: \"id\") {
+          id: ID! @external @tag(name: \"hi from inventory\")
+          dimensions: ProductDimension @external
+          delivery(zip: String): DeliveryEstimates @requires(fields: \"dimensions { size weight }\")
+        }
+
+        type ProductDimension {
+          size: String
+          weight: Float @tag(name: \"hi from inventory value type field\")
+        }
+
+        type DeliveryEstimates {
+          estimatedDelivery: String
+          fastestDelivery: String
+        }
+        ";
         let parser = Parser::new(input);
 
         println!("{:?}", parser.parse());
