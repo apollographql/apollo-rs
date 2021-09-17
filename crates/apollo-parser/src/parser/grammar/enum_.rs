@@ -8,7 +8,7 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 //     Description[opt] enum Name Directives[Const][opt] EnumValuesDefinition[opt]
 /// ```
 pub(crate) fn enum_type_definition(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::ENUM_TYPE_DEFINITION);
+    let _guard = p.start(SyntaxKind::ENUM_TYPE_DEFINITION);
     p.bump(SyntaxKind::enum_KW);
 
     match p.peek() {
@@ -104,17 +104,7 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
         }
     }
 
-    if let Some(T!['}']) = p.peek() {
-        p.bump(S!['}'])
-    } else {
-        p.push_err(create_err!(
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected Enum Values Definition to have a closing }}, got {}",
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data"))
-        ));
-    }
+    p.expect(T!['}'], S!['}']);
 }
 
 /// See: https://spec.graphql.org/June2018/#EnumValueDefinition
@@ -241,6 +231,31 @@ mod test {
                         - L_CURLY@13..14 "{"
                         - R_CURLY@14..15 "}"
             - ERROR@0:1 "Expected Enum Value Definition to follow, got }"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_creates_an_error_when_l_curly_is_missing() {
+        utils::check_ast(
+            "enum Direction { NORTH WEST",
+            r#"
+            - DOCUMENT@0..23
+                - ENUM_TYPE_DEFINITION@0..23
+                    - enum_KW@0..4 "enum"
+                    - NAME@4..13
+                        - IDENT@4..13 "Direction"
+                    - ENUM_VALUES_DEFINITION@13..23
+                        - L_CURLY@13..14 "{"
+                        - ENUM_VALUE_DEFINITION@14..19
+                            - ENUM_VALUE@14..19
+                                - NAME@14..19
+                                    - IDENT@14..19 "NORTH"
+                        - ENUM_VALUE_DEFINITION@19..23
+                            - ENUM_VALUE@19..23
+                                - NAME@19..23
+                                    - IDENT@19..23 "WEST"
+            - ERROR@0:15 "expected R_CURLY, got no further data"
             "#,
         )
     }

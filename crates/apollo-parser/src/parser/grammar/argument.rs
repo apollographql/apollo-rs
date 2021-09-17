@@ -9,7 +9,7 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 /// ```
 pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
     if let Some(TokenKind::Name) = p.peek() {
-        let guard = p.start_node(SyntaxKind::ARGUMENT);
+        let guard = p.start(SyntaxKind::ARGUMENT);
         name::name(p);
         if let Some(T![:]) = p.peek() {
             p.bump(S![:]);
@@ -43,7 +43,7 @@ pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
 ///    ( Argument(list) )
 /// ```
 pub(crate) fn arguments(p: &mut Parser) {
-    let guard = p.start_node(SyntaxKind::ARGUMENTS);
+    let guard = p.start(SyntaxKind::ARGUMENTS);
     p.bump(S!['(']);
     argument(p, false);
     match p.peek() {
@@ -68,7 +68,7 @@ pub(crate) fn arguments(p: &mut Parser) {
 ///     ( InputValueDefinition[list] )
 /// ```
 pub(crate) fn arguments_definition(p: &mut Parser) {
-    let guard = p.start_node(SyntaxKind::ARGUMENTS);
+    let guard = p.start(SyntaxKind::ARGUMENTS);
     p.bump(S!['(']);
     input::input_value_definition(p, false);
     match p.peek() {

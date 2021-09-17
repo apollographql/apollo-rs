@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::create_err;
 use crate::lexer::Lexer;
 use crate::TokenKind;
 use crate::{lexer, Token};
@@ -86,6 +87,37 @@ impl Parser {
         builder.finish(self.errors)
     }
 
+    /// Check if the current token is `kind`.
+    pub(crate) fn at(&mut self, token: TokenKind) -> bool {
+        if let Some(t) = self.peek() {
+            if t == token {
+                return true;
+            }
+            return false;
+        }
+
+        false
+    }
+
+    /// Consume the next token if it is `kind` or emit an error
+    /// otherwise.
+    pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
+        let current_t = self
+            .peek_data()
+            .unwrap_or_else(|| String::from("no further data"));
+
+        if self.at(token) {
+            self.bump(kind);
+            return;
+        }
+
+        self.push_err(create_err!(
+            current_t,
+            "expected {:?}, got {}",
+            kind,
+            current_t,
+        ));
+    }
     /// Consume a token from the lexer and insert it into the AST.
     pub(crate) fn bump(&mut self, kind: SyntaxKind) {
         let token = self.tokens.pop().unwrap();

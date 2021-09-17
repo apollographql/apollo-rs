@@ -192,17 +192,7 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
 pub(crate) fn directive(p: &mut Parser) {
     let _guard = p.start_node(SyntaxKind::DIRECTIVE);
 
-    match p.peek() {
-        Some(T![@]) => p.bump(S![@]),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data().unwrap(),
-                "Expected directive @ definition, got {}",
-                p.peek_data().unwrap()
-            ));
-        }
-    }
-
+    p.expect(T![@], S![@]);
     name::name(p);
 
     if let Some(T!['(']) = p.peek() {
@@ -234,8 +224,7 @@ mod test {
                     - NAME@10..17
                         - IDENT@10..17 "example"
                     - on_KW@17..19 "on"
-                    - DIRECTIVE_LOCATIONS@19..19
-            - ERROR@0:15 "Expected to have Directive Locations in a Directive Definition, got no further data"
+            - ERROR@0:15 "Expected to have a valid Directive Location in a Directive Definition, got no further data"
             "#,
         );
     }
@@ -271,11 +260,11 @@ mod test {
                         - R_PAREN@37..38 ")"
                     - on_KW@38..40 "on"
                     - DIRECTIVE_LOCATIONS@40..54
-                        - DIRECTIVE_LOCATION@40..54
+                        - DIRECTIVE_LOCATION@40..45
                             - FIELD_KW@40..45 "FIELD"
-                            - PIPE@45..46 "|"
-                            - DIRECTIVE_LOCATION@46..54
-                                - QUERY_KW@46..54 "MUTATION"
+                        - PIPE@45..46 "|"
+                        - DIRECTIVE_LOCATION@46..54
+                            - QUERY_KW@46..54 "MUTATION"
             "#,
         );
     }
@@ -288,8 +277,8 @@ mod test {
         utils::check_ast(
             "directive @example(isTreat: Boolean, treatKind: String) repeatable on FIELD | MUTATION",
             r#"
-            - DOCUMENT@0..54
-                - DIRECTIVE_DEFINITION@0..54
+            - DOCUMENT@0..64
+                - DIRECTIVE_DEFINITION@0..64
                     - directive_KW@0..9 "directive"
                     - AT@9..10 "@"
                     - NAME@10..17
@@ -310,13 +299,14 @@ mod test {
                             - TYPE@37..37
                                 - NAMED_TYPE@37..37
                         - R_PAREN@37..38 ")"
-                    - on_KW@38..40 "on"
-                    - DIRECTIVE_LOCATIONS@40..54
-                        - DIRECTIVE_LOCATION@40..54
-                            - FIELD_KW@40..45 "FIELD"
-                            - PIPE@45..46 "|"
-                            - DIRECTIVE_LOCATION@46..54
-                                - QUERY_KW@46..54 "MUTATION"
+                    - repeatable_KW@38..48 "repeatable"
+                    - on_KW@48..50 "on"
+                    - DIRECTIVE_LOCATIONS@50..64
+                        - DIRECTIVE_LOCATION@50..55
+                            - FIELD_KW@50..55 "FIELD"
+                        - PIPE@55..56 "|"
+                        - DIRECTIVE_LOCATION@56..64
+                            - QUERY_KW@56..64 "MUTATION"
             "#,
         );
     }

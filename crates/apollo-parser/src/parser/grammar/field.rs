@@ -51,19 +51,10 @@ pub(crate) fn field(p: &mut Parser) {
 /// ```
 pub(crate) fn fields_definition(p: &mut Parser) {
     let _guard = p.start_node(SyntaxKind::FIELDS_DEFINITION);
+    let _guard = p.start(SyntaxKind::FIELDS_DEFINITION);
     p.bump(S!['{']);
     field_definition(p);
-    if let Some(T!['}']) = p.peek() {
-        p.bump(S!['}'])
-    } else {
-        p.push_err(create_err!(
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected Fields Definition to have a closing }}, got {}",
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data"))
-        ));
-    }
+    p.expect(T!['}'], S!['}']);
 }
 
 /// See: https://spec.graphql.org/June2018/#FieldDefinition
