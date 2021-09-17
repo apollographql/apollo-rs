@@ -1,5 +1,5 @@
 use crate::create_err;
-use crate::{Parser, SyntaxKind, TokenKind};
+use crate::{Parser, SyntaxKind, TokenKind, S};
 
 /// See: https://spec.graphql.org/June2018/#Name
 ///
@@ -7,36 +7,36 @@ use crate::{Parser, SyntaxKind, TokenKind};
 /// Name
 ///     [_A-Za-z][_0-9A-Za-z]*/
 /// ```
-pub(crate) fn name(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::NAME);
-    match parser.peek() {
-        Some(TokenKind::Node) => {
-            validate_name(parser);
-            parser.bump(SyntaxKind::IDENT);
+pub(crate) fn name(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::NAME);
+    match p.peek() {
+        Some(TokenKind::Name) => {
+            validate_name(p);
+            p.bump(SyntaxKind::IDENT);
         }
         // missing name
-        _ => parser.push_err(create_err!(
-            parser.peek_data().unwrap(),
+        _ => p.push_err(create_err!(
+            p.peek_data().unwrap(),
             "Expected a spec compliant Name, got {}",
-            parser.peek_data().unwrap()
+            p.peek_data().unwrap()
         )),
     }
 }
 
-pub(crate) fn validate_name(parser: &mut Parser) {
-    let data = parser.peek_data().unwrap();
+pub(crate) fn validate_name(p: &mut Parser) {
+    let data = p.peek_data().unwrap();
     if !data.starts_with(is_start_char) {
-        parser.push_err(create_err!(
-            parser.peek_data().unwrap(),
+        p.push_err(create_err!(
+            p.peek_data().unwrap(),
             "Expected Name to start with a letter or an _, got {}",
-            parser.peek_data().unwrap()
+            p.peek_data().unwrap()
         ));
     }
     if data.len() >= 2 && !data[1..].chars().all(is_remainder_char) {
-        parser.push_err(create_err!(
-            parser.peek_data().unwrap(),
+        p.push_err(create_err!(
+            p.peek_data().unwrap(),
             "Name can only be composed of letters, numbers and _, got {}",
-            parser.peek_data().unwrap()
+            p.peek_data().unwrap()
         ));
     }
 }
@@ -47,10 +47,10 @@ pub(crate) fn validate_name(parser: &mut Parser) {
 /// Alias
 ///     Name :
 /// ```
-pub(crate) fn alias(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::ALIAS);
-    name(parser);
-    parser.bump(SyntaxKind::COLON);
+pub(crate) fn alias(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::ALIAS);
+    name(p);
+    p.bump(S![:]);
 }
 
 fn is_start_char(c: char) -> bool {

@@ -179,7 +179,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
         use crate::{
             SyntaxNode, SyntaxToken, SyntaxKind::{self, *},
             ast::{AstNode, AstChildren, support},
-            T,
+            S,
         };
 
         #(#node_defs)*
@@ -189,7 +189,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
         #(#display_impls)*
     };
 
-    let ast = ast.to_string().replace("T ! [", "T![");
+    let ast = ast.to_string().replace("S ! [", "S![");
 
     let mut res = String::with_capacity(ast.len() * 2);
 
@@ -260,7 +260,7 @@ impl Field {
         match self {
             Field::Token(token) => {
                 let token: proc_macro2::TokenStream = token.parse().unwrap();
-                Some(quote! { T![#token] })
+                Some(quote! { S![#token] })
             }
             _ => None,
         }

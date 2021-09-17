@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, name, selection, ty};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#FragmentDefinition
 ///
@@ -7,27 +7,25 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 /// FragmentDefinition
 ///     fragment FragmentName TypeCondition Directives(opt) SelectionSet
 /// ```
-pub(crate) fn fragment_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::FRAGMENT_DEFINITION);
-    parser.bump(SyntaxKind::fragment_KW);
+pub(crate) fn fragment_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::FRAGMENT_DEFINITION);
+    p.bump(SyntaxKind::fragment_KW);
 
-    fragment_name(parser);
-    type_condition(parser);
+    fragment_name(p);
+    type_condition(p);
 
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
+    if let Some(T![@]) = p.peek() {
+        directive::directives(p);
     }
 
-    match parser.peek() {
-        Some(TokenKind::LCurly) => selection::selection_set(parser),
+    match p.peek() {
+        Some(T!['{']) => selection::selection_set(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Fragment Definition to have a Selection Set, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
@@ -40,24 +38,23 @@ pub(crate) fn fragment_definition(parser: &mut Parser) {
 /// FragmentName
 ///     Name *but not* on
 /// ```
-pub(crate) fn fragment_name(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::FRAGMENT_NAME);
-    match parser.peek() {
-        Some(TokenKind::Node) => {
-            if parser.peek_data().unwrap() == "on" {
-                parser.push_err(create_err!(
-                    parser
-                        .peek_data()
+pub(crate) fn fragment_name(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::FRAGMENT_NAME);
+    match p.peek() {
+        Some(TokenKind::Name) => {
+            if p.peek_data().unwrap() == "on" {
+                p.push_err(create_err!(
+                    p.peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
                     "Fragment Name cannot be 'on'",
                 ));
             }
-            name::name(parser)
+            name::name(p)
         }
-        _ => parser.push_err(create_err!(
-            parser.peek_data().unwrap(),
+        _ => p.push_err(create_err!(
+            p.peek_data().unwrap(),
             "Expected Fragment Name, got {}",
-            parser.peek_data().unwrap()
+            p.peek_data().unwrap()
         )),
     }
 }
@@ -68,29 +65,27 @@ pub(crate) fn fragment_name(parser: &mut Parser) {
 /// TypeCondition
 ///     on NamedType
 /// ```
-pub(crate) fn type_condition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::TYPE_CONDITION);
-    match parser.peek() {
-        Some(TokenKind::Node) => {
-            if parser.peek_data().unwrap() == "on" {
-                parser.bump(SyntaxKind::on_KW);
+pub(crate) fn type_condition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::TYPE_CONDITION);
+    match p.peek() {
+        Some(TokenKind::Name) => {
+            if p.peek_data().unwrap() == "on" {
+                p.bump(SyntaxKind::on_KW);
             } else {
-                parser.push_err(create_err!(
-                    parser
-                        .peek_data()
+                p.push_err(create_err!(
+                    p.peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
                     "Expected Fragment's Type Condition to have 'on', got {}",
-                    parser
-                        .peek_data()
+                    p.peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
                 ));
             }
-            ty::named_type(parser)
+            ty::named_type(p)
         }
-        _ => parser.push_err(create_err!(
-            parser.peek_data().unwrap(),
+        _ => p.push_err(create_err!(
+            p.peek_data().unwrap(),
             "Expected Type Condition in a Fragment, got {}",
-            parser.peek_data().unwrap()
+            p.peek_data().unwrap()
         )),
     }
 }
@@ -101,25 +96,23 @@ pub(crate) fn type_condition(parser: &mut Parser) {
 /// InlineFragment
 ///     ... TypeCondition[opt] Directives[opt] SelectionSet
 /// ```
-pub(crate) fn inline_fragment(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::INLINE_FRAGMENT);
-    parser.bump(SyntaxKind::SPREAD);
-    if let Some(TokenKind::Node) = parser.peek() {
-        type_condition(parser);
+pub(crate) fn inline_fragment(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::INLINE_FRAGMENT);
+    p.bump(S![...]);
+    if let Some(TokenKind::Name) = p.peek() {
+        type_condition(p);
     }
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
+    if let Some(T![@]) = p.peek() {
+        directive::directives(p);
     }
-    match parser.peek() {
-        Some(TokenKind::LCurly) => selection::selection_set(parser),
+    match p.peek() {
+        Some(T!['{']) => selection::selection_set(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Inline Fragment to have a Selection Set, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
@@ -132,28 +125,26 @@ pub(crate) fn inline_fragment(parser: &mut Parser) {
 /// FragmentSpread
 ///     ... FragmentName Directives[opt]
 /// ```
-pub(crate) fn fragment_spread(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::FRAGMENT_SPREAD);
-    parser.bump(SyntaxKind::SPREAD);
-    match parser.peek() {
-        Some(TokenKind::Node) => {
-            fragment_name(parser);
+pub(crate) fn fragment_spread(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::FRAGMENT_SPREAD);
+    p.bump(S![...]);
+    match p.peek() {
+        Some(TokenKind::Name) => {
+            fragment_name(p);
         }
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Fragment Spread to have a Name, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
 
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
+    if let Some(T![@]) = p.peek() {
+        directive::directives(p);
     }
 }
 

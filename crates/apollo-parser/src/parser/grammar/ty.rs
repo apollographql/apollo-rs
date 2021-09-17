@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::{create_err, Parser, SyntaxKind, Token, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, Token, TokenKind, S, T};
 
 use crate::parser::grammar::name;
 
@@ -23,25 +23,25 @@ use crate::parser::grammar::name;
 // To make this work, we first collect all types in a double ended queue, and
 // unwrap them once the last possible child has been parsed. Nodes are then
 // created in the processing stage of this parsing rule.
-pub(crate) fn ty(parser: &mut Parser) {
-    let mut types = parse(parser);
+pub(crate) fn ty(p: &mut Parser) {
+    let mut types = parse(p);
 
-    process(&mut types, parser);
+    process(&mut types, p);
 
     return;
 
-    fn parse(parser: &mut Parser) -> VecDeque<(SyntaxKind, Token)> {
-        let token = parser.pop();
+    fn parse(p: &mut Parser) -> VecDeque<(SyntaxKind, Token)> {
+        let token = p.pop();
         let mut types = match token.kind() {
-            TokenKind::LBracket => {
-                let mut types = parse(parser);
-                types.push_front((SyntaxKind::L_BRACK, token));
-                if let Some(TokenKind::RBracket) = parser.peek() {
-                    types.push_back((SyntaxKind::R_BRACK, parser.pop()));
+            T!['['] => {
+                let mut types = parse(p);
+                types.push_front((S!['['], token));
+                if let Some(T![']']) = p.peek() {
+                    types.push_back((S![']'], p.pop()));
                 }
                 types
             }
-            TokenKind::Node => {
+            TokenKind::Name => {
                 let mut types = VecDeque::new();
                 types.push_back((SyntaxKind::NAMED_TYPE, token));
                 types
@@ -50,44 +50,42 @@ pub(crate) fn ty(parser: &mut Parser) {
             token => panic!("unexpected token, {:?}", token),
         };
 
-        if let Some(TokenKind::Bang) = parser.peek() {
-            types.push_front((SyntaxKind::NON_NULL_TYPE, parser.pop()));
+        if let Some(T![!]) = p.peek() {
+            types.push_front((SyntaxKind::NON_NULL_TYPE, p.pop()));
         }
 
         types
     }
 
-    fn process(types: &mut VecDeque<(SyntaxKind, Token)>, parser: &mut Parser) {
+    fn process(types: &mut VecDeque<(SyntaxKind, Token)>, p: &mut Parser) {
         match types.pop_front() {
-            Some((kind @ SyntaxKind::L_BRACK, token)) => {
-                let _ty_guard = parser.start_node(SyntaxKind::TYPE);
-                let _list_guard = parser.start_node(SyntaxKind::LIST_TYPE);
-                parser.push_ast(kind, token);
-                process(types, parser);
-                if let Some((_kind @ SyntaxKind::R_BRACK, _token)) = peek(types) {
-                    process(types, parser);
+            Some((kind @ S!['['], token)) => {
+                let _ty_guard = p.start_node(SyntaxKind::TYPE);
+                let _list_guard = p.start_node(SyntaxKind::LIST_TYPE);
+                p.push_ast(kind, token);
+                process(types, p);
+                if let Some((_kind @ S![']'], _token)) = peek(types) {
+                    process(types, p);
                 }
             }
             Some((kind @ SyntaxKind::NON_NULL_TYPE, _)) => {
-                let _ty_guard = parser.start_node(SyntaxKind::TYPE);
-                let _non_null_guard = parser.start_node(kind);
-                process(types, parser);
+                let _ty_guard = p.start_node(SyntaxKind::TYPE);
+                let _non_null_guard = p.start_node(kind);
+                process(types, p);
             }
             Some((SyntaxKind::NAMED_TYPE, _)) => {
-                let _ty_guard = parser.start_node(SyntaxKind::TYPE);
-                parser.start_node(SyntaxKind::NAMED_TYPE).finish_node();
+                let _ty_guard = p.start_node(SyntaxKind::TYPE);
+                p.start_node(SyntaxKind::NAMED_TYPE).finish_node();
             }
-            Some((kind @ SyntaxKind::R_BRACK, token)) => {
-                parser.push_ast(kind, token);
+            Some((kind @ S![']'], token)) => {
+                p.push_ast(kind, token);
             }
             _ => {
-                parser.push_err(create_err!(
-                    parser
-                        .peek_data()
+                p.push_err(create_err!(
+                    p.peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
                     "Internal apollo-parser error, {} token was not expected when creating a Type",
-                    parser
-                        .peek_data()
+                    p.peek_data()
                         .unwrap_or_else(|| String::from("no further data"))
                 ));
             }
@@ -101,9 +99,9 @@ pub(crate) fn ty(parser: &mut Parser) {
 /// NamedType
 ///     Name
 /// ```
-pub(crate) fn named_type(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::NAMED_TYPE);
-    name::name(parser);
+pub(crate) fn named_type(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::NAMED_TYPE);
+    name::name(p);
 }
 
 fn peek<T>(target: &VecDeque<T>) -> Option<&T> {

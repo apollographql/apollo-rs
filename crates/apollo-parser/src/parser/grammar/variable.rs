@@ -1,5 +1,5 @@
 use crate::parser::grammar::{name, ty, value};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#VariableDefinition
 ///
@@ -7,46 +7,46 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 /// VariableDefinition
 ///     Variable : Type DefaultValue(opt)
 /// ```
-pub(crate) fn variable_definition(parser: &mut Parser, is_variable: bool) {
-    if let Some(TokenKind::Dollar) = parser.peek() {
-        let guard = parser.start_node(SyntaxKind::VARIABLE_DEFINITION);
-        variable(parser);
-        if let Some(TokenKind::Colon) = parser.peek() {
-            parser.bump(SyntaxKind::COLON);
-            if let Some(TokenKind::Node) = parser.peek() {
-                ty::ty(parser);
-                if let Some(TokenKind::Eq) = parser.peek() {
-                    value::default_value(parser);
+pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
+    if let Some(T![$]) = p.peek() {
+        let guard = p.start_node(SyntaxKind::VARIABLE_DEFINITION);
+        variable(p);
+        if let Some(T![:]) = p.peek() {
+            p.bump(S![:]);
+            if let Some(TokenKind::Name) = p.peek() {
+                ty::ty(p);
+                if let Some(T![=]) = p.peek() {
+                    value::default_value(p);
                 }
-                if parser.peek().is_some() {
+                if p.peek().is_some() {
                     guard.finish_node();
-                    return variable_definition(parser, true);
+                    return variable_definition(p, true);
                 }
             }
-            parser.push_err(create_err!(
-                parser.peek_data().unwrap(),
+            p.push_err(create_err!(
+                p.peek_data().unwrap(),
                 "Expected Variable Definition to have a Type, got {}",
-                parser.peek_data().unwrap()
+                p.peek_data().unwrap()
             ));
         } else {
-            parser.push_err(create_err!(
-                parser.peek_data().unwrap(),
+            p.push_err(create_err!(
+                p.peek_data().unwrap(),
                 "Expected Variable Definition to have a Name, got {}",
-                parser.peek_data().unwrap()
+                p.peek_data().unwrap()
             ));
         }
     }
 
-    if let Some(TokenKind::Comma) = parser.peek() {
-        parser.bump(SyntaxKind::COMMA);
-        return variable_definition(parser, is_variable);
+    if let Some(T![,]) = p.peek() {
+        p.bump(S![,]);
+        return variable_definition(p, is_variable);
     }
 
     if !is_variable {
-        parser.push_err(create_err!(
-            parser.peek_data().unwrap(),
+        p.push_err(create_err!(
+            p.peek_data().unwrap(),
             "Expected to have an Variable Definition, got {}",
-            parser.peek_data().unwrap()
+            p.peek_data().unwrap()
         ));
     }
 }
@@ -57,10 +57,10 @@ pub(crate) fn variable_definition(parser: &mut Parser, is_variable: bool) {
 /// Variable
 ///     $ Name
 /// ```
-pub(crate) fn variable(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::VARIABLE);
-    parser.bump(SyntaxKind::DOLLAR);
-    name::name(parser);
+pub(crate) fn variable(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::VARIABLE);
+    p.bump(S![$]);
+    name::name(p);
 }
 
 #[cfg(test)]

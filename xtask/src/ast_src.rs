@@ -18,11 +18,11 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
         (",", "COMMA"),
         ("@", "AT"),
         ("$", "DOLLAR"),
+        ("&", "AMP"),
         ("|", "PIPE"),
         ("...", "SPREAD"),
         ("=", "EQ"),
         (":", "COLON"),
-        ("&", "AMP"),
     ],
     keywords: &[
         "query",

@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, name};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind, T};
 
 /// See: https://spec.graphql.org/June2018/#ScalarTypeDefinition
 ///
@@ -7,26 +7,24 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 /// ScalarTypeDefinition
 ///     Description[opt] scalar Name Directives[Const][opt]
 /// ```
-pub(crate) fn scalar_type_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::SCALAR_TYPE_DEFINITION);
-    parser.bump(SyntaxKind::scalar_KW);
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
+pub(crate) fn scalar_type_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::SCALAR_TYPE_DEFINITION);
+    p.bump(SyntaxKind::scalar_KW);
+    match p.peek() {
+        Some(TokenKind::Name) => name::name(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Scalar Type Definition to have a Name, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
 
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
+    if let Some(T![@]) = p.peek() {
+        directive::directives(p);
     }
 }
 
@@ -36,35 +34,31 @@ pub(crate) fn scalar_type_definition(parser: &mut Parser) {
 /// ScalarTypeExtension
 ///     extend scalar Name Directives[const]
 /// ```
-pub(crate) fn scalar_type_extension(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::SCALAR_TYPE_EXTENSION);
-    parser.bump(SyntaxKind::extend_KW);
-    parser.bump(SyntaxKind::scalar_KW);
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
+pub(crate) fn scalar_type_extension(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::SCALAR_TYPE_EXTENSION);
+    p.bump(SyntaxKind::extend_KW);
+    p.bump(SyntaxKind::scalar_KW);
+    match p.peek() {
+        Some(TokenKind::Name) => name::name(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Scalar Type Extension to have a Name, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
 
-    match parser.peek() {
-        Some(TokenKind::At) => directive::directives(parser),
+    match p.peek() {
+        Some(T![@]) => directive::directives(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Scalar Type Extension to have directives, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }

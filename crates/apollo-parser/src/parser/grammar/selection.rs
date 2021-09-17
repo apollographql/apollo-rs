@@ -1,5 +1,5 @@
 use crate::parser::grammar::{field, fragment};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#SelectionSet
 ///
@@ -7,13 +7,13 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 /// SelectionSet
 ///     { Selection }
 /// ```
-pub(crate) fn selection_set(parser: &mut Parser) {
-    if let Some(TokenKind::LCurly) = parser.peek() {
-        let guard = parser.start_node(SyntaxKind::SELECTION_SET);
-        parser.bump(SyntaxKind::L_CURLY);
-        selection(parser);
-        if let Some(TokenKind::RCurly) = parser.peek() {
-            parser.bump(SyntaxKind::R_CURLY);
+pub(crate) fn selection_set(p: &mut Parser) {
+    if let Some(T!['{']) = p.peek() {
+        let guard = p.start_node(SyntaxKind::SELECTION_SET);
+        p.bump(S!['{']);
+        selection(p);
+        if let Some(T!['}']) = p.peek() {
+            p.bump(S!['}']);
             guard.finish_node()
         }
     }
@@ -27,34 +27,32 @@ pub(crate) fn selection_set(parser: &mut Parser) {
 ///     FragmentSpread
 ///     InlineFragment
 /// ```
-pub(crate) fn selection(parser: &mut Parser) {
-    let guard = parser.start_node(SyntaxKind::SELECTION);
-    while let Some(node) = parser.peek() {
+pub(crate) fn selection(p: &mut Parser) {
+    let guard = p.start_node(SyntaxKind::SELECTION);
+    while let Some(node) = p.peek() {
         match node {
-            TokenKind::Spread => {
-                if let Some(node) = parser.peek_data_n(2) {
+            T![...] => {
+                if let Some(node) = p.peek_data_n(2) {
                     match node.as_str() {
-                        "on" | "{" => fragment::inline_fragment(parser),
-                        _ => fragment::fragment_spread(parser),
+                        "on" | "{" => fragment::inline_fragment(p),
+                        _ => fragment::fragment_spread(p),
                     }
                 } else {
-                    parser.push_err(create_err!(
-                        parser
-                            .peek_data()
+                    p.push_err(create_err!(
+                        p.peek_data()
                             .unwrap_or_else(|| String::from("no further data")),
                         "Expected Inline Fragment or Fragment Spread to follow a ..., got {}",
-                        parser
-                            .peek_data()
+                        p.peek_data()
                             .unwrap_or_else(|| String::from("no further data")),
                     ));
                 }
             }
-            TokenKind::LCurly => {
+            T!['{'] => {
                 guard.finish_node();
                 break;
             }
-            TokenKind::Node => {
-                field::field(parser);
+            TokenKind::Name => {
+                field::field(p);
             }
             _ => break,
         }

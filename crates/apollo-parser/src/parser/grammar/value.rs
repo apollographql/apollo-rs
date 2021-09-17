@@ -1,5 +1,5 @@
 use crate::parser::grammar::{name, variable};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#Value
 ///
@@ -15,26 +15,24 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 ///     ListValue [Const]
 ///     ObjectValue [Const]
 /// ```
-pub(crate) fn value(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::VALUE);
-    match parser.peek() {
-        Some(TokenKind::Dollar) => variable::variable(parser),
-        Some(TokenKind::Int) => parser.bump(SyntaxKind::INT_VALUE),
-        Some(TokenKind::Float) => parser.bump(SyntaxKind::FLOAT_VALUE),
-        Some(TokenKind::StringValue) => parser.bump(SyntaxKind::STRING_VALUE),
-        Some(TokenKind::Boolean) => parser.bump(SyntaxKind::BOOLEAN_VALUE),
-        Some(TokenKind::Null) => parser.bump(SyntaxKind::NULL_VALUE),
-        Some(TokenKind::Node) => enum_value(parser),
-        Some(TokenKind::LBracket) => list_value(parser),
-        Some(TokenKind::LCurly) => object_value(parser),
+pub(crate) fn value(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::VALUE);
+    match p.peek() {
+        Some(T![$]) => variable::variable(p),
+        Some(TokenKind::Int) => p.bump(SyntaxKind::INT_VALUE),
+        Some(TokenKind::Float) => p.bump(SyntaxKind::FLOAT_VALUE),
+        Some(TokenKind::StringValue) => p.bump(SyntaxKind::STRING_VALUE),
+        Some(TokenKind::Boolean) => p.bump(SyntaxKind::BOOLEAN_VALUE),
+        Some(TokenKind::Null) => p.bump(SyntaxKind::NULL_VALUE),
+        Some(TokenKind::Name) => enum_value(p),
+        Some(T!['[']) => list_value(p),
+        Some(T!['{']) => object_value(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected a valid Value, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data"))
             ));
         }
@@ -45,22 +43,20 @@ pub(crate) fn value(parser: &mut Parser) {
 /// EnumValue
 /// Name but not true or false or null
 /// ```
-pub(crate) fn enum_value(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::ENUM_VALUE);
-    let name = parser.peek_data().unwrap();
+pub(crate) fn enum_value(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::ENUM_VALUE);
+    let name = p.peek_data().unwrap();
 
     if matches!(name.as_str(), "true" | "false" | "null") {
-        parser.push_err(create_err!(
-            parser
-                .peek_data()
+        p.push_err(create_err!(
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
             "Enum Value cannot be {}",
-            parser
-                .peek_data()
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data"))
         ));
     }
-    name::name(parser);
+    name::name(p);
 }
 
 /// See: https://spec.graphql.org/June2018/#ListValue
@@ -69,19 +65,19 @@ pub(crate) fn enum_value(parser: &mut Parser) {
 ///     [ ]
 ///     [ Value [?const][list] ]
 /// ```
-pub(crate) fn list_value(parser: &mut Parser) {
-    let guard = parser.start_node(SyntaxKind::LIST_VALUE);
-    parser.bump(SyntaxKind::L_BRACK);
-    while let Some(node) = parser.peek() {
-        if node == TokenKind::RBracket {
-            parser.bump(SyntaxKind::R_BRACK);
+pub(crate) fn list_value(p: &mut Parser) {
+    let guard = p.start_node(SyntaxKind::LIST_VALUE);
+    p.bump(S!['[']);
+    while let Some(node) = p.peek() {
+        if node == T![']'] {
+            p.bump(S![']']);
             guard.finish_node();
             break;
-        } else if node == TokenKind::Comma {
-            parser.bump(SyntaxKind::COMMA);
-            value(parser);
+        } else if node == T![,] {
+            p.bump(S![,]);
+            value(p);
         } else {
-            value(parser);
+            value(p);
         }
     }
 }
@@ -92,39 +88,35 @@ pub(crate) fn list_value(parser: &mut Parser) {
 /// ObjectValue [Const]
 ///     { }
 ///     { ObjectField [Const][list] }
-pub(crate) fn object_value(parser: &mut Parser) {
-    let guard = parser.start_node(SyntaxKind::OBJECT_VALUE);
-    parser.bump(SyntaxKind::L_CURLY);
-    match parser.peek() {
-        Some(TokenKind::Node) => {
-            object_field(parser);
-            if let Some(TokenKind::RCurly) = parser.peek() {
-                parser.bump(SyntaxKind::R_CURLY);
+pub(crate) fn object_value(p: &mut Parser) {
+    let guard = p.start_node(SyntaxKind::OBJECT_VALUE);
+    p.bump(S!['{']);
+    match p.peek() {
+        Some(TokenKind::Name) => {
+            object_field(p);
+            if let Some(T!['}']) = p.peek() {
+                p.bump(S!['}']);
                 guard.finish_node()
             } else {
-                parser.push_err(create_err!(
-                    parser
-                        .peek_data()
+                p.push_err(create_err!(
+                    p.peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
                     "Expected a closing }} to follow an Object Value , got {}",
-                    parser
-                        .peek_data()
+                    p.peek_data()
                         .unwrap_or_else(|| String::from("no further data"))
                 ));
             }
         }
-        Some(TokenKind::RCurly) => {
-            parser.bump(SyntaxKind::R_CURLY);
+        Some(T!['}']) => {
+            p.bump(S!['}']);
             guard.finish_node()
         }
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected an Object Value, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data"))
             ));
         }
@@ -137,29 +129,29 @@ pub(crate) fn object_value(parser: &mut Parser) {
 /// ObjectField [Const]
 ///     Name : Value [const]
 /// ```
-pub(crate) fn object_field(parser: &mut Parser) {
-    if let Some(TokenKind::Node) = parser.peek() {
-        let guard = parser.start_node(SyntaxKind::OBJECT_FIELD);
-        name::name(parser);
-        if let Some(TokenKind::Colon) = parser.peek() {
-            parser.bump(SyntaxKind::COLON);
-            value(parser);
-            if parser.peek().is_some() {
+pub(crate) fn object_field(p: &mut Parser) {
+    if let Some(TokenKind::Name) = p.peek() {
+        let guard = p.start_node(SyntaxKind::OBJECT_FIELD);
+        name::name(p);
+        if let Some(T![:]) = p.peek() {
+            p.bump(S![:]);
+            value(p);
+            if p.peek().is_some() {
                 guard.finish_node();
-                return object_field(parser);
+                return object_field(p);
             }
         }
     }
-    if let Some(TokenKind::Comma) = parser.peek() {
-        parser.bump(SyntaxKind::COMMA);
-        return object_field(parser);
+    if let Some(T![,]) = p.peek() {
+        p.bump(S![,]);
+        return object_field(p);
     }
 }
 
-pub(crate) fn default_value(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::DEFAULT_VALUE);
-    parser.bump(SyntaxKind::EQ);
-    value(parser);
+pub(crate) fn default_value(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::DEFAULT_VALUE);
+    p.bump(S![=]);
+    value(p);
 }
 
 #[cfg(test)]

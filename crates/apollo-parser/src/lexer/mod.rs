@@ -106,7 +106,7 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
             match buf.as_str() {
                 "null" => Ok(Token::new(TokenKind::Null, buf)),
                 "true" | "false" => Ok(Token::new(TokenKind::Boolean, buf)),
-                _ => Ok(Token::new(TokenKind::Node, buf)),
+                _ => Ok(Token::new(TokenKind::Name, buf)),
             }
         }
         c @ '-' | c if is_digit_char(c) => {

@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, name, ty, value};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#InputObjectTypeDefinition
 ///
@@ -7,31 +7,29 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 /// InputObjectTypeDefinition
 ///     Description[opt] input Name Directives[Const][opt] InputFieldsDefinition[opt]
 /// ```
-pub(crate) fn input_object_type_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::INPUT_OBJECT_TYPE_DEFINITION);
-    parser.bump(SyntaxKind::input_KW);
+pub(crate) fn input_object_type_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::INPUT_OBJECT_TYPE_DEFINITION);
+    p.bump(SyntaxKind::input_KW);
 
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
+    match p.peek() {
+        Some(TokenKind::Name) => name::name(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Input Object Type Definition to have a Name, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
 
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
+    if let Some(T![@]) = p.peek() {
+        directive::directives(p);
     }
 
-    if let Some(TokenKind::LCurly) = parser.peek() {
-        input_fields_definition(parser);
+    if let Some(T!['{']) = p.peek() {
+        input_fields_definition(p);
     }
 }
 
@@ -42,45 +40,43 @@ pub(crate) fn input_object_type_definition(parser: &mut Parser) {
 ///     extend input Name Directives[Const][opt] InputFieldsDefinition
 ///     extend input Name Directives[Const]
 /// ```
-pub(crate) fn input_object_type_extension(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::INPUT_OBJECT_TYPE_EXTENSION);
-    parser.bump(SyntaxKind::extend_KW);
-    parser.bump(SyntaxKind::input_KW);
+pub(crate) fn input_object_type_extension(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::INPUT_OBJECT_TYPE_EXTENSION);
+    p.bump(SyntaxKind::extend_KW);
+    p.bump(SyntaxKind::input_KW);
 
     let mut meets_requirements = false;
 
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
+    match p.peek() {
+        Some(TokenKind::Name) => name::name(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Input Object Type Definition to have a Name, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
 
-    if let Some(TokenKind::At) = parser.peek() {
+    if let Some(T![@]) = p.peek() {
         meets_requirements = true;
-        directive::directives(parser);
+        directive::directives(p);
     }
 
-    if let Some(TokenKind::LCurly) = parser.peek() {
+    if let Some(T!['{']) = p.peek() {
         meets_requirements = true;
-        input_fields_definition(parser);
+        input_fields_definition(p);
     }
 
     if !meets_requirements {
-        parser.push_err(create_err!(
-            parser
+        p.push_err(create_err!(
+            p
                 .peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
             "Expected Input Object Type Extension to have Directives or Input Fields Definition, got {}",
-            parser
+            p
                 .peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
         ));
@@ -93,20 +89,18 @@ pub(crate) fn input_object_type_extension(parser: &mut Parser) {
 /// InputFieldsDefinition
 ///     { InputValueDefinition[list] }
 /// ```
-pub(crate) fn input_fields_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::INPUT_FIELDS_DEFINITION);
-    parser.bump(SyntaxKind::L_CURLY);
-    input_value_definition(parser, false);
-    if let Some(TokenKind::RCurly) = parser.peek() {
-        parser.bump(SyntaxKind::R_CURLY)
+pub(crate) fn input_fields_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::INPUT_FIELDS_DEFINITION);
+    p.bump(S!['{']);
+    input_value_definition(p, false);
+    if let Some(T!['}']) = p.peek() {
+        p.bump(S!['}'])
     } else {
-        parser.push_err(create_err!(
-            parser
-                .peek_data()
+        p.push_err(create_err!(
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
             "Expected Fields Definition to have a closing }}, got {}",
-            parser
-                .peek_data()
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data"))
         ));
     }
@@ -118,49 +112,49 @@ pub(crate) fn input_fields_definition(parser: &mut Parser) {
 /// InputValueDefinition
 ///     Description(opt) Name : Type DefaultValue(opt) Directives(const/opt)
 /// ```
-pub(crate) fn input_value_definition(parser: &mut Parser, is_input: bool) {
-    if let Some(TokenKind::Node) = parser.peek() {
-        let guard = parser.start_node(SyntaxKind::INPUT_VALUE_DEFINITION);
-        name::name(parser);
-        if let Some(TokenKind::Colon) = parser.peek() {
-            parser.bump(SyntaxKind::COLON);
-            match parser.peek() {
-                Some(TokenKind::Node) | Some(TokenKind::LBracket) => {
-                    ty::ty(parser);
-                    if let Some(TokenKind::Eq) = parser.peek() {
-                        value::default_value(parser);
+pub(crate) fn input_value_definition(p: &mut Parser, is_input: bool) {
+    if let Some(TokenKind::Name) = p.peek() {
+        let guard = p.start_node(SyntaxKind::INPUT_VALUE_DEFINITION);
+        name::name(p);
+        if let Some(T![:]) = p.peek() {
+            p.bump(S![:]);
+            match p.peek() {
+                Some(TokenKind::Name) | Some(T!['[']) => {
+                    ty::ty(p);
+                    if let Some(T![=]) = p.peek() {
+                        value::default_value(p);
                     }
-                    if parser.peek().is_some() {
+                    if p.peek().is_some() {
                         guard.finish_node();
-                        return input_value_definition(parser, true);
+                        return input_value_definition(p, true);
                     }
                 }
                 _ => {
-                    parser.push_err(create_err!(
-                        parser.peek_data().unwrap(),
+                    p.push_err(create_err!(
+                        p.peek_data().unwrap(),
                         "Expected InputValue definition to have a Type, got {}",
-                        parser.peek_data().unwrap()
+                        p.peek_data().unwrap()
                     ));
                 }
             }
         } else {
-            parser.push_err(create_err!(
-                parser.peek_data().unwrap(),
+            p.push_err(create_err!(
+                p.peek_data().unwrap(),
                 "Expected InputValue definition to have a Name, got {}",
-                parser.peek_data().unwrap()
+                p.peek_data().unwrap()
             ));
         }
     }
-    if let Some(TokenKind::Comma) = parser.peek() {
-        parser.bump(SyntaxKind::COMMA);
-        return input_value_definition(parser, is_input);
+    if let Some(T![,]) = p.peek() {
+        p.bump(S![,]);
+        return input_value_definition(p, is_input);
     }
     // TODO @lrlna: this can be simplified a little bit, and follow the pattern of FieldDefinition
     if !is_input {
-        parser.push_err(create_err!(
-            parser.peek_data().unwrap(),
+        p.push_err(create_err!(
+            p.peek_data().unwrap(),
             "Expected to have an InputValue definition, got {}",
-            parser.peek_data().unwrap()
+            p.peek_data().unwrap()
         ));
     }
 }

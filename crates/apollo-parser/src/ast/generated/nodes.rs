@@ -3,14 +3,14 @@
 use crate::{
     ast::{support, AstChildren, AstNode},
     SyntaxKind::{self, *},
-    SyntaxNode, SyntaxToken, T,
+    SyntaxNode, SyntaxToken, S,
 };
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Name {
     pub(crate) syntax: SyntaxNode,
 }
 impl Name {
-    pub fn ident_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![ident]) }
+    pub fn ident_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![ident]) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Document {
@@ -38,7 +38,7 @@ pub struct FragmentDefinition {
 }
 impl FragmentDefinition {
     pub fn fragment_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![fragment])
+        support::token(&self.syntax, S![fragment])
     }
     pub fn fragment_name(&self) -> Option<FragmentName> { support::child(&self.syntax) }
     pub fn type_condition(&self) -> Option<TypeCondition> { support::child(&self.syntax) }
@@ -52,14 +52,14 @@ pub struct DirectiveDefinition {
 impl DirectiveDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
     pub fn directive_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![directive])
+        support::token(&self.syntax, S![directive])
     }
-    pub fn at_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![@]) }
+    pub fn at_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![@]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn arguments_definition(&self) -> Option<ArgumentsDefinition> {
         support::child(&self.syntax)
     }
-    pub fn on_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![on]) }
+    pub fn on_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![on]) }
     pub fn directive_locations(&self) -> Option<DirectiveLocations> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -67,13 +67,13 @@ pub struct SchemaDefinition {
     pub(crate) syntax: SyntaxNode,
 }
 impl SchemaDefinition {
-    pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![schema]) }
+    pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![schema]) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
-    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['{']) }
+    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['{']) }
     pub fn operation_type_definitions(&self) -> AstChildren<OperationTypeDefinition> {
         support::children(&self.syntax)
     }
-    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['}']) }
+    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['}']) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarTypeDefinition {
@@ -81,7 +81,7 @@ pub struct ScalarTypeDefinition {
 }
 impl ScalarTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
-    pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![scalar]) }
+    pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![scalar]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
 }
@@ -91,7 +91,7 @@ pub struct ObjectTypeDefinition {
 }
 impl ObjectTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
-    pub fn type_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![type]) }
+    pub fn type_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![type]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn implements_interfaces(&self) -> Option<ImplementsInterfaces> {
         support::child(&self.syntax)
@@ -106,7 +106,7 @@ pub struct InterfaceTypeDefinition {
 impl InterfaceTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
     pub fn interface_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![interface])
+        support::token(&self.syntax, S![interface])
     }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
@@ -118,7 +118,7 @@ pub struct UnionTypeDefinition {
 }
 impl UnionTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
-    pub fn union_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![union]) }
+    pub fn union_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![union]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn union_member_types(&self) -> Option<UnionMemberTypes> { support::child(&self.syntax) }
@@ -129,7 +129,7 @@ pub struct EnumTypeDefinition {
 }
 impl EnumTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
-    pub fn enum_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![enum]) }
+    pub fn enum_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![enum]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn enum_values_definition(&self) -> Option<EnumValuesDefinition> {
@@ -142,7 +142,7 @@ pub struct InputObjectTypeDefinition {
 }
 impl InputObjectTypeDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
-    pub fn input_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![input]) }
+    pub fn input_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![input]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn input_fields_definition(&self) -> Option<InputFieldsDefinition> {
@@ -154,22 +154,22 @@ pub struct SchemaExtension {
     pub(crate) syntax: SyntaxNode,
 }
 impl SchemaExtension {
-    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
-    pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![schema]) }
+    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![extend]) }
+    pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![schema]) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
-    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['{']) }
+    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['{']) }
     pub fn operation_type_definitions(&self) -> AstChildren<OperationTypeDefinition> {
         support::children(&self.syntax)
     }
-    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['}']) }
+    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['}']) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
 impl ScalarTypeExtension {
-    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
-    pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![scalar]) }
+    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![extend]) }
+    pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![scalar]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
 }
@@ -178,8 +178,8 @@ pub struct ObjectTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
 impl ObjectTypeExtension {
-    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
-    pub fn type_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![type]) }
+    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![extend]) }
+    pub fn type_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![type]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn implements_interfaces(&self) -> Option<ImplementsInterfaces> {
         support::child(&self.syntax)
@@ -192,9 +192,9 @@ pub struct InterfaceTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
 impl InterfaceTypeExtension {
-    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
+    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![extend]) }
     pub fn interface_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![interface])
+        support::token(&self.syntax, S![interface])
     }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
@@ -205,8 +205,8 @@ pub struct UnionTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
 impl UnionTypeExtension {
-    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
-    pub fn union_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![union]) }
+    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![extend]) }
+    pub fn union_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![union]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn union_member_types(&self) -> Option<UnionMemberTypes> { support::child(&self.syntax) }
@@ -216,8 +216,8 @@ pub struct EnumTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
 impl EnumTypeExtension {
-    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
-    pub fn enum_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![enum]) }
+    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![extend]) }
+    pub fn enum_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![enum]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn enum_values_definition(&self) -> Option<EnumValuesDefinition> {
@@ -229,8 +229,8 @@ pub struct InputObjectTypeExtension {
     pub(crate) syntax: SyntaxNode,
 }
 impl InputObjectTypeExtension {
-    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![extend]) }
-    pub fn input_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![input]) }
+    pub fn extend_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![extend]) }
+    pub fn input_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![input]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn input_fields_definition(&self) -> Option<InputFieldsDefinition> {
@@ -242,12 +242,12 @@ pub struct OperationType {
     pub(crate) syntax: SyntaxNode,
 }
 impl OperationType {
-    pub fn query_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![query]) }
+    pub fn query_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![query]) }
     pub fn mutation_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![mutation])
+        support::token(&self.syntax, S![mutation])
     }
     pub fn subscription_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![subscription])
+        support::token(&self.syntax, S![subscription])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -255,11 +255,11 @@ pub struct VariableDefinitions {
     pub(crate) syntax: SyntaxNode,
 }
 impl VariableDefinitions {
-    pub fn l_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['(']) }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['(']) }
     pub fn variable_definitions(&self) -> AstChildren<VariableDefinition> {
         support::children(&self.syntax)
     }
-    pub fn r_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![')']) }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![')']) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Directives {
@@ -273,9 +273,9 @@ pub struct SelectionSet {
     pub(crate) syntax: SyntaxNode,
 }
 impl SelectionSet {
-    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['{']) }
+    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['{']) }
     pub fn selections(&self) -> AstChildren<Selection> { support::children(&self.syntax) }
-    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['}']) }
+    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['}']) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Field {
@@ -293,7 +293,7 @@ pub struct FragmentSpread {
     pub(crate) syntax: SyntaxNode,
 }
 impl FragmentSpread {
-    pub fn dotdotdot_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![...]) }
+    pub fn dotdotdot_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![...]) }
     pub fn fragment_name(&self) -> Option<FragmentName> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
 }
@@ -302,7 +302,7 @@ pub struct InlineFragment {
     pub(crate) syntax: SyntaxNode,
 }
 impl InlineFragment {
-    pub fn dotdotdot_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![...]) }
+    pub fn dotdotdot_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![...]) }
     pub fn type_condition(&self) -> Option<TypeCondition> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn selection_set(&self) -> Option<SelectionSet> { support::child(&self.syntax) }
@@ -313,16 +313,16 @@ pub struct Alias {
 }
 impl Alias {
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
-    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
+    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![:]) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Arguments {
     pub(crate) syntax: SyntaxNode,
 }
 impl Arguments {
-    pub fn l_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['(']) }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['(']) }
     pub fn arguments(&self) -> AstChildren<Argument> { support::children(&self.syntax) }
-    pub fn r_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![')']) }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![')']) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Argument {
@@ -330,7 +330,7 @@ pub struct Argument {
 }
 impl Argument {
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
-    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
+    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![:]) }
     pub fn value(&self) -> Option<Value> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -345,7 +345,7 @@ pub struct TypeCondition {
     pub(crate) syntax: SyntaxNode,
 }
 impl TypeCondition {
-    pub fn on_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![on]) }
+    pub fn on_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![on]) }
     pub fn named_type(&self) -> Option<NamedType> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -360,7 +360,7 @@ pub struct Variable {
     pub(crate) syntax: SyntaxNode,
 }
 impl Variable {
-    pub fn dollar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![$]) }
+    pub fn dollar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![$]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -369,7 +369,7 @@ pub struct StringValue {
 }
 impl StringValue {
     pub fn string_value_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![string_value])
+        support::token(&self.syntax, S![string_value])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -378,7 +378,7 @@ pub struct FloatValue {
 }
 impl FloatValue {
     pub fn float_value_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![float_value])
+        support::token(&self.syntax, S![float_value])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -387,7 +387,7 @@ pub struct IntValue {
 }
 impl IntValue {
     pub fn int_value_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![int_value])
+        support::token(&self.syntax, S![int_value])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -395,15 +395,15 @@ pub struct BooleanValue {
     pub(crate) syntax: SyntaxNode,
 }
 impl BooleanValue {
-    pub fn true_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![true]) }
-    pub fn false_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![false]) }
+    pub fn true_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![true]) }
+    pub fn false_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![false]) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct NullValue {
     pub(crate) syntax: SyntaxNode,
 }
 impl NullValue {
-    pub fn null_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![null]) }
+    pub fn null_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![null]) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct EnumValue {
@@ -417,8 +417,8 @@ pub struct ListValue {
     pub(crate) syntax: SyntaxNode,
 }
 impl ListValue {
-    pub fn l_brack_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['[']) }
-    pub fn r_brack_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![']']) }
+    pub fn l_brack_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['[']) }
+    pub fn r_brack_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![']']) }
     pub fn values(&self) -> AstChildren<Value> { support::children(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -426,8 +426,8 @@ pub struct ObjectValue {
     pub(crate) syntax: SyntaxNode,
 }
 impl ObjectValue {
-    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['{']) }
-    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['}']) }
+    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['{']) }
+    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['}']) }
     pub fn object_fields(&self) -> AstChildren<ObjectField> { support::children(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -436,7 +436,7 @@ pub struct ObjectField {
 }
 impl ObjectField {
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
-    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
+    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![:]) }
     pub fn value(&self) -> Option<Value> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -445,7 +445,7 @@ pub struct VariableDefinition {
 }
 impl VariableDefinition {
     pub fn variable(&self) -> Option<Variable> { support::child(&self.syntax) }
-    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
+    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![:]) }
     pub fn ty(&self) -> Option<Type> { support::child(&self.syntax) }
     pub fn default_value(&self) -> Option<DefaultValue> { support::child(&self.syntax) }
 }
@@ -454,7 +454,7 @@ pub struct DefaultValue {
     pub(crate) syntax: SyntaxNode,
 }
 impl DefaultValue {
-    pub fn eq_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![=]) }
+    pub fn eq_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![=]) }
     pub fn value(&self) -> Option<Value> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -462,9 +462,9 @@ pub struct ListType {
     pub(crate) syntax: SyntaxNode,
 }
 impl ListType {
-    pub fn l_brack_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['[']) }
+    pub fn l_brack_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['[']) }
     pub fn ty(&self) -> Option<Type> { support::child(&self.syntax) }
-    pub fn r_brack_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![']']) }
+    pub fn r_brack_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![']']) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct NonNullType {
@@ -472,7 +472,7 @@ pub struct NonNullType {
 }
 impl NonNullType {
     pub fn named_type(&self) -> Option<NamedType> { support::child(&self.syntax) }
-    pub fn excl_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![!]) }
+    pub fn excl_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![!]) }
     pub fn list_type(&self) -> Option<ListType> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -480,7 +480,7 @@ pub struct Directive {
     pub(crate) syntax: SyntaxNode,
 }
 impl Directive {
-    pub fn at_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![@]) }
+    pub fn at_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![@]) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
     pub fn arguments(&self) -> Option<Arguments> { support::child(&self.syntax) }
 }
@@ -490,7 +490,7 @@ pub struct OperationTypeDefinition {
 }
 impl OperationTypeDefinition {
     pub fn operation_type(&self) -> Option<OperationType> { support::child(&self.syntax) }
-    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
+    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![:]) }
     pub fn named_type(&self) -> Option<NamedType> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -506,9 +506,9 @@ pub struct ImplementsInterfaces {
 }
 impl ImplementsInterfaces {
     pub fn implements_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![implements])
+        support::token(&self.syntax, S![implements])
     }
-    pub fn amp_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![&]) }
+    pub fn amp_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![&]) }
     pub fn named_type(&self) -> Option<NamedType> { support::child(&self.syntax) }
     pub fn implements_interfaces(&self) -> Option<ImplementsInterfaces> {
         support::child(&self.syntax)
@@ -519,11 +519,11 @@ pub struct FieldsDefinition {
     pub(crate) syntax: SyntaxNode,
 }
 impl FieldsDefinition {
-    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['{']) }
+    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['{']) }
     pub fn field_definitions(&self) -> AstChildren<FieldDefinition> {
         support::children(&self.syntax)
     }
-    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['}']) }
+    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['}']) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FieldDefinition {
@@ -535,7 +535,7 @@ impl FieldDefinition {
     pub fn arguments_definition(&self) -> Option<ArgumentsDefinition> {
         support::child(&self.syntax)
     }
-    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
+    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![:]) }
     pub fn ty(&self) -> Option<Type> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
 }
@@ -544,11 +544,11 @@ pub struct ArgumentsDefinition {
     pub(crate) syntax: SyntaxNode,
 }
 impl ArgumentsDefinition {
-    pub fn l_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['(']) }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['(']) }
     pub fn input_value_definitions(&self) -> AstChildren<InputValueDefinition> {
         support::children(&self.syntax)
     }
-    pub fn r_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![')']) }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![')']) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct InputValueDefinition {
@@ -557,7 +557,7 @@ pub struct InputValueDefinition {
 impl InputValueDefinition {
     pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
-    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
+    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![:]) }
     pub fn ty(&self) -> Option<Type> { support::child(&self.syntax) }
     pub fn default_value(&self) -> Option<DefaultValue> { support::child(&self.syntax) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
@@ -567,8 +567,8 @@ pub struct UnionMemberTypes {
     pub(crate) syntax: SyntaxNode,
 }
 impl UnionMemberTypes {
-    pub fn eq_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![=]) }
-    pub fn pipe_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![|]) }
+    pub fn eq_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![=]) }
+    pub fn pipe_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![|]) }
     pub fn named_type(&self) -> Option<NamedType> { support::child(&self.syntax) }
     pub fn union_member_types(&self) -> Option<UnionMemberTypes> { support::child(&self.syntax) }
 }
@@ -577,11 +577,11 @@ pub struct EnumValuesDefinition {
     pub(crate) syntax: SyntaxNode,
 }
 impl EnumValuesDefinition {
-    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['{']) }
+    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['{']) }
     pub fn enum_value_definitions(&self) -> AstChildren<EnumValueDefinition> {
         support::children(&self.syntax)
     }
-    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['}']) }
+    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['}']) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct EnumValueDefinition {
@@ -597,18 +597,18 @@ pub struct InputFieldsDefinition {
     pub(crate) syntax: SyntaxNode,
 }
 impl InputFieldsDefinition {
-    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['{']) }
+    pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['{']) }
     pub fn input_value_definitions(&self) -> AstChildren<InputValueDefinition> {
         support::children(&self.syntax)
     }
-    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['}']) }
+    pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['}']) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DirectiveLocations {
     pub(crate) syntax: SyntaxNode,
 }
 impl DirectiveLocations {
-    pub fn pipe_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![|]) }
+    pub fn pipe_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![|]) }
     pub fn directive_location(&self) -> Option<DirectiveLocation> { support::child(&self.syntax) }
     pub fn directive_locations(&self) -> Option<DirectiveLocations> { support::child(&self.syntax) }
 }
@@ -617,45 +617,45 @@ pub struct DirectiveLocation {
     pub(crate) syntax: SyntaxNode,
 }
 impl DirectiveLocation {
-    pub fn query_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![QUERY]) }
+    pub fn query_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![QUERY]) }
     pub fn mutation_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![MUTATION])
+        support::token(&self.syntax, S![MUTATION])
     }
     pub fn subscription_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![SUBSCRIPTION])
+        support::token(&self.syntax, S![SUBSCRIPTION])
     }
-    pub fn field_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![FIELD]) }
+    pub fn field_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![FIELD]) }
     pub fn fragment_definition_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![FRAGMENT_DEFINITION])
+        support::token(&self.syntax, S![FRAGMENT_DEFINITION])
     }
     pub fn fragment_spread_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![FRAGMENT_SPREAD])
+        support::token(&self.syntax, S![FRAGMENT_SPREAD])
     }
     pub fn inline_fragment_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![INLINE_FRAGMENT])
+        support::token(&self.syntax, S![INLINE_FRAGMENT])
     }
-    pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![SCHEMA]) }
-    pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![SCALAR]) }
-    pub fn object_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![OBJECT]) }
+    pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![SCHEMA]) }
+    pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![SCALAR]) }
+    pub fn object_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![OBJECT]) }
     pub fn field_definition_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![FIELD_DEFINITION])
+        support::token(&self.syntax, S![FIELD_DEFINITION])
     }
     pub fn argument_definition_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![ARGUMENT_DEFINITION])
+        support::token(&self.syntax, S![ARGUMENT_DEFINITION])
     }
     pub fn interface_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![INTERFACE])
+        support::token(&self.syntax, S![INTERFACE])
     }
-    pub fn union_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![UNION]) }
-    pub fn enum_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![ENUM]) }
+    pub fn union_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![UNION]) }
+    pub fn enum_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![ENUM]) }
     pub fn enum_value_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![ENUM_VALUE])
+        support::token(&self.syntax, S![ENUM_VALUE])
     }
     pub fn input_object_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![INPUT_OBJECT])
+        support::token(&self.syntax, S![INPUT_OBJECT])
     }
     pub fn input_field_definition_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![INPUT_FIELD_DEFINITION])
+        support::token(&self.syntax, S![INPUT_FIELD_DEFINITION])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

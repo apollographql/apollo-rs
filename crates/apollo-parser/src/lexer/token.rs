@@ -91,14 +91,11 @@ impl fmt::Debug for Token {
             }
 
             // composite nodes
-            TokenKind::Node => {
+            TokenKind::Name => {
                 write!(f, "NODE@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::StringValue => {
                 write!(f, "STRING_VALUE@{}:{} {:?}", start, end, self.data)
-            }
-            TokenKind::Null => {
-                write!(f, "NULL@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::Boolean => {
                 write!(f, "BOOLEAN@{}:{} {:?}", start, end, self.data)
@@ -109,6 +106,7 @@ impl fmt::Debug for Token {
             TokenKind::Float => {
                 write!(f, "FLOAT@{}:{} {:?}", start, end, self.data)
             }
+            TokenKind::Null => todo!(),
         }
     }
 }

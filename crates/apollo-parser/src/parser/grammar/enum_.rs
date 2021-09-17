@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, name, value};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#EnumTypeDefinition
 ///
@@ -7,31 +7,29 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 // EnumTypeDefinition
 //     Description[opt] enum Name Directives[Const][opt] EnumValuesDefinition[opt]
 /// ```
-pub(crate) fn enum_type_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::ENUM_TYPE_DEFINITION);
-    parser.bump(SyntaxKind::enum_KW);
+pub(crate) fn enum_type_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::ENUM_TYPE_DEFINITION);
+    p.bump(SyntaxKind::enum_KW);
 
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
+    match p.peek() {
+        Some(TokenKind::Name) => name::name(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Union Type Definition to have a Name, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
 
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
+    if let Some(T![@]) = p.peek() {
+        directive::directives(p);
     }
 
-    if let Some(TokenKind::LCurly) = parser.peek() {
-        enum_values_definition(parser);
+    if let Some(T!['{']) = p.peek() {
+        enum_values_definition(p);
     }
 }
 
@@ -42,46 +40,42 @@ pub(crate) fn enum_type_definition(parser: &mut Parser) {
 ///    extend enum Name Directives[Const][opt] EnumValuesDefinition
 ///    extend enum Name Directives[Const]
 /// ```
-pub(crate) fn enum_type_extension(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::ENUM_TYPE_EXTENSION);
-    parser.bump(SyntaxKind::extend_KW);
-    parser.bump(SyntaxKind::enum_KW);
+pub(crate) fn enum_type_extension(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::ENUM_TYPE_EXTENSION);
+    p.bump(SyntaxKind::extend_KW);
+    p.bump(SyntaxKind::enum_KW);
 
     let mut meets_requirements = false;
 
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
+    match p.peek() {
+        Some(TokenKind::Name) => name::name(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Union Type Extension to have a Name, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
 
-    if let Some(TokenKind::At) = parser.peek() {
+    if let Some(T![@]) = p.peek() {
         meets_requirements = true;
-        directive::directives(parser);
+        directive::directives(p);
     }
 
-    if let Some(TokenKind::LCurly) = parser.peek() {
+    if let Some(T!['{']) = p.peek() {
         meets_requirements = true;
-        enum_values_definition(parser);
+        enum_values_definition(p);
     }
 
     if !meets_requirements {
-        parser.push_err(create_err!(
-            parser
-                .peek_data()
+        p.push_err(create_err!(
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
             "Expected Enum Type Extension to have Directives or Enum Values Definition, got {}",
-            parser
-                .peek_data()
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
         ));
     }
@@ -93,35 +87,31 @@ pub(crate) fn enum_type_extension(parser: &mut Parser) {
 /// EnumValuesDefinition
 ///     { EnumValueDefinition[list] }
 /// ```
-pub(crate) fn enum_values_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::ENUM_VALUES_DEFINITION);
-    parser.bump(SyntaxKind::L_CURLY);
+pub(crate) fn enum_values_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::ENUM_VALUES_DEFINITION);
+    p.bump(S!['{']);
 
-    match parser.peek() {
-        Some(TokenKind::Node) => enum_value_definition(parser),
+    match p.peek() {
+        Some(TokenKind::Name) => enum_value_definition(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Enum Value Definition to follow, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data"))
             ));
         }
     }
 
-    if let Some(TokenKind::RCurly) = parser.peek() {
-        parser.bump(SyntaxKind::R_CURLY)
+    if let Some(T!['}']) = p.peek() {
+        p.bump(S!['}'])
     } else {
-        parser.push_err(create_err!(
-            parser
-                .peek_data()
+        p.push_err(create_err!(
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
             "Expected Enum Values Definition to have a closing }}, got {}",
-            parser
-                .peek_data()
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data"))
         ));
     }
@@ -133,26 +123,26 @@ pub(crate) fn enum_values_definition(parser: &mut Parser) {
 /// EnumValueDefinition
 ///     Description[opt] EnumValue Directives[Const][opt]
 /// ```
-pub(crate) fn enum_value_definition(parser: &mut Parser) {
-    if let Some(TokenKind::Node) = parser.peek() {
-        let guard = parser.start_node(SyntaxKind::ENUM_VALUE_DEFINITION);
-        value::enum_value(parser);
+pub(crate) fn enum_value_definition(p: &mut Parser) {
+    if let Some(TokenKind::Name) = p.peek() {
+        let guard = p.start_node(SyntaxKind::ENUM_VALUE_DEFINITION);
+        value::enum_value(p);
 
-        if let Some(TokenKind::At) = parser.peek() {
-            directive::directives(parser);
+        if let Some(T![@]) = p.peek() {
+            directive::directives(p);
         }
-        if parser.peek().is_some() {
+        if p.peek().is_some() {
             guard.finish_node();
-            return enum_value_definition(parser);
+            return enum_value_definition(p);
         }
     }
 
-    if let Some(TokenKind::Comma) = parser.peek() {
-        parser.bump(SyntaxKind::COMMA);
-        return enum_value_definition(parser);
+    if let Some(T![,]) = p.peek() {
+        p.bump(S![,]);
+        return enum_value_definition(p);
     }
 
-    if let Some(TokenKind::RCurly) = parser.peek() {
+    if let Some(T!['}']) = p.peek() {
         return;
     }
 }

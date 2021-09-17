@@ -1,5 +1,5 @@
 use crate::parser::grammar::{argument, directive, name, selection, ty};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#Field
 ///
@@ -7,38 +7,36 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 /// Field
 ///     Alias(opt) Name Arguments(opt) Directives(opt) SelectionSet(opt)
 /// ```
-pub(crate) fn field(parser: &mut Parser) {
-    let guard = parser.start_node(SyntaxKind::FIELD);
-    if let Some(TokenKind::Node) = parser.peek() {
-        if let Some(TokenKind::Colon) = parser.peek_n(2) {
-            name::alias(parser)
+pub(crate) fn field(p: &mut Parser) {
+    let guard = p.start_node(SyntaxKind::FIELD);
+    if let Some(TokenKind::Name) = p.peek() {
+        if let Some(T![:]) = p.peek_n(2) {
+            name::alias(p)
         }
-        name::name(parser)
+        name::name(p)
     } else {
-        parser.push_err(create_err!(
-            parser
-                .peek_data()
+        p.push_err(create_err!(
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
             "Expected Field to have a Name, got {}",
-            parser
-                .peek_data()
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data"))
         ));
     }
-    match parser.peek() {
-        Some(TokenKind::LParen) => argument::arguments(parser),
-        Some(TokenKind::At) => directive::directives(parser),
-        Some(TokenKind::LCurly) => selection::selection_set(parser),
-        Some(TokenKind::Comma) => {
+    match p.peek() {
+        Some(T!['(']) => argument::arguments(p),
+        Some(T![@]) => directive::directives(p),
+        Some(T!['{']) => selection::selection_set(p),
+        Some(T![,]) => {
             guard.finish_node();
-            parser.bump(SyntaxKind::COMMA);
-            field(parser)
+            p.bump(S![,]);
+            field(p)
         }
-        Some(TokenKind::Node) => {
+        Some(TokenKind::Name) => {
             guard.finish_node();
-            field(parser)
+            field(p)
         }
-        Some(TokenKind::RCurly) => {
+        Some(T!['}']) => {
             guard.finish_node();
         }
         _ => guard.finish_node(),
@@ -51,20 +49,18 @@ pub(crate) fn field(parser: &mut Parser) {
 /// FieldsDefinition
 ///     { FieldDefinition[list] }
 /// ```
-pub(crate) fn fields_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::FIELDS_DEFINITION);
-    parser.bump(SyntaxKind::L_CURLY);
-    field_definition(parser);
-    if let Some(TokenKind::RCurly) = parser.peek() {
-        parser.bump(SyntaxKind::R_CURLY)
+pub(crate) fn fields_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::FIELDS_DEFINITION);
+    p.bump(S!['{']);
+    field_definition(p);
+    if let Some(T!['}']) = p.peek() {
+        p.bump(S!['}'])
     } else {
-        parser.push_err(create_err!(
-            parser
-                .peek_data()
+        p.push_err(create_err!(
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
             "Expected Fields Definition to have a closing }}, got {}",
-            parser
-                .peek_data()
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data"))
         ));
     }
@@ -76,50 +72,50 @@ pub(crate) fn fields_definition(parser: &mut Parser) {
 /// FieldDefinition
 ///     Description[opt] Name ArgumentsDefinition[opt] : Type Directives[Const][opt]
 /// ```
-pub(crate) fn field_definition(parser: &mut Parser) {
-    if let Some(TokenKind::Node) = parser.peek() {
-        let guard = parser.start_node(SyntaxKind::FIELD_DEFINITION);
-        name::name(parser);
-        if let Some(TokenKind::LParen) = parser.peek() {
-            argument::arguments_definition(parser);
+pub(crate) fn field_definition(p: &mut Parser) {
+    if let Some(TokenKind::Name) = p.peek() {
+        let guard = p.start_node(SyntaxKind::FIELD_DEFINITION);
+        name::name(p);
+        if let Some(T!['(']) = p.peek() {
+            argument::arguments_definition(p);
         }
 
-        if let Some(TokenKind::Colon) = parser.peek() {
-            parser.bump(SyntaxKind::COLON);
-            match parser.peek() {
-                Some(TokenKind::Node) | Some(TokenKind::LBracket) => {
-                    ty::ty(parser);
-                    if let Some(TokenKind::At) = parser.peek() {
-                        directive::directives(parser);
+        if let Some(T![:]) = p.peek() {
+            p.bump(S![:]);
+            match p.peek() {
+                Some(TokenKind::Name) | Some(T!['[']) => {
+                    ty::ty(p);
+                    if let Some(T![@]) = p.peek() {
+                        directive::directives(p);
                     }
-                    if parser.peek().is_some() {
+                    if p.peek().is_some() {
                         guard.finish_node();
-                        return field_definition(parser);
+                        return field_definition(p);
                     }
                 }
                 _ => {
-                    parser.push_err(create_err!(
-                        parser.peek_data().unwrap(),
+                    p.push_err(create_err!(
+                        p.peek_data().unwrap(),
                         "Expected InputValue definition to have a Type, got {}",
-                        parser.peek_data().unwrap()
+                        p.peek_data().unwrap()
                     ));
                 }
             }
         } else {
-            parser.push_err(create_err!(
-                parser.peek_data().unwrap(),
+            p.push_err(create_err!(
+                p.peek_data().unwrap(),
                 "Expected Field Definition to have a Type, got {}",
-                parser.peek_data().unwrap()
+                p.peek_data().unwrap()
             ));
         }
     }
 
-    if let Some(TokenKind::Comma) = parser.peek() {
-        parser.bump(SyntaxKind::COMMA);
-        return field_definition(parser);
+    if let Some(T![,]) = p.peek() {
+        p.bump(S![,]);
+        return field_definition(p);
     }
 
-    if let Some(TokenKind::RCurly) = parser.peek() {
+    if let Some(T!['}']) = p.peek() {
         return;
     }
 }

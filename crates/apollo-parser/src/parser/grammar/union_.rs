@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, name, ty};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#UnionTypeDefinition
 ///
@@ -7,31 +7,29 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 /// UnionTypeDefinition
 ///     Description[opt] union Name Directives[Const][opt] UnionMemberTypes[opt]
 /// ```
-pub(crate) fn union_type_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::UNION_TYPE_DEFINITION);
-    parser.bump(SyntaxKind::union_KW);
+pub(crate) fn union_type_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::UNION_TYPE_DEFINITION);
+    p.bump(SyntaxKind::union_KW);
 
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
+    match p.peek() {
+        Some(TokenKind::Name) => name::name(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Union Type Definition to have a Name, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
 
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
+    if let Some(T![@]) = p.peek() {
+        directive::directives(p);
     }
 
-    if let Some(TokenKind::Eq) = parser.peek() {
-        union_member_types(parser, false);
+    if let Some(T![=]) = p.peek() {
+        union_member_types(p, false);
     }
 }
 
@@ -42,46 +40,42 @@ pub(crate) fn union_type_definition(parser: &mut Parser) {
 ///     extend union Name Directives[Const][opt] UnionMemberTypes
 ///     extend union Name Directives[Const]
 /// ```
-pub(crate) fn union_type_extension(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::UNION_TYPE_EXTENSION);
-    parser.bump(SyntaxKind::extend_KW);
-    parser.bump(SyntaxKind::union_KW);
+pub(crate) fn union_type_extension(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::UNION_TYPE_EXTENSION);
+    p.bump(SyntaxKind::extend_KW);
+    p.bump(SyntaxKind::union_KW);
 
     let mut meets_requirements = false;
 
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
+    match p.peek() {
+        Some(TokenKind::Name) => name::name(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Union Type Extension to have a Name, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
 
-    if let Some(TokenKind::At) = parser.peek() {
+    if let Some(T![@]) = p.peek() {
         meets_requirements = true;
-        directive::directives(parser);
+        directive::directives(p);
     }
 
-    if let Some(TokenKind::Eq) = parser.peek() {
+    if let Some(T![=]) = p.peek() {
         meets_requirements = true;
-        union_member_types(parser, false);
+        union_member_types(p, false);
     }
 
     if !meets_requirements {
-        parser.push_err(create_err!(
-            parser
-                .peek_data()
+        p.push_err(create_err!(
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
             "Expected Union Type Extension to have Directives or Union Member Types, got {}",
-            parser
-                .peek_data()
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
         ));
     }
@@ -94,30 +88,28 @@ pub(crate) fn union_type_extension(parser: &mut Parser) {
 ///     = |[opt] NamedType
 ///     UnionMemberTypes | NamedType
 /// ```
-pub(crate) fn union_member_types(parser: &mut Parser, is_union: bool) {
-    let _guard = parser.start_node(SyntaxKind::UNION_MEMBER_TYPES);
-    parser.bump(SyntaxKind::EQ);
+pub(crate) fn union_member_types(p: &mut Parser, is_union: bool) {
+    let _guard = p.start_node(SyntaxKind::UNION_MEMBER_TYPES);
+    p.bump(S![=]);
 
-    match parser.peek() {
-        Some(TokenKind::Pipe) => {
-            parser.bump(SyntaxKind::PIPE);
-            union_member_types(parser, is_union);
+    match p.peek() {
+        Some(T![|]) => {
+            p.bump(S![|]);
+            union_member_types(p, is_union);
         }
-        Some(TokenKind::Node) => {
-            ty::named_type(parser);
-            if parser.peek_data().is_some() {
-                union_member_types(parser, true)
+        Some(TokenKind::Name) => {
+            ty::named_type(p);
+            if p.peek_data().is_some() {
+                union_member_types(p, true)
             }
         }
         _ => {
             if !is_union {
-                parser.push_err(create_err!(
-                    parser
-                        .peek_data()
+                p.push_err(create_err!(
+                    p.peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
                     "Expected to have Union Member Types in a Union Type Definition, got {}",
-                    parser
-                        .peek_data()
+                    p.peek_data()
                         .unwrap_or_else(|| String::from("no further data"))
                 ));
             }

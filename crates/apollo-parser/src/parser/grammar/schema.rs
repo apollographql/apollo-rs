@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, operation};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#SchemaDefinition
 ///
@@ -7,31 +7,31 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 /// SchemaDefinition
 ///    schema Directives { OperationTypeDefinition }
 /// ```
-pub(crate) fn schema_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::SCHEMA_DEFINITION);
-    parser.bump(SyntaxKind::schema_KW);
+pub(crate) fn schema_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::SCHEMA_DEFINITION);
+    p.bump(SyntaxKind::schema_KW);
 
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
+    if let Some(T![@]) = p.peek() {
+        directive::directives(p);
     }
 
-    if let Some(TokenKind::LCurly) = parser.peek() {
-        parser.bump(SyntaxKind::L_CURLY);
-        operation::operation_type_definition(parser, false);
-        if let Some(TokenKind::RCurly) = parser.peek() {
-            parser.bump(SyntaxKind::R_CURLY);
+    if let Some(T!['{']) = p.peek() {
+        p.bump(S!['{']);
+        operation::operation_type_definition(p, false);
+        if let Some(T!['}']) = p.peek() {
+            p.bump(S!['}']);
         } else {
-            parser.push_err(create_err!(
-                parser.peek_data().unwrap(),
+            p.push_err(create_err!(
+                p.peek_data().unwrap(),
                 "Expected Schema Definition to have a closing curly bracket, got {}",
-                parser.peek_data().unwrap()
+                p.peek_data().unwrap()
             ));
         }
     } else {
-        parser.push_err(create_err!(
-            parser.peek_data().unwrap(),
+        p.push_err(create_err!(
+            p.peek_data().unwrap(),
             "Expected Schema Definition to define a root operation, got {}",
-            parser.peek_data().unwrap()
+            p.peek_data().unwrap()
         ));
     }
 }
@@ -43,25 +43,25 @@ pub(crate) fn schema_definition(parser: &mut Parser) {
 ///     extend schema Directives[Const][opt] { OperationTypeDefinition[list] }
 ///     extend schema Directives[Const]
 /// ```
-pub(crate) fn schema_extension(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::SCHEMA_EXTENSION);
-    parser.bump(SyntaxKind::extend_KW);
-    parser.bump(SyntaxKind::schema_KW);
+pub(crate) fn schema_extension(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::SCHEMA_EXTENSION);
+    p.bump(SyntaxKind::extend_KW);
+    p.bump(SyntaxKind::schema_KW);
 
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
+    if let Some(T![@]) = p.peek() {
+        directive::directives(p);
     }
 
-    if let Some(TokenKind::LCurly) = parser.peek() {
-        parser.bump(SyntaxKind::L_CURLY);
-        operation::operation_type_definition(parser, false);
-        if let Some(TokenKind::RCurly) = parser.peek() {
-            parser.bump(SyntaxKind::R_CURLY);
+    if let Some(T!['{']) = p.peek() {
+        p.bump(S!['{']);
+        operation::operation_type_definition(p, false);
+        if let Some(T!['}']) = p.peek() {
+            p.bump(S!['}']);
         } else {
-            parser.push_err(create_err!(
-                parser.peek_data().unwrap(),
+            p.push_err(create_err!(
+                p.peek_data().unwrap(),
                 "Expected Schema Extension to have a closing }} following Operation Type Definitions, got {}",
-                parser.peek_data().unwrap()
+                p.peek_data().unwrap()
             ));
         }
     }

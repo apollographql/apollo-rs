@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, field, name};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind, T};
 
 /// See: https://spec.graphql.org/June2018/#ObjectTypeDefinition
 ///
@@ -7,46 +7,42 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 /// ObjectTypeDefinition
 ///     Description[opt] type Name ImplementsInterfaces[opt] Directives[Const][opt] FieldsDefinition[opt]
 /// ```
-pub(crate) fn object_type_definition(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::OBJECT_TYPE_DEFINITION);
-    parser.bump(SyntaxKind::type_KW);
+pub(crate) fn object_type_definition(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::OBJECT_TYPE_DEFINITION);
+    p.bump(SyntaxKind::type_KW);
 
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
+    match p.peek() {
+        Some(TokenKind::Name) => name::name(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Object Type Definition to have a Name, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
-    if let Some(TokenKind::Node) = parser.peek() {
-        if parser.peek_data().unwrap() == "implements" {
-            implements_interfaces(parser, false);
+    if let Some(TokenKind::Name) = p.peek() {
+        if p.peek_data().unwrap() == "implements" {
+            implements_interfaces(p, false);
         } else {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Unexpected Name in Object Type Definition, {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
 
-    if let Some(TokenKind::At) = parser.peek() {
-        directive::directives(parser);
+    if let Some(T![@]) = p.peek() {
+        directive::directives(p);
     }
 
-    if let Some(TokenKind::LCurly) = parser.peek() {
-        field::fields_definition(parser);
+    if let Some(T!['{']) = p.peek() {
+        field::fields_definition(p);
     }
 }
 
@@ -58,62 +54,58 @@ pub(crate) fn object_type_definition(parser: &mut Parser) {
 ///     extend type Name ImplementsInterfaces[opt] Directives[Const]
 ///     extend type Name ImplementsInterfaces
 /// ```
-pub(crate) fn object_type_extension(parser: &mut Parser) {
-    let _guard = parser.start_node(SyntaxKind::OBJECT_TYPE_EXTENSION);
-    parser.bump(SyntaxKind::extend_KW);
-    parser.bump(SyntaxKind::type_KW);
+pub(crate) fn object_type_extension(p: &mut Parser) {
+    let _guard = p.start_node(SyntaxKind::OBJECT_TYPE_EXTENSION);
+    p.bump(SyntaxKind::extend_KW);
+    p.bump(SyntaxKind::type_KW);
 
     // Use this variable to see if any of ImplementsInterfacs, Directives or
     // FieldsDefinitions is provided. If none are present, we push an error.
     let mut meets_requirements = false;
 
-    match parser.peek() {
-        Some(TokenKind::Node) => name::name(parser),
+    match p.peek() {
+        Some(TokenKind::Name) => name::name(p),
         _ => {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Object Type Extension to have a Name, got {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
-    if let Some(TokenKind::Node) = parser.peek() {
-        if parser.peek_data().unwrap() == "implements" {
+    if let Some(TokenKind::Name) = p.peek() {
+        if p.peek_data().unwrap() == "implements" {
             meets_requirements = true;
-            implements_interfaces(parser, false);
+            implements_interfaces(p, false);
         } else {
-            parser.push_err(create_err!(
-                parser
-                    .peek_data()
+            p.push_err(create_err!(
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Unexpected Name in Object Type Definition, {}",
-                parser
-                    .peek_data()
+                p.peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
         }
     }
-    if let Some(TokenKind::At) = parser.peek() {
+    if let Some(T![@]) = p.peek() {
         meets_requirements = true;
-        directive::directives(parser)
+        directive::directives(p)
     }
-    if let Some(TokenKind::LCurly) = parser.peek() {
+    if let Some(T!['{']) = p.peek() {
         meets_requirements = true;
-        field::fields_definition(parser)
+        field::fields_definition(p)
     }
 
     if !meets_requirements {
-        parser.push_err(
+        p.push_err(
             create_err!(
-                parser
+                p
                     .peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
                 "Expected Object Type Extension to have an Implements Interface, Directives, or Fields definition, got {}",
-                parser
+                p
                     .peek_data()
                     .unwrap_or_else(|| String::from("no further data")),
             ));
@@ -127,30 +119,28 @@ pub(crate) fn object_type_extension(parser: &mut Parser) {
 ///     implements &[opt] NamedType
 ///     ImplementsInterfaces & NamedType
 /// ```
-pub(crate) fn implements_interfaces(parser: &mut Parser, is_interfaces: bool) {
-    let _guard = parser.start_node(SyntaxKind::IMPLEMENTS_INTERFACES);
-    parser.bump(SyntaxKind::implements_KW);
+pub(crate) fn implements_interfaces(p: &mut Parser, is_interfaces: bool) {
+    let _guard = p.start_node(SyntaxKind::IMPLEMENTS_INTERFACES);
+    p.bump(SyntaxKind::implements_KW);
 
-    match parser.peek() {
-        Some(TokenKind::Node) => {
-            let node = parser.peek_data().unwrap();
+    match p.peek() {
+        Some(TokenKind::Name) => {
+            let node = p.peek_data().unwrap();
             match node.as_str() {
                 "&" => {
-                    parser.bump(SyntaxKind::AMP);
-                    implements_interfaces(parser, is_interfaces)
+                    p.bump(SyntaxKind::AMP);
+                    implements_interfaces(p, is_interfaces)
                 }
-                _ => name::name(parser),
+                _ => name::name(p),
             }
         }
         _ => {
             if !is_interfaces {
-                parser.push_err(create_err!(
-                    parser
-                        .peek_data()
+                p.push_err(create_err!(
+                    p.peek_data()
                         .unwrap_or_else(|| String::from("no further data")),
                     "Expected to have Implements Interfaces in a Object Type Definition, got {}",
-                    parser
-                        .peek_data()
+                    p.peek_data()
                         .unwrap_or_else(|| String::from("no further data"))
                 ));
             }

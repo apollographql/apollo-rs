@@ -1,5 +1,5 @@
 use crate::parser::grammar::{input, name, value};
-use crate::{create_err, Parser, SyntaxKind, TokenKind};
+use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#Argument
 ///
@@ -7,32 +7,30 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind};
 /// Argument
 ///    Name : Value
 /// ```
-pub(crate) fn argument(parser: &mut Parser, mut is_argument: bool) {
-    if let Some(TokenKind::Node) = parser.peek() {
-        let guard = parser.start_node(SyntaxKind::ARGUMENT);
-        name::name(parser);
-        if let Some(TokenKind::Colon) = parser.peek() {
-            parser.bump(SyntaxKind::COLON);
-            value::value(parser);
+pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
+    if let Some(TokenKind::Name) = p.peek() {
+        let guard = p.start_node(SyntaxKind::ARGUMENT);
+        name::name(p);
+        if let Some(T![:]) = p.peek() {
+            p.bump(S![:]);
+            value::value(p);
             is_argument = true;
-            if parser.peek().is_some() {
+            if p.peek().is_some() {
                 guard.finish_node();
-                return argument(parser, is_argument);
+                return argument(p, is_argument);
             }
         }
     }
-    if let Some(TokenKind::Comma) = parser.peek() {
-        parser.bump(SyntaxKind::COMMA);
-        return argument(parser, is_argument);
+    if let Some(T![,]) = p.peek() {
+        p.bump(S![,]);
+        return argument(p, is_argument);
     }
     if !is_argument {
-        parser.push_err(create_err!(
-            parser
-                .peek_data()
+        p.push_err(create_err!(
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
             "Expected to have an Argument, got {}",
-            parser
-                .peek_data()
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data"))
         ));
     }
@@ -44,22 +42,20 @@ pub(crate) fn argument(parser: &mut Parser, mut is_argument: bool) {
 /// Arguments
 ///    ( Argument(list) )
 /// ```
-pub(crate) fn arguments(parser: &mut Parser) {
-    let guard = parser.start_node(SyntaxKind::ARGUMENTS);
-    parser.bump(SyntaxKind::L_PAREN);
-    argument(parser, false);
-    match parser.peek() {
-        Some(TokenKind::RParen) => {
-            parser.bump(SyntaxKind::R_PAREN);
+pub(crate) fn arguments(p: &mut Parser) {
+    let guard = p.start_node(SyntaxKind::ARGUMENTS);
+    p.bump(S!['(']);
+    argument(p, false);
+    match p.peek() {
+        Some(T![')']) => {
+            p.bump(S![')']);
             guard.finish_node();
         }
-        _ => parser.push_err(create_err!(
-            parser
-                .peek_data()
+        _ => p.push_err(create_err!(
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
             "Expected closing ')', got {}",
-            parser
-                .peek_data()
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data"))
         )),
     }
@@ -71,22 +67,20 @@ pub(crate) fn arguments(parser: &mut Parser) {
 /// ArgumentsDefinition
 ///     ( InputValueDefinition[list] )
 /// ```
-pub(crate) fn arguments_definition(parser: &mut Parser) {
-    let guard = parser.start_node(SyntaxKind::ARGUMENTS);
-    parser.bump(SyntaxKind::L_PAREN);
-    input::input_value_definition(parser, false);
-    match parser.peek() {
-        Some(TokenKind::RParen) => {
-            parser.bump(SyntaxKind::R_PAREN);
+pub(crate) fn arguments_definition(p: &mut Parser) {
+    let guard = p.start_node(SyntaxKind::ARGUMENTS);
+    p.bump(S!['(']);
+    input::input_value_definition(p, false);
+    match p.peek() {
+        Some(T![')']) => {
+            p.bump(S![')']);
             guard.finish_node();
         }
-        _ => parser.push_err(create_err!(
-            parser
-                .peek_data()
+        _ => p.push_err(create_err!(
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data")),
             "Expected closing ')', got {}",
-            parser
-                .peek_data()
+            p.peek_data()
                 .unwrap_or_else(|| String::from("no further data"))
         )),
     }

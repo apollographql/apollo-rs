@@ -19,7 +19,7 @@ pub enum TokenKind {
     Eof,
 
     // composite nodes
-    Node,
+    Name,
     StringValue,
     Null,
     Boolean,
@@ -35,4 +35,28 @@ impl From<TokenKind> for rowan::SyntaxKind {
     fn from(kind: TokenKind) -> Self {
         Self(kind as u16)
     }
+}
+
+#[macro_export]
+macro_rules! T {
+    [!] => { $ crate :: TokenKind :: Bang } ;
+    [$] => { $ crate :: TokenKind :: Dollar } ;
+    [...] => { $ crate :: TokenKind :: Spread } ;
+    [,] => { $ crate :: TokenKind :: Comma } ;
+    [:] => { $ crate :: TokenKind :: Colon } ;
+    [=] => { $ crate :: TokenKind :: Eq } ;
+    [@] => { $ crate :: TokenKind :: At } ;
+    ['('] => { $ crate :: TokenKind :: LParen } ;
+    [')'] => { $ crate :: TokenKind :: RParen } ;
+    ['['] => { $ crate :: TokenKind :: LBracket } ;
+    [']'] => { $ crate :: TokenKind :: RBracket } ;
+    ['{'] => { $ crate :: TokenKind :: LCurly } ;
+    ['}'] => { $ crate :: TokenKind :: RCurly } ;
+    [|] => { $ crate :: TokenKind :: Pipe } ;
+
+    // composite nodes
+    [name] => { $ crate :: TokenKind :: Name } ;
+    [string] => { $ crate :: TokenKind :: StringValue} ;
+    [int] => { $ crate :: TokenKind :: Int} ;
+    [float] => { $ crate :: TokenKind :: Float} ;
 }
