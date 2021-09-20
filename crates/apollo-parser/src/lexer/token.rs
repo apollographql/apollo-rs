@@ -97,16 +97,12 @@ impl fmt::Debug for Token {
             TokenKind::StringValue => {
                 write!(f, "STRING_VALUE@{}:{} {:?}", start, end, self.data)
             }
-            TokenKind::Boolean => {
-                write!(f, "BOOLEAN@{}:{} {:?}", start, end, self.data)
-            }
             TokenKind::Int => {
                 write!(f, "INT@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::Float => {
                 write!(f, "FLOAT@{}:{} {:?}", start, end, self.data)
             }
-            TokenKind::Null => todo!(),
         }
     }
 }

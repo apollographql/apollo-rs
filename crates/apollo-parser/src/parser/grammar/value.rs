@@ -22,9 +22,16 @@ pub(crate) fn value(p: &mut Parser) {
         Some(TokenKind::Int) => p.bump(SyntaxKind::INT_VALUE),
         Some(TokenKind::Float) => p.bump(SyntaxKind::FLOAT_VALUE),
         Some(TokenKind::StringValue) => p.bump(SyntaxKind::STRING_VALUE),
-        Some(TokenKind::Boolean) => p.bump(SyntaxKind::BOOLEAN_VALUE),
-        Some(TokenKind::Null) => p.bump(SyntaxKind::NULL_VALUE),
-        Some(TokenKind::Name) => enum_value(p),
+        Some(TokenKind::Name) => {
+            let node = p.peek_data().unwrap();
+            if matches!(node.as_str(), "true" | "false") {
+                p.bump(SyntaxKind::BOOLEAN_VALUE);
+            } else if matches!(node.as_str(), "null") {
+                p.bump(SyntaxKind::NULL_VALUE);
+            } else {
+                enum_value(p);
+            }
+        }
         Some(T!['[']) => list_value(p),
         Some(T!['{']) => object_value(p),
         _ => p.err("expected a valid Value"),

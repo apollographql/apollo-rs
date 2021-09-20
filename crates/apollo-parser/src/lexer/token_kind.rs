@@ -21,8 +21,6 @@ pub enum TokenKind {
     // composite nodes
     Name,
     StringValue,
-    Null,
-    Boolean,
     Int,
     Float,
 
