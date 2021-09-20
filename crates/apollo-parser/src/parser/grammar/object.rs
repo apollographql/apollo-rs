@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, field, name};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, T};
+use crate::{Parser, SyntaxKind, TokenKind, T};
 
 /// See: https://spec.graphql.org/June2018/#ObjectTypeDefinition
 ///
@@ -13,27 +13,13 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Object Type Definition to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a name"),
     }
     if let Some(TokenKind::Name) = p.peek() {
         if p.peek_data().unwrap() == "implements" {
             implements_interfaces(p, false);
         } else {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Unexpected Name in Object Type Definition, {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
+            p.err("unexpected Name");
         }
     }
 
@@ -65,28 +51,14 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Object Type Extension to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
     if let Some(TokenKind::Name) = p.peek() {
         if p.peek_data().unwrap() == "implements" {
             meets_requirements = true;
             implements_interfaces(p, false);
         } else {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Unexpected Name in Object Type Definition, {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
+            p.err("unexpected Name");
         }
     }
     if let Some(T![@]) = p.peek() {
@@ -99,16 +71,7 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
     }
 
     if !meets_requirements {
-        p.push_err(
-            create_err!(
-                p
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Object Type Extension to have an Implements Interface, Directives, or Fields definition, got {}",
-                p
-                    .peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
+        p.err("expected an Implements Interface, Directives or a Fields Definition");
     }
 }
 
@@ -136,13 +99,7 @@ pub(crate) fn implements_interfaces(p: &mut Parser, is_interfaces: bool) {
         }
         _ => {
             if !is_interfaces {
-                p.push_err(create_err!(
-                    p.peek_data()
-                        .unwrap_or_else(|| String::from("no further data")),
-                    "Expected to have Implements Interfaces in a Object Type Definition, got {}",
-                    p.peek_data()
-                        .unwrap_or_else(|| String::from("no further data"))
-                ));
+                p.err("expected an Object Type Definition");
             }
         }
     }
@@ -281,7 +238,7 @@ mod test {
                             - TYPE@28..28
                                 - NAMED_TYPE@28..28
                         - R_CURLY@28..29 "}"
-            - ERROR@0:1 "Expected Object Type Extension to have a Name, got {"
+            - ERROR@0:1 "expected a Name"
             "#,
         )
     }
@@ -297,7 +254,7 @@ mod test {
                     - type_KW@6..10 "type"
                     - NAME@10..16
                         - IDENT@10..16 "Person"
-            - ERROR@0:15 "Expected Object Type Extension to have an Implements Interface, Directives, or Fields definition, got no further data"
+            - ERROR@0:3 "expected an Implements Interface, Directives or a Fields Definition"
             "#,
         )
     }

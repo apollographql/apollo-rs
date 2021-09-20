@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::{create_err, Parser, SyntaxKind, Token, TokenKind, S, T};
+use crate::{Parser, SyntaxKind, Token, TokenKind, S, T};
 
 use crate::parser::grammar::name;
 
@@ -80,15 +80,7 @@ pub(crate) fn ty(p: &mut Parser) {
             Some((kind @ S![']'], token)) => {
                 p.push_ast(kind, token);
             }
-            _ => {
-                p.push_err(create_err!(
-                    p.peek_data()
-                        .unwrap_or_else(|| String::from("no further data")),
-                    "Internal apollo-parser error, {} token was not expected when creating a Type",
-                    p.peek_data()
-                        .unwrap_or_else(|| String::from("no further data"))
-                ));
-            }
+            _ => p.err("Internal apollo-parser error: unexpected when creating a Type"),
         }
     }
 }

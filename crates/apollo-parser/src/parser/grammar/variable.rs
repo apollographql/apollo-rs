@@ -1,5 +1,5 @@
 use crate::parser::grammar::{name, ty, value};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#VariableDefinition
 ///
@@ -23,17 +23,9 @@ pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
                     return variable_definition(p, true);
                 }
             }
-            p.push_err(create_err!(
-                p.peek_data().unwrap(),
-                "Expected Variable Definition to have a Type, got {}",
-                p.peek_data().unwrap()
-            ));
+            p.err("expected a Type");
         } else {
-            p.push_err(create_err!(
-                p.peek_data().unwrap(),
-                "Expected Variable Definition to have a Name, got {}",
-                p.peek_data().unwrap()
-            ));
+            p.err("expected a Name");
         }
     }
 
@@ -43,11 +35,7 @@ pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
     }
 
     if !is_variable {
-        p.push_err(create_err!(
-            p.peek_data().unwrap(),
-            "Expected to have an Variable Definition, got {}",
-            p.peek_data().unwrap()
-        ));
+        p.err("expected a Variable Definition");
     }
 }
 

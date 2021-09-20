@@ -1,5 +1,5 @@
 use crate::parser::grammar::{argument, input, name};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#DirectiveDefinition
 ///
@@ -13,13 +13,7 @@ pub(crate) fn directive_definition(p: &mut Parser) {
     p.bump(SyntaxKind::directive_KW);
     match p.peek() {
         Some(T![@]) => p.bump(S![@]),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data().unwrap(),
-                "Expected directive @ definition, got {}",
-                p.peek_data().unwrap()
-            ));
-        }
+        _ => p.err("expected @ symbol"),
     }
     name::name(p);
 
@@ -32,13 +26,7 @@ pub(crate) fn directive_definition(p: &mut Parser) {
                 p.bump(S![')']);
                 guard.finish_node();
             }
-            _ => p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected closing ')', got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data"))
-            )),
+            _ => p.err("expected closing ')'"),
         }
     }
 
@@ -51,13 +39,7 @@ pub(crate) fn directive_definition(p: &mut Parser) {
     if let Some(node) = p.peek_data() {
         match node.as_str() {
             "on" => p.bump(SyntaxKind::on_KW),
-            _ => p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected to have Directive Locations in a Directive Definition, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data"))
-            )),
+            _ => p.err("expected Directive Locations"),
         }
     }
 
@@ -65,13 +47,7 @@ pub(crate) fn directive_definition(p: &mut Parser) {
         let _guard = p.start_node(SyntaxKind::DIRECTIVE_LOCATIONS);
         directive_locations(p, false);
     } else {
-        p.push_err(create_err!(
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected to have a valid Directive Location in a Directive Definition, got {}",
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data"))
-        ));
+        p.err("expected valid Directive Location");
     }
 }
 
@@ -155,15 +131,7 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
             }
             _ => {
                 if !is_location {
-                    p.push_err(create_err!(
-                        p
-                            .peek_data()
-                            .unwrap_or_else(|| String::from("no further data")),
-                        "Expected to have a valid Directive Location in a Directive Definition, got {}",
-                        p
-                            .peek_data()
-                            .unwrap_or_else(|| String::from("no further data"))
-                    ));
+                    p.err("expected valid Directive Location");
                 }
                 return;
             }
@@ -173,13 +141,7 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
         }
     }
     if !is_location {
-        p.push_err(create_err!(
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected to have Directive Locations in a Directive Definition, got {}",
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data"))
-        ));
+        p.err("expected Directive Locations");
     }
 }
 
@@ -224,7 +186,7 @@ mod test {
                     - NAME@10..17
                         - IDENT@10..17 "example"
                     - on_KW@17..19 "on"
-            - ERROR@0:15 "Expected to have a valid Directive Location in a Directive Definition, got no further data"
+            - ERROR@0:3 "expected valid Directive Location"
             "#,
         );
     }

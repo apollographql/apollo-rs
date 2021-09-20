@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, name};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, T};
+use crate::{Parser, SyntaxKind, TokenKind, T};
 
 /// See: https://spec.graphql.org/June2018/#ScalarTypeDefinition
 ///
@@ -12,15 +12,7 @@ pub(crate) fn scalar_type_definition(p: &mut Parser) {
     p.bump(SyntaxKind::scalar_KW);
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Scalar Type Definition to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
 
     if let Some(T![@]) = p.peek() {
@@ -40,28 +32,12 @@ pub(crate) fn scalar_type_extension(p: &mut Parser) {
     p.bump(SyntaxKind::scalar_KW);
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Scalar Type Extension to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
 
     match p.peek() {
         Some(T![@]) => directive::directives(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Scalar Type Extension to have directives, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected Directives"),
     }
 }
 
@@ -105,7 +81,7 @@ mod test {
                             - AT@6..7 "@"
                             - NAME@7..17
                                 - IDENT@7..17 "deprecated"
-            - ERROR@0:1 "Expected Scalar Type Definition to have a Name, got @"
+            - ERROR@0:1 "expected a Name"
             "#,
         )
     }
@@ -148,7 +124,7 @@ mod test {
                             - AT@12..13 "@"
                             - NAME@13..23
                                 - IDENT@13..23 "deprecated"
-            - ERROR@0:1 "Expected Scalar Type Extension to have a Name, got @"
+            - ERROR@0:1 "expected a Name"
             "#,
         )
     }

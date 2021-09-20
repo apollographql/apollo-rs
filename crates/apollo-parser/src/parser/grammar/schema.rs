@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, operation};
-use crate::{create_err, Parser, SyntaxKind, S, T};
+use crate::{Parser, SyntaxKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#SchemaDefinition
 ///
@@ -18,21 +18,9 @@ pub(crate) fn schema_definition(p: &mut Parser) {
     if let Some(T!['{']) = p.peek() {
         p.bump(S!['{']);
         operation::operation_type_definition(p, false);
-        if let Some(T!['}']) = p.peek() {
-            p.bump(S!['}']);
-        } else {
-            p.push_err(create_err!(
-                p.peek_data().unwrap(),
-                "Expected Schema Definition to have a closing curly bracket, got {}",
-                p.peek_data().unwrap()
-            ));
-        }
+        p.expect(T!['}'], S!['}']);
     } else {
-        p.push_err(create_err!(
-            p.peek_data().unwrap(),
-            "Expected Schema Definition to define a root operation, got {}",
-            p.peek_data().unwrap()
-        ));
+        p.err("expected Root Operation Type Definition");
     }
 }
 
@@ -55,15 +43,7 @@ pub(crate) fn schema_extension(p: &mut Parser) {
     if let Some(T!['{']) = p.peek() {
         p.bump(S!['{']);
         operation::operation_type_definition(p, false);
-        if let Some(T!['}']) = p.peek() {
-            p.bump(S!['}']);
-        } else {
-            p.push_err(create_err!(
-                p.peek_data().unwrap(),
-                "Expected Schema Extension to have a closing }} following Operation Type Definitions, got {}",
-                p.peek_data().unwrap()
-            ));
-        }
+        p.expect(T!['}'], S!['}']);
     }
 }
 

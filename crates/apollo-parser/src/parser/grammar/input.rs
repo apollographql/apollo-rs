@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, name, ty, value};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#InputObjectTypeDefinition
 ///
@@ -13,15 +13,7 @@ pub(crate) fn input_object_type_definition(p: &mut Parser) {
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Input Object Type Definition to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
 
     if let Some(T![@]) = p.peek() {
@@ -49,15 +41,7 @@ pub(crate) fn input_object_type_extension(p: &mut Parser) {
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Input Object Type Definition to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
 
     if let Some(T![@]) = p.peek() {
@@ -71,15 +55,7 @@ pub(crate) fn input_object_type_extension(p: &mut Parser) {
     }
 
     if !meets_requirements {
-        p.push_err(create_err!(
-            p
-                .peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected Input Object Type Extension to have Directives or Input Fields Definition, got {}",
-            p
-                .peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-        ));
+        p.err("expected Directives or an Input Fields Definition");
     }
 }
 
@@ -119,20 +95,10 @@ pub(crate) fn input_value_definition(p: &mut Parser, is_input: bool) {
                         return input_value_definition(p, true);
                     }
                 }
-                _ => {
-                    p.push_err(create_err!(
-                        p.peek_data().unwrap(),
-                        "Expected InputValue definition to have a Type, got {}",
-                        p.peek_data().unwrap()
-                    ));
-                }
+                _ => p.err("expected a Type"),
             }
         } else {
-            p.push_err(create_err!(
-                p.peek_data().unwrap(),
-                "Expected InputValue definition to have a Name, got {}",
-                p.peek_data().unwrap()
-            ));
+            p.err("expected a Name");
         }
     }
     if let Some(T![,]) = p.peek() {
@@ -141,11 +107,7 @@ pub(crate) fn input_value_definition(p: &mut Parser, is_input: bool) {
     }
     // TODO @lrlna: this can be simplified a little bit, and follow the pattern of FieldDefinition
     if !is_input {
-        p.push_err(create_err!(
-            p.peek_data().unwrap(),
-            "Expected to have an InputValue definition, got {}",
-            p.peek_data().unwrap()
-        ));
+        p.err("expected an Input Value Definition");
     }
 }
 
@@ -215,7 +177,7 @@ mod test {
                                     - TYPE@10..10
                                         - NAMED_TYPE@10..10
                         - R_CURLY@10..11 "}"
-            - ERROR@0:1 "Expected Input Object Type Definition to have a Name, got {"
+            - ERROR@0:1 "expected a Name"
             "#,
         )
     }
@@ -233,7 +195,7 @@ mod test {
                     - INPUT_FIELDS_DEFINITION@23..25
                         - L_CURLY@23..24 "{"
                         - R_CURLY@24..25 "}"
-            - ERROR@0:1 "Expected to have an InputValue definition, got }"
+            - ERROR@0:1 "expected an Input Value Definition"
             "#,
         )
     }
@@ -289,7 +251,7 @@ mod test {
                             - TYPE@14..14
                                 - NAMED_TYPE@14..14
                         - R_CURLY@14..15 "}"
-            - ERROR@0:1 "Expected Input Object Type Definition to have a Name, got {"
+            - ERROR@0:1 "expected a Name"
             "#,
         )
     }
@@ -305,7 +267,7 @@ mod test {
                     - input_KW@6..11 "input"
                     - NAME@11..29
                         - IDENT@11..29 "ExampleInputObject"
-            - ERROR@0:15 "Expected Input Object Type Extension to have Directives or Input Fields Definition, got no further data"
+            - ERROR@0:3 "expected Directives or an Input Fields Definition"
             "#,
         )
     }

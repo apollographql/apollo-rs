@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, name, selection, ty, variable};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// OperationTypeDefinition is used in a SchemaDefinition. Not to be confused
 /// with OperationDefinition.
@@ -27,20 +27,12 @@ pub(crate) fn operation_type_definition(p: &mut Parser, is_operation_type: bool)
                 return operation_type_definition(p, true);
             }
         } else {
-            p.push_err(create_err!(
-                p.peek_data().unwrap(),
-                "Expected Operation Type to have a Name Type, got {}",
-                p.peek_data().unwrap()
-            ));
+            p.err("expected a Name Type");
         }
     }
 
     if !is_operation_type {
-        p.push_err(create_err!(
-            p.peek_data().unwrap(),
-            "Expected Schema Definition to have an Operation Type, got {}",
-            p.peek_data().unwrap()
-        ));
+        p.err("expected an Operation Type");
     }
 }
 
@@ -57,13 +49,7 @@ pub(crate) fn operation_definition(p: &mut Parser) {
     match p.peek() {
         Some(TokenKind::Name) => operation_type(p),
         Some(T!['{']) => selection::selection_set(p),
-        _ => p.push_err(create_err!(
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected an Operation Type or a Selection Set, got {}",
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data"))
-        )),
+        _ => p.err("expected an Operation Type or a Selection Set"),
     }
     if let Some(TokenKind::Name) = p.peek() {
         name::name(p);
@@ -102,13 +88,7 @@ pub(crate) fn operation_type(p: &mut Parser) {
             "query" => p.bump(SyntaxKind::query_KW),
             "subscription" => p.bump(SyntaxKind::subscription_KW),
             "mutation" => p.bump(SyntaxKind::mutation_KW),
-            _ => p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Operation Type must be either 'mutation', 'query' or 'subscription', got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data"))
-            )),
+            _ => p.err("expected either a 'mutation', a 'query', or a 'subscription'"),
         }
     }
 }

@@ -1,5 +1,5 @@
 use crate::parser::grammar::{field, fragment};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#SelectionSet
 ///
@@ -38,13 +38,7 @@ pub(crate) fn selection(p: &mut Parser) {
                         _ => fragment::fragment_spread(p),
                     }
                 } else {
-                    p.push_err(create_err!(
-                        p.peek_data()
-                            .unwrap_or_else(|| String::from("no further data")),
-                        "Expected Inline Fragment or Fragment Spread to follow a ..., got {}",
-                        p.peek_data()
-                            .unwrap_or_else(|| String::from("no further data")),
-                    ));
+                    p.err("expected an Inline Fragment or a Fragment Spread");
                 }
             }
             T!['{'] => {

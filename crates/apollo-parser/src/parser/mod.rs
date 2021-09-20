@@ -99,12 +99,27 @@ impl Parser {
         false
     }
 
+    /// Consume a token from the lexer and insert it into the AST.
+    pub(crate) fn bump(&mut self, kind: SyntaxKind) {
+        let token = self.tokens.pop().unwrap();
+        self.builder.borrow_mut().token(kind, token.data());
+    }
+
+    pub(crate) fn current(&mut self) -> String {
+        self.peek_data().unwrap_or_else(|| "EOF".to_string())
+    }
+
+    /// Create a parser error and push it into the error vector.
+    pub(crate) fn err(&mut self, message: &str) {
+        let current = self.current();
+        let err = crate::Error::new(message.into(), current);
+        self.push_err(err)
+    }
+
     /// Consume the next token if it is `kind` or emit an error
     /// otherwise.
     pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
-        let current_t = self
-            .peek_data()
-            .unwrap_or_else(|| String::from("no further data"));
+        let current_t = self.current();
 
         if self.at(token) {
             self.bump(kind);
@@ -118,10 +133,9 @@ impl Parser {
             current_t,
         ));
     }
-    /// Consume a token from the lexer and insert it into the AST.
-    pub(crate) fn bump(&mut self, kind: SyntaxKind) {
-        let token = self.tokens.pop().unwrap();
-        self.builder.borrow_mut().token(kind, token.data());
+
+    pub(crate) fn push_err(&mut self, err: crate::error::Error) {
+        self.errors.push(err);
     }
 
     /// Consume a token from the lexer.
@@ -133,11 +147,6 @@ impl Parser {
     pub(crate) fn push_ast(&mut self, kind: SyntaxKind, token: Token) {
         self.builder.borrow_mut().token(kind, token.data())
     }
-
-    pub(crate) fn push_err(&mut self, err: crate::error::Error) {
-        self.errors.push(err);
-    }
-
     pub(crate) fn start_node(&mut self, kind: SyntaxKind) -> NodeGuard {
         self.builder.borrow_mut().start_node(kind);
         NodeGuard::new(self.builder.clone())

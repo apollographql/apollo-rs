@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, name, value};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#EnumTypeDefinition
 ///
@@ -8,20 +8,12 @@ use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
 //     Description[opt] enum Name Directives[Const][opt] EnumValuesDefinition[opt]
 /// ```
 pub(crate) fn enum_type_definition(p: &mut Parser) {
-    let _guard = p.start(SyntaxKind::ENUM_TYPE_DEFINITION);
+    let _guard = p.start_node(SyntaxKind::ENUM_TYPE_DEFINITION);
     p.bump(SyntaxKind::enum_KW);
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Union Type Definition to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
 
     if let Some(T![@]) = p.peek() {
@@ -49,15 +41,7 @@ pub(crate) fn enum_type_extension(p: &mut Parser) {
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Union Type Extension to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
 
     if let Some(T![@]) = p.peek() {
@@ -71,13 +55,7 @@ pub(crate) fn enum_type_extension(p: &mut Parser) {
     }
 
     if !meets_requirements {
-        p.push_err(create_err!(
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected Enum Type Extension to have Directives or Enum Values Definition, got {}",
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-        ));
+        p.err("expected Directived or Enum Values Definition");
     }
 }
 
@@ -93,15 +71,7 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
 
     match p.peek() {
         Some(TokenKind::Name) => enum_value_definition(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Enum Value Definition to follow, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data"))
-            ));
-        }
+        _ => p.err("expected Enum Value Definition"),
     }
 
     p.expect(T!['}'], S!['}']);
@@ -211,7 +181,7 @@ mod test {
                                 - NAME@19..23
                                     - IDENT@19..23 "WEST"
                         - R_CURLY@23..24 "}"
-            - ERROR@0:1 "Expected Union Type Definition to have a Name, got {"
+            - ERROR@0:1 "expected a Name"
             "#,
         )
     }
@@ -230,7 +200,7 @@ mod test {
                     - ENUM_VALUES_DEFINITION@13..15
                         - L_CURLY@13..14 "{"
                         - R_CURLY@14..15 "}"
-            - ERROR@0:1 "Expected Enum Value Definition to follow, got }"
+            - ERROR@0:1 "expected Enum Value Definition"
             "#,
         )
     }
@@ -255,7 +225,7 @@ mod test {
                             - ENUM_VALUE@19..23
                                 - NAME@19..23
                                     - IDENT@19..23 "WEST"
-            - ERROR@0:15 "expected R_CURLY, got no further data"
+            - ERROR@0:3 "expected R_CURLY, got EOF"
             "#,
         )
     }
@@ -317,7 +287,7 @@ mod test {
                                 - NAME@16..20
                                     - IDENT@16..20 "EAST"
                         - R_CURLY@20..21 "}"
-            - ERROR@0:1 "Expected Union Type Extension to have a Name, got {"
+            - ERROR@0:1 "expected a Name"
             "#,
         )
     }
@@ -333,7 +303,7 @@ mod test {
                     - enum_KW@6..10 "enum"
                     - NAME@10..19
                         - IDENT@10..19 "Direction"
-            - ERROR@0:15 "Expected Enum Type Extension to have Directives or Enum Values Definition, got no further data"
+            - ERROR@0:3 "expected Directived or Enum Values Definition"
             "#,
         )
     }

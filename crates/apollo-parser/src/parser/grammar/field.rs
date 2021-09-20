@@ -1,5 +1,5 @@
 use crate::parser::grammar::{argument, directive, name, selection, ty};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#Field
 ///
@@ -15,13 +15,7 @@ pub(crate) fn field(p: &mut Parser) {
         }
         name::name(p)
     } else {
-        p.push_err(create_err!(
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected Field to have a Name, got {}",
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data"))
-        ));
+        p.err("expected a Name");
     }
     match p.peek() {
         Some(T!['(']) => argument::arguments(p),
@@ -51,7 +45,6 @@ pub(crate) fn field(p: &mut Parser) {
 /// ```
 pub(crate) fn fields_definition(p: &mut Parser) {
     let _guard = p.start_node(SyntaxKind::FIELDS_DEFINITION);
-    let _guard = p.start(SyntaxKind::FIELDS_DEFINITION);
     p.bump(S!['{']);
     field_definition(p);
     p.expect(T!['}'], S!['}']);
@@ -85,19 +78,11 @@ pub(crate) fn field_definition(p: &mut Parser) {
                     }
                 }
                 _ => {
-                    p.push_err(create_err!(
-                        p.peek_data().unwrap(),
-                        "Expected InputValue definition to have a Type, got {}",
-                        p.peek_data().unwrap()
-                    ));
+                    p.err("expected a Type");
                 }
             }
         } else {
-            p.push_err(create_err!(
-                p.peek_data().unwrap(),
-                "Expected Field Definition to have a Type, got {}",
-                p.peek_data().unwrap()
-            ));
+            p.err("expected a type");
         }
     }
 

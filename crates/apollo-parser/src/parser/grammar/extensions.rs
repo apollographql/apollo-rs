@@ -1,5 +1,5 @@
 use crate::parser::grammar::{enum_, input, interface, object, scalar, schema, union_};
-use crate::{create_err, Parser};
+use crate::Parser;
 
 pub(crate) fn extensions(p: &mut Parser) {
     // we already know the next node is 'extend', check for the node after that
@@ -13,22 +13,8 @@ pub(crate) fn extensions(p: &mut Parser) {
             "union" => union_::union_type_extension(p),
             "enum" => enum_::enum_type_extension(p),
             "input" => input::input_object_type_extension(p),
-            _ => {
-                p.push_err(create_err!(
-                    p.peek_data().unwrap_or_else(|| String::from("no data")),
-                    "A Type System Extension cannot be applied to {}",
-                    p.peek_data().unwrap_or_else(|| String::from("no data")),
-                ));
-            }
+            _ => p.err("A Type System Extension cannot be applied"),
         },
-        None => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expect a Type System Extension to follow 'extend' keyword, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        None => p.err("expected a Type System Extension"),
     }
 }

@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, name, ty};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#UnionTypeDefinition
 ///
@@ -13,15 +13,7 @@ pub(crate) fn union_type_definition(p: &mut Parser) {
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Union Type Definition to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
 
     if let Some(T![@]) = p.peek() {
@@ -29,7 +21,7 @@ pub(crate) fn union_type_definition(p: &mut Parser) {
     }
 
     if let Some(T![=]) = p.peek() {
-        union_member_types(p, false);
+        union_member_types(p);
     }
 }
 
@@ -49,15 +41,7 @@ pub(crate) fn union_type_extension(p: &mut Parser) {
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Union Type Extension to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
 
     if let Some(T![@]) = p.peek() {
@@ -67,17 +51,11 @@ pub(crate) fn union_type_extension(p: &mut Parser) {
 
     if let Some(T![=]) = p.peek() {
         meets_requirements = true;
-        union_member_types(p, false);
+        union_member_types(p);
     }
 
     if !meets_requirements {
-        p.push_err(create_err!(
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected Union Type Extension to have Directives or Union Member Types, got {}",
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-        ));
+        p.err("expected Directives or Union Member Types");
     }
 }
 
@@ -88,30 +66,28 @@ pub(crate) fn union_type_extension(p: &mut Parser) {
 ///     = |[opt] NamedType
 ///     UnionMemberTypes | NamedType
 /// ```
-pub(crate) fn union_member_types(p: &mut Parser, is_union: bool) {
+pub(crate) fn union_member_types(p: &mut Parser) {
     let _guard = p.start_node(SyntaxKind::UNION_MEMBER_TYPES);
     p.bump(S![=]);
 
+    union_member_type(p, false);
+}
+
+fn union_member_type(p: &mut Parser, is_union: bool) {
     match p.peek() {
         Some(T![|]) => {
             p.bump(S![|]);
-            union_member_types(p, is_union);
+            union_member_type(p, is_union);
         }
         Some(TokenKind::Name) => {
             ty::named_type(p);
             if p.peek_data().is_some() {
-                union_member_types(p, true)
+                union_member_type(p, true)
             }
         }
         _ => {
             if !is_union {
-                p.push_err(create_err!(
-                    p.peek_data()
-                        .unwrap_or_else(|| String::from("no further data")),
-                    "Expected to have Union Member Types in a Union Type Definition, got {}",
-                    p.peek_data()
-                        .unwrap_or_else(|| String::from("no further data"))
-                ));
+                p.err("expected Union Member Types");
             }
         }
     }
@@ -136,11 +112,10 @@ mod test {
                         - NAMED_TYPE@18..23
                             - NAME@18..23
                                 - IDENT@18..23 "Photo"
-                        - UNION_MEMBER_TYPES@23..30
-                            - EQ@23..24 "|"
-                            - NAMED_TYPE@24..30
-                                - NAME@24..30
-                                    - IDENT@24..30 "Person"
+                        - PIPE@23..24 "|"
+                        - NAMED_TYPE@24..30
+                            - NAME@24..30
+                                - IDENT@24..30 "Person"
             "#,
         )
     }
@@ -158,12 +133,11 @@ mod test {
                         - NAMED_TYPE@6..11
                             - NAME@6..11
                                 - IDENT@6..11 "Photo"
-                        - UNION_MEMBER_TYPES@11..18
-                            - EQ@11..12 "|"
-                            - NAMED_TYPE@12..18
-                                - NAME@12..18
-                                    - IDENT@12..18 "Person"
-            - ERROR@0:1 "Expected Union Type Definition to have a Name, got ="
+                        - PIPE@11..12 "|"
+                        - NAMED_TYPE@12..18
+                            - NAME@12..18
+                                - IDENT@12..18 "Person"
+            - ERROR@0:1 "expected a Name"
             "#,
         )
     }
@@ -178,8 +152,8 @@ mod test {
                     - union_KW@0..5 "union"
                     - UNION_MEMBER_TYPES@5..6
                         - EQ@5..6 "="
-            - ERROR@0:1 "Expected Union Type Definition to have a Name, got ="
-            - ERROR@0:15 "Expected to have Union Member Types in a Union Type Definition, got no further data"
+            - ERROR@0:1 "expected a Name"
+            - ERROR@0:3 "expected Union Member Types"
             "#,
         )
     }
@@ -205,11 +179,10 @@ mod test {
                         - NAMED_TYPE@35..40
                             - NAME@35..40
                                 - IDENT@35..40 "Photo"
-                        - UNION_MEMBER_TYPES@40..47
-                            - EQ@40..41 "|"
-                            - NAMED_TYPE@41..47
-                                - NAME@41..47
-                                    - IDENT@41..47 "Person"
+                        - PIPE@40..41 "|"
+                        - NAMED_TYPE@41..47
+                            - NAME@41..47
+                                - IDENT@41..47 "Person"
             "#,
         )
     }
@@ -228,12 +201,11 @@ mod test {
                         - NAMED_TYPE@12..17
                             - NAME@12..17
                                 - IDENT@12..17 "Photo"
-                        - UNION_MEMBER_TYPES@17..24
-                            - EQ@17..18 "|"
-                            - NAMED_TYPE@18..24
-                                - NAME@18..24
-                                    - IDENT@18..24 "Person"
-            - ERROR@0:1 "Expected Union Type Extension to have a Name, got ="
+                        - PIPE@17..18 "|"
+                        - NAMED_TYPE@18..24
+                            - NAME@18..24
+                                - IDENT@18..24 "Person"
+            - ERROR@0:1 "expected a Name"
             "#,
         )
     }
@@ -249,7 +221,7 @@ mod test {
                     - union_KW@6..11 "union"
                     - NAME@11..23
                         - IDENT@11..23 "SearchResult"
-            - ERROR@0:15 "Expected Union Type Extension to have Directives or Union Member Types, got no further data"
+            - ERROR@0:3 "expected Directives or Union Member Types"
             "#,
         )
     }

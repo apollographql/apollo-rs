@@ -1,5 +1,5 @@
 use crate::parser::grammar::{name, variable};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#Value
 ///
@@ -27,15 +27,7 @@ pub(crate) fn value(p: &mut Parser) {
         Some(TokenKind::Name) => enum_value(p),
         Some(T!['[']) => list_value(p),
         Some(T!['{']) => object_value(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected a valid Value, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data"))
-            ));
-        }
+        _ => p.err("expected a valid Value"),
     }
 }
 /// See: https://spec.graphql.org/June2018/#EnumValue
@@ -48,13 +40,7 @@ pub(crate) fn enum_value(p: &mut Parser) {
     let name = p.peek_data().unwrap();
 
     if matches!(name.as_str(), "true" | "false" | "null") {
-        p.push_err(create_err!(
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Enum Value cannot be {}",
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data"))
-        ));
+        p.err("unexpected Enum Value");
     }
     name::name(p);
 }
@@ -98,28 +84,14 @@ pub(crate) fn object_value(p: &mut Parser) {
                 p.bump(S!['}']);
                 guard.finish_node()
             } else {
-                p.push_err(create_err!(
-                    p.peek_data()
-                        .unwrap_or_else(|| String::from("no further data")),
-                    "Expected a closing }} to follow an Object Value , got {}",
-                    p.peek_data()
-                        .unwrap_or_else(|| String::from("no further data"))
-                ));
+                p.err("expected }");
             }
         }
         Some(T!['}']) => {
             p.bump(S!['}']);
             guard.finish_node()
         }
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected an Object Value, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data"))
-            ));
-        }
+        _ => p.err("expected Object Value"),
     }
 }
 

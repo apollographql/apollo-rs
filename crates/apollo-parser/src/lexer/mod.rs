@@ -50,6 +50,8 @@ impl Lexer {
             }
         }
 
+        tokens.push(Ok(Token::new(TokenKind::Eof, String::from("EOF"))));
+
         Self { tokens }
     }
 

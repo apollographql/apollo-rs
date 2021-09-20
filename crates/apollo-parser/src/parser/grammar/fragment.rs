@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, name, selection, ty};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, S, T};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#FragmentDefinition
 ///
@@ -20,15 +20,7 @@ pub(crate) fn fragment_definition(p: &mut Parser) {
 
     match p.peek() {
         Some(T!['{']) => selection::selection_set(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Fragment Definition to have a Selection Set, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Selection Set"),
     }
 }
 
@@ -43,19 +35,11 @@ pub(crate) fn fragment_name(p: &mut Parser) {
     match p.peek() {
         Some(TokenKind::Name) => {
             if p.peek_data().unwrap() == "on" {
-                p.push_err(create_err!(
-                    p.peek_data()
-                        .unwrap_or_else(|| String::from("no further data")),
-                    "Fragment Name cannot be 'on'",
-                ));
+                return p.err("Fragment Name cannot be 'on'");
             }
             name::name(p)
         }
-        _ => p.push_err(create_err!(
-            p.peek_data().unwrap(),
-            "Expected Fragment Name, got {}",
-            p.peek_data().unwrap()
-        )),
+        _ => p.err("expected Fragment Name"),
     }
 }
 
@@ -72,21 +56,11 @@ pub(crate) fn type_condition(p: &mut Parser) {
             if p.peek_data().unwrap() == "on" {
                 p.bump(SyntaxKind::on_KW);
             } else {
-                p.push_err(create_err!(
-                    p.peek_data()
-                        .unwrap_or_else(|| String::from("no further data")),
-                    "Expected Fragment's Type Condition to have 'on', got {}",
-                    p.peek_data()
-                        .unwrap_or_else(|| String::from("no further data")),
-                ));
+                p.err("exptected 'on'");
             }
             ty::named_type(p)
         }
-        _ => p.push_err(create_err!(
-            p.peek_data().unwrap(),
-            "Expected Type Condition in a Fragment, got {}",
-            p.peek_data().unwrap()
-        )),
+        _ => p.err("expected Type Condition"),
     }
 }
 
@@ -107,15 +81,7 @@ pub(crate) fn inline_fragment(p: &mut Parser) {
     }
     match p.peek() {
         Some(T!['{']) => selection::selection_set(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Inline Fragment to have a Selection Set, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected Selection Set"),
     }
 }
 
@@ -132,15 +98,7 @@ pub(crate) fn fragment_spread(p: &mut Parser) {
         Some(TokenKind::Name) => {
             fragment_name(p);
         }
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Fragment Spread to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
 
     if let Some(T![@]) = p.peek() {
@@ -254,10 +212,9 @@ mod test {
             - DOCUMENT@0..26
                 - FRAGMENT_DEFINITION@0..26
                     - fragment_KW@0..8 "fragment"
-                    - FRAGMENT_NAME@8..10
-                        - NAME@8..10
-                            - IDENT@8..10 "on"
-                    - TYPE_CONDITION@10..14
+                    - FRAGMENT_NAME@8..8
+                    - TYPE_CONDITION@8..14
+                        - on_KW@8..10 "on"
                         - NAMED_TYPE@10..14
                             - NAME@10..14
                                 - IDENT@10..14 "User"
@@ -274,7 +231,6 @@ mod test {
                                     - IDENT@23..25 "id"
                         - R_CURLY@25..26 "}"
             - ERROR@0:2 "Fragment Name cannot be 'on'"
-            - ERROR@0:4 "Expected Fragment's Type Condition to have 'on', got User"
             "#,
         );
     }
@@ -309,7 +265,7 @@ mod test {
                                 - NAME@33..35
                                     - IDENT@33..35 "id"
                         - R_CURLY@35..36 "}"
-            - ERROR@0:4 "Expected Fragment's Type Condition to have 'on', got User"
+            - ERROR@0:4 "exptected 'on'"
             "#,
         );
     }
@@ -330,7 +286,7 @@ mod test {
                         - NAMED_TYPE@22..26
                             - NAME@22..26
                                 - IDENT@22..26 "User"
-            - ERROR@0:15 "Expected Fragment Definition to have a Selection Set, got no further data"
+            - ERROR@0:3 "expected a Selection Set"
             "#,
         );
     }

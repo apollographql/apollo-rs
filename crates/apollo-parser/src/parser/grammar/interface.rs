@@ -1,5 +1,5 @@
 use crate::parser::grammar::{directive, field, name};
-use crate::{create_err, Parser, SyntaxKind, TokenKind, T};
+use crate::{Parser, SyntaxKind, TokenKind, T};
 
 /// See: https://spec.graphql.org/June2018/#InterfaceTypeDefinition
 ///
@@ -13,15 +13,7 @@ pub(crate) fn interface_type_definition(p: &mut Parser) {
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Interface Type Definition to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
 
     if let Some(T![@]) = p.peek() {
@@ -49,15 +41,7 @@ pub(crate) fn interface_type_extension(p: &mut Parser) {
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
-        _ => {
-            p.push_err(create_err!(
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-                "Expected Interface Type Definition to have a Name, got {}",
-                p.peek_data()
-                    .unwrap_or_else(|| String::from("no further data")),
-            ));
-        }
+        _ => p.err("expected a Name"),
     }
 
     if let Some(T![@]) = p.peek() {
@@ -71,13 +55,7 @@ pub(crate) fn interface_type_extension(p: &mut Parser) {
     }
 
     if !meets_requirements {
-        p.push_err(create_err!(
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-            "Expected Interface Type Extension to have a Directives or Fields definition, got {}",
-            p.peek_data()
-                .unwrap_or_else(|| String::from("no further data")),
-        ));
+        p.err("exptected Directives or a Fields Definition");
     }
 }
 
@@ -164,7 +142,7 @@ mod test {
                             - TYPE@22..22
                                 - NAMED_TYPE@22..22
                         - R_CURLY@22..23 "}"
-            - ERROR@0:1 "Expected Interface Type Definition to have a Name, got {"
+            - ERROR@0:1 "expected a Name"
             "#,
         )
     }
@@ -180,7 +158,7 @@ mod test {
                     - interface_KW@6..15 "interface"
                     - NAME@15..27
                         - IDENT@15..27 "ValuedEntity"
-            - ERROR@0:15 "Expected Interface Type Extension to have a Directives or Fields definition, got no further data"
+            - ERROR@0:3 "exptected Directives or a Fields Definition"
             "#,
         )
     }
