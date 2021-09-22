@@ -58,28 +58,7 @@ impl Parser {
     }
 
     pub fn parse(mut self) -> SyntaxTree {
-        let guard = self.start_node(SyntaxKind::DOCUMENT);
-
-        while let Some(node) = self.peek_data() {
-            match node.as_str() {
-                "fragment" => grammar::fragment::fragment_definition(&mut self),
-                "directive" => grammar::directive::directive_definition(&mut self),
-                "schema" => grammar::schema::schema_definition(&mut self),
-                "scalar" => grammar::scalar::scalar_type_definition(&mut self),
-                "type" => grammar::object::object_type_definition(&mut self),
-                "interface" => grammar::interface::interface_type_definition(&mut self),
-                "union" => grammar::union_::union_type_definition(&mut self),
-                "enum" => grammar::enum_::enum_type_definition(&mut self),
-                "input" => grammar::input::input_object_type_definition(&mut self),
-                "extend" => grammar::extensions::extensions(&mut self),
-                "query" | "mutation" | "subscription" | "{" => {
-                    grammar::operation::operation_definition(&mut self)
-                }
-                _ => break,
-            }
-        }
-
-        guard.finish_node();
+        grammar::document::document(&mut self);
 
         let builder = Rc::try_unwrap(self.builder)
             .expect("More than one reference to builder left")
@@ -233,15 +212,6 @@ mod test {
     #[test]
     fn smoke_subgraph_test() {
         let input = "
-        # comment
-        directive @tag(name: String!) on FIELD_DEFINITION
-
-        extend type Product @key(fields: \"id\") {
-          id: ID! @external @tag(name: \"hi from inventory\")
-          dimensions: ProductDimension @external
-          delivery(zip: String): DeliveryEstimates @requires(fields: \"dimensions { size weight }\")
-        }
-
         type ProductDimension {
           size: String
           weight: Float @tag(name: \"hi from inventory value type field\")
