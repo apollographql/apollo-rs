@@ -1,4 +1,31 @@
 //! A parser for the GraphQL query language.
+//!
+//! ## Example
+//! ```rust
+//! use apollo_parser::Parser;
+//! use apollo_parser::ast::{Definition, ObjectTypeDefinition};
+//!
+//! let input = "
+//! type ProductDimension {
+//!   size: String
+//!   weight: Float @tag(name: \"hi from inventory value type field\")
+//! }
+//! ";
+//! let parser = Parser::new(input);
+//! let ast = parser.parse();
+//! assert!(ast.errors().is_empty());
+//!
+//! let doc = ast.document();
+//!
+//! for def in doc.definitions() {
+//!     if let Definition::ObjectTypeDefinition(object_type) = def {
+//!         assert_eq!(object_type.name().unwrap().text(), "ProductDimension");
+//!         for field_def in object_type.fields_definition().unwrap().field_definitions() {
+//!             println!("{}", field_def.name().unwrap().text()); // size weight
+//!         }
+//!     }
+//! }
+//! ```
 
 pub mod ast;
 mod error;

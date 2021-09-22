@@ -608,9 +608,9 @@ pub struct DirectiveLocations {
     pub(crate) syntax: SyntaxNode,
 }
 impl DirectiveLocations {
-    pub fn pipe_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![|]) }
-    pub fn directive_location(&self) -> Option<DirectiveLocation> { support::child(&self.syntax) }
-    pub fn directive_locations(&self) -> Option<DirectiveLocations> { support::child(&self.syntax) }
+    pub fn directive_locations(&self) -> AstChildren<DirectiveLocation> {
+        support::children(&self.syntax)
+    }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DirectiveLocation {

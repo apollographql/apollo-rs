@@ -107,7 +107,7 @@ mod test {
     use crate::Parser;
 
     #[test]
-    fn smoke_directive() {
+    fn directive_name() {
         let input = "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION";
         let parser = Parser::new(input);
         let ast = parser.parse();
@@ -115,7 +115,31 @@ mod test {
 
         for def in doc.definitions() {
             if let Definition::DirectiveDefinition(directive) = def {
-                println!("{:?}", directive.name().unwrap().text());
+                assert_eq!(directive.name().unwrap().text(), "example");
+            }
+        }
+    }
+
+    #[test]
+    fn object_type_definition() {
+        let input = "
+        type ProductDimension {
+          size: String
+          weight: Float @tag(name: \"hi from inventory value type field\")
+        }
+        ";
+        let parser = Parser::new(input);
+        let ast = parser.parse();
+        assert!(ast.errors().is_empty());
+
+        let doc = ast.document();
+
+        for def in doc.definitions() {
+            if let Definition::ObjectTypeDefinition(object_type) = def {
+                assert_eq!(object_type.name().unwrap().text(), "ProductDimension");
+                for field_def in object_type.fields_definition().unwrap().field_definitions() {
+                    println!("{}", field_def.name().unwrap().text()); // size weight
+                }
             }
         }
     }

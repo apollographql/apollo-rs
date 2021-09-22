@@ -247,8 +247,7 @@ DirectiveDefinition =
   Description? 'directive' '@' Name ArgumentsDefinition? 'on' DirectiveLocations
 
 DirectiveLocations =
-  '|'? DirectiveLocation
-  | DirectiveLocations '|' DirectiveLocation
+  DirectiveLocation*
 
 DirectiveLocation =
   'QUERY'
