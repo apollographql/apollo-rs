@@ -8,7 +8,7 @@ use crate::{Parser, SyntaxKind, TokenKind, T};
 ///     Description[opt] type Name ImplementsInterfaces[opt] Directives[Const][opt] FieldsDefinition[opt]
 /// ```
 pub(crate) fn object_type_definition(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::OBJECT_TYPE_DEFINITION);
+    let _g = p.start_node(SyntaxKind::OBJECT_TYPE_DEFINITION);
     p.bump(SyntaxKind::type_KW);
 
     match p.peek() {
@@ -41,7 +41,7 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
 ///     extend type Name ImplementsInterfaces
 /// ```
 pub(crate) fn object_type_extension(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::OBJECT_TYPE_EXTENSION);
+    let _g = p.start_node(SyntaxKind::OBJECT_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
     p.bump(SyntaxKind::type_KW);
 
@@ -83,7 +83,7 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
 ///     ImplementsInterfaces & NamedType
 /// ```
 pub(crate) fn implements_interfaces(p: &mut Parser, is_interfaces: bool) {
-    let _guard = p.start_node(SyntaxKind::IMPLEMENTS_INTERFACES);
+    let _g = p.start_node(SyntaxKind::IMPLEMENTS_INTERFACES);
     p.bump(SyntaxKind::implements_KW);
 
     match p.peek() {
@@ -119,36 +119,54 @@ mod test {
               picture: Url
             }",
             r#"
-            - DOCUMENT@0..44
-                - OBJECT_TYPE_DEFINITION@0..44
-                    - type_KW@0..4 "type"
-                    - NAME@4..10
-                        - IDENT@4..10 "Person"
-                    - IMPLEMENTS_INTERFACES@10..25
-                        - implements_KW@10..20 "implements"
-                        - NAME@20..25
-                            - IDENT@20..25 "Human"
-                    - FIELDS_DEFINITION@25..44
-                        - L_CURLY@25..26 "{"
-                        - FIELD_DEFINITION@26..31
-                            - NAME@26..30
-                                - IDENT@26..30 "name"
-                            - COLON@30..31 ":"
-                            - TYPE@31..31
-                                - NAMED_TYPE@31..31
-                        - FIELD_DEFINITION@31..35
-                            - NAME@31..34
-                                - IDENT@31..34 "age"
-                            - COLON@34..35 ":"
-                            - TYPE@35..35
-                                - NAMED_TYPE@35..35
-                        - FIELD_DEFINITION@35..43
-                            - NAME@35..42
-                                - IDENT@35..42 "picture"
-                            - COLON@42..43 ":"
-                            - TYPE@43..43
-                                - NAMED_TYPE@43..43
-                        - R_CURLY@43..44 "}"
+            - DOCUMENT@0..134
+                - WHITESPACE@0..13 "\n            "
+                - OBJECT_TYPE_DEFINITION@13..134
+                    - type_KW@13..17 "type"
+                    - WHITESPACE@17..18 " "
+                    - NAME@18..25
+                        - IDENT@18..24 "Person"
+                        - WHITESPACE@24..25 " "
+                    - IMPLEMENTS_INTERFACES@25..42
+                        - implements_KW@25..35 "implements"
+                        - WHITESPACE@35..36 " "
+                        - NAME@36..42
+                            - IDENT@36..41 "Human"
+                            - WHITESPACE@41..42 " "
+                    - FIELDS_DEFINITION@42..134
+                        - L_CURLY@42..43 "{"
+                        - WHITESPACE@43..58 "\n              "
+                        - FIELD_DEFINITION@58..85
+                            - NAME@58..62
+                                - IDENT@58..62 "name"
+                            - COLON@62..63 ":"
+                            - WHITESPACE@63..64 " "
+                            - TYPE@64..85
+                                - WHITESPACE@64..79 "\n              "
+                                - NAMED_TYPE@79..85
+                                    - NAME@79..85
+                                        - IDENT@79..85 "String"
+                        - FIELD_DEFINITION@85..108
+                            - NAME@85..88
+                                - IDENT@85..88 "age"
+                            - COLON@88..89 ":"
+                            - WHITESPACE@89..90 " "
+                            - TYPE@90..108
+                                - WHITESPACE@90..105 "\n              "
+                                - NAMED_TYPE@105..108
+                                    - NAME@105..108
+                                        - IDENT@105..108 "Int"
+                        - FIELD_DEFINITION@108..133
+                            - NAME@108..115
+                                - IDENT@108..115 "picture"
+                            - COLON@115..116 ":"
+                            - WHITESPACE@116..117 " "
+                            - TYPE@117..133
+                                - WHITESPACE@117..130 "\n            "
+                                - NAMED_TYPE@130..133
+                                    - NAME@130..133
+                                        - IDENT@130..133 "Url"
+                        - R_CURLY@133..134 "}"
             "#,
         )
     }
@@ -163,42 +181,62 @@ mod test {
               picture: Url
             }",
             r#"
-            - DOCUMENT@0..61
-                - OBJECT_TYPE_EXTENSION@0..61
-                    - extend_KW@0..6 "extend"
-                    - type_KW@6..10 "type"
-                    - NAME@10..16
-                        - IDENT@10..16 "Person"
-                    - IMPLEMENTS_INTERFACES@16..31
-                        - implements_KW@16..26 "implements"
-                        - NAME@26..31
-                            - IDENT@26..31 "Human"
-                    - DIRECTIVES@31..42
-                        - DIRECTIVE@31..42
-                            - AT@31..32 "@"
-                            - NAME@32..42
-                                - IDENT@32..42 "deprecated"
-                    - FIELDS_DEFINITION@42..61
-                        - L_CURLY@42..43 "{"
-                        - FIELD_DEFINITION@43..48
-                            - NAME@43..47
-                                - IDENT@43..47 "name"
-                            - COLON@47..48 ":"
-                            - TYPE@48..48
-                                - NAMED_TYPE@48..48
-                        - FIELD_DEFINITION@48..52
-                            - NAME@48..51
-                                - IDENT@48..51 "age"
-                            - COLON@51..52 ":"
-                            - TYPE@52..52
-                                - NAMED_TYPE@52..52
-                        - FIELD_DEFINITION@52..60
-                            - NAME@52..59
-                                - IDENT@52..59 "picture"
-                            - COLON@59..60 ":"
-                            - TYPE@60..60
-                                - NAMED_TYPE@60..60
-                        - R_CURLY@60..61 "}"
+            - DOCUMENT@0..153
+                - WHITESPACE@0..13 "\n            "
+                - OBJECT_TYPE_EXTENSION@13..153
+                    - extend_KW@13..19 "extend"
+                    - WHITESPACE@19..20 " "
+                    - type_KW@20..24 "type"
+                    - WHITESPACE@24..25 " "
+                    - NAME@25..32
+                        - IDENT@25..31 "Person"
+                        - WHITESPACE@31..32 " "
+                    - IMPLEMENTS_INTERFACES@32..49
+                        - implements_KW@32..42 "implements"
+                        - WHITESPACE@42..43 " "
+                        - NAME@43..49
+                            - IDENT@43..48 "Human"
+                            - WHITESPACE@48..49 " "
+                    - DIRECTIVES@49..61
+                        - DIRECTIVE@49..61
+                            - AT@49..50 "@"
+                            - NAME@50..61
+                                - IDENT@50..60 "deprecated"
+                                - WHITESPACE@60..61 " "
+                    - FIELDS_DEFINITION@61..153
+                        - L_CURLY@61..62 "{"
+                        - WHITESPACE@62..77 "\n              "
+                        - FIELD_DEFINITION@77..104
+                            - NAME@77..81
+                                - IDENT@77..81 "name"
+                            - COLON@81..82 ":"
+                            - WHITESPACE@82..83 " "
+                            - TYPE@83..104
+                                - WHITESPACE@83..98 "\n              "
+                                - NAMED_TYPE@98..104
+                                    - NAME@98..104
+                                        - IDENT@98..104 "String"
+                        - FIELD_DEFINITION@104..127
+                            - NAME@104..107
+                                - IDENT@104..107 "age"
+                            - COLON@107..108 ":"
+                            - WHITESPACE@108..109 " "
+                            - TYPE@109..127
+                                - WHITESPACE@109..124 "\n              "
+                                - NAMED_TYPE@124..127
+                                    - NAME@124..127
+                                        - IDENT@124..127 "Int"
+                        - FIELD_DEFINITION@127..152
+                            - NAME@127..134
+                                - IDENT@127..134 "picture"
+                            - COLON@134..135 ":"
+                            - WHITESPACE@135..136 " "
+                            - TYPE@136..152
+                                - WHITESPACE@136..149 "\n            "
+                                - NAMED_TYPE@149..152
+                                    - NAME@149..152
+                                        - IDENT@149..152 "Url"
+                        - R_CURLY@152..153 "}"
             "#,
         )
     }
@@ -213,31 +251,47 @@ mod test {
               picture: Url
             }",
             r#"
-            - DOCUMENT@0..29
-                - OBJECT_TYPE_EXTENSION@0..29
-                    - extend_KW@0..6 "extend"
-                    - type_KW@6..10 "type"
-                    - FIELDS_DEFINITION@10..29
-                        - L_CURLY@10..11 "{"
-                        - FIELD_DEFINITION@11..16
-                            - NAME@11..15
-                                - IDENT@11..15 "name"
-                            - COLON@15..16 ":"
-                            - TYPE@16..16
-                                - NAMED_TYPE@16..16
-                        - FIELD_DEFINITION@16..20
-                            - NAME@16..19
-                                - IDENT@16..19 "age"
-                            - COLON@19..20 ":"
-                            - TYPE@20..20
-                                - NAMED_TYPE@20..20
-                        - FIELD_DEFINITION@20..28
-                            - NAME@20..27
-                                - IDENT@20..27 "picture"
-                            - COLON@27..28 ":"
-                            - TYPE@28..28
-                                - NAMED_TYPE@28..28
-                        - R_CURLY@28..29 "}"
+            - DOCUMENT@0..117
+                - WHITESPACE@0..13 "\n            "
+                - OBJECT_TYPE_EXTENSION@13..117
+                    - extend_KW@13..19 "extend"
+                    - WHITESPACE@19..20 " "
+                    - type_KW@20..24 "type"
+                    - WHITESPACE@24..25 " "
+                    - FIELDS_DEFINITION@25..117
+                        - L_CURLY@25..26 "{"
+                        - WHITESPACE@26..41 "\n              "
+                        - FIELD_DEFINITION@41..68
+                            - NAME@41..45
+                                - IDENT@41..45 "name"
+                            - COLON@45..46 ":"
+                            - WHITESPACE@46..47 " "
+                            - TYPE@47..68
+                                - WHITESPACE@47..62 "\n              "
+                                - NAMED_TYPE@62..68
+                                    - NAME@62..68
+                                        - IDENT@62..68 "String"
+                        - FIELD_DEFINITION@68..91
+                            - NAME@68..71
+                                - IDENT@68..71 "age"
+                            - COLON@71..72 ":"
+                            - WHITESPACE@72..73 " "
+                            - TYPE@73..91
+                                - WHITESPACE@73..88 "\n              "
+                                - NAMED_TYPE@88..91
+                                    - NAME@88..91
+                                        - IDENT@88..91 "Int"
+                        - FIELD_DEFINITION@91..116
+                            - NAME@91..98
+                                - IDENT@91..98 "picture"
+                            - COLON@98..99 ":"
+                            - WHITESPACE@99..100 " "
+                            - TYPE@100..116
+                                - WHITESPACE@100..113 "\n            "
+                                - NAMED_TYPE@113..116
+                                    - NAME@113..116
+                                        - IDENT@113..116 "Url"
+                        - R_CURLY@116..117 "}"
             - ERROR@0:1 "expected a Name"
             "#,
         )
@@ -248,12 +302,14 @@ mod test {
         utils::check_ast(
             "extend type Person",
             r#"
-            - DOCUMENT@0..16
-                - OBJECT_TYPE_EXTENSION@0..16
+            - DOCUMENT@0..18
+                - OBJECT_TYPE_EXTENSION@0..18
                     - extend_KW@0..6 "extend"
-                    - type_KW@6..10 "type"
-                    - NAME@10..16
-                        - IDENT@10..16 "Person"
+                    - WHITESPACE@6..7 " "
+                    - type_KW@7..11 "type"
+                    - WHITESPACE@11..12 " "
+                    - NAME@12..18
+                        - IDENT@12..18 "Person"
             - ERROR@0:3 "expected an Implements Interface, Directives or a Fields Definition"
             "#,
         )

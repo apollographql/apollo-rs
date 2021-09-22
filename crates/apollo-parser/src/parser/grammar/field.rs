@@ -44,10 +44,12 @@ pub(crate) fn field(p: &mut Parser) {
 ///     { FieldDefinition[list] }
 /// ```
 pub(crate) fn fields_definition(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::FIELDS_DEFINITION);
+    let g = p.start_node(SyntaxKind::FIELDS_DEFINITION);
     p.bump(S!['{']);
     field_definition(p);
     p.expect(T!['}'], S!['}']);
+    g.finish_node();
+    p.bump_ignored();
 }
 
 /// See: https://spec.graphql.org/June2018/#FieldDefinition

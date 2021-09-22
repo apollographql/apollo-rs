@@ -12,10 +12,9 @@ pub(crate) fn selection_set(p: &mut Parser) {
         let guard = p.start_node(SyntaxKind::SELECTION_SET);
         p.bump(S!['{']);
         selection(p);
-        if let Some(T!['}']) = p.peek() {
-            p.bump(S!['}']);
-            guard.finish_node()
-        }
+        p.expect(T!['}'], S!['}']);
+        guard.finish_node();
+        p.bump_ignored();
     }
 }
 
@@ -70,39 +69,50 @@ mod test {
                 lion
             }",
             r#"
-            - DOCUMENT@0..38
-                - OPERATION_DEFINITION@0..38
-                    - SELECTION_SET@0..38
+            - DOCUMENT@0..189
+                - OPERATION_DEFINITION@0..189
+                    - SELECTION_SET@0..189
                         - L_CURLY@0..1 "{"
-                        - SELECTION@1..37
-                            - FIELD@1..11
-                                - ALIAS@1..8
-                                    - NAME@1..7
-                                        - IDENT@1..7 "animal"
-                                    - COLON@7..8 ":"
-                                - NAME@8..11
-                                    - IDENT@8..11 "cat"
-                            - FIELD@11..33
-                                - NAME@11..14
-                                    - IDENT@11..14 "dog"
-                                - SELECTION_SET@14..33
-                                    - L_CURLY@14..15 "{"
-                                    - SELECTION@15..32
-                                        - FIELD@15..32
-                                            - NAME@15..20
-                                                - IDENT@15..20 "panda"
-                                            - SELECTION_SET@20..32
-                                                - L_CURLY@20..21 "{"
-                                                - SELECTION@21..31
-                                                    - FIELD@21..31
-                                                        - NAME@21..31
-                                                            - IDENT@21..31 "anotherCat"
-                                                - R_CURLY@31..32 "}"
-                                    - R_CURLY@32..33 "}"
-                            - FIELD@33..37
-                                - NAME@33..37
-                                    - IDENT@33..37 "lion"
-                        - R_CURLY@37..38 "}"
+                        - WHITESPACE@1..18 "\n                "
+                        - SELECTION@18..188
+                            - FIELD@18..46
+                                - ALIAS@18..26
+                                    - NAME@18..24
+                                        - IDENT@18..24 "animal"
+                                    - COLON@24..25 ":"
+                                    - WHITESPACE@25..26 " "
+                                - NAME@26..46
+                                    - IDENT@26..29 "cat"
+                                    - WHITESPACE@29..46 "\n                "
+                            - FIELD@46..171
+                                - NAME@46..50
+                                    - IDENT@46..49 "dog"
+                                    - WHITESPACE@49..50 " "
+                                - SELECTION_SET@50..154
+                                    - L_CURLY@50..51 "{"
+                                    - WHITESPACE@51..72 "\n                    "
+                                    - SELECTION@72..153
+                                        - FIELD@72..153
+                                            - NAME@72..78
+                                                - IDENT@72..77 "panda"
+                                                - WHITESPACE@77..78 " "
+                                            - SELECTION_SET@78..136
+                                                - L_CURLY@78..79 "{"
+                                                - WHITESPACE@79..104 "\n                        "
+                                                - SELECTION@104..135
+                                                    - FIELD@104..135
+                                                        - NAME@104..135
+                                                            - IDENT@104..114 "anotherCat"
+                                                            - WHITESPACE@114..135 "\n                    "
+                                                - R_CURLY@135..136 "}"
+                                            - WHITESPACE@136..153 "\n                "
+                                    - R_CURLY@153..154 "}"
+                                - WHITESPACE@154..171 "\n                "
+                            - FIELD@171..188
+                                - NAME@171..188
+                                    - IDENT@171..175 "lion"
+                                    - WHITESPACE@175..188 "\n            "
+                        - R_CURLY@188..189 "}"
             "#,
         )
     }
@@ -118,37 +128,47 @@ mod test {
                 }
             }",
             r#"
-            - DOCUMENT@0..38
-                - OPERATION_DEFINITION@0..38
-                    - SELECTION_SET@0..38
+            - DOCUMENT@0..144
+                - OPERATION_DEFINITION@0..144
+                    - SELECTION_SET@0..144
                         - L_CURLY@0..1 "{"
-                        - SELECTION@1..37
-                            - FIELD@1..4
-                                - NAME@1..4
-                                    - IDENT@1..4 "cat"
-                            - FIELD@4..7
-                                - NAME@4..7
-                                    - IDENT@4..7 "dog"
-                            - INLINE_FRAGMENT@7..37
-                                - SPREAD@7..10 "..."
-                                - TYPE_CONDITION@10..18
-                                    - on_KW@10..12 "on"
-                                    - NAMED_TYPE@12..18
-                                        - NAME@12..18
-                                            - IDENT@12..18 "Animal"
-                                - DIRECTIVES@18..26
-                                    - DIRECTIVE@18..26
-                                        - AT@18..19 "@"
-                                        - NAME@19..26
-                                            - IDENT@19..26 "example"
-                                - SELECTION_SET@26..37
-                                    - L_CURLY@26..27 "{"
-                                    - SELECTION@27..36
-                                        - FIELD@27..36
-                                            - NAME@27..36
-                                                - IDENT@27..36 "treatKind"
-                                    - R_CURLY@36..37 "}"
-                        - R_CURLY@37..38 "}"
+                        - WHITESPACE@1..18 "\n                "
+                        - SELECTION@18..143
+                            - FIELD@18..38
+                                - NAME@18..38
+                                    - IDENT@18..21 "cat"
+                                    - WHITESPACE@21..38 "\n                "
+                            - FIELD@38..58
+                                - NAME@38..58
+                                    - IDENT@38..41 "dog"
+                                    - WHITESPACE@41..58 "\n                "
+                            - INLINE_FRAGMENT@58..143
+                                - SPREAD@58..61 "..."
+                                - WHITESPACE@61..62 " "
+                                - TYPE_CONDITION@62..72
+                                    - on_KW@62..64 "on"
+                                    - WHITESPACE@64..65 " "
+                                    - NAMED_TYPE@65..72
+                                        - NAME@65..72
+                                            - IDENT@65..71 "Animal"
+                                            - WHITESPACE@71..72 " "
+                                - DIRECTIVES@72..81
+                                    - DIRECTIVE@72..81
+                                        - AT@72..73 "@"
+                                        - NAME@73..81
+                                            - IDENT@73..80 "example"
+                                            - WHITESPACE@80..81 " "
+                                - SELECTION_SET@81..130
+                                    - L_CURLY@81..82 "{"
+                                    - WHITESPACE@82..103 "\n                    "
+                                    - SELECTION@103..129
+                                        - FIELD@103..129
+                                            - NAME@103..129
+                                                - IDENT@103..112 "treatKind"
+                                                - WHITESPACE@112..129 "\n                "
+                                    - R_CURLY@129..130 "}"
+                                - WHITESPACE@130..143 "\n            "
+                        - R_CURLY@143..144 "}"
             "#,
         )
     }
@@ -162,23 +182,27 @@ mod test {
                 ...snackSelection
             }",
             r#"
-            - DOCUMENT@0..27
-                - OPERATION_DEFINITION@0..27
-                    - SELECTION_SET@0..27
+            - DOCUMENT@0..91
+                - OPERATION_DEFINITION@0..91
+                    - SELECTION_SET@0..91
                         - L_CURLY@0..1 "{"
-                        - SELECTION@1..26
-                            - FIELD@1..4
-                                - NAME@1..4
-                                    - IDENT@1..4 "pet"
-                            - FIELD@4..9
-                                - NAME@4..9
-                                    - IDENT@4..9 "treat"
-                            - FRAGMENT_SPREAD@9..26
-                                - SPREAD@9..12 "..."
-                                - FRAGMENT_NAME@12..26
-                                    - NAME@12..26
-                                        - IDENT@12..26 "snackSelection"
-                        - R_CURLY@26..27 "}"
+                        - WHITESPACE@1..18 "\n                "
+                        - SELECTION@18..90
+                            - FIELD@18..38
+                                - NAME@18..38
+                                    - IDENT@18..21 "pet"
+                                    - WHITESPACE@21..38 "\n                "
+                            - FIELD@38..60
+                                - NAME@38..60
+                                    - IDENT@38..43 "treat"
+                                    - WHITESPACE@43..60 "\n                "
+                            - FRAGMENT_SPREAD@60..90
+                                - SPREAD@60..63 "..."
+                                - FRAGMENT_NAME@63..90
+                                    - NAME@63..90
+                                        - IDENT@63..77 "snackSelection"
+                                        - WHITESPACE@77..90 "\n            "
+                        - R_CURLY@90..91 "}"
             "#,
         )
     }

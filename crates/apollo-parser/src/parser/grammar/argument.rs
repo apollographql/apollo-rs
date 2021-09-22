@@ -40,13 +40,9 @@ pub(crate) fn arguments(p: &mut Parser) {
     let guard = p.start_node(SyntaxKind::ARGUMENTS);
     p.bump(S!['(']);
     argument(p, false);
-    match p.peek() {
-        Some(T![')']) => {
-            p.bump(S![')']);
-            guard.finish_node();
-        }
-        _ => p.err("expected closing ')'"),
-    }
+    p.expect(T![')'], S![')']);
+    guard.finish_node();
+    p.bump_ignored();
 }
 
 /// See: https://spec.graphql.org/June2018/#ArgumentsDefinition
@@ -59,11 +55,7 @@ pub(crate) fn arguments_definition(p: &mut Parser) {
     let guard = p.start_node(SyntaxKind::ARGUMENTS);
     p.bump(S!['(']);
     input::input_value_definition(p, false);
-    match p.peek() {
-        Some(T![')']) => {
-            p.bump(S![')']);
-            guard.finish_node();
-        }
-        _ => p.err("expected closing ')'"),
-    }
+    p.expect(T![')'], S![')']);
+    guard.finish_node();
+    p.bump_ignored();
 }

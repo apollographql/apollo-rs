@@ -42,52 +42,58 @@ impl fmt::Debug for Token {
 
         match &self.kind {
             TokenKind::Root => {
-                write!(f, "ROOT@{}:{}", start, end)
+                write!(f, "ROOT@{}:{} {:?}", start, end, self.data)
+            }
+            TokenKind::Whitespace => {
+                write!(f, "WHITESPACE@{}:{} {:?}", start, end, self.data)
+            }
+            TokenKind::Comment => {
+                write!(f, "COMMENT@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::Bang => {
-                write!(f, "BANG@{}:{}", start, end)
+                write!(f, "BANG@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::Dollar => {
-                write!(f, "DOLLAR@{}:{}", start, end)
+                write!(f, "DOLLAR@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::Spread => {
-                write!(f, "SPREAD@{}:{}", start, end)
+                write!(f, "SPREAD@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::Colon => {
-                write!(f, "COLON@{}:{}", start, end)
+                write!(f, "COLON@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::Comma => {
-                write!(f, "COMMA@{}:{}", start, end)
+                write!(f, "COMMA@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::Eq => {
-                write!(f, "EQ@{}:{}", start, end)
+                write!(f, "EQ@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::At => {
-                write!(f, "AT@{}:{}", start, end)
+                write!(f, "AT@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::LParen => {
-                write!(f, "L_PAREN@{}:{}", start, end)
+                write!(f, "L_PAREN@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::RParen => {
-                write!(f, "R_PAREN@{}:{}", start, end)
+                write!(f, "R_PAREN@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::LBracket => {
-                write!(f, "L_BRACKET@{}:{}", start, end)
+                write!(f, "L_BRACKET@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::RBracket => {
-                write!(f, "R_BRACKET@{}:{}", start, end)
+                write!(f, "R_BRACKET@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::LCurly => {
-                write!(f, "L_CURLY@{}:{}", start, end)
+                write!(f, "L_CURLY@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::RCurly => {
-                write!(f, "R_CURLY@{}:{}", start, end)
+                write!(f, "R_CURLY@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::Pipe => {
-                write!(f, "PIPE@{}:{}", start, end)
+                write!(f, "PIPE@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::Eof => {
-                write!(f, "EOF@{}:{}", start, end)
+                write!(f, "EOF@{}:{} {:?}", start, end, self.data)
             }
 
             // composite nodes

@@ -23,11 +23,6 @@ impl Lexer {
 
         while !input.is_empty() {
             let old_input = input;
-            // TODO: do not skip comment
-            // TODO: add comment to token kinds
-            // TODO: add parsing of comment to parser.rs
-            skip_ws(&mut input);
-            skip_comment(&mut input);
 
             if old_input.len() == input.len() {
                 let r = advance(&mut input);
@@ -92,6 +87,34 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
             }
 
             Ok(Token::new(TokenKind::StringValue, buf))
+        }
+        '#' => {
+            let mut buf = String::new();
+            buf.push(c);
+
+            while let Some(c) = chars.clone().next() {
+                if !is_line_terminator(c) {
+                    buf.push(chars.next().unwrap());
+                } else {
+                    break;
+                }
+            }
+
+            Ok(Token::new(TokenKind::Comment, buf))
+        }
+        c if is_whitespace(c) => {
+            let mut buf = String::new();
+            buf.push(c);
+
+            while let Some(c) = chars.clone().next() {
+                if is_whitespace(c) {
+                    buf.push(chars.next().unwrap());
+                } else {
+                    break;
+                }
+            }
+
+            Ok(Token::new(TokenKind::Whitespace, buf))
         }
         c if is_ident_char(c) => {
             let mut buf = String::new();
@@ -185,23 +208,16 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
     kind
 }
 
-fn skip_ws(input: &mut &str) {
-    *input = input.trim_start_matches(is_whitespace)
-}
-
-fn skip_comment(input: &mut &str) {
-    if input.starts_with('#') {
-        let idx = input.find('\n').map_or(input.len(), |it| it + 1);
-        *input = &input[idx..]
-    }
-}
-
 fn is_whitespace(c: char) -> bool {
-    matches!(c, ' ' | '\t' | '\n')
+    matches!(c, ' ' | '\t' | '\n' | '\r')
 }
 
 fn is_ident_char(c: char) -> bool {
     matches!(c, 'a'..='z' | 'A'..='Z' | '_')
+}
+
+fn is_line_terminator(c: char) -> bool {
+    matches!(c, '\n' | '\r')
 }
 
 fn is_digit_char(c: char) -> bool {
@@ -226,8 +242,8 @@ mod test {
     #[test]
     fn tests() {
         let gql_1 = r#"
-"description"
-directive @example("another description" field: value) on FIELD"#;
+{ foo(a: [0x10]) }
+"#;
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
     }

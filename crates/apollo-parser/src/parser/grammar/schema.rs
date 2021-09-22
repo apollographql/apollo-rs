@@ -8,7 +8,7 @@ use crate::{Parser, SyntaxKind, S, T};
 ///    schema Directives { OperationTypeDefinition }
 /// ```
 pub(crate) fn schema_definition(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::SCHEMA_DEFINITION);
+    let _g = p.start_node(SyntaxKind::SCHEMA_DEFINITION);
     p.bump(SyntaxKind::schema_KW);
 
     if let Some(T![@]) = p.peek() {
@@ -32,7 +32,7 @@ pub(crate) fn schema_definition(p: &mut Parser) {
 ///     extend schema Directives[Const]
 /// ```
 pub(crate) fn schema_extension(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::SCHEMA_EXTENSION);
+    let _g = p.start_node(SyntaxKind::SCHEMA_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
     p.bump(SyntaxKind::schema_KW);
 
@@ -61,33 +61,41 @@ mod test {
                 subscription: MySubscriptionRootType
             }",
             r#"
-            - DOCUMENT@0..92
-                - SCHEMA_DEFINITION@0..92
+            - DOCUMENT@0..160
+                - SCHEMA_DEFINITION@0..160
                     - schema_KW@0..6 "schema"
-                    - L_CURLY@6..7 "{"
-                    - OPERATION_TYPE_DEFINITION@7..28
-                        - OPERATION_TYPE@7..12
-                            - query_KW@7..12 "query"
-                        - COLON@12..13 ":"
-                        - NAMED_TYPE@13..28
-                            - NAME@13..28
-                                - IDENT@13..28 "MyQueryRootType"
-                    - OPERATION_TYPE_DEFINITION@28..55
-                        - OPERATION_TYPE@28..36
-                            - mutation_KW@28..36 "mutation"
-                        - COLON@36..37 ":"
-                        - NAMED_TYPE@37..55
-                            - NAME@37..55
-                                - IDENT@37..55 "MyMutationRootType"
-                    - COMMA@55..56 ","
-                    - OPERATION_TYPE_DEFINITION@56..91
-                        - OPERATION_TYPE@56..68
-                            - subscription_KW@56..68 "subscription"
-                        - COLON@68..69 ":"
-                        - NAMED_TYPE@69..91
-                            - NAME@69..91
-                                - IDENT@69..91 "MySubscriptionRootType"
-                    - R_CURLY@91..92 "}"
+                    - WHITESPACE@6..7 " "
+                    - L_CURLY@7..8 "{"
+                    - WHITESPACE@8..25 "\n                "
+                    - OPERATION_TYPE_DEFINITION@25..64
+                        - OPERATION_TYPE@25..30
+                            - query_KW@25..30 "query"
+                        - COLON@30..31 ":"
+                        - WHITESPACE@31..32 " "
+                        - NAMED_TYPE@32..64
+                            - NAME@32..64
+                                - IDENT@32..47 "MyQueryRootType"
+                                - WHITESPACE@47..64 "\n                "
+                    - OPERATION_TYPE_DEFINITION@64..92
+                        - OPERATION_TYPE@64..72
+                            - mutation_KW@64..72 "mutation"
+                        - COLON@72..73 ":"
+                        - WHITESPACE@73..74 " "
+                        - NAMED_TYPE@74..92
+                            - NAME@74..92
+                                - IDENT@74..92 "MyMutationRootType"
+                    - COMMA@92..93 ","
+                    - WHITESPACE@93..110 "\n                "
+                    - OPERATION_TYPE_DEFINITION@110..159
+                        - OPERATION_TYPE@110..122
+                            - subscription_KW@110..122 "subscription"
+                        - COLON@122..123 ":"
+                        - WHITESPACE@123..124 " "
+                        - NAMED_TYPE@124..159
+                            - NAME@124..159
+                                - IDENT@124..146 "MySubscriptionRootType"
+                                - WHITESPACE@146..159 "\n            "
+                    - R_CURLY@159..160 "}"
             "#,
         );
     }
@@ -99,28 +107,35 @@ mod test {
                 query: MyExtendedQueryType
             }",
             r#"
-            - DOCUMENT@0..52
-                - SCHEMA_EXTENSION@0..52
+            - DOCUMENT@0..87
+                - SCHEMA_EXTENSION@0..87
                     - extend_KW@0..6 "extend"
-                    - schema_KW@6..12 "schema"
-                    - DIRECTIVES@12..25
-                        - DIRECTIVE@12..17
-                            - AT@12..13 "@"
-                            - NAME@13..17
-                                - IDENT@13..17 "skip"
-                        - DIRECTIVE@17..25
-                            - AT@17..18 "@"
-                            - NAME@18..25
-                                - IDENT@18..25 "example"
-                    - L_CURLY@25..26 "{"
-                    - OPERATION_TYPE_DEFINITION@26..51
-                        - OPERATION_TYPE@26..31
-                            - query_KW@26..31 "query"
-                        - COLON@31..32 ":"
-                        - NAMED_TYPE@32..51
-                            - NAME@32..51
-                                - IDENT@32..51 "MyExtendedQueryType"
-                    - R_CURLY@51..52 "}"
+                    - WHITESPACE@6..7 " "
+                    - schema_KW@7..13 "schema"
+                    - WHITESPACE@13..14 " "
+                    - DIRECTIVES@14..29
+                        - DIRECTIVE@14..20
+                            - AT@14..15 "@"
+                            - NAME@15..20
+                                - IDENT@15..19 "skip"
+                                - WHITESPACE@19..20 " "
+                        - DIRECTIVE@20..29
+                            - AT@20..21 "@"
+                            - NAME@21..29
+                                - IDENT@21..28 "example"
+                                - WHITESPACE@28..29 " "
+                    - L_CURLY@29..30 "{"
+                    - WHITESPACE@30..47 "\n                "
+                    - OPERATION_TYPE_DEFINITION@47..86
+                        - OPERATION_TYPE@47..52
+                            - query_KW@47..52 "query"
+                        - COLON@52..53 ":"
+                        - WHITESPACE@53..54 " "
+                        - NAMED_TYPE@54..86
+                            - NAME@54..86
+                                - IDENT@54..73 "MyExtendedQueryType"
+                                - WHITESPACE@73..86 "\n            "
+                    - R_CURLY@86..87 "}"
             "#,
         );
     }

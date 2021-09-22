@@ -8,7 +8,7 @@ use crate::{Parser, SyntaxKind, TokenKind, T};
 ///     Description[opt] scalar Name Directives[Const][opt]
 /// ```
 pub(crate) fn scalar_type_definition(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::SCALAR_TYPE_DEFINITION);
+    let _g = p.start_node(SyntaxKind::SCALAR_TYPE_DEFINITION);
     p.bump(SyntaxKind::scalar_KW);
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
@@ -27,7 +27,7 @@ pub(crate) fn scalar_type_definition(p: &mut Parser) {
 ///     extend scalar Name Directives[const]
 /// ```
 pub(crate) fn scalar_type_extension(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::SCALAR_TYPE_EXTENSION);
+    let _g = p.start_node(SyntaxKind::SCALAR_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
     p.bump(SyntaxKind::scalar_KW);
     match p.peek() {
@@ -52,16 +52,20 @@ mod test {
             scalar Time @deprecated
             ",
             r#"
-            - DOCUMENT@0..21
-                - SCALAR_TYPE_DEFINITION@0..21
-                    - scalar_KW@0..6 "scalar"
-                    - NAME@6..10
-                        - IDENT@6..10 "Time"
-                    - DIRECTIVES@10..21
-                        - DIRECTIVE@10..21
-                            - AT@10..11 "@"
-                            - NAME@11..21
-                                - IDENT@11..21 "deprecated"
+            - DOCUMENT@0..49
+                - WHITESPACE@0..13 "\n            "
+                - SCALAR_TYPE_DEFINITION@13..49
+                    - scalar_KW@13..19 "scalar"
+                    - WHITESPACE@19..20 " "
+                    - NAME@20..25
+                        - IDENT@20..24 "Time"
+                        - WHITESPACE@24..25 " "
+                    - DIRECTIVES@25..49
+                        - DIRECTIVE@25..49
+                            - AT@25..26 "@"
+                            - NAME@26..49
+                                - IDENT@26..36 "deprecated"
+                                - WHITESPACE@36..49 "\n            "
             "#,
         )
     }
@@ -73,14 +77,17 @@ mod test {
             scalar @deprecated
             ",
             r#"
-            - DOCUMENT@0..17
-                - SCALAR_TYPE_DEFINITION@0..17
-                    - scalar_KW@0..6 "scalar"
-                    - DIRECTIVES@6..17
-                        - DIRECTIVE@6..17
-                            - AT@6..7 "@"
-                            - NAME@7..17
-                                - IDENT@7..17 "deprecated"
+            - DOCUMENT@0..44
+                - WHITESPACE@0..13 "\n            "
+                - SCALAR_TYPE_DEFINITION@13..44
+                    - scalar_KW@13..19 "scalar"
+                    - WHITESPACE@19..20 " "
+                    - DIRECTIVES@20..44
+                        - DIRECTIVE@20..44
+                            - AT@20..21 "@"
+                            - NAME@21..44
+                                - IDENT@21..31 "deprecated"
+                                - WHITESPACE@31..44 "\n            "
             - ERROR@0:1 "expected a Name"
             "#,
         )
@@ -93,17 +100,22 @@ mod test {
             extend scalar Time @deprecated
             ",
             r#"
-            - DOCUMENT@0..27
-                - SCALAR_TYPE_EXTENSION@0..27
-                    - extend_KW@0..6 "extend"
-                    - scalar_KW@6..12 "scalar"
-                    - NAME@12..16
-                        - IDENT@12..16 "Time"
-                    - DIRECTIVES@16..27
-                        - DIRECTIVE@16..27
-                            - AT@16..17 "@"
-                            - NAME@17..27
-                                - IDENT@17..27 "deprecated"
+            - DOCUMENT@0..56
+                - WHITESPACE@0..13 "\n            "
+                - SCALAR_TYPE_EXTENSION@13..56
+                    - extend_KW@13..19 "extend"
+                    - WHITESPACE@19..20 " "
+                    - scalar_KW@20..26 "scalar"
+                    - WHITESPACE@26..27 " "
+                    - NAME@27..32
+                        - IDENT@27..31 "Time"
+                        - WHITESPACE@31..32 " "
+                    - DIRECTIVES@32..56
+                        - DIRECTIVE@32..56
+                            - AT@32..33 "@"
+                            - NAME@33..56
+                                - IDENT@33..43 "deprecated"
+                                - WHITESPACE@43..56 "\n            "
             "#,
         )
     }
@@ -115,15 +127,19 @@ mod test {
             extend scalar @deprecated
             ",
             r#"
-            - DOCUMENT@0..23
-                - SCALAR_TYPE_EXTENSION@0..23
-                    - extend_KW@0..6 "extend"
-                    - scalar_KW@6..12 "scalar"
-                    - DIRECTIVES@12..23
-                        - DIRECTIVE@12..23
-                            - AT@12..13 "@"
-                            - NAME@13..23
-                                - IDENT@13..23 "deprecated"
+            - DOCUMENT@0..51
+                - WHITESPACE@0..13 "\n            "
+                - SCALAR_TYPE_EXTENSION@13..51
+                    - extend_KW@13..19 "extend"
+                    - WHITESPACE@19..20 " "
+                    - scalar_KW@20..26 "scalar"
+                    - WHITESPACE@26..27 " "
+                    - DIRECTIVES@27..51
+                        - DIRECTIVE@27..51
+                            - AT@27..28 "@"
+                            - NAME@28..51
+                                - IDENT@28..38 "deprecated"
+                                - WHITESPACE@38..51 "\n            "
             - ERROR@0:1 "expected a Name"
             "#,
         )

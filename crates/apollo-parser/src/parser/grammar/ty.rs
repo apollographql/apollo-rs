@@ -18,7 +18,7 @@ use crate::parser::grammar::name;
 // NOTE(lrlna): Because Type cannot be parsed in a typical LR fashion, the
 // following parsing rule does not follow the same pattern as all other parsing
 // rules in this library. The parent node type is determined based on what its
-// last possible is a NonNullType.
+// last possible NonNullType.
 //
 // To make this work, we first collect all types in a double ended queue, and
 // unwrap them once the last possible child has been parsed. Nodes are then
@@ -60,8 +60,8 @@ pub(crate) fn ty(p: &mut Parser) {
     fn process(types: &mut VecDeque<(SyntaxKind, Token)>, p: &mut Parser) {
         match types.pop_front() {
             Some((kind @ S!['['], token)) => {
-                let _ty_guard = p.start_node(SyntaxKind::TYPE);
-                let _list_guard = p.start_node(SyntaxKind::LIST_TYPE);
+                let _ty_g = p.start_node(SyntaxKind::TYPE);
+                let _list_g = p.start_node(SyntaxKind::LIST_TYPE);
                 p.push_ast(kind, token);
                 process(types, p);
                 if let Some((_kind @ S![']'], _token)) = peek(types) {
@@ -69,13 +69,22 @@ pub(crate) fn ty(p: &mut Parser) {
                 }
             }
             Some((kind @ SyntaxKind::NON_NULL_TYPE, _)) => {
-                let _ty_guard = p.start_node(SyntaxKind::TYPE);
-                let _non_null_guard = p.start_node(kind);
+                let _ty_g = p.start_node(SyntaxKind::TYPE);
+                let _non_null_g = p.start_node(kind);
                 process(types, p);
             }
-            Some((SyntaxKind::NAMED_TYPE, _)) => {
-                let _ty_guard = p.start_node(SyntaxKind::TYPE);
-                p.start_node(SyntaxKind::NAMED_TYPE).finish_node();
+            // Cannot use `name::name` or `named_type` function here as we
+            // cannot bump from this function. Instead, the process function has
+            // already popped Tokens off the token vec, and we are simply adding
+            // to the AST.
+            Some((SyntaxKind::NAMED_TYPE, token)) => {
+                let _ty_g = p.start_node(SyntaxKind::TYPE);
+                let named_g = p.start_node(SyntaxKind::NAMED_TYPE);
+                let name_g = p.start_node(SyntaxKind::NAME);
+                name::validate_name(token.data().to_string(), p);
+                p.push_ast(SyntaxKind::IDENT, token);
+                name_g.finish_node();
+                named_g.finish_node();
             }
             Some((kind @ S![']'], token)) => {
                 p.push_ast(kind, token);
@@ -92,7 +101,7 @@ pub(crate) fn ty(p: &mut Parser) {
 ///     Name
 /// ```
 pub(crate) fn named_type(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::NAMED_TYPE);
+    let _g = p.start_node(SyntaxKind::NAMED_TYPE);
     name::name(p);
 }
 

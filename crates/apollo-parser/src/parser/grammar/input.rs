@@ -8,7 +8,7 @@ use crate::{Parser, SyntaxKind, TokenKind, S, T};
 ///     Description[opt] input Name Directives[Const][opt] InputFieldsDefinition[opt]
 /// ```
 pub(crate) fn input_object_type_definition(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::INPUT_OBJECT_TYPE_DEFINITION);
+    let _g = p.start_node(SyntaxKind::INPUT_OBJECT_TYPE_DEFINITION);
     p.bump(SyntaxKind::input_KW);
 
     match p.peek() {
@@ -33,7 +33,7 @@ pub(crate) fn input_object_type_definition(p: &mut Parser) {
 ///     extend input Name Directives[Const]
 /// ```
 pub(crate) fn input_object_type_extension(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::INPUT_OBJECT_TYPE_EXTENSION);
+    let _g = p.start_node(SyntaxKind::INPUT_OBJECT_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
     p.bump(SyntaxKind::input_KW);
 
@@ -66,10 +66,12 @@ pub(crate) fn input_object_type_extension(p: &mut Parser) {
 ///     { InputValueDefinition[list] }
 /// ```
 pub(crate) fn input_fields_definition(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::INPUT_FIELDS_DEFINITION);
+    let g = p.start_node(SyntaxKind::INPUT_FIELDS_DEFINITION);
     p.bump(S!['{']);
     input_value_definition(p, false);
     p.expect(T!['}'], S!['}']);
+    g.finish_node();
+    p.bump_ignored();
 }
 
 /// See: https://spec.graphql.org/June2018/#InputValueDefinition
@@ -123,28 +125,39 @@ mod test {
               b: Int!
             }",
             r#"
-            - DOCUMENT@0..29
-                - INPUT_OBJECT_TYPE_DEFINITION@0..29
+            - DOCUMENT@0..85
+                - INPUT_OBJECT_TYPE_DEFINITION@0..85
                     - input_KW@0..5 "input"
-                    - NAME@5..23
-                        - IDENT@5..23 "ExampleInputObject"
-                    - INPUT_FIELDS_DEFINITION@23..29
-                        - L_CURLY@23..24 "{"
-                        - INPUT_VALUE_DEFINITION@24..26
-                            - NAME@24..25
-                                - IDENT@24..25 "a"
-                            - COLON@25..26 ":"
-                            - TYPE@26..26
-                                - NAMED_TYPE@26..26
-                        - INPUT_VALUE_DEFINITION@26..28
-                            - NAME@26..27
-                                - IDENT@26..27 "b"
-                            - COLON@27..28 ":"
-                            - TYPE@28..28
-                                - NON_NULL_TYPE@28..28
-                                    - TYPE@28..28
-                                        - NAMED_TYPE@28..28
-                        - R_CURLY@28..29 "}"
+                    - WHITESPACE@5..6 " "
+                    - NAME@6..25
+                        - IDENT@6..24 "ExampleInputObject"
+                        - WHITESPACE@24..25 " "
+                    - INPUT_FIELDS_DEFINITION@25..85
+                        - L_CURLY@25..26 "{"
+                        - WHITESPACE@26..41 "\n              "
+                        - INPUT_VALUE_DEFINITION@41..65
+                            - NAME@41..42
+                                - IDENT@41..42 "a"
+                            - COLON@42..43 ":"
+                            - WHITESPACE@43..44 " "
+                            - TYPE@44..65
+                                - WHITESPACE@44..59 "\n              "
+                                - NAMED_TYPE@59..65
+                                    - NAME@59..65
+                                        - IDENT@59..65 "String"
+                        - INPUT_VALUE_DEFINITION@65..84
+                            - NAME@65..66
+                                - IDENT@65..66 "b"
+                            - COLON@66..67 ":"
+                            - WHITESPACE@67..68 " "
+                            - TYPE@68..84
+                                - WHITESPACE@68..81 "\n            "
+                                - NON_NULL_TYPE@81..84
+                                    - TYPE@81..84
+                                        - NAMED_TYPE@81..84
+                                            - NAME@81..84
+                                                - IDENT@81..84 "Int"
+                        - R_CURLY@84..85 "}"
             "#,
         )
     }
@@ -157,26 +170,36 @@ mod test {
               b: Int!
             }",
             r#"
-            - DOCUMENT@0..11
-                - INPUT_OBJECT_TYPE_DEFINITION@0..11
+            - DOCUMENT@0..66
+                - INPUT_OBJECT_TYPE_DEFINITION@0..66
                     - input_KW@0..5 "input"
-                    - INPUT_FIELDS_DEFINITION@5..11
-                        - L_CURLY@5..6 "{"
-                        - INPUT_VALUE_DEFINITION@6..8
-                            - NAME@6..7
-                                - IDENT@6..7 "a"
-                            - COLON@7..8 ":"
-                            - TYPE@8..8
-                                - NAMED_TYPE@8..8
-                        - INPUT_VALUE_DEFINITION@8..10
-                            - NAME@8..9
-                                - IDENT@8..9 "b"
-                            - COLON@9..10 ":"
-                            - TYPE@10..10
-                                - NON_NULL_TYPE@10..10
-                                    - TYPE@10..10
-                                        - NAMED_TYPE@10..10
-                        - R_CURLY@10..11 "}"
+                    - WHITESPACE@5..6 " "
+                    - INPUT_FIELDS_DEFINITION@6..66
+                        - L_CURLY@6..7 "{"
+                        - WHITESPACE@7..22 "\n              "
+                        - INPUT_VALUE_DEFINITION@22..46
+                            - NAME@22..23
+                                - IDENT@22..23 "a"
+                            - COLON@23..24 ":"
+                            - WHITESPACE@24..25 " "
+                            - TYPE@25..46
+                                - WHITESPACE@25..40 "\n              "
+                                - NAMED_TYPE@40..46
+                                    - NAME@40..46
+                                        - IDENT@40..46 "String"
+                        - INPUT_VALUE_DEFINITION@46..65
+                            - NAME@46..47
+                                - IDENT@46..47 "b"
+                            - COLON@47..48 ":"
+                            - WHITESPACE@48..49 " "
+                            - TYPE@49..65
+                                - WHITESPACE@49..62 "\n            "
+                                - NON_NULL_TYPE@62..65
+                                    - TYPE@62..65
+                                        - NAMED_TYPE@62..65
+                                            - NAME@62..65
+                                                - IDENT@62..65 "Int"
+                        - R_CURLY@65..66 "}"
             - ERROR@0:1 "expected a Name"
             "#,
         )
@@ -187,14 +210,16 @@ mod test {
         utils::check_ast(
             "input ExampleInputObject {}",
             r#"
-            - DOCUMENT@0..25
-                - INPUT_OBJECT_TYPE_DEFINITION@0..25
+            - DOCUMENT@0..27
+                - INPUT_OBJECT_TYPE_DEFINITION@0..27
                     - input_KW@0..5 "input"
-                    - NAME@5..23
-                        - IDENT@5..23 "ExampleInputObject"
-                    - INPUT_FIELDS_DEFINITION@23..25
-                        - L_CURLY@23..24 "{"
-                        - R_CURLY@24..25 "}"
+                    - WHITESPACE@5..6 " "
+                    - NAME@6..25
+                        - IDENT@6..24 "ExampleInputObject"
+                        - WHITESPACE@24..25 " "
+                    - INPUT_FIELDS_DEFINITION@25..27
+                        - L_CURLY@25..26 "{"
+                        - R_CURLY@26..27 "}"
             - ERROR@0:1 "expected an Input Value Definition"
             "#,
         )
@@ -207,26 +232,35 @@ mod test {
               a: String
             }",
             r#"
-            - DOCUMENT@0..38
-                - INPUT_OBJECT_TYPE_EXTENSION@0..38
+            - DOCUMENT@0..77
+                - INPUT_OBJECT_TYPE_EXTENSION@0..77
                     - extend_KW@0..6 "extend"
-                    - input_KW@6..11 "input"
-                    - NAME@11..29
-                        - IDENT@11..29 "ExampleInputObject"
-                    - DIRECTIVES@29..34
-                        - DIRECTIVE@29..34
-                            - AT@29..30 "@"
-                            - NAME@30..34
-                                - IDENT@30..34 "skip"
-                    - INPUT_FIELDS_DEFINITION@34..38
-                        - L_CURLY@34..35 "{"
-                        - INPUT_VALUE_DEFINITION@35..37
-                            - NAME@35..36
-                                - IDENT@35..36 "a"
-                            - COLON@36..37 ":"
-                            - TYPE@37..37
-                                - NAMED_TYPE@37..37
-                        - R_CURLY@37..38 "}"
+                    - WHITESPACE@6..7 " "
+                    - input_KW@7..12 "input"
+                    - WHITESPACE@12..13 " "
+                    - NAME@13..32
+                        - IDENT@13..31 "ExampleInputObject"
+                        - WHITESPACE@31..32 " "
+                    - DIRECTIVES@32..38
+                        - DIRECTIVE@32..38
+                            - AT@32..33 "@"
+                            - NAME@33..38
+                                - IDENT@33..37 "skip"
+                                - WHITESPACE@37..38 " "
+                    - INPUT_FIELDS_DEFINITION@38..77
+                        - L_CURLY@38..39 "{"
+                        - WHITESPACE@39..54 "\n              "
+                        - INPUT_VALUE_DEFINITION@54..76
+                            - NAME@54..55
+                                - IDENT@54..55 "a"
+                            - COLON@55..56 ":"
+                            - WHITESPACE@56..57 " "
+                            - TYPE@57..76
+                                - WHITESPACE@57..70 "\n            "
+                                - NAMED_TYPE@70..76
+                                    - NAME@70..76
+                                        - IDENT@70..76 "String"
+                        - R_CURLY@76..77 "}"
             "#,
         )
     }
@@ -238,19 +272,26 @@ mod test {
               a: String
             }",
             r#"
-            - DOCUMENT@0..15
-                - INPUT_OBJECT_TYPE_EXTENSION@0..15
+            - DOCUMENT@0..52
+                - INPUT_OBJECT_TYPE_EXTENSION@0..52
                     - extend_KW@0..6 "extend"
-                    - input_KW@6..11 "input"
-                    - INPUT_FIELDS_DEFINITION@11..15
-                        - L_CURLY@11..12 "{"
-                        - INPUT_VALUE_DEFINITION@12..14
-                            - NAME@12..13
-                                - IDENT@12..13 "a"
-                            - COLON@13..14 ":"
-                            - TYPE@14..14
-                                - NAMED_TYPE@14..14
-                        - R_CURLY@14..15 "}"
+                    - WHITESPACE@6..7 " "
+                    - input_KW@7..12 "input"
+                    - WHITESPACE@12..13 " "
+                    - INPUT_FIELDS_DEFINITION@13..52
+                        - L_CURLY@13..14 "{"
+                        - WHITESPACE@14..29 "\n              "
+                        - INPUT_VALUE_DEFINITION@29..51
+                            - NAME@29..30
+                                - IDENT@29..30 "a"
+                            - COLON@30..31 ":"
+                            - WHITESPACE@31..32 " "
+                            - TYPE@32..51
+                                - WHITESPACE@32..45 "\n            "
+                                - NAMED_TYPE@45..51
+                                    - NAME@45..51
+                                        - IDENT@45..51 "String"
+                        - R_CURLY@51..52 "}"
             - ERROR@0:1 "expected a Name"
             "#,
         )
@@ -261,12 +302,14 @@ mod test {
         utils::check_ast(
             "extend input ExampleInputObject",
             r#"
-            - DOCUMENT@0..29
-                - INPUT_OBJECT_TYPE_EXTENSION@0..29
+            - DOCUMENT@0..31
+                - INPUT_OBJECT_TYPE_EXTENSION@0..31
                     - extend_KW@0..6 "extend"
-                    - input_KW@6..11 "input"
-                    - NAME@11..29
-                        - IDENT@11..29 "ExampleInputObject"
+                    - WHITESPACE@6..7 " "
+                    - input_KW@7..12 "input"
+                    - WHITESPACE@12..13 " "
+                    - NAME@13..31
+                        - IDENT@13..31 "ExampleInputObject"
             - ERROR@0:3 "expected Directives or an Input Fields Definition"
             "#,
         )

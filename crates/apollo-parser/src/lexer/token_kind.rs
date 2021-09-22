@@ -2,20 +2,22 @@
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u16)]
 pub enum TokenKind {
-    Bang,     // !
-    Dollar,   // $
-    Spread,   // ...
-    Comma,    // ,
-    Colon,    // :
-    Eq,       // =
-    At,       // @
-    LParen,   // (
-    RParen,   // )
-    LBracket, // [
-    RBracket, // ]
-    LCurly,   // {
-    RCurly,   // }
-    Pipe,     // |
+    Whitespace, // \r | \n |   | \t
+    Comment,    // # comment
+    Bang,       // !
+    Dollar,     // $
+    Spread,     // ...
+    Comma,      // ,
+    Colon,      // :
+    Eq,         // =
+    At,         // @
+    LParen,     // (
+    RParen,     // )
+    LBracket,   // [
+    RBracket,   // ]
+    LCurly,     // {
+    RCurly,     // }
+    Pipe,       // |
     Eof,
 
     // composite nodes

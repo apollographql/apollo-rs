@@ -7,22 +7,21 @@ use crate::{Parser, SyntaxKind, TokenKind, S};
 ///     [_A-Za-z][_0-9A-Za-z]*/
 /// ```
 pub(crate) fn name(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::NAME);
+    let _g = p.start_node(SyntaxKind::NAME);
     match p.peek() {
         Some(TokenKind::Name) => {
-            validate_name(p);
+            validate_name(p.peek_data().unwrap(), p);
             p.bump(SyntaxKind::IDENT);
         }
         _ => p.err("expected a name"),
     }
 }
 
-pub(crate) fn validate_name(p: &mut Parser) {
-    let data = p.peek_data().unwrap();
-    if !data.starts_with(is_start_char) {
+pub(crate) fn validate_name(name: String, p: &mut Parser) {
+    if !name.starts_with(is_start_char) {
         p.err("expected Name to start with a letter or an _");
     }
-    if data.len() >= 2 && !data[1..].chars().all(is_remainder_char) {
+    if name.len() >= 2 && !name[1..].chars().all(is_remainder_char) {
         p.err("Name can only be composed of letters, numbers and _");
     }
 }
@@ -34,7 +33,7 @@ pub(crate) fn validate_name(p: &mut Parser) {
 ///     Name :
 /// ```
 pub(crate) fn alias(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::ALIAS);
+    let _g = p.start_node(SyntaxKind::ALIAS);
     name(p);
     p.bump(S![:]);
 }

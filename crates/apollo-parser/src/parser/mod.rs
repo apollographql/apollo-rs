@@ -99,14 +99,34 @@ impl Parser {
         false
     }
 
-    /// Consume a token from the lexer and insert it into the AST.
+    /// Consume a token from the lexer, and any ignored tokens that follow it
+    /// and add them to the AST.
     pub(crate) fn bump(&mut self, kind: SyntaxKind) {
-        let token = self.tokens.pop().unwrap();
-        self.builder.borrow_mut().token(kind, token.data());
+        self.eat(kind);
+        self.bump_ignored();
     }
 
+    /// Consume ignored tokens and add them to the AST.
+    pub(crate) fn bump_ignored(&mut self) {
+        while let Some(TokenKind::Comment | TokenKind::Whitespace) = self.peek() {
+            if let Some(TokenKind::Comment) = self.peek() {
+                self.bump(SyntaxKind::COMMENT);
+            }
+            if let Some(TokenKind::Whitespace) = self.peek() {
+                self.bump(SyntaxKind::WHITESPACE);
+            }
+        }
+    }
+
+    /// Get current token's data.
     pub(crate) fn current(&mut self) -> String {
         self.peek_data().unwrap_or_else(|| "EOF".to_string())
+    }
+
+    /// Consume a token from the lexer and add it to the AST.
+    pub(crate) fn eat(&mut self, kind: SyntaxKind) {
+        let token = self.tokens.pop().unwrap();
+        self.builder.borrow_mut().token(kind, token.data());
     }
 
     /// Create a parser error and push it into the error vector.
@@ -122,7 +142,7 @@ impl Parser {
         let current_t = self.current();
 
         if self.at(token) {
-            self.bump(kind);
+            self.eat(kind);
             return;
         }
 
@@ -147,9 +167,13 @@ impl Parser {
     pub(crate) fn push_ast(&mut self, kind: SyntaxKind, token: Token) {
         self.builder.borrow_mut().token(kind, token.data())
     }
+
     pub(crate) fn start_node(&mut self, kind: SyntaxKind) -> NodeGuard {
         self.builder.borrow_mut().start_node(kind);
-        NodeGuard::new(self.builder.clone())
+        let guard = NodeGuard::new(self.builder.clone());
+        self.bump_ignored();
+
+        guard
     }
 
     pub(crate) fn peek(&self) -> Option<TokenKind> {
@@ -157,9 +181,13 @@ impl Parser {
     }
 
     pub(crate) fn peek_n(&self, n: usize) -> Option<TokenKind> {
-        self.tokens
-            .get(self.tokens.len() - n)
-            .map(|token| token.kind())
+        let tok = self
+            .tokens
+            .clone()
+            .into_iter()
+            .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
+            .collect::<Vec<Token>>();
+        tok.get(tok.len() - n).map(|token| token.kind())
     }
 
     pub(crate) fn peek_data(&self) -> Option<String> {
@@ -167,9 +195,13 @@ impl Parser {
     }
 
     pub(crate) fn peek_data_n(&self, n: usize) -> Option<String> {
-        self.tokens
-            .get(self.tokens.len() - n)
-            .map(|token| token.data().to_string())
+        let tok = self
+            .tokens
+            .clone()
+            .into_iter()
+            .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
+            .collect::<Vec<Token>>();
+        tok.get(tok.len() - n).map(|token| token.data().to_string())
     }
 }
 
@@ -201,6 +233,7 @@ mod test {
     #[test]
     fn smoke_subgraph_test() {
         let input = "
+        # comment
         directive @tag(name: String!) on FIELD_DEFINITION
 
         extend type Product @key(fields: \"id\") {
@@ -212,11 +245,6 @@ mod test {
         type ProductDimension {
           size: String
           weight: Float @tag(name: \"hi from inventory value type field\")
-        }
-
-        type DeliveryEstimates {
-          estimatedDelivery: String
-          fastestDelivery: String
         }
         ";
         let parser = Parser::new(input);

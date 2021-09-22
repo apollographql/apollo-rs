@@ -1,0 +1,5 @@
+type User @key(fields: "email") {
+    email:ID!
+    name: String
+    totalProductsCreated: Int
+}

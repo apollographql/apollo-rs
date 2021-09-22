@@ -46,7 +46,7 @@ pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
 ///     $ Name
 /// ```
 pub(crate) fn variable(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::VARIABLE);
+    let _g = p.start_node(SyntaxKind::VARIABLE);
     p.bump(S![$]);
     name::name(p);
 }
@@ -62,46 +62,60 @@ mod test {
                 animal
             }",
             r#"
-            - DOCUMENT@0..50
-                - OPERATION_DEFINITION@0..50
-                    - OPERATION_TYPE@0..5
+            - DOCUMENT@0..97
+                - OPERATION_DEFINITION@0..97
+                    - OPERATION_TYPE@0..6
                         - query_KW@0..5 "query"
-                    - NAME@5..14
-                        - IDENT@5..14 "getOutput"
-                    - VARIABLE_DEFINITIONS@14..42
-                        - L_PAREN@14..15 "("
-                        - VARIABLE_DEFINITION@15..24
-                            - VARIABLE@15..21
-                                - DOLLAR@15..16 "$"
-                                - NAME@16..21
-                                    - IDENT@16..21 "input"
-                            - COLON@21..22 ":"
-                            - TYPE@22..22
-                                - NAMED_TYPE@22..22
-                            - DEFAULT_VALUE@22..24
-                                - EQ@22..23 "="
-                                - VALUE@23..24
-                                    - INT_VALUE@23..24 "5"
-                        - VARIABLE_DEFINITION@24..41
-                            - VARIABLE@24..31
-                                - DOLLAR@24..25 "$"
-                                - NAME@25..31
-                                    - IDENT@25..31 "config"
-                            - COLON@31..32 ":"
-                            - TYPE@32..32
-                                - NAMED_TYPE@32..32
-                            - DEFAULT_VALUE@32..41
-                                - EQ@32..33 "="
-                                - VALUE@33..41
-                                    - STRING_VALUE@33..41 "\"Config\""
-                        - R_PAREN@41..42 ")"
-                    - SELECTION_SET@42..50
-                        - L_CURLY@42..43 "{"
-                        - SELECTION@43..49
-                            - FIELD@43..49
-                                - NAME@43..49
-                                    - IDENT@43..49 "animal"
-                        - R_CURLY@49..50 "}"
+                        - WHITESPACE@5..6 " "
+                    - NAME@6..15
+                        - IDENT@6..15 "getOutput"
+                    - VARIABLE_DEFINITIONS@15..59
+                        - L_PAREN@15..16 "("
+                        - VARIABLE_DEFINITION@16..32
+                            - VARIABLE@16..22
+                                - DOLLAR@16..17 "$"
+                                - NAME@17..22
+                                    - IDENT@17..22 "input"
+                            - COLON@22..23 ":"
+                            - WHITESPACE@23..24 " "
+                            - TYPE@24..28
+                                - WHITESPACE@24..25 " "
+                                - NAMED_TYPE@25..28
+                                    - NAME@25..28
+                                        - IDENT@25..28 "Int"
+                            - DEFAULT_VALUE@28..32
+                                - EQ@28..29 "="
+                                - WHITESPACE@29..30 " "
+                                - VALUE@30..32
+                                    - INT_VALUE@30..31 "5"
+                                    - WHITESPACE@31..32 " "
+                        - VARIABLE_DEFINITION@32..58
+                            - VARIABLE@32..39
+                                - DOLLAR@32..33 "$"
+                                - NAME@33..39
+                                    - IDENT@33..39 "config"
+                            - COLON@39..40 ":"
+                            - WHITESPACE@40..41 " "
+                            - TYPE@41..48
+                                - WHITESPACE@41..42 " "
+                                - NAMED_TYPE@42..48
+                                    - NAME@42..48
+                                        - IDENT@42..48 "String"
+                            - DEFAULT_VALUE@48..58
+                                - EQ@48..49 "="
+                                - WHITESPACE@49..50 " "
+                                - VALUE@50..58
+                                    - STRING_VALUE@50..58 "\"Config\""
+                        - R_PAREN@58..59 ")"
+                    - SELECTION_SET@59..97
+                        - L_CURLY@59..60 "{"
+                        - WHITESPACE@60..77 "\n                "
+                        - SELECTION@77..96
+                            - FIELD@77..96
+                                - NAME@77..96
+                                    - IDENT@77..83 "animal"
+                                    - WHITESPACE@83..96 "\n            "
+                        - R_CURLY@96..97 "}"
             "#,
         )
     }
@@ -114,50 +128,64 @@ mod test {
                 treat
             }",
             r#"
-            - DOCUMENT@0..60
-                - OPERATION_DEFINITION@0..60
-                    - OPERATION_TYPE@0..5
+            - DOCUMENT@0..129
+                - OPERATION_DEFINITION@0..129
+                    - OPERATION_TYPE@0..6
                         - query_KW@0..5 "query"
-                    - NAME@5..12
-                        - IDENT@5..12 "myQuery"
-                    - VARIABLE_DEFINITIONS@12..29
-                        - L_PAREN@12..13 "("
-                        - VARIABLE_DEFINITION@13..18
-                            - VARIABLE@13..17
-                                - DOLLAR@13..14 "$"
-                                - NAME@14..17
-                                    - IDENT@14..17 "var"
-                            - COLON@17..18 ":"
-                            - TYPE@18..18
-                                - NAMED_TYPE@18..18
-                        - VARIABLE_DEFINITION@18..28
-                            - VARIABLE@18..27
-                                - DOLLAR@18..19 "$"
-                                - NAME@19..27
-                                    - IDENT@19..27 "varOther"
-                            - COLON@27..28 ":"
-                            - TYPE@28..28
-                                - NAMED_TYPE@28..28
-                        - R_PAREN@28..29 ")"
-                    - DIRECTIVES@29..47
-                        - DIRECTIVE@29..40
-                            - AT@29..30 "@"
-                            - NAME@30..40
-                                - IDENT@30..40 "deprecated"
-                        - DIRECTIVE@40..47
-                            - AT@40..41 "@"
-                            - NAME@41..47
-                                - IDENT@41..47 "unused"
-                    - SELECTION_SET@47..60
-                        - L_CURLY@47..48 "{"
-                        - SELECTION@48..59
-                            - FIELD@48..54
-                                - NAME@48..54
-                                    - IDENT@48..54 "animal"
-                            - FIELD@54..59
-                                - NAME@54..59
-                                    - IDENT@54..59 "treat"
-                        - R_CURLY@59..60 "}"
+                        - WHITESPACE@5..6 " "
+                    - NAME@6..13
+                        - IDENT@6..13 "myQuery"
+                    - VARIABLE_DEFINITIONS@13..48
+                        - L_PAREN@13..14 "("
+                        - VARIABLE_DEFINITION@14..26
+                            - VARIABLE@14..18
+                                - DOLLAR@14..15 "$"
+                                - NAME@15..18
+                                    - IDENT@15..18 "var"
+                            - COLON@18..19 ":"
+                            - WHITESPACE@19..20 " "
+                            - TYPE@20..26
+                                - WHITESPACE@20..21 " "
+                                - NAMED_TYPE@21..26
+                                    - NAME@21..26
+                                        - IDENT@21..26 "input"
+                        - VARIABLE_DEFINITION@26..47
+                            - VARIABLE@26..35
+                                - DOLLAR@26..27 "$"
+                                - NAME@27..35
+                                    - IDENT@27..35 "varOther"
+                            - COLON@35..36 ":"
+                            - WHITESPACE@36..37 " "
+                            - TYPE@37..47
+                                - NAMED_TYPE@37..47
+                                    - NAME@37..47
+                                        - IDENT@37..47 "otherInput"
+                        - R_PAREN@47..48 ")"
+                    - WHITESPACE@48..49 " "
+                    - DIRECTIVES@49..69
+                        - DIRECTIVE@49..61
+                            - AT@49..50 "@"
+                            - NAME@50..61
+                                - IDENT@50..60 "deprecated"
+                                - WHITESPACE@60..61 " "
+                        - DIRECTIVE@61..69
+                            - AT@61..62 "@"
+                            - NAME@62..69
+                                - IDENT@62..68 "unused"
+                                - WHITESPACE@68..69 " "
+                    - SELECTION_SET@69..129
+                        - L_CURLY@69..70 "{"
+                        - WHITESPACE@70..87 "\n                "
+                        - SELECTION@87..128
+                            - FIELD@87..110
+                                - NAME@87..110
+                                    - IDENT@87..93 "animal"
+                                    - WHITESPACE@93..110 "\n                "
+                            - FIELD@110..128
+                                - NAME@110..128
+                                    - IDENT@110..115 "treat"
+                                    - WHITESPACE@115..128 "\n            "
+                        - R_CURLY@128..129 "}"
             "#,
         )
     }

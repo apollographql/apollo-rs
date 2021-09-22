@@ -16,7 +16,7 @@ use crate::{Parser, SyntaxKind, TokenKind, S, T};
 ///     ObjectValue [Const]
 /// ```
 pub(crate) fn value(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::VALUE);
+    let _g = p.start_node(SyntaxKind::VALUE);
     match p.peek() {
         Some(T![$]) => variable::variable(p),
         Some(TokenKind::Int) => p.bump(SyntaxKind::INT_VALUE),
@@ -43,7 +43,7 @@ pub(crate) fn value(p: &mut Parser) {
 /// Name but not true or false or null
 /// ```
 pub(crate) fn enum_value(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::ENUM_VALUE);
+    let _g = p.start_node(SyntaxKind::ENUM_VALUE);
     let name = p.peek_data().unwrap();
 
     if matches!(name.as_str(), "true" | "false" | "null") {
@@ -65,6 +65,7 @@ pub(crate) fn list_value(p: &mut Parser) {
         if node == T![']'] {
             p.bump(S![']']);
             guard.finish_node();
+            p.bump_ignored();
             break;
         } else if node == T![,] {
             p.bump(S![,]);
@@ -89,14 +90,16 @@ pub(crate) fn object_value(p: &mut Parser) {
             object_field(p);
             if let Some(T!['}']) = p.peek() {
                 p.bump(S!['}']);
-                guard.finish_node()
+                guard.finish_node();
+                p.bump_ignored();
             } else {
                 p.err("expected }");
             }
         }
         Some(T!['}']) => {
             p.bump(S!['}']);
-            guard.finish_node()
+            guard.finish_node();
+            p.bump_ignored();
         }
         _ => p.err("expected Object Value"),
     }
@@ -128,7 +131,7 @@ pub(crate) fn object_field(p: &mut Parser) {
 }
 
 pub(crate) fn default_value(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::DEFAULT_VALUE);
+    let _g = p.start_node(SyntaxKind::DEFAULT_VALUE);
     p.bump(S![=]);
     value(p);
 }
@@ -145,76 +148,96 @@ mod test {
               user(id: 4, size: $size value: "string", input: [ "one", 1.34 ], otherInput: { key: false, output: null })
             }"#,
             r#"
-            - DOCUMENT@0..91
-                - OPERATION_DEFINITION@0..91
-                    - SELECTION_SET@0..91
-                        - L_CURLY@0..1 "{"
-                        - SELECTION@1..90
-                            - FIELD@1..90
-                                - NAME@1..5
-                                    - IDENT@1..5 "user"
-                                - ARGUMENTS@5..90
-                                    - L_PAREN@5..6 "("
-                                    - ARGUMENT@6..10
-                                        - NAME@6..8
-                                            - IDENT@6..8 "id"
-                                        - COLON@8..9 ":"
-                                        - VALUE@9..10
-                                            - INT_VALUE@9..10 "4"
-                                    - COMMA@10..11 ","
-                                    - ARGUMENT@11..21
-                                        - NAME@11..15
-                                            - IDENT@11..15 "size"
-                                        - COLON@15..16 ":"
-                                        - VALUE@16..21
-                                            - VARIABLE@16..21
-                                                - DOLLAR@16..17 "$"
-                                                - NAME@17..21
-                                                    - IDENT@17..21 "size"
-                                    - ARGUMENT@21..35
-                                        - NAME@21..26
-                                            - IDENT@21..26 "value"
-                                        - COLON@26..27 ":"
-                                        - VALUE@27..35
-                                            - STRING_VALUE@27..35 "\"string\""
-                                    - COMMA@35..36 ","
-                                    - ARGUMENT@36..54
-                                        - NAME@36..41
-                                            - IDENT@36..41 "input"
-                                        - COLON@41..42 ":"
-                                        - VALUE@42..54
-                                            - LIST_VALUE@42..54
-                                                - L_BRACK@42..43 "["
-                                                - VALUE@43..48
-                                                    - STRING_VALUE@43..48 "\"one\""
-                                                - COMMA@48..49 ","
-                                                - VALUE@49..53
-                                                    - FLOAT_VALUE@49..53 "1.34"
-                                                - R_BRACK@53..54 "]"
-                                    - COMMA@54..55 ","
-                                    - ARGUMENT@55..89
-                                        - NAME@55..65
-                                            - IDENT@55..65 "otherInput"
-                                        - COLON@65..66 ":"
-                                        - VALUE@66..89
-                                            - OBJECT_VALUE@66..89
-                                                - L_CURLY@66..67 "{"
-                                                - OBJECT_FIELD@67..76
-                                                    - NAME@67..70
-                                                        - IDENT@67..70 "key"
-                                                    - COLON@70..71 ":"
-                                                    - VALUE@71..76
-                                                        - BOOLEAN_VALUE@71..76 "false"
-                                                - COMMA@76..77 ","
-                                                - OBJECT_FIELD@77..88
-                                                    - NAME@77..83
-                                                        - IDENT@77..83 "output"
-                                                    - COLON@83..84 ":"
-                                                    - VALUE@84..88
-                                                        - NULL_VALUE@84..88 "null"
-                                                - R_CURLY@88..89 "}"
-                                    - R_PAREN@89..90 ")"
-                        - R_CURLY@90..91 "}"
+            - DOCUMENT@0..149
+                - WHITESPACE@0..13 "\n            "
+                - OPERATION_DEFINITION@13..149
+                    - SELECTION_SET@13..149
+                        - L_CURLY@13..14 "{"
+                        - WHITESPACE@14..29 "\n              "
+                        - SELECTION@29..148
+                            - FIELD@29..148
+                                - NAME@29..33
+                                    - IDENT@29..33 "user"
+                                - ARGUMENTS@33..135
+                                    - L_PAREN@33..34 "("
+                                    - ARGUMENT@34..39
+                                        - NAME@34..36
+                                            - IDENT@34..36 "id"
+                                        - COLON@36..37 ":"
+                                        - WHITESPACE@37..38 " "
+                                        - VALUE@38..39
+                                            - INT_VALUE@38..39 "4"
+                                    - COMMA@39..40 ","
+                                    - WHITESPACE@40..41 " "
+                                    - ARGUMENT@41..53
+                                        - NAME@41..45
+                                            - IDENT@41..45 "size"
+                                        - COLON@45..46 ":"
+                                        - WHITESPACE@46..47 " "
+                                        - VALUE@47..53
+                                            - VARIABLE@47..53
+                                                - DOLLAR@47..48 "$"
+                                                - NAME@48..53
+                                                    - IDENT@48..52 "size"
+                                                    - WHITESPACE@52..53 " "
+                                    - ARGUMENT@53..68
+                                        - NAME@53..58
+                                            - IDENT@53..58 "value"
+                                        - COLON@58..59 ":"
+                                        - WHITESPACE@59..60 " "
+                                        - VALUE@60..68
+                                            - STRING_VALUE@60..68 "\"string\""
+                                    - COMMA@68..69 ","
+                                    - WHITESPACE@69..70 " "
+                                    - ARGUMENT@70..92
+                                        - NAME@70..75
+                                            - IDENT@70..75 "input"
+                                        - COLON@75..76 ":"
+                                        - WHITESPACE@76..77 " "
+                                        - VALUE@77..92
+                                            - LIST_VALUE@77..92
+                                                - L_BRACK@77..78 "["
+                                                - WHITESPACE@78..79 " "
+                                                - VALUE@79..84
+                                                    - STRING_VALUE@79..84 "\"one\""
+                                                - COMMA@84..85 ","
+                                                - WHITESPACE@85..86 " "
+                                                - VALUE@86..91
+                                                    - FLOAT_VALUE@86..90 "1.34"
+                                                    - WHITESPACE@90..91 " "
+                                                - R_BRACK@91..92 "]"
+                                    - COMMA@92..93 ","
+                                    - WHITESPACE@93..94 " "
+                                    - ARGUMENT@94..134
+                                        - NAME@94..104
+                                            - IDENT@94..104 "otherInput"
+                                        - COLON@104..105 ":"
+                                        - WHITESPACE@105..106 " "
+                                        - VALUE@106..134
+                                            - OBJECT_VALUE@106..134
+                                                - L_CURLY@106..107 "{"
+                                                - WHITESPACE@107..108 " "
+                                                - OBJECT_FIELD@108..118
+                                                    - NAME@108..111
+                                                        - IDENT@108..111 "key"
+                                                    - COLON@111..112 ":"
+                                                    - WHITESPACE@112..113 " "
+                                                    - VALUE@113..118
+                                                        - BOOLEAN_VALUE@113..118 "false"
+                                                - COMMA@118..119 ","
+                                                - WHITESPACE@119..120 " "
+                                                - OBJECT_FIELD@120..133
+                                                    - NAME@120..126
+                                                        - IDENT@120..126 "output"
+                                                    - COLON@126..127 ":"
+                                                    - WHITESPACE@127..128 " "
+                                                    - VALUE@128..133
+                                                        - NULL_VALUE@128..132 "null"
+                                                        - WHITESPACE@132..133 " "
+                                                - R_CURLY@133..134 "}"
+                                    - R_PAREN@134..135 ")"
+                                - WHITESPACE@135..148 "\n            "
+                        - R_CURLY@148..149 "}"
             "#,
         );
     }

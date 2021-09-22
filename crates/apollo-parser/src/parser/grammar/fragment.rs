@@ -8,7 +8,7 @@ use crate::{Parser, SyntaxKind, TokenKind, S, T};
 ///     fragment FragmentName TypeCondition Directives(opt) SelectionSet
 /// ```
 pub(crate) fn fragment_definition(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::FRAGMENT_DEFINITION);
+    let _g = p.start_node(SyntaxKind::FRAGMENT_DEFINITION);
     p.bump(SyntaxKind::fragment_KW);
 
     fragment_name(p);
@@ -31,7 +31,7 @@ pub(crate) fn fragment_definition(p: &mut Parser) {
 ///     Name *but not* on
 /// ```
 pub(crate) fn fragment_name(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::FRAGMENT_NAME);
+    let _g = p.start_node(SyntaxKind::FRAGMENT_NAME);
     match p.peek() {
         Some(TokenKind::Name) => {
             if p.peek_data().unwrap() == "on" {
@@ -50,7 +50,7 @@ pub(crate) fn fragment_name(p: &mut Parser) {
 ///     on NamedType
 /// ```
 pub(crate) fn type_condition(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::TYPE_CONDITION);
+    let _g = p.start_node(SyntaxKind::TYPE_CONDITION);
     match p.peek() {
         Some(TokenKind::Name) => {
             if p.peek_data().unwrap() == "on" {
@@ -71,7 +71,7 @@ pub(crate) fn type_condition(p: &mut Parser) {
 ///     ... TypeCondition[opt] Directives[opt] SelectionSet
 /// ```
 pub(crate) fn inline_fragment(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::INLINE_FRAGMENT);
+    let _g = p.start_node(SyntaxKind::INLINE_FRAGMENT);
     p.bump(S![...]);
     if let Some(TokenKind::Name) = p.peek() {
         type_condition(p);
@@ -92,7 +92,7 @@ pub(crate) fn inline_fragment(p: &mut Parser) {
 ///     ... FragmentName Directives[opt]
 /// ```
 pub(crate) fn fragment_spread(p: &mut Parser) {
-    let _guard = p.start_node(SyntaxKind::FRAGMENT_SPREAD);
+    let _g = p.start_node(SyntaxKind::FRAGMENT_SPREAD);
     p.bump(S![...]);
     match p.peek() {
         Some(TokenKind::Name) => {
@@ -120,44 +120,55 @@ mod test {
             }
             ",
             r#"
-            - DOCUMENT@0..61
-                - FRAGMENT_DEFINITION@0..61
+            - DOCUMENT@0..138
+                - FRAGMENT_DEFINITION@0..138
                     - fragment_KW@0..8 "fragment"
-                    - FRAGMENT_NAME@8..20
-                        - NAME@8..20
-                            - IDENT@8..20 "friendFields"
-                    - TYPE_CONDITION@20..26
-                        - on_KW@20..22 "on"
-                        - NAMED_TYPE@22..26
-                            - NAME@22..26
-                                - IDENT@22..26 "User"
-                    - DIRECTIVES@26..34
-                        - DIRECTIVE@26..34
-                            - AT@26..27 "@"
-                            - NAME@27..34
-                                - IDENT@27..34 "example"
-                    - SELECTION_SET@34..61
-                        - L_CURLY@34..35 "{"
-                        - SELECTION@35..60
-                            - FIELD@35..37
-                                - NAME@35..37
-                                    - IDENT@35..37 "id"
-                            - FIELD@37..41
-                                - NAME@37..41
-                                    - IDENT@37..41 "name"
-                            - FIELD@41..60
-                                - NAME@41..51
-                                    - IDENT@41..51 "profilePic"
-                                - ARGUMENTS@51..60
-                                    - L_PAREN@51..52 "("
-                                    - ARGUMENT@52..59
-                                        - NAME@52..56
-                                            - IDENT@52..56 "size"
-                                        - COLON@56..57 ":"
-                                        - VALUE@57..59
-                                            - INT_VALUE@57..59 "50"
-                                    - R_PAREN@59..60 ")"
-                        - R_CURLY@60..61 "}"
+                    - WHITESPACE@8..9 " "
+                    - FRAGMENT_NAME@9..22
+                        - NAME@9..22
+                            - IDENT@9..21 "friendFields"
+                            - WHITESPACE@21..22 " "
+                    - TYPE_CONDITION@22..30
+                        - on_KW@22..24 "on"
+                        - WHITESPACE@24..25 " "
+                        - NAMED_TYPE@25..30
+                            - NAME@25..30
+                                - IDENT@25..29 "User"
+                                - WHITESPACE@29..30 " "
+                    - DIRECTIVES@30..39
+                        - DIRECTIVE@30..39
+                            - AT@30..31 "@"
+                            - NAME@31..39
+                                - IDENT@31..38 "example"
+                                - WHITESPACE@38..39 " "
+                    - SELECTION_SET@39..125
+                        - L_CURLY@39..40 "{"
+                        - WHITESPACE@40..55 "\n              "
+                        - SELECTION@55..124
+                            - FIELD@55..72
+                                - NAME@55..72
+                                    - IDENT@55..57 "id"
+                                    - WHITESPACE@57..72 "\n              "
+                            - FIELD@72..91
+                                - NAME@72..91
+                                    - IDENT@72..76 "name"
+                                    - WHITESPACE@76..91 "\n              "
+                            - FIELD@91..124
+                                - NAME@91..101
+                                    - IDENT@91..101 "profilePic"
+                                - ARGUMENTS@101..111
+                                    - L_PAREN@101..102 "("
+                                    - ARGUMENT@102..110
+                                        - NAME@102..106
+                                            - IDENT@102..106 "size"
+                                        - COLON@106..107 ":"
+                                        - WHITESPACE@107..108 " "
+                                        - VALUE@108..110
+                                            - INT_VALUE@108..110 "50"
+                                    - R_PAREN@110..111 ")"
+                                - WHITESPACE@111..124 "\n            "
+                        - R_CURLY@124..125 "}"
+                    - WHITESPACE@125..138 "\n            "
             "#,
         );
     }
@@ -171,32 +182,40 @@ mod test {
                 ...standardProfilePic
             }",
             r#"
-            - DOCUMENT@0..55
-                - FRAGMENT_DEFINITION@0..55
+            - DOCUMENT@0..123
+                - FRAGMENT_DEFINITION@0..123
                     - fragment_KW@0..8 "fragment"
-                    - FRAGMENT_NAME@8..20
-                        - NAME@8..20
-                            - IDENT@8..20 "friendFields"
-                    - TYPE_CONDITION@20..26
-                        - on_KW@20..22 "on"
-                        - NAMED_TYPE@22..26
-                            - NAME@22..26
-                                - IDENT@22..26 "User"
-                    - SELECTION_SET@26..55
-                        - L_CURLY@26..27 "{"
-                        - SELECTION@27..54
-                            - FIELD@27..29
-                                - NAME@27..29
-                                    - IDENT@27..29 "id"
-                            - FIELD@29..33
-                                - NAME@29..33
-                                    - IDENT@29..33 "name"
-                            - FRAGMENT_SPREAD@33..54
-                                - SPREAD@33..36 "..."
-                                - FRAGMENT_NAME@36..54
-                                    - NAME@36..54
-                                        - IDENT@36..54 "standardProfilePic"
-                        - R_CURLY@54..55 "}"
+                    - WHITESPACE@8..9 " "
+                    - FRAGMENT_NAME@9..22
+                        - NAME@9..22
+                            - IDENT@9..21 "friendFields"
+                            - WHITESPACE@21..22 " "
+                    - TYPE_CONDITION@22..30
+                        - on_KW@22..24 "on"
+                        - WHITESPACE@24..25 " "
+                        - NAMED_TYPE@25..30
+                            - NAME@25..30
+                                - IDENT@25..29 "User"
+                                - WHITESPACE@29..30 " "
+                    - SELECTION_SET@30..123
+                        - L_CURLY@30..31 "{"
+                        - WHITESPACE@31..48 "\n                "
+                        - SELECTION@48..122
+                            - FIELD@48..67
+                                - NAME@48..67
+                                    - IDENT@48..50 "id"
+                                    - WHITESPACE@50..67 "\n                "
+                            - FIELD@67..88
+                                - NAME@67..88
+                                    - IDENT@67..71 "name"
+                                    - WHITESPACE@71..88 "\n                "
+                            - FRAGMENT_SPREAD@88..122
+                                - SPREAD@88..91 "..."
+                                - FRAGMENT_NAME@91..122
+                                    - NAME@91..122
+                                        - IDENT@91..109 "standardProfilePic"
+                                        - WHITESPACE@109..122 "\n            "
+                        - R_CURLY@122..123 "}"
             "#,
         );
     }
@@ -209,27 +228,34 @@ mod test {
             }
             ",
             r#"
-            - DOCUMENT@0..26
-                - FRAGMENT_DEFINITION@0..26
+            - DOCUMENT@0..71
+                - FRAGMENT_DEFINITION@0..71
                     - fragment_KW@0..8 "fragment"
-                    - FRAGMENT_NAME@8..8
-                    - TYPE_CONDITION@8..14
-                        - on_KW@8..10 "on"
-                        - NAMED_TYPE@10..14
-                            - NAME@10..14
-                                - IDENT@10..14 "User"
-                    - DIRECTIVES@14..22
-                        - DIRECTIVE@14..22
-                            - AT@14..15 "@"
-                            - NAME@15..22
-                                - IDENT@15..22 "example"
-                    - SELECTION_SET@22..26
-                        - L_CURLY@22..23 "{"
-                        - SELECTION@23..25
-                            - FIELD@23..25
-                                - NAME@23..25
-                                    - IDENT@23..25 "id"
-                        - R_CURLY@25..26 "}"
+                    - WHITESPACE@8..9 " "
+                    - FRAGMENT_NAME@9..9
+                    - TYPE_CONDITION@9..17
+                        - on_KW@9..11 "on"
+                        - WHITESPACE@11..12 " "
+                        - NAMED_TYPE@12..17
+                            - NAME@12..17
+                                - IDENT@12..16 "User"
+                                - WHITESPACE@16..17 " "
+                    - DIRECTIVES@17..26
+                        - DIRECTIVE@17..26
+                            - AT@17..18 "@"
+                            - NAME@18..26
+                                - IDENT@18..25 "example"
+                                - WHITESPACE@25..26 " "
+                    - SELECTION_SET@26..58
+                        - L_CURLY@26..27 "{"
+                        - WHITESPACE@27..42 "\n              "
+                        - SELECTION@42..57
+                            - FIELD@42..57
+                                - NAME@42..57
+                                    - IDENT@42..44 "id"
+                                    - WHITESPACE@44..57 "\n            "
+                        - R_CURLY@57..58 "}"
+                    - WHITESPACE@58..71 "\n            "
             - ERROR@0:2 "Fragment Name cannot be 'on'"
             "#,
         );
@@ -243,28 +269,35 @@ mod test {
             }
             ",
             r#"
-            - DOCUMENT@0..36
-                - FRAGMENT_DEFINITION@0..36
+            - DOCUMENT@0..81
+                - FRAGMENT_DEFINITION@0..81
                     - fragment_KW@0..8 "fragment"
-                    - FRAGMENT_NAME@8..20
-                        - NAME@8..20
-                            - IDENT@8..20 "friendFields"
-                    - TYPE_CONDITION@20..24
-                        - NAMED_TYPE@20..24
-                            - NAME@20..24
-                                - IDENT@20..24 "User"
-                    - DIRECTIVES@24..32
-                        - DIRECTIVE@24..32
-                            - AT@24..25 "@"
-                            - NAME@25..32
-                                - IDENT@25..32 "example"
-                    - SELECTION_SET@32..36
-                        - L_CURLY@32..33 "{"
-                        - SELECTION@33..35
-                            - FIELD@33..35
-                                - NAME@33..35
-                                    - IDENT@33..35 "id"
-                        - R_CURLY@35..36 "}"
+                    - WHITESPACE@8..9 " "
+                    - FRAGMENT_NAME@9..22
+                        - NAME@9..22
+                            - IDENT@9..21 "friendFields"
+                            - WHITESPACE@21..22 " "
+                    - TYPE_CONDITION@22..27
+                        - NAMED_TYPE@22..27
+                            - NAME@22..27
+                                - IDENT@22..26 "User"
+                                - WHITESPACE@26..27 " "
+                    - DIRECTIVES@27..36
+                        - DIRECTIVE@27..36
+                            - AT@27..28 "@"
+                            - NAME@28..36
+                                - IDENT@28..35 "example"
+                                - WHITESPACE@35..36 " "
+                    - SELECTION_SET@36..68
+                        - L_CURLY@36..37 "{"
+                        - WHITESPACE@37..52 "\n              "
+                        - SELECTION@52..67
+                            - FIELD@52..67
+                                - NAME@52..67
+                                    - IDENT@52..54 "id"
+                                    - WHITESPACE@54..67 "\n            "
+                        - R_CURLY@67..68 "}"
+                    - WHITESPACE@68..81 "\n            "
             - ERROR@0:4 "exptected 'on'"
             "#,
         );
@@ -275,17 +308,20 @@ mod test {
         utils::check_ast(
             "fragment friendFields on User",
             r#"
-            - DOCUMENT@0..26
-                - FRAGMENT_DEFINITION@0..26
+            - DOCUMENT@0..29
+                - FRAGMENT_DEFINITION@0..29
                     - fragment_KW@0..8 "fragment"
-                    - FRAGMENT_NAME@8..20
-                        - NAME@8..20
-                            - IDENT@8..20 "friendFields"
-                    - TYPE_CONDITION@20..26
-                        - on_KW@20..22 "on"
-                        - NAMED_TYPE@22..26
-                            - NAME@22..26
-                                - IDENT@22..26 "User"
+                    - WHITESPACE@8..9 " "
+                    - FRAGMENT_NAME@9..22
+                        - NAME@9..22
+                            - IDENT@9..21 "friendFields"
+                            - WHITESPACE@21..22 " "
+                    - TYPE_CONDITION@22..29
+                        - on_KW@22..24 "on"
+                        - WHITESPACE@24..25 " "
+                        - NAMED_TYPE@25..29
+                            - NAME@25..29
+                                - IDENT@25..29 "User"
             - ERROR@0:3 "expected a Selection Set"
             "#,
         );
