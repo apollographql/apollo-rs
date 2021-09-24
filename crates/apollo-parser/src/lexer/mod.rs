@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::{create_err, Error};
 use crate::{ensure, format_err};
 
 pub use location::Location;
@@ -71,23 +71,91 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
     let c = chars.next().unwrap();
 
     let kind = match c {
-        '"' => {
-            let mut buf = String::new();
-            buf.push(c);
+        '"' => match chars.next().unwrap() {
+            '"' => {
+                let mut buf = String::new();
+                buf.push(c); // the first " we already matched on
+                buf.push(chars.next().unwrap()); // the second " we already matched on
 
-            while let Some(c) = chars.clone().next() {
-                if c != '"' {
-                    buf.push(chars.next().unwrap());
-                } else if c == '"' {
-                    buf.push(chars.next().unwrap());
-                    break;
-                } else {
-                    break;
+                let c = chars.next().unwrap();
+                match c {
+                    '"' => {
+                        buf.push(c);
+
+                        while let Some(c) = chars.clone().next() {
+                            if c != '"' {
+                                buf.push(chars.next().unwrap());
+                            } else if c == '"' {
+                                match (chars.next(), chars.next()) {
+                                    (Some('"'), Some('"')) => {
+                                        buf.push(chars.next().unwrap());
+                                        buf.push(chars.next().unwrap());
+                                        break;
+                                    }
+                                    (Some(a), Some(b)) => {
+                                        buf.push(chars.next().unwrap());
+                                        buf.push(chars.next().unwrap());
+                                        let current = format!("{}{}", a, b);
+                                        create_err!(
+                                current,
+                                "Unterminated block comment, expected `\"\"\"`, found `\"{}`",
+                                current,
+                            );
+                                        break;
+                                    }
+                                    (Some(a), None) => {
+                                        buf.push(chars.next().unwrap());
+                                        buf.push(chars.next().unwrap());
+                                        create_err!(
+                                a,
+                                "Unterminated block comment, expected `\"\"\"`, found `\"{}`",
+                                a
+                            );
+                                        break;
+                                    }
+                                    (_, _) => {
+                                        buf.push(chars.next().unwrap());
+                                        buf.push(chars.next().unwrap());
+                                        create_err!(
+                                "",
+                                "Unterminated block comment, expected `\"\"\"`, found `\"`"
+                            );
+                                        break;
+                                    }
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+
+                        Ok(Token::new(TokenKind::StringValue, buf))
+                    }
+                    _ => Ok(Token::new(TokenKind::StringValue, buf)),
                 }
             }
+            _ => {
+                // TODO @lrlna: consider using a 'terminated' bool to store whether a string
+                // character or block character are terminated (rust's lexer does this).
+                let mut buf = String::new();
+                buf.push(c); // the first " we already matched on
 
-            Ok(Token::new(TokenKind::StringValue, buf))
-        }
+                while let Some(c) = chars.clone().next() {
+                    if is_escaped_char(c)
+                        || is_source_char(c) && c != '\\' && c != '"' && !is_line_terminator(c)
+                    {
+                        buf.push(chars.next().unwrap());
+                    } else if c == '"' {
+                        buf.push(chars.next().unwrap());
+                        break;
+                    // TODO @lrlna: this should error if c == \ or has a line terminator
+                    } else {
+                        break;
+                    }
+                }
+
+                Ok(Token::new(TokenKind::StringValue, buf))
+            }
+        },
         '#' => {
             let mut buf = String::new();
             buf.push(c);
@@ -102,6 +170,22 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
 
             Ok(Token::new(TokenKind::Comment, buf))
         }
+        '.' => match (chars.next(), chars.next()) {
+            (Some('.'), Some('.')) => Ok(Token::new(TokenKind::Spread, "...".to_string())),
+            (Some(a), Some(b)) => format_err!(
+                format!("{}{}", a, b),
+                "Unterminated spread operator, expected `...`, found `.{}{}`",
+                a,
+                b,
+            ),
+            (Some(a), None) => {
+                format_err!(a, "Unterminated spread, expected `...`, found `.{}`", a)
+            }
+            (_, _) => format_err!(
+                "",
+                "Unterminated spread operator, expected `...`, found `.`"
+            ),
+        },
         c if is_whitespace(c) => {
             let mut buf = String::new();
             buf.push(c);
@@ -176,22 +260,6 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
         '$' => Ok(Token::new(TokenKind::Dollar, c.into())),
         '(' => Ok(Token::new(TokenKind::LParen, c.into())),
         ')' => Ok(Token::new(TokenKind::RParen, c.into())),
-        '.' => match (chars.next(), chars.next()) {
-            (Some('.'), Some('.')) => Ok(Token::new(TokenKind::Spread, "...".to_string())),
-            (Some(a), Some(b)) => format_err!(
-                format!("{}{}", a, b),
-                "Unterminated spread operator, expected `...`, found `.{}{}`",
-                a,
-                b,
-            ),
-            (Some(a), None) => {
-                format_err!(a, "Unterminated spread, expected `...`, found `.{}`", a)
-            }
-            (_, _) => format_err!(
-                "",
-                "Unterminated spread operator, expected `...`, found `.`"
-            ),
-        },
         ':' => Ok(Token::new(TokenKind::Colon, c.into())),
         ',' => Ok(Token::new(TokenKind::Comma, c.into())),
         '=' => Ok(Token::new(TokenKind::Eq, c.into())),
@@ -224,17 +292,17 @@ fn is_digit_char(c: char) -> bool {
     matches!(c, '0'..='9')
 }
 
-/// EscapedCharacter
-///     "  \  /  b  f  n  r  t
-// fn is_escaped_char(c: char) -> bool {
-//     matches!(c, '"' | '\\' | '/' | 'b' | 'f' | 'n' | 'r' | 't')
-// }
+// EscapedCharacter
+//     "  \  /  b  f  n  r  t
+fn is_escaped_char(c: char) -> bool {
+    matches!(c, '"' | '\\' | '/' | 'b' | 'f' | 'n' | 'r' | 't')
+}
 
-/// SourceCharacter
-///     /[\u0009\u000A\u000D\u0020-\uFFFF]/
-// fn is_source_char(c: char) -> bool {
-//     matches!(c, '\t' | '\r' | '\n' | '\u{0020}'..='\u{FFFF}')
-// }
+// SourceCharacter
+//     /[\u0009\u000A\u000D\u0020-\uFFFF]/
+fn is_source_char(c: char) -> bool {
+    matches!(c, '\t' | '\r' | '\n' | '\u{0020}'..='\u{FFFF}')
+}
 
 #[cfg(test)]
 mod test {
@@ -242,7 +310,7 @@ mod test {
     #[test]
     fn tests() {
         let gql_1 = r#"
-{ foo(a: [0x10]) }
+{ foo(a: [ü]) }
 "#;
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
