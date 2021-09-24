@@ -8,7 +8,7 @@ use crate::{Parser, SyntaxKind, S, T};
 ///    schema Directives { OperationTypeDefinition }
 /// ```
 pub(crate) fn schema_definition(p: &mut Parser) {
-    let _g = p.start_node(SyntaxKind::SCHEMA_DEFINITION);
+    let g = p.start_node(SyntaxKind::SCHEMA_DEFINITION);
     p.bump(SyntaxKind::schema_KW);
 
     if let Some(T![@]) = p.peek() {
@@ -19,6 +19,8 @@ pub(crate) fn schema_definition(p: &mut Parser) {
         p.bump(S!['{']);
         operation::operation_type_definition(p, false);
         p.expect(T!['}'], S!['}']);
+        g.finish_node();
+        p.bump_ignored();
     } else {
         p.err("expected Root Operation Type Definition");
     }
@@ -32,7 +34,7 @@ pub(crate) fn schema_definition(p: &mut Parser) {
 ///     extend schema Directives[Const]
 /// ```
 pub(crate) fn schema_extension(p: &mut Parser) {
-    let _g = p.start_node(SyntaxKind::SCHEMA_EXTENSION);
+    let g = p.start_node(SyntaxKind::SCHEMA_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
     p.bump(SyntaxKind::schema_KW);
 
@@ -44,6 +46,8 @@ pub(crate) fn schema_extension(p: &mut Parser) {
         p.bump(S!['{']);
         operation::operation_type_definition(p, false);
         p.expect(T!['}'], S!['}']);
+        g.finish_node();
+        p.bump_ignored();
     }
 }
 
