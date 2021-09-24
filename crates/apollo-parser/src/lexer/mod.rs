@@ -11,13 +11,15 @@ mod token_kind;
 
 /// Parse text into tokens.
 pub struct Lexer {
-    tokens: Vec<Result<Token, Error>>,
+    tokens: Vec<Token>,
+    errors: Vec<Error>,
 }
 
 impl Lexer {
     /// Create a new instance of `Lexer`.
     pub fn new(mut input: &str) -> Self {
         let mut tokens = Vec::new();
+        let mut errors = Vec::new();
 
         let mut index = 0;
 
@@ -34,20 +36,20 @@ impl Lexer {
                     Ok(mut t) => {
                         t.loc = loc;
                         index += t.data.len();
-                        tokens.push(Ok(t));
+                        tokens.push(t);
                     }
                     Err(mut e) => {
                         e.loc = loc;
                         index += e.data.len();
-                        tokens.push(Err(e));
+                        errors.push(e);
                     }
                 };
             }
         }
 
-        tokens.push(Ok(Token::new(TokenKind::Eof, String::from("EOF"))));
+        tokens.push(Token::new(TokenKind::Eof, String::from("EOF")));
 
-        Self { tokens }
+        Self { tokens, errors }
     }
 
     /// Advance the cursor and get the next token.
@@ -61,9 +63,19 @@ impl Lexer {
     // }
 
     /// Get a reference to the lexer's tokens.
-    pub(crate) fn tokens(&self) -> &[Result<Token, Error>] {
+    pub(crate) fn tokens(&self) -> &[Token] {
         self.tokens.as_slice()
     }
+
+    /// Get a reference to the lexer's tokens.
+    pub(crate) fn errors(&self) -> &[Error] {
+        self.errors.as_slice()
+    }
+
+    //pub(crate) fn push_err(&self, m: String, data: &str) {
+    //    let err = Error::new(m.to_string(), data.to_string());
+    //    self.errors.push(err)
+    //}
 }
 
 fn advance(input: &mut &str) -> Result<Token, Error> {
@@ -71,91 +83,93 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
     let c = chars.next().unwrap();
 
     let kind = match c {
-        '"' => match chars.next().unwrap() {
-            '"' => {
-                let mut buf = String::new();
-                buf.push(c); // the first " we already matched on
-                buf.push(chars.next().unwrap()); // the second " we already matched on
+        '"' => {
+            // TODO @lrlna: consider using a 'terminated' bool to store whether a string
+            // character or block character are terminated (rust's lexer does this).
+            let mut buf = String::new();
+            buf.push(c); // the first " we already matched on
 
-                let c = chars.next().unwrap();
-                match c {
-                    '"' => {
-                        buf.push(c);
+            let c = chars.next().unwrap();
+            match c {
+                '"' => {
+                    buf.push(c); // the second " we already matched on
 
-                        while let Some(c) = chars.clone().next() {
-                            if c != '"' {
-                                buf.push(chars.next().unwrap());
-                            } else if c == '"' {
-                                match (chars.next(), chars.next()) {
-                                    (Some('"'), Some('"')) => {
-                                        buf.push(chars.next().unwrap());
-                                        buf.push(chars.next().unwrap());
-                                        break;
+                    let c = chars.next().unwrap();
+                    match c {
+                        '"' => {
+                            buf.push(chars.next().unwrap());
+
+                            while let Some(c) = chars.clone().next() {
+                                if c == '"' {
+                                    buf.push(chars.next().unwrap());
+                                    let n1 = chars.next();
+                                    let n2 = chars.next();
+                                    match (n1, n2) {
+                                        (Some('"'), Some('"')) => {
+                                            buf.push(n1.unwrap());
+                                            buf.push(n2.unwrap());
+                                            break;
+                                        }
+                                        (Some(a), Some(b)) => {
+                                            buf.push(a);
+                                            buf.push(b);
+                                            let current = format!("{}{}", a, b);
+                                            create_err!(current,
+                                                "Unterminated block comment, expected `\"\"\"`, found `\"{}`",
+                                                current,
+                                            );
+                                            break;
+                                        }
+                                        (Some(a), None) => {
+                                            buf.push(a);
+                                            create_err!(a,
+                                                "Unterminated block comment, expected `\"\"\"`, found `\"{}`",
+                                                a
+                                            );
+                                            break;
+                                        }
+                                        (_, _) => {
+                                            buf.push(chars.next().unwrap());
+                                            create_err!(
+                                                "",
+                                                "Unterminated block comment, expected `\"\"\"`, found `\"`"
+                                            );
+                                            break;
+                                        }
                                     }
-                                    (Some(a), Some(b)) => {
-                                        buf.push(chars.next().unwrap());
-                                        buf.push(chars.next().unwrap());
-                                        let current = format!("{}{}", a, b);
-                                        create_err!(
-                                current,
-                                "Unterminated block comment, expected `\"\"\"`, found `\"{}`",
-                                current,
-                            );
-                                        break;
-                                    }
-                                    (Some(a), None) => {
-                                        buf.push(chars.next().unwrap());
-                                        buf.push(chars.next().unwrap());
-                                        create_err!(
-                                a,
-                                "Unterminated block comment, expected `\"\"\"`, found `\"{}`",
-                                a
-                            );
-                                        break;
-                                    }
-                                    (_, _) => {
-                                        buf.push(chars.next().unwrap());
-                                        buf.push(chars.next().unwrap());
-                                        create_err!(
-                                "",
-                                "Unterminated block comment, expected `\"\"\"`, found `\"`"
-                            );
-                                        break;
-                                    }
+                                } else if is_source_char(c) {
+                                    buf.push(chars.next().unwrap());
+                                } else {
+                                    break;
                                 }
-                            } else {
-                                break;
                             }
+
+                            Ok(Token::new(TokenKind::StringValue, buf))
                         }
-
-                        Ok(Token::new(TokenKind::StringValue, buf))
-                    }
-                    _ => Ok(Token::new(TokenKind::StringValue, buf)),
-                }
-            }
-            _ => {
-                // TODO @lrlna: consider using a 'terminated' bool to store whether a string
-                // character or block character are terminated (rust's lexer does this).
-                let mut buf = String::new();
-                buf.push(c); // the first " we already matched on
-
-                while let Some(c) = chars.clone().next() {
-                    if is_escaped_char(c)
-                        || is_source_char(c) && c != '\\' && c != '"' && !is_line_terminator(c)
-                    {
-                        buf.push(chars.next().unwrap());
-                    } else if c == '"' {
-                        buf.push(chars.next().unwrap());
-                        break;
-                    // TODO @lrlna: this should error if c == \ or has a line terminator
-                    } else {
-                        break;
+                        _ => Ok(Token::new(TokenKind::StringValue, buf)),
                     }
                 }
+                t => {
+                    buf.push(t);
 
-                Ok(Token::new(TokenKind::StringValue, buf))
+                    while let Some(c) = chars.clone().next() {
+                        if c == '"' {
+                            buf.push(chars.next().unwrap());
+                            break;
+                        } else if is_escaped_char(c)
+                            || is_source_char(c) && c != '\\' && c != '"' && !is_line_terminator(c)
+                        {
+                            buf.push(chars.next().unwrap());
+                        // TODO @lrlna: this should error if c == \ or has a line terminator
+                        } else {
+                            break;
+                        }
+                    }
+
+                    Ok(Token::new(TokenKind::StringValue, buf))
+                }
             }
-        },
+        }
         '#' => {
             let mut buf = String::new();
             buf.push(c);
@@ -307,12 +321,24 @@ fn is_source_char(c: char) -> bool {
 #[cfg(test)]
 mod test {
     use super::*;
+    use indoc::indoc;
+
     #[test]
     fn tests() {
-        let gql_1 = r#"
-{ foo(a: [ü]) }
-"#;
+        let gql_1 = indoc! { r#"
+            """
+            Description
+            """
+
+            type ProductDimension {
+                "another description"
+                size: String
+                " another description �� "
+                weight: Float @tag(name: "hi from inventory value type field")
+            }
+        "#};
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
+        dbg!(lexer_1.errors);
     }
 }

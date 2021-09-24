@@ -41,10 +41,11 @@ impl Parser {
         let mut errors = Vec::new();
 
         for s in lexer.tokens().to_owned() {
-            match s {
-                Ok(t) => tokens.push(t),
-                Err(e) => errors.push(e),
-            }
+            tokens.push(s);
+        }
+
+        for e in lexer.errors().to_owned() {
+            errors.push(e);
         }
 
         tokens.reverse();
