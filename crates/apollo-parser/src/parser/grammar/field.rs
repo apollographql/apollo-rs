@@ -21,11 +21,6 @@ pub(crate) fn field(p: &mut Parser) {
         Some(T!['(']) => argument::arguments(p),
         Some(T![@]) => directive::directives(p),
         Some(T!['{']) => selection::selection_set(p),
-        Some(T![,]) => {
-            guard.finish_node();
-            p.bump(S![,]);
-            field(p)
-        }
         Some(TokenKind::Name) => {
             guard.finish_node();
             field(p)
@@ -90,11 +85,6 @@ pub(crate) fn field_definition(p: &mut Parser) {
         } else {
             p.err("expected a type");
         }
-    }
-
-    if let Some(T![,]) = p.peek() {
-        p.bump(S![,]);
-        return field_definition(p);
     }
 
     if let Some(T!['}']) = p.peek() {

@@ -109,11 +109,6 @@ pub(crate) fn enum_value_definition(p: &mut Parser) {
         }
     }
 
-    if let Some(T![,]) = p.peek() {
-        p.bump(S![,]);
-        return enum_value_definition(p);
-    }
-
     if let Some(T!['}']) = p.peek() {
         return;
     }

@@ -11,11 +11,6 @@ use crate::{Parser, SyntaxKind, TokenKind, S, T};
 ///    OperationType : NamedType
 /// ```
 pub(crate) fn operation_type_definition(p: &mut Parser, is_operation_type: bool) {
-    if let Some(T![,]) = p.peek() {
-        p.bump(S![,]);
-        return operation_type_definition(p, is_operation_type);
-    }
-
     if let Some(TokenKind::Name) = p.peek() {
         let guard = p.start_node(SyntaxKind::OPERATION_TYPE_DEFINITION);
         operation_type(p);

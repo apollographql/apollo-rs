@@ -114,10 +114,6 @@ pub(crate) fn input_value_definition(p: &mut Parser, is_input: bool) {
             p.err("expected a Name");
         }
     }
-    if let Some(T![,]) = p.peek() {
-        p.bump(S![,]);
-        return input_value_definition(p, is_input);
-    }
     // TODO @lrlna: this can be simplified a little bit, and follow the pattern of FieldDefinition
     if !is_input {
         p.err("expected an Input Value Definition");

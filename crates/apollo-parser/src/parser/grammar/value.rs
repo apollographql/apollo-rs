@@ -65,9 +65,6 @@ pub(crate) fn list_value(p: &mut Parser) {
         if node == T![']'] {
             p.bump(S![']']);
             break;
-        } else if node == T![,] {
-            p.bump(S![,]);
-            value(p);
         } else {
             value(p);
         }
@@ -117,10 +114,6 @@ pub(crate) fn object_field(p: &mut Parser) {
                 return object_field(p);
             }
         }
-    }
-    if let Some(T![,]) = p.peek() {
-        p.bump(S![,]);
-        return object_field(p);
     }
 }
 

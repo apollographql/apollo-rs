@@ -88,12 +88,16 @@ impl Parser {
 
     /// Consume ignored tokens and add them to the AST.
     fn bump_ignored(&mut self) {
-        while let Some(TokenKind::Comment | TokenKind::Whitespace) = self.peek() {
+        while let Some(TokenKind::Comment | TokenKind::Whitespace | TokenKind::Comma) = self.peek()
+        {
             if let Some(TokenKind::Comment) = self.peek() {
                 self.bump(SyntaxKind::COMMENT);
             }
             if let Some(TokenKind::Whitespace) = self.peek() {
                 self.bump(SyntaxKind::WHITESPACE);
+            }
+            if let Some(TokenKind::Comma) = self.peek() {
+                self.bump(SyntaxKind::COMMA);
             }
         }
     }

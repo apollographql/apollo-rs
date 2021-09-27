@@ -21,10 +21,6 @@ pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
             }
         }
     }
-    if let Some(T![,]) = p.peek() {
-        p.bump(S![,]);
-        return argument(p, is_argument);
-    }
     if !is_argument {
         p.err("expected an Argument");
     }

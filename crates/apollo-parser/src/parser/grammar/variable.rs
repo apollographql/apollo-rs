@@ -29,11 +29,6 @@ pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
         }
     }
 
-    if let Some(T![,]) = p.peek() {
-        p.bump(S![,]);
-        return variable_definition(p, is_variable);
-    }
-
     if !is_variable {
         p.err("expected a Variable Definition");
     }
@@ -186,6 +181,67 @@ mod test {
                                     - IDENT@110..115 "treat"
                                     - WHITESPACE@115..128 "\n            "
                         - R_CURLY@128..129 "}"
+            "#,
+        )
+    }
+
+    #[test]
+    fn it_parses_operation_definition_with_arguments() {
+        utils::check_ast(
+            "query myQuery($var: input, $varOther: otherInput) {
+                animal,
+                treat
+            }",
+            r#"
+            - DOCUMENT@0..111
+                - OPERATION_DEFINITION@0..111
+                    - OPERATION_TYPE@0..6
+                        - query_KW@0..5 "query"
+                        - WHITESPACE@5..6 " "
+                    - NAME@6..13
+                        - IDENT@6..13 "myQuery"
+                    - VARIABLE_DEFINITIONS@13..50
+                        - L_PAREN@13..14 "("
+                        - VARIABLE_DEFINITION@14..27
+                            - VARIABLE@14..18
+                                - DOLLAR@14..15 "$"
+                                - NAME@15..18
+                                    - IDENT@15..18 "var"
+                            - COLON@18..19 ":"
+                            - WHITESPACE@19..20 " "
+                            - TYPE@20..27
+                                - COMMA@20..21 ","
+                                - WHITESPACE@21..22 " "
+                                - NAMED_TYPE@22..27
+                                    - NAME@22..27
+                                        - IDENT@22..27 "input"
+                        - VARIABLE_DEFINITION@27..48
+                            - VARIABLE@27..36
+                                - DOLLAR@27..28 "$"
+                                - NAME@28..36
+                                    - IDENT@28..36 "varOther"
+                            - COLON@36..37 ":"
+                            - WHITESPACE@37..38 " "
+                            - TYPE@38..48
+                                - NAMED_TYPE@38..48
+                                    - NAME@38..48
+                                        - IDENT@38..48 "otherInput"
+                        - R_PAREN@48..49 ")"
+                        - WHITESPACE@49..50 " "
+                    - SELECTION_SET@50..111
+                        - L_CURLY@50..51 "{"
+                        - WHITESPACE@51..68 "\n                "
+                        - SELECTION@68..110
+                            - FIELD@68..92
+                                - NAME@68..92
+                                    - IDENT@68..74 "animal"
+                                    - COMMA@74..75 ","
+                                    - WHITESPACE@75..92 "\n                "
+                            - FIELD@92..110
+                                - NAME@92..110
+                                    - IDENT@92..97 "treat"
+                                    - WHITESPACE@97..110 "\n            "
+                        - R_CURLY@110..111 "}"
             "#,
         )
     }
