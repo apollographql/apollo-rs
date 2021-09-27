@@ -56,6 +56,9 @@ impl fmt::Debug for Token {
             TokenKind::Dollar => {
                 write!(f, "DOLLAR@{}:{} {:?}", start, end, self.data)
             }
+            TokenKind::Amp => {
+                write!(f, "AMP@{}:{} {:?}", start, end, self.data)
+            }
             TokenKind::Spread => {
                 write!(f, "SPREAD@{}:{} {:?}", start, end, self.data)
             }

@@ -1,12 +1,10 @@
-use crate::parser::grammar::{description, directive, field, name};
+use crate::parser::grammar::{description, directive, field, name, object};
 use crate::{Parser, SyntaxKind, TokenKind, T};
 
-/// See: https://spec.graphql.org/June2018/#InterfaceTypeDefinition
+/// See: https://spec.graphql.org/draft/#InterfaceTypeDefinition
 ///
-/// ```txt
-/// InterfaceTypeDefinition
-///     Description[opt] interface Name Directives[Const][opt] FieldsDefinition[opt]
-/// ```
+/// *InterfaceTypeDefinition*:
+///     Description<sub>opt</sub> **interface** Name ImplementsInterface<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition<sub>opt</sub>
 pub(crate) fn interface_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INTERFACE_TYPE_DEFINITION);
 
@@ -23,6 +21,10 @@ pub(crate) fn interface_type_definition(p: &mut Parser) {
         _ => p.err("expected a Name"),
     }
 
+    if let Some("implements") = p.peek_data().as_deref() {
+        object::implements_interfaces(p, false);
+    }
+
     if let Some(T![@]) = p.peek() {
         directive::directives(p);
     }
@@ -32,13 +34,12 @@ pub(crate) fn interface_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#InterfaceTypeExtension
+/// See: https://spec.graphql.org/draft/#InterfaceTypeExtension
 ///
-/// ```txt
-/// InterfaceTypeExtension
-///     extend interface Name Directives[Const][opt] FieldsDefinition
-///     extend interface Name Directives[Const]
-/// ```
+/// *InterfaceTypeExtension*:
+///     **extend** **interface** Name ImplementsInterface<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition
+///     **extend** **interface** Name ImplementsInterface<sub>opt</sub> Directives
+///     **extend** **interface** Name ImplementsInterface
 pub(crate) fn interface_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INTERFACE_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
@@ -49,6 +50,11 @@ pub(crate) fn interface_type_extension(p: &mut Parser) {
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
         _ => p.err("expected a Name"),
+    }
+
+    if let Some("implements") = p.peek_data().as_deref() {
+        meets_requirements = true;
+        object::implements_interfaces(p, false);
     }
 
     if let Some(T![@]) = p.peek() {
@@ -62,7 +68,7 @@ pub(crate) fn interface_type_extension(p: &mut Parser) {
     }
 
     if !meets_requirements {
-        p.err("exptected Directives or a Fields Definition");
+        p.err("exptected an Implements Interfaces, Directives, or a Fields Definition");
     }
 }
 

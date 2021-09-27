@@ -1,25 +1,25 @@
 use crate::parser::grammar::{directive, name, selection, ty, variable};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
-/// OperationTypeDefinition is used in a SchemaDefinition. Not to be confused
+/// RootOperationTypeDefinition is used in a SchemaDefinition. Not to be confused
 /// with OperationDefinition.
 ///
-/// See: https://spec.graphql.org/June2018/#RootOperationTypeDefinition
+/// See: https://spec.graphql.org/draft/#RootOperationTypeDefinition
 ///
-/// ```txt
-/// OperationTypeDefinition
-///    OperationType : NamedType
-/// ```
-pub(crate) fn operation_type_definition(p: &mut Parser, is_operation_type: bool) {
+/// *RootOperationTypeDefinition*:
+///    OperationType **:** NamedType
+pub(crate) fn root_operation_type_definition(p: &mut Parser, is_operation_type: bool) {
+    p.bump(S!['{']);
+
     if let Some(TokenKind::Name) = p.peek() {
-        let guard = p.start_node(SyntaxKind::OPERATION_TYPE_DEFINITION);
+        let guard = p.start_node(SyntaxKind::ROOT_OPERATION_TYPE_DEFINITION);
         operation_type(p);
         if let Some(T![:]) = p.peek() {
             p.bump(S![:]);
             ty::named_type(p);
             if p.peek().is_some() {
                 guard.finish_node();
-                return operation_type_definition(p, true);
+                return root_operation_type_definition(p, true);
             }
         } else {
             p.err("expected a Name Type");
@@ -31,48 +31,42 @@ pub(crate) fn operation_type_definition(p: &mut Parser, is_operation_type: bool)
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#OperationDefinition
+/// See: https://spec.graphql.org/draft/#OperationDefinition
 ///
-/// ```txt
-/// OperationDefinition
-///    OperationType Name VariableDefinitions Directives SelectionSet
-///    Selection Set (TODO)
-/// ```
+/// *OperationDefinition*:
+///    OperationType Name<sub>opt</sub> VariableDefinitions<sub>opt</sub> Directives<sub>opt</sub> SelectionSet
+///    SelectionSet
 
 pub(crate) fn operation_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OPERATION_DEFINITION);
+
     match p.peek() {
         Some(TokenKind::Name) => operation_type(p),
         Some(T!['{']) => selection::selection_set(p),
         _ => p.err("expected an Operation Type or a Selection Set"),
     }
+
     if let Some(TokenKind::Name) = p.peek() {
         name::name(p);
     }
 
     if let Some(T!['(']) = p.peek() {
-        let _g = p.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
-        p.bump(S!['(']);
-        if let Some(T![$]) = p.peek() {
-            variable::variable_definition(p, false);
-        }
-        p.expect(T![')'], S![')']);
-        // TODO @lrlna error: expected a variable definition to follow an opening brace
+        variable::variable_definitions(p)
     }
+
     if let Some(T![@]) = p.peek() {
         directive::directives(p);
     }
+
     if let Some(T!['{']) = p.peek() {
         selection::selection_set(p)
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#OperationType
+/// See: https://spec.graphql.org/draft/#OperationType
 ///
-/// ```txt
-/// OperationType : one of
-///    query    mutation    subscription
-/// ```
+/// *OperationType*: one of
+///    **query**    **mutation**    **subscription**
 pub(crate) fn operation_type(p: &mut Parser) {
     if let Some(node) = p.peek_data() {
         let _g = p.start_node(SyntaxKind::OPERATION_TYPE);

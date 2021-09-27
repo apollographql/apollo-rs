@@ -10,7 +10,7 @@
 
 This project is intended to house a number of tools related to the low-level
 workings of GraphQL according to the [GraphQL
-specification (June 2018)](https://spec.graphql.org/June2018). Nothing in
+specification (June 2018)](https://spec.graphql.org/draft). Nothing in
 these libraries is specific to Apollo, and can freely be used by other
 projects which need standards-compliant GraphQL tooling written in Rust. The
 following crates currently exist:

@@ -1,12 +1,10 @@
 use crate::parser::grammar::{directive, name, selection, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
-/// See: https://spec.graphql.org/June2018/#FragmentDefinition
+/// See: https://spec.graphql.org/draft/#FragmentDefinition
 ///
-/// ```txt
-/// FragmentDefinition
-///     fragment FragmentName TypeCondition Directives(opt) SelectionSet
-/// ```
+/// *FragmentDefinition*:
+///     **fragment** FragmentName TypeCondition Directives<sub>opt</sub> SelectionSet
 pub(crate) fn fragment_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FRAGMENT_DEFINITION);
     p.bump(SyntaxKind::fragment_KW);
@@ -24,12 +22,10 @@ pub(crate) fn fragment_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#FragmentName
+/// See: https://spec.graphql.org/draft/#FragmentName
 ///
-/// ```txt
-/// FragmentName
-///     Name *but not* on
-/// ```
+/// *FragmentName*:
+///     Name *but not* **on**
 pub(crate) fn fragment_name(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FRAGMENT_NAME);
     match p.peek() {
@@ -43,12 +39,10 @@ pub(crate) fn fragment_name(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#TypeCondition
+/// See: https://spec.graphql.org/draft/#TypeCondition
 ///
-/// ```txt
-/// TypeCondition
-///     on NamedType
-/// ```
+/// *TypeCondition*:
+///     **on** NamedType
 pub(crate) fn type_condition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::TYPE_CONDITION);
     match p.peek() {
@@ -64,36 +58,36 @@ pub(crate) fn type_condition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#InlineFragment
+/// See: https://spec.graphql.org/draft/#InlineFragment
 ///
-/// ```txt
-/// InlineFragment
-///     ... TypeCondition[opt] Directives[opt] SelectionSet
-/// ```
+/// *InlineFragment*:
+///     **...** TypeCondition<sub>opt</sub> Directives<sub>opt</sub> SelectionSet
 pub(crate) fn inline_fragment(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INLINE_FRAGMENT);
     p.bump(S![...]);
+
     if let Some(TokenKind::Name) = p.peek() {
         type_condition(p);
     }
+
     if let Some(T![@]) = p.peek() {
         directive::directives(p);
     }
+
     match p.peek() {
         Some(T!['{']) => selection::selection_set(p),
         _ => p.err("expected Selection Set"),
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#FragmentSpread
+/// See: https://spec.graphql.org/draft/#FragmentSpread
 ///
-/// ```txt
-/// FragmentSpread
-///     ... FragmentName Directives[opt]
-/// ```
+/// *FragmentSpread*:
+///     **...** FragmentName Directives<sub>opt</sub>
 pub(crate) fn fragment_spread(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FRAGMENT_SPREAD);
     p.bump(S![...]);
+
     match p.peek() {
         Some(TokenKind::Name) => {
             fragment_name(p);

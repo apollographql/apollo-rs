@@ -51,6 +51,7 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
         "FRAGMENT_DEFINITION",
         "FRAGMENT_SPREAD",
         "INLINE_FRAGMENT",
+        "VARIABLE_DEFINITION",
         "SCHEMA",
         "SCALAR",
         "OBJECT",
@@ -68,7 +69,7 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
     // WHITESPACE and COMMENT.
     tokens: &["IDENT", "WHITESPACE", "COMMENT"],
     // These are all the "DOCUMENT" items defined in the GraphQL spec --
-    // https://spec.graphql.org/June2018/#sec-Appendix-Grammar-Summary.Document,
+    // https://spec.graphql.org/draft/#sec-Appendix-Grammar-Summary.Document,
     // as well as items listed in the ungrammar file in the root directory.
     nodes: &[
         "NAME",
@@ -120,7 +121,7 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
         "DIRECTIVE_DEFINITION",
         "SCHEMA_EXTENSION",
         "TYPE_EXTENSION",
-        "OPERATION_TYPE_DEFINITION",
+        "ROOT_OPERATION_TYPE_DEFINITION",
         "DESCRIPTION",
         "SCALAR_TYPE_DEFINITION",
         "OBJECT_TYPE_DEFINITION",

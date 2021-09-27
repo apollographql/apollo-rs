@@ -1,12 +1,10 @@
 use crate::parser::grammar::{description, directive, name};
 use crate::{Parser, SyntaxKind, TokenKind, T};
 
-/// See: https://spec.graphql.org/June2018/#ScalarTypeDefinition
+/// See: https://spec.graphql.org/draft/#ScalarTypeDefinition
 ///
-/// ```txt
-/// ScalarTypeDefinition
-///     Description[opt] scalar Name Directives[Const][opt]
-/// ```
+/// *ScalarTypeDefinition*:
+///     Description<sub>opt</sub> **scalar** Name Directives<sub>\[Const\] opt</sub>
 pub(crate) fn scalar_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCALAR_TYPE_DEFINITION);
 
@@ -28,16 +26,15 @@ pub(crate) fn scalar_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#ScalarTypeExtension
+/// See: https://spec.graphql.org/draft/#ScalarTypeExtension
 ///
-/// ```txt
-/// ScalarTypeExtension
-///     extend scalar Name Directives[const]
-/// ```
+/// *ScalarTypeExtension*:
+///     **extend** **scalar** Name Directives<sub>\[Const\]</sub>
 pub(crate) fn scalar_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCALAR_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
     p.bump(SyntaxKind::scalar_KW);
+
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
         _ => p.err("expected a Name"),

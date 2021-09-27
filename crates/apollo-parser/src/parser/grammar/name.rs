@@ -1,11 +1,9 @@
 use crate::{Parser, SyntaxKind, TokenKind, S};
 
-/// See: https://spec.graphql.org/June2018/#Name
+/// See: https://spec.graphql.org/draft/#Name
 ///
-/// ```txt
-/// Name
-///     [_A-Za-z][_0-9A-Za-z]*/
-/// ```
+/// *Name*:
+///     [_A-Za-z][_0-9A-Za-z]
 pub(crate) fn name(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::NAME);
     match p.peek() {
@@ -26,12 +24,10 @@ pub(crate) fn validate_name(name: String, p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#Alias
+/// See: https://spec.graphql.org/draft/#Alias
 ///
-/// ```txt
-/// Alias
-///     Name :
-/// ```
+/// *Alias*:
+///     Name **:**
 pub(crate) fn alias(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ALIAS);
     name(p);

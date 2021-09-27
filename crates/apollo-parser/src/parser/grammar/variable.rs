@@ -1,22 +1,39 @@
-use crate::parser::grammar::{name, ty, value};
+use crate::parser::grammar::{directive, name, ty, value};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
-/// See: https://spec.graphql.org/June2018/#VariableDefinition
+/// See: https://spec.graphql.org/draft/#VariableDefinitions
 ///
-/// ```txt
-/// VariableDefinition
-///     Variable : Type DefaultValue(opt)
-/// ```
+/// *VariableDefinitions*:
+///     **(** VariableDefinition<sub>list</sub> **)**
+pub(crate) fn variable_definitions(p: &mut Parser) {
+    let _g = p.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
+    p.bump(S!['(']);
+
+    // TODO @lrlna error: expected a variable definition to follow an opening brace
+    if let Some(T![$]) = p.peek() {
+        variable_definition(p, false);
+    }
+    p.expect(T![')'], S![')']);
+}
+
+/// See: https://spec.graphql.org/draft/#VariableDefinition
+///
+/// *VariableDefinition*:
+///     Variable **:** Type DefaultValue<sub>opt</sub> Directives<sub>\[Const\] opt</sub>
 pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
     if let Some(T![$]) = p.peek() {
         let guard = p.start_node(SyntaxKind::VARIABLE_DEFINITION);
         variable(p);
+
         if let Some(T![:]) = p.peek() {
             p.bump(S![:]);
             if let Some(TokenKind::Name) = p.peek() {
                 ty::ty(p);
                 if let Some(T![=]) = p.peek() {
                     value::default_value(p);
+                }
+                if let Some(T![@]) = p.peek() {
+                    directive::directives(p)
                 }
                 if p.peek().is_some() {
                     guard.finish_node();
@@ -34,12 +51,10 @@ pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#Variable
+/// See: https://spec.graphql.org/draft/#Variable
 ///
-/// ```txt
-/// Variable
-///     $ Name
-/// ```
+/// *Variable*:
+///     **$** Name
 pub(crate) fn variable(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::VARIABLE);
     p.bump(S![$]);

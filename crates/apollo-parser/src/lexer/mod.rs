@@ -272,6 +272,7 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
         }
         '!' => Ok(Token::new(TokenKind::Bang, c.into())),
         '$' => Ok(Token::new(TokenKind::Dollar, c.into())),
+        '&' => Ok(Token::new(TokenKind::Amp, c.into())),
         '(' => Ok(Token::new(TokenKind::LParen, c.into())),
         ')' => Ok(Token::new(TokenKind::RParen, c.into())),
         ':' => Ok(Token::new(TokenKind::Colon, c.into())),
@@ -291,7 +292,31 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
 }
 
 fn is_whitespace(c: char) -> bool {
-    matches!(c, ' ' | '\t' | '\n' | '\r')
+    // from rust's lexer:
+    matches!(
+        c,
+        // ASCII
+        '\u{0009}'   // \t
+        | '\u{000A}' // \n
+        | '\u{000B}' // vertical tab
+        | '\u{000C}' // form feed
+        | '\u{000D}' // \r
+        | '\u{0020}' // space
+
+        // Unicode BOM (Byte Order Mark)
+        | '\u{FEFF}'
+
+        // NEXT LINE from latin1
+        | '\u{0085}'
+
+        // Bidi markers
+        | '\u{200E}' // LEFT-TO-RIGHT MARK
+        | '\u{200F}' // RIGHT-TO-LEFT MARK
+
+        // Dedicated whitespace characters from Unicode
+        | '\u{2028}' // LINE SEPARATOR
+        | '\u{2029}' // PARAGRAPH SEPARATOR
+    )
 }
 
 fn is_ident_char(c: char) -> bool {

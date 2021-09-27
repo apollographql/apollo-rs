@@ -7,8 +7,8 @@ use std::fmt::{self, Display};
 /// and types exactly matching. The implementations of this interface are
 /// explicitly listed out in possibleTypes.
 ///
-/// *InterfaceDefTypeDefinition*:
-///     Description<sub>opt</sub> **interface** Name ImplementsInterfaceDefs<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition<sub>opt</sub>
+/// *InterfaceTypeDefinition*:
+///     Description<sub>opt</sub> **interface** Name ImplementsInterface<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition<sub>opt</sub>
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-InterfaceDef).
 ///

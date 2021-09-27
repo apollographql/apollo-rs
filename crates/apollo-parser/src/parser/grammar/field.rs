@@ -1,14 +1,13 @@
 use crate::parser::grammar::{argument, description, directive, name, selection, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
-/// See: https://spec.graphql.org/June2018/#Field
+/// See: https://spec.graphql.org/draft/#Field
 ///
-/// ```txt
-/// Field
-///     Alias(opt) Name Arguments(opt) Directives(opt) SelectionSet(opt)
-/// ```
+/// *Field*:
+///     Alias<sub>opt</sub> Name Arguments<sub>opt</sub> Directives<sub>opt</sub> SelectionSet<sub>opt</sub>
 pub(crate) fn field(p: &mut Parser) {
     let guard = p.start_node(SyntaxKind::FIELD);
+
     if let Some(TokenKind::Name) = p.peek() {
         if let Some(T![:]) = p.peek_n(2) {
             name::alias(p)
@@ -17,6 +16,7 @@ pub(crate) fn field(p: &mut Parser) {
     } else {
         p.err("expected a Name");
     }
+
     match p.peek() {
         Some(T!['(']) => argument::arguments(p),
         Some(T![@]) => directive::directives(p),
@@ -32,12 +32,10 @@ pub(crate) fn field(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#FieldsDefinition
+/// See: https://spec.graphql.org/draft/#FieldsDefinition
 ///
-/// ```txt
-/// FieldsDefinition
-///     { FieldDefinition[list] }
-/// ```
+/// *FieldsDefinition*:
+///     **{** FieldDefinition<sub>list</sub> **}**
 pub(crate) fn fields_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FIELDS_DEFINITION);
     p.bump(S!['{']);
@@ -45,12 +43,10 @@ pub(crate) fn fields_definition(p: &mut Parser) {
     p.expect(T!['}'], S!['}']);
 }
 
-/// See: https://spec.graphql.org/June2018/#FieldDefinition
+/// See: https://spec.graphql.org/draft/#FieldDefinition
 ///
-/// ```txt
-/// FieldDefinition
-///     Description[opt] Name ArgumentsDefinition[opt] : Type Directives[Const][opt]
-/// ```
+/// *FieldDefinition*:
+///     Description<sub>opt</sub> Name ArgumentsDefinition<sub>opt</sub> **:** Type Directives<sub>\[Const\] opt</sub>
 pub(crate) fn field_definition(p: &mut Parser) {
     if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
         let guard = p.start_node(SyntaxKind::FIELD_DEFINITION);

@@ -1,12 +1,10 @@
 use crate::parser::grammar::{description, directive, operation};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
-/// See: https://spec.graphql.org/June2018/#SchemaDefinition
+/// See: https://spec.graphql.org/draft/#SchemaDefinition
 ///
-/// ```txt
-/// SchemaDefinition
-///    Description[opt] schema Directives[Const][opt] { RootOperationTypeDefinition[list] }
-/// ```
+/// *SchemaDefinition*:
+///     Description<sub>opt</sub> **schema** Directives<sub>\[Const\] opt</sub> **{** RootOperationTypeDefinition<sub>list</sub> **}**
 pub(crate) fn schema_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCHEMA_DEFINITION);
 
@@ -24,33 +22,38 @@ pub(crate) fn schema_definition(p: &mut Parser) {
 
     if let Some(T!['{']) = p.peek() {
         p.bump(S!['{']);
-        operation::operation_type_definition(p, false);
+        operation::root_operation_type_definition(p, false);
         p.expect(T!['}'], S!['}']);
     } else {
         p.err("expected Root Operation Type Definition");
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#SchemaExtension
+/// See: https://spec.graphql.org/draft/#SchemaExtension
 ///
-/// ```txt
-/// SchemaExtension
-///     extend schema Directives[Const][opt] { OperationTypeDefinition[list] }
-///     extend schema Directives[Const]
-/// ```
+/// *SchemaExtension*:
+///     **extend** **schema** Directives<sub>\[Const\] opt</sub> **{** RootOperationTypeDefinition<sub>list</sub> **}**
+///     **extend** **schema** Directives<sub>\[Const\]</sub>
 pub(crate) fn schema_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCHEMA_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
     p.bump(SyntaxKind::schema_KW);
 
+    let mut meets_requirements = false;
+
     if let Some(T![@]) = p.peek() {
+        meets_requirements = true;
         directive::directives(p);
     }
 
     if let Some(T!['{']) = p.peek() {
-        p.bump(S!['{']);
-        operation::operation_type_definition(p, false);
+        meets_requirements = true;
+        operation::root_operation_type_definition(p, false);
         p.expect(T!['}'], S!['}']);
+    }
+
+    if !meets_requirements {
+        p.err("expected directives or Root Operation Type Definition");
     }
 }
 

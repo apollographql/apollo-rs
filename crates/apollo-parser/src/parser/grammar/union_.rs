@@ -1,12 +1,10 @@
 use crate::parser::grammar::{description, directive, name, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
-/// See: https://spec.graphql.org/June2018/#UnionTypeDefinition
+/// See: https://spec.graphql.org/draft/#UnionTypeDefinition
 ///
-/// ```txt
-/// UnionTypeDefinition
-///     Description[opt] union Name Directives[Const][opt] UnionMemberTypes[opt]
-/// ```
+/// *UnionTypeDefinition*:
+///     Description<sub>opt</sub> **union** Name Directives<sub>\[Const\] opt</sub> UnionDefMemberTypes<sub>opt</sub>
 pub(crate) fn union_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::UNION_TYPE_DEFINITION);
 
@@ -32,13 +30,11 @@ pub(crate) fn union_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#UnionTypeExtension
+/// See: https://spec.graphql.org/draft/#UnionTypeExtension
 ///
-/// ```txt
-/// UnionTypeExtension
-///     extend union Name Directives[Const][opt] UnionMemberTypes
-///     extend union Name Directives[Const]
-/// ```
+/// *UnionTypeExtension*:
+///     **extend** **union** Name Directives<sub>\[Const\] opt</sub> UnionDefMemberTypes
+///     **extend** **union** Name Directives<sub>\[Const\]</sub>
 pub(crate) fn union_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::UNION_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
@@ -66,13 +62,11 @@ pub(crate) fn union_type_extension(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#UnionMemberTypes
+/// See: https://spec.graphql.org/draft/#UnionMemberTypes
 ///
-/// ```txt
-/// UnionMemberTypes
-///     = |[opt] NamedType
-///     UnionMemberTypes | NamedType
-/// ```
+/// *UnionMemberTypes*:
+///     **=** **|**<sub>opt</sub> NamedType
+///     UnionMemberTypes **|** NamedType
 pub(crate) fn union_member_types(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::UNION_MEMBER_TYPES);
     p.bump(S![=]);

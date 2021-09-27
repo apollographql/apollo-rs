@@ -70,7 +70,7 @@ impl SchemaDefinition {
     pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![schema]) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['{']) }
-    pub fn operation_type_definitions(&self) -> AstChildren<OperationTypeDefinition> {
+    pub fn root_operation_type_definitions(&self) -> AstChildren<RootOperationTypeDefinition> {
         support::children(&self.syntax)
     }
     pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['}']) }
@@ -158,7 +158,7 @@ impl SchemaExtension {
     pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![schema]) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['{']) }
-    pub fn operation_type_definitions(&self) -> AstChildren<OperationTypeDefinition> {
+    pub fn root_operation_type_definitions(&self) -> AstChildren<RootOperationTypeDefinition> {
         support::children(&self.syntax)
     }
     pub fn r_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['}']) }
@@ -485,10 +485,10 @@ impl Directive {
     pub fn arguments(&self) -> Option<Arguments> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct OperationTypeDefinition {
+pub struct RootOperationTypeDefinition {
     pub(crate) syntax: SyntaxNode,
 }
-impl OperationTypeDefinition {
+impl RootOperationTypeDefinition {
     pub fn operation_type(&self) -> Option<OperationType> { support::child(&self.syntax) }
     pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![:]) }
     pub fn named_type(&self) -> Option<NamedType> { support::child(&self.syntax) }
@@ -633,6 +633,9 @@ impl DirectiveLocation {
     }
     pub fn inline_fragment_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S![INLINE_FRAGMENT])
+    }
+    pub fn variable_definition_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, S![VARIABLE_DEFINITION])
     }
     pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![SCHEMA]) }
     pub fn scalar_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![SCALAR]) }
@@ -1219,8 +1222,8 @@ impl AstNode for Directive {
     }
     fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for OperationTypeDefinition {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == OPERATION_TYPE_DEFINITION }
+impl AstNode for RootOperationTypeDefinition {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == ROOT_OPERATION_TYPE_DEFINITION }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -1889,7 +1892,7 @@ impl std::fmt::Display for Directive {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for OperationTypeDefinition {
+impl std::fmt::Display for RootOperationTypeDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

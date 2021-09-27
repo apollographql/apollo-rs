@@ -6,6 +6,7 @@ pub enum TokenKind {
     Comment,    // # comment
     Bang,       // !
     Dollar,     // $
+    Amp,        // &
     Spread,     // ...
     Comma,      // ,
     Colon,      // :
@@ -41,6 +42,7 @@ impl From<TokenKind> for rowan::SyntaxKind {
 macro_rules! T {
     [!] => { $ crate :: TokenKind :: Bang } ;
     [$] => { $ crate :: TokenKind :: Dollar } ;
+    [&] => { $ crate :: TokenKind :: Amp } ;
     [...] => { $ crate :: TokenKind :: Spread } ;
     [,] => { $ crate :: TokenKind :: Comma } ;
     [:] => { $ crate :: TokenKind :: Colon } ;

@@ -1,12 +1,10 @@
 use crate::parser::grammar::{description, directive, field, name};
 use crate::{Parser, SyntaxKind, TokenKind, T};
 
-/// See: https://spec.graphql.org/June2018/#ObjectTypeDefinition
+/// See: https://spec.graphql.org/draft/#ObjectTypeDefinition
 ///
-/// ```txt
-/// ObjectTypeDefinition
-///     Description[opt] type Name ImplementsInterfaces[opt] Directives[Const][opt] FieldsDefinition[opt]
-/// ```
+/// *ObjectTypeDefinition*:
+///     Description<sub>opt</sub> **type** Name ImplementsInterfaces<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition<sub>opt</sub>
 pub(crate) fn object_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_TYPE_DEFINITION);
 
@@ -22,6 +20,7 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
         Some(TokenKind::Name) => name::name(p),
         _ => p.err("expected a name"),
     }
+
     if let Some(TokenKind::Name) = p.peek() {
         if p.peek_data().unwrap() == "implements" {
             implements_interfaces(p, false);
@@ -39,14 +38,12 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#ObjectTypeExtension
+/// See: https://spec.graphql.org/draft/#ObjectTypeExtension
 ///
-/// ```txt
-/// ObjectTypeExtension
-///     extend type Name ImplementsInterfaces[opt] Directives[Const][opt] FieldsDefinition
-///     extend type Name ImplementsInterfaces[opt] Directives[Const]
-///     extend type Name ImplementsInterfaces
-/// ```
+/// *ObjectTypeExtension*:
+///     **extend** **type** Name ImplementsInterfaces<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition
+///     **extend** **type** Name ImplementsInterfaces<sub>opt</sub> Directives<sub>\[Const\]</sub>
+///     **extend** **type** Name ImplementsInterfaces
 pub(crate) fn object_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
@@ -60,18 +57,17 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
         Some(TokenKind::Name) => name::name(p),
         _ => p.err("expected a Name"),
     }
-    if let Some(TokenKind::Name) = p.peek() {
-        if p.peek_data().unwrap() == "implements" {
-            meets_requirements = true;
-            implements_interfaces(p, false);
-        } else {
-            p.err("unexpected Name");
-        }
+
+    if let Some("implements") = p.peek_data().as_deref() {
+        meets_requirements = true;
+        implements_interfaces(p, false);
     }
+
     if let Some(T![@]) = p.peek() {
         meets_requirements = true;
         directive::directives(p)
     }
+
     if let Some(T!['{']) = p.peek() {
         meets_requirements = true;
         field::fields_definition(p)
@@ -82,27 +78,20 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#ImplementsInterfaces
+/// See: https://spec.graphql.org/draft/#ImplementsInterfaces
 ///
-/// ```txt
-/// ImplementsInterfaces
-///     implements &[opt] NamedType
-///     ImplementsInterfaces & NamedType
-/// ```
+/// *ImplementsInterfaces*:
+///     **implements** **&**<sub>opt</sub> NamedType
+///     ImplementsInterfaces **&** NamedType
 pub(crate) fn implements_interfaces(p: &mut Parser, is_interfaces: bool) {
     let _g = p.start_node(SyntaxKind::IMPLEMENTS_INTERFACES);
     p.bump(SyntaxKind::implements_KW);
 
     match p.peek() {
-        Some(TokenKind::Name) => {
-            let node = p.peek_data().unwrap();
-            match node.as_str() {
-                "&" => {
-                    p.bump(SyntaxKind::AMP);
-                    implements_interfaces(p, is_interfaces)
-                }
-                _ => name::name(p),
-            }
+        Some(TokenKind::Name) => name::name(p),
+        Some(TokenKind::Amp) => {
+            p.bump(SyntaxKind::AMP);
+            implements_interfaces(p, is_interfaces)
         }
         _ => {
             if !is_interfaces {

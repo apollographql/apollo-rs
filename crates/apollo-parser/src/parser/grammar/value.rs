@@ -1,20 +1,18 @@
 use crate::parser::grammar::{name, variable};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
-/// See: https://spec.graphql.org/June2018/#Value
+/// See: https://spec.graphql.org/draft/#Value
 ///
-/// ```txt
-/// Value [Const]
-///     [~Const] Variable
+/// *Value*<sub>\[Const\]</sub>
+///     <sub>\[if not Const\]</sub> Variable
 ///     IntValue
 ///     FloatValue
 ///     StringValue
 ///     BooleanValue
 ///     NullValue
 ///     EnumValue
-///     ListValue [Const]
-///     ObjectValue [Const]
-/// ```
+///     ListValue<sub>\[?Const\]</sub>
+///     ObjectValue<sub>\[?Const\]</sub>
 pub(crate) fn value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::VALUE);
     match p.peek() {
@@ -37,11 +35,10 @@ pub(crate) fn value(p: &mut Parser) {
         _ => p.err("expected a valid Value"),
     }
 }
-/// See: https://spec.graphql.org/June2018/#EnumValue
-/// ```txt
-/// EnumValue
-/// Name but not true or false or null
-/// ```
+/// See: https://spec.graphql.org/draft/#EnumValue
+///
+/// *EnumValue*:
+///     Name *but not* **true** *or* **false** *or* **null**
 pub(crate) fn enum_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_VALUE);
     let name = p.peek_data().unwrap();
@@ -49,18 +46,19 @@ pub(crate) fn enum_value(p: &mut Parser) {
     if matches!(name.as_str(), "true" | "false" | "null") {
         p.err("unexpected Enum Value");
     }
+
     name::name(p);
 }
 
-/// See: https://spec.graphql.org/June2018/#ListValue
-/// ```txt
-/// ListValue[Const]
-///     [ ]
-///     [ Value [?const][list] ]
-/// ```
+/// See: https://spec.graphql.org/draft/#ListValue
+///
+/// *ListValue*<sub>\[Const\]</sub>:
+///     **[** **]**
+///     **[** Value<sub>\[?Const\] list</sub> **]**
 pub(crate) fn list_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::LIST_VALUE);
     p.bump(S!['[']);
+
     while let Some(node) = p.peek() {
         if node == T![']'] {
             p.bump(S![']']);
@@ -71,15 +69,15 @@ pub(crate) fn list_value(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#ObjectValue
+/// See: https://spec.graphql.org/draft/#ObjectValue
 ///
-/// ```txt
-/// ObjectValue [Const]
-///     { }
-///     { ObjectField [Const][list] }
+/// *ObjectValue*<sub>\[Const\]</sub>:
+///     **{** **}**
+///     **{** ObjectField<sub>\[?Const\] list</sub> **}**
 pub(crate) fn object_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_VALUE);
     p.bump(S!['{']);
+
     match p.peek() {
         Some(TokenKind::Name) => {
             object_field(p);
@@ -96,16 +94,15 @@ pub(crate) fn object_value(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#ObjectField
+/// See: https://spec.graphql.org/draft/#ObjectField
 ///
-/// ```txt
-/// ObjectField [Const]
-///     Name : Value [const]
-/// ```
+/// *ObjectField*<sub>\[Const\]</sub>:
+///     Name **:** Value<sub>\[?Const\]</sub>
 pub(crate) fn object_field(p: &mut Parser) {
     if let Some(TokenKind::Name) = p.peek() {
         let guard = p.start_node(SyntaxKind::OBJECT_FIELD);
         name::name(p);
+
         if let Some(T![:]) = p.peek() {
             p.bump(S![:]);
             value(p);
@@ -117,6 +114,10 @@ pub(crate) fn object_field(p: &mut Parser) {
     }
 }
 
+/// See: https://spec.graphql.org/draft/#DefaultValue
+///
+/// *DefaultValue*:
+///     **=** Value<sub>\[Const\]</sub>
 pub(crate) fn default_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DEFAULT_VALUE);
     p.bump(S![=]);

@@ -4,6 +4,10 @@ use crate::parser::grammar::{
 };
 use crate::{Parser, SyntaxKind, TokenKind};
 
+/// See: https://spec.graphql.org/draft/#Document
+///
+/// *Document*
+///     Definition<sub>list</sub>
 pub(crate) fn document(p: &mut Parser) {
     let doc = p.start_node(SyntaxKind::DOCUMENT);
 

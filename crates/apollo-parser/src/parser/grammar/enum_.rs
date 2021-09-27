@@ -1,12 +1,10 @@
 use crate::parser::grammar::{description, directive, name, value};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
-/// See: https://spec.graphql.org/June2018/#EnumTypeDefinition
+/// See: https://spec.graphql.org/draft/#EnumTypeDefinition
 ///
-/// ```txt
-// EnumTypeDefinition
-//     Description[opt] enum Name Directives[Const][opt] EnumValuesDefinition[opt]
-/// ```
+/// *EnumTypeDefinition*:
+///     Description<sub>opt</sub> **enum** Name Directives<sub>\[Const\] opt</sub> EnumValuesDefinition <sub>opt</sub>
 pub(crate) fn enum_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_TYPE_DEFINITION);
 
@@ -32,13 +30,11 @@ pub(crate) fn enum_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#EnumTypeExtension
+/// See: https://spec.graphql.org/draft/#EnumTypeExtension
 ///
-/// ```txt
-// EnumTypeExtension
-///    extend enum Name Directives[Const][opt] EnumValuesDefinition
-///    extend enum Name Directives[Const]
-/// ```
+// *EnumTypeExtension*:
+///    **extend** **enum** Name Directives<sub>\[Const\] opt</sub> EnumValuesDefinition
+///    **extend** **enum** Name Directives<sub>\[Const\]</sub>
 pub(crate) fn enum_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
@@ -66,12 +62,10 @@ pub(crate) fn enum_type_extension(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#EnumValuesDefinition
+/// See: https://spec.graphql.org/draft/#EnumValuesDefinition
 ///
-/// ```txt
-/// EnumValuesDefinition
-///     { EnumValueDefinition[list] }
-/// ```
+/// *EnumValuesDefinition*:
+///     **{** EnumValueDefinition<sub>list</sub> **}**
 pub(crate) fn enum_values_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_VALUES_DEFINITION);
     p.bump(S!['{']);
@@ -84,12 +78,10 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
     p.expect(T!['}'], S!['}']);
 }
 
-/// See: https://spec.graphql.org/June2018/#EnumValueDefinition
+/// See: https://spec.graphql.org/draft/#EnumValueDefinition
 ///
-/// ```txt
-/// EnumValueDefinition
-///     Description[opt] EnumValue Directives[Const][opt]
-/// ```
+/// *EnumValueDefinition*:
+///     Description<sub>opt</sub> EnumValue Directives<sub>\[Const\] opt</sub>
 pub(crate) fn enum_value_definition(p: &mut Parser) {
     if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
         let guard = p.start_node(SyntaxKind::ENUM_VALUE_DEFINITION);

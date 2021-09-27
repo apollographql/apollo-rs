@@ -1,12 +1,10 @@
 use crate::parser::grammar::{field, fragment};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
-/// See: https://spec.graphql.org/June2018/#SelectionSet
+/// See: https://spec.graphql.org/draft/#SelectionSet
 ///
-/// ```txt
-/// SelectionSet
-///     { Selection }
-/// ```
+/// *SelectionSet*:
+///     **{** Selection<sub>list</sub> **}**
 pub(crate) fn selection_set(p: &mut Parser) {
     if let Some(T!['{']) = p.peek() {
         let _g = p.start_node(SyntaxKind::SELECTION_SET);
@@ -16,16 +14,15 @@ pub(crate) fn selection_set(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#Selection
+/// See: https://spec.graphql.org/draft/#Selection
 ///
-/// ```txt
-/// Selection
+/// *Selection*:
 ///     Field
 ///     FragmentSpread
 ///     InlineFragment
-/// ```
 pub(crate) fn selection(p: &mut Parser) {
     let guard = p.start_node(SyntaxKind::SELECTION);
+
     while let Some(node) = p.peek() {
         match node {
             T![...] => {

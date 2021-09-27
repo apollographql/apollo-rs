@@ -4,17 +4,16 @@ use crate::{Parser, SyntaxKind, Token, TokenKind, S, T};
 
 use crate::parser::grammar::name;
 
-/// See: https://spec.graphql.org/June2018/#InputValueDefinition
+/// See: https://spec.graphql.org/draft/#InputValueDefinition
 ///
-/// ```txt
-/// Type
+/// *Type*:
 ///     NamedType
 ///     ListType
-///         [ Type ]
+///         **[** Type **]**
 ///     NonNullType
-///         NamedType!
-///         ListType!
-/// ```
+///         NamedType **!**
+///         ListType **!**
+
 // NOTE(lrlna): Because Type cannot be parsed in a typical LR fashion, the
 // following parsing rule does not follow the same pattern as all other parsing
 // rules in this library. The parent node type is determined based on what its
@@ -94,12 +93,10 @@ pub(crate) fn ty(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#NamedType
+/// See: https://spec.graphql.org/draft/#NamedType
 ///
-/// ```txt
-/// NamedType
+/// *NamedType*:
 ///     Name
-/// ```
 pub(crate) fn named_type(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::NAMED_TYPE);
     name::name(p);

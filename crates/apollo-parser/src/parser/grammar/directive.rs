@@ -1,12 +1,10 @@
 use crate::parser::grammar::{argument, description, input, name};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
-/// See: https://spec.graphql.org/June2018/#DirectiveDefinition
+/// See: https://spec.graphql.org/draft/#DirectiveDefinition
 ///
-/// ```txt
-/// DirectiveDefinition
-///     Description(opt) directive @ Name ArgumentsDefinition(opt) repeatable(opt) on DirectiveLocations
-/// ```
+/// *DirectiveDefinition*:
+///     Description<sub>opt</sub> **directive @** Name ArgumentsDefinition<sub>opt</sub> **repeatable**<sub>opt</sub> **on** DirectiveLocations
 pub(crate) fn directive_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DIRECTIVE_DEFINITION);
 
@@ -52,7 +50,11 @@ pub(crate) fn directive_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#DirectiveLocations
+/// See: https://spec.graphql.org/draft/#DirectiveLocations
+///
+/// *DirectiveLocations*:
+///     DirectiveLocations **|** DirectiveLocation
+///     **|**<sub>opt</sub> DirectiveLocation
 pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
     if let Some(T![|]) = p.peek() {
         p.bump(S![|]);
@@ -62,9 +64,13 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
     if let Some(TokenKind::Name) = p.peek() {
         let loc = p.peek_data().unwrap();
         match loc.as_str() {
-            "MUTATION" => {
+            "QUERY" => {
                 let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
                 p.bump(SyntaxKind::QUERY_KW);
+            }
+            "MUTATION" => {
+                let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
+                p.bump(SyntaxKind::MUTATION_KW);
             }
             "SUBSCRIPTION" => {
                 let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
@@ -85,6 +91,10 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
             "INLINE_FRAGMENT" => {
                 let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
                 p.bump(SyntaxKind::INLINE_FRAGMENT_KW);
+            }
+            "VARIABLE_DEFINITION" => {
+                let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
+                p.bump(SyntaxKind::VARIABLE_DEFINITION_KW);
             }
             "SCHEMA" => {
                 let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
@@ -146,12 +156,10 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#Directive
+/// See: https://spec.graphql.org/draft/#Directive
 ///
-/// ```txt
-/// Directive
-///     @ Name Arguments
-/// ```
+/// *Directive*<sub>\[Const\]</sub>:
+///     **@** Name Arguments<sub>\[Const\] opt</sub>
 pub(crate) fn directive(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DIRECTIVE);
 
@@ -163,6 +171,10 @@ pub(crate) fn directive(p: &mut Parser) {
     }
 }
 
+/// See: https://spec.graphql.org/draft/#Directives
+///
+/// *Directives*<sub>\[Const\]</sub>:
+///     Directive<sub>\[Const\] list</sub>
 pub(crate) fn directives(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DIRECTIVES);
     while let Some(T![@]) = p.peek() {

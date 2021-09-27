@@ -1,12 +1,10 @@
 use crate::parser::grammar::{input, name, value};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
-/// See: https://spec.graphql.org/June2018/#Argument
+/// See: https://spec.graphql.org/draft/#Argument
 ///
-/// ```txt
-/// Argument
-///    Name : Value
-/// ```
+/// *Argument*<sub>\[Const\]</sub>:
+///    Name **:** Value<sub>\[?Const\]</sub>
 pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
     if let Some(TokenKind::Name) = p.peek() {
         let guard = p.start_node(SyntaxKind::ARGUMENT);
@@ -26,12 +24,10 @@ pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
     }
 }
 
-/// See: https://spec.graphql.org/June2018/#Arguments
+/// See: https://spec.graphql.org/draft/#Arguments
 ///
-/// ```txt
-/// Arguments
-///    ( Argument(list) )
-/// ```
+/// *Arguments*<sub>\[Const\]</sub>:
+///    **(** Argument<sub>\[?Const\] list</sub> **)**
 pub(crate) fn arguments(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ARGUMENTS);
     p.bump(S!['(']);
@@ -39,12 +35,10 @@ pub(crate) fn arguments(p: &mut Parser) {
     p.expect(T![')'], S![')']);
 }
 
-/// See: https://spec.graphql.org/June2018/#ArgumentsDefinition
+/// See: https://spec.graphql.org/draft/#ArgumentsDefinition
 ///
-/// ```txt
-/// ArgumentsDefinition
-///     ( InputValueDefinition[list] )
-/// ```
+/// *ArgumentsDefinition*:
+///     **(** InputValueDefinition<sub>list</sub> **)**
 pub(crate) fn arguments_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ARGUMENTS);
     p.bump(S!['(']);

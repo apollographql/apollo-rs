@@ -160,13 +160,13 @@ Directive =
   '@' Name Arguments?
 
 SchemaDefinition =
-  'schema' Directives? '{' OperationTypeDefinition* '}'
+  'schema' Directives? '{' RootOperationTypeDefinition* '}'
 
 SchemaExtension =
-  'extend' 'schema' Directives? '{' OperationTypeDefinition* '}'
+  'extend' 'schema' Directives? '{' RootOperationTypeDefinition* '}'
   | 'extend' 'schema' Directives
 
-OperationTypeDefinition =
+RootOperationTypeDefinition =
   OperationType ':' NamedType
 
 Description =
@@ -257,6 +257,7 @@ DirectiveLocation =
   | 'FRAGMENT_DEFINITION'
   | 'FRAGMENT_SPREAD'
   | 'INLINE_FRAGMENT'
+  | 'VARIABLE_DEFINITION'
   | 'SCHEMA'
   | 'SCALAR'
   | 'OBJECT'
