@@ -66,7 +66,7 @@ pub(crate) fn enum_type_extension(p: &mut Parser) {
 ///     { EnumValueDefinition[list] }
 /// ```
 pub(crate) fn enum_values_definition(p: &mut Parser) {
-    let g = p.start_node(SyntaxKind::ENUM_VALUES_DEFINITION);
+    let _g = p.start_node(SyntaxKind::ENUM_VALUES_DEFINITION);
     p.bump(S!['{']);
 
     match p.peek() {
@@ -75,8 +75,6 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
     }
 
     p.expect(T!['}'], S!['}']);
-    g.finish_node();
-    p.bump_ignored();
 }
 
 /// See: https://spec.graphql.org/June2018/#EnumValueDefinition

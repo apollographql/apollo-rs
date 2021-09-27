@@ -9,12 +9,10 @@ use crate::{Parser, SyntaxKind, TokenKind, S, T};
 /// ```
 pub(crate) fn selection_set(p: &mut Parser) {
     if let Some(T!['{']) = p.peek() {
-        let guard = p.start_node(SyntaxKind::SELECTION_SET);
+        let _g = p.start_node(SyntaxKind::SELECTION_SET);
         p.bump(S!['{']);
         selection(p);
         p.expect(T!['}'], S!['}']);
-        guard.finish_node();
-        p.bump_ignored();
     }
 }
 

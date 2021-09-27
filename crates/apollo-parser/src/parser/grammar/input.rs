@@ -66,12 +66,10 @@ pub(crate) fn input_object_type_extension(p: &mut Parser) {
 ///     { InputValueDefinition[list] }
 /// ```
 pub(crate) fn input_fields_definition(p: &mut Parser) {
-    let g = p.start_node(SyntaxKind::INPUT_FIELDS_DEFINITION);
+    let _g = p.start_node(SyntaxKind::INPUT_FIELDS_DEFINITION);
     p.bump(S!['{']);
     input_value_definition(p, false);
     p.expect(T!['}'], S!['}']);
-    g.finish_node();
-    p.bump_ignored();
 }
 
 /// See: https://spec.graphql.org/June2018/#InputValueDefinition

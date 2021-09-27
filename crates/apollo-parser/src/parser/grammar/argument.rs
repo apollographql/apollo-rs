@@ -37,12 +37,10 @@ pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
 ///    ( Argument(list) )
 /// ```
 pub(crate) fn arguments(p: &mut Parser) {
-    let guard = p.start_node(SyntaxKind::ARGUMENTS);
+    let _g = p.start_node(SyntaxKind::ARGUMENTS);
     p.bump(S!['(']);
     argument(p, false);
     p.expect(T![')'], S![')']);
-    guard.finish_node();
-    p.bump_ignored();
 }
 
 /// See: https://spec.graphql.org/June2018/#ArgumentsDefinition
@@ -52,10 +50,8 @@ pub(crate) fn arguments(p: &mut Parser) {
 ///     ( InputValueDefinition[list] )
 /// ```
 pub(crate) fn arguments_definition(p: &mut Parser) {
-    let guard = p.start_node(SyntaxKind::ARGUMENTS);
+    let _g = p.start_node(SyntaxKind::ARGUMENTS);
     p.bump(S!['(']);
     input::input_value_definition(p, false);
     p.expect(T![')'], S![')']);
-    guard.finish_node();
-    p.bump_ignored();
 }

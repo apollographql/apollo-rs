@@ -56,14 +56,12 @@ pub(crate) fn operation_definition(p: &mut Parser) {
     }
 
     if let Some(T!['(']) = p.peek() {
-        let guard = p.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
+        let _g = p.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
         p.bump(S!['(']);
         if let Some(T![$]) = p.peek() {
             variable::variable_definition(p, false);
         }
         p.expect(T![')'], S![')']);
-        guard.finish_node();
-        p.bump_ignored();
         // TODO @lrlna error: expected a variable definition to follow an opening brace
     }
     if let Some(T![@]) = p.peek() {

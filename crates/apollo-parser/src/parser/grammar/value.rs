@@ -59,13 +59,11 @@ pub(crate) fn enum_value(p: &mut Parser) {
 ///     [ Value [?const][list] ]
 /// ```
 pub(crate) fn list_value(p: &mut Parser) {
-    let guard = p.start_node(SyntaxKind::LIST_VALUE);
+    let _g = p.start_node(SyntaxKind::LIST_VALUE);
     p.bump(S!['[']);
     while let Some(node) = p.peek() {
         if node == T![']'] {
             p.bump(S![']']);
-            guard.finish_node();
-            p.bump_ignored();
             break;
         } else if node == T![,] {
             p.bump(S![,]);
@@ -83,23 +81,19 @@ pub(crate) fn list_value(p: &mut Parser) {
 ///     { }
 ///     { ObjectField [Const][list] }
 pub(crate) fn object_value(p: &mut Parser) {
-    let guard = p.start_node(SyntaxKind::OBJECT_VALUE);
+    let _g = p.start_node(SyntaxKind::OBJECT_VALUE);
     p.bump(S!['{']);
     match p.peek() {
         Some(TokenKind::Name) => {
             object_field(p);
             if let Some(T!['}']) = p.peek() {
                 p.bump(S!['}']);
-                guard.finish_node();
-                p.bump_ignored();
             } else {
                 p.err("expected }");
             }
         }
         Some(T!['}']) => {
             p.bump(S!['}']);
-            guard.finish_node();
-            p.bump_ignored();
         }
         _ => p.err("expected Object Value"),
     }

@@ -87,7 +87,7 @@ impl Parser {
     }
 
     /// Consume ignored tokens and add them to the AST.
-    pub(crate) fn bump_ignored(&mut self) {
+    fn bump_ignored(&mut self) {
         while let Some(TokenKind::Comment | TokenKind::Whitespace) = self.peek() {
             if let Some(TokenKind::Comment) = self.peek() {
                 self.bump(SyntaxKind::COMMENT);
@@ -104,7 +104,7 @@ impl Parser {
     }
 
     /// Consume a token from the lexer and add it to the AST.
-    pub(crate) fn eat(&mut self, kind: SyntaxKind) {
+    fn eat(&mut self, kind: SyntaxKind) {
         let token = self.tokens.pop().unwrap();
         self.builder.borrow_mut().token(kind, token.data());
     }
@@ -122,7 +122,7 @@ impl Parser {
         let current_t = self.current();
 
         if self.at(token) {
-            self.eat(kind);
+            self.bump(kind);
             return;
         }
 

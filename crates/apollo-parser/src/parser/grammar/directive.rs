@@ -18,12 +18,10 @@ pub(crate) fn directive_definition(p: &mut Parser) {
     name::name(p);
 
     if let Some(T!['(']) = p.peek() {
-        let guard = p.start_node(SyntaxKind::ARGUMENTS_DEFINITION);
+        let _g = p.start_node(SyntaxKind::ARGUMENTS_DEFINITION);
         p.bump(S!['(']);
         input::input_value_definition(p, false);
         p.expect(T![')'], S![')']);
-        guard.finish_node();
-        p.bump_ignored();
     }
 
     if let Some(node) = p.peek_data() {
