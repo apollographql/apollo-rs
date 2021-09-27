@@ -1,4 +1,4 @@
-use crate::parser::grammar::{directive, name};
+use crate::parser::grammar::{description, directive, name};
 use crate::{Parser, SyntaxKind, TokenKind, T};
 
 /// See: https://spec.graphql.org/June2018/#ScalarTypeDefinition
@@ -9,7 +9,15 @@ use crate::{Parser, SyntaxKind, TokenKind, T};
 /// ```
 pub(crate) fn scalar_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCALAR_TYPE_DEFINITION);
-    p.bump(SyntaxKind::scalar_KW);
+
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
+    if let Some("scalar") = p.peek_data().as_deref() {
+        p.bump(SyntaxKind::scalar_KW);
+    }
+
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
         _ => p.err("expected a Name"),

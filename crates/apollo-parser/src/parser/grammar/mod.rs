@@ -1,6 +1,7 @@
 pub(crate) mod document;
 
 mod argument;
+mod description;
 mod directive;
 mod enum_;
 mod extensions;

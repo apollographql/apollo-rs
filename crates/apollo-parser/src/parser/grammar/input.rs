@@ -1,4 +1,4 @@
-use crate::parser::grammar::{directive, name, ty, value};
+use crate::parser::grammar::{description, directive, name, ty, value};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#InputObjectTypeDefinition
@@ -9,7 +9,14 @@ use crate::{Parser, SyntaxKind, TokenKind, S, T};
 /// ```
 pub(crate) fn input_object_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INPUT_OBJECT_TYPE_DEFINITION);
-    p.bump(SyntaxKind::input_KW);
+
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
+    if let Some("input") = p.peek_data().as_deref() {
+        p.bump(SyntaxKind::input_KW);
+    }
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
@@ -79,9 +86,15 @@ pub(crate) fn input_fields_definition(p: &mut Parser) {
 ///     Description(opt) Name : Type DefaultValue(opt) Directives(const/opt)
 /// ```
 pub(crate) fn input_value_definition(p: &mut Parser, is_input: bool) {
-    if let Some(TokenKind::Name) = p.peek() {
+    if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
         let guard = p.start_node(SyntaxKind::INPUT_VALUE_DEFINITION);
+
+        if let Some(TokenKind::StringValue) = p.peek() {
+            description::description(p);
+        }
+
         name::name(p);
+
         if let Some(T![:]) = p.peek() {
             p.bump(S![:]);
             match p.peek() {

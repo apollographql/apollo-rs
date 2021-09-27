@@ -205,35 +205,3 @@ impl Drop for NodeGuard {
         self.builder.borrow_mut().finish_node();
     }
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    use indoc::indoc;
-
-    #[test]
-    fn smoke_subgraph_test() {
-        let input = indoc! { r#"
-            schema {
-              query: Query
-            }
-
-            type Query {
-              translate(
-                fromLanguage: Language
-                toLanguage: Language
-                text: String
-              ): String
-            }
-
-            enum Language {
-              EN
-              FR
-              CH
-            }
-        "#};
-        let parser = Parser::new(input);
-
-        println!("{:?}", parser.parse());
-    }
-}

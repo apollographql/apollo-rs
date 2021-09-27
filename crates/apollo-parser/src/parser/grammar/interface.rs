@@ -1,4 +1,4 @@
-use crate::parser::grammar::{directive, field, name};
+use crate::parser::grammar::{description, directive, field, name};
 use crate::{Parser, SyntaxKind, TokenKind, T};
 
 /// See: https://spec.graphql.org/June2018/#InterfaceTypeDefinition
@@ -9,7 +9,14 @@ use crate::{Parser, SyntaxKind, TokenKind, T};
 /// ```
 pub(crate) fn interface_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INTERFACE_TYPE_DEFINITION);
-    p.bump(SyntaxKind::interface_KW);
+
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
+    if let Some("interface") = p.peek_data().as_deref() {
+        p.bump(SyntaxKind::interface_KW);
+    }
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),

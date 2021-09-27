@@ -1,4 +1,4 @@
-use crate::parser::grammar::{argument, directive, name, selection, ty};
+use crate::parser::grammar::{argument, description, directive, name, selection, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#Field
@@ -57,9 +57,15 @@ pub(crate) fn fields_definition(p: &mut Parser) {
 ///     Description[opt] Name ArgumentsDefinition[opt] : Type Directives[Const][opt]
 /// ```
 pub(crate) fn field_definition(p: &mut Parser) {
-    if let Some(TokenKind::Name) = p.peek() {
+    if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
         let guard = p.start_node(SyntaxKind::FIELD_DEFINITION);
+
+        if let Some(TokenKind::StringValue) = p.peek() {
+            description::description(p);
+        }
+
         name::name(p);
+
         if let Some(T!['(']) = p.peek() {
             argument::arguments_definition(p);
         }

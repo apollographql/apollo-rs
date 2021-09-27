@@ -1,4 +1,4 @@
-use crate::parser::grammar::{directive, name, value};
+use crate::parser::grammar::{description, directive, name, value};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#EnumTypeDefinition
@@ -9,7 +9,14 @@ use crate::{Parser, SyntaxKind, TokenKind, S, T};
 /// ```
 pub(crate) fn enum_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_TYPE_DEFINITION);
-    p.bump(SyntaxKind::enum_KW);
+
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
+    if let Some("enum") = p.peek_data().as_deref() {
+        p.bump(SyntaxKind::enum_KW);
+    }
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
@@ -70,7 +77,7 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
     p.bump(S!['{']);
 
     match p.peek() {
-        Some(TokenKind::Name) => enum_value_definition(p),
+        Some(TokenKind::Name | TokenKind::StringValue) => enum_value_definition(p),
         _ => p.err("expected Enum Value Definition"),
     }
 
@@ -84,8 +91,13 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
 ///     Description[opt] EnumValue Directives[Const][opt]
 /// ```
 pub(crate) fn enum_value_definition(p: &mut Parser) {
-    if let Some(TokenKind::Name) = p.peek() {
+    if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
         let guard = p.start_node(SyntaxKind::ENUM_VALUE_DEFINITION);
+
+        if let Some(TokenKind::StringValue) = p.peek() {
+            description::description(p);
+        }
+
         value::enum_value(p);
 
         if let Some(T![@]) = p.peek() {
@@ -115,43 +127,49 @@ mod test {
     fn it_parses_enum_type_definition() {
         utils::check_ast(
             "enum Direction {
+              \"\"\"
+              enum description
+              \"\"\"
               NORTH
               EAST
               SOUTH
               WEST
             }",
             r#"
-            - DOCUMENT@0..108
-                - ENUM_TYPE_DEFINITION@0..108
+            - DOCUMENT@0..174
+                - ENUM_TYPE_DEFINITION@0..174
                     - enum_KW@0..4 "enum"
                     - WHITESPACE@4..5 " "
                     - NAME@5..15
                         - IDENT@5..14 "Direction"
                         - WHITESPACE@14..15 " "
-                    - ENUM_VALUES_DEFINITION@15..108
+                    - ENUM_VALUES_DEFINITION@15..174
                         - L_CURLY@15..16 "{"
                         - WHITESPACE@16..31 "\n              "
-                        - ENUM_VALUE_DEFINITION@31..51
-                            - ENUM_VALUE@31..51
-                                - NAME@31..51
-                                    - IDENT@31..36 "NORTH"
-                                    - WHITESPACE@36..51 "\n              "
-                        - ENUM_VALUE_DEFINITION@51..70
-                            - ENUM_VALUE@51..70
-                                - NAME@51..70
-                                    - IDENT@51..55 "EAST"
-                                    - WHITESPACE@55..70 "\n              "
-                        - ENUM_VALUE_DEFINITION@70..90
-                            - ENUM_VALUE@70..90
-                                - NAME@70..90
-                                    - IDENT@70..75 "SOUTH"
-                                    - WHITESPACE@75..90 "\n              "
-                        - ENUM_VALUE_DEFINITION@90..107
-                            - ENUM_VALUE@90..107
-                                - NAME@90..107
-                                    - IDENT@90..94 "WEST"
-                                    - WHITESPACE@94..107 "\n            "
-                        - R_CURLY@107..108 "}"
+                        - ENUM_VALUE_DEFINITION@31..117
+                            - DESCRIPTION@31..97
+                                - STRING_VALUE@31..82 "\"\"\n              enum description\n              \"\"\""
+                                - WHITESPACE@82..97 "\n              "
+                            - ENUM_VALUE@97..117
+                                - NAME@97..117
+                                    - IDENT@97..102 "NORTH"
+                                    - WHITESPACE@102..117 "\n              "
+                        - ENUM_VALUE_DEFINITION@117..136
+                            - ENUM_VALUE@117..136
+                                - NAME@117..136
+                                    - IDENT@117..121 "EAST"
+                                    - WHITESPACE@121..136 "\n              "
+                        - ENUM_VALUE_DEFINITION@136..156
+                            - ENUM_VALUE@136..156
+                                - NAME@136..156
+                                    - IDENT@136..141 "SOUTH"
+                                    - WHITESPACE@141..156 "\n              "
+                        - ENUM_VALUE_DEFINITION@156..173
+                            - ENUM_VALUE@156..173
+                                - NAME@156..173
+                                    - IDENT@156..160 "WEST"
+                                    - WHITESPACE@160..173 "\n            "
+                        - R_CURLY@173..174 "}"
             "#,
         )
     }

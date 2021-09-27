@@ -1,4 +1,4 @@
-use crate::parser::grammar::{directive, name, ty};
+use crate::parser::grammar::{description, directive, name, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#UnionTypeDefinition
@@ -9,7 +9,14 @@ use crate::{Parser, SyntaxKind, TokenKind, S, T};
 /// ```
 pub(crate) fn union_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::UNION_TYPE_DEFINITION);
-    p.bump(SyntaxKind::union_KW);
+
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
+    if let Some("union") = p.peek_data().as_deref() {
+        p.bump(SyntaxKind::union_KW);
+    }
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),

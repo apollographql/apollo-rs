@@ -1,4 +1,4 @@
-use crate::parser::grammar::{directive, field, name};
+use crate::parser::grammar::{description, directive, field, name};
 use crate::{Parser, SyntaxKind, TokenKind, T};
 
 /// See: https://spec.graphql.org/June2018/#ObjectTypeDefinition
@@ -9,7 +9,14 @@ use crate::{Parser, SyntaxKind, TokenKind, T};
 /// ```
 pub(crate) fn object_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_TYPE_DEFINITION);
-    p.bump(SyntaxKind::type_KW);
+
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
+    if let Some("type") = p.peek_data().as_deref() {
+        p.bump(SyntaxKind::type_KW);
+    }
 
     match p.peek() {
         Some(TokenKind::Name) => name::name(p),
@@ -113,60 +120,70 @@ mod test {
     fn it_parses_object_type_definition() {
         utils::check_ast(
             "
+            \"description of type\"
             type Person implements Human {
+              \"\"\"
+              description of field
+              \"\"\"
               name: String
               age: Int
               picture: Url
             }",
             r#"
-            - DOCUMENT@0..134
+            - DOCUMENT@0..238
                 - WHITESPACE@0..13 "\n            "
-                - OBJECT_TYPE_DEFINITION@13..134
-                    - type_KW@13..17 "type"
-                    - WHITESPACE@17..18 " "
-                    - NAME@18..25
-                        - IDENT@18..24 "Person"
-                        - WHITESPACE@24..25 " "
-                    - IMPLEMENTS_INTERFACES@25..42
-                        - implements_KW@25..35 "implements"
-                        - WHITESPACE@35..36 " "
-                        - NAME@36..42
-                            - IDENT@36..41 "Human"
-                            - WHITESPACE@41..42 " "
-                    - FIELDS_DEFINITION@42..134
-                        - L_CURLY@42..43 "{"
-                        - WHITESPACE@43..58 "\n              "
-                        - FIELD_DEFINITION@58..85
-                            - NAME@58..62
-                                - IDENT@58..62 "name"
-                            - COLON@62..63 ":"
-                            - WHITESPACE@63..64 " "
-                            - TYPE@64..85
-                                - WHITESPACE@64..79 "\n              "
-                                - NAMED_TYPE@79..85
-                                    - NAME@79..85
-                                        - IDENT@79..85 "String"
-                        - FIELD_DEFINITION@85..108
-                            - NAME@85..88
-                                - IDENT@85..88 "age"
-                            - COLON@88..89 ":"
-                            - WHITESPACE@89..90 " "
-                            - TYPE@90..108
-                                - WHITESPACE@90..105 "\n              "
-                                - NAMED_TYPE@105..108
-                                    - NAME@105..108
-                                        - IDENT@105..108 "Int"
-                        - FIELD_DEFINITION@108..133
-                            - NAME@108..115
-                                - IDENT@108..115 "picture"
-                            - COLON@115..116 ":"
-                            - WHITESPACE@116..117 " "
-                            - TYPE@117..133
-                                - WHITESPACE@117..130 "\n            "
-                                - NAMED_TYPE@130..133
-                                    - NAME@130..133
-                                        - IDENT@130..133 "Url"
-                        - R_CURLY@133..134 "}"
+                - OBJECT_TYPE_DEFINITION@13..238
+                    - DESCRIPTION@13..47
+                        - STRING_VALUE@13..34 "\"description of type\""
+                        - WHITESPACE@34..47 "\n            "
+                    - type_KW@47..51 "type"
+                    - WHITESPACE@51..52 " "
+                    - NAME@52..59
+                        - IDENT@52..58 "Person"
+                        - WHITESPACE@58..59 " "
+                    - IMPLEMENTS_INTERFACES@59..76
+                        - implements_KW@59..69 "implements"
+                        - WHITESPACE@69..70 " "
+                        - NAME@70..76
+                            - IDENT@70..75 "Human"
+                            - WHITESPACE@75..76 " "
+                    - FIELDS_DEFINITION@76..238
+                        - L_CURLY@76..77 "{"
+                        - WHITESPACE@77..92 "\n              "
+                        - FIELD_DEFINITION@92..189
+                            - DESCRIPTION@92..162
+                                - STRING_VALUE@92..147 "\"\"\n              description of field\n              \"\"\""
+                                - WHITESPACE@147..162 "\n              "
+                            - NAME@162..166
+                                - IDENT@162..166 "name"
+                            - COLON@166..167 ":"
+                            - WHITESPACE@167..168 " "
+                            - TYPE@168..189
+                                - WHITESPACE@168..183 "\n              "
+                                - NAMED_TYPE@183..189
+                                    - NAME@183..189
+                                        - IDENT@183..189 "String"
+                        - FIELD_DEFINITION@189..212
+                            - NAME@189..192
+                                - IDENT@189..192 "age"
+                            - COLON@192..193 ":"
+                            - WHITESPACE@193..194 " "
+                            - TYPE@194..212
+                                - WHITESPACE@194..209 "\n              "
+                                - NAMED_TYPE@209..212
+                                    - NAME@209..212
+                                        - IDENT@209..212 "Int"
+                        - FIELD_DEFINITION@212..237
+                            - NAME@212..219
+                                - IDENT@212..219 "picture"
+                            - COLON@219..220 ":"
+                            - WHITESPACE@220..221 " "
+                            - TYPE@221..237
+                                - WHITESPACE@221..234 "\n            "
+                                - NAMED_TYPE@234..237
+                                    - NAME@234..237
+                                        - IDENT@234..237 "Url"
+                        - R_CURLY@237..238 "}"
             "#,
         )
     }

@@ -1,16 +1,22 @@
-use crate::parser::grammar::{directive, operation};
-use crate::{Parser, SyntaxKind, S, T};
+use crate::parser::grammar::{description, directive, operation};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#SchemaDefinition
 ///
 /// ```txt
 /// SchemaDefinition
-///    schema Directives { OperationTypeDefinition }
+///    Description[opt] schema Directives[Const][opt] { RootOperationTypeDefinition[list] }
 /// ```
 pub(crate) fn schema_definition(p: &mut Parser) {
-    let g = p.start_node(SyntaxKind::SCHEMA_DEFINITION);
-    p.bump(SyntaxKind::schema_KW);
     let _g = p.start_node(SyntaxKind::SCHEMA_DEFINITION);
+
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
+    if let Some("schema") = p.peek_data().as_deref() {
+        p.bump(SyntaxKind::schema_KW);
+    }
 
     if let Some(T![@]) = p.peek() {
         directive::directives(p);

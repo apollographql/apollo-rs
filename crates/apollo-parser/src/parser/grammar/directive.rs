@@ -1,4 +1,4 @@
-use crate::parser::grammar::{argument, input, name};
+use crate::parser::grammar::{argument, description, input, name};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/June2018/#DirectiveDefinition
@@ -9,8 +9,15 @@ use crate::{Parser, SyntaxKind, TokenKind, S, T};
 /// ```
 pub(crate) fn directive_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DIRECTIVE_DEFINITION);
-    // TODO @lrlna: parse Description
-    p.bump(SyntaxKind::directive_KW);
+
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
+    }
+
+    if let Some("directive") = p.peek_data().as_deref() {
+        p.bump(SyntaxKind::directive_KW);
+    }
+
     match p.peek() {
         Some(T![@]) => p.bump(S![@]),
         _ => p.err("expected @ symbol"),
