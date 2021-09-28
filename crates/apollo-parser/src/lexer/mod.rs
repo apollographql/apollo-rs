@@ -219,7 +219,7 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
             buf.push(c);
 
             while let Some(c) = chars.clone().next() {
-                if is_ident_char(c) {
+                if is_ident_char(c) || is_digit_char(c) {
                     buf.push(chars.next().unwrap());
                 } else {
                     break;
