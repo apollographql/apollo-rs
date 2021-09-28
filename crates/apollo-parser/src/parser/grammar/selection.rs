@@ -83,7 +83,7 @@ mod test {
                                 - NAME@46..50
                                     - IDENT@46..49 "dog"
                                     - WHITESPACE@49..50 " "
-                                - SELECTION_SET@50..154
+                                - SELECTION_SET@50..171
                                     - L_CURLY@50..51 "{"
                                     - WHITESPACE@51..72 "\n                    "
                                     - SELECTION@72..153
@@ -91,7 +91,7 @@ mod test {
                                             - NAME@72..78
                                                 - IDENT@72..77 "panda"
                                                 - WHITESPACE@77..78 " "
-                                            - SELECTION_SET@78..136
+                                            - SELECTION_SET@78..153
                                                 - L_CURLY@78..79 "{"
                                                 - WHITESPACE@79..104 "\n                        "
                                                 - SELECTION@104..135
@@ -100,9 +100,9 @@ mod test {
                                                             - IDENT@104..114 "anotherCat"
                                                             - WHITESPACE@114..135 "\n                    "
                                                 - R_CURLY@135..136 "}"
-                                            - WHITESPACE@136..153 "\n                "
+                                                - WHITESPACE@136..153 "\n                "
                                     - R_CURLY@153..154 "}"
-                                - WHITESPACE@154..171 "\n                "
+                                    - WHITESPACE@154..171 "\n                "
                             - FIELD@171..188
                                 - NAME@171..188
                                     - IDENT@171..175 "lion"
@@ -153,7 +153,7 @@ mod test {
                                         - NAME@73..81
                                             - IDENT@73..80 "example"
                                             - WHITESPACE@80..81 " "
-                                - SELECTION_SET@81..130
+                                - SELECTION_SET@81..143
                                     - L_CURLY@81..82 "{"
                                     - WHITESPACE@82..103 "\n                    "
                                     - SELECTION@103..129
@@ -162,7 +162,7 @@ mod test {
                                                 - IDENT@103..112 "treatKind"
                                                 - WHITESPACE@112..129 "\n                "
                                     - R_CURLY@129..130 "}"
-                                - WHITESPACE@130..143 "\n            "
+                                    - WHITESPACE@130..143 "\n            "
                         - R_CURLY@143..144 "}"
             "#,
         )

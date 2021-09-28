@@ -200,7 +200,7 @@ mod test {
                                             - NAME@62..65
                                                 - IDENT@62..65 "Int"
                         - R_CURLY@65..66 "}"
-            - ERROR@0:1 "expected a Name"
+            - ERROR@6:7 "expected a Name"
             "#,
         )
     }
@@ -220,7 +220,7 @@ mod test {
                     - INPUT_FIELDS_DEFINITION@25..27
                         - L_CURLY@25..26 "{"
                         - R_CURLY@26..27 "}"
-            - ERROR@0:1 "expected an Input Value Definition"
+            - ERROR@26:27 "expected an Input Value Definition"
             "#,
         )
     }
@@ -292,7 +292,7 @@ mod test {
                                     - NAME@45..51
                                         - IDENT@45..51 "String"
                         - R_CURLY@51..52 "}"
-            - ERROR@0:1 "expected a Name"
+            - ERROR@13:14 "expected a Name"
             "#,
         )
     }
@@ -310,7 +310,7 @@ mod test {
                     - WHITESPACE@12..13 " "
                     - NAME@13..31
                         - IDENT@13..31 "ExampleInputObject"
-            - ERROR@0:3 "expected Directives or an Input Fields Definition"
+            - ERROR@31:31 "expected Directives or an Input Fields Definition"
             "#,
         )
     }

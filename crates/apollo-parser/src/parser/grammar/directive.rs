@@ -201,13 +201,11 @@ mod test {
                         - IDENT@11..18 "example"
                         - WHITESPACE@18..19 " "
                     - on_KW@19..21 "on"
-            - ERROR@0:3 "expected valid Directive Location"
+            - ERROR@21:21 "expected valid Directive Location"
             "#,
         );
     }
 
-    // TODO @lrlna: these tests need to check for indentation as part of the
-    // output, not just the nodes of the tree
     #[test]
     fn it_parses_directive_definition() {
         utils::check_ast(
@@ -220,19 +218,19 @@ mod test {
                     - AT@10..11 "@"
                     - NAME@11..18
                         - IDENT@11..18 "example"
-                    - ARGUMENTS_DEFINITION@18..55
+                    - ARGUMENTS_DEFINITION@18..56
                         - L_PAREN@18..19 "("
-                        - INPUT_VALUE_DEFINITION@19..35
+                        - INPUT_VALUE_DEFINITION@19..37
                             - NAME@19..26
                                 - IDENT@19..26 "isTreat"
                             - COLON@26..27 ":"
                             - WHITESPACE@27..28 " "
-                            - TYPE@28..35
-                                - NAMED_TYPE@28..35
-                                    - NAME@28..35
-                                        - IDENT@28..35 "Boolean"
-                        - COMMA@35..36 ","
-                        - WHITESPACE@36..37 " "
+                            - TYPE@28..37
+                                - COMMA@28..29 ","
+                                - WHITESPACE@29..30 " "
+                                - NAMED_TYPE@30..37
+                                    - NAME@30..37
+                                        - IDENT@30..37 "Boolean"
                         - INPUT_VALUE_DEFINITION@37..54
                             - NAME@37..46
                                 - IDENT@37..46 "treatKind"
@@ -243,7 +241,7 @@ mod test {
                                     - NAME@48..54
                                         - IDENT@48..54 "String"
                         - R_PAREN@54..55 ")"
-                    - WHITESPACE@55..56 " "
+                        - WHITESPACE@55..56 " "
                     - on_KW@56..58 "on"
                     - WHITESPACE@58..59 " "
                     - DIRECTIVE_LOCATIONS@59..75
@@ -253,14 +251,11 @@ mod test {
                         - PIPE@65..66 "|"
                         - WHITESPACE@66..67 " "
                         - DIRECTIVE_LOCATION@67..75
-                            - QUERY_KW@67..75 "MUTATION"
+                            - MUTATION_KW@67..75 "MUTATION"
             "#,
         );
     }
 
-    // TODO @lrlna: enable the "repeatable" graphql extension
-    //
-    // See: https://spec.graphql.org/draft/#sec-Type-System.Directives
     #[test]
     fn it_parses_repeatable_nodes() {
         utils::check_ast(
@@ -273,19 +268,19 @@ mod test {
                     - AT@10..11 "@"
                     - NAME@11..18
                         - IDENT@11..18 "example"
-                    - ARGUMENTS_DEFINITION@18..55
+                    - ARGUMENTS_DEFINITION@18..56
                         - L_PAREN@18..19 "("
-                        - INPUT_VALUE_DEFINITION@19..35
+                        - INPUT_VALUE_DEFINITION@19..37
                             - NAME@19..26
                                 - IDENT@19..26 "isTreat"
                             - COLON@26..27 ":"
                             - WHITESPACE@27..28 " "
-                            - TYPE@28..35
-                                - NAMED_TYPE@28..35
-                                    - NAME@28..35
-                                        - IDENT@28..35 "Boolean"
-                        - COMMA@35..36 ","
-                        - WHITESPACE@36..37 " "
+                            - TYPE@28..37
+                                - COMMA@28..29 ","
+                                - WHITESPACE@29..30 " "
+                                - NAMED_TYPE@30..37
+                                    - NAME@30..37
+                                        - IDENT@30..37 "Boolean"
                         - INPUT_VALUE_DEFINITION@37..54
                             - NAME@37..46
                                 - IDENT@37..46 "treatKind"
@@ -296,7 +291,7 @@ mod test {
                                     - NAME@48..54
                                         - IDENT@48..54 "String"
                         - R_PAREN@54..55 ")"
-                    - WHITESPACE@55..56 " "
+                        - WHITESPACE@55..56 " "
                     - repeatable_KW@56..66 "repeatable"
                     - WHITESPACE@66..67 " "
                     - on_KW@67..69 "on"
@@ -308,7 +303,7 @@ mod test {
                         - PIPE@76..77 "|"
                         - WHITESPACE@77..78 " "
                         - DIRECTIVE_LOCATION@78..86
-                            - QUERY_KW@78..86 "MUTATION"
+                            - MUTATION_KW@78..86 "MUTATION"
             "#,
         );
     }

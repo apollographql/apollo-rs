@@ -199,7 +199,7 @@ mod test {
                                     - IDENT@80..84 "WEST"
                                     - WHITESPACE@84..97 "\n            "
                         - R_CURLY@97..98 "}"
-            - ERROR@0:1 "expected a Name"
+            - ERROR@5:6 "expected a Name"
             "#,
         )
     }
@@ -221,7 +221,7 @@ mod test {
                         - L_CURLY@15..16 "{"
                         - WHITESPACE@16..29 "\n            "
                         - R_CURLY@29..30 "}"
-            - ERROR@0:1 "expected Enum Value Definition"
+            - ERROR@29:30 "expected Enum Value Definition"
             "#,
         )
     }
@@ -250,7 +250,7 @@ mod test {
                             - ENUM_VALUE@23..27
                                 - NAME@23..27
                                     - IDENT@23..27 "WEST"
-            - ERROR@0:3 "expected R_CURLY, got EOF"
+            - ERROR@27:27 "expected R_CURLY, got EOF"
             "#,
         )
     }
@@ -324,7 +324,7 @@ mod test {
                                     - IDENT@48..52 "EAST"
                                     - WHITESPACE@52..65 "\n            "
                         - R_CURLY@65..66 "}"
-            - ERROR@0:1 "expected a Name"
+            - ERROR@12:13 "expected a Name"
             "#,
         )
     }
@@ -342,7 +342,7 @@ mod test {
                     - WHITESPACE@11..12 " "
                     - NAME@12..21
                         - IDENT@12..21 "Direction"
-            - ERROR@0:3 "expected Directived or Enum Values Definition"
+            - ERROR@21:21 "expected Directived or Enum Values Definition"
             "#,
         )
     }

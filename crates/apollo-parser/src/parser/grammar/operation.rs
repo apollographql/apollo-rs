@@ -9,7 +9,9 @@ use crate::{Parser, SyntaxKind, TokenKind, S, T};
 /// *RootOperationTypeDefinition*:
 ///    OperationType **:** NamedType
 pub(crate) fn root_operation_type_definition(p: &mut Parser, is_operation_type: bool) {
-    p.bump(S!['{']);
+    if let Some(T!['{']) = p.peek() {
+        p.bump(S!['{']);
+    }
 
     if let Some(TokenKind::Name) = p.peek() {
         let guard = p.start_node(SyntaxKind::ROOT_OPERATION_TYPE_DEFINITION);
@@ -121,7 +123,7 @@ mod test {
                                 - NAME@60..64
                                     - IDENT@60..63 "dog"
                                     - WHITESPACE@63..64 " "
-                                - SELECTION_SET@64..180
+                                - SELECTION_SET@64..197
                                     - L_CURLY@64..65 "{"
                                     - WHITESPACE@65..86 "\n                    "
                                     - SELECTION@86..179
@@ -129,7 +131,7 @@ mod test {
                                             - NAME@86..92
                                                 - IDENT@86..91 "panda"
                                                 - WHITESPACE@91..92 " "
-                                            - SELECTION_SET@92..162
+                                            - SELECTION_SET@92..179
                                                 - L_CURLY@92..93 "{"
                                                 - WHITESPACE@93..118 "\n                        "
                                                 - SELECTION@118..161
@@ -144,9 +146,9 @@ mod test {
                                                                     - IDENT@130..140 "deprecated"
                                                                     - WHITESPACE@140..161 "\n                    "
                                                 - R_CURLY@161..162 "}"
-                                            - WHITESPACE@162..179 "\n                "
+                                                - WHITESPACE@162..179 "\n                "
                                     - R_CURLY@179..180 "}"
-                                - WHITESPACE@180..197 "\n                "
+                                    - WHITESPACE@180..197 "\n                "
                             - FIELD@197..214
                                 - NAME@197..214
                                     - IDENT@197..201 "lion"
@@ -229,7 +231,7 @@ mod test {
                         - WHITESPACE@5..6 " "
                     - NAME@6..13
                         - IDENT@6..13 "myQuery"
-                    - VARIABLE_DEFINITIONS@13..48
+                    - VARIABLE_DEFINITIONS@13..49
                         - L_PAREN@13..14 "("
                         - VARIABLE_DEFINITION@14..26
                             - VARIABLE@14..18
@@ -255,7 +257,7 @@ mod test {
                                     - NAME@37..47
                                         - IDENT@37..47 "otherInput"
                         - R_PAREN@47..48 ")"
-                    - WHITESPACE@48..49 " "
+                        - WHITESPACE@48..49 " "
                     - DIRECTIVES@49..69
                         - DIRECTIVE@49..61
                             - AT@49..50 "@"

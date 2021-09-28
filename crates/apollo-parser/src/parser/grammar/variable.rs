@@ -145,7 +145,7 @@ mod test {
                         - WHITESPACE@5..6 " "
                     - NAME@6..13
                         - IDENT@6..13 "myQuery"
-                    - VARIABLE_DEFINITIONS@13..48
+                    - VARIABLE_DEFINITIONS@13..49
                         - L_PAREN@13..14 "("
                         - VARIABLE_DEFINITION@14..26
                             - VARIABLE@14..18
@@ -171,7 +171,7 @@ mod test {
                                     - NAME@37..47
                                         - IDENT@37..47 "otherInput"
                         - R_PAREN@47..48 ")"
-                    - WHITESPACE@48..49 " "
+                        - WHITESPACE@48..49 " "
                     - DIRECTIVES@49..69
                         - DIRECTIVE@49..61
                             - AT@49..50 "@"

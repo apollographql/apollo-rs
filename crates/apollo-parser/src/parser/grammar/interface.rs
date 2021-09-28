@@ -181,7 +181,7 @@ mod test {
                                     - NAME@66..69
                                         - IDENT@66..69 "Int"
                         - R_CURLY@69..70 "}"
-            - ERROR@0:1 "expected a Name"
+            - ERROR@30:31 "expected a Name"
             "#,
         )
     }
@@ -199,7 +199,7 @@ mod test {
                     - WHITESPACE@16..17 " "
                     - NAME@17..29
                         - IDENT@17..29 "ValuedEntity"
-            - ERROR@0:3 "exptected Directives or a Fields Definition"
+            - ERROR@29:29 "exptected an Implements Interfaces, Directives, or a Fields Definition"
             "#,
         )
     }

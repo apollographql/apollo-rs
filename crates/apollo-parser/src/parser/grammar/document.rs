@@ -107,7 +107,7 @@ enum Language {
         - WHITESPACE@62..63 " "
         - L_CURLY@63..64 "{"
         - WHITESPACE@64..67 "\n  "
-        - OPERATION_TYPE_DEFINITION@67..80
+        - ROOT_OPERATION_TYPE_DEFINITION@67..80
             - OPERATION_TYPE@67..72
                 - query_KW@67..72 "query"
             - COLON@72..73 ":"

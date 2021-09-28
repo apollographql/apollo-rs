@@ -147,7 +147,7 @@ mod test {
                         - NAMED_TYPE@16..22
                             - NAME@16..22
                                 - IDENT@16..22 "Person"
-            - ERROR@0:1 "expected a Name"
+            - ERROR@6:7 "expected a Name"
             "#,
         )
     }
@@ -164,8 +164,8 @@ mod test {
                     - UNION_MEMBER_TYPES@6..8
                         - EQ@6..7 "="
                         - WHITESPACE@7..8 " "
-            - ERROR@0:1 "expected a Name"
-            - ERROR@0:3 "expected Union Member Types"
+            - ERROR@6:7 "expected a Name"
+            - ERROR@8:8 "expected Union Member Types"
             "#,
         )
     }
@@ -229,7 +229,7 @@ mod test {
                         - NAMED_TYPE@23..29
                             - NAME@23..29
                                 - IDENT@23..29 "Person"
-            - ERROR@0:1 "expected a Name"
+            - ERROR@13:14 "expected a Name"
             "#,
         )
     }
@@ -247,7 +247,7 @@ mod test {
                     - WHITESPACE@12..13 " "
                     - NAME@13..25
                         - IDENT@13..25 "SearchResult"
-            - ERROR@0:3 "expected Directives or Union Member Types"
+            - ERROR@25:25 "expected Directives or Union Member Types"
             "#,
         )
     }

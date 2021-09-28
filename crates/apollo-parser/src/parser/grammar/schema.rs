@@ -76,7 +76,7 @@ mod test {
                     - WHITESPACE@6..7 " "
                     - L_CURLY@7..8 "{"
                     - WHITESPACE@8..25 "\n                "
-                    - OPERATION_TYPE_DEFINITION@25..64
+                    - ROOT_OPERATION_TYPE_DEFINITION@25..64
                         - OPERATION_TYPE@25..30
                             - query_KW@25..30 "query"
                         - COLON@30..31 ":"
@@ -85,17 +85,17 @@ mod test {
                             - NAME@32..64
                                 - IDENT@32..47 "MyQueryRootType"
                                 - WHITESPACE@47..64 "\n                "
-                    - OPERATION_TYPE_DEFINITION@64..92
+                    - ROOT_OPERATION_TYPE_DEFINITION@64..110
                         - OPERATION_TYPE@64..72
                             - mutation_KW@64..72 "mutation"
                         - COLON@72..73 ":"
                         - WHITESPACE@73..74 " "
-                        - NAMED_TYPE@74..92
-                            - NAME@74..92
+                        - NAMED_TYPE@74..110
+                            - NAME@74..110
                                 - IDENT@74..92 "MyMutationRootType"
-                    - COMMA@92..93 ","
-                    - WHITESPACE@93..110 "\n                "
-                    - OPERATION_TYPE_DEFINITION@110..159
+                                - COMMA@92..93 ","
+                                - WHITESPACE@93..110 "\n                "
+                    - ROOT_OPERATION_TYPE_DEFINITION@110..159
                         - OPERATION_TYPE@110..122
                             - subscription_KW@110..122 "subscription"
                         - COLON@122..123 ":"
@@ -135,7 +135,7 @@ mod test {
                                 - WHITESPACE@28..29 " "
                     - L_CURLY@29..30 "{"
                     - WHITESPACE@30..47 "\n                "
-                    - OPERATION_TYPE_DEFINITION@47..86
+                    - ROOT_OPERATION_TYPE_DEFINITION@47..86
                         - OPERATION_TYPE@47..52
                             - query_KW@47..52 "query"
                         - COLON@52..53 ":"

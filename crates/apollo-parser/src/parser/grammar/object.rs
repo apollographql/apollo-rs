@@ -298,7 +298,7 @@ mod test {
                                     - NAME@113..116
                                         - IDENT@113..116 "Url"
                         - R_CURLY@116..117 "}"
-            - ERROR@0:1 "expected a Name"
+            - ERROR@25:26 "expected a Name"
             "#,
         )
     }
@@ -316,7 +316,7 @@ mod test {
                     - WHITESPACE@11..12 " "
                     - NAME@12..18
                         - IDENT@12..18 "Person"
-            - ERROR@0:3 "expected an Implements Interface, Directives or a Fields Definition"
+            - ERROR@18:18 "expected an Implements Interface, Directives or a Fields Definition"
             "#,
         )
     }

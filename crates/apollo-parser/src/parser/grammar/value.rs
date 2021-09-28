@@ -146,17 +146,17 @@ mod test {
                             - FIELD@29..148
                                 - NAME@29..33
                                     - IDENT@29..33 "user"
-                                - ARGUMENTS@33..135
+                                - ARGUMENTS@33..148
                                     - L_PAREN@33..34 "("
-                                    - ARGUMENT@34..39
+                                    - ARGUMENT@34..41
                                         - NAME@34..36
                                             - IDENT@34..36 "id"
                                         - COLON@36..37 ":"
                                         - WHITESPACE@37..38 " "
-                                        - VALUE@38..39
+                                        - VALUE@38..41
                                             - INT_VALUE@38..39 "4"
-                                    - COMMA@39..40 ","
-                                    - WHITESPACE@40..41 " "
+                                            - COMMA@39..40 ","
+                                            - WHITESPACE@40..41 " "
                                     - ARGUMENT@41..53
                                         - NAME@41..45
                                             - IDENT@41..45 "size"
@@ -168,34 +168,34 @@ mod test {
                                                 - NAME@48..53
                                                     - IDENT@48..52 "size"
                                                     - WHITESPACE@52..53 " "
-                                    - ARGUMENT@53..68
+                                    - ARGUMENT@53..70
                                         - NAME@53..58
                                             - IDENT@53..58 "value"
                                         - COLON@58..59 ":"
                                         - WHITESPACE@59..60 " "
-                                        - VALUE@60..68
+                                        - VALUE@60..70
                                             - STRING_VALUE@60..68 "\"string\""
-                                    - COMMA@68..69 ","
-                                    - WHITESPACE@69..70 " "
-                                    - ARGUMENT@70..92
+                                            - COMMA@68..69 ","
+                                            - WHITESPACE@69..70 " "
+                                    - ARGUMENT@70..94
                                         - NAME@70..75
                                             - IDENT@70..75 "input"
                                         - COLON@75..76 ":"
                                         - WHITESPACE@76..77 " "
-                                        - VALUE@77..92
-                                            - LIST_VALUE@77..92
+                                        - VALUE@77..94
+                                            - LIST_VALUE@77..94
                                                 - L_BRACK@77..78 "["
                                                 - WHITESPACE@78..79 " "
-                                                - VALUE@79..84
+                                                - VALUE@79..86
                                                     - STRING_VALUE@79..84 "\"one\""
-                                                - COMMA@84..85 ","
-                                                - WHITESPACE@85..86 " "
+                                                    - COMMA@84..85 ","
+                                                    - WHITESPACE@85..86 " "
                                                 - VALUE@86..91
                                                     - FLOAT_VALUE@86..90 "1.34"
                                                     - WHITESPACE@90..91 " "
                                                 - R_BRACK@91..92 "]"
-                                    - COMMA@92..93 ","
-                                    - WHITESPACE@93..94 " "
+                                                - COMMA@92..93 ","
+                                                - WHITESPACE@93..94 " "
                                     - ARGUMENT@94..134
                                         - NAME@94..104
                                             - IDENT@94..104 "otherInput"
@@ -205,15 +205,15 @@ mod test {
                                             - OBJECT_VALUE@106..134
                                                 - L_CURLY@106..107 "{"
                                                 - WHITESPACE@107..108 " "
-                                                - OBJECT_FIELD@108..118
+                                                - OBJECT_FIELD@108..120
                                                     - NAME@108..111
                                                         - IDENT@108..111 "key"
                                                     - COLON@111..112 ":"
                                                     - WHITESPACE@112..113 " "
-                                                    - VALUE@113..118
+                                                    - VALUE@113..120
                                                         - BOOLEAN_VALUE@113..118 "false"
-                                                - COMMA@118..119 ","
-                                                - WHITESPACE@119..120 " "
+                                                        - COMMA@118..119 ","
+                                                        - WHITESPACE@119..120 " "
                                                 - OBJECT_FIELD@120..133
                                                     - NAME@120..126
                                                         - IDENT@120..126 "output"
@@ -224,7 +224,7 @@ mod test {
                                                         - WHITESPACE@132..133 " "
                                                 - R_CURLY@133..134 "}"
                                     - R_PAREN@134..135 ")"
-                                - WHITESPACE@135..148 "\n            "
+                                    - WHITESPACE@135..148 "\n            "
                         - R_CURLY@148..149 "}"
             "#,
         );

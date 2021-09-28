@@ -1,8 +1,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::create_err;
 use crate::lexer::Lexer;
+use crate::Error;
 use crate::TokenKind;
 use crate::{lexer, Token};
 
@@ -103,8 +103,8 @@ impl Parser {
     }
 
     /// Get current token's data.
-    pub(crate) fn current(&mut self) -> String {
-        self.peek_data().unwrap_or_else(|| "EOF".to_string())
+    pub(crate) fn current(&mut self) -> &Token {
+        self.peek_token().unwrap()
     }
 
     /// Consume a token from the lexer and add it to the AST.
@@ -116,26 +116,28 @@ impl Parser {
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err(&mut self, message: &str) {
         let current = self.current();
-        let err = crate::Error::new(message.into(), current);
+        let err = Error::with_loc(message.into(), current.data().to_string(), current.loc());
         self.push_err(err)
     }
 
     /// Consume the next token if it is `kind` or emit an error
     /// otherwise.
     pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
-        let current_t = self.current();
+        let current = self.current().clone();
+        let data = current.data().to_string();
 
         if self.at(token) {
             self.bump(kind);
             return;
         }
 
-        self.push_err(create_err!(
-            current_t,
-            "expected {:?}, got {}",
-            kind,
-            current_t,
-        ));
+        let err = Error::with_loc(
+            format!("expected {:?}, got {}", kind, data),
+            data,
+            current.loc(),
+        );
+
+        self.push_err(err);
     }
 
     pub(crate) fn push_err(&mut self, err: crate::error::Error) {
@@ -162,6 +164,10 @@ impl Parser {
 
     pub(crate) fn peek(&self) -> Option<TokenKind> {
         self.tokens.last().map(|token| token.kind())
+    }
+
+    pub(crate) fn peek_token(&self) -> Option<&Token> {
+        self.tokens.last()
     }
 
     pub(crate) fn peek_n(&self, n: usize) -> Option<TokenKind> {

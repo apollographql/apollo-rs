@@ -135,7 +135,7 @@ mod test {
                             - NAME@31..39
                                 - IDENT@31..38 "example"
                                 - WHITESPACE@38..39 " "
-                    - SELECTION_SET@39..125
+                    - SELECTION_SET@39..138
                         - L_CURLY@39..40 "{"
                         - WHITESPACE@40..55 "\n              "
                         - SELECTION@55..124
@@ -150,7 +150,7 @@ mod test {
                             - FIELD@91..124
                                 - NAME@91..101
                                     - IDENT@91..101 "profilePic"
-                                - ARGUMENTS@101..111
+                                - ARGUMENTS@101..124
                                     - L_PAREN@101..102 "("
                                     - ARGUMENT@102..110
                                         - NAME@102..106
@@ -160,9 +160,9 @@ mod test {
                                         - VALUE@108..110
                                             - INT_VALUE@108..110 "50"
                                     - R_PAREN@110..111 ")"
-                                - WHITESPACE@111..124 "\n            "
+                                    - WHITESPACE@111..124 "\n            "
                         - R_CURLY@124..125 "}"
-                    - WHITESPACE@125..138 "\n            "
+                        - WHITESPACE@125..138 "\n            "
             "#,
         );
     }
@@ -240,7 +240,7 @@ mod test {
                             - NAME@18..26
                                 - IDENT@18..25 "example"
                                 - WHITESPACE@25..26 " "
-                    - SELECTION_SET@26..58
+                    - SELECTION_SET@26..71
                         - L_CURLY@26..27 "{"
                         - WHITESPACE@27..42 "\n              "
                         - SELECTION@42..57
@@ -249,8 +249,8 @@ mod test {
                                     - IDENT@42..44 "id"
                                     - WHITESPACE@44..57 "\n            "
                         - R_CURLY@57..58 "}"
-                    - WHITESPACE@58..71 "\n            "
-            - ERROR@0:2 "Fragment Name cannot be 'on'"
+                        - WHITESPACE@58..71 "\n            "
+            - ERROR@9:11 "Fragment Name cannot be 'on'"
             "#,
         );
     }
@@ -282,7 +282,7 @@ mod test {
                             - NAME@28..36
                                 - IDENT@28..35 "example"
                                 - WHITESPACE@35..36 " "
-                    - SELECTION_SET@36..68
+                    - SELECTION_SET@36..81
                         - L_CURLY@36..37 "{"
                         - WHITESPACE@37..52 "\n              "
                         - SELECTION@52..67
@@ -291,8 +291,8 @@ mod test {
                                     - IDENT@52..54 "id"
                                     - WHITESPACE@54..67 "\n            "
                         - R_CURLY@67..68 "}"
-                    - WHITESPACE@68..81 "\n            "
-            - ERROR@0:4 "exptected 'on'"
+                        - WHITESPACE@68..81 "\n            "
+            - ERROR@22:26 "exptected 'on'"
             "#,
         );
     }
@@ -316,7 +316,7 @@ mod test {
                         - NAMED_TYPE@25..29
                             - NAME@25..29
                                 - IDENT@25..29 "User"
-            - ERROR@0:3 "expected a Selection Set"
+            - ERROR@29:29 "expected a Selection Set"
             "#,
         );
     }

@@ -93,7 +93,7 @@ mod test {
                             - NAME@21..44
                                 - IDENT@21..31 "deprecated"
                                 - WHITESPACE@31..44 "\n            "
-            - ERROR@0:1 "expected a Name"
+            - ERROR@20:21 "expected a Name"
             "#,
         )
     }
@@ -145,7 +145,7 @@ mod test {
                             - NAME@28..51
                                 - IDENT@28..38 "deprecated"
                                 - WHITESPACE@38..51 "\n            "
-            - ERROR@0:1 "expected a Name"
+            - ERROR@27:28 "expected a Name"
             "#,
         )
     }
