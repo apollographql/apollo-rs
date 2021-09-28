@@ -31,6 +31,10 @@ impl fmt::Debug for Error {
         let start = self.loc.index;
         let end = self.loc.index + self.data.len();
 
-        write!(f, "ERROR@{}:{} {:?}", start, end, self.message)
+        if &self.data == "EOF" {
+            write!(f, "ERROR@{}:{} {:?}", start, start, self.message)
+        } else {
+            write!(f, "ERROR@{}:{} {:?}", start, end, self.message)
+        }
     }
 }

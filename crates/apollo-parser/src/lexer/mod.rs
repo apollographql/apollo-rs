@@ -47,7 +47,9 @@ impl Lexer {
             }
         }
 
-        tokens.push(Token::new(TokenKind::Eof, String::from("EOF")));
+        let mut eof = Token::new(TokenKind::Eof, String::from("EOF"));
+        eof.loc = Location::new(index);
+        tokens.push(eof);
 
         Self { tokens, errors }
     }
@@ -351,16 +353,7 @@ mod test {
     #[test]
     fn tests() {
         let gql_1 = indoc! { r#"
-            """
-            Description
-            """
-
-            type ProductDimension {
-                "another description"
-                size: String
-                " another description �� "
-                weight: Float @tag(name: "hi from inventory value type field")
-            }
+            enum Direction { NORTH WEST
         "#};
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
