@@ -21,6 +21,10 @@ pub(crate) fn document(p: &mut Parser) {
                 let def = p.peek_data().unwrap();
                 select_definition(def, p);
             }
+            TokenKind::LCurly => {
+                let def = p.peek_data().unwrap();
+                select_definition(def, p);
+            }
             _ => break,
         }
     }
