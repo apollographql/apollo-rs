@@ -21,7 +21,6 @@ pub(crate) fn schema_definition(p: &mut Parser) {
     }
 
     if let Some(T!['{']) = p.peek() {
-        p.bump(S!['{']);
         operation::root_operation_type_definition(p, false);
         p.expect(T!['}'], S!['}']);
     } else {
