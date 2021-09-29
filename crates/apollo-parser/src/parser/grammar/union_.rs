@@ -82,7 +82,7 @@ fn union_member_type(p: &mut Parser, is_union: bool) {
         }
         Some(TokenKind::Name) => {
             ty::named_type(p);
-            if p.peek_data().is_some() {
+            if p.peek().is_some() {
                 union_member_type(p, true)
             }
         }
@@ -96,7 +96,28 @@ fn union_member_type(p: &mut Parser, is_union: bool) {
 
 #[cfg(test)]
 mod test {
+    use super::*;
+    use crate::ast;
     use crate::parser::utils;
+
+    #[test]
+    fn union_member_types() {
+        let input = "union SearchResult = Photo | Person | Cat | Dog";
+        let parser = Parser::new(input);
+        let ast = parser.parse();
+        assert!(ast.errors().is_empty());
+
+        let doc = ast.document();
+
+        for def in doc.definitions() {
+            if let ast::Definition::UnionTypeDefinition(union_type) = def {
+                assert_eq!(union_type.name().unwrap().text(), "SearchResult");
+                for union_member in union_type.union_member_types().unwrap().named_types() {
+                    println!("{}", union_member.name().unwrap().text()); // Photo Person Cat Dog
+                }
+            }
+        }
+    }
 
     #[test]
     fn it_parses_union_type_definition() {

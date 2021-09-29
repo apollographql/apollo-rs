@@ -22,7 +22,7 @@ pub(crate) fn interface_type_definition(p: &mut Parser) {
     }
 
     if let Some("implements") = p.peek_data().as_deref() {
-        object::implements_interfaces(p, false);
+        object::implements_interfaces(p);
     }
 
     if let Some(T![@]) = p.peek() {
@@ -54,7 +54,7 @@ pub(crate) fn interface_type_extension(p: &mut Parser) {
 
     if let Some("implements") = p.peek_data().as_deref() {
         meets_requirements = true;
-        object::implements_interfaces(p, false);
+        object::implements_interfaces(p);
     }
 
     if let Some(T![@]) = p.peek() {

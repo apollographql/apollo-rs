@@ -109,6 +109,9 @@ impl InterfaceTypeDefinition {
         support::token(&self.syntax, S![interface])
     }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn implements_interfaces(&self) -> Option<ImplementsInterfaces> {
+        support::child(&self.syntax)
+    }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn fields_definition(&self) -> Option<FieldsDefinition> { support::child(&self.syntax) }
 }
@@ -197,6 +200,9 @@ impl InterfaceTypeExtension {
         support::token(&self.syntax, S![interface])
     }
     pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn implements_interfaces(&self) -> Option<ImplementsInterfaces> {
+        support::child(&self.syntax)
+    }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn fields_definition(&self) -> Option<FieldsDefinition> { support::child(&self.syntax) }
 }
@@ -509,10 +515,7 @@ impl ImplementsInterfaces {
         support::token(&self.syntax, S![implements])
     }
     pub fn amp_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![&]) }
-    pub fn named_type(&self) -> Option<NamedType> { support::child(&self.syntax) }
-    pub fn implements_interfaces(&self) -> Option<ImplementsInterfaces> {
-        support::child(&self.syntax)
-    }
+    pub fn named_types(&self) -> AstChildren<NamedType> { support::children(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FieldsDefinition {
@@ -569,8 +572,7 @@ pub struct UnionMemberTypes {
 impl UnionMemberTypes {
     pub fn eq_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![=]) }
     pub fn pipe_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![|]) }
-    pub fn named_type(&self) -> Option<NamedType> { support::child(&self.syntax) }
-    pub fn union_member_types(&self) -> Option<UnionMemberTypes> { support::child(&self.syntax) }
+    pub fn named_types(&self) -> AstChildren<NamedType> { support::children(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct EnumValuesDefinition {

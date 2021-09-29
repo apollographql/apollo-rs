@@ -186,9 +186,16 @@ ObjectTypeExtension =
   | 'extend' 'type' Name ImplementsInterfaces? Directives
   | 'extend' 'type' Name ImplementsInterfaces
 
+// In the spec, ImplementsInterfaces is defined as an enum of:
+// ImplementsInterfaces =
+//   'implements' '&'? NamedType
+//   | ImplementsInterfaces '&' NamedType
+//
+// TODO @lrlna: think about a more accurate way of depicting this in our ungrammar file
+// `(T ('&' T)* '&'?)`
+// ` '&'? (NamedType '|')* NamedType`
 ImplementsInterfaces =
-  'implements' '&'? NamedType
-  | ImplementsInterfaces '&' NamedType
+  'implements' '&'? NamedType*
 
 FieldsDefinition =
   '{' FieldDefinition* '}'
@@ -203,18 +210,26 @@ InputValueDefinition =
   Description? Name ':' Type DefaultValue? Directives?
 
 InterfaceTypeDefinition =
-  Description? 'interface' Name Directives? FieldsDefinition?
+  Description? 'interface' Name ImplementsInterfaces? Directives? FieldsDefinition?
 
 InterfaceTypeExtension =
-  'extend' 'interface' Name Directives? FieldsDefinition
-  | 'extend' 'interface' Name Directives
+  'extend' 'interface' Name ImplementsInterfaces? Directives? FieldsDefinition
+  | 'extend' 'interface' Name ImplementsInterfaces? Directives
+  | 'extend' 'interface' Name ImplementsInterfaces
 
 UnionTypeDefinition =
   Description? 'union' Name Directives? UnionMemberTypes?
 
+// In the spec, UnionMemberTypes is defined as an enum of:
+// UnionMemberTypes =
+//   '=' '|'? NamedType
+//    | UnionMemberTypes '|' NamedType
+//
+// TODO @lrlna: think about a more accurate way of depicting this in our ungrammar file
+// `(T ('|' T)* '|'?)`
+// `'=' '|'? (NamedType '|')* NamedType`
 UnionMemberTypes =
-  '=' '|'? NamedType
-  | UnionMemberTypes '|' NamedType
+  '=' '|'? NamedType*
 
 UnionTypeExtension =
   'extend' 'union' Name Directives? UnionMemberTypes
@@ -246,6 +261,12 @@ InputObjectTypeExtension =
 DirectiveDefinition =
   Description? 'directive' '@' Name ArgumentsDefinition? 'on' DirectiveLocations
 
+// In the spec, DirectiveLocations is defined as an enum of:
+// DirectiveLocations
+//   '|'? DirectiveLocation
+//    | DirectiveLocations '|' DirectiveLocation
+//
+// TODO @lrlna: think about a more accurate way of depicting this in our ungrammar file
 DirectiveLocations =
   DirectiveLocation*
 

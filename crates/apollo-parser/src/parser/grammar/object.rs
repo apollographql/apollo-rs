@@ -1,5 +1,5 @@
-use crate::parser::grammar::{description, directive, field, name};
-use crate::{Parser, SyntaxKind, TokenKind, T};
+use crate::parser::grammar::{description, directive, field, name, ty};
+use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/draft/#ObjectTypeDefinition
 ///
@@ -23,7 +23,7 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
 
     if let Some(TokenKind::Name) = p.peek() {
         if p.peek_data().unwrap() == "implements" {
-            implements_interfaces(p, false);
+            implements_interfaces(p);
         } else {
             p.err("unexpected Name");
         }
@@ -60,7 +60,7 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
 
     if let Some("implements") = p.peek_data().as_deref() {
         meets_requirements = true;
-        implements_interfaces(p, false);
+        implements_interfaces(p);
     }
 
     if let Some(T![@]) = p.peek() {
@@ -83,15 +83,24 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
 /// *ImplementsInterfaces*:
 ///     **implements** **&**<sub>opt</sub> NamedType
 ///     ImplementsInterfaces **&** NamedType
-pub(crate) fn implements_interfaces(p: &mut Parser, is_interfaces: bool) {
+pub(crate) fn implements_interfaces(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::IMPLEMENTS_INTERFACES);
     p.bump(SyntaxKind::implements_KW);
 
+    implements_interface(p, false);
+}
+
+fn implements_interface(p: &mut Parser, is_interfaces: bool) {
     match p.peek() {
-        Some(TokenKind::Name) => name::name(p),
-        Some(TokenKind::Amp) => {
-            p.bump(SyntaxKind::AMP);
-            implements_interfaces(p, is_interfaces)
+        Some(T![&]) => {
+            p.bump(S![&]);
+            implements_interface(p, is_interfaces)
+        }
+        Some(TokenKind::Name) => {
+            ty::named_type(p);
+            if p.peek().is_some() {
+                implements_interface(p, true)
+            }
         }
         _ => {
             if !is_interfaces {
@@ -103,7 +112,36 @@ pub(crate) fn implements_interfaces(p: &mut Parser, is_interfaces: bool) {
 
 #[cfg(test)]
 mod test {
+    use super::*;
+    use crate::ast;
     use crate::parser::utils;
+
+    #[test]
+    fn object_type_definition() {
+        let input = "
+type Business implements NamedEntity & ValuedEntity & CatEntity {
+  name: String
+}";
+        let parser = Parser::new(input);
+        let ast = parser.parse();
+        assert!(ast.errors().is_empty());
+
+        let doc = ast.document();
+
+        for def in doc.definitions() {
+            if let ast::Definition::ObjectTypeDefinition(interface_type) = def {
+                assert_eq!(interface_type.name().unwrap().text(), "Business");
+                for implements_interfaces in interface_type
+                    .implements_interfaces()
+                    .unwrap()
+                    .named_types()
+                {
+                    // NamedEntity ValuedEntity CatEntity
+                    println!("{}", implements_interfaces.name().unwrap().text());
+                }
+            }
+        }
+    }
 
     #[test]
     fn it_parses_object_type_definition() {
@@ -133,9 +171,10 @@ mod test {
                     - IMPLEMENTS_INTERFACES@59..76
                         - implements_KW@59..69 "implements"
                         - WHITESPACE@69..70 " "
-                        - NAME@70..76
-                            - IDENT@70..75 "Human"
-                            - WHITESPACE@75..76 " "
+                        - NAMED_TYPE@70..76
+                            - NAME@70..76
+                                - IDENT@70..75 "Human"
+                                - WHITESPACE@75..76 " "
                     - FIELDS_DEFINITION@76..238
                         - L_CURLY@76..77 "{"
                         - WHITESPACE@77..92 "\n              "
@@ -200,9 +239,10 @@ mod test {
                     - IMPLEMENTS_INTERFACES@32..49
                         - implements_KW@32..42 "implements"
                         - WHITESPACE@42..43 " "
-                        - NAME@43..49
-                            - IDENT@43..48 "Human"
-                            - WHITESPACE@48..49 " "
+                        - NAMED_TYPE@43..49
+                            - NAME@43..49
+                                - IDENT@43..48 "Human"
+                                - WHITESPACE@48..49 " "
                     - DIRECTIVES@49..61
                         - DIRECTIVE@49..61
                             - AT@49..50 "@"
