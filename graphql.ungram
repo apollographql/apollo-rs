@@ -13,9 +13,6 @@
 Name =
   'ident'
 
-///////////////////////////
-//        DOCUMENT       //
-///////////////////////////
 Document =
   Definition*
 

@@ -1,4 +1,4 @@
-use crate::parser::grammar::{description, directive, field, name, ty};
+use crate::parser::grammar::{description, directive, document::is_definition, field, name, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/draft/#ObjectTypeDefinition
@@ -98,8 +98,12 @@ fn implements_interface(p: &mut Parser, is_interfaces: bool) {
         }
         Some(TokenKind::Name) => {
             ty::named_type(p);
-            if p.peek().is_some() {
-                implements_interface(p, true)
+            if let Some(node) = p.peek_data() {
+                if !is_definition(node) {
+                    implements_interface(p, true);
+                }
+
+                return;
             }
         }
         _ => {

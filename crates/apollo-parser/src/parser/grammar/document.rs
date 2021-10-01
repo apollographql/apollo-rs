@@ -32,6 +32,26 @@ pub(crate) fn document(p: &mut Parser) {
     doc.finish_node();
 }
 
+pub(crate) fn is_definition(def: String) -> bool {
+    matches!(
+        def.as_str(),
+        "directive"
+            | "enum"
+            | "extend"
+            | "fragment"
+            | "input"
+            | "interface"
+            | "type"
+            | "query"
+            | "mutation"
+            | "subscription"
+            | "{"
+            | "scalar"
+            | "schema"
+            | "union"
+    )
+}
+
 fn select_definition(def: String, p: &mut Parser) {
     match def.as_str() {
         "directive" => directive::directive_definition(p),

@@ -1,4 +1,4 @@
-use crate::parser::grammar::{description, directive, name, ty};
+use crate::parser::grammar::{description, directive, document::is_definition, name, ty};
 use crate::{Parser, SyntaxKind, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/draft/#UnionTypeDefinition
@@ -82,8 +82,12 @@ fn union_member_type(p: &mut Parser, is_union: bool) {
         }
         Some(TokenKind::Name) => {
             ty::named_type(p);
-            if p.peek().is_some() {
-                union_member_type(p, true)
+            if let Some(node) = p.peek_data() {
+                if !is_definition(node) {
+                    union_member_type(p, true);
+                }
+
+                return;
             }
         }
         _ => {
@@ -145,6 +149,58 @@ mod test {
                                 - IDENT@29..35 "Person"
             "#,
         )
+    }
+
+    #[test]
+    fn it_parses_union_type_definition_followed_by_object_definition() {
+        utils::check_ast(
+            "union SearchResult = Photo | Person
+type Error {
+    code: Int
+}",
+            r#"
+            - DOCUMENT@0..64
+                - UNION_TYPE_DEFINITION@0..36
+                    - union_KW@0..5 "union"
+                    - WHITESPACE@5..6 " "
+                    - NAME@6..19
+                        - IDENT@6..18 "SearchResult"
+                        - WHITESPACE@18..19 " "
+                    - UNION_MEMBER_TYPES@19..36
+                        - EQ@19..20 "="
+                        - WHITESPACE@20..21 " "
+                        - NAMED_TYPE@21..27
+                            - NAME@21..27
+                                - IDENT@21..26 "Photo"
+                                - WHITESPACE@26..27 " "
+                        - PIPE@27..28 "|"
+                        - WHITESPACE@28..29 " "
+                        - NAMED_TYPE@29..36
+                            - NAME@29..36
+                                - IDENT@29..35 "Person"
+                                - WHITESPACE@35..36 "\n"
+                - OBJECT_TYPE_DEFINITION@36..64
+                    - type_KW@36..40 "type"
+                    - WHITESPACE@40..41 " "
+                    - NAME@41..47
+                        - IDENT@41..46 "Error"
+                        - WHITESPACE@46..47 " "
+                    - FIELDS_DEFINITION@47..64
+                        - L_CURLY@47..48 "{"
+                        - WHITESPACE@48..53 "\n    "
+                        - FIELD_DEFINITION@53..63
+                            - NAME@53..57
+                                - IDENT@53..57 "code"
+                            - COLON@57..58 ":"
+                            - WHITESPACE@58..59 " "
+                            - TYPE@59..63
+                                - WHITESPACE@59..60 "\n"
+                                - NAMED_TYPE@60..63
+                                    - NAME@60..63
+                                        - IDENT@60..63 "Int"
+                        - R_CURLY@63..64 "}"
+            "#,
+        );
     }
 
     #[test]
