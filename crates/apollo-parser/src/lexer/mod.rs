@@ -96,60 +96,63 @@ fn advance(input: &mut &str) -> Result<Token, Error> {
                 '"' => {
                     buf.push(c); // the second " we already matched on
 
-                    let c = chars.next().unwrap();
-                    match c {
-                        '"' => {
-                            buf.push(chars.next().unwrap());
+                    // TODO @lrlna: don't clone these chars.
+                    // The clone is currently in place to account for empty string values, or "".
+                    // If we encounter "", we need to exit this match statmenet
+                    // and continue where we left off. Without the clone we miss
+                    // the next char entirely.
+                    if let '"' = chars.clone().next().unwrap() {
+                        buf.push(chars.next().unwrap());
 
-                            while let Some(c) = chars.clone().next() {
-                                if c == '"' {
-                                    buf.push(chars.next().unwrap());
-                                    let n1 = chars.next();
-                                    let n2 = chars.next();
-                                    match (n1, n2) {
-                                        (Some('"'), Some('"')) => {
-                                            buf.push(n1.unwrap());
-                                            buf.push(n2.unwrap());
-                                            break;
-                                        }
-                                        (Some(a), Some(b)) => {
-                                            buf.push(a);
-                                            buf.push(b);
-                                            let current = format!("{}{}", a, b);
-                                            create_err!(current,
+                        while let Some(c) = chars.clone().next() {
+                            if c == '"' {
+                                buf.push(chars.next().unwrap());
+                                let n1 = chars.next();
+                                let n2 = chars.next();
+                                match (n1, n2) {
+                                    (Some('"'), Some('"')) => {
+                                        buf.push(n1.unwrap());
+                                        buf.push(n2.unwrap());
+                                        break;
+                                    }
+                                    (Some(a), Some(b)) => {
+                                        buf.push(a);
+                                        buf.push(b);
+                                        let current = format!("{}{}", a, b);
+                                        create_err!(current,
                                                 "Unterminated block comment, expected `\"\"\"`, found `\"{}`",
                                                 current,
                                             );
-                                            break;
-                                        }
-                                        (Some(a), None) => {
-                                            buf.push(a);
-                                            create_err!(a,
+                                        break;
+                                    }
+                                    (Some(a), None) => {
+                                        buf.push(a);
+                                        create_err!(a,
                                                 "Unterminated block comment, expected `\"\"\"`, found `\"{}`",
                                                 a
                                             );
-                                            break;
-                                        }
-                                        (_, _) => {
-                                            buf.push(chars.next().unwrap());
-                                            create_err!(
+                                        break;
+                                    }
+                                    (_, _) => {
+                                        buf.push(chars.next().unwrap());
+                                        create_err!(
                                                 "",
                                                 "Unterminated block comment, expected `\"\"\"`, found `\"`"
                                             );
-                                            break;
-                                        }
+                                        break;
                                     }
-                                } else if is_source_char(c) {
-                                    buf.push(chars.next().unwrap());
-                                } else {
-                                    break;
                                 }
+                            } else if is_source_char(c) {
+                                buf.push(chars.next().unwrap());
+                            } else {
+                                break;
                             }
-
-                            Ok(Token::new(TokenKind::StringValue, buf))
                         }
-                        _ => Ok(Token::new(TokenKind::StringValue, buf)),
+
+                        return Ok(Token::new(TokenKind::StringValue, buf));
                     }
+
+                    Ok(Token::new(TokenKind::StringValue, buf))
                 }
                 t => {
                     buf.push(t);
@@ -353,8 +356,9 @@ mod test {
     #[test]
     fn tests() {
         let gql_1 = indoc! { r#"
-            enum Direction { NORTH WEST
-        "#};
+enum join__Graph {
+  ACCOUNTS @join__graph(name: "accounts" url: "" )
+}"#};
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
         dbg!(lexer_1.errors);
