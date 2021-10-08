@@ -2,14 +2,13 @@ This repository is in active development as we strive to implement features outl
 
 While this is a non-exhaustive list, current large features we are planning on building are as follows:
 
-1. **High-level intermediate represenation (HIR).**
+1. **Semantic Analysis and Validation**
     We will be building a separate structure on top of the the AST created by
     the parser to allow for more effient schema querying. This will include more
     easily accessible information about queries, mutations, types and their
     subtypes, directives etc.
 
-2. **Validation**.
-    Corresponds to [#Validation part](https://spec.graphql.org/draft/#sec-Validation)
+    Validation will correspond to [#Validation part](https://spec.graphql.org/draft/#sec-Validation)
     of the GraphQL spec. This feature allows us to have spec-correct queries and
     schemas.
 
