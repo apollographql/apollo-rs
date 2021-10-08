@@ -1,0 +1,2 @@
+EOF@0:0
+ERROR@0:0 "Unterminated spread operator, expected `...`, found `.`"

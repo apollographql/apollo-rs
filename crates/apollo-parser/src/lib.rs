@@ -31,6 +31,8 @@ pub mod ast;
 mod error;
 mod lexer;
 mod parser;
+#[cfg(test)]
+mod tests;
 
 pub use error::Error;
 pub use lexer::*;

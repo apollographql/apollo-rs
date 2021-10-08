@@ -1,0 +1,2 @@
+EOF@1:1
+ERROR@0:1 "Unterminated spread, expected `...`, found `..`"

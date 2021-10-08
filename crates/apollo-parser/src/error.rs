@@ -3,7 +3,7 @@ use std::fmt;
 use crate::Location;
 
 /// An `Error` type for operations performed in this crate.
-#[derive(Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub struct Error {
     pub(crate) message: String,
     pub(crate) data: String,
