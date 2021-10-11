@@ -17,14 +17,24 @@ pub(crate) fn field(p: &mut Parser) {
         p.err("expected a Name");
     }
 
+    if let Some(T!['(']) = p.peek() {
+        argument::arguments(p);
+    }
+
+    if let Some(T![@]) = p.peek() {
+        directive::directives(p);
+    }
+
+    if let Some(T!['{']) = p.peek() {
+        selection::selection_set(p);
+    }
+
     match p.peek() {
-        Some(T!['(']) => argument::arguments(p),
-        Some(T![@]) => directive::directives(p),
-        Some(T!['{']) => selection::selection_set(p),
         Some(TokenKind::Name) => {
             guard.finish_node();
             field(p)
         }
+
         Some(T!['}']) => {
             guard.finish_node();
         }

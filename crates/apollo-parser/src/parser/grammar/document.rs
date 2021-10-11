@@ -71,8 +71,46 @@ fn select_definition(def: String, p: &mut Parser) {
 
 #[cfg(test)]
 mod test {
+    use crate::ast::Definition;
     use crate::parser::utils;
+    use crate::{Parser, SyntaxTree};
     use indoc::indoc;
+
+    #[test]
+    fn query() {
+        let input = "
+query GraphQuery($graph_id: ID!, $variant: String) {
+  service(id: $graph_id) {
+    schema(tag: $variant) {
+      document
+    }
+  }
+}
+";
+        let parser = Parser::new(input);
+        let ast: SyntaxTree = parser.parse();
+        assert!(&ast.errors().is_empty());
+
+        let doc = ast.document();
+
+        for def in doc.definitions() {
+            if let Definition::OperationDefinition(op_def) = def {
+                assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
+
+                let variable_defs = op_def.variable_definitions();
+                let variables: Vec<String> = variable_defs
+                    .iter()
+                    .map(|v| v.variable_definitions())
+                    .flatten()
+                    .filter_map(|v| Some(v.variable()?.name()?.text().to_string()))
+                    .collect();
+                assert_eq!(
+                    variables.as_slice(),
+                    ["graph_id".to_string(), "variant".to_string()]
+                );
+            }
+        }
+    }
 
     #[test]
     fn smoke_subgraph_test() {
