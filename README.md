@@ -6,7 +6,7 @@
   </p>
 </div>
 
-# This repository is a work in progress, and we do not recommend to use it in production.
+## This repository is a work in progress, and we do not recommend to use it in production.
 Please check out the [ROADMAP](ROADMAP.md) for upcoming features we are working on building.
 
 If you do end up trying out `apollo-rs` and run into trouble, please feel free
