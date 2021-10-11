@@ -1,6 +1,8 @@
 //! A parser for the GraphQL query language.
 //!
-//! ## Example
+//! ## Examples
+//!
+//! ### An example to get field names:
 //! ```rust
 //! use apollo_parser::Parser;
 //! use apollo_parser::ast::{Definition, ObjectTypeDefinition};
@@ -11,6 +13,7 @@
 //!   weight: Float @tag(name: \"hi from inventory value type field\")
 //! }
 //! ";
+//!
 //! let parser = Parser::new(input);
 //! let ast = parser.parse();
 //! assert!(ast.errors().is_empty());
@@ -23,6 +26,46 @@
 //!         for field_def in object_type.fields_definition().unwrap().field_definitions() {
 //!             println!("{}", field_def.name().unwrap().text()); // size weight
 //!         }
+//!     }
+//! }
+//! ```
+//!
+//! ### An example to get variables used in a query:
+//! ```rust
+//! use apollo_parser::{Parser};
+//! use apollo_parser::ast::{Definition, OperationDefinition};
+//!
+//! let input = "
+//! query GraphQuery($graph_id: ID!, $variant: String) {
+//!   service(id: $graph_id) {
+//!     schema(tag: $variant) {
+//!       document
+//!     }
+//!   }
+//! }
+//! ";
+//!
+//! let parser = Parser::new(input);
+//! let ast = parser.parse();
+//! assert!(&ast.errors().is_empty());
+//!
+//! let doc = ast.document();
+//!
+//! for def in doc.definitions() {
+//!     if let Definition::OperationDefinition(op_def) = def {
+//!         assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
+//!
+//!         let variable_defs = op_def.variable_definitions();
+//!         let variables: Vec<String> = variable_defs
+//!             .iter()
+//!             .map(|v| v.variable_definitions())
+//!             .flatten()
+//!             .filter_map(|v| Some(v.variable()?.name()?.text().to_string()))
+//!             .collect();
+//!         assert_eq!(
+//!             variables.as_slice(),
+//!             ["graph_id".to_string(), "variant".to_string()]
+//!         );
 //!     }
 //! }
 //! ```
