@@ -12,7 +12,7 @@ use std::fmt::{self, Display};
 ///
 /// ### Example
 /// ```rust
-/// use sdl_encoder::{Type_, Field, ObjectDef};
+/// use apollo_encoder::{Type_, Field, ObjectDef};
 /// use indoc::indoc;
 ///
 /// let ty_1 = Type_::NamedType {

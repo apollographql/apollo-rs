@@ -9,7 +9,7 @@ use std::fmt::{self, Display};
 ///
 /// ### Example
 /// ```rust
-/// use sdl_encoder::{EnumValue};
+/// use apollo_encoder::{EnumValue};
 ///
 /// let mut enum_ty = EnumValue::new("CARDBOARD_BOX".to_string());
 /// enum_ty.description(Some("Box nap spot.".to_string()));

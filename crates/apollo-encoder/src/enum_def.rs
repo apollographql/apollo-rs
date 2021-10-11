@@ -10,7 +10,7 @@ use std::fmt::{self, Display};
 ///
 /// ### Example
 /// ```rust
-/// use sdl_encoder::{EnumValue, EnumDef};
+/// use apollo_encoder::{EnumValue, EnumDef};
 ///
 /// let mut enum_ty_1 = EnumValue::new("CAT_TREE".to_string());
 /// enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));

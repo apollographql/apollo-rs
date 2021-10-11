@@ -5,7 +5,7 @@
 //!
 //! ## Example
 //! ```rust
-//! use sdl_encoder::{Schema, Field, UnionDef, EnumValue, Directive, EnumDef, Type_};
+//! use apollo_encoder::{Schema, Field, UnionDef, EnumValue, Directive, EnumDef, Type_};
 //! use indoc::indoc;
 //!
 //! let mut schema = Schema::new();

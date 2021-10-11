@@ -9,7 +9,7 @@ use std::fmt::{self, Display};
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-Scalar).
 /// ### Example
 /// ```rust
-/// use sdl_encoder::ScalarDef;
+/// use apollo_encoder::ScalarDef;
 ///
 /// let mut scalar = ScalarDef::new("NumberOfTreatsPerDay".to_string());
 /// scalar.description(Some(

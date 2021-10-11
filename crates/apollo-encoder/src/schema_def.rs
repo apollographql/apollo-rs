@@ -9,7 +9,7 @@ use std::fmt::{self, Display};
 ///
 /// ### Example
 /// ```rust
-/// use sdl_encoder::{SchemaDef};
+/// use apollo_encoder::{SchemaDef};
 /// use indoc::indoc;
 ///
 /// let mut schema_def = SchemaDef::new();

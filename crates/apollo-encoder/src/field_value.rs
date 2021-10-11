@@ -7,7 +7,7 @@ use std::fmt::{self, Display};
 ///
 /// ### Example
 /// ```rust
-/// use sdl_encoder::{Type_};
+/// use apollo_encoder::{Type_};
 ///
 /// let field_ty = Type_::NamedType {
 ///     name: "String".to_string(),

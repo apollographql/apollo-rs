@@ -14,7 +14,7 @@ use std::fmt::{self, Display};
 ///
 /// ### Example
 /// ```rust
-/// use sdl_encoder::{Type_, InputField, InputObjectDef};
+/// use apollo_encoder::{Type_, InputField, InputObjectDef};
 /// use indoc::indoc;
 ///
 /// let ty_1 = Type_::NamedType {

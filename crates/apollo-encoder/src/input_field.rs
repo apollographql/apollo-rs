@@ -9,7 +9,7 @@ use std::fmt::{self, Display};
 ///
 /// ### Example
 /// ```rust
-/// use sdl_encoder::{Type_, InputField};
+/// use apollo_encoder::{Type_, InputField};
 ///
 /// let ty_1 = Type_::NamedType {
 ///     name: "CatBreed".to_string(),

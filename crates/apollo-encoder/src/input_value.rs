@@ -16,7 +16,7 @@ use std::fmt::{self, Display};
 ///
 /// ### Example
 /// ```rust
-/// use sdl_encoder::{Type_, InputValue};
+/// use apollo_encoder::{Type_, InputValue};
 ///
 /// let ty_1 = Type_::NamedType {
 ///     name: "SpaceProgram".to_string(),

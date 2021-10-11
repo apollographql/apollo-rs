@@ -9,7 +9,7 @@ use std::fmt::{self, Display};
 ///
 /// ### Example
 /// ```rust
-/// use sdl_encoder::{UnionDef};
+/// use apollo_encoder::{UnionDef};
 ///
 /// let mut union_ = UnionDef::new("Pet".to_string());
 /// union_.member("Cat".to_string());

@@ -10,7 +10,7 @@ use std::fmt::{self, Display};
 ///
 /// ### Example
 /// ```rust
-/// use sdl_encoder::{Directive};
+/// use apollo_encoder::{Directive};
 /// use indoc::indoc;
 ///
 /// let mut directive = Directive::new("infer".to_string());
