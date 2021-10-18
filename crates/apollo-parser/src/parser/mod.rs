@@ -1,10 +1,10 @@
-pub(crate) mod grammar;
-pub(crate) mod utils;
-
 mod generated;
 mod language;
 mod syntax_tree;
 mod token_text;
+
+pub(crate) mod grammar;
+pub(crate) mod utils;
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -21,17 +21,16 @@ pub(crate) use token_text::TokenText;
 /// Parse text into an AST.
 #[derive(Debug)]
 pub struct Parser {
-    /// input tokens, including whitespace,
-    /// in *reverse* order.
+    /// Input tokens, including whitespace, in *reverse* order.
     tokens: Vec<Token>,
-    /// the in-progress tree.
+    /// The in-progress tree.
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
-    /// the list of syntax errors we've accumulated
-    /// so far.
+    /// The list of syntax errors we've accumulated so far.
     errors: Vec<crate::Error>,
 }
 
 impl Parser {
+    /// Create a new instance of a parser given an input string.
     pub fn new(input: &str) -> Self {
         let lexer = Lexer::new(input);
 
@@ -56,6 +55,7 @@ impl Parser {
         }
     }
 
+    /// Parse the current tokens.
     pub fn parse(mut self) -> SyntaxTree {
         grammar::document::document(&mut self);
 
@@ -77,8 +77,7 @@ impl Parser {
         false
     }
 
-    /// Consume a token from the lexer, and any ignored tokens that follow it
-    /// and add them to the AST.
+    /// Consume a token and any ignored tokens that follow, then add it to AST.
     pub(crate) fn bump(&mut self, kind: SyntaxKind) {
         self.eat(kind);
         self.bump_ignored();
@@ -138,6 +137,7 @@ impl Parser {
         self.push_err(err);
     }
 
+    /// Push an error to parser's error Vec.
     pub(crate) fn push_err(&mut self, err: crate::error::Error) {
         self.errors.push(err);
     }
@@ -152,6 +152,12 @@ impl Parser {
         self.builder.borrow_mut().token(kind, token.data())
     }
 
+    /// Start a node and make it current.
+    ///
+    /// This also creates a NodeGuard under the hood that will automatically
+    /// close the node(via Drop) when the guard goes out of scope.
+    /// This allows for us to not have to always close nodes when we are parsing
+    /// tokens.
     pub(crate) fn start_node(&mut self, kind: SyntaxKind) -> NodeGuard {
         self.builder.borrow_mut().start_node(kind);
         let guard = NodeGuard::new(self.builder.clone());
@@ -160,14 +166,17 @@ impl Parser {
         guard
     }
 
+    /// Peek the next Token and return its TokenKind.
     pub(crate) fn peek(&self) -> Option<TokenKind> {
         self.tokens.last().map(|token| token.kind())
     }
 
+    /// Peek the next Token and return it.
     pub(crate) fn peek_token(&self) -> Option<&Token> {
         self.tokens.last()
     }
 
+    /// Peek Token `n` and return its TokenKind.
     pub(crate) fn peek_n(&self, n: usize) -> Option<TokenKind> {
         let tok = self
             .tokens
@@ -178,10 +187,12 @@ impl Parser {
         tok.get(tok.len() - n).map(|token| token.kind())
     }
 
+    /// Peek next Token's `data` property.
     pub(crate) fn peek_data(&self) -> Option<String> {
         self.tokens.last().map(|token| token.data().to_string())
     }
 
+    /// Peek `n` Token's `data` property.
     pub(crate) fn peek_data_n(&self, n: usize) -> Option<String> {
         let tok = self
             .tokens
@@ -193,6 +204,11 @@ impl Parser {
     }
 }
 
+/// A wrapper around the SyntaxTreeBuilder used to self-close nodes.
+///
+/// When the NodeGuard goes out of scope, it automatically runs `finish_node()`
+/// on the SyntaxTreeBuilder. This ensures that nodes are not forgotten to be
+/// closed.
 #[must_use]
 pub(crate) struct NodeGuard {
     builder: Rc<RefCell<SyntaxTreeBuilder>>,

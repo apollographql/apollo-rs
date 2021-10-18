@@ -1,5 +1,4 @@
-/// A location in the stream.
-// TODO lrlna: Am I needed?
+/// A location index in the token stream.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Location {
     pub(crate) index: usize,

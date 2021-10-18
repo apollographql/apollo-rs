@@ -2,14 +2,14 @@ mod location;
 mod token;
 mod token_kind;
 
-use crate::{create_err, Error, ensure, format_err};
+use crate::{create_err, ensure, format_err, Error};
 
 pub use location::Location;
 pub use token::Token;
 pub use token_kind::TokenKind;
 
-/// Parse text into tokens.
-pub struct Lexer {
+/// Parses tokens into text.
+pub(crate) struct Lexer {
     tokens: Vec<Token>,
     errors: Vec<Error>,
 }
