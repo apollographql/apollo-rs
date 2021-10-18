@@ -1,5 +1,6 @@
+use std::fmt;
+
 use crate::Field;
-use std::fmt::{self, Display};
 /// Object types represent concrete instantiations of sets of fields.
 ///
 /// The introspection types (e.g. `__Type`, `__Field`, etc) are examples of
@@ -90,7 +91,7 @@ impl ObjectDef {
     }
 }
 
-impl Display for ObjectDef {
+impl fmt::Display for ObjectDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // We are determing on whether to have description formatted as

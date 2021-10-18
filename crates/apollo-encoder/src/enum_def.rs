@@ -1,5 +1,6 @@
+use std::fmt;
+
 use crate::EnumValue;
-use std::fmt::{self, Display};
 
 /// Enums are special scalars that can only have a defined set of values.
 ///
@@ -68,7 +69,7 @@ impl EnumDef {
     }
 }
 
-impl Display for EnumDef {
+impl fmt::Display for EnumDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // We are determing on whether to have description formatted as

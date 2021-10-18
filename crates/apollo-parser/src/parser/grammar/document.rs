@@ -1,8 +1,10 @@
-use crate::parser::grammar::{
-    directive, enum_, extensions, fragment, input, interface, object, operation, scalar, schema,
-    union_,
+use crate::{
+    parser::grammar::{
+        directive, enum_, extensions, fragment, input, interface, object, operation, scalar,
+        schema, union_,
+    },
+    Parser, SyntaxKind, TokenKind,
 };
-use crate::{Parser, SyntaxKind, TokenKind};
 
 /// See: https://spec.graphql.org/draft/#Document
 ///
@@ -73,7 +75,7 @@ fn select_definition(def: String, p: &mut Parser) {
 mod test {
     use crate::ast::Definition;
     use crate::parser::utils;
-    use crate::{Parser, SyntaxTree};
+    use crate::Parser;
     use indoc::indoc;
 
     #[test]
@@ -88,7 +90,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
 }
 ";
         let parser = Parser::new(input);
-        let ast: SyntaxTree = parser.parse();
+        let ast = parser.parse();
         assert!(&ast.errors().is_empty());
 
         let doc = ast.document();

@@ -1,5 +1,6 @@
+use std::fmt;
+
 use crate::{InputValue, Type_};
-use std::fmt::{self, Display};
 /// The __Field type represents each field in an Object or Interface type.
 ///
 /// *FieldDefinition*:
@@ -76,7 +77,7 @@ impl Field {
     }
 }
 
-impl Display for Field {
+impl fmt::Display for Field {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // Let's indent description on a field level for now, as all fields

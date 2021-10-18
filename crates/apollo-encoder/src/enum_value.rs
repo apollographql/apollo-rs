@@ -1,4 +1,4 @@
-use std::fmt::{self, Display};
+use std::fmt;
 
 /// The __EnumValue type represents one of possible values of an enum.
 ///
@@ -56,7 +56,7 @@ impl EnumValue {
     }
 }
 
-impl Display for EnumValue {
+impl fmt::Display for EnumValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // We are determing on whether to have description formatted as

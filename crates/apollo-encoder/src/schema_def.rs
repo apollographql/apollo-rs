@@ -1,4 +1,4 @@
-use std::fmt::{self, Display};
+use std::fmt;
 
 /// A GraphQL service’s collective type system capabilities are referred to as that service’s “schema”.
 ///
@@ -78,7 +78,7 @@ impl Default for SchemaDef {
     }
 }
 
-impl Display for SchemaDef {
+impl fmt::Display for SchemaDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // We are determing on whether to have description formatted as

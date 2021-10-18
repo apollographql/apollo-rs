@@ -1,5 +1,7 @@
-use crate::parser::grammar::{description, directive, field, name, object};
-use crate::{Parser, SyntaxKind, TokenKind, T};
+use crate::{
+    parser::grammar::{description, directive, field, name, object},
+    Parser, SyntaxKind, TokenKind, T,
+};
 
 /// See: https://spec.graphql.org/draft/#InterfaceTypeDefinition
 ///

@@ -1,5 +1,7 @@
-use crate::parser::grammar::{directive, name, ty, value};
-use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use crate::{
+    parser::grammar::{directive, name, ty, value},
+    Parser, SyntaxKind, TokenKind, S, T,
+};
 
 /// See: https://spec.graphql.org/draft/#VariableDefinitions
 ///

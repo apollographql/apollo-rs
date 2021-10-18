@@ -1,5 +1,7 @@
-use crate::parser::grammar::{directive, name, selection, ty, variable};
-use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use crate::{
+    parser::grammar::{directive, name, selection, ty, variable},
+    Parser, SyntaxKind, TokenKind, S, T,
+};
 
 /// RootOperationTypeDefinition is used in a SchemaDefinition. Not to be confused
 /// with OperationDefinition.

@@ -1,5 +1,7 @@
-use crate::parser::grammar::{description, directive, name};
-use crate::{Parser, SyntaxKind, TokenKind, T};
+use crate::{
+    parser::grammar::{description, directive, name},
+    Parser, SyntaxKind, TokenKind, T,
+};
 
 /// See: https://spec.graphql.org/draft/#ScalarTypeDefinition
 ///

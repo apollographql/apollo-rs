@@ -1,10 +1,14 @@
-use std::cell::RefCell;
-use std::rc::Rc;
+pub(crate) mod grammar;
+pub(crate) mod utils;
 
-use crate::lexer::Lexer;
-use crate::Error;
-use crate::TokenKind;
-use crate::{lexer, Token};
+mod generated;
+mod language;
+mod syntax_tree;
+mod token_text;
+
+use std::{cell::RefCell, rc::Rc};
+
+use crate::{lexer::Lexer, Error, Token, TokenKind};
 
 pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxElementChildren, SyntaxNodeChildren, SyntaxToken};
@@ -14,18 +18,12 @@ pub(crate) use language::{GraphQLLanguage, SyntaxNode};
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
 pub(crate) use token_text::TokenText;
 
-mod generated;
-pub(crate) mod grammar;
-mod language;
-mod syntax_tree;
-mod token_text;
-pub(crate) mod utils;
 /// Parse text into an AST.
 #[derive(Debug)]
 pub struct Parser {
     /// input tokens, including whitespace,
     /// in *reverse* order.
-    tokens: Vec<lexer::Token>,
+    tokens: Vec<Token>,
     /// the in-progress tree.
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
     /// the list of syntax errors we've accumulated

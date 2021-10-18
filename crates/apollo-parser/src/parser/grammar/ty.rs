@@ -1,8 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::{Parser, SyntaxKind, Token, TokenKind, S, T};
-
-use crate::parser::grammar::name;
+use crate::{parser::grammar::name, Parser, SyntaxKind, Token, TokenKind, S, T};
 
 /// See: https://spec.graphql.org/draft/#InputValueDefinition
 ///

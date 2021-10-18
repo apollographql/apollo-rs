@@ -1,4 +1,5 @@
-//! This is a generated file, please do not edit.
+//! This is a generated file, please do not edit manually. Changes can be
+//! made in codegeneration that lives in `xtask` top-level dir.
 
 #![allow(
     bad_style,
@@ -217,7 +218,9 @@ impl SyntaxKind {
                 | COLON
         )
     }
-    pub fn is_literal(self) -> bool { matches!(self, INT_VALUE | FLOAT_VALUE | STRING_VALUE) }
+    pub fn is_literal(self) -> bool {
+        matches!(self, INT_VALUE | FLOAT_VALUE | STRING_VALUE)
+    }
     pub fn from_keyword(ident: &str) -> Option<SyntaxKind> {
         let kw = match ident {
             "query" => query_KW,

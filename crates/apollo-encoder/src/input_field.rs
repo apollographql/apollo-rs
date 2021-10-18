@@ -1,5 +1,6 @@
+use std::fmt;
+
 use crate::Type_;
-use std::fmt::{self, Display};
 
 #[derive(Debug, PartialEq, Clone)]
 /// Input Field in a given Input Object.
@@ -53,7 +54,7 @@ impl InputField {
     }
 }
 
-impl Display for InputField {
+impl fmt::Display for InputField {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // Let's indent description on a field level for now, as all fields

@@ -1,4 +1,4 @@
-use std::fmt::{self, Display};
+use std::fmt;
 
 /// UnionDefs are an abstract type where no common fields are declared.
 ///
@@ -52,7 +52,7 @@ impl UnionDef {
     }
 }
 
-impl Display for UnionDef {
+impl fmt::Display for UnionDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // We are determing on whether to have description formatted as

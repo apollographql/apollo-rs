@@ -1,16 +1,17 @@
+mod gen_syntax_kinds;
+mod gen_syntax_nodes;
+
 use std::collections::BTreeSet;
+
+use anyhow::Result;
+use structopt::StructOpt;
+use ungrammar::{Grammar, Rule};
 
 use crate::{
     ast_src::{AstEnumSrc, AstNodeSrc, AstSrc, Cardinality, Field, KINDS_SRC},
     ensure_file_contents, root_path,
     utils::{pluralize, project_root, to_lower_snake_case},
 };
-use anyhow::Result;
-use structopt::StructOpt;
-use ungrammar::{Grammar, Rule};
-
-mod gen_syntax_kinds;
-mod gen_syntax_nodes;
 
 use gen_syntax_kinds::generate_kinds;
 use gen_syntax_nodes::generate_nodes;

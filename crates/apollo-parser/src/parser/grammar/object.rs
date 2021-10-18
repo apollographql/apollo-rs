@@ -1,5 +1,7 @@
-use crate::parser::grammar::{description, directive, document::is_definition, field, name, ty};
-use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use crate::{
+    parser::grammar::{description, directive, document::is_definition, field, name, ty},
+    Parser, SyntaxKind, TokenKind, S, T,
+};
 
 /// See: https://spec.graphql.org/draft/#ObjectTypeDefinition
 ///

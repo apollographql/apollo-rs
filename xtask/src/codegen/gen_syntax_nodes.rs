@@ -1,14 +1,10 @@
-use crate::ast_src::AstSrc;
-use crate::ast_src::Cardinality;
-use crate::ast_src::Field;
-use crate::ast_src::KindsSrc;
-use crate::reformat;
+use std::{collections::HashSet, fmt::Write};
 
 use anyhow::Result;
 use quote::{format_ident, quote};
 
-use std::collections::HashSet;
-use std::fmt::Write;
+use crate::ast_src::{AstSrc, Cardinality, Field, KindsSrc};
+use crate::reformat;
 
 pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<String> {
     let (node_defs, node_boilerplate_impls): (Vec<_>, Vec<_>) = grammar

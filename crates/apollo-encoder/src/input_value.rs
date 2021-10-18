@@ -1,5 +1,6 @@
+use std::fmt;
+
 use crate::Type_;
-use std::fmt::{self, Display};
 
 // NOTE(@lrlna): __InputValue is also meant to be used for InputFields on an
 // InputObject. We currently do not differentiate between InputFields and
@@ -81,7 +82,7 @@ impl InputValue {
     }
 }
 
-impl Display for InputValue {
+impl fmt::Display for InputValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // We are determing on whether to have description formatted as

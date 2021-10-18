@@ -1,4 +1,6 @@
-use crate::*;
+use crate::{
+    Directive, EnumDef, InputObjectDef, InterfaceDef, ObjectDef, ScalarDef, SchemaDef, UnionDef,
+};
 
 /// GraphQLSchema represented in Schema Definition Language.
 ///
@@ -98,7 +100,10 @@ impl Default for Schema {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::{
+        Directive, EnumDef, EnumValue, Field, InputField, InputObjectDef, ObjectDef, ScalarDef,
+        Schema, SchemaDef, Type_, UnionDef,
+    };
     use indoc::indoc;
     use pretty_assertions::assert_eq;
 

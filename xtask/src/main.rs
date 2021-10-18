@@ -2,11 +2,12 @@ mod ast_src;
 mod codegen;
 mod utils;
 
-use anyhow::{bail, Result};
 use std::{
     env,
     path::{Path, PathBuf},
 };
+
+use anyhow::{bail, Result};
 use structopt::StructOpt;
 use xshell::{cmd, pushenv};
 
@@ -69,8 +70,10 @@ fn reformat(text: &str) -> Result<String> {
         .stdin(text)
         .read()?;
     Ok(format!(
-        "//! {}\n\n{}\n",
-        "This is a generated file, please do not edit.", stdout
+        "{}\n\n{}\n",
+        "//! This is a generated file, please do not edit manually. Changes can be
+//! made in codegeneration that lives in `xtask` top-level dir.",
+        stdout
     ))
 }
 
