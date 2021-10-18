@@ -1,5 +1,6 @@
-use rowan::GreenNodeBuilder;
 use std::fmt;
+
+use rowan::GreenNodeBuilder;
 
 use crate::{ast::Document, Error, SyntaxElement, SyntaxKind};
 

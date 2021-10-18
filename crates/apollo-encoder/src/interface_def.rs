@@ -1,5 +1,6 @@
+use std::fmt;
+
 use crate::Field;
-use std::fmt::{self, Display};
 
 /// InterfaceDefs are an abstract type where there are common fields declared.
 ///
@@ -105,7 +106,7 @@ impl InterfaceDef {
     }
 }
 
-impl Display for InterfaceDef {
+impl fmt::Display for InterfaceDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // We are determing on whether to have description formatted as

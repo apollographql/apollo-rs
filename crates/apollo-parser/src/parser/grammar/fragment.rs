@@ -1,5 +1,7 @@
-use crate::parser::grammar::{directive, name, selection, ty};
-use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use crate::{
+    parser::grammar::{directive, name, selection, ty},
+    Parser, SyntaxKind, TokenKind, S, T,
+};
 
 /// See: https://spec.graphql.org/draft/#FragmentDefinition
 ///

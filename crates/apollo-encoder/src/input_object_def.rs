@@ -1,5 +1,6 @@
+use std::fmt;
+
 use crate::InputField;
-use std::fmt::{self, Display};
 
 /// Input objects are composite types used as inputs into queries defined as a list of named input values..
 ///
@@ -78,7 +79,7 @@ impl InputObjectDef {
     }
 }
 
-impl Display for InputObjectDef {
+impl fmt::Display for InputObjectDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // We are determing on whether to have description formatted as

@@ -1,5 +1,7 @@
-use crate::parser::grammar::{argument, description, input, name};
-use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use crate::{
+    parser::grammar::{argument, description, input, name},
+    Parser, SyntaxKind, TokenKind, S, T,
+};
 
 /// See: https://spec.graphql.org/draft/#DirectiveDefinition
 ///

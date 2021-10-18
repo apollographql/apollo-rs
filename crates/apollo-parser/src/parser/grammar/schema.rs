@@ -1,5 +1,7 @@
-use crate::parser::grammar::{description, directive, operation};
-use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use crate::{
+    parser::grammar::{description, directive, operation},
+    Parser, SyntaxKind, TokenKind, S, T,
+};
 
 /// See: https://spec.graphql.org/draft/#SchemaDefinition
 ///

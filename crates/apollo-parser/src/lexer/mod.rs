@@ -1,13 +1,12 @@
-use crate::{create_err, Error};
-use crate::{ensure, format_err};
+mod location;
+mod token;
+mod token_kind;
+
+use crate::{create_err, Error, ensure, format_err};
 
 pub use location::Location;
 pub use token::Token;
 pub use token_kind::TokenKind;
-
-mod location;
-mod token;
-mod token_kind;
 
 /// Parse text into tokens.
 pub struct Lexer {

@@ -1,5 +1,7 @@
-use crate::parser::grammar::{enum_, input, interface, object, scalar, schema, union_};
-use crate::Parser;
+use crate::{
+    parser::grammar::{enum_, input, interface, object, scalar, schema, union_},
+    Parser,
+};
 
 pub(crate) fn extensions(p: &mut Parser) {
     // we already know the next node is 'extend', check for the node after that

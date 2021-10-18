@@ -1,5 +1,7 @@
-use crate::parser::grammar::{field, fragment};
-use crate::{Parser, SyntaxKind, TokenKind, S, T};
+use crate::{
+    parser::grammar::{field, fragment},
+    Parser, SyntaxKind, TokenKind, S, T,
+};
 
 /// See: https://spec.graphql.org/draft/#SelectionSet
 ///

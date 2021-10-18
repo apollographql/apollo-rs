@@ -1,4 +1,4 @@
-use std::fmt::{self, Display};
+use std::fmt;
 
 /// Represents scalar types such as Int, String, and Boolean.
 /// Scalars cannot have fields.
@@ -46,7 +46,7 @@ impl ScalarDef {
     }
 }
 
-impl Display for ScalarDef {
+impl fmt::Display for ScalarDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // We are determing on whether to have description formatted as

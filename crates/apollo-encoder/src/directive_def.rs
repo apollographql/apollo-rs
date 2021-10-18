@@ -1,5 +1,6 @@
+use std::fmt;
+
 use crate::InputValue;
-use std::fmt::{self, Display};
 
 /// The `__Directive` type represents a Directive that a service supports.
 ///
@@ -70,7 +71,7 @@ impl Directive {
     }
 }
 
-impl Display for Directive {
+impl fmt::Display for Directive {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
             // We are determing on whether to have description formatted as

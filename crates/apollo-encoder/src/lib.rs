@@ -62,44 +62,32 @@
 #![deny(missing_debug_implementations, nonstandard_style)]
 #![warn(missing_docs, future_incompatible, unreachable_pub, rust_2018_idioms)]
 
-mod schema;
-pub use schema::Schema;
-
-mod field;
-pub use field::Field;
-
-mod field_value;
-pub use field_value::Type_;
-
-mod input_object_def;
-pub use input_object_def::InputObjectDef;
-
-mod input_value;
-pub use input_value::InputValue;
-
-mod input_field;
-pub use input_field::InputField;
-
-mod enum_def;
-pub use enum_def::EnumDef;
-
-mod enum_value;
-pub use enum_value::EnumValue;
-
-mod object_def;
-pub use object_def::ObjectDef;
-
-mod scalar_def;
-pub use scalar_def::ScalarDef;
-
-mod union_def;
-pub use union_def::UnionDef;
-
 mod directive_def;
-pub use directive_def::Directive;
-
+mod enum_def;
+mod enum_value;
+mod field;
+mod field_value;
+mod input_field;
+mod input_object_def;
+mod input_value;
 mod interface_def;
-pub use interface_def::InterfaceDef;
-
+mod object_def;
+mod scalar_def;
+mod schema;
 mod schema_def;
+mod union_def;
+
+pub use directive_def::Directive;
+pub use enum_def::EnumDef;
+pub use enum_value::EnumValue;
+pub use field::Field;
+pub use field_value::Type_;
+pub use input_field::InputField;
+pub use input_object_def::InputObjectDef;
+pub use input_value::InputValue;
+pub use interface_def::InterfaceDef;
+pub use object_def::ObjectDef;
+pub use scalar_def::ScalarDef;
+pub use schema::Schema;
 pub use schema_def::SchemaDef;
+pub use union_def::UnionDef;
