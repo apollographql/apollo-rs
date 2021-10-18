@@ -41,9 +41,6 @@ impl fmt::Debug for Token {
         let end = self.loc.index + self.data.len();
 
         match &self.kind {
-            TokenKind::Root => {
-                write!(f, "ROOT@{}:{} {:?}", start, end, self.data)
-            }
             TokenKind::Whitespace => {
                 write!(f, "WHITESPACE@{}:{} {:?}", start, end, self.data)
             }

@@ -69,22 +69,23 @@
 //!     }
 //! }
 //! ```
-pub mod ast;
-pub mod error;
-pub mod parser;
-
 mod lexer;
 #[cfg(test)]
 mod tests;
 
-pub(crate) use lexer::{Location, Token, TokenKind};
-pub(crate) use parser::{
+pub mod ast;
+pub mod error;
+pub mod parser;
+
+#[cfg(test)]
+pub(crate) use crate::lexer::Lexer;
+pub(crate) use crate::lexer::{Location, Token, TokenKind};
+pub(crate) use crate::parser::{
     SyntaxElement, SyntaxKind, SyntaxNode, SyntaxNodeChildren, SyntaxToken, TokenText,
 };
 
 pub use crate::error::Error;
-pub use crate::lexer::Lexer;
-pub use crate::parser::Parser;
+pub use crate::parser::{Parser, SyntaxTree};
 
 #[macro_export]
 macro_rules! format_err {

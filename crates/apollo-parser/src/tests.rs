@@ -12,14 +12,14 @@ use expect_test::expect_file;
 
 use crate::{Error, Lexer, Token};
 
-/// To run these tests and update files:
-/// ```bash
-/// env UPDATE_EXPECT=1 cargo qt
-/// ```
-/// or on windows
-/// ```bash
-/// $env:UPDATE_EXPECT=1; cargo test --package apollo-parser
-/// ```
+// To run these tests and update files:
+// ```bash
+// env UPDATE_EXPECT=1 cargo qt
+// ```
+// or on windows
+// ```bash
+// $env:UPDATE_EXPECT=1; cargo test --package apollo-parser
+// ```
 #[test]
 fn lexer_tests() {
     dir_tests(&test_data_dir(), &["lexer/ok"], "txt", |text, path| {
