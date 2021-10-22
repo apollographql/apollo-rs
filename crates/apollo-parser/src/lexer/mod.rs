@@ -3,39 +3,70 @@ mod location;
 mod token;
 mod token_kind;
 
-use crate::{create_err, ensure, format_err, Error};
+use std::str::Chars;
 
-use cursor::Cursor;
+use crate::{create_err, ensure, format_err, Error};
 
 pub use location::Location;
 pub use token::Token;
 pub use token_kind::TokenKind;
 
-/// Parses tokens into text.
-pub(crate) struct Lexer {
-    tokens: Vec<Token>,
-    errors: Vec<Error>,
-    input: &str,
+pub(crate) const EOF_CHAR: char = '\0';
+
+pub(crate) struct Cursor<'a> {
+    initial_len: usize,
+    chars: Chars<'a>,
 }
 
-impl Lexer {
+impl<'a> Cursor<'a> {
+    pub(crate) fn new(input: &'a str) -> Cursor<'a> {
+        Cursor {
+            initial_len: input.len(),
+            chars: input.chars(),
+        }
+    }
+}
+
+/// Parses tokens into text.
+pub(crate) struct Lexer<'a> {
+    tokens: Vec<Token>,
+    errors: Vec<Error>,
+    input: &'a str,
+    chars: Chars<'a>,
+    initial_len: usize,
+}
+
+impl<'a> Lexer<'a> {
     /// Create a new instance of `Lexer`.
-    pub fn new(mut input: &str) -> Self {
+    pub fn new(mut input: &'a str) -> Self {
         Self {
             tokens: Vec::new(),
             errors: Vec::new(),
             input,
+            chars: input.chars(),
+            initial_len: input.len(),
         }
     }
 
-    pub fn tokenise(&self) -> Self {
-        while !self.input.is_empty() {
-            let token = Cursor::new(self.input).advance();
-            self.input = &self.input[token.len..];
-            self.tokens.push(token);
-        }
+    pub fn tokenise(&mut self) {
+        // while !input.is_empty() {
+        //     let token = self.advance();
+        //     self.input = self.input[token.len..].to_owned();
+        //     self.tokens.push(token);
+        // }
 
-        Self
+        while !self.input.is_empty() {
+            let old_input = self.input;
+
+            if old_input.len() == self.input.len() {
+                self.chars = self.input.chars();
+                self.initial_len = self.input.len();
+
+                let token = self.advance();
+                self.input = &self.input[token.len..];
+                self.tokens.push(token);
+            }
+        }
     }
 
     /// Get a reference to the lexer's tokens.
@@ -48,13 +79,6 @@ impl Lexer {
         self.errors.as_slice()
     }
 
-    // pub(crate) fn push_err(&self, m: String, data: &str) {
-    //     let err = Error::new(m.to_string(), data.to_string());
-    //     self.errors.push(err)
-    // }
-}
-
-impl Cursor<'_> {
     fn advance(&mut self) -> Token {
         let first_char = self.bump().unwrap();
 
@@ -290,7 +314,52 @@ impl Cursor<'_> {
             Token::new(TokenKind::Int, buf, self.len_consumed())
         }
     }
+
+    /// Returns nth character relative to the current cursor position.
+    /// If requested position doesn't exist, `EOF_CHAR` is returned.
+    /// However, getting `EOF_CHAR` doesn't always mean actual end of file,
+    /// it should be checked with `is_eof` method.
+    fn nth_char(&self, n: usize) -> char {
+        self.chars().nth(n).unwrap_or(EOF_CHAR)
+    }
+
+    /// Peeks the next symbol from the input stream without consuming it.
+    pub(crate) fn first(&self) -> char {
+        self.nth_char(0)
+    }
+
+    /// Peeks the second symbol from the input stream without consuming it.
+    pub(crate) fn second(&self) -> char {
+        self.nth_char(1)
+    }
+    /// Checks if there is nothing more to consume.
+    pub(crate) fn is_eof(&self) -> bool {
+        self.chars.as_str().is_empty()
+    }
+
+    /// Returns amount of already consumed symbols.
+    pub(crate) fn len_consumed(&self) -> usize {
+        self.initial_len - self.chars.as_str().len()
+    }
+    /// Returns a `Chars` iterator over the remaining characters.
+    fn chars(&self) -> Chars<'_> {
+        self.chars.clone()
+    }
+
+    /// Moves to the next character.
+    pub(crate) fn bump(&mut self) -> Option<char> {
+        let c = self.chars.next()?;
+
+        Some(c)
+    }
+
+    // pub(crate) fn push_err(&self, m: String, data: &str) {
+    //     let err = Error::new(m.to_string(), data.to_string());
+    //     self.errors.push(err)
+    // }
 }
+
+impl Cursor<'_> {}
 
 fn is_whitespace(c: char) -> bool {
     // from rust's lexer:
