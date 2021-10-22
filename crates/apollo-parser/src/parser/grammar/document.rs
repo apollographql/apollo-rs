@@ -79,6 +79,7 @@ mod test {
     use indoc::indoc;
 
     #[test]
+<<<<<<< HEAD
     fn core_schema() {
         let schema = r#"schema
     @core(feature: "https://specs.apollo.dev/join/v0.1")
@@ -151,6 +152,15 @@ mod test {
                 }
             }
         }
+=======
+    fn schema() {
+        let input = r#"
+
+"#;
+        let parser = Parser::new(input);
+        let ast = parser.parse();
+        dbg!(ast.document());
+>>>>>>> 29455f7 (lexer: use a Cursor to iterate over input)
     }
 
     #[test]

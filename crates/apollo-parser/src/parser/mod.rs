@@ -8,7 +8,7 @@ pub(crate) mod utils;
 
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{lexer::Lexer, Error, Token, TokenKind};
+use crate::{lexer::Lexer, Error, Location, Token, TokenKind};
 
 pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxElementChildren, SyntaxNodeChildren, SyntaxToken};
@@ -32,7 +32,7 @@ pub struct Parser {
 impl Parser {
     /// Create a new instance of a parser given an input string.
     pub fn new(input: &str) -> Self {
-        let lexer = Lexer::new(input);
+        let lexer = Lexer::new(input).tokenise();
 
         let mut tokens = Vec::new();
         let mut errors = Vec::new();
@@ -113,7 +113,12 @@ impl Parser {
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err(&mut self, message: &str) {
         let current = self.current();
-        let err = Error::with_loc(message.into(), current.data().to_string(), current.loc());
+        // this needs to be the computed location
+        let err = Error::with_loc(
+            message.into(),
+            current.data().to_string(),
+            Location::new(current.len()),
+        );
         self.push_err(err)
     }
 
@@ -131,7 +136,7 @@ impl Parser {
         let err = Error::with_loc(
             format!("expected {:?}, got {}", kind, data),
             data,
-            current.loc(),
+            Location::new(current.len()),
         );
 
         self.push_err(err);
