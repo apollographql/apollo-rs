@@ -33,7 +33,6 @@ impl Parser {
     /// Create a new instance of a parser given an input string.
     pub fn new(input: &str) -> Self {
         let mut lexer = Lexer::new(input);
-        lexer.tokenise();
 
         let mut tokens = Vec::new();
         let mut errors = Vec::new();
