@@ -53,7 +53,7 @@ impl Cursor<'_> {
     fn advance(&mut self) -> Token {
         let first_char = self.bump().unwrap();
 
-        let kind = match first_char {
+        match first_char {
             '"' => self.string_value(first_char),
             '#' => self.comment(first_char),
             '.' => self.spread_operator(),
@@ -76,9 +76,7 @@ impl Cursor<'_> {
             '|' => Token::new(TokenKind::Pipe, first_char.into(), self.len_consumed()),
             '}' => Token::new(TokenKind::RCurly, first_char.into(), self.len_consumed()),
             _c => todo!(), // create_err!(c, "Unexpected character: {}", c),
-        };
-
-        kind
+        }
     }
 
     fn string_value(&mut self, first_char: char) -> Token {
@@ -86,28 +84,19 @@ impl Cursor<'_> {
         // character or block character are terminated (rust's lexer does this).
         let mut buf = String::new();
         buf.push(first_char); // the first " we already matched on
-        self.bump();
 
-        let c = self.first();
+        let c = self.bump().unwrap();
         match c {
             '"' => {
                 buf.push(c); // the second " we already matched on
-                self.bump();
 
-                // TODO @lrlna: don't clone these chars.
-                // The clone is currently in place to account for empty string values, or "".
-                // If we encounter "", we need to exit this match statmenet
-                // and continue where we left off. Without the clone we miss
-                // the next char entirely.
-                if let '"' = self.first() {
-                    buf.push(self.first());
-                    self.bump();
+                if let c @ '"' = self.bump().unwrap() {
+                    buf.push(c);
 
                     while !self.is_eof() {
-                        let first = self.first();
-                        if first == '"' {
-                            buf.push(first);
-                            self.bump();
+                        let c = self.bump().unwrap();
+                        if c == '"' {
+                            buf.push(c);
                             match (self.first(), self.second()) {
                                 ('"', '"') => {
                                     buf.push(self.first());
@@ -125,9 +114,8 @@ impl Cursor<'_> {
                                     break;
                                 }
                             }
-                        } else if is_source_char(first) {
-                            buf.push(first);
-                            self.bump();
+                        } else if is_source_char(c) {
+                            buf.push(c);
                         } else {
                             break;
                         }
@@ -140,22 +128,16 @@ impl Cursor<'_> {
             }
             t => {
                 buf.push(t);
-                self.bump();
 
                 while !self.is_eof() {
-                    let first = self.first();
-                    if first == '"' {
-                        buf.push(first);
-                        self.bump();
+                    let c = self.bump().unwrap();
+                    if c == '"' {
+                        buf.push(c);
                         break;
-                    } else if is_escaped_char(first)
-                        || is_source_char(first)
-                            && first != '\\'
-                            && first != '"'
-                            && !is_line_terminator(first)
+                    } else if is_escaped_char(c)
+                        || is_source_char(c) && c != '\\' && c != '"' && !is_line_terminator(c)
                     {
-                        buf.push(first);
-                        self.bump();
+                        buf.push(c);
                     // TODO @lrlna: this should error if c == \ or has a line terminator
                     } else {
                         break;
@@ -170,13 +152,11 @@ impl Cursor<'_> {
     fn comment(&mut self, first_char: char) -> Token {
         let mut buf = String::new();
         buf.push(first_char);
-        self.bump();
 
         while !self.is_eof() {
-            let first = self.first();
+            let first = self.bump().unwrap();
             if !is_line_terminator(first) {
                 buf.push(first);
-                self.bump();
             } else {
                 break;
             }
@@ -206,13 +186,11 @@ impl Cursor<'_> {
     fn whitespace(&mut self, first_char: char) -> Token {
         let mut buf = String::new();
         buf.push(first_char);
-        self.bump();
 
         while !self.is_eof() {
-            let first = self.first();
+            let first = self.bump().unwrap();
             if is_whitespace(first) {
                 buf.push(first);
-                self.bump();
             } else {
                 break;
             }
