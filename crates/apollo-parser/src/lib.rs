@@ -88,33 +88,12 @@ pub use crate::error::Error;
 pub use crate::parser::{Parser, SyntaxTree};
 
 #[macro_export]
-macro_rules! format_err {
-    ($data:expr, $($tt:tt)*) => {
-        Err($crate::error::Error::new(
-            format!($($tt)*),
-            $data.to_string(),
-        ))
-    };
-}
-
-#[macro_export]
 macro_rules! create_err {
     ($data:expr, $($tt:tt)*) => {
         $crate::error::Error::new(
             format!($($tt)*),
             $data.to_string(),
         )
-    };
-}
-
-/// Return early with an error.
-#[macro_export]
-macro_rules! bail {
-    ($data:expr, $($tt:tt)*) => {
-        return Err($crate::error::Error::new(
-            format!($($tt)*),
-            $data.to_string(),
-        ))
     };
 }
 
