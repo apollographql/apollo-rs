@@ -2,9 +2,6 @@ use std::str::Chars;
 
 use crate::Error;
 /// Peekable iterator over a char sequence.
-///
-/// Next characters can be peeked via `nth_char` method,
-/// and position can be shifted forward via `bump` method.
 pub(crate) struct Cursor<'a> {
     chars: Chars<'a>,
     pub(crate) err: Option<Error>,
@@ -23,30 +20,23 @@ pub(crate) const EOF_CHAR: char = '\0';
 
 impl<'a> Cursor<'a> {
     /// Returns nth character relative to the current cursor position.
-    /// If requested position doesn't exist, `EOF_CHAR` is returned.
-    /// However, getting `EOF_CHAR` doesn't always mean actual end of file,
-    /// it should be checked with `is_eof` method.
     fn nth_char(&self, n: usize) -> char {
         self.chars().nth(n).unwrap_or(EOF_CHAR)
     }
 
-    /// Peeks the next symbol from the input stream without consuming it.
+    /// Peeks the next char in input without consuming.
     pub(crate) fn first(&self) -> char {
         self.nth_char(0)
     }
 
-    /// Peeks the second symbol from the input stream without consuming it.
+    /// Peeks the second char in input without consuming.
     pub(crate) fn second(&self) -> char {
         self.nth_char(1)
     }
-    /// Checks if there is nothing more to consume.
+
+    /// Checks if there are chars to consume.
     pub(crate) fn is_eof(&self) -> bool {
         self.chars.as_str().is_empty()
-    }
-
-    /// Returns a `Chars` iterator over the remaining characters.
-    fn chars(&self) -> Chars<'_> {
-        self.chars.clone()
     }
 
     /// Moves to the next character.
@@ -56,13 +46,18 @@ impl<'a> Cursor<'a> {
         Some(c)
     }
 
-    /// Get current error object in the Cursor.
+    /// Get current error object in the cursor.
     pub(crate) fn err(&mut self) -> Option<Error> {
         self.err.clone()
     }
 
-    /// Add error object to the Cursor.
+    /// Add error object to the cursor.
     pub(crate) fn add_err(&mut self, err: Error) {
         self.err = Some(err)
+    }
+
+    /// Returns a `Chars` iterator over the remaining characters.
+    fn chars(&self) -> Chars<'_> {
+        self.chars.clone()
     }
 }
