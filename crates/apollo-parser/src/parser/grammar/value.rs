@@ -16,20 +16,36 @@ use crate::{
 ///     ListValue<sub>\[?Const\]</sub>
 ///     ObjectValue<sub>\[?Const\]</sub>
 pub(crate) fn value(p: &mut Parser) {
-    let _g = p.start_node(SyntaxKind::VALUE);
     match p.peek() {
         Some(T![$]) => variable::variable(p),
-        Some(TokenKind::Int) => p.bump(SyntaxKind::INT_VALUE),
-        Some(TokenKind::Float) => p.bump(SyntaxKind::FLOAT_VALUE),
-        Some(TokenKind::StringValue) => p.bump(SyntaxKind::STRING_VALUE),
+        Some(TokenKind::Int) => {
+            let _g = p.start_node(SyntaxKind::INT_VALUE);
+            p.bump(SyntaxKind::INT);
+        }
+        Some(TokenKind::Float) => {
+            let _g = p.start_node(SyntaxKind::FLOAT_VALUE);
+            p.bump(SyntaxKind::FLOAT);
+        }
+        Some(TokenKind::StringValue) => {
+            let _g = p.start_node(SyntaxKind::STRING_VALUE);
+            p.bump(SyntaxKind::STRING);
+        }
         Some(TokenKind::Name) => {
             let node = p.peek_data().unwrap();
-            if matches!(node.as_str(), "true" | "false") {
-                p.bump(SyntaxKind::BOOLEAN_VALUE);
-            } else if matches!(node.as_str(), "null") {
-                p.bump(SyntaxKind::NULL_VALUE);
-            } else {
-                enum_value(p);
+            match node.as_str() {
+                "true" => {
+                    let _g = p.start_node(SyntaxKind::BOOLEAN_VALUE);
+                    p.bump(SyntaxKind::true_KW);
+                }
+                "false" => {
+                    let _g = p.start_node(SyntaxKind::BOOLEAN_VALUE);
+                    p.bump(SyntaxKind::false_KW);
+                }
+                "null" => {
+                    let _g = p.start_node(SyntaxKind::NULL_VALUE);
+                    p.bump(SyntaxKind::null_KW)
+                }
+                _ => enum_value(p),
             }
         }
         Some(T!['[']) => list_value(p),
