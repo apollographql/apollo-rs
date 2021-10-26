@@ -6,15 +6,13 @@ use crate::Error;
 /// Next characters can be peeked via `nth_char` method,
 /// and position can be shifted forward via `bump` method.
 pub(crate) struct Cursor<'a> {
-    initial_len: usize,
     chars: Chars<'a>,
-    err: Option<Error>,
+    pub(crate) err: Option<Error>,
 }
 
 impl<'a> Cursor<'a> {
     pub(crate) fn new(input: &'a str) -> Cursor<'a> {
         Cursor {
-            initial_len: input.len(),
             chars: input.chars(),
             err: None,
         }
@@ -46,10 +44,6 @@ impl<'a> Cursor<'a> {
         self.chars.as_str().is_empty()
     }
 
-    /// Returns amount of already consumed symbols.
-    pub(crate) fn len_consumed(&self) -> usize {
-        self.initial_len - self.chars.as_str().len()
-    }
     /// Returns a `Chars` iterator over the remaining characters.
     fn chars(&self) -> Chars<'_> {
         self.chars.clone()
@@ -62,7 +56,13 @@ impl<'a> Cursor<'a> {
         Some(c)
     }
 
-    pub(crate) fn err(self) -> Option<Error> {
-        self.err
+    /// Get current error object in the Cursor.
+    pub(crate) fn err(&mut self) -> Option<Error> {
+        self.err.clone()
+    }
+
+    /// Add error object to the Cursor.
+    pub(crate) fn add_err(&mut self, err: Error) {
+        self.err = Some(err)
     }
 }

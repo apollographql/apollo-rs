@@ -7,12 +7,16 @@ use crate::TokenKind;
 pub struct Token {
     pub(crate) kind: TokenKind,
     pub(crate) data: String,
-    pub(crate) len: usize,
+    pub(crate) index: usize,
 }
 
 impl Token {
-    pub(crate) fn new(kind: TokenKind, data: String, len: usize) -> Self {
-        Self { kind, data, len }
+    pub(crate) fn new(kind: TokenKind, data: String) -> Self {
+        Self {
+            kind,
+            data,
+            index: 0,
+        }
     }
 
     /// Get a reference to the token's kind.
@@ -26,15 +30,15 @@ impl Token {
     }
 
     /// Get a reference to the token's loc.
-    pub fn len(&self) -> usize {
-        self.len
+    pub fn index(&self) -> usize {
+        self.index
     }
 }
 
 impl fmt::Debug for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let end = self.len();
-        let start = end - self.data().len();
+        let start = self.index;
+        let end = self.index + self.data.len();
 
         match &self.kind {
             TokenKind::Whitespace => {
