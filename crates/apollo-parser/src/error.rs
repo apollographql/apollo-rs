@@ -1,40 +1,50 @@
 use std::fmt;
 
-use crate::Location;
-
 /// An `Error` type for operations performed in this crate.
 #[derive(PartialEq, Eq, Clone)]
 pub struct Error {
     pub(crate) message: String,
     pub(crate) data: String,
-    pub(crate) loc: Location,
+    pub(crate) index: usize,
 }
 
 impl Error {
     /// Create a new instance of `Error`.
-    pub fn new(message: String, data: String) -> Self {
+    pub fn new<S: Into<String>>(message: S, data: String) -> Self {
         Self {
-            message,
+            message: message.into(),
             data,
-            loc: Location::new(0),
+            index: 0,
         }
     }
 
     /// Create a new instance of `Error` with a `Location`.
-    pub fn with_loc(message: String, data: String, loc: Location) -> Self {
-        Self { message, data, loc }
+    pub fn with_loc<S: Into<String>>(message: S, data: String, index: usize) -> Self {
+        Self {
+            message: message.into(),
+            data,
+            index,
+        }
     }
 }
 
 impl fmt::Debug for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let start = self.loc.index;
-        let end = self.loc.index + self.data.len();
+        let start = self.index;
+        let end = self.index + self.data.len();
 
         if &self.data == "EOF" {
-            write!(f, "ERROR@{}:{} {:?}", start, start, self.message)
+            write!(
+                f,
+                "ERROR@{}:{} {:?} {}",
+                start, start, self.message, self.data
+            )
         } else {
-            write!(f, "ERROR@{}:{} {:?}", start, end, self.message)
+            write!(
+                f,
+                "ERROR@{}:{} {:?} {}",
+                start, end, self.message, self.data
+            )
         }
     }
 }

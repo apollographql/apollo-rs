@@ -79,33 +79,10 @@ pub mod parser;
 
 #[cfg(test)]
 pub(crate) use crate::lexer::Lexer;
-pub(crate) use crate::lexer::{Location, Token, TokenKind};
+pub(crate) use crate::lexer::{Token, TokenKind};
 pub(crate) use crate::parser::{
     SyntaxElement, SyntaxKind, SyntaxNode, SyntaxNodeChildren, SyntaxToken, TokenText,
 };
 
 pub use crate::error::Error;
 pub use crate::parser::{Parser, SyntaxTree};
-
-#[macro_export]
-macro_rules! create_err {
-    ($data:expr, $($tt:tt)*) => {
-        $crate::error::Error::new(
-            format!($($tt)*),
-            $data.to_string(),
-        )
-    };
-}
-
-/// Return early with an error if a condition is not satisfied.
-#[macro_export]
-macro_rules! ensure {
-    ($cond:expr, $data:expr, $($tt:tt)*) => {
-        if !$cond {
-            return Err($crate::lexer::Error::new(
-                format!($($tt)*),
-                $data.to_string(),
-            ))
-        }
-    };
-}
