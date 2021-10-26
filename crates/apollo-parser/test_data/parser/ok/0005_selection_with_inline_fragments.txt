@@ -1,0 +1,45 @@
+- DOCUMENT@0..91
+    - OPERATION_DEFINITION@0..91
+        - SELECTION_SET@0..91
+            - L_CURLY@0..1 "{"
+            - WHITESPACE@1..6 "\n    "
+            - SELECTION@6..90
+                - FIELD@6..17
+                    - NAME@6..17
+                        - IDENT@6..12 "animal"
+                        - WHITESPACE@12..17 "\n    "
+                - FIELD@17..31
+                    - NAME@17..31
+                        - IDENT@17..26 "faveSnack"
+                        - WHITESPACE@26..31 "\n    "
+                - INLINE_FRAGMENT@31..90
+                    - SPREAD@31..34 "..."
+                    - WHITESPACE@34..35 " "
+                    - TYPE_CONDITION@35..42
+                        - on_KW@35..37 "on"
+                        - WHITESPACE@37..38 " "
+                        - NAMED_TYPE@38..42
+                            - NAME@38..42
+                                - IDENT@38..41 "Pet"
+                                - WHITESPACE@41..42 " "
+                    - SELECTION_SET@42..90
+                        - L_CURLY@42..43 "{"
+                        - WHITESPACE@43..50 "\n      "
+                        - SELECTION@50..88
+                            - FIELD@50..88
+                                - NAME@50..60
+                                    - IDENT@50..59 "playmates"
+                                    - WHITESPACE@59..60 " "
+                                - SELECTION_SET@60..88
+                                    - L_CURLY@60..61 "{"
+                                    - WHITESPACE@61..70 "\n        "
+                                    - SELECTION@70..82
+                                        - FIELD@70..82
+                                            - NAME@70..82
+                                                - IDENT@70..75 "count"
+                                                - WHITESPACE@75..82 "\n      "
+                                    - R_CURLY@82..83 "}"
+                                    - WHITESPACE@83..88 "\n    "
+                        - R_CURLY@88..89 "}"
+                        - WHITESPACE@89..90 "\n"
+            - R_CURLY@90..91 "}"

@@ -1,0 +1,29 @@
+- DOCUMENT@0..46
+    - ENUM_TYPE_DEFINITION@0..46
+        - enum_KW@0..4 "enum"
+        - WHITESPACE@4..5 " "
+        - ENUM_VALUES_DEFINITION@5..46
+            - L_CURLY@5..6 "{"
+            - WHITESPACE@6..11 "\n    "
+            - ENUM_VALUE_DEFINITION@11..21
+                - ENUM_VALUE@11..21
+                    - NAME@11..21
+                        - IDENT@11..16 "NORTH"
+                        - WHITESPACE@16..21 "\n    "
+            - ENUM_VALUE_DEFINITION@21..30
+                - ENUM_VALUE@21..30
+                    - NAME@21..30
+                        - IDENT@21..25 "EAST"
+                        - WHITESPACE@25..30 "\n    "
+            - ENUM_VALUE_DEFINITION@30..40
+                - ENUM_VALUE@30..40
+                    - NAME@30..40
+                        - IDENT@30..35 "SOUTH"
+                        - WHITESPACE@35..40 "\n    "
+            - ENUM_VALUE_DEFINITION@40..45
+                - ENUM_VALUE@40..45
+                    - NAME@40..45
+                        - IDENT@40..44 "WEST"
+                        - WHITESPACE@44..45 "\n"
+            - R_CURLY@45..46 "}"
+- ERROR@5:6 "expected a Name" {

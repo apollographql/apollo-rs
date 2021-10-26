@@ -1,0 +1,41 @@
+- DOCUMENT@0..62
+    - OBJECT_TYPE_EXTENSION@0..62
+        - extend_KW@0..6 "extend"
+        - WHITESPACE@6..7 " "
+        - type_KW@7..11 "type"
+        - WHITESPACE@11..12 " "
+        - FIELDS_DEFINITION@12..62
+            - L_CURLY@12..13 "{"
+            - WHITESPACE@13..18 "\n    "
+            - FIELD_DEFINITION@18..35
+                - NAME@18..22
+                    - IDENT@18..22 "name"
+                - COLON@22..23 ":"
+                - WHITESPACE@23..24 " "
+                - TYPE@24..35
+                    - WHITESPACE@24..29 "\n    "
+                    - NAMED_TYPE@29..35
+                        - NAME@29..35
+                            - IDENT@29..35 "String"
+            - FIELD_DEFINITION@35..48
+                - NAME@35..38
+                    - IDENT@35..38 "age"
+                - COLON@38..39 ":"
+                - WHITESPACE@39..40 " "
+                - TYPE@40..48
+                    - WHITESPACE@40..45 "\n    "
+                    - NAMED_TYPE@45..48
+                        - NAME@45..48
+                            - IDENT@45..48 "Int"
+            - FIELD_DEFINITION@48..61
+                - NAME@48..55
+                    - IDENT@48..55 "picture"
+                - COLON@55..56 ":"
+                - WHITESPACE@56..57 " "
+                - TYPE@57..61
+                    - WHITESPACE@57..58 "\n"
+                    - NAMED_TYPE@58..61
+                        - NAME@58..61
+                            - IDENT@58..61 "Url"
+            - R_CURLY@61..62 "}"
+- ERROR@12:13 "expected a Name" {

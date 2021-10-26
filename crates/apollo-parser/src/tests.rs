@@ -10,7 +10,7 @@ use std::{
 
 use expect_test::expect_file;
 
-use crate::{Error, Lexer, Token};
+use crate::{Error, Lexer, Parser, Token};
 
 // To run these tests and update files:
 // ```bash
@@ -32,6 +32,23 @@ fn lexer_tests() {
         let tokens = Lexer::new(text);
         assert_errors_are_present(tokens.errors(), path);
         dump_tokens_and_errors(tokens.tokens(), tokens.errors())
+    });
+}
+
+#[test]
+fn parser_tests() {
+    dir_tests(&test_data_dir(), &["parser/ok"], "txt", |text, path| {
+        let parser = Parser::new(text);
+        let ast = parser.parse();
+        assert_errors_are_absent(ast.errors(), path);
+        format!("{:?}", ast)
+    });
+
+    dir_tests(&test_data_dir(), &["parser/err"], "txt", |text, path| {
+        let parser = Parser::new(text);
+        let ast = parser.parse();
+        assert_errors_are_present(ast.errors(), path);
+        format!("{:?}", ast)
     });
 }
 

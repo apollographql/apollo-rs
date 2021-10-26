@@ -382,7 +382,6 @@ fn is_source_char(c: char) -> bool {
 #[cfg(test)]
 mod test {
     use super::*;
-    // use indoc::indoc;
 
     #[test]
     fn tests() {

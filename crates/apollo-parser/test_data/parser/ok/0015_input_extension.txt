@@ -1,0 +1,29 @@
+- DOCUMENT@0..55
+    - INPUT_OBJECT_TYPE_EXTENSION@0..55
+        - extend_KW@0..6 "extend"
+        - WHITESPACE@6..7 " "
+        - input_KW@7..12 "input"
+        - WHITESPACE@12..13 " "
+        - NAME@13..32
+            - IDENT@13..31 "ExampleInputObject"
+            - WHITESPACE@31..32 " "
+        - DIRECTIVES@32..38
+            - DIRECTIVE@32..38
+                - AT@32..33 "@"
+                - NAME@33..38
+                    - IDENT@33..37 "skip"
+                    - WHITESPACE@37..38 " "
+        - INPUT_FIELDS_DEFINITION@38..55
+            - L_CURLY@38..39 "{"
+            - WHITESPACE@39..44 "\n    "
+            - INPUT_VALUE_DEFINITION@44..54
+                - NAME@44..45
+                    - IDENT@44..45 "a"
+                - COLON@45..46 ":"
+                - WHITESPACE@46..47 " "
+                - TYPE@47..54
+                    - WHITESPACE@47..48 "\n"
+                    - NAMED_TYPE@48..54
+                        - NAME@48..54
+                            - IDENT@48..54 "String"
+            - R_CURLY@54..55 "}"

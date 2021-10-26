@@ -1,0 +1,54 @@
+- DOCUMENT@0..142
+    - OBJECT_TYPE_DEFINITION@0..142
+        - DESCRIPTION@0..22
+            - STRING_VALUE@0..21 "\"description of type\""
+            - WHITESPACE@21..22 "\n"
+        - type_KW@22..26 "type"
+        - WHITESPACE@26..27 " "
+        - NAME@27..34
+            - IDENT@27..33 "Person"
+            - WHITESPACE@33..34 " "
+        - IMPLEMENTS_INTERFACES@34..51
+            - implements_KW@34..44 "implements"
+            - WHITESPACE@44..45 " "
+            - NAMED_TYPE@45..51
+                - NAME@45..51
+                    - IDENT@45..50 "Human"
+                    - WHITESPACE@50..51 " "
+        - FIELDS_DEFINITION@51..142
+            - L_CURLY@51..52 "{"
+            - WHITESPACE@52..57 "\n    "
+            - FIELD_DEFINITION@57..115
+                - DESCRIPTION@57..98
+                    - STRING_VALUE@57..93 "\"\"\"\n    description of field\n    \"\"\""
+                    - WHITESPACE@93..98 "\n    "
+                - NAME@98..102
+                    - IDENT@98..102 "name"
+                - COLON@102..103 ":"
+                - WHITESPACE@103..104 " "
+                - TYPE@104..115
+                    - WHITESPACE@104..109 "\n    "
+                    - NAMED_TYPE@109..115
+                        - NAME@109..115
+                            - IDENT@109..115 "String"
+            - FIELD_DEFINITION@115..128
+                - NAME@115..118
+                    - IDENT@115..118 "age"
+                - COLON@118..119 ":"
+                - WHITESPACE@119..120 " "
+                - TYPE@120..128
+                    - WHITESPACE@120..125 "\n    "
+                    - NAMED_TYPE@125..128
+                        - NAME@125..128
+                            - IDENT@125..128 "Int"
+            - FIELD_DEFINITION@128..141
+                - NAME@128..135
+                    - IDENT@128..135 "picture"
+                - COLON@135..136 ":"
+                - WHITESPACE@136..137 " "
+                - TYPE@137..141
+                    - WHITESPACE@137..138 "\n"
+                    - NAMED_TYPE@138..141
+                        - NAME@138..141
+                            - IDENT@138..141 "Url"
+            - R_CURLY@141..142 "}"
