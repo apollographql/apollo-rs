@@ -1,0 +1,19 @@
+- DOCUMENT@0..35
+    - UNION_TYPE_DEFINITION@0..35
+        - union_KW@0..5 "union"
+        - WHITESPACE@5..6 " "
+        - NAME@6..19
+            - IDENT@6..18 "SearchResult"
+            - WHITESPACE@18..19 " "
+        - UNION_MEMBER_TYPES@19..35
+            - EQ@19..20 "="
+            - WHITESPACE@20..21 " "
+            - NAMED_TYPE@21..27
+                - NAME@21..27
+                    - IDENT@21..26 "Photo"
+                    - WHITESPACE@26..27 " "
+            - PIPE@27..28 "|"
+            - WHITESPACE@28..29 " "
+            - NAMED_TYPE@29..35
+                - NAME@29..35
+                    - IDENT@29..35 "Person"
