@@ -94,13 +94,13 @@ Value =
   | ObjectValue
 
 StringValue =
-  'string_value'
+  'string'
 
 FloatValue =
-  'float_value'
+  'float'
 
 IntValue =
-  'int_value'
+  'int'
 
 BooleanValue =
   'true'

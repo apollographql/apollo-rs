@@ -69,9 +69,9 @@ pub enum SyntaxKind {
     ENUM_VALUE_KW,
     INPUT_OBJECT_KW,
     INPUT_FIELD_DEFINITION_KW,
-    INT_VALUE,
-    FLOAT_VALUE,
-    STRING_VALUE,
+    INT,
+    FLOAT,
+    STRING,
     IDENT,
     WHITESPACE,
     COMMENT,
@@ -103,6 +103,9 @@ pub enum SyntaxKind {
     ARGUMENTS,
     ARGUMENT,
     VALUE,
+    STRING_VALUE,
+    INT_VALUE,
+    FLOAT_VALUE,
     FRAGMENT_NAME,
     TYPE_CONDITION,
     VARIABLE,
@@ -218,9 +221,7 @@ impl SyntaxKind {
                 | COLON
         )
     }
-    pub fn is_literal(self) -> bool {
-        matches!(self, INT_VALUE | FLOAT_VALUE | STRING_VALUE)
-    }
+    pub fn is_literal(self) -> bool { matches!(self, INT | FLOAT | STRING) }
     pub fn from_keyword(ident: &str) -> Option<SyntaxKind> {
         let kw = match ident {
             "query" => query_KW,

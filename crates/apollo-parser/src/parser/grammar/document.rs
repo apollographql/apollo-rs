@@ -79,6 +79,81 @@ mod test {
     use indoc::indoc;
 
     #[test]
+    fn core_schema() {
+        let schema = r#"schema
+    @core(feature: "https://specs.apollo.dev/join/v0.1")
+  {
+    query: Query
+    mutation: Mutation
+  }
+
+  enum join__Graph {
+    ACCOUNTS @join__graph(name: "accounts")
+  }
+  "#;
+        let parser = crate::Parser::new(schema);
+        let ast = parser.parse();
+
+        assert!(ast.errors.is_empty());
+
+        let document = ast.document();
+        for definition in document.definitions() {
+            if let crate::ast::Definition::EnumTypeDefinition(enum_type) = definition {
+                assert_eq!(
+                    Some("join__Graph".to_string()),
+                    enum_type
+                        .name()
+                        .and_then(|n| n.ident_token())
+                        .map(|id| id.text().to_owned())
+                );
+
+                if enum_type
+                    .name()
+                    .and_then(|n| n.ident_token())
+                    .as_ref()
+                    .map(|id| id.text())
+                    == Some("join__Graph")
+                {
+                    if let Some(enums) = enum_type.enum_values_definition() {
+                        for enum_kind in enums.enum_value_definitions() {
+                            assert_eq!(
+                                Some("ACCOUNTS"),
+                                enum_kind
+                                    .enum_value()
+                                    .and_then(|v| v.name())
+                                    .and_then(|n| n.ident_token())
+                                    .as_ref()
+                                    .map(|id| id.text())
+                            );
+
+                            if let Some(directives) = enum_kind.directives() {
+                                for directive in directives.directives() {
+                                    if directive
+                                        .name()
+                                        .and_then(|n| n.ident_token())
+                                        .as_ref()
+                                        .map(|id| id.text())
+                                        == Some("join__graph")
+                                    {
+                                        if let Some(arguments) = directive.arguments() {
+                                            for argument in arguments.arguments() {
+                                                assert_eq!(
+                                                    "\"accounts\"".to_string(),
+                                                    argument.value().unwrap().to_string()
+                                                );
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn query() {
         let input = "
 query GraphQuery($graph_id: ID!, $variant: String) {
