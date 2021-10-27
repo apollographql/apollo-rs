@@ -98,6 +98,11 @@ pub(crate) fn input_value_definition(p: &mut Parser, is_input: bool) {
                     if let Some(T![=]) = p.peek() {
                         value::default_value(p);
                     }
+
+                    if let Some(T![@]) = p.peek() {
+                        directive::directives(p);
+                    }
+
                     if p.peek().is_some() {
                         guard.finish_node();
                         return input_value_definition(p, true);
