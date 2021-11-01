@@ -1,45 +1,42 @@
-- DOCUMENT@0..91
-    - OPERATION_DEFINITION@0..91
-        - SELECTION_SET@0..91
+- DOCUMENT@0..99
+    - OPERATION_DEFINITION@0..99
+        - SELECTION_SET@0..99
             - L_CURLY@0..1 "{"
-            - WHITESPACE@1..6 "\n    "
-            - SELECTION@6..90
-                - FIELD@6..17
-                    - NAME@6..17
-                        - IDENT@6..12 "animal"
-                        - WHITESPACE@12..17 "\n    "
-                - FIELD@17..31
-                    - NAME@17..31
-                        - IDENT@17..26 "faveSnack"
-                        - WHITESPACE@26..31 "\n    "
-                - INLINE_FRAGMENT@31..90
-                    - SPREAD@31..34 "..."
-                    - WHITESPACE@34..35 " "
-                    - TYPE_CONDITION@35..42
-                        - on_KW@35..37 "on"
-                        - WHITESPACE@37..38 " "
-                        - NAMED_TYPE@38..42
-                            - NAME@38..42
-                                - IDENT@38..41 "Pet"
-                                - WHITESPACE@41..42 " "
-                    - SELECTION_SET@42..90
-                        - L_CURLY@42..43 "{"
-                        - WHITESPACE@43..50 "\n      "
-                        - SELECTION@50..88
-                            - FIELD@50..88
-                                - NAME@50..60
-                                    - IDENT@50..59 "playmates"
-                                    - WHITESPACE@59..60 " "
-                                - SELECTION_SET@60..88
-                                    - L_CURLY@60..61 "{"
-                                    - WHITESPACE@61..70 "\n        "
-                                    - SELECTION@70..82
-                                        - FIELD@70..82
-                                            - NAME@70..82
-                                                - IDENT@70..75 "count"
-                                                - WHITESPACE@75..82 "\n      "
-                                    - R_CURLY@82..83 "}"
-                                    - WHITESPACE@83..88 "\n    "
-                        - R_CURLY@88..89 "}"
-                        - WHITESPACE@89..90 "\n"
-            - R_CURLY@90..91 "}"
+            - WHITESPACE@1..7 "\r\n    "
+            - FIELD@7..19
+                - NAME@7..19
+                    - IDENT@7..13 "animal"
+                    - WHITESPACE@13..19 "\r\n    "
+            - FIELD@19..34
+                - NAME@19..34
+                    - IDENT@19..28 "faveSnack"
+                    - WHITESPACE@28..34 "\r\n    "
+            - INLINE_FRAGMENT@34..98
+                - SPREAD@34..37 "..."
+                - WHITESPACE@37..38 " "
+                - TYPE_CONDITION@38..45
+                    - on_KW@38..40 "on"
+                    - WHITESPACE@40..41 " "
+                    - NAMED_TYPE@41..45
+                        - NAME@41..45
+                            - IDENT@41..44 "Pet"
+                            - WHITESPACE@44..45 " "
+                - SELECTION_SET@45..98
+                    - L_CURLY@45..46 "{"
+                    - WHITESPACE@46..54 "\r\n      "
+                    - FIELD@54..95
+                        - NAME@54..64
+                            - IDENT@54..63 "playmates"
+                            - WHITESPACE@63..64 " "
+                        - SELECTION_SET@64..95
+                            - L_CURLY@64..65 "{"
+                            - WHITESPACE@65..75 "\r\n        "
+                            - FIELD@75..88
+                                - NAME@75..88
+                                    - IDENT@75..80 "count"
+                                    - WHITESPACE@80..88 "\r\n      "
+                            - R_CURLY@88..89 "}"
+                            - WHITESPACE@89..95 "\r\n    "
+                    - R_CURLY@95..96 "}"
+                    - WHITESPACE@96..98 "\r\n"
+            - R_CURLY@98..99 "}"

@@ -1,5 +1,5 @@
-- DOCUMENT@0..54
-    - INTERFACE_TYPE_EXTENSION@0..54
+- DOCUMENT@0..56
+    - INTERFACE_TYPE_EXTENSION@0..56
         - extend_KW@0..6 "extend"
         - WHITESPACE@6..7 " "
         - interface_KW@7..16 "interface"
@@ -13,17 +13,17 @@
                 - NAME@31..36
                     - IDENT@31..35 "skip"
                     - WHITESPACE@35..36 " "
-        - FIELDS_DEFINITION@36..54
+        - FIELDS_DEFINITION@36..56
             - L_CURLY@36..37 "{"
-            - WHITESPACE@37..42 "\n    "
-            - FIELD_DEFINITION@42..53
-                - NAME@42..47
-                    - IDENT@42..47 "value"
-                - COLON@47..48 ":"
-                - WHITESPACE@48..49 " "
-                - TYPE@49..53
-                    - WHITESPACE@49..50 "\n"
-                    - NAMED_TYPE@50..53
-                        - NAME@50..53
-                            - IDENT@50..53 "Int"
-            - R_CURLY@53..54 "}"
+            - WHITESPACE@37..43 "\r\n    "
+            - FIELD_DEFINITION@43..55
+                - NAME@43..48
+                    - IDENT@43..48 "value"
+                - COLON@48..49 ":"
+                - WHITESPACE@49..50 " "
+                - TYPE@50..55
+                    - WHITESPACE@50..52 "\r\n"
+                    - NAMED_TYPE@52..55
+                        - NAME@52..55
+                            - IDENT@52..55 "Int"
+            - R_CURLY@55..56 "}"

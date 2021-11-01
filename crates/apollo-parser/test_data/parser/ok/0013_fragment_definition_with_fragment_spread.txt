@@ -1,5 +1,5 @@
-- DOCUMENT@0..75
-    - FRAGMENT_DEFINITION@0..75
+- DOCUMENT@0..79
+    - FRAGMENT_DEFINITION@0..79
         - fragment_KW@0..8 "fragment"
         - WHITESPACE@8..9 " "
         - FRAGMENT_NAME@9..22
@@ -13,22 +13,21 @@
                 - NAME@25..30
                     - IDENT@25..29 "User"
                     - WHITESPACE@29..30 " "
-        - SELECTION_SET@30..75
+        - SELECTION_SET@30..79
             - L_CURLY@30..31 "{"
-            - WHITESPACE@31..36 "\n    "
-            - SELECTION@36..74
-                - FIELD@36..43
-                    - NAME@36..43
-                        - IDENT@36..38 "id"
-                        - WHITESPACE@38..43 "\n    "
-                - FIELD@43..52
-                    - NAME@43..52
-                        - IDENT@43..47 "name"
-                        - WHITESPACE@47..52 "\n    "
-                - FRAGMENT_SPREAD@52..74
-                    - SPREAD@52..55 "..."
-                    - FRAGMENT_NAME@55..74
-                        - NAME@55..74
-                            - IDENT@55..73 "standardProfilePic"
-                            - WHITESPACE@73..74 "\n"
-            - R_CURLY@74..75 "}"
+            - WHITESPACE@31..37 "\r\n    "
+            - FIELD@37..45
+                - NAME@37..45
+                    - IDENT@37..39 "id"
+                    - WHITESPACE@39..45 "\r\n    "
+            - FIELD@45..55
+                - NAME@45..55
+                    - IDENT@45..49 "name"
+                    - WHITESPACE@49..55 "\r\n    "
+            - FRAGMENT_SPREAD@55..78
+                - SPREAD@55..58 "..."
+                - FRAGMENT_NAME@58..78
+                    - NAME@58..78
+                        - IDENT@58..76 "standardProfilePic"
+                        - WHITESPACE@76..78 "\r\n"
+            - R_CURLY@78..79 "}"

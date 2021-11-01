@@ -1,5 +1,5 @@
-- DOCUMENT@0..53
-    - ENUM_TYPE_EXTENSION@0..53
+- DOCUMENT@0..56
+    - ENUM_TYPE_EXTENSION@0..56
         - extend_KW@0..6 "extend"
         - WHITESPACE@6..7 " "
         - enum_KW@7..11 "enum"
@@ -13,17 +13,17 @@
                 - NAME@23..31
                     - IDENT@23..30 "example"
                     - WHITESPACE@30..31 " "
-        - ENUM_VALUES_DEFINITION@31..53
+        - ENUM_VALUES_DEFINITION@31..56
             - L_CURLY@31..32 "{"
-            - WHITESPACE@32..37 "\n    "
-            - ENUM_VALUE_DEFINITION@37..47
-                - ENUM_VALUE@37..47
-                    - NAME@37..47
-                        - IDENT@37..42 "SOUTH"
-                        - WHITESPACE@42..47 "\n    "
-            - ENUM_VALUE_DEFINITION@47..52
-                - ENUM_VALUE@47..52
-                    - NAME@47..52
-                        - IDENT@47..51 "WEST"
-                        - WHITESPACE@51..52 "\n"
-            - R_CURLY@52..53 "}"
+            - WHITESPACE@32..38 "\r\n    "
+            - ENUM_VALUE_DEFINITION@38..49
+                - ENUM_VALUE@38..49
+                    - NAME@38..49
+                        - IDENT@38..43 "SOUTH"
+                        - WHITESPACE@43..49 "\r\n    "
+            - ENUM_VALUE_DEFINITION@49..55
+                - ENUM_VALUE@49..55
+                    - NAME@49..55
+                        - IDENT@49..53 "WEST"
+                        - WHITESPACE@53..55 "\r\n"
+            - R_CURLY@55..56 "}"

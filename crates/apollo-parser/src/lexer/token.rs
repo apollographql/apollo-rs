@@ -98,7 +98,7 @@ impl fmt::Debug for Token {
 
             // composite nodes
             TokenKind::Name => {
-                write!(f, "NODE@{}:{} {:?}", start, end, self.data)
+                write!(f, "NAME@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::StringValue => {
                 write!(f, "STRING_VALUE@{}:{} {:?}", start, end, self.data)

@@ -1,4 +1,4 @@
-NODE@0:5 "hello"
+NAME@0:5 "hello"
 WHITESPACE@5:6 " "
-NODE@6:11 "world"
+NAME@6:11 "world"
 EOF@11:11

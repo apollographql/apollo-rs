@@ -1,29 +1,29 @@
-- DOCUMENT@0..46
-    - ENUM_TYPE_DEFINITION@0..46
+- DOCUMENT@0..51
+    - ENUM_TYPE_DEFINITION@0..51
         - enum_KW@0..4 "enum"
         - WHITESPACE@4..5 " "
-        - ENUM_VALUES_DEFINITION@5..46
+        - ENUM_VALUES_DEFINITION@5..51
             - L_CURLY@5..6 "{"
-            - WHITESPACE@6..11 "\n    "
-            - ENUM_VALUE_DEFINITION@11..21
-                - ENUM_VALUE@11..21
-                    - NAME@11..21
-                        - IDENT@11..16 "NORTH"
-                        - WHITESPACE@16..21 "\n    "
-            - ENUM_VALUE_DEFINITION@21..30
-                - ENUM_VALUE@21..30
-                    - NAME@21..30
-                        - IDENT@21..25 "EAST"
-                        - WHITESPACE@25..30 "\n    "
-            - ENUM_VALUE_DEFINITION@30..40
-                - ENUM_VALUE@30..40
-                    - NAME@30..40
-                        - IDENT@30..35 "SOUTH"
-                        - WHITESPACE@35..40 "\n    "
-            - ENUM_VALUE_DEFINITION@40..45
-                - ENUM_VALUE@40..45
-                    - NAME@40..45
-                        - IDENT@40..44 "WEST"
-                        - WHITESPACE@44..45 "\n"
-            - R_CURLY@45..46 "}"
+            - WHITESPACE@6..12 "\r\n    "
+            - ENUM_VALUE_DEFINITION@12..23
+                - ENUM_VALUE@12..23
+                    - NAME@12..23
+                        - IDENT@12..17 "NORTH"
+                        - WHITESPACE@17..23 "\r\n    "
+            - ENUM_VALUE_DEFINITION@23..33
+                - ENUM_VALUE@23..33
+                    - NAME@23..33
+                        - IDENT@23..27 "EAST"
+                        - WHITESPACE@27..33 "\r\n    "
+            - ENUM_VALUE_DEFINITION@33..44
+                - ENUM_VALUE@33..44
+                    - NAME@33..44
+                        - IDENT@33..38 "SOUTH"
+                        - WHITESPACE@38..44 "\r\n    "
+            - ENUM_VALUE_DEFINITION@44..50
+                - ENUM_VALUE@44..50
+                    - NAME@44..50
+                        - IDENT@44..48 "WEST"
+                        - WHITESPACE@48..50 "\r\n"
+            - R_CURLY@50..51 "}"
 - ERROR@5:6 "expected a Name" {

@@ -1,5 +1,5 @@
-- DOCUMENT@0..63
-    - SCHEMA_EXTENSION@0..63
+- DOCUMENT@0..65
+    - SCHEMA_EXTENSION@0..65
         - extend_KW@0..6 "extend"
         - WHITESPACE@6..7 " "
         - schema_KW@7..13 "schema"
@@ -16,14 +16,14 @@
                     - IDENT@21..28 "example"
                     - WHITESPACE@28..29 " "
         - L_CURLY@29..30 "{"
-        - WHITESPACE@30..35 "\n    "
-        - ROOT_OPERATION_TYPE_DEFINITION@35..62
-            - OPERATION_TYPE@35..40
-                - query_KW@35..40 "query"
-            - COLON@40..41 ":"
-            - WHITESPACE@41..42 " "
-            - NAMED_TYPE@42..62
-                - NAME@42..62
-                    - IDENT@42..61 "MyExtendedQueryType"
-                    - WHITESPACE@61..62 "\n"
-        - R_CURLY@62..63 "}"
+        - WHITESPACE@30..36 "\r\n    "
+        - ROOT_OPERATION_TYPE_DEFINITION@36..64
+            - OPERATION_TYPE@36..41
+                - query_KW@36..41 "query"
+            - COLON@41..42 ":"
+            - WHITESPACE@42..43 " "
+            - NAMED_TYPE@43..64
+                - NAME@43..64
+                    - IDENT@43..62 "MyExtendedQueryType"
+                    - WHITESPACE@62..64 "\r\n"
+        - R_CURLY@64..65 "}"
