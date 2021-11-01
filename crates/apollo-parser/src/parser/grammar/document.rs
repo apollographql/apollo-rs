@@ -73,8 +73,7 @@ fn select_definition(def: String, p: &mut Parser) {
 
 #[cfg(test)]
 mod test {
-    use crate::ast::Definition;
-    use crate::Parser;
+    use crate::{ast::Definition, Parser};
 
     #[test]
     fn core_schema() {
