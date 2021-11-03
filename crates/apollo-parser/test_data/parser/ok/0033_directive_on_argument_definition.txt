@@ -1,49 +1,49 @@
-- DOCUMENT@0..91
-    - OBJECT_TYPE_DEFINITION@0..91
+- DOCUMENT@0..93
+    - OBJECT_TYPE_DEFINITION@0..93
         - type_KW@0..4 "type"
         - WHITESPACE@4..5 " "
         - NAME@5..14
             - IDENT@5..13 "Mutation"
             - WHITESPACE@13..14 " "
-        - FIELDS_DEFINITION@14..91
+        - FIELDS_DEFINITION@14..93
             - L_CURLY@14..15 "{"
-            - WHITESPACE@15..18 "\n  "
-            - FIELD_DEFINITION@18..90
-                - NAME@18..23
-                    - IDENT@18..23 "login"
-                - ARGUMENTS@23..83
-                    - L_PAREN@23..24 "("
-                    - INPUT_VALUE_DEFINITION@24..82
-                        - NAME@24..30
-                            - IDENT@24..30 "userId"
-                        - COLON@30..31 ":"
-                        - WHITESPACE@31..32 " "
-                        - TYPE@32..39
-                            - WHITESPACE@32..33 " "
-                            - NAMED_TYPE@33..39
-                                - NAME@33..39
-                                    - IDENT@33..39 "String"
-                        - DIRECTIVES@39..82
-                            - DIRECTIVE@39..82
-                                - AT@39..40 "@"
-                                - NAME@40..50
-                                    - IDENT@40..50 "deprecated"
-                                - ARGUMENTS@50..82
-                                    - L_PAREN@50..51 "("
-                                    - ARGUMENT@51..81
-                                        - NAME@51..57
-                                            - IDENT@51..57 "reason"
-                                        - COLON@57..58 ":"
-                                        - WHITESPACE@58..59 " "
-                                        - STRING_VALUE@59..81
-                                            - STRING@59..81 "\"Use username instead\""
-                                    - R_PAREN@81..82 ")"
-                    - R_PAREN@82..83 ")"
-                - COLON@83..84 ":"
-                - WHITESPACE@84..85 " "
-                - TYPE@85..90
-                    - WHITESPACE@85..86 "\n"
-                    - NAMED_TYPE@86..90
-                        - NAME@86..90
-                            - IDENT@86..90 "User"
-            - R_CURLY@90..91 "}"
+            - WHITESPACE@15..19 "\r\n  "
+            - FIELD_DEFINITION@19..92
+                - NAME@19..24
+                    - IDENT@19..24 "login"
+                - ARGUMENTS@24..84
+                    - L_PAREN@24..25 "("
+                    - INPUT_VALUE_DEFINITION@25..83
+                        - NAME@25..31
+                            - IDENT@25..31 "userId"
+                        - COLON@31..32 ":"
+                        - WHITESPACE@32..33 " "
+                        - TYPE@33..40
+                            - WHITESPACE@33..34 " "
+                            - NAMED_TYPE@34..40
+                                - NAME@34..40
+                                    - IDENT@34..40 "String"
+                        - DIRECTIVES@40..83
+                            - DIRECTIVE@40..83
+                                - AT@40..41 "@"
+                                - NAME@41..51
+                                    - IDENT@41..51 "deprecated"
+                                - ARGUMENTS@51..83
+                                    - L_PAREN@51..52 "("
+                                    - ARGUMENT@52..82
+                                        - NAME@52..58
+                                            - IDENT@52..58 "reason"
+                                        - COLON@58..59 ":"
+                                        - WHITESPACE@59..60 " "
+                                        - STRING_VALUE@60..82
+                                            - STRING@60..82 "\"Use username instead\""
+                                    - R_PAREN@82..83 ")"
+                    - R_PAREN@83..84 ")"
+                - COLON@84..85 ":"
+                - WHITESPACE@85..86 " "
+                - TYPE@86..92
+                    - WHITESPACE@86..88 "\r\n"
+                    - NAMED_TYPE@88..92
+                        - NAME@88..92
+                            - IDENT@88..92 "User"
+            - R_CURLY@92..93 "}"

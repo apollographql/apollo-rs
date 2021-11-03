@@ -45,25 +45,27 @@ pub(crate) fn operation_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OPERATION_DEFINITION);
 
     match p.peek() {
-        Some(TokenKind::Name) => operation_type(p),
+        Some(TokenKind::Name) => {
+            operation_type(p);
+
+            if let Some(TokenKind::Name) = p.peek() {
+                name::name(p);
+            }
+
+            if let Some(T!['(']) = p.peek() {
+                variable::variable_definitions(p)
+            }
+
+            if let Some(T![@]) = p.peek() {
+                directive::directives(p);
+            }
+
+            if let Some(T!['{']) = p.peek() {
+                selection::selection_set(p)
+            }
+        }
         Some(T!['{']) => selection::selection_set(p),
         _ => p.err("expected an Operation Type or a Selection Set"),
-    }
-
-    if let Some(TokenKind::Name) = p.peek() {
-        name::name(p);
-    }
-
-    if let Some(T!['(']) = p.peek() {
-        variable::variable_definitions(p)
-    }
-
-    if let Some(T![@]) = p.peek() {
-        directive::directives(p);
-    }
-
-    if let Some(T!['{']) = p.peek() {
-        selection::selection_set(p)
     }
 }
 
