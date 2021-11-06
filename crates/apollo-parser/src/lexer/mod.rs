@@ -385,19 +385,7 @@ mod test {
 
     #[test]
     fn tests() {
-        let gql_1 = r#"
-enum core__Purpose {
-  """
-  `EXECUTION` features provide metadata necessary to for operation execution.
-  """
-  EXECUTION
-
-  """
-  `SECURITY` features provide metadata necessary to securely resolve fields.
-  """
-  SECURITY
-}
-        "#;
+        let gql_1 = r#"dtzt7777777777t7777777777z7"#;
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
         dbg!(lexer_1.errors);

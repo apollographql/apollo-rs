@@ -100,21 +100,25 @@ impl Parser {
 
     /// Get current token's data.
     pub(crate) fn current(&mut self) -> &Token {
-        self.peek_token().unwrap()
+        self.peek_token()
+            .expect("Could not peek at the current token")
     }
 
     /// Consume a token from the lexer and add it to the AST.
     fn eat(&mut self, kind: SyntaxKind) {
-        let token = self.tokens.pop().unwrap();
+        let token = self
+            .tokens
+            .pop()
+            .expect("Could not eat a token from the AST");
         self.builder.borrow_mut().token(kind, token.data());
     }
 
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err(&mut self, message: &str) {
-        let current = self.current();
+        let current = self.tokens.pop().expect("Could not get current token.");
         // this needs to be the computed location
         let err = Error::with_loc(message, current.data().to_string(), current.index());
-        self.push_err(err)
+        self.push_err(err);
     }
 
     /// Consume the next token if it is `kind` or emit an error
@@ -144,7 +148,9 @@ impl Parser {
 
     /// Consume a token from the lexer.
     pub(crate) fn pop(&mut self) -> Token {
-        self.tokens.pop().unwrap()
+        self.tokens
+            .pop()
+            .expect("Could not pop a token from the AST")
     }
 
     /// Insert a token into the AST.

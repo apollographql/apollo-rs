@@ -34,6 +34,23 @@ pub(crate) fn document(p: &mut Parser) {
     doc.finish_node();
 }
 
+fn select_definition(def: String, p: &mut Parser) {
+    match def.as_str() {
+        "directive" => directive::directive_definition(p),
+        "enum" => enum_::enum_type_definition(p),
+        "extend" => extensions::extensions(p),
+        "fragment" => fragment::fragment_definition(p),
+        "input" => input::input_object_type_definition(p),
+        "interface" => interface::interface_type_definition(p),
+        "type" => object::object_type_definition(p),
+        "query" | "mutation" | "subscription" | "{" => operation::operation_definition(p),
+        "scalar" => scalar::scalar_type_definition(p),
+        "schema" => schema::schema_definition(p),
+        "union" => union_::union_type_definition(p),
+        _ => p.err("expected definition"),
+    }
+}
+
 pub(crate) fn is_definition(def: String) -> bool {
     matches!(
         def.as_str(),
@@ -54,26 +71,22 @@ pub(crate) fn is_definition(def: String) -> bool {
     )
 }
 
-fn select_definition(def: String, p: &mut Parser) {
-    match def.as_str() {
-        "directive" => directive::directive_definition(p),
-        "enum" => enum_::enum_type_definition(p),
-        "extend" => extensions::extensions(p),
-        "fragment" => fragment::fragment_definition(p),
-        "input" => input::input_object_type_definition(p),
-        "interface" => interface::interface_type_definition(p),
-        "type" => object::object_type_definition(p),
-        "query" | "mutation" | "subscription" | "{" => operation::operation_definition(p),
-        "scalar" => scalar::scalar_type_definition(p),
-        "schema" => schema::schema_definition(p),
-        "union" => union_::union_type_definition(p),
-        _ => p.err("expected definition"),
-    }
-}
-
 #[cfg(test)]
 mod test {
     use crate::{ast::Definition, Parser};
+
+    #[test]
+    fn test_invalid() {
+        let schema = r#"dtzt7777777777t7777777777z7"#;
+        let parser = Parser::new(schema);
+
+        let ast = parser.parse();
+        assert_eq!(ast.errors().len(), 1);
+
+        let doc = ast.document();
+        let nodes: Vec<_> = doc.definitions().into_iter().collect();
+        assert!(nodes.is_empty());
+    }
 
     #[test]
     fn core_schema() {
