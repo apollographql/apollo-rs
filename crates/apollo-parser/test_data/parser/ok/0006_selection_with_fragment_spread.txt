@@ -1,16 +1,16 @@
-- DOCUMENT@0..36
-    - OPERATION_DEFINITION@0..36
-        - SELECTION_SET@0..36
+- DOCUMENT@0..33
+    - OPERATION_DEFINITION@0..33
+        - SELECTION_SET@0..33
             - L_CURLY@0..1 "{"
-            - WHITESPACE@1..7 "\r\n    "
-            - FIELD@7..16
-                - NAME@7..16
-                    - IDENT@7..10 "pet"
-                    - WHITESPACE@10..16 "\r\n    "
-            - FRAGMENT_SPREAD@16..35
-                - SPREAD@16..19 "..."
-                - FRAGMENT_NAME@19..35
-                    - NAME@19..35
-                        - IDENT@19..33 "snackSelection"
-                        - WHITESPACE@33..35 "\r\n"
-            - R_CURLY@35..36 "}"
+            - WHITESPACE@1..6 "\n    "
+            - FIELD@6..14
+                - NAME@6..14
+                    - IDENT@6..9 "pet"
+                    - WHITESPACE@9..14 "\n    "
+            - FRAGMENT_SPREAD@14..32
+                - SPREAD@14..17 "..."
+                - FRAGMENT_NAME@17..32
+                    - NAME@17..32
+                        - IDENT@17..31 "snackSelection"
+                        - WHITESPACE@31..32 "\n"
+            - R_CURLY@32..33 "}"

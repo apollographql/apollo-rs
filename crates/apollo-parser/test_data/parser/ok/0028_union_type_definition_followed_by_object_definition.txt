@@ -1,11 +1,11 @@
-- DOCUMENT@0..69
-    - UNION_TYPE_DEFINITION@0..39
+- DOCUMENT@0..65
+    - UNION_TYPE_DEFINITION@0..37
         - union_KW@0..5 "union"
         - WHITESPACE@5..6 " "
         - NAME@6..19
             - IDENT@6..18 "SearchResult"
             - WHITESPACE@18..19 " "
-        - UNION_MEMBER_TYPES@19..39
+        - UNION_MEMBER_TYPES@19..37
             - EQ@19..20 "="
             - WHITESPACE@20..21 " "
             - NAMED_TYPE@21..27
@@ -14,27 +14,27 @@
                     - WHITESPACE@26..27 " "
             - PIPE@27..28 "|"
             - WHITESPACE@28..29 " "
-            - NAMED_TYPE@29..39
-                - NAME@29..39
+            - NAMED_TYPE@29..37
+                - NAME@29..37
                     - IDENT@29..35 "Person"
-                    - WHITESPACE@35..39 "\r\n\r\n"
-    - OBJECT_TYPE_DEFINITION@39..69
-        - type_KW@39..43 "type"
-        - WHITESPACE@43..44 " "
-        - NAME@44..50
-            - IDENT@44..49 "Error"
-            - WHITESPACE@49..50 " "
-        - FIELDS_DEFINITION@50..69
-            - L_CURLY@50..51 "{"
-            - WHITESPACE@51..57 "\r\n    "
-            - FIELD_DEFINITION@57..68
-                - NAME@57..61
-                    - IDENT@57..61 "code"
-                - COLON@61..62 ":"
-                - WHITESPACE@62..63 " "
-                - TYPE@63..68
-                    - WHITESPACE@63..65 "\r\n"
-                    - NAMED_TYPE@65..68
-                        - NAME@65..68
-                            - IDENT@65..68 "Int"
-            - R_CURLY@68..69 "}"
+                    - WHITESPACE@35..37 "\n\n"
+    - OBJECT_TYPE_DEFINITION@37..65
+        - type_KW@37..41 "type"
+        - WHITESPACE@41..42 " "
+        - NAME@42..48
+            - IDENT@42..47 "Error"
+            - WHITESPACE@47..48 " "
+        - FIELDS_DEFINITION@48..65
+            - L_CURLY@48..49 "{"
+            - WHITESPACE@49..54 "\n    "
+            - FIELD_DEFINITION@54..64
+                - NAME@54..58
+                    - IDENT@54..58 "code"
+                - COLON@58..59 ":"
+                - WHITESPACE@59..60 " "
+                - TYPE@60..64
+                    - WHITESPACE@60..61 "\n"
+                    - NAMED_TYPE@61..64
+                        - NAME@61..64
+                            - IDENT@61..64 "Int"
+            - R_CURLY@64..65 "}"

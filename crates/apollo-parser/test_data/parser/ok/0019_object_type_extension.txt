@@ -1,5 +1,5 @@
-- DOCUMENT@0..102
-    - OBJECT_TYPE_EXTENSION@0..102
+- DOCUMENT@0..98
+    - OBJECT_TYPE_EXTENSION@0..98
         - extend_KW@0..6 "extend"
         - WHITESPACE@6..7 " "
         - type_KW@7..11 "type"
@@ -20,37 +20,37 @@
                 - NAME@37..48
                     - IDENT@37..47 "deprecated"
                     - WHITESPACE@47..48 " "
-        - FIELDS_DEFINITION@48..102
+        - FIELDS_DEFINITION@48..98
             - L_CURLY@48..49 "{"
-            - WHITESPACE@49..55 "\r\n    "
-            - FIELD_DEFINITION@55..73
-                - NAME@55..59
-                    - IDENT@55..59 "name"
-                - COLON@59..60 ":"
-                - WHITESPACE@60..61 " "
-                - TYPE@61..73
-                    - WHITESPACE@61..67 "\r\n    "
-                    - NAMED_TYPE@67..73
-                        - NAME@67..73
-                            - IDENT@67..73 "String"
-            - FIELD_DEFINITION@73..87
-                - NAME@73..76
-                    - IDENT@73..76 "age"
-                - COLON@76..77 ":"
-                - WHITESPACE@77..78 " "
-                - TYPE@78..87
-                    - WHITESPACE@78..84 "\r\n    "
-                    - NAMED_TYPE@84..87
-                        - NAME@84..87
-                            - IDENT@84..87 "Int"
-            - FIELD_DEFINITION@87..101
-                - NAME@87..94
-                    - IDENT@87..94 "picture"
-                - COLON@94..95 ":"
-                - WHITESPACE@95..96 " "
-                - TYPE@96..101
-                    - WHITESPACE@96..98 "\r\n"
-                    - NAMED_TYPE@98..101
-                        - NAME@98..101
-                            - IDENT@98..101 "Url"
-            - R_CURLY@101..102 "}"
+            - WHITESPACE@49..54 "\n    "
+            - FIELD_DEFINITION@54..71
+                - NAME@54..58
+                    - IDENT@54..58 "name"
+                - COLON@58..59 ":"
+                - WHITESPACE@59..60 " "
+                - TYPE@60..71
+                    - WHITESPACE@60..65 "\n    "
+                    - NAMED_TYPE@65..71
+                        - NAME@65..71
+                            - IDENT@65..71 "String"
+            - FIELD_DEFINITION@71..84
+                - NAME@71..74
+                    - IDENT@71..74 "age"
+                - COLON@74..75 ":"
+                - WHITESPACE@75..76 " "
+                - TYPE@76..84
+                    - WHITESPACE@76..81 "\n    "
+                    - NAMED_TYPE@81..84
+                        - NAME@81..84
+                            - IDENT@81..84 "Int"
+            - FIELD_DEFINITION@84..97
+                - NAME@84..91
+                    - IDENT@84..91 "picture"
+                - COLON@91..92 ":"
+                - WHITESPACE@92..93 " "
+                - TYPE@93..97
+                    - WHITESPACE@93..94 "\n"
+                    - NAMED_TYPE@94..97
+                        - NAME@94..97
+                            - IDENT@94..97 "Url"
+            - R_CURLY@97..98 "}"
