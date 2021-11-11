@@ -1,5 +1,5 @@
-- DOCUMENT@0..105
-    - ENUM_TYPE_DEFINITION@0..105
+- DOCUMENT@0..97
+    - ENUM_TYPE_DEFINITION@0..97
         - enum_KW@0..4 "enum"
         - WHITESPACE@4..5 " "
         - NAME@5..15
@@ -11,30 +11,30 @@
                 - NAME@16..24
                     - IDENT@16..23 "example"
                     - WHITESPACE@23..24 " "
-        - ENUM_VALUES_DEFINITION@24..105
+        - ENUM_VALUES_DEFINITION@24..97
             - L_CURLY@24..25 "{"
-            - WHITESPACE@25..31 "\r\n    "
-            - ENUM_VALUE_DEFINITION@31..77
-                - DESCRIPTION@31..66
-                    - STRING_VALUE@31..60 "\"\"\"\r\n    description\r\n    \"\"\""
-                    - WHITESPACE@60..66 "\r\n    "
-                - ENUM_VALUE@66..77
-                    - NAME@66..77
-                        - IDENT@66..71 "NORTH"
-                        - WHITESPACE@71..77 "\r\n    "
-            - ENUM_VALUE_DEFINITION@77..87
-                - ENUM_VALUE@77..87
-                    - NAME@77..87
-                        - IDENT@77..81 "EAST"
-                        - WHITESPACE@81..87 "\r\n    "
-            - ENUM_VALUE_DEFINITION@87..98
-                - ENUM_VALUE@87..98
-                    - NAME@87..98
-                        - IDENT@87..92 "SOUTH"
-                        - WHITESPACE@92..98 "\r\n    "
-            - ENUM_VALUE_DEFINITION@98..104
-                - ENUM_VALUE@98..104
-                    - NAME@98..104
-                        - IDENT@98..102 "WEST"
-                        - WHITESPACE@102..104 "\r\n"
-            - R_CURLY@104..105 "}"
+            - WHITESPACE@25..30 "\n    "
+            - ENUM_VALUE_DEFINITION@30..72
+                - DESCRIPTION@30..62
+                    - STRING_VALUE@30..57 "\"\"\"\n    description\n    \"\"\""
+                    - WHITESPACE@57..62 "\n    "
+                - ENUM_VALUE@62..72
+                    - NAME@62..72
+                        - IDENT@62..67 "NORTH"
+                        - WHITESPACE@67..72 "\n    "
+            - ENUM_VALUE_DEFINITION@72..81
+                - ENUM_VALUE@72..81
+                    - NAME@72..81
+                        - IDENT@72..76 "EAST"
+                        - WHITESPACE@76..81 "\n    "
+            - ENUM_VALUE_DEFINITION@81..91
+                - ENUM_VALUE@81..91
+                    - NAME@81..91
+                        - IDENT@81..86 "SOUTH"
+                        - WHITESPACE@86..91 "\n    "
+            - ENUM_VALUE_DEFINITION@91..96
+                - ENUM_VALUE@91..96
+                    - NAME@91..96
+                        - IDENT@91..95 "WEST"
+                        - WHITESPACE@95..96 "\n"
+            - R_CURLY@96..97 "}"

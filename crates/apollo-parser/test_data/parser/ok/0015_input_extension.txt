@@ -1,5 +1,5 @@
-- DOCUMENT@0..57
-    - INPUT_OBJECT_TYPE_EXTENSION@0..57
+- DOCUMENT@0..55
+    - INPUT_OBJECT_TYPE_EXTENSION@0..55
         - extend_KW@0..6 "extend"
         - WHITESPACE@6..7 " "
         - input_KW@7..12 "input"
@@ -13,17 +13,17 @@
                 - NAME@33..38
                     - IDENT@33..37 "skip"
                     - WHITESPACE@37..38 " "
-        - INPUT_FIELDS_DEFINITION@38..57
+        - INPUT_FIELDS_DEFINITION@38..55
             - L_CURLY@38..39 "{"
-            - WHITESPACE@39..45 "\r\n    "
-            - INPUT_VALUE_DEFINITION@45..56
-                - NAME@45..46
-                    - IDENT@45..46 "a"
-                - COLON@46..47 ":"
-                - WHITESPACE@47..48 " "
-                - TYPE@48..56
-                    - WHITESPACE@48..50 "\r\n"
-                    - NAMED_TYPE@50..56
-                        - NAME@50..56
-                            - IDENT@50..56 "String"
-            - R_CURLY@56..57 "}"
+            - WHITESPACE@39..44 "\n    "
+            - INPUT_VALUE_DEFINITION@44..54
+                - NAME@44..45
+                    - IDENT@44..45 "a"
+                - COLON@45..46 ":"
+                - WHITESPACE@46..47 " "
+                - TYPE@47..54
+                    - WHITESPACE@47..48 "\n"
+                    - NAMED_TYPE@48..54
+                        - NAME@48..54
+                            - IDENT@48..54 "String"
+            - R_CURLY@54..55 "}"
