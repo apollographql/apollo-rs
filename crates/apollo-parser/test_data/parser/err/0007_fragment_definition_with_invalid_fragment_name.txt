@@ -1,5 +1,5 @@
-- DOCUMENT@0..38
-    - FRAGMENT_DEFINITION@0..38
+- DOCUMENT@0..36
+    - FRAGMENT_DEFINITION@0..36
         - fragment_KW@0..8 "fragment"
         - WHITESPACE@8..9 " "
         - FRAGMENT_NAME@9..9
@@ -16,12 +16,12 @@
                 - NAME@18..26
                     - IDENT@18..25 "example"
                     - WHITESPACE@25..26 " "
-        - SELECTION_SET@26..38
+        - SELECTION_SET@26..36
             - L_CURLY@26..27 "{"
-            - WHITESPACE@27..33 "\r\n    "
-            - FIELD@33..37
-                - NAME@33..37
-                    - IDENT@33..35 "id"
-                    - WHITESPACE@35..37 "\r\n"
-            - R_CURLY@37..38 "}"
+            - WHITESPACE@27..32 "\n    "
+            - FIELD@32..35
+                - NAME@32..35
+                    - IDENT@32..34 "id"
+                    - WHITESPACE@34..35 "\n"
+            - R_CURLY@35..36 "}"
 - ERROR@9:11 "Fragment Name cannot be 'on'" on

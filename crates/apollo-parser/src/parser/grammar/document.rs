@@ -47,7 +47,7 @@ fn select_definition(def: String, p: &mut Parser) {
         "scalar" => scalar::scalar_type_definition(p),
         "schema" => schema::schema_definition(p),
         "union" => union_::union_type_definition(p),
-        _ => p.err("expected definition"),
+        _ => p.err_and_pop("expected definition"),
     }
 }
 
@@ -76,7 +76,27 @@ mod test {
     use crate::{ast::Definition, Parser};
 
     #[test]
-    fn test_invalid() {
+    fn it_creates_error_for_invalid_definition_and_has_nodes_for_valid_definition() {
+        let schema = r#"
+uasdf21230jkdw
+
+{
+    pet
+    faveSnack
+}
+        "#;
+        let parser = Parser::new(schema);
+
+        let ast = parser.parse();
+        assert_eq!(ast.errors().len(), 1);
+
+        let doc = ast.document();
+        let nodes: Vec<_> = doc.definitions().into_iter().collect();
+        assert_eq!(nodes.len(), 1);
+    }
+
+    #[test]
+    fn it_creates_an_error_for_a_document_with_only_an_invalid_definition() {
         let schema = r#"dtzt7777777777t7777777777z7"#;
         let parser = Parser::new(schema);
 
@@ -90,17 +110,16 @@ mod test {
 
     #[test]
     fn core_schema() {
-        let schema = r#"schema
-    @core(feature: "https://specs.apollo.dev/join/v0.1")
-  {
-    query: Query
-    mutation: Mutation
-  }
+        let schema = r#"
+schema @core(feature: "https://specs.apollo.dev/join/v0.1") {
+  query: Query
+  mutation: Mutation
+}
 
-  enum join__Graph {
-    ACCOUNTS @join__graph(name: "accounts")
-  }
-  "#;
+enum join__Graph {
+  ACCOUNTS @join__graph(name: "accounts")
+}
+        "#;
         let parser = crate::Parser::new(schema);
         let ast = parser.parse();
 
@@ -173,7 +192,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
     }
   }
 }
-";
+        ";
         let parser = Parser::new(input);
         let ast = parser.parse();
         assert!(&ast.errors().is_empty());
