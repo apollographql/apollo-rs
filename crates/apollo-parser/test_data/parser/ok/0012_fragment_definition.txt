@@ -1,5 +1,5 @@
-- DOCUMENT@0..87
-    - FRAGMENT_DEFINITION@0..87
+- DOCUMENT@0..83
+    - FRAGMENT_DEFINITION@0..83
         - fragment_KW@0..8 "fragment"
         - WHITESPACE@8..9 " "
         - FRAGMENT_NAME@9..22
@@ -19,29 +19,29 @@
                 - NAME@31..39
                     - IDENT@31..38 "example"
                     - WHITESPACE@38..39 " "
-        - SELECTION_SET@39..87
+        - SELECTION_SET@39..83
             - L_CURLY@39..40 "{"
-            - WHITESPACE@40..46 "\r\n    "
-            - FIELD@46..54
-                - NAME@46..54
-                    - IDENT@46..48 "id"
-                    - WHITESPACE@48..54 "\r\n    "
-            - FIELD@54..64
-                - NAME@54..64
-                    - IDENT@54..58 "name"
-                    - WHITESPACE@58..64 "\r\n    "
-            - FIELD@64..86
-                - NAME@64..74
-                    - IDENT@64..74 "profilePic"
-                - ARGUMENTS@74..86
-                    - L_PAREN@74..75 "("
-                    - ARGUMENT@75..83
-                        - NAME@75..79
-                            - IDENT@75..79 "size"
-                        - COLON@79..80 ":"
-                        - WHITESPACE@80..81 " "
-                        - INT_VALUE@81..83
-                            - INT@81..83 "50"
-                    - R_PAREN@83..84 ")"
-                    - WHITESPACE@84..86 "\r\n"
-            - R_CURLY@86..87 "}"
+            - WHITESPACE@40..45 "\n    "
+            - FIELD@45..52
+                - NAME@45..52
+                    - IDENT@45..47 "id"
+                    - WHITESPACE@47..52 "\n    "
+            - FIELD@52..61
+                - NAME@52..61
+                    - IDENT@52..56 "name"
+                    - WHITESPACE@56..61 "\n    "
+            - FIELD@61..82
+                - NAME@61..71
+                    - IDENT@61..71 "profilePic"
+                - ARGUMENTS@71..82
+                    - L_PAREN@71..72 "("
+                    - ARGUMENT@72..80
+                        - NAME@72..76
+                            - IDENT@72..76 "size"
+                        - COLON@76..77 ":"
+                        - WHITESPACE@77..78 " "
+                        - INT_VALUE@78..80
+                            - INT@78..80 "50"
+                    - R_PAREN@80..81 ")"
+                    - WHITESPACE@81..82 "\n"
+            - R_CURLY@82..83 "}"

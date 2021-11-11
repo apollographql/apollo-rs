@@ -136,24 +136,12 @@ impl Cursor<'_> {
                 let c = self.bump().unwrap();
                 if c == '"' {
                     buf.push(c);
-                    match (self.first(), self.second()) {
-                        ('"', '"') => {
-                            buf.push(self.first());
-                            buf.push(self.second());
-                            self.bump();
-                            self.bump();
-                            break;
-                        }
-                        (a, b) => {
-                            let current = format!("{}{}", a, b);
-                            buf.push(a);
-                            buf.push(b);
-                            self.bump();
-                            self.bump();
-
-                            self.add_err(Error::new("Unterminated block comment", current));
-                            break;
-                        }
+                    if ('"', '"') == (self.first(), self.second()) {
+                        buf.push(self.first());
+                        buf.push(self.second());
+                        self.bump();
+                        self.bump();
+                        break;
                     }
                 } else if is_source_char(c) {
                     buf.push(c);
@@ -161,12 +149,6 @@ impl Cursor<'_> {
                     break;
                 }
             }
-
-            if let Some(mut err) = self.err() {
-                err.data = buf;
-                return Err(err);
-            }
-            return Ok(Token::new(TokenKind::StringValue, buf));
         }
 
         Ok(Token::new(TokenKind::StringValue, buf))
@@ -385,7 +367,12 @@ mod test {
 
     #[test]
     fn tests() {
-        let gql_1 = r#"dtzt7777777777t7777777777z7"#;
+        let gql_1 = r#"
+        """
+        **Example**: "Saturn5"
+        """
+        name: String @join__field(graph: PRODUCTS)
+        "#;
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
         dbg!(lexer_1.errors);

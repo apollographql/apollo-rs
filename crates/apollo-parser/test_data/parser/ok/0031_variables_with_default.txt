@@ -1,5 +1,5 @@
-- DOCUMENT@0..76
-    - OPERATION_DEFINITION@0..76
+- DOCUMENT@0..74
+    - OPERATION_DEFINITION@0..74
         - OPERATION_TYPE@0..6
             - query_KW@0..5 "query"
             - WHITESPACE@5..6 " "
@@ -44,11 +44,11 @@
                         - STRING@50..58 "\"Config\""
             - R_PAREN@58..59 ")"
             - WHITESPACE@59..60 " "
-        - SELECTION_SET@60..76
+        - SELECTION_SET@60..74
             - L_CURLY@60..61 "{"
-            - WHITESPACE@61..67 "\r\n    "
-            - FIELD@67..75
-                - NAME@67..75
-                    - IDENT@67..73 "animal"
-                    - WHITESPACE@73..75 "\r\n"
-            - R_CURLY@75..76 "}"
+            - WHITESPACE@61..66 "\n    "
+            - FIELD@66..73
+                - NAME@66..73
+                    - IDENT@66..72 "animal"
+                    - WHITESPACE@72..73 "\n"
+            - R_CURLY@73..74 "}"

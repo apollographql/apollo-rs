@@ -1,21 +1,21 @@
-- DOCUMENT@0..43
-    - INTERFACE_TYPE_DEFINITION@0..43
+- DOCUMENT@0..41
+    - INTERFACE_TYPE_DEFINITION@0..41
         - interface_KW@0..9 "interface"
         - WHITESPACE@9..10 " "
         - NAME@10..23
             - IDENT@10..22 "ValuedEntity"
             - WHITESPACE@22..23 " "
-        - FIELDS_DEFINITION@23..43
+        - FIELDS_DEFINITION@23..41
             - L_CURLY@23..24 "{"
-            - WHITESPACE@24..30 "\r\n    "
-            - FIELD_DEFINITION@30..42
-                - NAME@30..35
-                    - IDENT@30..35 "value"
-                - COLON@35..36 ":"
-                - WHITESPACE@36..37 " "
-                - TYPE@37..42
-                    - WHITESPACE@37..39 "\r\n"
-                    - NAMED_TYPE@39..42
-                        - NAME@39..42
-                            - IDENT@39..42 "Int"
-            - R_CURLY@42..43 "}"
+            - WHITESPACE@24..29 "\n    "
+            - FIELD_DEFINITION@29..40
+                - NAME@29..34
+                    - IDENT@29..34 "value"
+                - COLON@34..35 ":"
+                - WHITESPACE@35..36 " "
+                - TYPE@36..40
+                    - WHITESPACE@36..37 "\n"
+                    - NAMED_TYPE@37..40
+                        - NAME@37..40
+                            - IDENT@37..40 "Int"
+            - R_CURLY@40..41 "}"
