@@ -141,3 +141,67 @@ pub(crate) fn default_value(p: &mut Parser) {
     p.bump(S![=]);
     value(p);
 }
+
+#[cfg(test)]
+mod test {
+    use crate::{ast, Parser, TokenText};
+    ///     IntValue
+    ///     FloatValue
+    ///     StringValue
+    ///     BooleanValue
+    ///     NullValue
+    ///     EnumValue
+    ///     ListValue<sub>\[?Const\]</sub>
+    ///     ObjectValue<sub>\[?Const\]</sub>
+    #[test]
+    fn it_gets_text_from_values() {
+        let schema = r#"
+enum Test @dir__one(string: "one", int: 2, float: 3.4, bool: true, null: null, enum: Enum, variable: $variable) {
+  ACCOUNTS
+  INVENTORY
+} "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+
+        dbg!(&ast);
+        assert!(ast.errors.is_empty());
+
+        let document = ast.document();
+        for definition in document.definitions() {
+            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+                for directive in enum_.directives().unwrap().directives() {
+                    if let Some(arguments) = directive.arguments() {
+                        for argument in arguments.arguments() {
+                            if let Some(val) = argument.value() {
+                                match val {
+                                    ast::Value::StringValue(val) => {
+                                        assert_eq!(val.text().as_ref(), "one")
+                                    }
+                                    ast::Value::IntValue(val) => {}
+                                    ast::Value::FloatValue(val) => {}
+                                    ast::Value::BooleanValue(val) => {}
+                                    ast::Value::Variable(val) => todo!(),
+                                    ast::Value::NullValue(val) => todo!(),
+                                    ast::Value::EnumValue(val) => todo!(),
+                                    ast::Value::ListValue(val) => todo!(),
+                                    ast::Value::ObjectValue(val) => todo!(),
+                                }
+                            }
+                        }
+                    }
+                    assert_eq!(
+                        [
+                            "one".to_string(),
+                            "2".to_string(),
+                            "3.4".to_string(),
+                            "true".to_string(),
+                            "null".to_string(),
+                            "Enum".to_string()
+                        ],
+                        values.as_slice()
+                    )
+                }
+            }
+        }
+    }
+}

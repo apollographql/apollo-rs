@@ -1,6 +1,15 @@
-use crate::{ast::{Name, AstNode}, SyntaxNode, TokenText};
+use crate::{
+    ast::{AstNode, Name, StringValue},
+    SyntaxNode, TokenText,
+};
 
 impl Name {
+    pub fn text(&self) -> TokenText {
+        text_of_first_token(self.syntax())
+    }
+}
+
+impl StringValue {
     pub fn text(&self) -> TokenText {
         text_of_first_token(self.syntax())
     }

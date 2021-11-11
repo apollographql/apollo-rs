@@ -73,7 +73,7 @@ pub(crate) fn is_definition(def: String) -> bool {
 
 #[cfg(test)]
 mod test {
-    use crate::{ast::Definition, Parser};
+    use crate::{ast, Parser};
 
     #[test]
     fn test_invalid() {
@@ -101,59 +101,54 @@ mod test {
     ACCOUNTS @join__graph(name: "accounts")
   }
   "#;
-        let parser = crate::Parser::new(schema);
+        let parser = Parser::new(schema);
         let ast = parser.parse();
 
         assert!(ast.errors.is_empty());
 
         let document = ast.document();
         for definition in document.definitions() {
-            if let crate::ast::Definition::EnumTypeDefinition(enum_type) = definition {
-                assert_eq!(
-                    Some("join__Graph".to_string()),
-                    enum_type
-                        .name()
-                        .and_then(|n| n.ident_token())
-                        .map(|id| id.text().to_owned())
-                );
-
-                if enum_type
+            if let ast::Definition::EnumTypeDefinition(enum_type) = definition {
+                let enum_name = enum_type
                     .name()
-                    .and_then(|n| n.ident_token())
-                    .as_ref()
-                    .map(|id| id.text())
-                    == Some("join__Graph")
-                {
+                    .expect("Could not get Enum Type Definition's Name");
+
+                assert_eq!("join__Graph", enum_name.text().as_ref());
+
+                if enum_name.text().as_ref() == "join__Graph" {
                     if let Some(enums) = enum_type.enum_values_definition() {
                         for enum_kind in enums.enum_value_definitions() {
                             assert_eq!(
-                                Some("ACCOUNTS"),
+                                "ACCOUNTS",
                                 enum_kind
                                     .enum_value()
-                                    .and_then(|v| v.name())
-                                    .and_then(|n| n.ident_token())
+                                    .unwrap()
+                                    .name()
+                                    .unwrap()
+                                    .text()
                                     .as_ref()
-                                    .map(|id| id.text())
                             );
+                            check_directive_arguments(enum_kind);
+                        }
+                    }
+                }
+            }
+        }
 
-                            if let Some(directives) = enum_kind.directives() {
-                                for directive in directives.directives() {
-                                    if directive
-                                        .name()
-                                        .and_then(|n| n.ident_token())
-                                        .as_ref()
-                                        .map(|id| id.text())
-                                        == Some("join__graph")
-                                    {
-                                        if let Some(arguments) = directive.arguments() {
-                                            for argument in arguments.arguments() {
-                                                assert_eq!(
-                                                    "\"accounts\"".to_string(),
-                                                    argument.value().unwrap().to_string()
-                                                );
-                                            }
-                                        }
-                                    }
+        fn check_directive_arguments(enum_kind: ast::EnumValueDefinition) {
+            if let Some(directives) = enum_kind.directives() {
+                for directive in directives.directives() {
+                    if directive
+                        .name()
+                        .and_then(|n| n.ident_token())
+                        .as_ref()
+                        .map(|id| id.text())
+                        == Some("join__graph")
+                    {
+                        if let Some(arguments) = directive.arguments() {
+                            for argument in arguments.arguments() {
+                                if let ast::Value::StringValue(val) = argument.value().unwrap() {
+                                    assert_eq!("\"accounts\"", val.text().as_ref());
                                 }
                             }
                         }
@@ -181,7 +176,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
         let doc = ast.document();
 
         for def in doc.definitions() {
-            if let Definition::OperationDefinition(op_def) = def {
+            if let ast::Definition::OperationDefinition(op_def) = def {
                 assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
 
                 let variable_defs = op_def.variable_definitions();
