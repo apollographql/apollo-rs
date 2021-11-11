@@ -115,7 +115,18 @@ impl Parser {
 
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err(&mut self, message: &str) {
-        let current = self.tokens.pop().expect("Could not get current token.");
+        let current = self.current().clone();
+        // this needs to be the computed location
+        let err = Error::with_loc(message, current.data().to_string(), current.index());
+        self.push_err(err);
+    }
+
+    /// Create a parser error and push it into the error vector.
+    pub(crate) fn err_and_pop(&mut self, message: &str) {
+        let current = self.pop();
+        // we usually bump ignored after we pop a token, so make sure we also do
+        // this when we create an error and pop.
+        self.bump_ignored();
         // this needs to be the computed location
         let err = Error::with_loc(message, current.data().to_string(), current.index());
         self.push_err(err);

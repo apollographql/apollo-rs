@@ -1,0 +1,16 @@
+- DOCUMENT@0..27
+    - WHITESPACE@0..2 "\n\n"
+    - OPERATION_DEFINITION@2..27
+        - SELECTION_SET@2..27
+            - L_CURLY@2..3 "{"
+            - WHITESPACE@3..8 "\n    "
+            - FIELD@8..16
+                - NAME@8..16
+                    - IDENT@8..11 "pet"
+                    - WHITESPACE@11..16 "\n    "
+            - FIELD@16..26
+                - NAME@16..26
+                    - IDENT@16..25 "faveSnack"
+                    - WHITESPACE@25..26 "\n"
+            - R_CURLY@26..27 "}"
+- ERROR@0:14 "expected definition" uasdf21230jkdw

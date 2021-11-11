@@ -17,10 +17,10 @@ pub(crate) fn name(p: &mut Parser) {
 
 pub(crate) fn validate_name(name: String, p: &mut Parser) {
     if !name.starts_with(is_start_char) {
-        p.err("expected Name to start with a letter or an _");
+        p.err_and_pop("expected Name to start with a letter or an _");
     }
     if name.len() >= 2 && !name[1..].chars().all(is_remainder_char) {
-        p.err("Name can only be composed of letters, numbers and _");
+        p.err_and_pop("Name can only be composed of letters, numbers and _");
     }
 }
 
