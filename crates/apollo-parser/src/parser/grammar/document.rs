@@ -164,11 +164,12 @@ enum join__Graph {
                         .map(|id| id.text())
                         == Some("join__graph")
                     {
-                        if let Some(arguments) = directive.arguments() {
-                            for argument in arguments.arguments() {
-                                if let ast::Value::StringValue(val) = argument.value().unwrap() {
-                                    assert_eq!("\"accounts\"", val.text().as_ref());
-                                }
+                        for argument in directive.arguments().unwrap().arguments() {
+                            if let ast::Value::StringValue(val) =
+                                argument.value().expect("Cannot get argument value.")
+                            {
+                                let val: String = val.into();
+                                assert_eq!("accounts".to_string(), val);
                             }
                         }
                     }
@@ -177,39 +178,4 @@ enum join__Graph {
         }
     }
 
-    #[test]
-    fn query() {
-        let input = "
-query GraphQuery($graph_id: ID!, $variant: String) {
-  service(id: $graph_id) {
-    schema(tag: $variant) {
-      document
-    }
-  }
-}
-        ";
-        let parser = Parser::new(input);
-        let ast = parser.parse();
-        assert!(&ast.errors().is_empty());
-
-        let doc = ast.document();
-
-        for def in doc.definitions() {
-            if let ast::Definition::OperationDefinition(op_def) = def {
-                assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
-
-                let variable_defs = op_def.variable_definitions();
-                let variables: Vec<String> = variable_defs
-                    .iter()
-                    .map(|v| v.variable_definitions())
-                    .flatten()
-                    .filter_map(|v| Some(v.variable()?.name()?.text().to_string()))
-                    .collect();
-                assert_eq!(
-                    variables.as_slice(),
-                    ["graph_id".to_string(), "variant".to_string()]
-                );
-            }
-        }
-    }
 }

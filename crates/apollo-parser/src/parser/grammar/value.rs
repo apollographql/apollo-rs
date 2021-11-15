@@ -144,63 +144,151 @@ pub(crate) fn default_value(p: &mut Parser) {
 
 #[cfg(test)]
 mod test {
-    use crate::{ast, Parser, TokenText};
-    ///     IntValue
-    ///     FloatValue
-    ///     StringValue
-    ///     BooleanValue
-    ///     NullValue
-    ///     EnumValue
-    ///     ListValue<sub>\[?Const\]</sub>
-    ///     ObjectValue<sub>\[?Const\]</sub>
+    use crate::{ast, Parser};
     #[test]
-    fn it_gets_text_from_values() {
+    fn it_returns_string_for_string_value_into() {
         let schema = r#"
-enum Test @dir__one(string: "one", int: 2, float: 3.4, bool: true, null: null, enum: Enum, variable: $variable) {
-  ACCOUNTS
+enum Test @dir__one(string: "string value", int_value: -10, float_value: -1.123e+4, bool: false) {
   INVENTORY
 } "#;
         let parser = Parser::new(schema);
         let ast = parser.parse();
 
-        dbg!(&ast);
         assert!(ast.errors.is_empty());
 
         let document = ast.document();
         for definition in document.definitions() {
             if let ast::Definition::EnumTypeDefinition(enum_) = definition {
                 for directive in enum_.directives().unwrap().directives() {
-                    if let Some(arguments) = directive.arguments() {
-                        for argument in arguments.arguments() {
-                            if let Some(val) = argument.value() {
-                                match val {
-                                    ast::Value::StringValue(val) => {
-                                        assert_eq!(val.text().as_ref(), "one")
-                                    }
-                                    ast::Value::IntValue(val) => {}
-                                    ast::Value::FloatValue(val) => {}
-                                    ast::Value::BooleanValue(val) => {}
-                                    ast::Value::Variable(val) => todo!(),
-                                    ast::Value::NullValue(val) => todo!(),
-                                    ast::Value::EnumValue(val) => todo!(),
-                                    ast::Value::ListValue(val) => todo!(),
-                                    ast::Value::ObjectValue(val) => todo!(),
-                                }
-                            }
+                    for argument in directive.arguments().unwrap().arguments() {
+                        if let ast::Value::StringValue(val) =
+                            argument.value().expect("Cannot get argument value.")
+                        {
+                            let s: String = val.into();
+                            assert_eq!(s, "string value".to_string());
                         }
                     }
-                    assert_eq!(
-                        [
-                            "one".to_string(),
-                            "2".to_string(),
-                            "3.4".to_string(),
-                            "true".to_string(),
-                            "null".to_string(),
-                            "Enum".to_string()
-                        ],
-                        values.as_slice()
-                    )
                 }
+            }
+        }
+    }
+
+    #[test]
+    fn it_returns_i64_for_int_values() {
+        let schema = r#"
+enum Test @dir__one(int_value: -10) {
+  INVENTORY
+} "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+
+        assert!(ast.errors.is_empty());
+
+        let document = ast.document();
+        for definition in document.definitions() {
+            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+                for directive in enum_.directives().unwrap().directives() {
+                    for argument in directive.arguments().unwrap().arguments() {
+                        if let ast::Value::IntValue(val) =
+                            argument.value().expect("Cannot get argument value.")
+                        {
+                            let i: i64 = val.into();
+                            assert_eq!(i, -10);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn it_returns_f64_for_float_values() {
+        let schema = r#"
+enum Test @dir__one(float_value: -1.123E4) { 
+  INVENTORY
+} "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+
+        assert!(ast.errors.is_empty());
+
+        let document = ast.document();
+        for definition in document.definitions() {
+            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+                for directive in enum_.directives().unwrap().directives() {
+                    for argument in directive.arguments().unwrap().arguments() {
+                        if let ast::Value::FloatValue(val) =
+                            argument.value().expect("Cannot get argument value.")
+                        {
+                            let f: f64 = val.into();
+                            assert_eq!(f, -1.123E4);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn it_returns_bool_for_boolean_values() {
+        let schema = r#"
+enum Test @dir__one(bool_value: false) { 
+  INVENTORY
+} "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+
+        assert!(ast.errors.is_empty());
+
+        let document = ast.document();
+        for definition in document.definitions() {
+            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+                for directive in enum_.directives().unwrap().directives() {
+                    for argument in directive.arguments().unwrap().arguments() {
+                        if let ast::Value::BooleanValue(val) =
+                            argument.value().expect("Cannot get argument value.")
+                        {
+                            let b: bool = val.into();
+                            assert_eq!(b, false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn it_parses_variable_names() {
+        let input = "
+query GraphQuery($graph_id: ID!, $variant: String) {
+  service(id: $graph_id) {
+    schema(tag: $variant) {
+      document
+    }
+  }
+}
+        ";
+        let parser = Parser::new(input);
+        let ast = parser.parse();
+        assert!(&ast.errors().is_empty());
+
+        let doc = ast.document();
+
+        for def in doc.definitions() {
+            if let ast::Definition::OperationDefinition(op_def) = def {
+                assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
+
+                let variable_defs = op_def.variable_definitions();
+                let variables: Vec<String> = variable_defs
+                    .iter()
+                    .map(|v| v.variable_definitions())
+                    .flatten()
+                    .filter_map(|v| Some(v.variable()?.text().to_string()))
+                    .collect();
+                assert_eq!(
+                    variables.as_slice(),
+                    ["graph_id".to_string(), "variant".to_string()]
+                );
             }
         }
     }
