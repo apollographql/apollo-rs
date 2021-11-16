@@ -19,35 +19,30 @@ executors:
       xcode: "11.4"
   windows: &windows_executor
     machine:
-      image: 'windows-server-2019-vs2019:stable'
+      image: "windows-server-2019-vs2019:stable"
     resource_class: windows.xlarge
     shell: powershell.exe -ExecutionPolicy Bypass
 
 # Describes the three jobs we run for apollo-rs: build, lint and test.
 jobs:
-  build:
-    name: Build rust on the current system 
+  lint:
     matrix:
       parameters:
         platform: [linux, macos, windows]
-        rust_channel: [stable]
     steps:
-      - run: 
-          name: Install system dependencies
-          command: install_system_deps
-      - run: 
-          name: Install rust
-          command: install_rust_toolchain 
-  lint:
-    platform: [linux, macos, windows]
-    steps:
+      - install_system_deps
+      - install_rust_toolchain
       - run:
           name: Run cargo clippy
           command: cargo clippy 
 
   test:
-    platform: [linux, macos, windows]
+    matrix:
+      parameters:
+        platform: [linux, macos, windows]
     steps:
+      - install_system_deps
+      - install_rust_toolchain
       - run:
           name: Run cargo test
           command: cargo test
@@ -56,7 +51,6 @@ jobs:
 workflows:
   build_lint_test:
     jobs:
-      - build
       - lint
       - test
 
