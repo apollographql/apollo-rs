@@ -23,12 +23,13 @@ executors:
     resource_class: windows.xlarge
     shell: powershell.exe -ExecutionPolicy Bypass
 
-# Describes the three jobs we run for apollo-rs: build, lint and test.
+# Describes the three jobs we run for apollo-rs: lint and test.
 jobs:
   lint:
-    matrix:
-      parameters:
-        platform: [linux, macos, windows]
+    parameters:
+      platform:
+        type: executor
+    executor: << parameters.platform >>
     steps:
       - install_system_deps
       - install_rust_toolchain
@@ -37,9 +38,14 @@ jobs:
           command: cargo clippy 
 
   test:
-    matrix:
-      parameters:
-        platform: [linux, macos, windows]
+    parameters:
+      rust_channel:
+        type: enum
+        enum: ["stable", "nightly"]
+        default: stable
+      platform:
+        type: executor
+    executor: << parameters.platform >>
     steps:
       - install_system_deps
       - install_rust_toolchain
@@ -49,10 +55,19 @@ jobs:
 
 # Workflow consists of running the jobs previously described.
 workflows:
-  build_lint_test:
+  lint_test:
     jobs:
       - lint
+        name: Run clippy on the project.
+          matrix:
+            parameters:
+              platform: [linux, macos, windows]
       - test
+        name: Run cargo test on the project.
+          matrix:
+            parameters:
+              platform: [linux, macos, windows]
+              rust_channel: [stable, nightly]
 
 
 # The folowing are reusable command snippets can be referred to in any `steps`.
