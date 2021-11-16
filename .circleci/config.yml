@@ -20,7 +20,7 @@ executors:
   windows: &windows_executor
     machine:
       image: "windows-server-2019-vs2019:stable"
-    resource_class: windows.xlarge
+    resource_class: xlarge
     shell: powershell.exe -ExecutionPolicy Bypass
 
 # Describes the three jobs we run for apollo-rs: lint and test.
