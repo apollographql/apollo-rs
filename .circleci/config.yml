@@ -23,21 +23,36 @@ executors:
     resource_class: windows.xlarge
     shell: powershell.exe -ExecutionPolicy Bypass
 
+# Describes the three jobs we run for apollo-rs: build, lint and test.
 jobs:
+  build:
+    executor: [linux, macos, windows]
+    steps:
+      - run: 
+        name: Install system dependencies
+        command: install_system_deps
+      - run: 
+        name: Install rust
+        command: install_rust_toolchain 
   lint:
     executor: [linux, macos, windows]
     steps:
-      - full_ci:
+      - run:
+        name: Run cargo clippy
+        command: cargo clippy 
 
   test:
     executor: [linux, macos, windows]
     steps:
-      - full_ci:
+      - run:
+        name: Run cargo test
+        command: cargo test
 
+# Workflow consists of running the jobs previously described.
 workflows:
   build_lint_test:
     jobs:
-      - built
+      - build
       - lint
       - test
 
