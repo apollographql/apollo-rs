@@ -16,7 +16,7 @@ executors:
     resource_class: medium+
   macos: &macos_executor
     macos:
-      xcode: 11.4
+      xcode: "11.4"
   windows: &windows_executor
     machine:
       image: 'windows-server-2019-vs2019:stable'
@@ -26,27 +26,31 @@ executors:
 # Describes the three jobs we run for apollo-rs: build, lint and test.
 jobs:
   build:
-    executor: [linux, macos, windows]
+    name: Build rust on the current system 
+    matrix:
+      parameters:
+        platform: [linux, macos, windows]
+        rust_channel: [stable]
     steps:
       - run: 
-        name: Install system dependencies
-        command: install_system_deps
+          name: Install system dependencies
+          command: install_system_deps
       - run: 
-        name: Install rust
-        command: install_rust_toolchain 
+          name: Install rust
+          command: install_rust_toolchain 
   lint:
-    executor: [linux, macos, windows]
+    platform: [linux, macos, windows]
     steps:
       - run:
-        name: Run cargo clippy
-        command: cargo clippy 
+          name: Run cargo clippy
+          command: cargo clippy 
 
   test:
-    executor: [linux, macos, windows]
+    platform: [linux, macos, windows]
     steps:
       - run:
-        name: Run cargo test
-        command: cargo test
+          name: Run cargo test
+          command: cargo test
 
 # Workflow consists of running the jobs previously described.
 workflows:
