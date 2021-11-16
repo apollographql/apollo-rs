@@ -55,15 +55,17 @@ jobs:
 
 # Workflow consists of running the jobs previously described.
 workflows:
-  lint_test:
+  lint:
     jobs:
       - lint
-        name: Run clippy on the project.
+        name: Run clippy on the project
         matrix:
           parameters:
             platform: [linux, macos, windows]
+  test:
+    jobs:
       - test
-        name: Run cargo test on the project.
+        name: Run cargo test on the project
           matrix:
           parameters:
             platform: [linux, macos, windows]
