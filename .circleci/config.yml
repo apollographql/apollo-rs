@@ -59,15 +59,15 @@ workflows:
     jobs:
       - lint
         name: Run clippy on the project.
-          matrix:
-            parameters:
-              platform: [linux, macos, windows]
+        matrix:
+          parameters:
+            platform: [linux, macos, windows]
       - test
         name: Run cargo test on the project.
           matrix:
-            parameters:
-              platform: [linux, macos, windows]
-              rust_channel: [stable, nightly]
+          parameters:
+            platform: [linux, macos, windows]
+            rust_channel: [stable, nightly]
 
 
 # The folowing are reusable command snippets can be referred to in any `steps`.
