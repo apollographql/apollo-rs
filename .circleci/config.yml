@@ -87,12 +87,12 @@ workflows:
           name: Lint 
           matrix:
             parameters:
-              platform: [linux, macos, windows]
+              platform: [linux]
               rust_channel: [stable]
   test:
     jobs:
       - test:
-          name: Run cargo test on the project
+          name: Test (<< matrix.rust_channel >> rust on << matrix.platform >>)  
           matrix:
             parameters:
               platform: [linux, macos, windows]
