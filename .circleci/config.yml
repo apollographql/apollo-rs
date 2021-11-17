@@ -10,14 +10,14 @@ orbs:
 # We run jobs on the following platforms: linux, macos and windows.
 # These are their specifications:
 executors:
-  linux: &linux_executor
+  linux: &linux
     docker:
       - image: cimg/base:stable
     resource_class: medium+
-  macos: &macos_executor
+  macos: &macos
     macos:
       xcode: "11.4"
-  windows: &windows_executor
+  windows: &windows
     machine:
       image: 'windows-server-2019-vs2019:stable'
     resource_class: windows.xlarge
@@ -35,12 +35,19 @@ jobs:
         type: executor
     executor: << parameters.platform >>
     steps:
+      - restore_cache:
+          keys:
+            - rust-target-v1-{{<< parameters.platform >>}}-{{ checksum "Cargo.lock" }}
       - install_system_deps:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
       - install_rust_toolchain:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
+      - save_cache:
+          key: rust-target-v1-{{<< parameters.platform >>}}-{{ checksum "Cargo.lock" }}
+          paths:
+            - target/
       - run:
           name: Run cargo clippy
           command: cargo clippy 
@@ -55,12 +62,19 @@ jobs:
         type: executor
     executor: << parameters.platform >>
     steps:
+      - restore_cache:
+          keys:
+            - rust-target-v1-{{<< parameters.platform >>}}-{{ checksum "Cargo.lock" }}
       - install_system_deps:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
       - install_rust_toolchain:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
+      - save_cache:
+          key: rust-target-v1-{{<< parameters.platform >>}}-{{ checksum "Cargo.lock" }}
+          paths:
+            - target/
       - run:
           name: Run cargo test
           command: cargo test
@@ -135,16 +149,14 @@ commands:
     steps:
       - unless:
           condition:
-            equal: [ *windows_executor, << parameters.platform >> ]
+            equal: [ *windows, << parameters.platform >> ]
           steps:
             - rust/install:
                 version: << parameters.rust_channel >>
-            - run:
-                name: Install specific rust toolchain
-                command: rustup target add $XTASK_TARGET
+
       - when:
           condition:
-            equal: [ *windows_executor, << parameters.platform >> ]
+            equal: [ *windows, << parameters.platform >> ]
           steps:
             - run:
                 name: Install rustup
