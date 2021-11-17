@@ -35,10 +35,6 @@ jobs:
         type: executor
     executor: << parameters.platform >>
     steps:
-      - run:
-          name: Ensure LF line endings for AST tests
-          command: |
-            git config --global core.autocrlf false
       - checkout
       #- restore_cache:
       #    keys:
@@ -64,10 +60,6 @@ jobs:
         type: executor
     executor: << parameters.platform >>
     steps:
-      - run:
-          name: Ensure LF line endings for AST tests
-          command: |
-            git config --global core.autocrlf false
       - checkout
       #- restore_cache:
       #    keys:
