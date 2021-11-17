@@ -35,10 +35,10 @@ jobs:
         type: executor
     executor: << parameters.platform >>
     steps:
-      - install_system_deps
+      - install_system_deps:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
-      - install_rust_toolchain
+      - install_rust_toolchain:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
       - run:
@@ -55,10 +55,10 @@ jobs:
         type: executor
     executor: << parameters.platform >>
     steps:
-      - install_system_deps
+      - install_system_deps:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
-      - install_rust_toolchain
+      - install_rust_toolchain:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
       - run:
