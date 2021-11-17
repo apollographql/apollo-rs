@@ -168,6 +168,10 @@ commands:
                   & $installer_dir\rustup-init.exe --profile minimal -y
                   exit $LASTEXITCODE
             - run:
+                name: Ensure LF line endings for AST tests
+                command: |
+                  git config --global core.autocrlf false
+            - run:
                 name: Configure cargo for Windows
                 command: |
                   Add-Content -path "${Env:USERPROFILE}\.cargo\config.toml" @"
