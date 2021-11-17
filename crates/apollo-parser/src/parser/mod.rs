@@ -195,13 +195,12 @@ impl Parser {
 
     /// Peek Token `n` and return its TokenKind.
     pub(crate) fn peek_n(&self, n: usize) -> Option<TokenKind> {
-        let tok = self
-            .tokens
-            .clone()
-            .into_iter()
+        self.tokens
+            .iter()
+            .rev()
             .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
-            .collect::<Vec<Token>>();
-        tok.get(tok.len() - n).map(|token| token.kind())
+            .nth(n - 1)
+            .map(|token| token.kind())
     }
 
     /// Peek next Token's `data` property.
@@ -211,13 +210,12 @@ impl Parser {
 
     /// Peek `n` Token's `data` property.
     pub(crate) fn peek_data_n(&self, n: usize) -> Option<String> {
-        let tok = self
-            .tokens
-            .clone()
-            .into_iter()
+        self.tokens
+            .iter()
+            .rev()
             .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
-            .collect::<Vec<Token>>();
-        tok.get(tok.len() - n).map(|token| token.data().to_string())
+            .nth(n - 1)
+            .map(|token| token.data().to_string())
     }
 }
 
