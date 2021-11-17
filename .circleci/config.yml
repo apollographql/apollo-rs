@@ -112,7 +112,7 @@ commands:
     steps:
       - when:
           condition:
-            equal: [ *linux_executor, << parameters.platform >> ]
+            equal: [ *linux, << parameters.platform >> ]
           steps:
             - run:
                 name: Update apt repositories
@@ -126,7 +126,7 @@ commands:
 
       - when:
           condition:
-            equal: [ *macos_executor, << parameters.platform >> ]
+            equal: [ *macos, << parameters.platform >> ]
           steps:
             - run:
                 name: Skip homebrew update
