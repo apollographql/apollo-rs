@@ -41,9 +41,6 @@ jobs:
       - install_system_deps:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
-      - install_rust_toolchain:
-          rust_channel: << parameters.rust_channel >>
-          platform: << parameters.platform >>
       #- save_cache:
       #    key: rust-target-v1-{{<< parameters.platform >>}}-{{ checksum "Cargo.lock" }}
       #    paths:
@@ -66,9 +63,6 @@ jobs:
       #    keys:
       #      - rust-target-v1-{{<< parameters.platform >>}}-{{ checksum "Cargo.lock" }}
       - install_system_deps:
-          rust_channel: << parameters.rust_channel >>
-          platform: << parameters.platform >>
-      - install_rust_toolchain:
           rust_channel: << parameters.rust_channel >>
           platform: << parameters.platform >>
       #- save_cache:
