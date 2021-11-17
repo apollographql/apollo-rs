@@ -19,8 +19,8 @@ executors:
       xcode: "11.4"
   windows: &windows_executor
     machine:
-      image: "windows-server-2019-vs2019:stable"
-    resource_class: xlarge
+      image: 'windows-server-2019-vs2019:stable'
+    resource_class: windows.xlarge
     shell: powershell.exe -ExecutionPolicy Bypass
 
 # Describes the three jobs we run for apollo-rs: lint and test.
