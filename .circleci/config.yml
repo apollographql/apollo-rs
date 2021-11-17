@@ -27,12 +27,20 @@ executors:
 jobs:
   lint:
     parameters:
+      rust_channel:
+        type: enum
+        enum: ["stable", "nightly"]
+        default: stable
       platform:
         type: executor
     executor: << parameters.platform >>
     steps:
       - install_system_deps
+          rust_channel: << parameters.rust_channel >>
+          platform: << parameters.platform >>
       - install_rust_toolchain
+          rust_channel: << parameters.rust_channel >>
+          platform: << parameters.platform >>
       - run:
           name: Run cargo clippy
           command: cargo clippy 
@@ -48,7 +56,11 @@ jobs:
     executor: << parameters.platform >>
     steps:
       - install_system_deps
+          rust_channel: << parameters.rust_channel >>
+          platform: << parameters.platform >>
       - install_rust_toolchain
+          rust_channel: << parameters.rust_channel >>
+          platform: << parameters.platform >>
       - run:
           name: Run cargo test
           command: cargo test
@@ -57,14 +69,15 @@ jobs:
 workflows:
   lint:
     jobs:
-      - lint
+      - lint:
           name: Lint 
           matrix:
             parameters:
               platform: [linux, macos, windows]
+              rust_channel: [stable]
   test:
     jobs:
-      - test
+      - test:
           name: Run cargo test on the project
           matrix:
             parameters:
