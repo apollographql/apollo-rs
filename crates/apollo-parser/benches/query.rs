@@ -1,4 +1,4 @@
-use apollo_parser::ast;
+use apollo_parser::{ast, Lexer};
 use criterion::*;
 
 fn parse_query(query: &str) {
@@ -24,11 +24,21 @@ fn parse_query(query: &str) {
     }
 }
 
-fn bench_parser_peek_n(c: &mut Criterion) {
+fn bench_query_parser(c: &mut Criterion) {
     let query = "query ExampleQuery($topProductsFirst: Int) {\n  me { \n    id\n  }\n  topProducts(first:  $topProductsFirst) {\n    name\n    price\n    inStock\n weight\n test test test test test test test test test test test test }\n}";
 
-    c.bench_function("parser_peek_n", move |b| b.iter(|| parse_query(query)));
+    c.bench_function("query_parser", move |b| b.iter(|| parse_query(query)));
 }
 
-criterion_group!(benches, bench_parser_peek_n);
+fn bench_query_lexer(c: &mut Criterion) {
+    let query = "query ExampleQuery($topProductsFirst: Int) {\n  me { \n    id\n  }\n  topProducts(first:  $topProductsFirst) {\n    name\n    price\n    inStock\n weight\n test test test test test test test test test test test test }\n}";
+
+    c.bench_function("query_lexer", move |b| {
+        b.iter(|| {
+            let _ = Lexer::new(query);
+        })
+    });
+}
+
+criterion_group!(benches, bench_query_lexer, bench_query_parser);
 criterion_main!(benches);
