@@ -5,9 +5,12 @@ mod token_text;
 
 pub(crate) mod grammar;
 
-use std::{cell::RefCell, collections::VecDeque, fmt, rc::Rc};
+use std::{cell::RefCell, fmt, rc::Rc};
 
-use crate::{lexer::Lexer, Error, Token, TokenKind};
+use crate::{
+    lexer::{LexerIterator, LexerResult},
+    Error, Token, TokenKind,
+};
 
 pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxNode, SyntaxNodeChildren, SyntaxNodePtr, SyntaxToken};
@@ -70,9 +73,8 @@ pub(crate) use token_text::TokenText;
 /// let document = ast.document();
 /// ```
 #[derive(Debug)]
-pub struct Parser {
-    /// Input tokens, including whitespace, in *reverse* order.
-    tokens: VecDeque<Token>,
+pub struct Parser<'a> {
+    lexer: LexerIterator<'a>,
     /// The in-progress tree.
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
     /// The list of syntax errors we've accumulated so far.
@@ -83,18 +85,15 @@ pub struct Parser {
     accept_errors: bool,
 }
 
-impl Parser {
+impl<'a> Parser<'a> {
     /// Create a new instance of a parser given an input string.
-    pub fn new(input: &str) -> Self {
-        let (mut tokens, mut errors) = Lexer::new(input).into_parts();
-
-        tokens.reverse();
-        errors.reverse();
+    pub fn new(input: &'a str) -> Self {
+        let lexer = LexerIterator::new(input);
 
         Self {
-            tokens,
+            lexer,
             builder: Rc::new(RefCell::new(SyntaxTreeBuilder::new())),
-            errors,
+            errors: Vec::new(),
             recursion_limit: Default::default(),
             accept_errors: true,
         }
@@ -102,7 +101,7 @@ impl Parser {
 
     /// Create a new resource limited instance of a parser given an input string
     /// and a recursion limit.
-    pub fn with_recursion_limit(input: &str, recursion_limit: usize) -> Self {
+    pub fn with_recursion_limit(input: &'a str, recursion_limit: usize) -> Self {
         let mut parser = Parser::new(input);
         parser.recursion_limit = LimitTracker::new(recursion_limit);
         parser
@@ -153,18 +152,26 @@ impl Parser {
     }
 
     /// Get current token's data.
-    pub(crate) fn current(&mut self) -> &Token {
+    pub(crate) fn current(&mut self) -> Token {
         self.peek_token()
             .expect("Could not peek at the current token")
     }
 
     /// Consume a token from the lexer and add it to the AST.
     fn eat(&mut self, kind: SyntaxKind) {
-        let token = self
-            .tokens
-            .pop_front()
-            .expect("Could not eat a token from the AST");
-        self.builder.borrow_mut().token(kind, token.data());
+        loop {
+            match self
+                .lexer
+                .next()
+                .expect("Could not eat a token from the AST")
+            {
+                LexerResult::Error(e) => self.errors.push(e),
+                LexerResult::Token(token) => {
+                    self.builder.borrow_mut().token(kind, token.data());
+                    break;
+                }
+            }
+        }
     }
 
     /// Create a parser limit error and push it into the error vector.
@@ -238,9 +245,16 @@ impl Parser {
 
     /// Consume a token from the lexer.
     pub(crate) fn pop(&mut self) -> Token {
-        self.tokens
-            .pop_front()
-            .expect("Could not pop a token from the AST")
+        loop {
+            match self
+                .lexer
+                .next()
+                .expect("Could not pop a token from the AST")
+            {
+                LexerResult::Error(e) => self.errors.push(e),
+                LexerResult::Token(token) => return token,
+            }
+        }
     }
 
     /// Insert a token into the AST.
@@ -264,44 +278,54 @@ impl Parser {
 
     /// Peek the next Token and return its TokenKind.
     pub(crate) fn peek(&self) -> Option<TokenKind> {
-        self.tokens.front().map(|token| token.kind())
+        self.lexer.peek_token().map(|token| token.kind())
     }
 
     /// Peek the next Token and return it.
-    pub(crate) fn peek_token(&self) -> Option<&Token> {
-        self.tokens.front()
+    pub(crate) fn peek_token(&self) -> Option<Token> {
+        self.lexer.peek_token()
     }
 
     /// Peek Token `n` and return it.
-    pub(crate) fn peek_token_n(&self, n: usize) -> Option<&Token> {
-        self.tokens
-            .iter()
-            .rev()
+    pub(crate) fn peek_token_n(&self, n: usize) -> Option<Token> {
+        self.lexer.clone()
+            .filter_map(|res| match res {
+                LexerResult::Error(_) => None,
+                LexerResult::Token(token) => Some(token),
+            })
             .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
             .nth(n - 1)
     }
 
     /// Peek Token `n` and return its TokenKind.
     pub(crate) fn peek_n(&self, n: usize) -> Option<TokenKind> {
-        self.tokens
-            .iter()
-            .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
-            .nth(n - 1)
-            .map(|token| token.kind())
+        let it = self.lexer.clone();
+        it.filter_map(|res| match res {
+            LexerResult::Error(_) => None,
+            LexerResult::Token(token) => Some(token),
+        })
+        .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
+        .nth(n - 1)
+        .map(|token| token.kind())
     }
 
     /// Peek next Token's `data` property.
     pub(crate) fn peek_data(&self) -> Option<String> {
-        self.tokens.front().map(|token| token.data().to_string())
+        self.lexer
+            .peek_token()
+            .map(|token| token.data().to_string())
     }
 
     /// Peek `n` Token's `data` property.
     pub(crate) fn peek_data_n(&self, n: usize) -> Option<String> {
-        self.tokens
-            .iter()
-            .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
-            .nth(n - 1)
-            .map(|token| token.data().to_string())
+        let it = self.lexer.clone();
+        it.filter_map(|res| match res {
+            LexerResult::Error(_) => None,
+            LexerResult::Token(token) => Some(token),
+        })
+        .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
+        .nth(n - 1)
+        .map(|token| token.data().to_string())
     }
 }
 
