@@ -110,16 +110,6 @@ impl<'a> LexerIterator<'a> {
             finished: false,
         }
     }
-
-    pub fn peek_token(&self) -> Option<Token> {
-        let it = self.clone();
-
-        it.filter_map(|res| match res {
-            LexerResult::Error(_) => None,
-            LexerResult::Token(token) => Some(token),
-        })
-        .next()
-    }
 }
 
 impl<'a> Iterator for LexerIterator<'a> {

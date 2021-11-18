@@ -75,6 +75,8 @@ pub(crate) use token_text::TokenText;
 #[derive(Debug)]
 pub struct Parser<'a> {
     lexer: LexerIterator<'a>,
+    /// Store one lookahead token so we don't need to reparse things as much.
+    current_token: Option<Token>,
     /// The in-progress tree.
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
     /// The list of syntax errors we've accumulated so far.
@@ -92,6 +94,7 @@ impl<'a> Parser<'a> {
 
         Self {
             lexer,
+            current_token: None,
             builder: Rc::new(RefCell::new(SyntaxTreeBuilder::new())),
             errors: Vec::new(),
             recursion_limit: Default::default(),
@@ -152,26 +155,15 @@ impl<'a> Parser<'a> {
     }
 
     /// Get current token's data.
-    pub(crate) fn current(&mut self) -> Token {
+    pub(crate) fn current(&mut self) -> &Token {
         self.peek_token()
             .expect("Could not peek at the current token")
     }
 
     /// Consume a token from the lexer and add it to the AST.
     fn eat(&mut self, kind: SyntaxKind) {
-        loop {
-            match self
-                .lexer
-                .next()
-                .expect("Could not eat a token from the AST")
-            {
-                LexerResult::Error(e) => self.errors.push(e),
-                LexerResult::Token(token) => {
-                    self.builder.borrow_mut().token(kind, token.data());
-                    break;
-                }
-            }
-        }
+        let token = self.pop();
+        self.builder.borrow_mut().token(kind, token.data());
     }
 
     /// Create a parser limit error and push it into the error vector.
@@ -245,6 +237,10 @@ impl<'a> Parser<'a> {
 
     /// Consume a token from the lexer.
     pub(crate) fn pop(&mut self) -> Token {
+        if let Some(token) = self.current_token.take() {
+            return token;
+        }
+
         loop {
             match self
                 .lexer
@@ -277,13 +273,28 @@ impl<'a> Parser<'a> {
     }
 
     /// Peek the next Token and return its TokenKind.
-    pub(crate) fn peek(&self) -> Option<TokenKind> {
-        self.lexer.peek_token().map(|token| token.kind())
+    pub(crate) fn peek(&mut self) -> Option<TokenKind> {
+        self.peek_token().map(|token| token.kind())
     }
 
     /// Peek the next Token and return it.
-    pub(crate) fn peek_token(&self) -> Option<Token> {
-        self.lexer.peek_token()
+    pub(crate) fn peek_token(&mut self) -> Option<&Token> {
+        if self.current_token.is_none() {
+            loop {
+                match self
+                    .lexer
+                    .next()
+                    .expect("Could not pop a token from the AST")
+                {
+                    LexerResult::Error(e) => self.errors.push(e),
+                    LexerResult::Token(token) => {
+                        self.current_token = Some(token);
+                        break;
+                    }
+                }
+            }
+        }
+        self.current_token.as_ref()
     }
 
     /// Peek Token `n` and return it.
@@ -299,32 +310,42 @@ impl<'a> Parser<'a> {
 
     /// Peek Token `n` and return its TokenKind.
     pub(crate) fn peek_n(&self, n: usize) -> Option<TokenKind> {
+        let index = if self.current_token.is_none() {
+            n - 1
+        } else {
+            n - 2
+        };
+
         let it = self.lexer.clone();
         it.filter_map(|res| match res {
             LexerResult::Error(_) => None,
             LexerResult::Token(token) => Some(token),
         })
         .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
-        .nth(n - 1)
+        .nth(index)
         .map(|token| token.kind())
     }
 
     /// Peek next Token's `data` property.
-    pub(crate) fn peek_data(&self) -> Option<String> {
-        self.lexer
-            .peek_token()
-            .map(|token| token.data().to_string())
+    pub(crate) fn peek_data(&mut self) -> Option<String> {
+        self.peek_token().map(|token| token.data().to_string())
     }
 
     /// Peek `n` Token's `data` property.
     pub(crate) fn peek_data_n(&self, n: usize) -> Option<String> {
+        let index = if self.current_token.is_none() {
+            n - 1
+        } else {
+            n - 2
+        };
+
         let it = self.lexer.clone();
         it.filter_map(|res| match res {
             LexerResult::Error(_) => None,
             LexerResult::Token(token) => Some(token),
         })
         .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
-        .nth(n - 1)
+        .nth(index)
         .map(|token| token.data().to_string())
     }
 }
