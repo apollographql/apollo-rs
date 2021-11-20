@@ -26,6 +26,16 @@ impl Error {
             index,
         }
     }
+
+    /// Get a reference to the error's data.
+    pub fn data(&self) -> &str {
+        self.data.as_ref()
+    }
+
+    /// Get a reference to the error's index.
+    pub fn index(&self) -> usize {
+        self.index
+    }
 }
 
 impl fmt::Debug for Error {

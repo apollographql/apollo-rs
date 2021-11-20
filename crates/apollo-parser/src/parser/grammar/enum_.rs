@@ -60,7 +60,7 @@ pub(crate) fn enum_type_extension(p: &mut Parser) {
     }
 
     if !meets_requirements {
-        p.err("expected Directived or Enum Values Definition");
+        p.err("expected Directive or Enum Values Definition");
     }
 }
 
