@@ -15,6 +15,7 @@ thiserror = "1.0.30"
 
 [dev-dependencies]
 pretty_assertions = "0.7.1"
+annotate-snippets = "0.9.1"
 expect-test = "1.1"
 unindent = "0.1.7"
 criterion = "0.3.0"

@@ -5,8 +5,7 @@ use thiserror::Error;
 #[derive(Error, Debug, Diagnostic)]
 #[error("Unexpected Token")]
 #[diagnostic(
-    code(LexicalError::unexpected_token),
-    url(docsrs),
+    code(apollo_parser),
     help("GraphQL grammar does not accept this token.")
 )]
 struct Error {
