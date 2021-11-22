@@ -1,7 +1,7 @@
 use std::{fs, path::Path};
 
-use apollo_parser::Parser;
-use miette::{Diagnostic, NamedSource, Result, SourceSpan};
+use apollo_parser::{ast, Parser};
+use miette::{Diagnostic, NamedSource, Report, SourceSpan};
 use thiserror::Error;
 
 #[derive(Error, Debug, Diagnostic)]
@@ -15,7 +15,7 @@ struct ApolloParserError {
     span: SourceSpan,
 }
 
-fn parse_schema() -> Result<()> {
+fn parse_schema() -> ast::Document {
     let file = Path::new("crates/apollo-parser/examples/schema_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
     let file_name = file
@@ -26,21 +26,19 @@ fn parse_schema() -> Result<()> {
 
     let parser = Parser::new(&src);
     let ast = parser.parse();
-    dbg!(&ast);
 
     for err in ast.errors() {
-        Err(ApolloParserError {
+        let err = Report::new(ApolloParserError {
             src: NamedSource::new(file_name, src.clone()),
             span: (err.index(), err.data().len()).into(),
             ty: err.message().into(),
-        })?;
+        });
+        println!("{:?}", err);
     }
 
-    Ok(())
+    ast.document()
 }
 
-fn main() -> Result<()> {
-    parse_schema()?;
-
-    Ok(())
+fn main() {
+    parse_schema();
 }
