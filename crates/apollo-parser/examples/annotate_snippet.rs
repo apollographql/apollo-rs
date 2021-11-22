@@ -4,9 +4,9 @@ use annotate_snippets::{
     display_list::{DisplayList, FormatOptions},
     snippet::{Annotation, AnnotationType, Slice, Snippet, SourceAnnotation},
 };
-use apollo_parser::Parser;
+use apollo_parser::{ast, Parser};
 
-fn this_fails() {
+fn parse_schema() -> ast::Document {
     let file = Path::new("crates/apollo-parser/examples/schema_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
     let file_name = file
@@ -45,8 +45,10 @@ fn this_fails() {
         let dl = DisplayList::from(snippet);
         println!("{}\n\n", dl);
     }
+
+    ast.document()
 }
 
 fn main() {
-    this_fails();
+    parse_schema();
 }
