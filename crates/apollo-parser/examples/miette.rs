@@ -1,9 +1,16 @@
+/// This example describes how to use `apollo-parser` with
+/// [`miette`](https://docs.rs/miette/3.2.0/miette) diagnostic library.
+///
+///
 use std::{fs, path::Path};
 
 use apollo_parser::{ast, Parser};
 use miette::{Diagnostic, NamedSource, Report, SourceSpan};
 use thiserror::Error;
 
+// If your application is using a bunch of other thiserror errors,
+// `ApolloParserError` can live within that enum and be responsible for just
+// `apollo-parser` errors. It should work really nicely together!
 #[derive(Error, Debug, Diagnostic)]
 #[error("{}", self.ty)]
 #[diagnostic(code("apollo-parser parsing error."))]
@@ -18,6 +25,7 @@ struct ApolloParserError {
 fn parse_schema() -> ast::Document {
     let file = Path::new("crates/apollo-parser/examples/schema_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
+    // This is really useful for display the src path within the diagnostic.
     let file_name = file
         .file_name()
         .expect("Could not get file name.")
@@ -27,10 +35,15 @@ fn parse_schema() -> ast::Document {
     let parser = Parser::new(&src);
     let ast = parser.parse();
 
+    // each err comes with the two pieces of data you need for diagnostics:
+    // - message (err.message())
+    // - index (err.index())
     for err in ast.errors() {
+        // We need to create a report and print that individually, as the error
+        // slice can have many errors.
         let err = Report::new(ApolloParserError {
             src: NamedSource::new(file_name, src.clone()),
-            span: (err.index(), err.data().len()).into(),
+            span: (err.index(), err.data().len()).into(), // (offset, length of error token)
             ty: err.message().into(),
         });
         println!("{:?}", err);
