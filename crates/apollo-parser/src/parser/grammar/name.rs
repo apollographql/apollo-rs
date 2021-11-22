@@ -11,7 +11,7 @@ pub(crate) fn name(p: &mut Parser) {
             validate_name(p.peek_data().unwrap(), p);
             p.bump(SyntaxKind::IDENT);
         }
-        _ => p.err("expected a name"),
+        _ => p.err("expected a Name"),
     }
 }
 

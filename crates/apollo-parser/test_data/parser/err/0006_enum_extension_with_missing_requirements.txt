@@ -6,4 +6,4 @@
         - WHITESPACE@11..12 " "
         - NAME@12..21
             - IDENT@12..21 "Direction"
-- ERROR@21:21 "expected Directived or Enum Values Definition" EOF
+- ERROR@21:21 "expected Directive or Enum Values Definition" EOF

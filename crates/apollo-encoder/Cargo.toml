@@ -1,6 +1,6 @@
 [package]
 authors = ["lrlna <shestak.irina@gmail.com>"]
-edition = "2018"
+edition = "2021"
 name = "apollo-encoder"
 version = "0.1.0"
 license = "MIT OR Apache-2.0"

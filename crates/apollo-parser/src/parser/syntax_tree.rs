@@ -14,8 +14,8 @@ pub struct SyntaxTree {
 
 impl SyntaxTree {
     /// Get a reference to the syntax tree's errors.
-    pub fn errors(&self) -> &Vec<crate::Error> {
-        &self.errors
+    pub fn errors(&self) -> &[crate::Error] {
+        self.errors.as_ref()
     }
 
     /// Return the root typed `Document` node.
@@ -50,8 +50,6 @@ impl fmt::Debug for SyntaxTree {
             }
         }
 
-        // TODO @lrlna: needs a more elegant way of formatting Debug of Errors.
-        // Perhaps a separate struct with its own Debug implementation.
         fn print_err(f: &mut fmt::Formatter<'_>, errors: Vec<Error>) -> fmt::Result {
             for err in errors {
                 writeln!(f, "- {:?}", err)?;
