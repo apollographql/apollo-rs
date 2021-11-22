@@ -106,21 +106,6 @@ mod test {
     use crate::Parser;
 
     #[test]
-    fn schema_with_errors() {
-        let input = "directive @example(isTreat: Boolean, treatKind: * String) on";
-        let parser = Parser::new(input);
-        let ast = parser.parse();
-
-        let doc = ast.document();
-
-        for def in doc.definitions() {
-            if let Definition::DirectiveDefinition(directive) = def {
-                assert_eq!(directive.name().unwrap().text(), "example");
-            }
-        }
-    }
-
-    #[test]
     fn directive_name() {
         let input = "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION";
         let parser = Parser::new(input);
