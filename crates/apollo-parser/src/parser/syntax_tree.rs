@@ -27,52 +27,12 @@ pub struct SyntaxTree {
 impl SyntaxTree {
     /// Get a reference to the syntax tree's errors.
     pub fn errors(&self) -> &[crate::Error] {
-        self.errors.as_slice()
+        self.errors.as_ref()
     }
 
     /// Return the root typed `Document` node.
     pub fn document(self) -> Document {
         Document { syntax: self.ast }
-    }
-
-    pub fn pretty_print_errors(&self) {
-        for err in self.errors().into_iter().rev() {
-            println!(
-                "{}",
-                ApolloParserError {
-                    src: NamedSource::new("schema.graphql", self.as_string()),
-                    span: (err.index(), err.data().len()).into(),
-                    ty: err.message().into(),
-                }
-            );
-        }
-    }
-
-    pub fn as_string(&self) -> String {
-        let element = self.ast.clone().into();
-        let data: Vec<(usize, &str)> = self
-            .errors
-            .iter()
-            .map(|err| (err.index, err.data().clone()))
-            .collect();
-        let mut data = Self::data_index_pairs(element, data);
-        data.sort_by(|a, b| a.0.cmp(&b.0));
-        data.into_iter().map(|item| item.1).collect()
-    }
-
-    fn data_index_pairs(
-        element: SyntaxElement,
-        mut data: Vec<(usize, &str)>,
-    ) -> Vec<(usize, &str)> {
-        match element {
-            rowan::NodeOrToken::Node(node) => {
-                for child in node.children_with_tokens() {
-                    return Self::data_index_pairs(child, data);
-                }
-            }
-            rowan::NodeOrToken::Token(token) => data.push((token.index(), token.text())),
-        }
-        data
     }
 }
 
@@ -163,10 +123,6 @@ mod test {
         let parser = Parser::new(input);
         let ast = parser.parse();
 
-        if !ast.errors().is_empty() {
-            ast.pretty_print_errors();
-        }
-
         let doc = ast.document();
 
         for def in doc.definitions() {
@@ -181,11 +137,6 @@ mod test {
         let input = "directive @example(isTreat: Boolean, treatKind: String) on FIELD | MUTATION";
         let parser = Parser::new(input);
         let ast = parser.parse();
-
-        if !ast.errors().is_empty() {
-            ast.pretty_print_errors();
-        }
-
         let doc = ast.document();
 
         for def in doc.definitions() {

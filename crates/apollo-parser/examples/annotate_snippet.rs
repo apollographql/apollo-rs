@@ -1,3 +1,5 @@
+use std::{fs, path::Path};
+
 use annotate_snippets::{
     display_list::{DisplayList, FormatOptions},
     snippet::{Annotation, AnnotationType, Slice, Snippet, SourceAnnotation},
@@ -5,15 +7,17 @@ use annotate_snippets::{
 use apollo_parser::Parser;
 
 fn this_fails() {
-    let src = r#"
-    type Field {
-        field: * Cat
-    }
-    "#;
-    let parser = Parser::new(src);
+    let file = Path::new("crates/apollo-parser/examples/schema_with_errors.graphql");
+    let src = fs::read_to_string(file).expect("Could not read schema file.");
+    let file_name = file
+        .file_name()
+        .expect("Could not get file name.")
+        .to_str()
+        .expect("Could not get &str from file name.");
+    let parser = Parser::new(&src);
     let ast = parser.parse();
 
-    for err in ast.errors().into_iter().rev() {
+    for err in ast.errors().into_iter() {
         let snippet = Snippet {
             title: Some(Annotation {
                 label: Some(err.message()),
@@ -22,9 +26,9 @@ fn this_fails() {
             }),
             footer: vec![],
             slices: vec![Slice {
-                source: src,
+                source: &src,
                 line_start: 0,
-                origin: None,
+                origin: Some(file_name),
                 fold: false,
                 annotations: vec![SourceAnnotation {
                     label: err.message(),
