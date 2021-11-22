@@ -9,11 +9,11 @@ license = "MIT OR Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-miette = { version = "3.2.0", features = ["fancy"] }
 rowan = "0.13.0-pre.7"
-thiserror = "1.0.30"
 
 [dev-dependencies]
+miette = { version = "3.2.0", features = ["fancy"] }
+thiserror = "1.0.30"
 pretty_assertions = "0.7.1"
 annotate-snippets = "0.9.1"
 expect-test = "1.1"

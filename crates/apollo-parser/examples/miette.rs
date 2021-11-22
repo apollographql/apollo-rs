@@ -1,6 +1,6 @@
-use std::{env, fs, path::Path};
+use std::{fs, path::Path};
 
-use apollo_parser::{ast, Parser};
+use apollo_parser::Parser;
 use miette::{Diagnostic, NamedSource, Result, SourceSpan};
 use thiserror::Error;
 
