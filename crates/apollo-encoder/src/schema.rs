@@ -27,7 +27,7 @@ use crate::{
 /// assert_eq!(
 ///     schema.finish(),
 ///     indoc! { r#"
-///         """A union of all cats represented within a household."""
+///         "A union of all cats represented within a household."
 ///         union Cat = NORI | CHASHU
 ///     "# }
 /// );
@@ -208,7 +208,9 @@ mod tests {
             name: "FavouriteSpots".to_string(),
         };
         let mut input_value_2 = InputField::new("playSpot".to_string(), input_value_3);
-        input_value_2.description(Some("Best playime spots, e.g. tree, bed.".to_string()));
+        input_value_2.description(Some(
+            "Best playime spots, e.g. \"tree\", \"bed\".".to_string(),
+        ));
 
         let mut input_def = InputObjectDef::new("PlayTime".to_string());
         input_def.field(input_field);
@@ -218,31 +220,33 @@ mod tests {
         assert_eq!(
             schema.finish(),
             indoc! { r#"
-                """Ensures cats get treats."""
+                "Ensures cats get treats."
                 directive @provideTreat on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
                 schema {
                   query: TryingToFindCatQuery
                 }
-                """A union of all animals in a household."""
+                "A union of all animals in a household."
                 union Pet = Cat | Dog
                 type PetStoreTrip implements ShoppingTrip {
                   toys: [DanglerPoleToys] @deprecated(reason: "Cats are too spoiled")
-                  """Dry or wet food?"""
+                  "Dry or wet food?"
                   food: FoodType
                   catGrass: Boolean
                 }
-                """Favourite cat nap spots."""
+                "Favourite cat nap spots."
                 enum NapSpots {
-                  """Top bunk of a cat tree."""
+                  "Top bunk of a cat tree."
                   CAT_TREE
                   BED
                   CARDBOARD_BOX @deprecated(reason: "Box was recycled.")
                 }
-                """Int representing number of treats received."""
+                "Int representing number of treats received."
                 scalar NumberOfTreatsPerDay
                 input PlayTime {
                   toys: [DanglerPoleToys] = "Cat Dangler Pole Bird"
-                  """Best playime spots, e.g. tree, bed."""
+                  """
+                  Best playime spots, e.g. "tree", "bed".
+                  """
                   playSpot: FavouriteSpots
                 }
             "# }

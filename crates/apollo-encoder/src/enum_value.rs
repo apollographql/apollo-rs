@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::StringValue;
+
 /// The __EnumValue type represents one of possible values of an enum.
 ///
 /// *EnumValueDefinition*:
@@ -17,7 +19,7 @@ use std::fmt;
 ///
 /// assert_eq!(
 ///     enum_ty.to_string(),
-///     r#"  """Box nap spot."""
+///     r#"  "Box nap spot."
 ///   CARDBOARD_BOX @deprecated(reason: "Box was recycled.")"#
 /// );
 /// ```
@@ -26,11 +28,11 @@ pub struct EnumValue {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: Option<String>,
+    description: StringValue,
     // Deprecated returns true if this enum value should no longer be used, otherwise false.
     is_deprecated: bool,
     // Deprecation reason optionally provides a reason why this enum value is deprecated.
-    deprecation_reason: Option<String>,
+    deprecation_reason: StringValue,
 }
 
 impl EnumValue {
@@ -39,43 +41,36 @@ impl EnumValue {
         Self {
             name,
             is_deprecated: false,
-            description: None,
-            deprecation_reason: None,
+            description: StringValue::Field { source: None },
+            deprecation_reason: StringValue::Reason { source: None },
         }
     }
 
     /// Set the Enum Value's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = description;
+        self.description = StringValue::Field {
+            source: description,
+        };
     }
 
     /// Set the Enum Value's deprecation properties.
     pub fn deprecated(&mut self, reason: Option<String>) {
         self.is_deprecated = true;
-        self.deprecation_reason = reason;
+        self.deprecation_reason = StringValue::Reason { source: reason };
     }
 }
 
 impl fmt::Display for EnumValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(description) = &self.description {
-            // We are determing on whether to have description formatted as
-            // a multiline comment based on whether or not it already includes a
-            // \n.
-            match description.contains('\n') {
-                true => writeln!(f, "  \"\"\"\n  {}\n  \"\"\"", description)?,
-                false => writeln!(f, "  \"\"\"{}\"\"\"", description)?,
-            }
-        }
-
+        write!(f, "{}", self.description)?;
         write!(f, "  {}", self.name)?;
 
         if self.is_deprecated {
             write!(f, " @deprecated")?;
-            // Just in case deprecated directive is ever used without a reason,
-            // let's properly unwrap this Option.
-            if let Some(reason) = &self.deprecation_reason {
-                write!(f, "(reason: \"{}\")", reason)?;
+            if let StringValue::Reason { source: _ } = &self.deprecation_reason {
+                write!(f, "(reason:")?;
+                write!(f, "{}", self.deprecation_reason)?;
+                write!(f, ")")?
             }
         }
 
@@ -100,7 +95,7 @@ mod tests {
         enum_ty.description(Some("Top bunk of a cat tree.".to_string()));
         assert_eq!(
             enum_ty.to_string(),
-            r#"  """Top bunk of a cat tree."""
+            r#"  "Top bunk of a cat tree."
   CAT_TREE"#
         );
     }
@@ -114,9 +109,29 @@ mod tests {
             enum_ty.to_string(),
             r#"  """
   Box nap
-spot.
+  spot.
   """
   CARDBOARD_BOX @deprecated(reason: "Box was recycled.")"#
+        );
+    }
+
+    #[test]
+    fn it_encodes_an_enum_value_with_deprecated_block_string_value() {
+        let mut enum_ty = EnumValue::new("CARDBOARD_BOX".to_string());
+        enum_ty.description(Some("Box nap\nspot.".to_string()));
+        enum_ty.deprecated(Some("Box was \"recycled\".".to_string()));
+
+        assert_eq!(
+            enum_ty.to_string(),
+            r#"  """
+  Box nap
+  spot.
+  """
+  CARDBOARD_BOX @deprecated(reason:
+  """
+  Box was "recycled".
+  """
+  )"#
         );
     }
 }

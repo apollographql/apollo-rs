@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::Field;
+use crate::{Field, StringValue};
 
 /// InterfaceDefs are an abstract type where there are common fields declared.
 ///
@@ -8,8 +8,8 @@ use crate::Field;
 /// and types exactly matching. The implementations of this interface are
 /// explicitly listed out in possibleTypes.
 ///
-/// *InterfaceTypeDefinition*:
-///     Description<sub>opt</sub> **interface** Name ImplementsInterface<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition<sub>opt</sub>
+/// *InterfaceDefTypeDefinition*:
+///     Description<sub>opt</sub> **interface** Name ImplementsInterfaceDefs<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition<sub>opt</sub>
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-InterfaceDef).
 ///
@@ -46,7 +46,7 @@ use crate::Field;
 /// // a schema definition
 /// let mut interface = InterfaceDef::new("Meal".to_string());
 /// interface.description(Some(
-///     "Meal interface for various meals during the day.".to_string(),
+///     "Meal interface for various\nmeals during the day.".to_string(),
 /// ));
 /// interface.field(field_1);
 /// interface.field(field_2);
@@ -55,13 +55,16 @@ use crate::Field;
 /// assert_eq!(
 ///     interface.to_string(),
 ///     indoc! { r#"
-///     """Meal interface for various meals during the day."""
+///     """
+///     Meal interface for various
+///     meals during the day.
+///     """
 ///     interface Meal {
-///       """Cat's main dish of a meal."""
+///       "Cat's main dish of a meal."
 ///       main: String
-///       """Cat's post meal snack."""
+///       "Cat's post meal snack."
 ///       snack: [String!]!
-///       """Does cat get a pat after meal?"""
+///       "Does cat get a pat after meal?"
 ///       pats: Boolean
 ///     }
 ///     "# }
@@ -72,7 +75,7 @@ pub struct InterfaceDef {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: Option<String>,
+    description: StringValue,
     // The vector of interfaces that this interface implements.
     interfaces: Vec<String>,
     // The vector of fields required by this interface.
@@ -84,7 +87,7 @@ impl InterfaceDef {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: None,
+            description: StringValue::Top { source: None },
             fields: Vec::new(),
             interfaces: Vec::new(),
         }
@@ -92,7 +95,9 @@ impl InterfaceDef {
 
     /// Set the schema def's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = description
+        self.description = StringValue::Top {
+            source: description,
+        };
     }
 
     /// Set the interfaces ObjectDef implements.
@@ -108,15 +113,7 @@ impl InterfaceDef {
 
 impl fmt::Display for InterfaceDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(description) = &self.description {
-            // We are determing on whether to have description formatted as
-            // a multiline comment based on whether or not it already includes a
-            // \n.
-            match description.contains('\n') {
-                true => writeln!(f, "\"\"\"\n{}\n\"\"\"", description)?,
-                false => writeln!(f, "\"\"\"{}\"\"\"", description)?,
-            }
-        }
+        write!(f, "{}", self.description)?;
 
         write!(f, "interface {}", &self.name)?;
         for (i, interface) in self.interfaces.iter().enumerate() {
@@ -166,12 +163,12 @@ mod tests {
         field_2.description(Some("Cat's post meal snack.".to_string()));
 
         let mut field_3 = Field::new("pats".to_string(), ty_6);
-        field_3.description(Some("Does cat get a pat after meal?".to_string()));
+        field_3.description(Some("Does cat get a pat\nafter meal?".to_string()));
 
         // a schema definition
         let mut interface = InterfaceDef::new("Meal".to_string());
         interface.description(Some(
-            "Meal interface for various meals during the day.".to_string(),
+            "Meal interface for various\nmeals during the day.".to_string(),
         ));
         interface.field(field_1);
         interface.field(field_2);
@@ -180,13 +177,19 @@ mod tests {
         assert_eq!(
             interface.to_string(),
             indoc! { r#"
-            """Meal interface for various meals during the day."""
+            """
+            Meal interface for various
+            meals during the day.
+            """
             interface Meal {
-              """Cat's main dish of a meal."""
+              "Cat's main dish of a meal."
               main: String
-              """Cat's post meal snack."""
+              "Cat's post meal snack."
               snack: [String!]!
-              """Does cat get a pat after meal?"""
+              """
+              Does cat get a pat
+              after meal?
+              """
               pats: Boolean
             }
             "# }

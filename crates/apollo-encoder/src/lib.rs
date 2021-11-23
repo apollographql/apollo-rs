@@ -26,7 +26,7 @@
 //! enum_ty_3.deprecated(Some("Box was recycled.".to_string()));
 //!
 //! let mut enum_def = EnumDef::new("NapSpots".to_string());
-//! enum_def.description(Some("Favourite cat nap spots.".to_string()));
+//! enum_def.description(Some("Favourite cat\nnap spots.".to_string()));
 //! enum_def.value(enum_ty_1);
 //! enum_def.value(enum_ty_2);
 //! enum_def.value(enum_ty_3);
@@ -43,16 +43,19 @@
 //! assert_eq!(
 //!     schema.finish(),
 //!     indoc! { r#"
-//!         """Ensures cats get treats."""
+//!         "Ensures cats get treats."
 //!         directive @provideTreat on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
-//!         """Favourite cat nap spots."""
+//!         """
+//!         Favourite cat
+//!         nap spots.
+//!         """
 //!         enum NapSpots {
-//!           """Top bunk of a cat tree."""
+//!           "Top bunk of a cat tree."
 //!           CatTree
 //!           Bed
 //!           CardboardBox @deprecated(reason: "Box was recycled.")
 //!         }
-//!         """A union of all cats represented within a household."""
+//!         "A union of all cats represented within a household."
 //!         union Cat = NORI | CHASHU
 //!     "# }
 //! );
@@ -75,6 +78,7 @@ mod object_def;
 mod scalar_def;
 mod schema;
 mod schema_def;
+mod string_value;
 mod union_def;
 
 pub use directive_def::Directive;
@@ -90,4 +94,5 @@ pub use object_def::ObjectDef;
 pub use scalar_def::ScalarDef;
 pub use schema::Schema;
 pub use schema_def::SchemaDef;
+pub use string_value::StringValue;
 pub use union_def::UnionDef;

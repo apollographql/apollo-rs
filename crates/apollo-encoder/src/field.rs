@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{InputValue, Type_};
+use crate::{InputValue, StringValue, Type_};
 /// The __Field type represents each field in an Object or Interface type.
 ///
 /// *FieldDefinition*:
@@ -36,7 +36,7 @@ pub struct Field {
     // Name must return a String.
     name: String,
     // Description may return a String.
-    description: Option<String>,
+    description: StringValue,
     // Args returns a List of __InputValue representing the arguments this field accepts.
     args: Vec<InputValue>,
     // Type must return a __Type that represents the type of value returned by this field.
@@ -44,31 +44,33 @@ pub struct Field {
     // Deprecated returns true if this field should no longer be used, otherwise false.
     is_deprecated: bool,
     // Deprecation reason optionally provides a reason why this field is deprecated.
-    deprecation_reason: Option<String>,
+    deprecation_reason: StringValue,
 }
 
 impl Field {
     /// Create a new instance of Field.
     pub fn new(name: String, type_: Type_) -> Self {
         Self {
-            description: None,
+            description: StringValue::Field { source: None },
             name,
             type_,
             args: Vec::new(),
             is_deprecated: false,
-            deprecation_reason: None,
+            deprecation_reason: StringValue::Reason { source: None },
         }
     }
 
     /// Set the Field's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = description;
+        self.description = StringValue::Field {
+            source: description,
+        };
     }
 
     /// Set the Field's deprecation properties.
     pub fn deprecated(&mut self, reason: Option<String>) {
         self.is_deprecated = true;
-        self.deprecation_reason = reason;
+        self.deprecation_reason = StringValue::Reason { source: reason };
     }
 
     /// Set the Field's arguments.
@@ -79,19 +81,7 @@ impl Field {
 
 impl fmt::Display for Field {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(description) = &self.description {
-            // Let's indent description on a field level for now, as all fields
-            // are always on the same level and are indented by 2 spaces.
-            //
-            // We are also determing on whether to have description formatted as
-            // a multiline comment based on whether or not it already includes a
-            // \n.
-            match description.contains('\n') {
-                true => writeln!(f, "  \"\"\"\n  {}\n  \"\"\"", description)?,
-                false => writeln!(f, "  \"\"\"{}\"\"\"", description)?,
-            }
-        }
-
+        write!(f, "{}", self.description)?;
         write!(f, "  {}", self.name)?;
 
         if !self.args.is_empty() {
@@ -108,10 +98,11 @@ impl fmt::Display for Field {
 
         if self.is_deprecated {
             write!(f, " @deprecated")?;
-            // Just in case deprecated field is ever used without a reason,
-            // let's properly unwrap this Option.
-            if let Some(reason) = &self.deprecation_reason {
-                write!(f, "(reason: \"{}\")", reason)?;
+
+            if let StringValue::Reason { source: _ } = &self.deprecation_reason {
+                write!(f, "(reason:")?;
+                write!(f, "{}", self.deprecation_reason)?;
+                write!(f, ")")?
             }
         }
 
@@ -150,7 +141,7 @@ mod tests {
 
         assert_eq!(
             field.to_string(),
-            r#"  """Very good cats"""
+            r#"  "Very good cats"
   cat: [SpaceProgram] @deprecated(reason: "Cats are no longer sent to space.")"#
         );
     }
@@ -169,7 +160,7 @@ mod tests {
 
         assert_eq!(
             field.to_string(),
-            r#"  """Very good space cats"""
+            r#"  "Very good space cats"
   spaceCat: [SpaceProgram!]!"#
         );
     }
@@ -199,7 +190,7 @@ mod tests {
 
         assert_eq!(
             field.to_string(),
-            r#"  """Very good space cats"""
+            r#"  "Very good space cats"
   spaceCat(cat: [SpaceProgram] @deprecated(reason: "Cats are no longer sent to space.")): [SpaceProgram!]!"#
         );
     }

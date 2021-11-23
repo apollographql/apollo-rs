@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::EnumValue;
+use crate::{EnumValue, StringValue};
 
 /// Enums are special scalars that can only have a defined set of values.
 ///
@@ -27,9 +27,9 @@ use crate::EnumValue;
 ///
 /// assert_eq!(
 ///     enum_.to_string(),
-///     r#""""Favourite cat nap spots."""
+///     r#""Favourite cat nap spots."
 /// enum NapSpots {
-///   """Top bunk of a cat tree."""
+///   "Top bunk of a cat tree."
 ///   CAT_TREE
 ///   BED
 ///   CARDBOARD_BOX @deprecated(reason: "Box was recycled.")
@@ -42,7 +42,7 @@ pub struct EnumDef {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: Option<String>,
+    description: StringValue,
     // A vector of EnumValue. There must be at least one and they must have
     // unique names.
     values: Vec<EnumValue>,
@@ -53,14 +53,16 @@ impl EnumDef {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: None,
+            description: StringValue::Top { source: None },
             values: Vec::new(),
         }
     }
 
     /// Set the Enum Definition's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = description;
+        self.description = StringValue::Top {
+            source: description,
+        };
     }
 
     /// Set the Enum Definitions's values.
@@ -71,16 +73,7 @@ impl EnumDef {
 
 impl fmt::Display for EnumDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(description) = &self.description {
-            // We are determing on whether to have description formatted as
-            // a multiline comment based on whether or not it already includes a
-            // \n.
-            match description.contains('\n') {
-                true => writeln!(f, "\"\"\"\n{}\n\"\"\"", description)?,
-                false => writeln!(f, "\"\"\"{}\"\"\"", description)?,
-            }
-        }
-
+        write!(f, "{}", self.description)?;
         write!(f, "enum {} {{", self.name)?;
         for value in &self.values {
             write!(f, "\n{}", value)?;
@@ -131,9 +124,9 @@ mod tests {
 
         assert_eq!(
             enum_.to_string(),
-            r#""""Favourite cat nap spots."""
+            r#""Favourite cat nap spots."
 enum NapSpots {
-  """Top bunk of a cat tree."""
+  "Top bunk of a cat tree."
   CAT_TREE
   BED
   CARDBOARD_BOX @deprecated(reason: "Box was recycled.")

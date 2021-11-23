@@ -1,8 +1,10 @@
 use std::fmt;
 
+use crate::StringValue;
+
 /// UnionDefs are an abstract type where no common fields are declared.
 ///
-/// *UnionTypeDefinition*:
+/// *UnionDefTypeDefinition*:
 ///     Description<sub>opt</sub> **union** Name Directives<sub>\[Const\] opt</sub> UnionDefMemberTypes<sub>opt</sub>
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-UnionDef).
@@ -26,7 +28,7 @@ pub struct UnionDef {
     // Name must return a String.
     name: String,
     // Description may return a String.
-    description: Option<String>,
+    description: StringValue,
     // The vector of members that can be represented within this union.
     members: Vec<String>,
 }
@@ -36,14 +38,16 @@ impl UnionDef {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: None,
+            description: StringValue::Top { source: None },
             members: Vec::new(),
         }
     }
 
     /// Set the UnionDefs description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = description;
+        self.description = StringValue::Top {
+            source: description,
+        };
     }
 
     /// Set a UnionDef member.
@@ -54,15 +58,7 @@ impl UnionDef {
 
 impl fmt::Display for UnionDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(description) = &self.description {
-            // We are determing on whether to have description formatted as
-            // a multiline comment based on whether or not it already includes a
-            // \n.
-            match description.contains('\n') {
-                true => writeln!(f, "\"\"\"\n{}\n\"\"\"", description)?,
-                false => writeln!(f, "\"\"\"{}\"\"\"", description)?,
-            }
-        }
+        write!(f, "{}", self.description)?;
 
         write!(f, "union {} = ", self.name)?;
 
@@ -92,7 +88,7 @@ mod tests {
 
         assert_eq!(
             union_.to_string(),
-            r#""""A union of all animals in a household."""
+            r#""A union of all animals in a household."
 union Pet = Cat | Dog
 "#
         );

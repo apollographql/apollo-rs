@@ -1,4 +1,4 @@
-use std::fmt;
+use std::fmt::{self, Display};
 
 /// Convenience Type_ implementation used when creating a Field.
 /// Can be a `NamedType`, a `NonNull` or a `List`.
@@ -40,7 +40,7 @@ pub enum Type_ {
     },
 }
 
-impl fmt::Display for Type_ {
+impl Display for Type_ {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Type_::List { ty } => {

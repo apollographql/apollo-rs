@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::InputField;
+use crate::{InputField, StringValue};
 
 /// Input objects are composite types used as inputs into queries defined as a list of named input values..
 ///
@@ -39,10 +39,10 @@ use crate::InputField;
 /// assert_eq!(
 ///     input_def.to_string(),
 ///     indoc! { r#"
-///         """Cat playtime input"""
+///         "Cat playtime input"
 ///         input PlayTime {
 ///           toys: [DanglerPoleToys] = "Cat Dangler Pole Bird"
-///           """Best playime spots, e.g. tree, bed."""
+///           "Best playime spots, e.g. tree, bed."
 ///           playSpot: FavouriteSpots
 ///         }
 ///     "#}
@@ -53,7 +53,7 @@ pub struct InputObjectDef {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: Option<String>,
+    description: StringValue,
     // A vector of fields
     fields: Vec<InputField>,
 }
@@ -63,14 +63,16 @@ impl InputObjectDef {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: None,
+            description: StringValue::Top { source: None },
             fields: Vec::new(),
         }
     }
 
     /// Set the InputObjectDef's description field.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = description
+        self.description = StringValue::Top {
+            source: description,
+        };
     }
 
     /// Push a Field to InputObjectDef's fields vector.
@@ -81,15 +83,7 @@ impl InputObjectDef {
 
 impl fmt::Display for InputObjectDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(description) = &self.description {
-            // We are determing on whether to have description formatted as
-            // a multiline comment based on whether or not it already includes a
-            // \n.
-            match description.contains('\n') {
-                true => writeln!(f, "\"\"\"\n{}\n\"\"\"", description)?,
-                false => writeln!(f, "\"\"\"{}\"\"\"", description)?,
-            }
-        }
+        write!(f, "{}", self.description)?;
 
         write!(f, "input {} {{", &self.name)?;
 
@@ -131,7 +125,7 @@ mod tests {
             indoc! { r#"
                 input PlayTime {
                   toys: [DanglerPoleToys] = "Cat Dangler Pole Bird"
-                  """Best playime spots, e.g. tree, bed."""
+                  "Best playime spots, e.g. tree, bed."
                   playSpot: FavouriteSpots
                 }
             "#}
@@ -161,10 +155,10 @@ mod tests {
         assert_eq!(
             input_def.to_string(),
             indoc! { r#"
-                """Cat playtime input"""
+                "Cat playtime input"
                 input PlayTime {
                   toys: [DanglerPoleToys] = "Cat Dangler Pole Bird"
-                  """Best playime spots, e.g. tree, bed."""
+                  "Best playime spots, e.g. tree, bed."
                   playSpot: FavouriteSpots
                 }
             "#}

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::Field;
+use crate::{Field, StringValue};
 /// Object types represent concrete instantiations of sets of fields.
 ///
 /// The introspection types (e.g. `__Type`, `__Field`, etc) are examples of
@@ -45,7 +45,7 @@ use crate::Field;
 ///     indoc! { r#"
 ///         type PetStoreTrip implements ShoppingTrip {
 ///           toys: [DanglerPoleToys] @deprecated(reason: "Cats are too spoiled")
-///           """Dry or wet food?"""
+///           "Dry or wet food?"
 ///           food: FoodType
 ///           catGrass: Boolean
 ///         }
@@ -57,7 +57,7 @@ pub struct ObjectDef {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: Option<String>,
+    description: StringValue,
     // The vector of interfaces that an object implements.
     interfaces: Vec<String>,
     // The vector of fields query‐able on this type.
@@ -69,7 +69,7 @@ impl ObjectDef {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: None,
+            description: StringValue::Top { source: None },
             interfaces: Vec::new(),
             fields: Vec::new(),
         }
@@ -77,7 +77,9 @@ impl ObjectDef {
 
     /// Set the ObjectDef's description field.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = description
+        self.description = StringValue::Top {
+            source: description,
+        };
     }
 
     /// Set the interfaces ObjectDef implements.
@@ -93,15 +95,7 @@ impl ObjectDef {
 
 impl fmt::Display for ObjectDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(description) = &self.description {
-            // We are determing on whether to have description formatted as
-            // a multiline comment based on whether or not it already includes a
-            // \n.
-            match description.contains('\n') {
-                true => writeln!(f, "\"\"\"\n{}\n\"\"\"", description)?,
-                false => writeln!(f, "\"\"\"{}\"\"\"", description)?,
-            }
-        }
+        write!(f, "{}", self.description)?;
 
         write!(f, "type {}", &self.name)?;
         for (i, interface) in self.interfaces.iter().enumerate() {
@@ -142,9 +136,39 @@ mod tests {
         assert_eq!(
             object_def.to_string(),
             indoc! { r#"
-                """What to get at Fressnapf?"""
+                "What to get at Fressnapf?"
                 type PetStoreTrip {
                   toys: [DanglerPoleToys]
+                }
+            "#}
+        );
+    }
+
+    #[test]
+    fn it_encodes_object_with_field_directives() {
+        let ty_1 = Type_::NamedType {
+            name: "DanglerPoleToys".to_string(),
+        };
+
+        let mut field = Field::new("toys".to_string(), ty_1);
+        field.deprecated(Some(
+            "\"DanglerPoleToys\" are no longer interesting".to_string(),
+        ));
+
+        let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
+        object_def.field(field);
+        object_def.description(Some("What to get at Fressnapf?".to_string()));
+
+        assert_eq!(
+            object_def.to_string(),
+            indoc! { r#"
+                "What to get at Fressnapf?"
+                type PetStoreTrip {
+                  toys: DanglerPoleToys @deprecated(reason:
+                  """
+                  "DanglerPoleToys" are no longer interesting
+                  """
+                  )
                 }
             "#}
         );
@@ -174,16 +198,49 @@ mod tests {
         object_def.field(field);
         object_def.field(field_2);
         object_def.field(field_3);
+        object_def.description(Some("Shopping list for cats at the pet store.".to_string()));
         object_def.interface("ShoppingTrip".to_string());
 
         assert_eq!(
             object_def.to_string(),
             indoc! { r#"
+                "Shopping list for cats at the pet store."
                 type PetStoreTrip implements ShoppingTrip {
                   toys: [DanglerPoleToys] @deprecated(reason: "Cats are too spoiled")
-                  """Dry or wet food?"""
+                  "Dry or wet food?"
                   food: FoodType
                   catGrass: Boolean
+                }
+            "#}
+        );
+    }
+
+    #[test]
+    fn it_encodes_object_with_block_string_description() {
+        let ty_1 = Type_::NamedType {
+            name: "String".to_string(),
+        };
+
+        let mut field = Field::new("name".to_string(), ty_1);
+        field.description(Some("multiline\ndescription".to_string()));
+
+        let mut object_def = ObjectDef::new("Book".to_string());
+        object_def.field(field);
+        object_def.description(Some("Book Object\nType".to_string()));
+
+        assert_eq!(
+            object_def.to_string(),
+            indoc! { r#"
+                """
+                Book Object
+                Type
+                """
+                type Book {
+                  """
+                  multiline
+                  description
+                  """
+                  name: String
                 }
             "#}
         );

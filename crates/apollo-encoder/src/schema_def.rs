@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::StringValue;
+
 /// A GraphQL service’s collective type system capabilities are referred to as that service’s “schema”.
 ///
 /// *SchemaDefinition*:
@@ -32,7 +34,7 @@ use std::fmt;
 #[derive(Debug, Clone)]
 pub struct SchemaDef {
     // Description may be a String.
-    description: Option<String>,
+    description: StringValue,
     // The vector of fields in a schema to represent root operation type
     // definition.
     query: Option<String>,
@@ -44,7 +46,7 @@ impl SchemaDef {
     /// Create a new instance of SchemaDef.
     pub fn new() -> Self {
         Self {
-            description: None,
+            description: StringValue::Top { source: None },
             query: None,
             mutation: None,
             subscription: None,
@@ -53,7 +55,9 @@ impl SchemaDef {
 
     /// Set the SchemaDef's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = description
+        self.description = StringValue::Top {
+            source: description,
+        };
     }
 
     /// Set the schema def's query type.
@@ -80,15 +84,8 @@ impl Default for SchemaDef {
 
 impl fmt::Display for SchemaDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(description) = &self.description {
-            // We are determing on whether to have description formatted as
-            // a multiline comment based on whether or not it already includes a
-            // \n.
-            match description.contains('\n') {
-                true => writeln!(f, "\"\"\"\n{}\n\"\"\"", description)?,
-                false => writeln!(f, "\"\"\"{}\"\"\"", description)?,
-            }
-        }
+        write!(f, "{}", self.description)?;
+
         writeln!(f, "schema {{")?;
         if let Some(query) = &self.query {
             writeln!(f, "  query: {}", query)?;

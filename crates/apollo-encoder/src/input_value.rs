@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::Type_;
+use crate::{StringValue, Type_};
 
 // NOTE(@lrlna): __InputValue is also meant to be used for InputFields on an
 // InputObject. We currently do not differentiate between InputFields and
@@ -30,7 +30,7 @@ use crate::Type_;
 ///
 /// assert_eq!(
 ///     value.to_string(),
-///     r#""""Very good cats""" cat: [SpaceProgram] @deprecated(reason: "Cats are no longer sent to space.")"#
+///     r#""Very good cats" cat: [SpaceProgram] @deprecated(reason: "Cats are no longer sent to space.")"#
 /// );
 /// ```
 #[derive(Debug, PartialEq, Clone)]
@@ -38,7 +38,7 @@ pub struct InputValue {
     // Name must return a String.
     name: String,
     // Description may return a String.
-    description: Option<String>,
+    description: StringValue,
     // Type must return a __Type that represents the type this input value expects.
     type_: Type_,
     // Default may return a String encoding (using the GraphQL language) of
@@ -56,7 +56,7 @@ impl InputValue {
     /// Create a new instance of InputValue.
     pub fn new(name: String, type_: Type_) -> Self {
         Self {
-            description: None,
+            description: StringValue::Input { source: None },
             name,
             type_,
             is_deprecated: false,
@@ -67,7 +67,9 @@ impl InputValue {
 
     /// Set the InputValue's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = description;
+        self.description = StringValue::Input {
+            source: description,
+        };
     }
 
     /// Set the InputValue's default value.
@@ -84,15 +86,7 @@ impl InputValue {
 
 impl fmt::Display for InputValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(description) = &self.description {
-            // We are determing on whether to have description formatted as
-            // a multiline comment based on whether or not it already includes a
-            // \n.
-            match description.contains('\n') {
-                true => write!(f, "\"\"\"\n{}\n\"\"\" ", description)?,
-                false => write!(f, "\"\"\"{}\"\"\" ", description)?,
-            }
-        }
+        write!(f, "{}", self.description)?;
 
         write!(f, "{}: {}", self.name, self.type_)?;
 
@@ -160,7 +154,7 @@ mod tests {
 
         assert_eq!(
             value.to_string(),
-            r#""""Very good cats""" cat: [SpaceProgram] @deprecated(reason: "Cats are no longer sent to space.")"#
+            r#""Very good cats" cat: [SpaceProgram] @deprecated(reason: "Cats are no longer sent to space.")"#
         );
     }
 
@@ -178,7 +172,7 @@ mod tests {
 
         assert_eq!(
             value.to_string(),
-            r#""""Very good space cats""" spaceCat: [SpaceProgram!]!"#
+            r#""Very good space cats" spaceCat: [SpaceProgram!]!"#
         );
     }
 }

@@ -1,5 +1,6 @@
 use std::fmt;
 
+use crate::StringValue;
 /// Represents scalar types such as Int, String, and Boolean.
 /// Scalars cannot have fields.
 ///
@@ -18,7 +19,7 @@ use std::fmt;
 ///
 /// assert_eq!(
 ///     scalar.to_string(),
-///     r#""""Int representing number of treats received."""
+///     r#""Int representing number of treats received."
 /// scalar NumberOfTreatsPerDay
 /// "#
 /// );
@@ -28,7 +29,7 @@ pub struct ScalarDef {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: Option<String>,
+    description: StringValue,
 }
 
 impl ScalarDef {
@@ -36,28 +37,21 @@ impl ScalarDef {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: None,
+            description: StringValue::Top { source: None },
         }
     }
 
     /// Set the ScalarDef's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = description;
+        self.description = StringValue::Top {
+            source: description,
+        };
     }
 }
 
 impl fmt::Display for ScalarDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(description) = &self.description {
-            // We are determing on whether to have description formatted as
-            // a multiline comment based on whether or not it already includes a
-            // \n.
-            match description.contains('\n') {
-                true => writeln!(f, "\"\"\"\n{}\n\"\"\"", description)?,
-                false => writeln!(f, "\"\"\"{}\"\"\"", description)?,
-            }
-        }
-
+        write!(f, "{}", self.description)?;
         writeln!(f, "scalar {}", self.name)
     }
 }
@@ -86,7 +80,7 @@ mod tests {
 
         assert_eq!(
             scalar.to_string(),
-            r#""""Int representing number of treats received."""
+            r#""Int representing number of treats received."
 scalar NumberOfTreatsPerDay
 "#
         );
