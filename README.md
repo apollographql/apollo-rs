@@ -6,103 +6,59 @@
   </p>
 </div>
 
-## This repository is a work in progress, and we do not recommend to use it in production.
-Please check out the [ROADMAP](ROADMAP.md) for upcoming features we are working on building.
-
-If you do end up trying out `apollo-rs` and run into trouble, please feel free
-[to open an issue](https://github.com/apollographql/apollo-rs/issues/new/choose).
-
-# Tools included
+## Tools included
 
 This project is intended to house a number of tools related to the low-level
-workings of GraphQL according to the [GraphQL
-specification (draft)](https://spec.graphql.org/draft). Nothing in
+workings of GraphQL according to the [GraphQL specification]. Nothing in
 these libraries is specific to Apollo, and can freely be used by other
 projects which need standards-compliant GraphQL tooling written in Rust. The
 following crates currently exist:
 
-* [**`apollo-encoder`**](crates/apollo-encoder) - a library to generate GraphQL code.
-* [**`apollo-parser`**](crates/apollo-parser) - a library to parse the GraphQL
-  query language.
+* [**`apollo-encoder`**](crates/apollo-encoder) - a library to generate GraphQL code (SDL).
+* [**`apollo-parser`**](crates/apollo-parser) - a library to parse the GraphQL query language.
 
-# Parser
+Please check out their respective READMEs for usage examples.
 
-## Examples
+## Status
+`apollo-rs` is a work in progress. Please check out the
+[ROADMAP](ROADMAP.md) for upcoming features we are working on building.
 
-1. **An example to get field names**:
+If you do end up trying out `apollo-rs` and run into trouble, we encourage you 
+to open an [issue].
 
-```rust
-use apollo_parser::Parser;
-use apollo_parser::ast::{Definition, ObjectTypeDefinition};
+## Design Principles
+1. **Prioritizing developer experience.** Elegant and ergonomic APIs is the
+theme for Rust as a language, and we want to make sure that all component APIs
+we provide are aligned with these principles.
 
-let input = "
-type ProductDimension {
-  size: String
-  weight: Float @tag(name: \"hi from inventory value type field\")
-}
-";
-let parser = Parser::new(input);
-let ast = parser.parse();
-assert!(ast.errors().is_empty());
+2. **Stability and reliability.** Spec-compliant, and idempotent APIs which,
+when complete, can be used safely in enterprise-grade codebases.
 
-let doc = ast.document();
+3. **Diagnostics.** The tools are to be written in a way that will allow us to
+produce detailed diagnostics. It does not panic or return early if there is a
+lexical or a syntactic error. Instead, the parser is meant to gather as much
+context and information as possible and return errors alongside the output that
+is valid. Coincidentally, this allows for easily debuggable code for those
+maintaining this project.
 
-for def in doc.definitions() {
-    if let Definition::ObjectTypeDefinition(object_type) = def {
-        assert_eq!(object_type.name().unwrap().text(), "ProductDimension");
-        for field_def in object_type.fields_definition().unwrap().field_definitions() {
-            println!("{}", field_def.name().unwrap().text()); // size weight
-        }
-    }
-}
-```
+4. **Extensibility.** The parser is written to work with different use cases in
+our budding Rust GraphQL ecosystem, be it building schema-diagnostics for Rover,
+or writing out query planning and composition algorithms in Rust. These all have
+quite different requirements when it comes to AST manipulation. We wanted to
+make sure we account for them early on.
 
-2. **An example to get variables used in a query**:
-
-```rust
-use apollo_parser::{Parser};
-use apollo_parser::ast::{Definition, OperationDefinition};
-
-let input = "
-query GraphQuery($graph_id: ID!, $variant: String) {
-  service(id: $graph_id) {
-    schema(tag: $variant) {
-      document
-    }
-  }
-}
-";
-
-let parser = Parser::new(input);
-let ast = parser.parse();
-assert!(&ast.errors().is_empty());
-
-let doc = ast.document();
-
-for def in doc.definitions() {
-    if let Definition::OperationDefinition(op_def) = def {
-        assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
-
-        let variable_defs = op_def.variable_definitions();
-        let variables: Vec<String> = variable_defs
-            .iter()
-            .map(|v| v.variable_definitions())
-            .flatten()
-            .filter_map(|v| Some(v.variable()?.name()?.text().to_string()))
-            .collect();
-        assert_eq!(
-            variables.as_slice(),
-            ["graph_id".to_string(), "variant".to_string()]
-        );
-    }
-}
-```
-
-# License
-
+## License
 Licensed under either of
 
 - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or https://opensource.org/licenses/MIT)
 
 at your option.
+
+#### Contribution
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.
+
+[issue]: https://github.com/apollographql/apollo-rs/issues/new/choose
+[GraphQL specification]: https://spec.graphql.org/October2021
