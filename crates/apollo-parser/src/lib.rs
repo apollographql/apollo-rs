@@ -21,6 +21,8 @@
 //! * Typed GraphQL AST as per [October 2021 specification]
 //! * Error resilience
 //!   * lexing and parsing does not fail or `panic` if a lexical or a syntax error is found
+//! * The AST produced is lossless, meaning all ignored tokens like whitespace
+//! and commas are kept in the tree
 //! * GraphQL lexer
 //! * GraphQL parser
 //!

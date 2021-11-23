@@ -8,6 +8,7 @@ use std::fmt;
 /// We encourage you to check for the AST's errors before proceeding to iterate
 /// over the AST's nodes:
 ///
+/// ## Example
 /// ```rust
 /// use apollo_parser::Parser;
 ///
@@ -20,7 +21,6 @@ use std::fmt;
 ///
 ///     let doc = ast.document();
 /// }
-///
 /// ```
 ///
 /// `Error` struct does not at the moment implement `Display`. We encourage you

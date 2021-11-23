@@ -112,7 +112,7 @@ pub(crate) fn generate_kinds(kinds: KindsSrc<'_>) -> Result<String> {
             }
         }
 
-        /// Create a new `SyntaxKind`
+        /// Create a new `SyntaxKind`.
         #[macro_export]
         macro_rules! S {
             #([#punctuation_values] => { $crate::SyntaxKind::#punctuation };)*

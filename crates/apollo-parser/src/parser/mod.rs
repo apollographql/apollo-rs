@@ -17,7 +17,57 @@ pub(crate) use language::{GraphQLLanguage, SyntaxNode};
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
 pub(crate) use token_text::TokenText;
 
-/// Parse text into an AST.
+/// Parse GraphQL schemas or queries into a typed AST.
+///
+/// ## Example
+///
+/// The API to parse a query or a schema is the same, as the parser currently
+/// accepts a `&str`. Here is an example of parsing a query:
+/// ```rust
+/// use apollo_parser::Parser;
+///
+/// let query = "
+/// {
+///     animal
+///     ...snackSelection
+///     ... on Pet {
+///       playmates {
+///         count
+///       }
+///     }
+/// }
+/// ";
+/// // Create a new instance of a parser given a query above.
+/// let parser = Parser::new(query);
+/// // Parse the query, and return a SyntaxTree.
+/// let ast = parser.parse();
+/// // Check that are no errors. These are not part of the AST.
+/// assert!(&ast.errors().is_empty());
+///
+/// // Get the document root node
+/// let doc = ast.document();
+/// // ... continue
+/// ```
+///
+/// Here is how you'd parse a schema:
+/// ```rust
+/// let core_schema = r#"
+/// schema @core(feature: "https://specs.apollo.dev/join/v0.1") {
+///   query: Query
+///   mutation: Mutation
+/// }
+///
+/// enum join__Graph {
+///   ACCOUNTS @join__graph(name: "accounts")
+/// }
+/// "#;
+/// let parser = crate::Parser::new(core_schema);
+/// let ast = parser.parse();
+///
+/// assert!(ast.errors.is_empty());
+///
+/// let document = ast.document();
+/// ```
 #[derive(Debug)]
 pub struct Parser {
     /// Input tokens, including whitespace, in *reverse* order.
