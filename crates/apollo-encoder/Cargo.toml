@@ -1,26 +1,20 @@
 [package]
 name = "apollo-encoder"
+version = "0.1.0"
 authors = ["Irina Shestak <shestak.irina@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
 documentation = "https://docs.rs/apollo-encoder"
 description = "Library to serialise GraphQL Schemas."
-keywords = [
-    "graphql",
-    "schema",
-    "encoder",
-    "serializer",
-    "parser-implementations",
-]
+keywords = ["graphql", "schema", "encoder", "serializer", "apollographql"]
 categories = [
     "compilers",
     "encoding",
     "parser-implementations",
     "parsing",
-    "web-programming",
+    "development-tools",
 ]
 edition = "2021"
-version = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "0.7.1"
