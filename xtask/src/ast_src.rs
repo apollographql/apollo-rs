@@ -67,7 +67,7 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
     literals: &["INT", "FLOAT", "STRING"],
     tokens: &["IDENT", "WHITESPACE", "COMMENT"],
     // These are all the "DOCUMENT" items defined in the GraphQL spec --
-    // https://spec.graphql.org/draft/#sec-Appendix-Grammar-Summary.Document,
+    // https://spec.graphql.org/October2021/#sec-Appendix-Grammar-Summary.Document,
     // as well as items listed in the ungrammar file in the root directory.
     nodes: &[
         "NAME",

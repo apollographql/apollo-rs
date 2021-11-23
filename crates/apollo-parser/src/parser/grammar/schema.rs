@@ -3,10 +3,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// See: https://spec.graphql.org/draft/#SchemaDefinition
+/// See: https://spec.graphql.org/October2021/#SchemaDefinition
 ///
 /// *SchemaDefinition*:
-///     Description<sub>opt</sub> **schema** Directives<sub>\[Const\] opt</sub> **{** RootOperationTypeDefinition<sub>list</sub> **}**
+///     Description? **schema** Directives? **{** RootOperationTypeDefinition* **}**
 pub(crate) fn schema_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCHEMA_DEFINITION);
 
@@ -30,11 +30,11 @@ pub(crate) fn schema_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#SchemaExtension
+/// See: https://spec.graphql.org/October2021/#SchemaExtension
 ///
 /// *SchemaExtension*:
-///     **extend** **schema** Directives<sub>\[Const\] opt</sub> **{** RootOperationTypeDefinition<sub>list</sub> **}**
-///     **extend** **schema** Directives<sub>\[Const\]</sub>
+///     **extend** **schema** Directives? **{** RootOperationTypeDefinition* **}**
+///     **extend** **schema** Directives
 pub(crate) fn schema_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCHEMA_EXTENSION);
     p.bump(SyntaxKind::extend_KW);

@@ -9,9 +9,9 @@ use crate::{Field, StringValue};
 /// explicitly listed out in possibleTypes.
 ///
 /// *InterfaceDefTypeDefinition*:
-///     Description<sub>opt</sub> **interface** Name ImplementsInterfaceDefs<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition<sub>opt</sub>
+///     Description? **interface** Name ImplementsInterfaceDefs? Directives?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-InterfaceDef).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-InterfaceDef).
 ///
 /// ### Example
 /// ```rust

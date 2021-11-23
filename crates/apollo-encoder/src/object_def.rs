@@ -7,9 +7,9 @@ use crate::{Field, StringValue};
 /// objects.
 ///
 /// *ObjectTypeDefinition*:
-///     Description<sub>opt</sub> **type** Name ImplementsInterfaces<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition<sub>opt</sub>
+///     Description? **type** Name ImplementsInterfaces? Directives? FieldsDefinition?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-Object).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Object).
 ///
 /// ### Example
 /// ```rust

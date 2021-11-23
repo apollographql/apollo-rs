@@ -5,9 +5,9 @@ use crate::{InputField, StringValue};
 /// Input objects are composite types used as inputs into queries defined as a list of named input values..
 ///
 /// InputObjectTypeDefinition
-///     Description<sub>opt</sub> **input** Name Directives<sub>\[Const\] opt</sub> FieldsDefinition<sub>opt</sub>
+///     Description? **input** Name Directives? FieldsDefinition?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-Input-Objects).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Input-Objects).
 ///
 /// **Note**: At the moment InputObjectTypeDefinition differs slightly from the
 /// spec. Instead of accepting InputValues as `field` parameter, we accept

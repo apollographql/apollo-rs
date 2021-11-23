@@ -4,9 +4,9 @@ use crate::{InputValue, StringValue, Type_};
 /// The __Field type represents each field in an Object or Interface type.
 ///
 /// *FieldDefinition*:
-///     Description<sub>opt</sub> Name ArgumentsDefinition<sub>opt</sub> **:** TypeDirectives<sub>\[Const\] opt</sub>
+///     Description? Name ArgumentsDefinition? **:** TypeDirectives?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-The-__Field-Type).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-The-__Field-Type).
 ///
 /// ### Example
 /// ```rust

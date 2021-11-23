@@ -5,9 +5,9 @@ use crate::StringValue;
 /// A GraphQL service’s collective type system capabilities are referred to as that service’s “schema”.
 ///
 /// *SchemaDefinition*:
-///     Description<sub>opt</sub> **schema** Directives<sub>\[Const\] opt</sub> **{** RootOperationTypeDefinition<sub>list</sub> **}**
+///     Description? **schema** Directives? **{** RootOperationTypeDefinition* **}**
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-Schema).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Schema).
 ///
 /// ### Example
 /// ```rust

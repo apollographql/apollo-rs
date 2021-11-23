@@ -8,18 +8,18 @@ While this is a non-exhaustive list, current large features we are planning on b
     easily accessible information about queries, mutations, types and their
     subtypes, directives etc.
 
-    Validation will correspond to [#Validation part](https://spec.graphql.org/draft/#sec-Validation)
+    Validation will correspond to [#Validation part](https://spec.graphql.org/October2021/#sec-Validation)
     of the GraphQL spec. This feature allows us to have spec-correct queries and
     schemas.
 
 3. **Execution.**
-    Corresponds to [#Execution part](https://spec.graphql.org/draft/#sec-Execution)
+    Corresponds to [#Execution part](https://spec.graphql.org/October2021/#sec-Execution)
     of the GraphQL spec.  Execution has to be implemented after we implement
     validation and HIR. It will run on Operations, SelectionSets, Fields, and
     Requests.
 
 4. **Response shaping.**
-    Corresponds to [#Response part](https://spec.graphql.org/draft/#sec-Response)
+    Corresponds to [#Response part](https://spec.graphql.org/October2021/#sec-Response)
     of the GraphQL spec. This bit of work will be responsible for providing an
     API to shape a Response and its errors. It may be worked in parallel with
     Execution and can only be done after HIR and validation are completed.

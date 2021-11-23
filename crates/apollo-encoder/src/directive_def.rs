@@ -5,9 +5,9 @@ use crate::{InputValue, StringValue};
 /// The `__Directive` type represents a Directive that a service supports.
 ///
 /// *DirectiveDefinition*:
-///     Description<sub>opt</sub> **directive @** Name Arguments Definition<sub>opt</sub> **repeatable**<sub>opt</sub> **on** DirectiveLocations
+///     Description? **directive @** Name Arguments Definition? **repeatable**? **on** DirectiveLocations
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-Type-System.Directives).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Type-System.Directives).
 ///
 /// ### Example
 /// ```rust

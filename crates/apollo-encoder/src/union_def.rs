@@ -5,9 +5,9 @@ use crate::StringValue;
 /// UnionDefs are an abstract type where no common fields are declared.
 ///
 /// *UnionDefTypeDefinition*:
-///     Description<sub>opt</sub> **union** Name Directives<sub>\[Const\] opt</sub> UnionDefMemberTypes<sub>opt</sub>
+///     Description? **union** Name Directives? UnionDefMemberTypes?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-UnionDef).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-UnionDef).
 ///
 /// ### Example
 /// ```rust

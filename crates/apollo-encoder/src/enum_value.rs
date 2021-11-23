@@ -5,9 +5,9 @@ use crate::StringValue;
 /// The __EnumValue type represents one of possible values of an enum.
 ///
 /// *EnumValueDefinition*:
-///     Description<sub>opt</sub> EnumValue Directives<sub>\[Const\] opt </sub>
+///     Description? EnumValue Directives?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-The-__EnumValue-Type).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-The-__EnumValue-Type).
 ///
 /// ### Example
 /// ```rust

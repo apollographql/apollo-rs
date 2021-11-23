@@ -6,7 +6,7 @@ use crate::{
 /// RootOperationTypeDefinition is used in a SchemaDefinition. Not to be confused
 /// with OperationDefinition.
 ///
-/// See: https://spec.graphql.org/draft/#RootOperationTypeDefinition
+/// See: https://spec.graphql.org/October2021/#RootOperationTypeDefinition
 ///
 /// *RootOperationTypeDefinition*:
 ///    OperationType **:** NamedType
@@ -35,10 +35,10 @@ pub(crate) fn root_operation_type_definition(p: &mut Parser, is_operation_type: 
     }
 }
 
-/// See: https://spec.graphql.org/draft/#OperationDefinition
+/// See: https://spec.graphql.org/October2021/#OperationDefinition
 ///
 /// *OperationDefinition*:
-///    OperationType Name<sub>opt</sub> VariableDefinitions<sub>opt</sub> Directives<sub>opt</sub> SelectionSet
+///    OperationType Name? VariableDefinitions? Directives? SelectionSet
 ///    SelectionSet
 
 pub(crate) fn operation_definition(p: &mut Parser) {
@@ -69,7 +69,7 @@ pub(crate) fn operation_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#OperationType
+/// See: https://spec.graphql.org/October2021/#OperationType
 ///
 /// *OperationType*: one of
 ///    **query**    **mutation**    **subscription**

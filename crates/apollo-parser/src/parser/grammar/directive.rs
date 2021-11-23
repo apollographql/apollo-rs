@@ -3,10 +3,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// See: https://spec.graphql.org/draft/#DirectiveDefinition
+/// See: https://spec.graphql.org/October2021/#DirectiveDefinition
 ///
 /// *DirectiveDefinition*:
-///     Description<sub>opt</sub> **directive @** Name ArgumentsDefinition<sub>opt</sub> **repeatable**<sub>opt</sub> **on** DirectiveLocations
+///     Description? **directive @** Name ArgumentsDefinition? **repeatable**? **on** DirectiveLocations
 pub(crate) fn directive_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DIRECTIVE_DEFINITION);
 
@@ -52,11 +52,11 @@ pub(crate) fn directive_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#DirectiveLocations
+/// See: https://spec.graphql.org/October2021/#DirectiveLocations
 ///
 /// *DirectiveLocations*:
 ///     DirectiveLocations **|** DirectiveLocation
-///     **|**<sub>opt</sub> DirectiveLocation
+///     **|**? DirectiveLocation
 pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
     if let Some(T![|]) = p.peek() {
         p.bump(S![|]);
@@ -158,10 +158,10 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#Directive
+/// See: https://spec.graphql.org/October2021/#Directive
 ///
-/// *Directive*<sub>\[Const\]</sub>:
-///     **@** Name Arguments<sub>\[Const\] opt</sub>
+/// *Directive*:
+///     **@** Name Arguments?
 pub(crate) fn directive(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DIRECTIVE);
 
@@ -173,10 +173,10 @@ pub(crate) fn directive(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#Directives
+/// See: https://spec.graphql.org/October2021/#Directives
 ///
-/// *Directives*<sub>\[Const\]</sub>:
-///     Directive<sub>\[Const\] list</sub>
+/// *Directives*:
+///     Directive*
 pub(crate) fn directives(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DIRECTIVES);
     while let Some(T![@]) = p.peek() {

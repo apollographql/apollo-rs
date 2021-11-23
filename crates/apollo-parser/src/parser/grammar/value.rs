@@ -3,18 +3,18 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// See: https://spec.graphql.org/draft/#Value
+/// See: https://spec.graphql.org/October2021/#Value
 ///
-/// *Value*<sub>\[Const\]</sub>
-///     <sub>\[if not Const\]</sub> Variable
+/// *Value*
+///     Variable
 ///     IntValue
 ///     FloatValue
 ///     StringValue
 ///     BooleanValue
 ///     NullValue
 ///     EnumValue
-///     ListValue<sub>\[?Const\]</sub>
-///     ObjectValue<sub>\[?Const\]</sub>
+///     ListValue
+///     ObjectValue
 pub(crate) fn value(p: &mut Parser) {
     match p.peek() {
         Some(T![$]) => variable::variable(p),
@@ -53,7 +53,7 @@ pub(crate) fn value(p: &mut Parser) {
         _ => p.err("expected a valid Value"),
     }
 }
-/// See: https://spec.graphql.org/draft/#EnumValue
+/// See: https://spec.graphql.org/October2021/#EnumValue
 ///
 /// *EnumValue*:
 ///     Name *but not* **true** *or* **false** *or* **null**
@@ -68,11 +68,11 @@ pub(crate) fn enum_value(p: &mut Parser) {
     name::name(p);
 }
 
-/// See: https://spec.graphql.org/draft/#ListValue
+/// See: https://spec.graphql.org/October2021/#ListValue
 ///
-/// *ListValue*<sub>\[Const\]</sub>:
+/// *ListValue*:
 ///     **[** **]**
-///     **[** Value<sub>\[?Const\] list</sub> **]**
+///     **[** Value* **]**
 pub(crate) fn list_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::LIST_VALUE);
     p.bump(S!['[']);
@@ -87,11 +87,11 @@ pub(crate) fn list_value(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#ObjectValue
+/// See: https://spec.graphql.org/October2021/#ObjectValue
 ///
-/// *ObjectValue*<sub>\[Const\]</sub>:
+/// *ObjectValue*:
 ///     **{** **}**
-///     **{** ObjectField<sub>\[?Const\] list</sub> **}**
+///     **{** ObjectField* **}**
 pub(crate) fn object_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_VALUE);
     p.bump(S!['{']);
@@ -112,10 +112,10 @@ pub(crate) fn object_value(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#ObjectField
+/// See: https://spec.graphql.org/October2021/#ObjectField
 ///
-/// *ObjectField*<sub>\[Const\]</sub>:
-///     Name **:** Value<sub>\[?Const\]</sub>
+/// *ObjectField*:
+///     Name **:** Value
 pub(crate) fn object_field(p: &mut Parser) {
     if let Some(TokenKind::Name) = p.peek() {
         let guard = p.start_node(SyntaxKind::OBJECT_FIELD);
@@ -132,10 +132,10 @@ pub(crate) fn object_field(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#DefaultValue
+/// See: https://spec.graphql.org/October2021/#DefaultValue
 ///
 /// *DefaultValue*:
-///     **=** Value<sub>\[Const\]</sub>
+///     **=** Value
 pub(crate) fn default_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DEFAULT_VALUE);
     p.bump(S![=]);

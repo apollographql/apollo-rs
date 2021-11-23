@@ -3,10 +3,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind, T,
 };
 
-/// See: https://spec.graphql.org/draft/#InterfaceTypeDefinition
+/// See: https://spec.graphql.org/October2021/#InterfaceTypeDefinition
 ///
 /// *InterfaceTypeDefinition*:
-///     Description<sub>opt</sub> **interface** Name ImplementsInterface<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition<sub>opt</sub>
+///     Description? **interface** Name ImplementsInterface? Directives? FieldsDefinition?
 pub(crate) fn interface_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INTERFACE_TYPE_DEFINITION);
 
@@ -36,11 +36,11 @@ pub(crate) fn interface_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#InterfaceTypeExtension
+/// See: https://spec.graphql.org/October2021/#InterfaceTypeExtension
 ///
 /// *InterfaceTypeExtension*:
-///     **extend** **interface** Name ImplementsInterface<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition
-///     **extend** **interface** Name ImplementsInterface<sub>opt</sub> Directives
+///     **extend** **interface** Name ImplementsInterface? Directives? FieldsDefinition
+///     **extend** **interface** Name ImplementsInterface? Directives
 ///     **extend** **interface** Name ImplementsInterface
 pub(crate) fn interface_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INTERFACE_TYPE_EXTENSION);

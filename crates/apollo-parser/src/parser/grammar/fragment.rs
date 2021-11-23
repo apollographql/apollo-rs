@@ -3,10 +3,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// See: https://spec.graphql.org/draft/#FragmentDefinition
+/// See: https://spec.graphql.org/October2021/#FragmentDefinition
 ///
 /// *FragmentDefinition*:
-///     **fragment** FragmentName TypeCondition Directives<sub>opt</sub> SelectionSet
+///     **fragment** FragmentName TypeCondition Directives? SelectionSet
 pub(crate) fn fragment_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FRAGMENT_DEFINITION);
     p.bump(SyntaxKind::fragment_KW);
@@ -24,7 +24,7 @@ pub(crate) fn fragment_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#FragmentName
+/// See: https://spec.graphql.org/October2021/#FragmentName
 ///
 /// *FragmentName*:
 ///     Name *but not* **on**
@@ -41,7 +41,7 @@ pub(crate) fn fragment_name(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#TypeCondition
+/// See: https://spec.graphql.org/October2021/#TypeCondition
 ///
 /// *TypeCondition*:
 ///     **on** NamedType
@@ -60,10 +60,10 @@ pub(crate) fn type_condition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#InlineFragment
+/// See: https://spec.graphql.org/October2021/#InlineFragment
 ///
 /// *InlineFragment*:
-///     **...** TypeCondition<sub>opt</sub> Directives<sub>opt</sub> SelectionSet
+///     **...** TypeCondition? Directives? SelectionSet
 pub(crate) fn inline_fragment(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INLINE_FRAGMENT);
     p.bump(S![...]);
@@ -82,10 +82,10 @@ pub(crate) fn inline_fragment(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#FragmentSpread
+/// See: https://spec.graphql.org/October2021/#FragmentSpread
 ///
 /// *FragmentSpread*:
-///     **...** FragmentName Directives<sub>opt</sub>
+///     **...** FragmentName Directives?
 pub(crate) fn fragment_spread(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FRAGMENT_SPREAD);
     p.bump(S![...]);

@@ -3,10 +3,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// See: https://spec.graphql.org/draft/#ObjectTypeDefinition
+/// See: https://spec.graphql.org/October2021/#ObjectTypeDefinition
 ///
 /// *ObjectTypeDefinition*:
-///     Description<sub>opt</sub> **type** Name ImplementsInterfaces<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition<sub>opt</sub>
+///     Description? **type** Name ImplementsInterfaces? Directives? FieldsDefinition?
 pub(crate) fn object_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_TYPE_DEFINITION);
 
@@ -40,11 +40,11 @@ pub(crate) fn object_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#ObjectTypeExtension
+/// See: https://spec.graphql.org/October2021/#ObjectTypeExtension
 ///
 /// *ObjectTypeExtension*:
-///     **extend** **type** Name ImplementsInterfaces<sub>opt</sub> Directives<sub>\[Const\] opt</sub> FieldsDefinition
-///     **extend** **type** Name ImplementsInterfaces<sub>opt</sub> Directives<sub>\[Const\]</sub>
+///     **extend** **type** Name ImplementsInterfaces? Directives? FieldsDefinition
+///     **extend** **type** Name ImplementsInterfaces? Directives?
 ///     **extend** **type** Name ImplementsInterfaces
 pub(crate) fn object_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::OBJECT_TYPE_EXTENSION);
@@ -80,10 +80,10 @@ pub(crate) fn object_type_extension(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#ImplementsInterfaces
+/// See: https://spec.graphql.org/October2021/#ImplementsInterfaces
 ///
 /// *ImplementsInterfaces*:
-///     **implements** **&**<sub>opt</sub> NamedType
+///     **implements** **&**? NamedType
 ///     ImplementsInterfaces **&** NamedType
 pub(crate) fn implements_interfaces(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::IMPLEMENTS_INTERFACES);

@@ -3,10 +3,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// See: https://spec.graphql.org/draft/#VariableDefinitions
+/// See: https://spec.graphql.org/October2021/#VariableDefinitions
 ///
 /// *VariableDefinitions*:
-///     **(** VariableDefinition<sub>list</sub> **)**
+///     **(** VariableDefinition* **)**
 pub(crate) fn variable_definitions(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
     p.bump(S!['(']);
@@ -18,10 +18,10 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
     p.expect(T![')'], S![')']);
 }
 
-/// See: https://spec.graphql.org/draft/#VariableDefinition
+/// See: https://spec.graphql.org/October2021/#VariableDefinition
 ///
 /// *VariableDefinition*:
-///     Variable **:** Type DefaultValue<sub>opt</sub> Directives<sub>\[Const\] opt</sub>
+///     Variable **:** Type DefaultValue? Directives?
 pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
     if let Some(T![$]) = p.peek() {
         let guard = p.start_node(SyntaxKind::VARIABLE_DEFINITION);
@@ -53,7 +53,7 @@ pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#Variable
+/// See: https://spec.graphql.org/October2021/#Variable
 ///
 /// *Variable*:
 ///     **$** Name

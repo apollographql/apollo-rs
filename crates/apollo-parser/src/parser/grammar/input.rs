@@ -3,10 +3,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// See: https://spec.graphql.org/draft/#InputObjectTypeDefinition
+/// See: https://spec.graphql.org/October2021/#InputObjectTypeDefinition
 ///
 /// *InputObjectTypeDefinition*:
-///     Description<sub>opt</sub> **input** Name Directives<sub>\[Const\] opt</sub> InputFieldsDefinition<sub>opt</sub>
+///     Description? **input** Name Directives? InputFieldsDefinition?
 /// ```
 pub(crate) fn input_object_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INPUT_OBJECT_TYPE_DEFINITION);
@@ -33,11 +33,11 @@ pub(crate) fn input_object_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#InputObjectTypeExtension
+/// See: https://spec.graphql.org/October2021/#InputObjectTypeExtension
 ///
 /// *InputObjectTypeExtension*:
-///     **extend** **input** Name Directives<sub>\[Const\] opt</sub> InputFieldsDefinition
-///     **extend** **input** Name Directives<sub>\[Const\]</sub>
+///     **extend** **input** Name Directives? InputFieldsDefinition
+///     **extend** **input** Name Directives
 pub(crate) fn input_object_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INPUT_OBJECT_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
@@ -65,10 +65,10 @@ pub(crate) fn input_object_type_extension(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#InputFieldsDefinition
+/// See: https://spec.graphql.org/October2021/#InputFieldsDefinition
 ///
 /// *InputFieldsDefinition*:
-///     **{** InputValueDefinition<sub>list</sub> **}**
+///     **{** InputValueDefinition* **}**
 pub(crate) fn input_fields_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::INPUT_FIELDS_DEFINITION);
     p.bump(S!['{']);
@@ -76,10 +76,10 @@ pub(crate) fn input_fields_definition(p: &mut Parser) {
     p.expect(T!['}'], S!['}']);
 }
 
-/// See: https://spec.graphql.org/draft/#InputValueDefinition
+/// See: https://spec.graphql.org/October2021/#InputValueDefinition
 ///
 /// *InputValueDefinition*:
-///     Description<sub>opt</sub> Name **:** Type DefaultValue<sub>opt</sub> Directives<sub>\[Const\] opt</sub>
+///     Description? Name **:** Type DefaultValue? Directives?
 pub(crate) fn input_value_definition(p: &mut Parser, is_input: bool) {
     if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
         let guard = p.start_node(SyntaxKind::INPUT_VALUE_DEFINITION);

@@ -5,9 +5,9 @@ use crate::{EnumValue, StringValue};
 /// Enums are special scalars that can only have a defined set of values.
 ///
 /// *EnumTypeDefinition*:
-///     Description<sub>opt</sub> **enum** Name Directives<sub>\[Const\] opt</sub> EnumValuesDefinition <sub>opt</sub>
+///     Description? **enum** Name Directives? EnumValuesDefinition?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-Enums).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Enums).
 ///
 /// ### Example
 /// ```rust

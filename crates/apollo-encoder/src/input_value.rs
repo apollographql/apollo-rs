@@ -11,9 +11,9 @@ use crate::{StringValue, Type_};
 /// The __InputValue type represents field and directive arguments.
 ///
 /// *InputValueDefinition*:
-///     Description<sub>opt</sub> Name **:** Type DefaultValue<sub>opt</sub> Directives<sub>\[Const\] opt</sub>
+///     Description? Name **:** Type DefaultValue? Directives?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-The-__InputValue-Type).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-The-__InputValue-Type).
 ///
 /// ### Example
 /// ```rust

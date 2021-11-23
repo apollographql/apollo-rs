@@ -3,10 +3,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind, T,
 };
 
-/// See: https://spec.graphql.org/draft/#ScalarTypeDefinition
+/// See: https://spec.graphql.org/October2021/#ScalarTypeDefinition
 ///
 /// *ScalarTypeDefinition*:
-///     Description<sub>opt</sub> **scalar** Name Directives<sub>\[Const\] opt</sub>
+///     Description? **scalar** Name Directives?
 pub(crate) fn scalar_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCALAR_TYPE_DEFINITION);
 
@@ -28,10 +28,10 @@ pub(crate) fn scalar_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#ScalarTypeExtension
+/// See: https://spec.graphql.org/October2021/#ScalarTypeExtension
 ///
 /// *ScalarTypeExtension*:
-///     **extend** **scalar** Name Directives<sub>\[Const\]</sub>
+///     **extend** **scalar** Name Directives
 pub(crate) fn scalar_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::SCALAR_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);

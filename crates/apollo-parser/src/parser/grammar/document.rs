@@ -6,10 +6,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind,
 };
 
-/// See: https://spec.graphql.org/draft/#Document
+/// See: https://spec.graphql.org/October2021/#Document
 ///
 /// *Document*
-///     Definition<sub>list</sub>
+///     Definition*
 pub(crate) fn document(p: &mut Parser) {
     let doc = p.start_node(SyntaxKind::DOCUMENT);
 
@@ -177,5 +177,4 @@ enum join__Graph {
             }
         }
     }
-
 }

@@ -5,9 +5,9 @@ use crate::StringValue;
 /// Scalars cannot have fields.
 ///
 /// *ScalarTypeDefinition*:
-///     Description<sub>opt</sub> **scalar** Name Directives<sub>\[Const\]opt</sub>
+///     Description? **scalar** Name Directives?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/draft/#sec-Scalar).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Scalar).
 /// ### Example
 /// ```rust
 /// use apollo_encoder::ScalarDef;

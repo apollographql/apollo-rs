@@ -3,10 +3,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// See: https://spec.graphql.org/draft/#SelectionSet
+/// See: https://spec.graphql.org/October2021/#SelectionSet
 ///
 /// *SelectionSet*:
-///     **{** Selection<sub>list</sub> **}**
+///     **{** Selection* **}**
 pub(crate) fn selection_set(p: &mut Parser) {
     if let Some(T!['{']) = p.peek() {
         let _g = p.start_node(SyntaxKind::SELECTION_SET);
@@ -16,7 +16,7 @@ pub(crate) fn selection_set(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#Selection
+/// See: https://spec.graphql.org/October2021/#Selection
 ///
 /// *Selection*:
 ///     Field

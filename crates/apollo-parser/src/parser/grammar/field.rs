@@ -3,10 +3,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// See: https://spec.graphql.org/draft/#Field
+/// See: https://spec.graphql.org/October2021/#Field
 ///
 /// *Field*:
-///     Alias<sub>opt</sub> Name Arguments<sub>opt</sub> Directives<sub>opt</sub> SelectionSet<sub>opt</sub>
+///     Alias? Name Arguments? Directives? SelectionSet?
 pub(crate) fn field(p: &mut Parser) {
     let guard = p.start_node(SyntaxKind::FIELD);
 
@@ -44,10 +44,10 @@ pub(crate) fn field(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#FieldsDefinition
+/// See: https://spec.graphql.org/October2021/#FieldsDefinition
 ///
 /// *FieldsDefinition*:
-///     **{** FieldDefinition<sub>list</sub> **}**
+///     **{** FieldDefinition* **}**
 pub(crate) fn fields_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FIELDS_DEFINITION);
     p.bump(S!['{']);
@@ -55,10 +55,10 @@ pub(crate) fn fields_definition(p: &mut Parser) {
     p.expect(T!['}'], S!['}']);
 }
 
-/// See: https://spec.graphql.org/draft/#FieldDefinition
+/// See: https://spec.graphql.org/October2021/#FieldDefinition
 ///
 /// *FieldDefinition*:
-///     Description<sub>opt</sub> Name ArgumentsDefinition<sub>opt</sub> **:** Type Directives<sub>\[Const\] opt</sub>
+///     Description? Name ArgumentsDefinition? **:** Type Directives?
 pub(crate) fn field_definition(p: &mut Parser) {
     if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
         let guard = p.start_node(SyntaxKind::FIELD_DEFINITION);

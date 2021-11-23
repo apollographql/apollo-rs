@@ -3,10 +3,10 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// See: https://spec.graphql.org/draft/#EnumTypeDefinition
+/// See: https://spec.graphql.org/October2021/#EnumTypeDefinition
 ///
 /// *EnumTypeDefinition*:
-///     Description<sub>opt</sub> **enum** Name Directives<sub>\[Const\] opt</sub> EnumValuesDefinition <sub>opt</sub>
+///     Description? **enum** Name Directives? EnumValuesDefinition?
 pub(crate) fn enum_type_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_TYPE_DEFINITION);
 
@@ -32,11 +32,11 @@ pub(crate) fn enum_type_definition(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#EnumTypeExtension
+/// See: https://spec.graphql.org/October2021/#EnumTypeExtension
 ///
 // *EnumTypeExtension*:
-///    **extend** **enum** Name Directives<sub>\[Const\] opt</sub> EnumValuesDefinition
-///    **extend** **enum** Name Directives<sub>\[Const\]</sub>
+///    **extend** **enum** Name Directives? EnumValuesDefinition
+///    **extend** **enum** Name Directives?
 pub(crate) fn enum_type_extension(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_TYPE_EXTENSION);
     p.bump(SyntaxKind::extend_KW);
@@ -64,10 +64,10 @@ pub(crate) fn enum_type_extension(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#EnumValuesDefinition
+/// See: https://spec.graphql.org/October2021/#EnumValuesDefinition
 ///
 /// *EnumValuesDefinition*:
-///     **{** EnumValueDefinition<sub>list</sub> **}**
+///     **{** EnumValueDefinition* **}**
 pub(crate) fn enum_values_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::ENUM_VALUES_DEFINITION);
     p.bump(S!['{']);
@@ -80,10 +80,10 @@ pub(crate) fn enum_values_definition(p: &mut Parser) {
     p.expect(T!['}'], S!['}']);
 }
 
-/// See: https://spec.graphql.org/draft/#EnumValueDefinition
+/// See: https://spec.graphql.org/October2021/#EnumValueDefinition
 ///
 /// *EnumValueDefinition*:
-///     Description<sub>opt</sub> EnumValue Directives<sub>\[Const\] opt</sub>
+///     Description? EnumValue Directives?
 pub(crate) fn enum_value_definition(p: &mut Parser) {
     if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
         let guard = p.start_node(SyntaxKind::ENUM_VALUE_DEFINITION);

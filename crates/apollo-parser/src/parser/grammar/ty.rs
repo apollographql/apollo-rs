@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use crate::{parser::grammar::name, Parser, SyntaxKind, Token, TokenKind, S, T};
 
-/// See: https://spec.graphql.org/draft/#InputValueDefinition
+/// See: https://spec.graphql.org/October2021/#InputValueDefinition
 ///
 /// *Type*:
 ///     NamedType
@@ -91,7 +91,7 @@ pub(crate) fn ty(p: &mut Parser) {
     }
 }
 
-/// See: https://spec.graphql.org/draft/#NamedType
+/// See: https://spec.graphql.org/October2021/#NamedType
 ///
 /// *NamedType*:
 ///     Name
