@@ -51,6 +51,7 @@ pub(crate) use token_text::TokenText;
 ///
 /// Here is how you'd parse a schema:
 /// ```rust
+/// use apollo_parser::Parser;
 /// let core_schema = r#"
 /// schema @core(feature: "https://specs.apollo.dev/join/v0.1") {
 ///   query: Query
@@ -61,10 +62,10 @@ pub(crate) use token_text::TokenText;
 ///   ACCOUNTS @join__graph(name: "accounts")
 /// }
 /// "#;
-/// let parser = crate::Parser::new(core_schema);
+/// let parser = Parser::new(core_schema);
 /// let ast = parser.parse();
 ///
-/// assert!(ast.errors.is_empty());
+/// assert!(ast.errors().is_empty());
 ///
 /// let document = ast.document();
 /// ```
