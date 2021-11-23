@@ -12,15 +12,13 @@ use std::fmt;
 /// ```rust
 /// use apollo_parser::Parser;
 ///
-/// fn main() {
-///     let input = "union SearchResult = Photo | Person | Cat | Dog";
-///     let parser = Parser::new(input);
-///     let ast = parser.parse();
+/// let input = "union SearchResult = Photo | Person | Cat | Dog";
+/// let parser = Parser::new(input);
+/// let ast = parser.parse();
 ///
-///     assert!(ast.errors().is_empty());
+/// assert!(ast.errors().is_empty());
 ///
-///     let doc = ast.document();
-/// }
+/// let doc = ast.document();
 /// ```
 ///
 /// `Error` struct does not at the moment implement `Display`. We encourage you

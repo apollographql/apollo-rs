@@ -1,3 +1,7 @@
+// This lint is here as we don't really need users to convert String/i64/f64
+// into an AST Node. Should this change, we can remove this lint again.
+#![allow(clippy::from_over_into)]
+
 use crate::{ast, ast::AstNode, SyntaxNode, TokenText};
 
 impl ast::Name {

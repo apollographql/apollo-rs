@@ -47,11 +47,9 @@
 //! ```rust
 //! use apollo_parser::Parser;
 //!
-//! fn main() {
-//!     let input = "union SearchResult = Photo | Person | Cat | Dog";
-//!     let parser = Parser::new(input);
-//!     let ast = parser.parse();
-//! }
+//! let input = "union SearchResult = Photo | Person | Cat | Dog";
+//! let parser = Parser::new(input);
+//! let ast = parser.parse();
 //! ```
 //!
 //! `apollo-parser` is built to be error-resilient. This means we don't abort parsing (or lexing) if an error occurs. That means `parser.parse()` will always produce an AST, and it will be accompanied by any errors that are encountered:
@@ -59,18 +57,16 @@
 //! ```rust
 //! use apollo_parser::Parser;
 //!
-//! fn main() {
-//!     let input = "union SearchResult = Photo | Person | Cat | Dog";
-//!     let parser = Parser::new(input);
-//!     let ast = parser.parse();
+//! let input = "union SearchResult = Photo | Person | Cat | Dog";
+//! let parser = Parser::new(input);
+//! let ast = parser.parse();
 //!
-//!     // ast.errors() returns an errors slice encountered during lexing and parsing
-//!     assert!(ast.errors().is_empty());
+//! // ast.errors() returns an errors slice encountered during lexing and parsing
+//! assert!(ast.errors().is_empty());
 //!
-//!     // ast.document() get the Document, or root node, of the tree that you can
-//!     // start iterating on.
-//!     let doc = ast.document();
-//! }
+//! // ast.document() get the Document, or root node, of the tree that you can
+//! // start iterating on.
+//! let doc = ast.document();
 //! ```
 //!
 //! ### Examples
@@ -90,25 +86,23 @@
 //! ```rust
 //! use apollo_parser::{ast, Parser};
 //!
-//! fn main() {
-//!     let input = "
-//!     type ProductDimension {
-//!       size: String
-//!       weight: Float @tag(name: \"hi from inventory value type field\")
-//!     }
-//!     ";
-//!     let parser = Parser::new(input);
-//!     let ast = parser.parse();
-//!     assert!(ast.errors().is_empty());
-//!   
-//!     let doc = ast.document();
-//!   
-//!     for def in doc.definitions() {
-//!         if let ast::Definition::ObjectTypeDefinition(object_type) = def {
-//!             assert_eq!(object_type.name().unwrap().text(), "ProductDimension");
-//!             for field_def in object_type.fields_definition().unwrap().field_definitions() {
-//!                 println!("{}", field_def.name().unwrap().text()); // size weight
-//!             }
+//! let input = "
+//! type ProductDimension {
+//!   size: String
+//!   weight: Float @tag(name: \"hi from inventory value type field\")
+//! }
+//! ";
+//! let parser = Parser::new(input);
+//! let ast = parser.parse();
+//! assert!(ast.errors().is_empty());
+//!
+//! let doc = ast.document();
+//!
+//! for def in doc.definitions() {
+//!     if let ast::Definition::ObjectTypeDefinition(object_type) = def {
+//!         assert_eq!(object_type.name().unwrap().text(), "ProductDimension");
+//!         for field_def in object_type.fields_definition().unwrap().field_definitions() {
+//!             println!("{}", field_def.name().unwrap().text()); // size weight
 //!         }
 //!     }
 //! }
@@ -119,39 +113,37 @@
 //! ```rust
 //! use apollo_parser::{ast, Parser};
 //!
-//! fn main() {
-//!     let input = "
-//!     query GraphQuery($graph_id: ID!, $variant: String) {
-//!       service(id: $graph_id) {
-//!         schema(tag: $variant) {
-//!           document
-//!         }
-//!       }
+//! let input = "
+//! query GraphQuery($graph_id: ID!, $variant: String) {
+//!   service(id: $graph_id) {
+//!     schema(tag: $variant) {
+//!       document
 //!     }
-//!     ";
-//!     
-//!     let parser = Parser::new(input);
-//!     let ast = parser.parse();
-//!     assert!(&ast.errors().is_empty());
-//!     
-//!     let doc = ast.document();
-//!     
-//!     for def in doc.definitions() {
-//!         if let ast::Definition::OperationDefinition(op_def) = def {
-//!             assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
-//!     
-//!             let variable_defs = op_def.variable_definitions();
-//!             let variables: Vec<String> = variable_defs
-//!                 .iter()
-//!                 .map(|v| v.variable_definitions())
-//!                 .flatten()
-//!                 .filter_map(|v| Some(v.variable()?.text().to_string()))
-//!                 .collect();
-//!             assert_eq!(
-//!                 variables.as_slice(),
-//!                 ["graph_id".to_string(), "variant".to_string()]
-//!             );
-//!         }
+//!   }
+//! }
+//! ";
+//!
+//! let parser = Parser::new(input);
+//! let ast = parser.parse();
+//! assert!(&ast.errors().is_empty());
+//!
+//! let doc = ast.document();
+//!
+//! for def in doc.definitions() {
+//!     if let ast::Definition::OperationDefinition(op_def) = def {
+//!         assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
+//!
+//!         let variable_defs = op_def.variable_definitions();
+//!         let variables: Vec<String> = variable_defs
+//!             .iter()
+//!             .map(|v| v.variable_definitions())
+//!             .flatten()
+//!             .filter_map(|v| Some(v.variable()?.text().to_string()))
+//!             .collect();
+//!         assert_eq!(
+//!             variables.as_slice(),
+//!             ["graph_id".to_string(), "variant".to_string()]
+//!         );
 //!     }
 //! }
 //! ```

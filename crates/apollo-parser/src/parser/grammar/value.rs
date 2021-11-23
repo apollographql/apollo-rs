@@ -126,7 +126,7 @@ pub(crate) fn object_field(p: &mut Parser) {
             value(p);
             if p.peek().is_some() {
                 guard.finish_node();
-                return object_field(p);
+                object_field(p)
             }
         }
     }

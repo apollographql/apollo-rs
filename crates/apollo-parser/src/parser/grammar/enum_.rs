@@ -1,3 +1,5 @@
+#![allow(clippy::needless_return)]
+
 use crate::{
     parser::grammar::{description, directive, name, value},
     Parser, SyntaxKind, TokenKind, S, T,
