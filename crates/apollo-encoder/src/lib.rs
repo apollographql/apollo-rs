@@ -1,7 +1,37 @@
-//! Apollo Encoder provides methods to serialise a GraphQL Schema.
+//! <div align="center">
+//!   <h1><code>apollo-encoder</code></h1>
 //!
-//! For mor information on GraphQL Schema Types, please refer to [official
+//!   <p>
+//!     <strong>A library to generate GraphQL Code, SDL.</strong>
+//!   </p>
+//!   <p>
+//!     <a href="https://crates.io/crates/apollo-encoder">
+//!         <img src="https://img.shields.io/crates/v/apollo-encoder.svg?style=flat-square" alt="Crates.io version badge" />
+//!     </a>
+//!     <a href="https://crates.io/crates/apollo-encoder">
+//!         <img src="https://img.shields.io/crates/d/apollo-encoder.svg?style=flat-square" alt="Download badge" />
+//!     </a>
+//!     <a href="https://docs.rs/apollo-encoder/">
+//!         <img src="https://img.shields.io/static/v1?label=docs&message=apollo-encoder&color=blue&style=flat-square" alt="docs.rs docs badge" />
+//!     </a>
+//!   </p>
+//! </div>
+//!
+//! For more information on GraphQL Schema Types, please refer to [official
 //! documentation](https://graphql.org/learn/schema/).
+//!
+//! ## Getting started
+//! Add this to your `Cargo.toml` to start using `apollo-encoder`:
+//! ```toml
+//! # Just an example, change to the necessary package version.
+//! [dependencies]
+//! apollo_encoder = "0.1.0"
+//! ```
+//!
+//! Or using [cargo-edit]:
+//! ```bash
+//! cargo add apollo_encoder
+//! ```
 //!
 //! ## Example
 //! ```rust
@@ -60,6 +90,23 @@
 //!     "# }
 //! );
 //! ```
+//!
+//! ## License
+//! Licensed under either of
+//!
+//! - Apache License, Version 2.0 ([LICENSE-APACHE] or <https://www.apache.org/licenses/LICENSE-2.0>)
+//! - MIT license ([LICENSE-MIT] or <https://opensource.org/licenses/MIT>)
+//!
+//! at your option.
+//!
+//! #### Contribution
+//! Unless you explicitly state otherwise, any contribution intentionally submitted
+//! for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
+//! dual licensed as above, without any additional terms or conditions.
+//!
+//! [cargo-edit]: https://github.com/killercup/cargo-edit
+//! [LICENSE-APACHE]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/LICENSE-APACHE
+//! [LICENSE-MIT]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/LICENSE-MIT
 
 #![forbid(unsafe_code)]
 #![deny(missing_debug_implementations, nonstandard_style)]

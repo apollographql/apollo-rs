@@ -155,6 +155,18 @@
 //!     }
 //! }
 //! ```
+//! ## License
+//! Licensed under either of
+//!
+//! - Apache License, Version 2.0 ([LICENSE-APACHE] or <https://www.apache.org/licenses/LICENSE-2.0>)
+//! - MIT license ([LICENSE-MIT] or <https://opensource.org/licenses/MIT>)
+//!
+//! at your option.
+//!
+//! #### Contribution
+//! Unless you explicitly state otherwise, any contribution intentionally submitted
+//! for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
+//! dual licensed as above, without any additional terms or conditions.
 //!
 //! [cargo-edit]: https://github.com/killercup/cargo-edit
 //! [apollo-rs: spec-compliant GraphQL Tools in Rust]: https://www.apollographql.com/blog/announcement/tooling/apollo-rs-graphql-tools-in-rust/
@@ -165,6 +177,8 @@
 //! [using apollo-rs with annotate_snippets to display error diagnostics]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/examples/annotate_snippet.rs
 //! [checking for unused variables]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/examples/unused_vars.rs
 //! [October 2021 specification]: https://spec.graphql.org/October2021
+//! [LICENSE-APACHE]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/LICENSE-APACHE
+//! [LICENSE-MIT]:https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/LICENSE-MIT
 
 mod lexer;
 #[cfg(test)]
