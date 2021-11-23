@@ -1,6 +1,6 @@
 use std::fmt;
 
-/// An `Error` type for operations performed in this crate.
+/// An `Error` type for operations performed in the lexer and the parser.
 #[derive(PartialEq, Eq, Clone)]
 pub struct Error {
     pub(crate) message: String,

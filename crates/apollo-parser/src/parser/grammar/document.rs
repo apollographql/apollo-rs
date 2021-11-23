@@ -109,6 +109,85 @@ uasdf21230jkdw
     }
 
     #[test]
+    fn it_accesses_definition_names() {
+        let schema = r#"
+directive @tag(name: String!) repeatable on FIELD_DEFINITION
+
+type ProductVariation {
+  id: ID!
+}
+scalar UUID @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")
+
+union SearchResult = Photo | Person
+
+extend type Query {
+  allProducts: [Product]
+  product(id: ID!): Product
+}
+        "#;
+        let parser = crate::Parser::new(schema);
+        let ast = parser.parse();
+
+        assert!(ast.errors.is_empty());
+        let document = ast.document();
+        for definition in document.definitions() {
+            match definition {
+                ast::Definition::DirectiveDefinition(directive) => {
+                    assert_eq!(
+                        directive
+                            .name()
+                            .expect("Cannot get directive name.")
+                            .text()
+                            .as_ref(),
+                        "tag"
+                    )
+                }
+                ast::Definition::ObjectTypeDefinition(object_type) => {
+                    assert_eq!(
+                        object_type
+                            .name()
+                            .expect("Cannot get object type definition name.")
+                            .text()
+                            .as_ref(),
+                        "ProductVariation"
+                    )
+                }
+                ast::Definition::UnionTypeDefinition(union_type) => {
+                    assert_eq!(
+                        union_type
+                            .name()
+                            .expect("Cannot get union type definition name.")
+                            .text()
+                            .as_ref(),
+                        "SearchResult"
+                    )
+                }
+                ast::Definition::ScalarTypeDefinition(scalar_type) => {
+                    assert_eq!(
+                        scalar_type
+                            .name()
+                            .expect("Cannot get scalar type definition name.")
+                            .text()
+                            .as_ref(),
+                        "UUID"
+                    )
+                }
+                ast::Definition::ObjectTypeExtension(object_type) => {
+                    assert_eq!(
+                        object_type
+                            .name()
+                            .expect("Cannot get object type extension name.")
+                            .text()
+                            .as_ref(),
+                        "Query"
+                    )
+                }
+                _ => unimplemented!(),
+            }
+        }
+    }
+
+    #[test]
     fn core_schema() {
         let schema = r#"
 schema @core(feature: "https://specs.apollo.dev/join/v0.1") {

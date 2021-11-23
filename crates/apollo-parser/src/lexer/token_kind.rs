@@ -41,6 +41,7 @@ pub enum TokenKind {
     Float,
 }
 
+/// Create a new `TokenKind`.
 #[macro_export]
 macro_rules! T {
     [!] => { $ crate :: TokenKind :: Bang } ;

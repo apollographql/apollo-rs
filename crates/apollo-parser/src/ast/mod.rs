@@ -1,3 +1,107 @@
+//! Typed AST module to access nodes in the tree.
+//!
+//! The nodes described here are those also described in the [GraphQL grammar],
+//! with a few exceptions. For example, for easy of querying the AST we do not
+//! separate `Definition` into `ExecutableDefinition` and
+//! `TypeSystemDefinitionOrExtension`. Instead, all possible definitions and
+//! extensions can be accessed with `Definition`.
+//!
+//! Each struct in this module has getter methods to access information that's
+//! part of its node. For example, as per spec a `UnionTypeDefinition` is defined as follows:
+//!
+//! ```ungram
+//! UnionTypeDefinition =
+//!   Description? 'union' Name Directives? UnionMemberTypes?
+//! ```
+//!
+//! It will then have getters for `Description`, union token, `Name`,
+//! `Directives` and `UnionMemberTypes`. Checkout documentation for the Struct
+//! you're working with to find out its exact API.
+//!
+//! ## Example
+//! This example parses a subgraph schema and looks at the various Definition Names.
+//!
+//! ```rust
+//! use apollo_parser::{ast, Parser};
+//!
+//! let schema = r#"
+//! directive @tag(name: String!) repeatable on FIELD_DEFINITION
+//!
+//! type ProductVariation {
+//!   id: ID!
+//! }
+//! scalar UUID @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")
+//!
+//! union SearchResult = Photo | Person
+//!
+//! extend type Query {
+//!   allProducts: [Product]
+//!   product(id: ID!): Product
+//! }
+//! "#;
+//! let parser = crate::Parser::new(schema);
+//! let ast = parser.parse();
+//!
+//! assert!(ast.errors.is_empty());
+//! let document = ast.document();
+//! for definition in document.definitions() {
+//!     match definition {
+//!         ast::Definition::DirectiveDefinition(directive) => {
+//!             assert_eq!(
+//!                 directive
+//!                     .name()
+//!                     .expect("Cannot get directive name.")
+//!                     .text()
+//!                     .as_ref(),
+//!                 "tag"
+//!             )
+//!         }
+//!         ast::Definition::ObjectTypeDefinition(object_type) => {
+//!             assert_eq!(
+//!                 object_type
+//!                     .name()
+//!                     .expect("Cannot get object type definition name.")
+//!                     .text()
+//!                     .as_ref(),
+//!                 "ProductVariation"
+//!             )
+//!         }
+//!         ast::Definition::UnionTypeDefinition(union_type) => {
+//!             assert_eq!(
+//!                 union_type
+//!                     .name()
+//!                     .expect("Cannot get union type definition name.")
+//!                     .text()
+//!                     .as_ref(),
+//!                 "SearchResult"
+//!             )
+//!         }
+//!         ast::Definition::ScalarTypeDefinition(scalar_type) => {
+//!             assert_eq!(
+//!                 scalar_type
+//!                     .name()
+//!                     .expect("Cannot get scalar type definition name.")
+//!                     .text()
+//!                     .as_ref(),
+//!                 "UUID"
+//!             )
+//!         }
+//!         ast::Definition::ObjectTypeExtension(object_type) => {
+//!             assert_eq!(
+//!                 object_type
+//!                     .name()
+//!                     .expect("Cannot get object type extension name.")
+//!                     .text()
+//!                     .as_ref(),
+//!                 "Query"
+//!             )
+//!         }
+//!         _ => unimplemented!(),
+//!     }
+//! }
+//! ```
+//!
+//! [GraphQL grammar]: https://spec.graphql.org/October2021/#sec-Document-Syntax
 mod generated;
 mod node_ext;
 

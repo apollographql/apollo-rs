@@ -118,9 +118,9 @@ pub(crate) fn generate_kinds(kinds: KindsSrc<'_>) -> Result<String> {
             #([#punctuation_values] => { $crate::SyntaxKind::#punctuation };)*
             #([#all_keywords_idents] => { $crate::SyntaxKind::#all_keywords };)*
             [ident] => { $crate::SyntaxKind::IDENT };
-            [float_value] => { $crate::SyntaxKind::FLOAT_VALUE };
+            [float] => { $crate::SyntaxKind::FLOAT };
             [string_value] => { $crate::SyntaxKind::STRING_VALUE };
-            [int_value] => { $crate::SyntaxKind::INT_VALUE };
+            [int] => { $crate::SyntaxKind::INT };
         }
     };
 

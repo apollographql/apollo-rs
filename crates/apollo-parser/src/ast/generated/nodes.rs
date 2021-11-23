@@ -592,18 +592,14 @@ impl Variable {
 pub struct StringValue {
     pub(crate) syntax: SyntaxNode,
 }
-impl StringValue {
-    pub fn string_value_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, S![string_value])
-    }
-}
+impl StringValue {}
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FloatValue {
     pub(crate) syntax: SyntaxNode,
 }
 impl FloatValue {
-    pub fn float_value_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, S![float_value])
+    pub fn float_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, S![float])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -611,8 +607,8 @@ pub struct IntValue {
     pub(crate) syntax: SyntaxNode,
 }
 impl IntValue {
-    pub fn int_value_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, S![int_value])
+    pub fn int_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, S![int])
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

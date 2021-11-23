@@ -8,8 +8,6 @@ pub type SyntaxToken = rowan::SyntaxToken<GraphQLLanguage>;
 pub type SyntaxElement = rowan::SyntaxElement<GraphQLLanguage>;
 /// Children of a `SyntaxNode`.
 pub type SyntaxNodeChildren = rowan::SyntaxNodeChildren<GraphQLLanguage>;
-/// Children of a `SyntaxElement`.
-pub type SyntaxElementChildren = rowan::SyntaxElementChildren<GraphQLLanguage>;
 
 /// A language implementation for use in `Rowan`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

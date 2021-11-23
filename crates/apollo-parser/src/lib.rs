@@ -169,8 +169,8 @@ mod lexer;
 mod tests;
 
 pub mod ast;
-pub mod error;
-pub mod parser;
+mod error;
+mod parser;
 
 #[cfg(test)]
 pub(crate) use crate::lexer::Lexer;
