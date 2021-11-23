@@ -39,10 +39,10 @@
 //!   product(id: ID!): Product
 //! }
 //! "#;
-//! let parser = crate::Parser::new(schema);
+//! let parser = Parser::new(schema);
 //! let ast = parser.parse();
 //!
-//! assert!(ast.errors.is_empty());
+//! assert!(ast.errors().is_empty());
 //! let document = ast.document();
 //! for definition in document.definitions() {
 //!     match definition {
