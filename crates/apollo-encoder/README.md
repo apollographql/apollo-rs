@@ -6,13 +6,13 @@
   </p>
   <p>
     <a href="https://crates.io/crates/apollo-encoder">
-        <img src="https://img.shields.io/crates/v/apollo-encoder.svg?style=flat-square" alt="Crates.io version badge" />
+        <img src="https://img.shields.io/crates/v/apollo-encoder.svg?style=flat-square" alt="Crates.io" />
     </a>
     <a href="https://crates.io/crates/apollo-encoder">
-        <img src="https://img.shields.io/crates/d/apollo-encoder.svg?style=flat-square" alt="Download badge" />
+        <img src="https://img.shields.io/crates/d/apollo-encoder.svg?style=flat-square" alt="Download" />
     </a>
     <a href="https://docs.rs/apollo-encoder/">
-        <img src="https://img.shields.io/static/v1?label=docs&message=apollo-encoder&color=blue&style=flat-square" alt="docs.rs docs badge" />
+        <img src="https://img.shields.io/static/v1?label=docs&message=apollo-encoder&color=blue&style=flat-square" alt="docs.rs docs" />
     </a>
   </p>
 </div>

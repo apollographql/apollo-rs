@@ -6,13 +6,13 @@
 //!   </p>
 //!   <p>
 //!     <a href="https://crates.io/crates/apollo-parser">
-//!         <img src="https://img.shields.io/crates/v/apollo-parser.svg?style=flat-square" alt="Crates.io version badge" />
+//!         <img src="https://img.shields.io/crates/v/apollo-parser.svg?style=flat-square" alt="Crates.io" />
 //!     </a>
 //!     <a href="https://crates.io/crates/apollo-parser">
-//!         <img src="https://img.shields.io/crates/d/apollo-parser.svg?style=flat-square" alt="Download badge" />
+//!         <img src="https://img.shields.io/crates/d/apollo-parser.svg?style=flat-square" alt="Download" />
 //!     </a>
 //!     <a href="https://docs.rs/apollo-parser/">
-//!         <img src="https://img.shields.io/static/v1?label=docs&message=apollo-parser&color=blue&style=flat-square" alt="docs.rs docs badge" />
+//!         <img src="https://img.shields.io/static/v1?label=docs&message=apollo-parser&color=blue&style=flat-square" alt="docs.rs docs" />
 //!     </a>
 //!   </p>
 //! </div>
