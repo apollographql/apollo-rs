@@ -21,21 +21,19 @@ use std::fmt;
 /// let doc = ast.document();
 /// ```
 ///
-/// `Error` struct does not at the moment implement `Display`. We encourage you
-/// to take a look at the [miette] and [annotate_snippets] integration examples
-/// if you'd like to display Errors in a terminal-like environment. The
-/// `Error`'s API allows for you to configure other ways to render your errors
-/// as well if a terminal-like environment is not where your final output goes.
-///
 /// ### Diagnostics
 ///
-/// Using something like [miette] along with apollo-parser lets you have
-/// diagnostics that look like this:
+/// Using something like [miette crate] along with apollo-parser lets you have
+/// more visual diagnostics. [miette] and [annotate_snippets] examples guide you
+/// through integrating them with apollo-parser. These are useful if you are
+/// displaying Errors in a terminal-like environment.
 ///
 /// <img src="https://raw.githubusercontent.com/apollographql/apollo-rs/main/crates/apollo-parser/screenshots/apollo_parser_error.png" alt="A screenshot of an error example produced by using apollo-parser and miette. The ascii display shows a graphql code snippet with line numbers to the left. Under the code sample there is a line pointing to where a value is missing in graphql code">
 ///
 /// [miette]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/miette.rs
 /// [annotate_snippets]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/annotate_snippet.rs
+/// [miette crate]: https://docs.rs/miette/3.2.0/miette/index.html
+
 #[derive(PartialEq, Eq, Clone)]
 pub struct Error {
     pub(crate) message: String,
