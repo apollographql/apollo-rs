@@ -27,8 +27,15 @@ use std::fmt;
 /// `Error`'s API allows for you to configure other ways to render your errors
 /// as well if a terminal-like environment is not where your final output goes.
 ///
-/// [miette]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/examples/miette.rs
-/// [annotate_snippets]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/examples/annotate_snippet.rs
+/// ### Diagnostics
+///
+/// Using something like [miette] along with apollo-parser lets you have
+/// diagnostics that look like this:
+///
+/// <img src="https://github.com/apollographql/apollo-rs/crates/apollo-parser/screenshots/apollo_parser_error.png" alt="A screenshot of an error example produced by using apollo-parser and miette. The ascii display shows a graphql code snippet with line numbers to the left. Under the code sample there is a line pointing to where a value is missing in graphql code">
+///
+/// [miette]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/miette.rs
+/// [annotate_snippets]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/annotate_snippet.rs
 #[derive(PartialEq, Eq, Clone)]
 pub struct Error {
     pub(crate) message: String,

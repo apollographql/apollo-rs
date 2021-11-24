@@ -165,9 +165,9 @@
 //! [examples directory]: https://github.com/apollographql/apollo-rs/tree/main/crates/apollo-parser/examples
 //! [Get field names in an object]: https://github.com/apollographql/apollo-rs#get-field-names-in-an-object
 //! [Get variables used in a query]: https://github.com/apollographql/apollo-rs#get-variables-used-in-a-query
-//! [using apollo-rs with miette to display error diagnostics]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/examples/miette.rs
-//! [using apollo-rs with annotate_snippets to display error diagnostics]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/examples/annotate_snippet.rs
-//! [checking for unused variables]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/examples/unused_vars.rs
+//! [using apollo-rs with miette to display error diagnostics]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/miette.rs
+//! [using apollo-rs with annotate_snippets to display error diagnostics]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/annotate_snippet.rs
+//! [checking for unused variables]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/unused_vars.rs
 //! [October 2021 specification]: https://spec.graphql.org/October2021
 //! [LICENSE-APACHE]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/LICENSE-APACHE
 //! [LICENSE-MIT]:https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/LICENSE-MIT
