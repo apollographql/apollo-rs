@@ -25,12 +25,12 @@
 //! ```toml
 //! # Just an example, change to the necessary package version.
 //! [dependencies]
-//! apollo_encoder = "0.1.0"
+//! apollo-encoder = "0.1.0"
 //! ```
 //!
 //! Or using [cargo-edit]:
 //! ```bash
-//! cargo add apollo_encoder
+//! cargo add apollo-encoder
 //! ```
 //!
 //! ## Example
@@ -98,11 +98,6 @@
 //! - MIT license ([LICENSE-MIT] or <https://opensource.org/licenses/MIT>)
 //!
 //! at your option.
-//!
-//! #### Contribution
-//! Unless you explicitly state otherwise, any contribution intentionally submitted
-//! for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
-//! dual licensed as above, without any additional terms or conditions.
 //!
 //! [cargo-edit]: https://github.com/killercup/cargo-edit
 //! [LICENSE-APACHE]: https://github.com/apollographql/apollo-rs/blob/main/crates/apollo-parser/LICENSE-APACHE

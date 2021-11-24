@@ -31,12 +31,12 @@
 //! ```toml
 //! # Just an example, change to the necessary package version.
 //! [dependencies]
-//! apollo_parser = "0.1.0"
+//! apollo-parser = "0.1.0"
 //! ```
 //!
 //! Or using [cargo-edit]:
 //! ```bash
-//! cargo add apollo_parser
+//! cargo add apollo-parser
 //! ```
 //!
 //! ## Usage
@@ -154,11 +154,6 @@
 //! - MIT license ([LICENSE-MIT] or <https://opensource.org/licenses/MIT>)
 //!
 //! at your option.
-//!
-//! #### Contribution
-//! Unless you explicitly state otherwise, any contribution intentionally submitted
-//! for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
-//! dual licensed as above, without any additional terms or conditions.
 //!
 //! [cargo-edit]: https://github.com/killercup/cargo-edit
 //! [apollo-rs: spec-compliant GraphQL Tools in Rust]: https://www.apollographql.com/blog/announcement/tooling/apollo-rs-graphql-tools-in-rust/
