@@ -41,7 +41,7 @@
 //!
 //! ## Usage
 //! `apollo-parser` is built to parse both GraphQL schemas and queries according to the latest [October 2021 specification]. It produces
-//! a typed syntax tree that then can we walked extracting all the necessary
+//! a typed syntax tree that then can we walked, extracting all the necessary
 //! information. You can quick start with:
 //!
 //! ```rust
