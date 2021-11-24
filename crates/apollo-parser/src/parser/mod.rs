@@ -42,7 +42,7 @@ pub(crate) use token_text::TokenText;
 /// // Parse the query, and return a SyntaxTree.
 /// let ast = parser.parse();
 /// // Check that are no errors. These are not part of the AST.
-/// assert!(&ast.errors().is_empty());
+/// assert_eq!(0, ast.errors().len());
 ///
 /// // Get the document root node
 /// let doc = ast.document();
@@ -65,7 +65,7 @@ pub(crate) use token_text::TokenText;
 /// let parser = Parser::new(core_schema);
 /// let ast = parser.parse();
 ///
-/// assert!(ast.errors().is_empty());
+/// assert_eq!(0, ast.errors().len());
 ///
 /// let document = ast.document();
 /// ```
@@ -91,7 +91,7 @@ impl Parser {
             tokens.push(s);
         }
 
-        for e in lexer.errors().to_owned() {
+        for e in lexer.errors().cloned() {
             errors.push(e);
         }
 

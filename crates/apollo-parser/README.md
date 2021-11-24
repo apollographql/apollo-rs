@@ -60,8 +60,8 @@ let input = "union SearchResult = Photo | Person | Cat | Dog";
 let parser = Parser::new(input);
 let ast = parser.parse();
 
-// ast.errors() returns an errors slice encountered during lexing and parsing
-assert!(ast.errors().is_empty());
+// ast.errors() returns an iterator with the errors encountered during lexing and parsing
+assert_eq!(0, ast.errors().len());
 
 // ast.document() gets the Document, or root node, of the tree that you can
 // start iterating on.
@@ -93,7 +93,7 @@ type ProductDimension {
 ";
 let parser = Parser::new(input);
 let ast = parser.parse();
-assert!(ast.errors().is_empty());
+assert_eq!(0, ast.errors().len());
 
 let doc = ast.document();
 
@@ -124,7 +124,7 @@ let input = "
   
   let parser = Parser::new(input);
   let ast = parser.parse();
-  assert!(&ast.errors().is_empty());
+  assert_eq!(0, ast.errors().len());
   
   let doc = ast.document();
   

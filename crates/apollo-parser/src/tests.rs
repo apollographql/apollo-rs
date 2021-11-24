@@ -6,6 +6,7 @@ use std::{
     fmt::Write,
     fs,
     path::{Path, PathBuf},
+    slice::Iter,
 };
 
 use expect_test::expect_file;
@@ -52,25 +53,24 @@ fn parser_tests() {
     });
 }
 
-fn assert_errors_are_present(errors: &[Error], path: &Path) {
+fn assert_errors_are_present(errors: Iter<'_, Error>, path: &Path) {
     assert!(
-        !errors.is_empty(),
+        errors.len() != 0,
         "There should be errors in the file {:?}",
         path.display()
     );
 }
 
-fn assert_errors_are_absent(errors: &[Error], path: &Path) {
-    assert_eq!(
-        errors,
-        &[] as &[Error],
+fn assert_errors_are_absent(errors: Iter<'_, Error>, path: &Path) {
+    assert!(
+        errors.len() == 0,
         "There should be no errors in the file {:?}",
         path.display(),
     );
 }
 
-/// Concatenate tokens and erorrs.
-fn dump_tokens_and_errors(tokens: &[Token], errors: &[Error]) -> String {
+/// Concatenate tokens and errors.
+fn dump_tokens_and_errors(tokens: &[Token], errors: Iter<'_, Error>) -> String {
     let mut acc = String::new();
     for token in tokens {
         writeln!(acc, "{:?}", token).unwrap();

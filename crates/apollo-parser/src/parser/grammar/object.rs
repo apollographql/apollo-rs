@@ -131,7 +131,7 @@ type Business implements NamedEntity & ValuedEntity & CatEntity {
 }";
         let parser = Parser::new(input);
         let ast = parser.parse();
-        assert!(ast.errors().is_empty());
+        assert_eq!(0, ast.errors().len());
 
         let doc = ast.document();
 

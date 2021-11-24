@@ -2,6 +2,8 @@ mod cursor;
 mod token;
 mod token_kind;
 
+use std::slice::Iter;
+
 use crate::{lexer::cursor::Cursor, Error};
 
 pub use token::Token;
@@ -59,8 +61,8 @@ impl Lexer {
     }
 
     /// Get a reference to the lexer's tokens.
-    pub(crate) fn errors(&self) -> &[Error] {
-        self.errors.as_slice()
+    pub(crate) fn errors(&self) -> Iter<'_, Error> {
+        self.errors.iter()
     }
 }
 
