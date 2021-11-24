@@ -6,13 +6,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
 documentation = "https://docs.rs/apollo-parser"
 description = "Spec-compliant GraphQL parser."
-keywords = [
-    "graphql",
-    "parser",
-    "graphql-tooling",
-    "apollographql",
-    "parser-implementations",
-]
+keywords = ["graphql", "parser", "graphql-tooling", "apollographql"]
 categories = [
     "compilers",
     "development-tools",
