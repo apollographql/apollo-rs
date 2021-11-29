@@ -42,7 +42,7 @@
 //! let parser = Parser::new(schema);
 //! let ast = parser.parse();
 //!
-//! assert!(ast.errors().is_empty());
+//! assert_eq!(0, ast.errors().len());
 //! let document = ast.document();
 //! for definition in document.definitions() {
 //!     match definition {

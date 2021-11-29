@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, slice::Iter};
 
 use rowan::GreenNodeBuilder;
 
@@ -44,8 +44,8 @@ pub struct SyntaxTree {
 
 impl SyntaxTree {
     /// Get a reference to the syntax tree's errors.
-    pub fn errors(&self) -> &[crate::Error] {
-        self.errors.as_ref()
+    pub fn errors(&self) -> Iter<'_, crate::Error> {
+        self.errors.iter()
     }
 
     /// Return the root typed `Document` node.
@@ -159,7 +159,7 @@ mod test {
         ";
         let parser = Parser::new(input);
         let ast = parser.parse();
-        assert!(ast.errors().is_empty());
+        assert_eq!(0, ast.errors().len());
 
         let doc = ast.document();
 

@@ -11,7 +11,7 @@ fn are_variables_unused() {
     let parser = Parser::new(&src);
     let ast = parser.parse();
 
-    assert!(&ast.errors().is_empty());
+    assert_eq!(0, ast.errors().len());
 
     let doc = ast.document();
 
