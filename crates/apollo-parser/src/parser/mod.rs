@@ -232,22 +232,29 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// gets the next token from the lexer
+    fn next_token(&mut self) -> Token {
+        for res in self.lexer.next() {
+            match res {
+                Err(e) => {
+                    self.errors.push(e);
+                }
+                Ok(token) => {
+                    return token;
+                }
+            }
+        }
+
+        panic!("Could not pop a token from the lexer")
+    }
+
     /// Consume a token from the lexer.
     pub(crate) fn pop(&mut self) -> Token {
         if let Some(token) = self.current_token.take() {
             return token;
         }
 
-        loop {
-            match self
-                .lexer
-                .next()
-                .expect("Could not pop a token from the AST")
-            {
-                Err(e) => self.errors.push(e),
-                Ok(token) => return token,
-            }
-        }
+        return self.next_token();
     }
 
     /// Insert a token into the AST.
@@ -277,19 +284,7 @@ impl<'a> Parser<'a> {
     /// Peek the next Token and return it.
     pub(crate) fn peek_token(&mut self) -> Option<&Token> {
         if self.current_token.is_none() {
-            loop {
-                match self
-                    .lexer
-                    .next()
-                    .expect("Could not pop a token from the AST")
-                {
-                    Err(e) => self.errors.push(e),
-                    Ok(token) => {
-                        self.current_token = Some(token);
-                        break;
-                    }
-                }
-            }
+            self.current_token = Some(self.next_token());
         }
         self.current_token.as_ref()
     }
