@@ -140,7 +140,17 @@ impl Cursor<'_> {
     fn block_string_value(&mut self, mut buf: String, first_char: char) -> Result<Token, Error> {
         buf.push(first_char); // the second " we already matched on
 
-        if let first_char @ '"' = self.bump().unwrap() {
+        let c = match self.bump() {
+            None => {
+                return Err(Error::new(
+                    "unexpected end of data while parsing block string",
+                    "\"\"".to_string(),
+                ));
+            }
+            Some(c) => c,
+        };
+
+        if let first_char @ '"' = c {
             buf.push(first_char);
 
             while !self.is_eof() {
