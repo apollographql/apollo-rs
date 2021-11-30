@@ -29,6 +29,11 @@ unindent = "0.1.7"
 criterion = "0.3.0"
 
 [[bench]]
-name = "benches"
-path = "benches/benches.rs"
+name = "query"
+path = "benches/query.rs"
+harness = false
+
+[[bench]]
+name = "supergraph"
+path = "benches/supergraph.rs"
 harness = false

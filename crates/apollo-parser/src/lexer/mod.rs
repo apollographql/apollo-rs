@@ -9,7 +9,7 @@ use crate::{lexer::cursor::Cursor, Error};
 pub use token::Token;
 pub use token_kind::TokenKind;
 /// Parses tokens into text.
-pub(crate) struct Lexer {
+pub struct Lexer {
     tokens: Vec<Token>,
     errors: Vec<Error>,
 }
@@ -56,13 +56,67 @@ impl Lexer {
     }
 
     /// Get a reference to the lexer's tokens.
-    pub(crate) fn tokens(&self) -> &[Token] {
+    pub fn tokens(&self) -> &[Token] {
         self.tokens.as_slice()
     }
 
     /// Get a reference to the lexer's tokens.
     pub(crate) fn errors(&self) -> Iter<'_, Error> {
         self.errors.iter()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct LexerIterator<'a> {
+    input: &'a str,
+    index: usize,
+    finished: bool,
+}
+
+impl<'a> LexerIterator<'a> {
+    pub fn new(input: &'a str) -> Self {
+        Self {
+            input,
+            index: 0,
+            finished: false,
+        }
+    }
+}
+
+impl<'a> Iterator for LexerIterator<'a> {
+    type Item = Result<Token, Error>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.finished {
+            return None;
+        }
+        if self.input.is_empty() {
+            let mut eof = Token::new(TokenKind::Eof, String::from("EOF"));
+            eof.index = self.index;
+
+            self.finished = true;
+            return Some(Ok(eof));
+        }
+
+        let mut c = Cursor::new(self.input);
+        let r = c.advance();
+
+        match r {
+            Ok(mut token) => {
+                token.index = self.index;
+                self.index += token.data.len();
+
+                self.input = &self.input[token.data.len()..];
+                Some(Ok(token))
+            }
+            Err(mut err) => {
+                err.index = self.index;
+                self.index += err.data.len();
+
+                self.input = &self.input[err.data.len()..];
+                Some(Err(err))
+            }
+        }
     }
 }
 
