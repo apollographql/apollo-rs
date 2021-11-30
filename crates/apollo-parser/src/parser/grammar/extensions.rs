@@ -14,6 +14,6 @@ pub(crate) fn extensions(p: &mut Parser) {
         Some("union") => union_::union_type_extension(p),
         Some("enum") => enum_::enum_type_extension(p),
         Some("input") => input::input_object_type_extension(p),
-        _ => p.err("A Type System Extension cannot be applied"),
+        _ => p.err_and_pop("A Type System Extension cannot be applied"),
     }
 }
