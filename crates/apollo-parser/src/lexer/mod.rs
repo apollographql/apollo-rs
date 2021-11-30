@@ -102,7 +102,16 @@ impl Cursor<'_> {
         let mut buf = String::new();
         buf.push(first_char); // the first " we already matched on
 
-        let c = self.bump().unwrap();
+        let c = match self.bump() {
+            None => {
+                return Err(Error::new(
+                    "unexpected end of data while parsing string",
+                    "\"".to_string(),
+                ));
+            }
+            Some(c) => c,
+        };
+
         match c {
             '"' => self.block_string_value(buf, c),
             t => {
