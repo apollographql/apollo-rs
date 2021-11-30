@@ -97,11 +97,6 @@ pub struct LexerIterator<'a> {
     finished: bool,
 }
 
-pub enum LexerResult {
-    Token(Token),
-    Error(Error),
-}
-
 impl<'a> LexerIterator<'a> {
     pub fn new(input: &'a str) -> Self {
         Self {
@@ -113,7 +108,7 @@ impl<'a> LexerIterator<'a> {
 }
 
 impl<'a> Iterator for LexerIterator<'a> {
-    type Item = LexerResult;
+    type Item = Result<Token, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.finished {
@@ -124,7 +119,7 @@ impl<'a> Iterator for LexerIterator<'a> {
             eof.index = self.index;
 
             self.finished = true;
-            return Some(LexerResult::Token(eof));
+            return Some(Ok(eof));
         }
 
         let mut c = Cursor::new(self.input);
@@ -136,14 +131,14 @@ impl<'a> Iterator for LexerIterator<'a> {
                 self.index += token.data.len();
 
                 self.input = &self.input[token.data.len()..];
-                Some(LexerResult::Token(token))
+                Some(Ok(token))
             }
             Err(mut err) => {
                 err.index = self.index;
                 self.index += err.data.len();
 
                 self.input = &self.input[err.data.len()..];
-                Some(LexerResult::Error(err))
+                Some(Err(err))
             }
         }
     }
