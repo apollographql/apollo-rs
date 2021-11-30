@@ -234,7 +234,7 @@ impl<'a> Parser<'a> {
 
     /// gets the next token from the lexer
     fn next_token(&mut self) -> Token {
-        for res in self.lexer.next() {
+        for res in &mut self.lexer {
             match res {
                 Err(e) => {
                     self.errors.push(e);
@@ -254,7 +254,7 @@ impl<'a> Parser<'a> {
             return token;
         }
 
-        return self.next_token();
+        self.next_token()
     }
 
     /// Insert a token into the AST.
