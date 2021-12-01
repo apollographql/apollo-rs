@@ -69,7 +69,7 @@ jobs:
           platform: << parameters.platform >>
       - run:
           name: Run cargo clippy
-          command: cargo clippy 
+          command: cargo clippy --all-targets --all-features -- -D warnings && cargo clippy --benches
 
   test:
     parameters:

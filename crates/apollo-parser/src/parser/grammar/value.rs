@@ -202,6 +202,9 @@ enum Test @dir__one(int_value: -10) {
     }
 
     #[test]
+    // Allow only for this test, as this tests doesn't actually aim to compare
+    // floats, but is here to ensure we are able to extract an f64 value
+    #[allow(clippy::float_cmp)]
     fn it_returns_f64_for_float_values() {
         let schema = r#"
 enum Test @dir__one(float_value: -1.123E4) { 
@@ -249,7 +252,7 @@ enum Test @dir__one(bool_value: false) {
                             argument.value().expect("Cannot get argument value.")
                         {
                             let b: bool = val.into();
-                            assert_eq!(b, false);
+                            assert!(!b);
                         }
                     }
                 }
