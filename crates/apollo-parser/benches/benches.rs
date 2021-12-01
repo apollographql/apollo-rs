@@ -5,7 +5,7 @@ fn parse_query(query: &str) {
     let parser = apollo_parser::Parser::new(query);
     let tree = parser.parse();
 
-    if !tree.errors().is_empty() {
+    if tree.errors().len() != 0 {
         panic!("error parsing query: {:?}", tree.errors());
     }
     let document = tree.document();
@@ -16,11 +16,8 @@ fn parse_query(query: &str) {
                 .selection_set()
                 .expect("the node SelectionSet is not optional in the spec; qed");
             for selection in selection_set.selections() {
-                match selection {
-                    ast::Selection::Field(field) => {
-                        let _selection_set = field.selection_set();
-                    }
-                    _ => {}
+                if let ast::Selection::Field(field) = selection {
+                    let _selection_set = field.selection_set();
                 }
             }
         }

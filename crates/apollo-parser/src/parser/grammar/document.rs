@@ -91,8 +91,7 @@ uasdf21230jkdw
         assert_eq!(ast.errors().len(), 1);
 
         let doc = ast.document();
-        let nodes: Vec<_> = doc.definitions().into_iter().collect();
-        assert_eq!(nodes.len(), 1);
+        assert_eq!(doc.definitions().into_iter().count(), 1);
     }
 
     #[test]
@@ -104,8 +103,7 @@ uasdf21230jkdw
         assert_eq!(ast.errors().len(), 1);
 
         let doc = ast.document();
-        let nodes: Vec<_> = doc.definitions().into_iter().collect();
-        assert!(nodes.is_empty());
+        assert!(doc.definitions().into_iter().next().is_none());
     }
 
     #[test]
