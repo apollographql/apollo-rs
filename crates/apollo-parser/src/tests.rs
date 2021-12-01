@@ -15,7 +15,7 @@ use crate::{Error, Lexer, Parser, Token};
 
 // To run these tests and update files:
 // ```bash
-// env UPDATE_EXPECT=1 cargo qt
+// env UPDATE_EXPECT=1 cargo test --package apollo-parser
 // ```
 // or on windows
 // ```bash
