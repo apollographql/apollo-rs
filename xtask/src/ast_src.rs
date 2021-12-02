@@ -152,6 +152,8 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
     ],
 };
 
+// pub(crate) tokens is actually used once the code is generated.
+#[allow(dead_code)]
 #[derive(Default, Debug)]
 pub(crate) struct AstSrc {
     pub(crate) tokens: Vec<String>,
