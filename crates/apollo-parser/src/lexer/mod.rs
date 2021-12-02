@@ -105,7 +105,7 @@ impl Cursor<'_> {
         let c = match self.bump() {
             None => {
                 return Err(Error::new(
-                    "unexpected end of data while parsing string",
+                    "unexpected end of data while lexing string value",
                     "\"".to_string(),
                 ));
             }
@@ -137,15 +137,12 @@ impl Cursor<'_> {
         }
     }
 
-    fn block_string_value(&mut self, mut buf: String, first_char: char) -> Result<Token, Error> {
-        buf.push(first_char); // the second " we already matched on
+    fn block_string_value(&mut self, mut buf: String, char: char) -> Result<Token, Error> {
+        buf.push(char); // the second " we already matched on
 
         let c = match self.bump() {
             None => {
-                return Err(Error::new(
-                    "unexpected end of data while parsing block string",
-                    "\"\"".to_string(),
-                ));
+                return Ok(Token::new(TokenKind::StringValue, buf));
             }
             Some(c) => c,
         };

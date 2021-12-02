@@ -88,10 +88,9 @@ uasdf21230jkdw
         let parser = Parser::new(schema);
 
         let ast = parser.parse();
-        assert_eq!(ast.errors().len(), 1);
 
-        let doc = ast.document();
-        assert_eq!(doc.definitions().into_iter().count(), 1);
+        assert_eq!(ast.errors().len(), 1);
+        assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }
 
     #[test]
