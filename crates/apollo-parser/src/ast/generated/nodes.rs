@@ -2267,16 +2267,22 @@ impl From<NonNullType> for Type {
 }
 impl AstNode for Type {
     fn can_cast(kind: SyntaxKind) -> bool {
-        matches!(kind, NAMED_TYPE | LIST_TYPE | NON_NULL_TYPE)
+        kind == TYPE
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
-        let res = match syntax.kind() {
-            NAMED_TYPE => Type::NamedType(NamedType { syntax }),
-            LIST_TYPE => Type::ListType(ListType { syntax }),
-            NON_NULL_TYPE => Type::NonNullType(NonNullType { syntax }),
-            _ => return None,
-        };
-        Some(res)
+        if syntax.kind() == TYPE {
+            if let Some(s) = syntax.first_child() {
+                let res = match s.kind() {
+                    NAMED_TYPE => Type::NamedType(NamedType { syntax }),
+                    LIST_TYPE => Type::ListType(ListType { syntax }),
+                    NON_NULL_TYPE => Type::NonNullType(NonNullType { syntax }),
+                    _ => return None,
+                };
+                return Some(res);
+            }
+        }
+
+        None
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
