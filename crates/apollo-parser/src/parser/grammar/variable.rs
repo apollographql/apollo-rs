@@ -62,3 +62,43 @@ pub(crate) fn variable(p: &mut Parser) {
     p.bump(S![$]);
     name::name(p);
 }
+
+#[cfg(test)]
+
+mod test {
+    use crate::{ast, Parser};
+
+    #[test]
+    fn it_accesses_variable_name_and_type() {
+        let gql = r#"
+query GroceryStoreTrip($budget: Int) {
+    name
+}
+        "#;
+
+        let parser = Parser::new(gql);
+        let ast = parser.parse();
+
+        assert!(ast.errors().len() == 0);
+
+        let doc = ast.document();
+
+        for definition in doc.definitions() {
+            if let ast::Definition::OperationDefinition(op_def) = definition {
+                for var in op_def
+                    .variable_definitions()
+                    .unwrap()
+                    .variable_definitions()
+                {
+                    assert_eq!(
+                        var.variable().unwrap().name().unwrap().text().as_ref(),
+                        "budget"
+                    );
+                    if let ast::Type::NamedType(name) = var.ty().unwrap() {
+                        assert_eq!(name.name().unwrap().text().as_ref(), "Int")
+                    }
+                }
+            }
+        }
+    }
+}

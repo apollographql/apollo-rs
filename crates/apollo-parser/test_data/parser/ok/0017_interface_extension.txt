@@ -21,9 +21,8 @@
                     - IDENT@42..47 "value"
                 - COLON@47..48 ":"
                 - WHITESPACE@48..49 " "
-                - TYPE@49..53
+                - NAMED_TYPE@49..53
                     - WHITESPACE@49..50 "\n"
-                    - NAMED_TYPE@50..53
-                        - NAME@50..53
-                            - IDENT@50..53 "Int"
+                    - NAME@50..53
+                        - IDENT@50..53 "Int"
             - R_CURLY@53..54 "}"

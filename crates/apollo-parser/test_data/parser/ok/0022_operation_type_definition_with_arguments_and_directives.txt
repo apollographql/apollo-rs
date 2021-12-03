@@ -14,11 +14,10 @@
                         - IDENT@15..18 "var"
                 - COLON@18..19 ":"
                 - WHITESPACE@19..20 " "
-                - TYPE@20..26
+                - NAMED_TYPE@20..26
                     - WHITESPACE@20..21 " "
-                    - NAMED_TYPE@21..26
-                        - NAME@21..26
-                            - IDENT@21..26 "input"
+                    - NAME@21..26
+                        - IDENT@21..26 "input"
             - VARIABLE_DEFINITION@26..47
                 - VARIABLE@26..35
                     - DOLLAR@26..27 "$"
@@ -26,10 +25,9 @@
                         - IDENT@27..35 "varOther"
                 - COLON@35..36 ":"
                 - WHITESPACE@36..37 " "
-                - TYPE@37..47
-                    - NAMED_TYPE@37..47
-                        - NAME@37..47
-                            - IDENT@37..47 "otherInput"
+                - NAMED_TYPE@37..47
+                    - NAME@37..47
+                        - IDENT@37..47 "otherInput"
             - R_PAREN@47..48 ")"
             - WHITESPACE@48..49 " "
         - DIRECTIVES@49..69
