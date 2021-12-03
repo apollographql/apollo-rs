@@ -2273,9 +2273,9 @@ impl AstNode for Type {
         if syntax.kind() == TYPE {
             if let Some(s) = syntax.first_child() {
                 let res = match s.kind() {
-                    NAMED_TYPE => Type::NamedType(NamedType { syntax }),
-                    LIST_TYPE => Type::ListType(ListType { syntax }),
-                    NON_NULL_TYPE => Type::NonNullType(NonNullType { syntax }),
+                    NAMED_TYPE => Type::NamedType(NamedType { syntax: s }),
+                    LIST_TYPE => Type::ListType(ListType { syntax: s }),
+                    NON_NULL_TYPE => Type::NonNullType(NonNullType { syntax: s }),
                     _ => return None,
                 };
                 return Some(res);
