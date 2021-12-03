@@ -81,6 +81,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
                 .map(|var| format_ident!("{}", var))
                 .collect();
             let name = format_ident!("{}", en.name);
+            let kind = format_ident!("{}", to_upper_snake_case(&en.name));
             let kinds: Vec<_> = variants
                 .iter()
                 .map(|name| format_ident!("{}", to_upper_snake_case(&name.to_string())))
@@ -96,16 +97,21 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
                 quote! {
                     impl AstNode for #name {
                         fn can_cast(kind: SyntaxKind) -> bool {
-                            matches!(kind, #(#kinds)|*)
+                            kind == #kind
                         }
                         fn cast(syntax: SyntaxNode) -> Option<Self> {
-                            let res = match syntax.kind() {
+                            if syntax.kind() != #kind {
+                                return None;
+                            }
+
+                            let syntax = syntax.first_child()?;
+
+                            match syntax.kind() {
                                 #(
-                                #kinds => #name::#variants(#variants { syntax }),
+                                #kinds => Some(#name::#variants(#variants { syntax })),
                                 )*
-                                _ => return None,
-                            };
-                            Some(res)
+                                _ => None,
+                            }
                         }
                         fn syntax(&self) -> &SyntaxNode {
                             match self {
