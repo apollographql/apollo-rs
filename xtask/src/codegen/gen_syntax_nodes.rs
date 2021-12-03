@@ -97,14 +97,12 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
                 quote! {
                     impl AstNode for #name {
                         fn can_cast(kind: SyntaxKind) -> bool {
-                            kind == #kind
+                            kind == #kind || matches!(kind, #(#kinds)|*)
                         }
-                        fn cast(syntax: SyntaxNode) -> Option<Self> {
-                            if syntax.kind() != #kind {
-                                return None;
+                        fn cast(mut syntax: SyntaxNode) -> Option<Self> {
+                            if syntax.kind() == #kind {
+                                syntax = syntax.first_child()?;
                             }
-
-                            let syntax = syntax.first_child()?;
 
                             match syntax.kind() {
                                 #(
