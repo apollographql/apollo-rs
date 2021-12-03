@@ -57,7 +57,6 @@ pub(crate) fn ty(p: &mut Parser) {
     fn process(types: &mut VecDeque<(SyntaxKind, Token)>, p: &mut Parser) {
         match types.pop_front() {
             Some((kind @ S!['['], token)) => {
-                let _ty_g = p.start_node(SyntaxKind::TYPE);
                 let _list_g = p.start_node(SyntaxKind::LIST_TYPE);
                 p.push_ast(kind, token);
                 process(types, p);
@@ -66,7 +65,6 @@ pub(crate) fn ty(p: &mut Parser) {
                 }
             }
             Some((kind @ SyntaxKind::NON_NULL_TYPE, _)) => {
-                let _ty_g = p.start_node(SyntaxKind::TYPE);
                 let _non_null_g = p.start_node(kind);
                 process(types, p);
             }
@@ -75,7 +73,6 @@ pub(crate) fn ty(p: &mut Parser) {
             // already popped Tokens off the token vec, and we are simply adding
             // to the AST.
             Some((SyntaxKind::NAMED_TYPE, token)) => {
-                let _ty_g = p.start_node(SyntaxKind::TYPE);
                 let named_g = p.start_node(SyntaxKind::NAMED_TYPE);
                 let name_g = p.start_node(SyntaxKind::NAME);
                 name::validate_name(token.data().to_string(), p);

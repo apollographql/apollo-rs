@@ -12,21 +12,19 @@
                     - IDENT@19..26 "isTreat"
                 - COLON@26..27 ":"
                 - WHITESPACE@27..28 " "
-                - TYPE@28..37
+                - NAMED_TYPE@28..37
                     - COMMA@28..29 ","
                     - WHITESPACE@29..30 " "
-                    - NAMED_TYPE@30..37
-                        - NAME@30..37
-                            - IDENT@30..37 "Boolean"
+                    - NAME@30..37
+                        - IDENT@30..37 "Boolean"
             - INPUT_VALUE_DEFINITION@37..54
                 - NAME@37..46
                     - IDENT@37..46 "treatKind"
                 - COLON@46..47 ":"
                 - WHITESPACE@47..48 " "
-                - TYPE@48..54
-                    - NAMED_TYPE@48..54
-                        - NAME@48..54
-                            - IDENT@48..54 "String"
+                - NAMED_TYPE@48..54
+                    - NAME@48..54
+                        - IDENT@48..54 "String"
             - R_PAREN@54..55 ")"
             - WHITESPACE@55..56 " "
         - repeatable_KW@56..66 "repeatable"

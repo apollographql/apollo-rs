@@ -32,9 +32,8 @@
                     - IDENT@54..58 "code"
                 - COLON@58..59 ":"
                 - WHITESPACE@59..60 " "
-                - TYPE@60..64
+                - NAMED_TYPE@60..64
                     - WHITESPACE@60..61 "\n"
-                    - NAMED_TYPE@61..64
-                        - NAME@61..64
-                            - IDENT@61..64 "Int"
+                    - NAME@61..64
+                        - IDENT@61..64 "Int"
             - R_CURLY@64..65 "}"
