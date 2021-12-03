@@ -1418,12 +1418,33 @@ impl From<InputObjectTypeExtension> for Definition {
     }
 }
 impl AstNode for Definition {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == DEFINITION }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if syntax.kind() != DEFINITION {
-            return None;
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == DEFINITION
+            || matches!(
+                kind,
+                OPERATION_DEFINITION
+                    | FRAGMENT_DEFINITION
+                    | DIRECTIVE_DEFINITION
+                    | SCHEMA_DEFINITION
+                    | SCALAR_TYPE_DEFINITION
+                    | OBJECT_TYPE_DEFINITION
+                    | INTERFACE_TYPE_DEFINITION
+                    | UNION_TYPE_DEFINITION
+                    | ENUM_TYPE_DEFINITION
+                    | INPUT_OBJECT_TYPE_DEFINITION
+                    | SCHEMA_EXTENSION
+                    | SCALAR_TYPE_EXTENSION
+                    | OBJECT_TYPE_EXTENSION
+                    | INTERFACE_TYPE_EXTENSION
+                    | UNION_TYPE_EXTENSION
+                    | ENUM_TYPE_EXTENSION
+                    | INPUT_OBJECT_TYPE_EXTENSION
+            )
+    }
+    fn cast(mut syntax: SyntaxNode) -> Option<Self> {
+        if syntax.kind() == DEFINITION {
+            syntax = syntax.first_child()?;
         }
-        let syntax = syntax.first_child()?;
         match syntax.kind() {
             OPERATION_DEFINITION => Some(Definition::OperationDefinition(OperationDefinition {
                 syntax,
@@ -1513,12 +1534,13 @@ impl From<InlineFragment> for Selection {
     fn from(node: InlineFragment) -> Selection { Selection::InlineFragment(node) }
 }
 impl AstNode for Selection {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == SELECTION }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if syntax.kind() != SELECTION {
-            return None;
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == SELECTION || matches!(kind, FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT)
+    }
+    fn cast(mut syntax: SyntaxNode) -> Option<Self> {
+        if syntax.kind() == SELECTION {
+            syntax = syntax.first_child()?;
         }
-        let syntax = syntax.first_child()?;
         match syntax.kind() {
             FIELD => Some(Selection::Field(Field { syntax })),
             FRAGMENT_SPREAD => Some(Selection::FragmentSpread(FragmentSpread { syntax })),
@@ -1562,12 +1584,25 @@ impl From<ObjectValue> for Value {
     fn from(node: ObjectValue) -> Value { Value::ObjectValue(node) }
 }
 impl AstNode for Value {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == VALUE }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if syntax.kind() != VALUE {
-            return None;
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == VALUE
+            || matches!(
+                kind,
+                VARIABLE
+                    | STRING_VALUE
+                    | FLOAT_VALUE
+                    | INT_VALUE
+                    | BOOLEAN_VALUE
+                    | NULL_VALUE
+                    | ENUM_VALUE
+                    | LIST_VALUE
+                    | OBJECT_VALUE
+            )
+    }
+    fn cast(mut syntax: SyntaxNode) -> Option<Self> {
+        if syntax.kind() == VALUE {
+            syntax = syntax.first_child()?;
         }
-        let syntax = syntax.first_child()?;
         match syntax.kind() {
             VARIABLE => Some(Value::Variable(Variable { syntax })),
             STRING_VALUE => Some(Value::StringValue(StringValue { syntax })),
@@ -1605,12 +1640,13 @@ impl From<NonNullType> for Type {
     fn from(node: NonNullType) -> Type { Type::NonNullType(node) }
 }
 impl AstNode for Type {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == TYPE }
-    fn cast(syntax: SyntaxNode) -> Option<Self> {
-        if syntax.kind() != TYPE {
-            return None;
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == TYPE || matches!(kind, NAMED_TYPE | LIST_TYPE | NON_NULL_TYPE)
+    }
+    fn cast(mut syntax: SyntaxNode) -> Option<Self> {
+        if syntax.kind() == TYPE {
+            syntax = syntax.first_child()?;
         }
-        let syntax = syntax.first_child()?;
         match syntax.kind() {
             NAMED_TYPE => Some(Type::NamedType(NamedType { syntax })),
             LIST_TYPE => Some(Type::ListType(ListType { syntax })),
