@@ -136,5 +136,5 @@ pub use object_def::ObjectDef;
 pub use scalar_def::ScalarDef;
 pub use schema::Schema;
 pub use schema_def::SchemaDef;
-pub use string_value::StringValue;
+pub use string_value::{TopStringValue, FieldStringValue, InputStringValue, ReasonStringValue};
 pub use union_def::UnionDef;

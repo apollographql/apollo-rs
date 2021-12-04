@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::StringValue;
+use crate::TopStringValue;
 
 /// UnionDefs are an abstract type where no common fields are declared.
 ///
@@ -28,7 +28,7 @@ pub struct UnionDef {
     // Name must return a String.
     name: String,
     // Description may return a String.
-    description: StringValue,
+    description: TopStringValue,
     // The vector of members that can be represented within this union.
     members: Vec<String>,
 }
@@ -38,16 +38,14 @@ impl UnionDef {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: StringValue::Top { source: None },
+            description: Default::default(),
             members: Vec::new(),
         }
     }
 
     /// Set the UnionDefs description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
-            source: description,
-        };
+        self.description = TopStringValue::new(description);
     }
 
     /// Set a UnionDef member.

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::StringValue;
+use crate::{FieldStringValue, ReasonStringValue};
 
 /// The __EnumValue type represents one of possible values of an enum.
 ///
@@ -28,11 +28,11 @@ pub struct EnumValue {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: StringValue,
+    description: FieldStringValue,
     // Deprecated returns true if this enum value should no longer be used, otherwise false.
     is_deprecated: bool,
     // Deprecation reason optionally provides a reason why this enum value is deprecated.
-    deprecation_reason: StringValue,
+    deprecation_reason: ReasonStringValue,
 }
 
 impl EnumValue {
@@ -41,22 +41,20 @@ impl EnumValue {
         Self {
             name,
             is_deprecated: false,
-            description: StringValue::Field { source: None },
-            deprecation_reason: StringValue::Reason { source: None },
+            description: Default::default(),
+            deprecation_reason: Default::default(),
         }
     }
 
     /// Set the Enum Value's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Field {
-            source: description,
-        };
+        self.description = FieldStringValue::new(description);
     }
 
     /// Set the Enum Value's deprecation properties.
     pub fn deprecated(&mut self, reason: Option<String>) {
         self.is_deprecated = true;
-        self.deprecation_reason = StringValue::Reason { source: reason };
+        self.deprecation_reason = ReasonStringValue::new(reason);
     }
 }
 
@@ -67,7 +65,7 @@ impl fmt::Display for EnumValue {
 
         if self.is_deprecated {
             write!(f, " @deprecated")?;
-            if let StringValue::Reason { source: _ } = &self.deprecation_reason {
+            if self.deprecation_reason.is_empty() {
                 write!(f, "(reason:")?;
                 write!(f, "{}", self.deprecation_reason)?;
                 write!(f, ")")?

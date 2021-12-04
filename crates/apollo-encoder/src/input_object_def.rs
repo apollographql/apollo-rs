@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{InputField, StringValue};
+use crate::{InputField, TopStringValue};
 
 /// Input objects are composite types used as inputs into queries defined as a list of named input values..
 ///
@@ -53,7 +53,7 @@ pub struct InputObjectDef {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: StringValue,
+    description: TopStringValue,
     // A vector of fields
     fields: Vec<InputField>,
 }
@@ -63,16 +63,14 @@ impl InputObjectDef {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: StringValue::Top { source: None },
+            description: Default::default(),
             fields: Vec::new(),
         }
     }
 
     /// Set the InputObjectDef's description field.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
-            source: description,
-        };
+        self.description = TopStringValue::new(description);
     }
 
     /// Push a Field to InputObjectDef's fields vector.

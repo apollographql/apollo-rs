@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{InputValue, StringValue};
+use crate::{InputValue, TopStringValue};
 
 /// The `__Directive` type represents a Directive that a service supports.
 ///
@@ -35,7 +35,7 @@ pub struct Directive {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: StringValue,
+    description: TopStringValue,
     // Args returns a Vector of __InputValue representing the arguments this
     // directive accepts.
     args: Vec<InputValue>,
@@ -49,7 +49,7 @@ impl Directive {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: StringValue::Top { source: None },
+            description: Default::default(),
             args: Vec::new(),
             locations: Vec::new(),
         }
@@ -57,9 +57,7 @@ impl Directive {
 
     /// Set the Directive's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
-            source: description,
-        };
+        self.description = TopStringValue::new(description);
     }
 
     /// Set the Directive's location.

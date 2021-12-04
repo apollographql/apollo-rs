@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{Field, StringValue};
+use crate::{Field, TopStringValue};
 
 /// InterfaceDefs are an abstract type where there are common fields declared.
 ///
@@ -75,7 +75,7 @@ pub struct InterfaceDef {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: StringValue,
+    description: TopStringValue,
     // The vector of interfaces that this interface implements.
     interfaces: Vec<String>,
     // The vector of fields required by this interface.
@@ -87,7 +87,7 @@ impl InterfaceDef {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: StringValue::Top { source: None },
+            description: Default::default(),
             fields: Vec::new(),
             interfaces: Vec::new(),
         }
@@ -95,9 +95,7 @@ impl InterfaceDef {
 
     /// Set the schema def's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
-            source: description,
-        };
+        self.description = TopStringValue::new(description);
     }
 
     /// Set the interfaces ObjectDef implements.

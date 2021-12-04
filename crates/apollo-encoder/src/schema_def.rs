@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::StringValue;
+use crate::TopStringValue;
 
 /// A GraphQL service’s collective type system capabilities are referred to as that service’s “schema”.
 ///
@@ -34,7 +34,7 @@ use crate::StringValue;
 #[derive(Debug, Clone)]
 pub struct SchemaDef {
     // Description may be a String.
-    description: StringValue,
+    description: TopStringValue,
     // The vector of fields in a schema to represent root operation type
     // definition.
     query: Option<String>,
@@ -46,7 +46,7 @@ impl SchemaDef {
     /// Create a new instance of SchemaDef.
     pub fn new() -> Self {
         Self {
-            description: StringValue::Top { source: None },
+            description: Default::default(),
             query: None,
             mutation: None,
             subscription: None,
@@ -55,9 +55,7 @@ impl SchemaDef {
 
     /// Set the SchemaDef's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
-            source: description,
-        };
+        self.description = TopStringValue::new(description);
     }
 
     /// Set the schema def's query type.

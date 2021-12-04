@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{StringValue, Type_};
+use crate::{FieldStringValue, Type_};
 
 #[derive(Debug, PartialEq, Clone)]
 /// Input Field in a given Input Object.
@@ -25,7 +25,7 @@ pub struct InputField {
     // Name must return a String.
     name: String,
     // Description may return a String.
-    description: StringValue,
+    description: FieldStringValue,
     // Type must return a __Type that represents the type of value returned by this field.
     type_: Type_,
     // Default value for this input field.
@@ -36,7 +36,7 @@ impl InputField {
     /// Create a new instance of InputField.
     pub fn new(name: String, type_: Type_) -> Self {
         Self {
-            description: StringValue::Field { source: None },
+            description: Default::default(),
             name,
             type_,
             default_value: None,
@@ -45,9 +45,7 @@ impl InputField {
 
     /// Set the InputField's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Field {
-            source: description,
-        };
+        self.description = FieldStringValue::new(description);
     }
 
     /// Set the InputField's default value.

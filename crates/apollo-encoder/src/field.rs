@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{InputValue, StringValue, Type_};
+use crate::{InputValue, FieldStringValue, ReasonStringValue, Type_};
 /// The __Field type represents each field in an Object or Interface type.
 ///
 /// *FieldDefinition*:
@@ -36,7 +36,7 @@ pub struct Field {
     // Name must return a String.
     name: String,
     // Description may return a String.
-    description: StringValue,
+    description: FieldStringValue,
     // Args returns a List of __InputValue representing the arguments this field accepts.
     args: Vec<InputValue>,
     // Type must return a __Type that represents the type of value returned by this field.
@@ -44,33 +44,31 @@ pub struct Field {
     // Deprecated returns true if this field should no longer be used, otherwise false.
     is_deprecated: bool,
     // Deprecation reason optionally provides a reason why this field is deprecated.
-    deprecation_reason: StringValue,
+    deprecation_reason: ReasonStringValue,
 }
 
 impl Field {
     /// Create a new instance of Field.
     pub fn new(name: String, type_: Type_) -> Self {
         Self {
-            description: StringValue::Field { source: None },
+            description: Default::default(),
             name,
             type_,
             args: Vec::new(),
             is_deprecated: false,
-            deprecation_reason: StringValue::Reason { source: None },
+            deprecation_reason: Default::default(),
         }
     }
 
     /// Set the Field's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Field {
-            source: description,
-        };
+        self.description = FieldStringValue::new(description);
     }
 
     /// Set the Field's deprecation properties.
     pub fn deprecated(&mut self, reason: Option<String>) {
         self.is_deprecated = true;
-        self.deprecation_reason = StringValue::Reason { source: reason };
+        self.deprecation_reason = ReasonStringValue::new(reason);
     }
 
     /// Set the Field's arguments.
@@ -99,7 +97,7 @@ impl fmt::Display for Field {
         if self.is_deprecated {
             write!(f, " @deprecated")?;
 
-            if let StringValue::Reason { source: _ } = &self.deprecation_reason {
+            if self.deprecation_reason.is_empty() {
                 write!(f, "(reason:")?;
                 write!(f, "{}", self.deprecation_reason)?;
                 write!(f, ")")?

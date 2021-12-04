@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::StringValue;
+use crate::TopStringValue;
 /// Represents scalar types such as Int, String, and Boolean.
 /// Scalars cannot have fields.
 ///
@@ -29,7 +29,7 @@ pub struct ScalarDef {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: StringValue,
+    description: TopStringValue,
 }
 
 impl ScalarDef {
@@ -37,15 +37,13 @@ impl ScalarDef {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: StringValue::Top { source: None },
+            description: Default::default(),
         }
     }
 
     /// Set the ScalarDef's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
-            source: description,
-        };
+        self.description = TopStringValue::new(description);
     }
 }
 

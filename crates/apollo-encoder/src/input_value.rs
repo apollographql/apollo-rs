@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{StringValue, Type_};
+use crate::{InputStringValue, Type_};
 
 // NOTE(@lrlna): __InputValue is also meant to be used for InputFields on an
 // InputObject. We currently do not differentiate between InputFields and
@@ -38,7 +38,7 @@ pub struct InputValue {
     // Name must return a String.
     name: String,
     // Description may return a String.
-    description: StringValue,
+    description: InputStringValue,
     // Type must return a __Type that represents the type this input value expects.
     type_: Type_,
     // Default may return a String encoding (using the GraphQL language) of
@@ -56,7 +56,7 @@ impl InputValue {
     /// Create a new instance of InputValue.
     pub fn new(name: String, type_: Type_) -> Self {
         Self {
-            description: StringValue::Input { source: None },
+            description: Default::default(),
             name,
             type_,
             is_deprecated: false,
@@ -67,9 +67,7 @@ impl InputValue {
 
     /// Set the InputValue's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Input {
-            source: description,
-        };
+        self.description = InputStringValue::new(description);
     }
 
     /// Set the InputValue's default value.

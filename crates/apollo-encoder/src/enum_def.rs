@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{EnumValue, StringValue};
+use crate::{EnumValue, TopStringValue};
 
 /// Enums are special scalars that can only have a defined set of values.
 ///
@@ -42,7 +42,7 @@ pub struct EnumDef {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: StringValue,
+    description: TopStringValue,
     // A vector of EnumValue. There must be at least one and they must have
     // unique names.
     values: Vec<EnumValue>,
@@ -53,16 +53,14 @@ impl EnumDef {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: StringValue::Top { source: None },
+            description: Default::default(),
             values: Vec::new(),
         }
     }
 
     /// Set the Enum Definition's description.
     pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
-            source: description,
-        };
+        self.description = TopStringValue::new(description);
     }
 
     /// Set the Enum Definitions's values.
