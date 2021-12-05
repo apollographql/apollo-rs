@@ -28,7 +28,7 @@ pub enum Type_ {
         ty: Box<Type_>,
     },
     /// The Named field type.
-    NamedType {
+    Named {
         /// NamedType type.
         name: String,
     },
@@ -36,19 +36,19 @@ pub enum Type_ {
 
 impl Type_ {
     /// Create a new instance of Type_::NonNull.
-    pub const fn non_null(ty: Box<Type_>) -> Self {
-        Type_::NonNull { ty }
+    pub fn non_null(ty: Self) -> Self {
+        Type_::NonNull { ty: Box::new(ty) }
     }
 
     /// Create a new instance of Type_::List.
-    pub const fn list(ty: Box<Type_>) -> Self {
-        Type_::List { ty }
+    pub fn list(ty: Self) -> Self {
+        Type_::List { ty: Box::new(ty) }
     }
 
     /// Create a new instance of Type_::NamedType.
     #[inline(always)]
-    pub fn named_type(name: &str) -> Self {
-        Type_::NamedType {
+    pub fn named(name: &str) -> Self {
+        Type_::Named {
             name: name.to_string(),
         }
     }
@@ -63,7 +63,7 @@ impl Display for Type_ {
             Type_::NonNull { ty } => {
                 write!(f, "{}!", ty)
             }
-            Type_::NamedType { name } => write!(f, "{}", name),
+            Type_::Named { name } => write!(f, "{}", name),
         }
     }
 }
