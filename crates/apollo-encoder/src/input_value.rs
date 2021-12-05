@@ -50,35 +50,65 @@ pub struct InputValue {
     deprecation_reason: Option<String>,
 }
 
-impl InputValue {
-    /// Create a new instance of InputValue.
+#[derive(Debug, Clone)]
+pub struct InputValueBuilder {
+    // Name must return a String.
+    name: String,
+    // Description may return a String.
+    description: Option<String>,
+    // Type must return a __Type that represents the type this input value expects.
+    type_: Type_,
+    // Default may return a String encoding (using the GraphQL language) of
+    // the default value used by this input value in the condition a value is
+    // not provided at runtime. If this input value has no default value,
+    // returns null.
+    default: Option<String>,
+    // Deprecation reason optionally provides a reason why this field is deprecated.
+    deprecation_reason: Option<String>,
+}
+
+impl InputValueBuilder {
+    /// Create a new instance of InputValueBuilder.
     pub fn new(name: &str, type_: Type_) -> Self {
         Self {
-            description: StringValue::Input { source: None },
+            description: None,
             name: name.to_string(),
             type_,
-            is_deprecated: false,
             deprecation_reason: None,
             default: None,
         }
     }
 
     /// Set the InputValue's description.
-    pub fn description(&mut self, description: &str) {
-        self.description = StringValue::Input {
-            source: Some(description.to_string()),
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
     }
 
     /// Set the InputValue's default value.
-    pub fn default(&mut self, default: &str) {
+    pub fn default(mut self, default: &str) -> Self {
         self.default = Some(default.to_string());
+        self
     }
 
     /// Set the InputValue's deprecation properties.
-    pub fn deprecated(&mut self, reason: &str) {
-        self.is_deprecated = true;
+    pub fn deprecated(mut self, reason: &str) -> Self {
         self.deprecation_reason = Some(reason.to_string());
+        self
+    }
+
+    /// Create a new instance of InputValue.
+    pub fn build(self) -> InputValue {
+        InputValue {
+            name: self.name,
+            description: StringValue::Input {
+                source: self.description,
+            },
+            type_: self.type_,
+            is_deprecated: self.deprecation_reason.is_some(),
+            deprecation_reason: self.deprecation_reason,
+            default: self.default,
+        }
     }
 }
 

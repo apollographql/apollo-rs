@@ -30,7 +30,6 @@ use crate::StringValue;
 ///    "#}
 /// );
 /// ```
-
 #[derive(Debug, Clone)]
 pub struct SchemaDef {
     // Description may be a String.
@@ -42,11 +41,22 @@ pub struct SchemaDef {
     subscription: Option<String>,
 }
 
-impl SchemaDef {
-    /// Create a new instance of SchemaDef.
+#[derive(Debug, Clone)]
+pub struct SchemaDefBuilder {
+    // Description may be a String.
+    description: Option<String>,
+    // The vector of fields in a schema to represent root operation type
+    // definition.
+    query: Option<String>,
+    mutation: Option<String>,
+    subscription: Option<String>,
+}
+
+impl SchemaDefBuilder {
+    /// Create a new instance of SchemaDefBuilder.
     pub fn new() -> Self {
         Self {
-            description: StringValue::Top { source: None },
+            description: None,
             query: None,
             mutation: None,
             subscription: None,
@@ -54,31 +64,39 @@ impl SchemaDef {
     }
 
     /// Set the SchemaDef's description.
-    pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
-            source: description,
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
     }
 
     /// Set the schema def's query type.
-    pub fn query(&mut self, query: &str) {
+    pub fn query(mut self, query: &str) -> Self {
         self.query = Some(query.to_string());
+        self
     }
 
     /// Set the schema def's mutation type.
-    pub fn mutation(&mut self, mutation: &str) {
+    pub fn mutation(mut self, mutation: &str) -> Self {
         self.mutation = Some(mutation.to_string());
+        self
     }
 
     /// Set the schema def's subscription type.
-    pub fn subscription(&mut self, subscription: &str) {
+    pub fn subscription(mut self, subscription: &str) -> Self {
         self.subscription = Some(subscription.to_string());
+        self
     }
-}
 
-impl Default for SchemaDef {
-    fn default() -> Self {
-        Self::new()
+    /// Create a new instance of SchemaDef.
+    pub fn build(self) -> SchemaDef {
+        SchemaDef {
+            description: StringValue::Top {
+                source: self.description,
+            },
+            query: self.query,
+            mutation: self.mutation,
+            subscription: self.subscription,
+        }
     }
 }
 

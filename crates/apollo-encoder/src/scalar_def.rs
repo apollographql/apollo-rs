@@ -30,20 +30,37 @@ pub struct ScalarDef {
     description: StringValue,
 }
 
-impl ScalarDef {
-    /// Create a new instance of Scalar Definition.
+#[derive(Debug, Clone)]
+pub struct ScalarDefBuilder {
+    // Name must return a String.
+    name: String,
+    // Description may return a String or null.
+    description: Option<String>,
+}
+
+impl ScalarDefBuilder {
+    /// Create a new instance of ScalarDefBuilder.
     pub fn new(name: &str) -> Self {
         Self {
             name: name.to_string(),
-            description: StringValue::Top { source: None },
+            description: None,
         }
     }
 
     /// Set the ScalarDef's description.
-    pub fn description(&mut self, description: &str) {
-        self.description = StringValue::Top {
-            source: Some(description.to_string()),
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
+    }
+
+    /// Create a new instance of ScalarDef.
+    pub fn build(self) -> ScalarDef {
+        ScalarDef {
+            name: self.name,
+            description: StringValue::Top {
+                source: self.description,
+            },
+        }
     }
 }
 

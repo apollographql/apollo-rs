@@ -43,37 +43,64 @@ pub struct Field {
     deprecation_reason: StringValue,
 }
 
-impl Field {
-    /// Create a new instance of Field.
+#[derive(Debug, Clone)]
+pub struct FieldBuilder {
+    // Name must return a String.
+    name: String,
+    // Description may return a String.
+    description: Option<String>,
+    // Args returns a List of __InputValue representing the arguments this field accepts.
+    args: Vec<InputValue>,
+    // Type must return a __Type that represents the type of value returned by this field.
+    type_: Type_,
+    // Deprecation reason optionally provides a reason why this field is deprecated.
+    deprecation_reason: Option<String>,
+}
+
+impl FieldBuilder {
+    /// Create a new instance of FieldBuilder.
     pub fn new(name: &str, type_: Type_) -> Self {
         Self {
-            description: StringValue::Field { source: None },
             name: name.to_string(),
-            type_,
+            description: None,
             args: Vec::new(),
-            is_deprecated: false,
-            deprecation_reason: StringValue::Reason { source: None },
+            type_,
+            deprecation_reason: None,
         }
     }
 
     /// Set the Field's description.
-    pub fn description(&mut self, description: &str) {
-        self.description = StringValue::Field {
-            source: Some(description.to_string()),
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
     }
 
     /// Set the Field's deprecation properties.
-    pub fn deprecated(&mut self, reason: &str) {
-        self.is_deprecated = true;
-        self.deprecation_reason = StringValue::Reason {
-            source: Some(reason.to_string()),
-        };
+    pub fn deprecated(mut self, reason: &str) -> Self {
+        self.deprecation_reason = Some(reason.to_string());
+        self
     }
 
     /// Set the Field's arguments.
-    pub fn arg(&mut self, arg: InputValue) {
+    pub fn arg(mut self, arg: InputValue) -> Self {
         self.args.push(arg);
+        self
+    }
+
+    /// Create a new instance of Field.
+    pub fn build(self) -> Field {
+        Field {
+            name: self.name,
+            description: StringValue::Field {
+                source: self.description,
+            },
+            args: self.args,
+            type_: self.type_,
+            is_deprecated: self.deprecation_reason.is_some(),
+            deprecation_reason: StringValue::Reason {
+                source: self.deprecation_reason,
+            },
+        }
     }
 }
 

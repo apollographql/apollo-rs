@@ -74,32 +74,57 @@ pub struct InterfaceDef {
     fields: Vec<Field>,
 }
 
-impl InterfaceDef {
-    /// Create a new instance of InterfaceDef.
+#[derive(Debug, Clone)]
+pub struct InterfaceDefBuilder {
+    // Name must return a String.
+    name: String,
+    // Description may return a String or null.
+    description: Option<String>,
+    // The vector of interfaces that this interface implements.
+    interfaces: Vec<String>,
+    // The vector of fields required by this interface.
+    fields: Vec<Field>,
+}
+
+impl InterfaceDefBuilder {
+    /// Create a new instance of InterfaceDefBuilder.
     pub fn new(name: &str) -> Self {
         Self {
             name: name.to_string(),
-            description: StringValue::Top { source: None },
+            description: None,
             fields: Vec::new(),
             interfaces: Vec::new(),
         }
     }
 
     /// Set the schema def's description.
-    pub fn description(&mut self, description: &str) {
-        self.description = StringValue::Top {
-            source: Some(description.to_string()),
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
     }
 
     /// Set the interfaces ObjectDef implements.
-    pub fn interface(&mut self, interface: &str) {
-        self.interfaces.push(interface.to_string())
+    pub fn interface(mut self, interface: &str) -> Self {
+        self.interfaces.push(interface.to_string());
+        self
     }
 
     /// Push a Field to schema def's fields vector.
-    pub fn field(&mut self, field: Field) {
-        self.fields.push(field)
+    pub fn field(mut self, field: Field) -> Self {
+        self.fields.push(field);
+        self
+    }
+
+    /// Create a new instance of InterfaceDef.
+    pub fn build(self) -> InterfaceDef {
+        InterfaceDef {
+            name: self.name,
+            description: StringValue::Top {
+                source: self.description,
+            },
+            fields: self.fields,
+            interfaces: self.interfaces,
+        }
     }
 }
 

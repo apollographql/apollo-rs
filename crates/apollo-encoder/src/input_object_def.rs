@@ -54,26 +54,47 @@ pub struct InputObjectDef {
     fields: Vec<InputField>,
 }
 
-impl InputObjectDef {
-    /// Create a new instance of ObjectDef with a name.
+#[derive(Debug, Clone)]
+pub struct InputObjectDefBuilder {
+    // Name must return a String.
+    name: String,
+    // Description may return a String or null.
+    description: Option<String>,
+    // A vector of fields
+    fields: Vec<InputField>,
+}
+
+impl InputObjectDefBuilder {
+    /// Create a new instance of ObjectDefBuilder.
     pub fn new(name: &str) -> Self {
         Self {
             name: name.to_string(),
-            description: StringValue::Top { source: None },
+            description: None,
             fields: Vec::new(),
         }
     }
 
     /// Set the InputObjectDef's description field.
-    pub fn description(&mut self, description: &str) {
-        self.description = StringValue::Top {
-            source: Some(description.to_string()),
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
     }
 
     /// Push a Field to InputObjectDef's fields vector.
-    pub fn field(&mut self, field: InputField) {
-        self.fields.push(field)
+    pub fn field(mut self, field: InputField) -> Self {
+        self.fields.push(field);
+        self
+    }
+
+    /// Create a new instance of ObjectDef.
+    pub fn build(self) -> InputObjectDef {
+        InputObjectDef {
+            name: self.name,
+            description: StringValue::Top {
+                source: self.description,
+            },
+            fields: self.fields,
+        }
     }
 }
 

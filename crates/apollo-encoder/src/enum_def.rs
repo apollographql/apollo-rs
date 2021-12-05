@@ -48,26 +48,48 @@ pub struct EnumDef {
     values: Vec<EnumValue>,
 }
 
-impl EnumDef {
-    /// Create a new instance of Enum Definition.
+#[derive(Debug, Clone)]
+pub struct EnumDefBuilder {
+    // Name must return a String.
+    name: String,
+    // Description may return a String or null.
+    description: Option<String>,
+    // A vector of EnumValue. There must be at least one and they must have
+    // unique names.
+    values: Vec<EnumValue>,
+}
+
+impl EnumDefBuilder {
+    /// Create a new instance of EnumDefBuilder.
     pub fn new(name: &str) -> Self {
         Self {
             name: name.to_string(),
-            description: StringValue::Top { source: None },
+            description: None,
             values: Vec::new(),
         }
     }
 
     /// Set the Enum Definition's description.
-    pub fn description(&mut self, description: &str) {
-        self.description = StringValue::Top {
-            source: Some(description.to_string()),
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
     }
 
     /// Set the Enum Definitions's values.
-    pub fn value(&mut self, value: EnumValue) {
-        self.values.push(value)
+    pub fn value(mut self, value: EnumValue) -> Self {
+        self.values.push(value);
+        self
+    }
+
+    /// Create a new instance of EnumDef.
+    pub fn build(self) -> EnumDef {
+        EnumDef {
+            name: self.name,
+            description: StringValue::Top {
+                source: self.description,
+            },
+            values: self.values,
+        }
     }
 }
 

@@ -58,32 +58,57 @@ pub struct ObjectDef {
     fields: Vec<Field>,
 }
 
-impl ObjectDef {
+#[derive(Debug)]
+pub struct ObjectDefBuilder {
+    // Name must return a String.
+    name: String,
+    // Description may return a String or null.
+    description: Option<String>,
+    // The vector of interfaces that an object implements.
+    interfaces: Vec<String>,
+    // The vector of fields query‐able on this type.
+    fields: Vec<Field>,
+}
+
+impl ObjectDefBuilder {
     /// Create a new instance of ObjectDef with a name.
     pub fn new(name: &str) -> Self {
         Self {
             name: name.to_string(),
-            description: StringValue::Top { source: None },
+            description: None,
             interfaces: Vec::new(),
             fields: Vec::new(),
         }
     }
 
     /// Set the ObjectDef's description field.
-    pub fn description(&mut self, description: &str) {
-        self.description = StringValue::Top {
-            source: Some(description.to_string()),
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
     }
 
     /// Set the interfaces ObjectDef implements.
-    pub fn interface(&mut self, interface: &str) {
-        self.interfaces.push(interface.to_string())
+    pub fn interface(mut self, interface: &str) -> Self {
+        self.interfaces.push(interface.to_string());
+        self
     }
 
     /// Push a Field to ObjectDef's fields vector.
-    pub fn field(&mut self, field: Field) {
-        self.fields.push(field)
+    pub fn field(mut self, field: Field) -> Self {
+        self.fields.push(field);
+        self
+    }
+
+    /// Create a new instance of ObjectDef with a name.
+    pub fn build(self) -> ObjectDef {
+        ObjectDef {
+            name: self.name,
+            description: StringValue::Top {
+                source: self.description,
+            },
+            interfaces: self.interfaces,
+            fields: self.fields,
+        }
     }
 }
 

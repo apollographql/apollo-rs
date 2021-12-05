@@ -44,32 +44,59 @@ pub struct Directive {
     locations: Vec<String>,
 }
 
-impl Directive {
-    /// Create a new instance of Directive definition.
+#[derive(Debug)]
+pub struct DirectiveBuilder {
+    // Name must return a String.
+    name: String,
+    // Description may return a String or null.
+    description: Option<String>,
+    // Args returns a Vector of __InputValue representing the arguments this
+    // directive accepts.
+    args: Vec<InputValue>,
+    // Locations returns a List of __DirectiveLocation representing the valid
+    // locations this directive may be placed.
+    locations: Vec<String>,
+}
+
+impl DirectiveBuilder {
+    /// Create a new instance of DirectiveBuilder.
     pub fn new(name: &str) -> Self {
         Self {
             name: name.to_string(),
-            description: StringValue::Top { source: None },
+            description: None,
             args: Vec::new(),
             locations: Vec::new(),
         }
     }
 
     /// Set the Directive's description.
-    pub fn description(&mut self, description: &str) {
-        self.description = StringValue::Top {
-            source: Some(description.to_string()),
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
     }
 
     /// Set the Directive's location.
-    pub fn location(&mut self, location: &str) {
+    pub fn location(mut self, location: &str) -> Self {
         self.locations.push(location.to_string());
+        self
     }
 
     /// Set the Directive's args.
-    pub fn arg(&mut self, arg: InputValue) {
+    pub fn arg(mut self, arg: InputValue) -> Self {
         self.args.push(arg);
+        self
+    }
+
+    /// Create a new instance of Directive.
+    pub fn build(self) -> Directive {
+        Directive {
+            name: self.name,
+            description: StringValue::Top {
+                source: self.description,
+            },
+            args: self.args,
+            locations: self.locations,
+        }
     }
 }
 

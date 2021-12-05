@@ -30,7 +30,8 @@ use crate::{
 ///     "# }
 /// );
 /// ```
-#[derive(Debug)]
+///
+#[derive(Debug, Default)]
 pub struct Schema {
     buf: String,
 }
@@ -42,57 +43,59 @@ impl Schema {
     }
 
     /// Adds a new Directive Definition.
-    pub fn directive(&mut self, directive: Directive) {
+    pub fn directive(mut self, directive: Directive) -> Self {
         self.buf.push_str(&directive.to_string());
+        self
     }
 
     /// Adds a new Type Definition.
-    pub fn object(&mut self, object: ObjectDef) {
+    pub fn object(mut self, object: ObjectDef) -> Self {
         self.buf.push_str(&object.to_string());
+        self
     }
 
     /// Adds a new Schema Definition.
     ///
     /// The schema type is only used when the root GraphQL type is different
     /// from default GraphQL types.
-    pub fn schema(&mut self, schema: SchemaDef) {
+    pub fn schema(mut self, schema: SchemaDef) -> Self {
         self.buf.push_str(&schema.to_string());
+        self
     }
 
     /// Adds a new Input Object Definition.
-    pub fn input(&mut self, input: InputObjectDef) {
+    pub fn input(mut self, input: InputObjectDef) -> Self {
         self.buf.push_str(&input.to_string());
+        self
     }
 
     /// Adds a new Enum Definition.
-    pub fn enum_(&mut self, enum_: EnumDef) {
+    pub fn enum_(mut self, enum_: EnumDef) -> Self {
         self.buf.push_str(&enum_.to_string());
+        self
     }
 
     /// Adds a new Scalar Definition.
-    pub fn scalar(&mut self, scalar: ScalarDef) {
+    pub fn scalar(mut self, scalar: ScalarDef) -> Self {
         self.buf.push_str(&scalar.to_string());
+        self
     }
 
     /// Adds a new Union Definition.
-    pub fn union(&mut self, union_: UnionDef) {
+    pub fn union(mut self, union_: UnionDef) -> Self {
         self.buf.push_str(&union_.to_string());
+        self
     }
 
     /// Adds a new Interface Definition.
-    pub fn interface(&mut self, interface: InterfaceDef) {
+    pub fn interface(mut self, interface: InterfaceDef) -> Self {
         self.buf.push_str(&interface.to_string());
+        self
     }
 
     /// Return the encoded SDL string after all types have been processed.
     pub fn finish(self) -> String {
         self.buf
-    }
-}
-
-impl Default for Schema {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

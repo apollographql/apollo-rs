@@ -33,26 +33,47 @@ pub struct UnionDef {
     members: Vec<String>,
 }
 
-impl UnionDef {
-    /// Create a new instance of a UnionDef.
+#[derive(Debug, Clone)]
+pub struct UnionDefBuilder {
+    // Name must return a String.
+    name: String,
+    // Description may return a String.
+    description: Option<String>,
+    // The vector of members that can be represented within this union.
+    members: Vec<String>,
+}
+
+impl UnionDefBuilder {
+    /// Create a new instance of a UnionDefBuilder.
     pub fn new(name: &str) -> Self {
         Self {
             name: name.to_string(),
-            description: StringValue::Top { source: None },
+            description: None,
             members: Vec::new(),
         }
     }
 
     /// Set the UnionDefs description.
-    pub fn description(&mut self, description: &str) {
-        self.description = StringValue::Top {
-            source: Some(description.to_string()),
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
     }
 
     /// Set a UnionDef member.
-    pub fn member(&mut self, member: &str) {
+    pub fn member(mut self, member: &str) -> Self {
         self.members.push(member.to_string());
+        self
+    }
+
+    /// Create a new instance of a UnionDef.
+    pub fn build(self) -> UnionDef {
+        UnionDef {
+            name: self.name,
+            description: StringValue::Top {
+                source: self.description,
+            },
+            members: self.members,
+        }
     }
 }
 

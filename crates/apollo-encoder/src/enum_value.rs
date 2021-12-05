@@ -35,30 +35,50 @@ pub struct EnumValue {
     deprecation_reason: StringValue,
 }
 
-impl EnumValue {
-    /// Create a new instance of EnumValue.
+#[derive(Debug, Clone)]
+pub struct EnumValueBuilder {
+    // Name must return a String.
+    name: String,
+    // Description may return a String or null.
+    description: Option<String>,
+    // Deprecation reason optionally provides a reason why this enum value is deprecated.
+    deprecation_reason: Option<String>,
+}
+
+impl EnumValueBuilder {
+    /// Create a new instance of EnumValueBuilder.
     pub fn new(name: &str) -> Self {
         Self {
             name: name.to_string(),
-            is_deprecated: false,
-            description: StringValue::Field { source: None },
-            deprecation_reason: StringValue::Reason { source: None },
+            description: None,
+            deprecation_reason: None,
         }
     }
 
     /// Set the Enum Value's description.
-    pub fn description(&mut self, description: &str) {
-        self.description = StringValue::Field {
-            source: Some(description.to_string()),
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
     }
 
     /// Set the Enum Value's deprecation properties.
-    pub fn deprecated(&mut self, reason: &str) {
-        self.is_deprecated = true;
-        self.deprecation_reason = StringValue::Reason {
-            source: Some(reason.to_string()),
-        };
+    pub fn deprecated(mut self, reason: &str) -> Self {
+        self.deprecation_reason = Some(reason.to_string());
+        self
+    }
+
+    /// Create a new instance of EnumValue.
+    pub fn build(self) -> EnumValue {
+        EnumValue {
+            name: self.name,
+            description: StringValue::Field {
+                source: self.description,
+            },
+            is_deprecated: self.deprecation_reason.is_some(),
+            deprecation_reason: StringValue::Reason {
+                source: self.deprecation_reason,
+            },
+        }
     }
 }
 

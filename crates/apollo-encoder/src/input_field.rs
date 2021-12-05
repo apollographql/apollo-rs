@@ -2,7 +2,6 @@ use std::fmt;
 
 use crate::{StringValue, Type_};
 
-#[derive(Debug, PartialEq, Clone)]
 /// Input Field in a given Input Object.
 /// A GraphQL Input Object defines a set of input fields; the input fields are
 /// either scalars, enums, or other input objects. Input fields are similar to
@@ -19,6 +18,7 @@ use crate::{StringValue, Type_};
 ///
 /// assert_eq!(field.to_string(), r#"  cat: CatBreed = "Norwegian Forest""#);
 /// ```
+#[derive(Debug, PartialEq, Clone)]
 pub struct InputField {
     // Name must return a String.
     name: String,
@@ -30,27 +30,51 @@ pub struct InputField {
     default_value: Option<String>,
 }
 
-impl InputField {
-    /// Create a new instance of InputField.
+#[derive(Debug, Clone)]
+pub struct InputFieldBuilder {
+    // Name must return a String.
+    name: String,
+    // Description may return a String.
+    description: Option<String>,
+    // Type must return a __Type that represents the type of value returned by this field.
+    type_: Type_,
+    // Default value for this input field.
+    default_value: Option<String>,
+}
+
+impl InputFieldBuilder {
+    /// Create a new instance of InputFieldBuilder.
     pub fn new(name: &str, type_: Type_) -> Self {
         Self {
-            description: StringValue::Field { source: None },
             name: name.to_string(),
+            description: None,
             type_,
             default_value: None,
         }
     }
 
     /// Set the InputField's description.
-    pub fn description(&mut self, description: &str) {
-        self.description = StringValue::Field {
-            source: Some(description.to_string()),
-        };
+    pub fn description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
     }
 
     /// Set the InputField's default value.
-    pub fn default(&mut self, default: &str) {
+    pub fn default(mut self, default: &str) -> Self {
         self.default_value = Some(default.to_string());
+        self
+    }
+
+    /// Create a new instance of InputField.
+    pub fn build(self) -> InputField {
+        InputField {
+            name: self.name,
+            description: StringValue::Field {
+                source: self.description,
+            },
+            type_: self.type_,
+            default_value: self.default_value,
+        }
     }
 }
 
