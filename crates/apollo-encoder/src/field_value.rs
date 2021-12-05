@@ -40,6 +40,26 @@ pub enum Type_ {
     },
 }
 
+impl Type_ {
+    /// Create a new instance of Type_::NonNull.
+    pub const fn non_null(ty: Box<Type_>) -> Self {
+        Type_::NonNull { ty }
+    }
+
+    /// Create a new instance of Type_::List.
+    pub const fn list(ty: Box<Type_>) -> Self {
+        Type_::List { ty }
+    }
+
+    /// Create a new instance of Type_::NamedType.
+    #[inline(always)]
+    pub fn named_type(name: &str) -> Self {
+        Type_::NamedType {
+            name: name.to_string(),
+        }
+    }
+}
+
 impl Display for Type_ {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
