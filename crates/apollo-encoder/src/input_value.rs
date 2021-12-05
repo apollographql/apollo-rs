@@ -37,8 +37,7 @@ pub struct InputValue {
 /// ```rust
 /// use apollo_encoder::{Type_, InputValueBuilder};
 ///
-/// let ty = Type_::named_type("SpaceProgram");
-/// let ty = Type_::list(Box::new(ty));
+/// let ty = Type_::list(Type_::named("SpaceProgram"));
 /// let value = InputValueBuilder::new("cat", ty)
 ///     .description("Very good cats")
 ///     .deprecated("Cats are no longer sent to space.")
@@ -141,9 +140,7 @@ mod tests {
 
     #[test]
     fn it_encodes_simple_values() {
-        let ty = Type_::named_type("SpaceProgram");
-        let ty = Type_::list(Box::new(ty));
-        let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::non_null(Type_::list(Type_::named("SpaceProgram")));
 
         let value = InputValueBuilder::new("spaceCat", ty).build();
 
@@ -152,8 +149,7 @@ mod tests {
 
     #[test]
     fn it_encodes_input_values_with_default() {
-        let ty = Type_::named_type("Breed");
-        let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::non_null(Type_::named("Breed"));
 
         let value = InputValueBuilder::new("spaceCat", ty)
             .default("\"Norwegian Forest\"")
@@ -167,8 +163,7 @@ mod tests {
 
     #[test]
     fn it_encodes_value_with_deprecation() {
-        let ty = Type_::named_type("SpaceProgram");
-        let ty = Type_::list(Box::new(ty));
+        let ty = Type_::list(Type_::named("SpaceProgram"));
 
         let value = InputValueBuilder::new("cat", ty)
             .description("Very good cats")
@@ -183,10 +178,7 @@ mod tests {
 
     #[test]
     fn it_encodes_valueuments_with_description() {
-        let ty = Type_::named_type("SpaceProgram");
-        let ty = Type_::non_null(Box::new(ty));
-        let ty = Type_::list(Box::new(ty));
-        let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::non_null(Type_::list(Type_::non_null(Type_::named("SpaceProgram"))));
 
         let value = InputValueBuilder::new("spaceCat", ty)
             .description("Very good space cats")

@@ -130,22 +130,21 @@ mod tests {
             .build();
         let object_def = {
             let field_1 = {
-                let ty = Type_::named_type("DanglerPoleToys");
-                let ty = Type_::list(Box::new(ty));
+                let ty = Type_::list(Type_::named("DanglerPoleToys"));
 
                 FieldBuilder::new("toys", ty)
                     .deprecated("Cats are too spoiled")
                     .build()
             };
             let field_2 = {
-                let ty = Type_::named_type("FoodType");
+                let ty = Type_::named("FoodType");
 
                 FieldBuilder::new("food", ty)
                     .description("Dry or wet food?")
                     .build()
             };
             let field_3 = {
-                let field = Type_::named_type("Boolean");
+                let field = Type_::named("Boolean");
 
                 FieldBuilder::new("catGrass", field).build()
             };
@@ -178,15 +177,14 @@ mod tests {
             .build();
         let input_def = {
             let input_field = {
-                let ty = Type_::named_type("DanglerPoleToys");
-                let ty = Type_::list(Box::new(ty));
+                let ty = Type_::list(Type_::named("DanglerPoleToys"));
 
                 InputFieldBuilder::new("toys", ty)
                     .default("\"Cat Dangler Pole Bird\"")
                     .build()
             };
             let input_value_2 = {
-                let ty = Type_::named_type("FavouriteSpots");
+                let ty = Type_::named("FavouriteSpots");
 
                 InputFieldBuilder::new("playSpot", ty)
                     .description("Best playime spots, e.g. \"tree\", \"bed\".")

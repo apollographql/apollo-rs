@@ -30,7 +30,7 @@ pub struct InterfaceDef {
 /// use indoc::indoc;
 ///
 /// let field_1 = {
-///     let ty = Type_::named_type("String");
+///     let ty = Type_::named("String");
 ///
 ///     FieldBuilder::new("main", ty)
 ///         .description("Cat's main dish of a meal.")
@@ -38,10 +38,7 @@ pub struct InterfaceDef {
 /// };
 ///
 /// let field_2 = {
-///     let ty = Type_::named_type("String");
-///     let ty = Type_::non_null(Box::new(ty));
-///     let ty = Type_::list(Box::new(ty));
-///     let ty = Type_::non_null(Box::new(ty));
+///     let ty = Type_::non_null(Type_::list(Type_::non_null(Type_::named("String"))));
 ///
 ///     FieldBuilder::new("snack", ty)
 ///         .description("Cat's post meal snack.")
@@ -49,7 +46,7 @@ pub struct InterfaceDef {
 /// };
 ///
 /// let field_3 = {
-///     let ty = Type_::named_type("Boolean");
+///     let ty = Type_::named("Boolean");
 ///
 ///     FieldBuilder::new("pats", ty)
 ///         .description("Does cat get a pat after meal?")
@@ -165,7 +162,7 @@ mod tests {
     #[test]
     fn it_encodes_interfaces() {
         let field_1 = {
-            let ty = Type_::named_type("String");
+            let ty = Type_::named("String");
 
             FieldBuilder::new("main", ty)
                 .description("Cat's main dish of a meal.")
@@ -173,10 +170,7 @@ mod tests {
         };
 
         let field_2 = {
-            let ty = Type_::named_type("String");
-            let ty = Type_::non_null(Box::new(ty));
-            let ty = Type_::list(Box::new(ty));
-            let ty = Type_::non_null(Box::new(ty));
+            let ty = Type_::non_null(Type_::list(Type_::non_null(Type_::named("String"))));
 
             FieldBuilder::new("snack", ty)
                 .description("Cat's post meal snack.")
@@ -184,7 +178,7 @@ mod tests {
         };
 
         let field_3 = {
-            let ty = Type_::named_type("Boolean");
+            let ty = Type_::named("Boolean");
 
             FieldBuilder::new("pats", ty)
                 .description("Does cat get a pat\nafter meal?")

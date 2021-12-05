@@ -28,15 +28,14 @@ pub struct InputObjectDef {
 /// use indoc::indoc;
 ///
 /// let field_1 = {
-///     let ty = Type_::named_type("DanglerPoleToys");
-///     let ty = Type_::list(Box::new(ty));
+///     let ty = Type_::list(Type_::named("DanglerPoleToys"));
 ///
 ///     InputFieldBuilder::new("toys", ty)
 ///         .default("\"Cat Dangler Pole Bird\"")
 ///         .build()
 /// };
 /// let field_2 = {
-///     let ty = Type_::named_type("FavouriteSpots");
+///     let ty = Type_::named("FavouriteSpots");
 ///
 ///     InputFieldBuilder::new("playSpot", ty)
 ///         .description("Best playime spots, e.g. tree, bed.")
@@ -127,8 +126,7 @@ mod tests {
     #[test]
     fn it_encodes_input_object() {
         let field_1 = {
-            let ty = Type_::named_type("DanglerPoleToys");
-            let ty = Type_::list(Box::new(ty));
+            let ty = Type_::list(Type_::named("DanglerPoleToys"));
 
             InputFieldBuilder::new("toys", ty)
                 .default("\"Cat Dangler Pole Bird\"")
@@ -136,7 +134,7 @@ mod tests {
         };
 
         let field_2 = {
-            let ty = Type_::named_type("FavouriteSpots");
+            let ty = Type_::named("FavouriteSpots");
 
             InputFieldBuilder::new("playSpot", ty)
                 .description("Best playime spots, e.g. tree, bed.")
@@ -163,8 +161,7 @@ mod tests {
     #[test]
     fn it_encodes_input_object_with_description() {
         let field_1 = {
-            let ty = Type_::named_type("DanglerPoleToys");
-            let ty = Type_::list(Box::new(ty));
+            let ty = Type_::list(Type_::named("DanglerPoleToys"));
 
             InputFieldBuilder::new("toys", ty)
                 .default("\"Cat Dangler Pole Bird\"")
@@ -172,7 +169,7 @@ mod tests {
         };
 
         let field_2 = {
-            let ty = Type_::named_type("FavouriteSpots");
+            let ty = Type_::named("FavouriteSpots");
 
             InputFieldBuilder::new("playSpot", ty)
                 .description("Best playime spots, e.g. tree, bed.")

@@ -170,8 +170,7 @@ directive @infer on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
     #[test]
     fn it_encodes_directives_with_arguments() {
         let arg = {
-            let ty = Type_::named_type("SpaceProgram");
-            let ty = Type_::list(Box::new(ty));
+            let ty = Type_::list(Type_::named("SpaceProgram"));
 
             InputValueBuilder::new("cat", ty).build()
         };

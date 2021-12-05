@@ -9,11 +9,9 @@ use std::fmt::{self, Display};
 /// ```rust
 /// use apollo_encoder::{Type_};
 ///
-/// let field_ty = Type_::named_type("String");
-/// let list = Type_::list(Box::new(field_ty));
-/// let non_null = Type_::non_null(Box::new(list));
+/// let ty = Type_::non_null(Type_::list(Type_::named("String")));
 ///
-/// assert_eq!(non_null.to_string(), "[String]!");
+/// assert_eq!(ty.to_string(), "[String]!");
 /// ```
 #[derive(Debug, PartialEq, Clone)]
 pub enum Type_ {
@@ -75,34 +73,29 @@ mod tests {
 
     #[test]
     fn encodes_simple_field_value() {
-        let ty = Type_::named_type("String");
+        let ty = Type_::named("String");
 
         assert_eq!(ty.to_string(), "String");
     }
 
     #[test]
     fn encodes_list_field_value() {
-        let ty = Type_::named_type("String");
-        let ty = Type_::list(Box::new(ty));
+        let ty = Type_::list(Type_::named("String"));
 
         assert_eq!(ty.to_string(), "[String]");
     }
 
     #[test]
     fn encodes_non_null_list_field_value() {
-        let ty = Type_::named_type("String");
-        let ty = Type_::list(Box::new(ty));
-        let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::non_null(Type_::list(Type_::named("String")));
 
         assert_eq!(ty.to_string(), "[String]!");
     }
     #[test]
     fn encodes_non_null_list_non_null_list_field_value() {
-        let ty = Type_::named_type("String");
-        let ty = Type_::list(Box::new(ty));
-        let ty = Type_::non_null(Box::new(ty));
-        let ty = Type_::list(Box::new(ty));
-        let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::non_null(Type_::list(Type_::non_null(Type_::list(Type_::named(
+            "String",
+        )))));
 
         assert_eq!(ty.to_string(), "[[String]!]!");
     }

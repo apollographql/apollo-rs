@@ -27,12 +27,13 @@ pub struct Field {
 /// ```rust
 /// use apollo_encoder::{Type_, FieldBuilder, InputValueBuilder};
 ///
-/// let ty = Type_::named_type("CatBreed");
 /// let arg = {
-///     let ty = Type_::named_type("CatBreed");
+///     let ty = Type_::named("CatBreed");
 ///
 ///     InputValueBuilder::new("breed", ty).build()
 /// };
+///
+/// let ty = Type_::named("CatBreed");
 ///
 /// let field = FieldBuilder::new("cat", ty)
 ///     .arg(arg)
@@ -142,9 +143,7 @@ mod tests {
 
     #[test]
     fn it_encodes_simple_fields() {
-        let ty = Type_::named_type("SpaceProgram");
-        let ty = Type_::list(Box::new(ty));
-        let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::non_null(Type_::list(Type_::named("SpaceProgram")));
 
         let field = FieldBuilder::new("spaceCat", ty).build();
 
@@ -153,8 +152,7 @@ mod tests {
 
     #[test]
     fn it_encodes_fields_with_deprecation() {
-        let ty = Type_::named_type("SpaceProgram");
-        let ty = Type_::list(Box::new(ty));
+        let ty = Type_::list(Type_::named("SpaceProgram"));
 
         let field = FieldBuilder::new("cat", ty)
             .description("Very good cats")
@@ -170,10 +168,7 @@ mod tests {
 
     #[test]
     fn it_encodes_fields_with_description() {
-        let ty = Type_::named_type("SpaceProgram");
-        let ty = Type_::non_null(Box::new(ty));
-        let ty = Type_::list(Box::new(ty));
-        let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::non_null(Type_::list(Type_::non_null(Type_::named("SpaceProgram"))));
 
         let field = FieldBuilder::new("spaceCat", ty)
             .description("Very good space cats")
@@ -189,14 +184,10 @@ mod tests {
     #[test]
     fn it_encodes_fields_with_valueuments() {
         let field = {
-            let ty = Type_::named_type("SpaceProgram");
-            let ty = Type_::non_null(Box::new(ty));
-            let ty = Type_::list(Box::new(ty));
-            let ty = Type_::non_null(Box::new(ty));
+            let ty = Type_::non_null(Type_::list(Type_::non_null(Type_::named("SpaceProgram"))));
 
             let arg = {
-                let ty = Type_::named_type("SpaceProgram");
-                let ty = Type_::list(Box::new(ty));
+                let ty = Type_::list(Type_::named("SpaceProgram"));
 
                 InputValueBuilder::new("cat", ty)
                     .deprecated("Cats are no longer sent to space.")

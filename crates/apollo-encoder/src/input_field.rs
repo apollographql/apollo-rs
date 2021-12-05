@@ -22,7 +22,7 @@ pub struct InputField {
 /// ```rust
 /// use apollo_encoder::{Type_, InputFieldBuilder};
 ///
-/// let ty = Type_::named_type("CatBreed");
+/// let ty = Type_::named("CatBreed");
 ///
 /// let field = InputFieldBuilder::new("cat", ty)
 ///     .default("\"Norwegian Forest\"")
@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn it_encodes_fields_with_defaults() {
-        let ty = Type_::named_type("CatBreed");
+        let ty = Type_::named("CatBreed");
 
         let field = InputFieldBuilder::new("cat", ty)
             .default("\"Norwegian Forest\"")

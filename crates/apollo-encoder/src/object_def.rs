@@ -28,15 +28,14 @@ pub struct ObjectDef {
 /// use indoc::indoc;
 ///
 /// let field_1 = {
-///     let ty = Type_::named_type("DanglerPoleToys");
-///     let ty = Type_::list(Box::new(ty));
+///     let ty = Type_::list(Type_::named("DanglerPoleToys"));
 ///
 ///     FieldBuilder::new("toys", ty)
 ///         .deprecated("Cats are too spoiled")
 ///         .build()
 /// };
 /// let field_2 = {
-///     let ty = Type_::named_type("FoodType");
+///     let ty = Type_::named("FoodType");
 ///
 ///     FieldBuilder::new("food", ty)
 ///         .description("Dry or wet food?")
@@ -44,7 +43,7 @@ pub struct ObjectDef {
 /// };
 ///
 /// let field_3 = {
-///     let ty = Type_::named_type("Boolean");
+///     let ty = Type_::named("Boolean");
 ///
 ///     FieldBuilder::new("catGrass", ty).build()
 /// };
@@ -151,8 +150,7 @@ mod tests {
     #[test]
     fn it_encodes_object_with_description() {
         let field = {
-            let ty = Type_::named_type("DanglerPoleToys");
-            let ty = Type_::list(Box::new(ty));
+            let ty = Type_::list(Type_::named("DanglerPoleToys"));
 
             FieldBuilder::new("toys", ty).build()
         };
@@ -176,7 +174,7 @@ mod tests {
     #[test]
     fn it_encodes_object_with_field_directives() {
         let field = {
-            let ty = Type_::named_type("DanglerPoleToys");
+            let ty = Type_::named("DanglerPoleToys");
 
             FieldBuilder::new("toys", ty)
                 .deprecated("\"DanglerPoleToys\" are no longer interesting")
@@ -206,8 +204,7 @@ mod tests {
     #[test]
     fn it_encodes_object_with_interface() {
         let field_1 = {
-            let ty = Type_::named_type("DanglerPoleToys");
-            let ty = Type_::list(Box::new(ty));
+            let ty = Type_::list(Type_::named("DanglerPoleToys"));
 
             FieldBuilder::new("toys", ty)
                 .deprecated("Cats are too spoiled")
@@ -215,7 +212,7 @@ mod tests {
         };
 
         let field_2 = {
-            let ty = Type_::named_type("FoodType");
+            let ty = Type_::named("FoodType");
 
             FieldBuilder::new("food", ty)
                 .description("Dry or wet food?")
@@ -223,7 +220,7 @@ mod tests {
         };
 
         let field_3 = {
-            let ty = Type_::named_type("Boolean");
+            let ty = Type_::named("Boolean");
 
             FieldBuilder::new("catGrass", ty).build()
         };
@@ -253,7 +250,7 @@ mod tests {
     #[test]
     fn it_encodes_object_with_block_string_description() {
         let field = {
-            let ty = Type_::named_type("String");
+            let ty = Type_::named("String");
 
             FieldBuilder::new("name", ty)
                 .description("multiline\ndescription")
