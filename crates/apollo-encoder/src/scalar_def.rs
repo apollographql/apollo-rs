@@ -12,10 +12,8 @@ use crate::StringValue;
 /// ```rust
 /// use apollo_encoder::ScalarDef;
 ///
-/// let mut scalar = ScalarDef::new("NumberOfTreatsPerDay".to_string());
-/// scalar.description(Some(
-///     "Int representing number of treats received.".to_string(),
-/// ));
+/// let mut scalar = ScalarDef::new("NumberOfTreatsPerDay");
+/// scalar.description("Int representing number of treats received.");
 ///
 /// assert_eq!(
 ///     scalar.to_string(),
@@ -63,7 +61,8 @@ mod tests {
 
     #[test]
     fn it_encodes_scalar() {
-        let scalar = ScalarDef::new("NumberOfTreatsPerDay".to_string());
+        let scalar = ScalarDef::new("NumberOfTreatsPerDay");
+
         assert_eq!(
             scalar.to_string(),
             r#"scalar NumberOfTreatsPerDay
@@ -73,10 +72,11 @@ mod tests {
 
     #[test]
     fn it_encodes_scalar_with_description() {
-        let mut scalar = ScalarDef::new("NumberOfTreatsPerDay".to_string());
-        scalar.description(Some(
-            "Int representing number of treats received.".to_string(),
-        ));
+        let scalar = {
+            let mut scalar = ScalarDef::new("NumberOfTreatsPerDay");
+            scalar.description("Int representing number of treats received.");
+            scalar
+        };
 
         assert_eq!(
             scalar.to_string(),

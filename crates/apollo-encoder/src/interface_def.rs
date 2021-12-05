@@ -18,36 +18,28 @@ use crate::{Field, StringValue};
 /// use apollo_encoder::{Type_, Field, InterfaceDef};
 /// use indoc::indoc;
 ///
-/// let ty_1 = Type_::NamedType {
-///     name: "String".to_string(),
-/// };
+/// let ty_1 = Type_::named_type("String");
 ///
-/// let ty_2 = Type_::NamedType {
-///     name: "String".to_string(),
-/// };
+/// let ty_2 = Type_::named_type("String");
 ///
-/// let ty_3 = Type_::NonNull { ty: Box::new(ty_2) };
-/// let ty_4 = Type_::List { ty: Box::new(ty_3) };
-/// let ty_5 = Type_::NonNull { ty: Box::new(ty_4) };
+/// let ty_3 = Type_::non_null(Box::new(ty_2));
+/// let ty_4 = Type_::list(Box::new(ty_3));
+/// let ty_5 = Type_::non_null(Box::new(ty_4));
 ///
-/// let ty_6 = Type_::NamedType {
-///     name: "Boolean".to_string(),
-/// };
+/// let ty_6 = Type_::named_type("Boolean");
 ///
-/// let mut field_1 = Field::new("main".to_string(), ty_1);
-/// field_1.description(Some("Cat's main dish of a meal.".to_string()));
+/// let mut field_1 = Field::new("main", ty_1);
+/// field_1.description("Cat's main dish of a meal.");
 ///
-/// let mut field_2 = Field::new("snack".to_string(), ty_5);
-/// field_2.description(Some("Cat's post meal snack.".to_string()));
+/// let mut field_2 = Field::new("snack", ty_5);
+/// field_2.description("Cat's post meal snack.");
 ///
-/// let mut field_3 = Field::new("pats".to_string(), ty_6);
-/// field_3.description(Some("Does cat get a pat after meal?".to_string()));
+/// let mut field_3 = Field::new("pats", ty_6);
+/// field_3.description("Does cat get a pat after meal?");
 ///
 /// // a schema definition
-/// let mut interface = InterfaceDef::new("Meal".to_string());
-/// interface.description(Some(
-///     "Meal interface for various\nmeals during the day.".to_string(),
-/// ));
+/// let mut interface = InterfaceDef::new("Meal");
+/// interface.description("Meal interface for various\nmeals during the day.");
 /// interface.field(field_1);
 /// interface.field(field_2);
 /// interface.field(field_3);
@@ -140,39 +132,42 @@ mod tests {
 
     #[test]
     fn it_encodes_interfaces() {
-        let ty_1 = Type_::NamedType {
-            name: "String".to_string(),
+        let field_1 = {
+            let ty = Type_::named_type("String");
+
+            let mut field = Field::new("main", ty);
+            field.description("Cat's main dish of a meal.");
+            field
         };
 
-        let ty_2 = Type_::NamedType {
-            name: "String".to_string(),
+        let field_2 = {
+            let ty = Type_::named_type("String");
+            let ty = Type_::non_null(Box::new(ty));
+            let ty = Type_::list(Box::new(ty));
+            let ty = Type_::non_null(Box::new(ty));
+
+            let mut field = Field::new("snack", ty);
+            field.description("Cat's post meal snack.");
+            field
         };
 
-        let ty_3 = Type_::NonNull { ty: Box::new(ty_2) };
-        let ty_4 = Type_::List { ty: Box::new(ty_3) };
-        let ty_5 = Type_::NonNull { ty: Box::new(ty_4) };
+        let field_3 = {
+            let ty = Type_::named_type("Boolean");
 
-        let ty_6 = Type_::NamedType {
-            name: "Boolean".to_string(),
+            let mut field = Field::new("pats", ty);
+            field.description("Does cat get a pat\nafter meal?");
+            field
         };
-
-        let mut field_1 = Field::new("main".to_string(), ty_1);
-        field_1.description(Some("Cat's main dish of a meal.".to_string()));
-
-        let mut field_2 = Field::new("snack".to_string(), ty_5);
-        field_2.description(Some("Cat's post meal snack.".to_string()));
-
-        let mut field_3 = Field::new("pats".to_string(), ty_6);
-        field_3.description(Some("Does cat get a pat\nafter meal?".to_string()));
 
         // a schema definition
-        let mut interface = InterfaceDef::new("Meal".to_string());
-        interface.description(Some(
-            "Meal interface for various\nmeals during the day.".to_string(),
-        ));
-        interface.field(field_1);
-        interface.field(field_2);
-        interface.field(field_3);
+        let interface = {
+            let mut interface = InterfaceDef::new("Meal");
+            interface.description("Meal interface for various\nmeals during the day.");
+            interface.field(field_1);
+            interface.field(field_2);
+            interface.field(field_3);
+            interface
+        };
 
         assert_eq!(
             interface.to_string(),

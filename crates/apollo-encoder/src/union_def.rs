@@ -13,9 +13,9 @@ use crate::StringValue;
 /// ```rust
 /// use apollo_encoder::{UnionDef};
 ///
-/// let mut union_ = UnionDef::new("Pet".to_string());
-/// union_.member("Cat".to_string());
-/// union_.member("Dog".to_string());
+/// let mut union_ = UnionDef::new("Pet");
+/// union_.member("Cat");
+/// union_.member("Dog");
 ///
 /// assert_eq!(
 ///     union_.to_string(),
@@ -81,10 +81,13 @@ mod tests {
 
     #[test]
     fn it_encodes_union_with_description() {
-        let mut union_ = UnionDef::new("Pet".to_string());
-        union_.description(Some("A union of all animals in a household.".to_string()));
-        union_.member("Cat".to_string());
-        union_.member("Dog".to_string());
+        let union_ = {
+            let mut union_ = UnionDef::new("Pet");
+            union_.description("A union of all animals in a household.");
+            union_.member("Cat");
+            union_.member("Dog");
+            union_
+        };
 
         assert_eq!(
             union_.to_string(),

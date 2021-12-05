@@ -12,17 +12,13 @@ use crate::{InputValue, StringValue, Type_};
 /// ```rust
 /// use apollo_encoder::{Type_, Field, InputValue};
 ///
-/// let ty_1 = Type_::NamedType {
-///     name: "CatBreed".to_string(),
-/// };
+/// let ty_1 = Type_::named_type("CatBreed");
 ///
-/// let mut field = Field::new("cat".to_string(), ty_1);
+/// let mut field = Field::new("cat", ty_1);
 ///
-/// let value_1 = Type_::NamedType {
-///     name: "CatBreed".to_string(),
-/// };
+/// let value_1 = Type_::named_type("CatBreed");
 ///
-/// let arg = InputValue::new("breed".to_string(), value_1);
+/// let arg = InputValue::new("breed", value_1);
 ///
 /// field.arg(arg);
 ///
@@ -119,27 +115,28 @@ mod tests {
 
     #[test]
     fn it_encodes_simple_fields() {
-        let ty_1 = Type_::NamedType {
-            name: "SpaceProgram".to_string(),
-        };
+        let field = {
+            let ty = Type_::named_type("SpaceProgram");
+            let ty = Type_::list(Box::new(ty));
+            let ty = Type_::non_null(Box::new(ty));
 
-        let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let ty_3 = Type_::NonNull { ty: Box::new(ty_2) };
-        let field = Field::new("spaceCat".to_string(), ty_3);
+            Field::new("spaceCat", ty)
+        };
 
         assert_eq!(field.to_string(), r#"  spaceCat: [SpaceProgram]!"#);
     }
 
     #[test]
     fn it_encodes_fields_with_deprecation() {
-        let ty_1 = Type_::NamedType {
-            name: "SpaceProgram".to_string(),
-        };
+        let field = {
+            let ty = Type_::named_type("SpaceProgram");
+            let ty = Type_::list(Box::new(ty));
 
-        let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let mut field = Field::new("cat".to_string(), ty_2);
-        field.description(Some("Very good cats".to_string()));
-        field.deprecated(Some("Cats are no longer sent to space.".to_string()));
+            let mut field = Field::new("cat", ty);
+            field.description("Very good cats");
+            field.deprecated("Cats are no longer sent to space.");
+            field
+        };
 
         assert_eq!(
             field.to_string(),
@@ -150,15 +147,16 @@ mod tests {
 
     #[test]
     fn it_encodes_fields_with_description() {
-        let ty_1 = Type_::NamedType {
-            name: "SpaceProgram".to_string(),
-        };
+        let field = {
+            let ty = Type_::named_type("SpaceProgram");
+            let ty = Type_::non_null(Box::new(ty));
+            let ty = Type_::list(Box::new(ty));
+            let ty = Type_::non_null(Box::new(ty));
 
-        let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
-        let ty_3 = Type_::List { ty: Box::new(ty_2) };
-        let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
-        let mut field = Field::new("spaceCat".to_string(), ty_4);
-        field.description(Some("Very good space cats".to_string()));
+            let mut field = Field::new("spaceCat", ty);
+            field.description("Very good space cats");
+            field
+        };
 
         assert_eq!(
             field.to_string(),
@@ -169,26 +167,29 @@ mod tests {
 
     #[test]
     fn it_encodes_fields_with_valueuments() {
-        let ty_1 = Type_::NamedType {
-            name: "SpaceProgram".to_string(),
-        };
+        let field = {
+            let ty = {
+                let ty = Type_::named_type("SpaceProgram");
+                let ty = Type_::non_null(Box::new(ty));
+                let ty = Type_::list(Box::new(ty));
+                let ty = Type_::non_null(Box::new(ty));
+                ty
+            };
 
-        let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
-        let ty_3 = Type_::List { ty: Box::new(ty_2) };
-        let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
-        let mut field = Field::new("spaceCat".to_string(), ty_4);
-        field.description(Some("Very good space cats".to_string()));
+            let mut field = Field::new("spaceCat", ty);
+            field.description("Very good space cats");
 
-        let value_1 = Type_::NamedType {
-            name: "SpaceProgram".to_string(),
-        };
+            let arg = {
+                let value = Type_::named_type("SpaceProgram");
+                let value = Type_::list(Box::new(value));
 
-        let value_2 = Type_::List {
-            ty: Box::new(value_1),
+                let mut arg = InputValue::new("cat", value);
+                arg.deprecated("Cats are no longer sent to space.");
+                arg
+            };
+            field.arg(arg);
+            field
         };
-        let mut arg = InputValue::new("cat".to_string(), value_2);
-        arg.deprecated(Some("Cats are no longer sent to space.".to_string()));
-        field.arg(arg);
 
         assert_eq!(
             field.to_string(),

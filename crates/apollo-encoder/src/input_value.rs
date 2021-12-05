@@ -19,14 +19,12 @@ use crate::{StringValue, Type_};
 /// ```rust
 /// use apollo_encoder::{Type_, InputValue};
 ///
-/// let ty_1 = Type_::NamedType {
-///     name: "SpaceProgram".to_string(),
-/// };
+/// let ty_1 = Type_::named_type("SpaceProgram");
 ///
-/// let ty_2 = Type_::List { ty: Box::new(ty_1) };
-/// let mut value = InputValue::new("cat".to_string(), ty_2);
-/// value.description(Some("Very good cats".to_string()));
-/// value.deprecated(Some("Cats are no longer sent to space.".to_string()));
+/// let ty_2 = Type_::list(Box::new(ty_1));
+/// let mut value = InputValue::new("cat", ty_2);
+/// value.description("Very good cats");
+/// value.deprecated("Cats are no longer sent to space.");
 ///
 /// assert_eq!(
 ///     value.to_string(),
@@ -114,26 +112,27 @@ mod tests {
 
     #[test]
     fn it_encodes_simple_values() {
-        let ty_1 = Type_::NamedType {
-            name: "SpaceProgram".to_string(),
-        };
+        let value = {
+            let ty = Type_::named_type("SpaceProgram");
+            let ty = Type_::list(Box::new(ty));
+            let ty = Type_::non_null(Box::new(ty));
 
-        let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let ty_3 = Type_::NonNull { ty: Box::new(ty_2) };
-        let value = InputValue::new("spaceCat".to_string(), ty_3);
+            InputValue::new("spaceCat", ty)
+        };
 
         assert_eq!(value.to_string(), r#"spaceCat: [SpaceProgram]!"#);
     }
 
     #[test]
     fn it_encodes_input_values_with_default() {
-        let ty_1 = Type_::NamedType {
-            name: "Breed".to_string(),
-        };
+        let value = {
+            let ty = Type_::named_type("Breed");
+            let ty = Type_::non_null(Box::new(ty));
 
-        let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
-        let mut value = InputValue::new("spaceCat".to_string(), ty_2);
-        value.default(Some("\"Norwegian Forest\"".to_string()));
+            let mut value = InputValue::new("spaceCat", ty);
+            value.default("\"Norwegian Forest\"");
+            value
+        };
 
         assert_eq!(
             value.to_string(),
@@ -143,14 +142,15 @@ mod tests {
 
     #[test]
     fn it_encodes_value_with_deprecation() {
-        let ty_1 = Type_::NamedType {
-            name: "SpaceProgram".to_string(),
-        };
+        let value = {
+            let ty = Type_::named_type("SpaceProgram");
+            let ty = Type_::list(Box::new(ty));
 
-        let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let mut value = InputValue::new("cat".to_string(), ty_2);
-        value.description(Some("Very good cats".to_string()));
-        value.deprecated(Some("Cats are no longer sent to space.".to_string()));
+            let mut value = InputValue::new("cat", ty);
+            value.description("Very good cats");
+            value.deprecated("Cats are no longer sent to space.");
+            value
+        };
 
         assert_eq!(
             value.to_string(),
@@ -160,15 +160,16 @@ mod tests {
 
     #[test]
     fn it_encodes_valueuments_with_description() {
-        let ty_1 = Type_::NamedType {
-            name: "SpaceProgram".to_string(),
-        };
+        let value = {
+            let ty = Type_::named_type("SpaceProgram");
+            let ty = Type_::non_null(Box::new(ty));
+            let ty = Type_::list(Box::new(ty));
+            let ty = Type_::non_null(Box::new(ty));
 
-        let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
-        let ty_3 = Type_::List { ty: Box::new(ty_2) };
-        let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
-        let mut value = InputValue::new("spaceCat".to_string(), ty_4);
-        value.description(Some("Very good space cats".to_string()));
+            let mut value = InputValue::new("spaceCat", ty);
+            value.description("Very good space cats");
+            value
+        };
 
         assert_eq!(
             value.to_string(),

@@ -15,9 +15,9 @@ use crate::StringValue;
 /// use indoc::indoc;
 ///
 /// let mut schema_def = SchemaDef::new();
-/// schema_def.query("TryingToFindCatQuery".to_string());
-/// schema_def.mutation("MyMutation".to_string());
-/// schema_def.subscription("MySubscription".to_string());
+/// schema_def.query("TryingToFindCatQuery");
+/// schema_def.mutation("MyMutation");
+/// schema_def.subscription("MySubscription");
 ///
 /// assert_eq!(
 ///    schema_def.to_string(),
@@ -111,10 +111,13 @@ mod tests {
 
     #[test]
     fn it_encodes_schema_with_mutation_and_subscription() {
-        let mut schema_def = SchemaDef::new();
-        schema_def.query("TryingToFindCatQuery".to_string());
-        schema_def.mutation("MyMutation".to_string());
-        schema_def.subscription("MySubscription".to_string());
+        let schema_def = {
+            let mut schema_def = SchemaDef::new();
+            schema_def.query("TryingToFindCatQuery");
+            schema_def.mutation("MyMutation");
+            schema_def.subscription("MySubscription");
+            schema_def
+        };
 
         assert_eq!(
             schema_def.to_string(),

@@ -12,12 +12,10 @@ use crate::{StringValue, Type_};
 /// ```rust
 /// use apollo_encoder::{Type_, InputField};
 ///
-/// let ty_1 = Type_::NamedType {
-///     name: "CatBreed".to_string(),
-/// };
+/// let ty_1 = Type_::named_type("CatBreed");
 ///
-/// let mut field = InputField::new("cat".to_string(), ty_1);
-/// field.default(Some("\"Norwegian Forest\"".to_string()));
+/// let mut field = InputField::new("cat", ty_1);
+/// field.default("\"Norwegian Forest\"");
 ///
 /// assert_eq!(field.to_string(), r#"  cat: CatBreed = "Norwegian Forest""#);
 /// ```
@@ -76,12 +74,13 @@ mod tests {
 
     #[test]
     fn it_encodes_fields_with_defaults() {
-        let ty_1 = Type_::NamedType {
-            name: "CatBreed".to_string(),
-        };
+        let field = {
+            let ty = Type_::named_type("CatBreed");
 
-        let mut field = InputField::new("cat".to_string(), ty_1);
-        field.default(Some("\"Norwegian Forest\"".to_string()));
+            let mut field = InputField::new("cat", ty);
+            field.default("\"Norwegian Forest\"");
+            field
+        };
 
         assert_eq!(field.to_string(), r#"  cat: CatBreed = "Norwegian Forest""#);
     }

@@ -14,11 +14,11 @@ use crate::{InputValue, StringValue};
 /// use apollo_encoder::{Directive};
 /// use indoc::indoc;
 ///
-/// let mut directive = Directive::new("infer".to_string());
-/// directive.description(Some("Infer field types\nfrom field values.".to_string()));
-/// directive.location("OBJECT".to_string());
-/// directive.location("FIELD_DEFINITION".to_string());
-/// directive.location("INPUT_FIELD_DEFINITION".to_string());
+/// let mut directive = Directive::new("infer");
+/// directive.description("Infer field types\nfrom field values.");
+/// directive.location("OBJECT");
+/// directive.location("FIELD_DEFINITION");
+/// directive.location("INPUT_FIELD_DEFINITION");
 ///
 /// assert_eq!(
 ///     directive.to_string(),
@@ -109,9 +109,12 @@ mod tests {
 
     #[test]
     fn it_encodes_directives_for_a_single_location() {
-        let mut directive = Directive::new("infer".to_string());
-        directive.description(Some("Infer field types from field values.".to_string()));
-        directive.location("OBJECT".to_string());
+        let directive = {
+            let mut directive = Directive::new("infer");
+            directive.description("Infer field types from field values.");
+            directive.location("OBJECT");
+            directive
+        };
 
         assert_eq!(
             directive.to_string(),
@@ -123,11 +126,14 @@ directive @infer on OBJECT
 
     #[test]
     fn it_encodes_directives_for_multiple_location() {
-        let mut directive = Directive::new("infer".to_string());
-        directive.description(Some("Infer field types\nfrom field values.".to_string()));
-        directive.location("OBJECT".to_string());
-        directive.location("FIELD_DEFINITION".to_string());
-        directive.location("INPUT_FIELD_DEFINITION".to_string());
+        let directive = {
+            let mut directive = Directive::new("infer");
+            directive.description("Infer field types\nfrom field values.");
+            directive.location("OBJECT");
+            directive.location("FIELD_DEFINITION");
+            directive.location("INPUT_FIELD_DEFINITION");
+            directive
+        };
 
         assert_eq!(
             directive.to_string(),
@@ -142,17 +148,17 @@ directive @infer on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 
     #[test]
     fn it_encodes_directives_with_arguments() {
-        let mut directive = Directive::new("infer".to_string());
-        directive.description(Some("Infer field types from field values.".to_string()));
-        directive.location("OBJECT".to_string());
+        let directive = {
+            let ty = Type_::named_type("SpaceProgram");
+            let ty = Type_::list(Box::new(ty));
+            let arg = InputValue::new("cat", ty);
 
-        let ty_1 = Type_::NamedType {
-            name: "SpaceProgram".to_string(),
+            let mut directive = Directive::new("infer");
+            directive.description("Infer field types from field values.");
+            directive.location("OBJECT");
+            directive.arg(arg);
+            directive
         };
-
-        let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let arg = InputValue::new("cat".to_string(), ty_2);
-        directive.arg(arg);
 
         assert_eq!(
             directive.to_string(),

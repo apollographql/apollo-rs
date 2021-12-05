@@ -16,29 +16,23 @@ use crate::{Field, StringValue};
 /// use apollo_encoder::{Type_, Field, ObjectDef};
 /// use indoc::indoc;
 ///
-/// let ty_1 = Type_::NamedType {
-///     name: "DanglerPoleToys".to_string(),
-/// };
+/// let ty_1 = Type_::named_type("DanglerPoleToys");
 ///
-/// let ty_2 = Type_::List { ty: Box::new(ty_1) };
-/// let mut field = Field::new("toys".to_string(), ty_2);
-/// field.deprecated(Some("Cats are too spoiled".to_string()));
-/// let ty_3 = Type_::NamedType {
-///     name: "FoodType".to_string(),
-/// };
-/// let mut field_2 = Field::new("food".to_string(), ty_3);
-/// field_2.description(Some("Dry or wet food?".to_string()));
+/// let ty_2 = Type_::list(Box::new(ty_1));
+/// let mut field = Field::new("toys", ty_2);
+/// field.deprecated("Cats are too spoiled");
+/// let ty_3 = Type_::named_type("FoodType");
+/// let mut field_2 = Field::new("food", ty_3);
+/// field_2.description("Dry or wet food?");
 ///
-/// let ty_4 = Type_::NamedType {
-///     name: "Boolean".to_string(),
-/// };
-/// let field_3 = Field::new("catGrass".to_string(), ty_4);
+/// let ty_4 = Type_::named_type("Boolean");
+/// let field_3 = Field::new("catGrass", ty_4);
 ///
-/// let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
+/// let mut object_def = ObjectDef::new("PetStoreTrip");
 /// object_def.field(field);
 /// object_def.field(field_2);
 /// object_def.field(field_3);
-/// object_def.interface("ShoppingTrip".to_string());
+/// object_def.interface("ShoppingTrip");
 ///
 /// assert_eq!(
 ///     object_def.to_string(),
@@ -122,16 +116,19 @@ mod tests {
 
     #[test]
     fn it_encodes_object_with_description() {
-        let ty_1 = Type_::NamedType {
-            name: "DanglerPoleToys".to_string(),
+        let field = {
+            let ty = Type_::named_type("DanglerPoleToys");
+            let ty = Type_::list(Box::new(ty));
+
+            Field::new("toys", ty)
         };
 
-        let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let field = Field::new("toys".to_string(), ty_2);
-
-        let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
-        object_def.field(field);
-        object_def.description(Some("What to get at Fressnapf?".to_string()));
+        let object_def = {
+            let mut object_def = ObjectDef::new("PetStoreTrip");
+            object_def.field(field);
+            object_def.description("What to get at Fressnapf?");
+            object_def
+        };
 
         assert_eq!(
             object_def.to_string(),
@@ -146,18 +143,20 @@ mod tests {
 
     #[test]
     fn it_encodes_object_with_field_directives() {
-        let ty_1 = Type_::NamedType {
-            name: "DanglerPoleToys".to_string(),
+        let field = {
+            let ty = Type_::named_type("DanglerPoleToys");
+
+            let mut field = Field::new("toys", ty);
+            field.deprecated("\"DanglerPoleToys\" are no longer interesting");
+            field
         };
 
-        let mut field = Field::new("toys".to_string(), ty_1);
-        field.deprecated(Some(
-            "\"DanglerPoleToys\" are no longer interesting".to_string(),
-        ));
-
-        let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
-        object_def.field(field);
-        object_def.description(Some("What to get at Fressnapf?".to_string()));
+        let object_def = {
+            let mut object_def = ObjectDef::new("PetStoreTrip");
+            object_def.field(field);
+            object_def.description("What to get at Fressnapf?");
+            object_def
+        };
 
         assert_eq!(
             object_def.to_string(),
@@ -176,30 +175,37 @@ mod tests {
 
     #[test]
     fn it_encodes_object_with_interface() {
-        let ty_1 = Type_::NamedType {
-            name: "DanglerPoleToys".to_string(),
+        let field_1 = {
+            let ty = Type_::named_type("DanglerPoleToys");
+            let ty = Type_::list(Box::new(ty));
+
+            let mut field = Field::new("toys", ty);
+            field.deprecated("Cats are too spoiled");
+            field
         };
 
-        let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let mut field = Field::new("toys".to_string(), ty_2);
-        field.deprecated(Some("Cats are too spoiled".to_string()));
-        let ty_3 = Type_::NamedType {
-            name: "FoodType".to_string(),
-        };
-        let mut field_2 = Field::new("food".to_string(), ty_3);
-        field_2.description(Some("Dry or wet food?".to_string()));
+        let field_2 = {
+            let ty = Type_::named_type("FoodType");
 
-        let ty_4 = Type_::NamedType {
-            name: "Boolean".to_string(),
+            let mut field = Field::new("food", ty);
+            field.description("Dry or wet food?");
+            field
         };
-        let field_3 = Field::new("catGrass".to_string(), ty_4);
 
-        let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
-        object_def.field(field);
-        object_def.field(field_2);
-        object_def.field(field_3);
-        object_def.description(Some("Shopping list for cats at the pet store.".to_string()));
-        object_def.interface("ShoppingTrip".to_string());
+        let field_3 = {
+            let ty = Type_::named_type("Boolean");
+            Field::new("catGrass", ty)
+        };
+
+        let object_def = {
+            let mut object_def = ObjectDef::new("PetStoreTrip");
+            object_def.field(field_1);
+            object_def.field(field_2);
+            object_def.field(field_3);
+            object_def.description("Shopping list for cats at the pet store.");
+            object_def.interface("ShoppingTrip");
+            object_def
+        };
 
         assert_eq!(
             object_def.to_string(),
@@ -217,16 +223,20 @@ mod tests {
 
     #[test]
     fn it_encodes_object_with_block_string_description() {
-        let ty_1 = Type_::NamedType {
-            name: "String".to_string(),
+        let field = {
+            let ty = Type_::named_type("String");
+
+            let mut field = Field::new("name", ty);
+            field.description("multiline\ndescription");
+            field
         };
 
-        let mut field = Field::new("name".to_string(), ty_1);
-        field.description(Some("multiline\ndescription".to_string()));
-
-        let mut object_def = ObjectDef::new("Book".to_string());
-        object_def.field(field);
-        object_def.description(Some("Book Object\nType".to_string()));
+        let object_def = {
+            let mut object_def = ObjectDef::new("Book");
+            object_def.field(field);
+            object_def.description("Book Object\nType");
+            object_def
+        };
 
         assert_eq!(
             object_def.to_string(),
