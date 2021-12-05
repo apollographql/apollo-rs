@@ -8,22 +8,35 @@ use crate::{EnumValue, StringValue};
 ///     Description? **enum** Name Directives? EnumValuesDefinition?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Enums).
-///
+#[derive(Debug, PartialEq, Clone)]
+pub struct EnumDef {
+    // Name must return a String.
+    name: String,
+    // Description may return a String or null.
+    description: StringValue,
+    // A vector of EnumValue. There must be at least one and they must have
+    // unique names.
+    values: Vec<EnumValue>,
+}
+
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{EnumValue, EnumDef};
+/// use apollo_encoder::{EnumValueBuilder, EnumDefBuilder};
 ///
-/// let mut enum_ty_1 = EnumValue::new("CAT_TREE");
-/// enum_ty_1.description("Top bunk of a cat tree.");
-/// let enum_ty_2 = EnumValue::new("BED");
-/// let mut enum_ty_3 = EnumValue::new("CARDBOARD_BOX");
-/// enum_ty_3.deprecated("Box was recycled.");
+/// let mut enum_ty_1 = EnumValueBuilder::new("CAT_TREE")
+///     .description("Top bunk of a cat tree.")
+///     .build();
+/// let enum_ty_2 = EnumValueBuilder::new("BED").build();
+/// let mut enum_ty_3 = EnumValueBuilder::new("CARDBOARD_BOX")
+///     .deprecated("Box was recycled.")
+///     .build();
 ///
-/// let mut enum_ = EnumDef::new("NapSpots");
-/// enum_.description("Favourite cat nap spots.");
-/// enum_.value(enum_ty_1);
-/// enum_.value(enum_ty_2);
-/// enum_.value(enum_ty_3);
+/// let enum_ = EnumDefBuilder::new("NapSpots")
+///     .description("Favourite cat nap spots.")
+///     .value(enum_ty_1)
+///     .value(enum_ty_2)
+///     .value(enum_ty_3)
+///     .build();
 ///
 /// assert_eq!(
 ///     enum_.to_string(),
@@ -37,17 +50,6 @@ use crate::{EnumValue, StringValue};
 /// "#
 /// );
 /// ```
-#[derive(Debug, PartialEq, Clone)]
-pub struct EnumDef {
-    // Name must return a String.
-    name: String,
-    // Description may return a String or null.
-    description: StringValue,
-    // A vector of EnumValue. There must be at least one and they must have
-    // unique names.
-    values: Vec<EnumValue>,
-}
-
 #[derive(Debug, Clone)]
 pub struct EnumDefBuilder {
     // Name must return a String.
@@ -106,18 +108,16 @@ impl fmt::Display for EnumDef {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::{EnumDefBuilder, EnumValueBuilder};
     use pretty_assertions::assert_eq;
 
     #[test]
     fn it_encodes_a_simple_enum() {
-        let enum_ = {
-            let mut enum_ = EnumDef::new("NapSpots");
-            enum_.value(EnumValue::new("CAT_TREE"));
-            enum_.value(EnumValue::new("BED"));
-            enum_.value(EnumValue::new("CARDBOARD_BOX"));
-            enum_
-        };
+        let enum_ = EnumDefBuilder::new("NapSpots")
+            .value(EnumValueBuilder::new("CAT_TREE").build())
+            .value(EnumValueBuilder::new("BED").build())
+            .value(EnumValueBuilder::new("CARDBOARD_BOX").build())
+            .build();
 
         assert_eq!(
             enum_.to_string(),
@@ -131,26 +131,19 @@ mod tests {
     }
     #[test]
     fn it_encodes_enum_with_descriptions() {
-        let enum_ = {
-            let enum_value_1 = {
-                let mut enum_value = EnumValue::new("CAT_TREE");
-                enum_value.description("Top bunk of a cat tree.");
-                enum_value
-            };
-            let enum_value_2 = EnumValue::new("BED");
-            let enum_value_3 = {
-                let mut enum_value = EnumValue::new("CARDBOARD_BOX");
-                enum_value.deprecated("Box was recycled.");
-                enum_value
-            };
-
-            let mut enum_ = EnumDef::new("NapSpots");
-            enum_.description("Favourite cat nap spots.");
-            enum_.value(enum_value_1);
-            enum_.value(enum_value_2);
-            enum_.value(enum_value_3);
-            enum_
-        };
+        let enum_value_1 = EnumValueBuilder::new("CAT_TREE")
+            .description("Top bunk of a cat tree.")
+            .build();
+        let enum_value_2 = EnumValueBuilder::new("BED").build();
+        let enum_value_3 = EnumValueBuilder::new("CARDBOARD_BOX")
+            .deprecated("Box was recycled.")
+            .build();
+        let enum_ = EnumDefBuilder::new("NapSpots")
+            .description("Favourite cat nap spots.")
+            .value(enum_value_1)
+            .value(enum_value_2)
+            .value(enum_value_3)
+            .build();
 
         assert_eq!(
             enum_.to_string(),

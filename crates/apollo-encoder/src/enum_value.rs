@@ -8,21 +8,6 @@ use crate::StringValue;
 ///     Description? EnumValue Directives?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-The-__EnumValue-Type).
-///
-/// ### Example
-/// ```rust
-/// use apollo_encoder::{EnumValue};
-///
-/// let mut enum_value = EnumValue::new("CARDBOARD_BOX");
-/// enum_value.description("Box nap spot.");
-/// enum_value.deprecated("Box was recycled.");
-///
-/// assert_eq!(
-///     enum_value.to_string(),
-///     r#"  "Box nap spot."
-///   CARDBOARD_BOX @deprecated(reason: "Box was recycled.")"#
-/// );
-/// ```
 #[derive(Debug, PartialEq, Clone)]
 pub struct EnumValue {
     // Name must return a String.
@@ -35,6 +20,21 @@ pub struct EnumValue {
     deprecation_reason: StringValue,
 }
 
+/// ### Example
+/// ```rust
+/// use apollo_encoder::{EnumValueBuilder};
+///
+/// let enum_value = EnumValueBuilder::new("CARDBOARD_BOX")
+///     .description("Box nap spot.")
+///     .deprecated("Box was recycled.")
+///     .build();
+///
+/// assert_eq!(
+///     enum_value.to_string(),
+///     r#"  "Box nap spot."
+///   CARDBOARD_BOX @deprecated(reason: "Box was recycled.")"#
+/// );
+/// ```
 #[derive(Debug, Clone)]
 pub struct EnumValueBuilder {
     // Name must return a String.
@@ -102,23 +102,21 @@ impl fmt::Display for EnumValue {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::EnumValueBuilder;
     use pretty_assertions::assert_eq;
 
     #[test]
     fn it_encodes_an_enum_value() {
-        let enum_value = EnumValue::new("CAT_TREE");
+        let enum_value = EnumValueBuilder::new("CAT_TREE").build();
 
         assert_eq!(enum_value.to_string(), "  CAT_TREE");
     }
 
     #[test]
     fn it_encodes_an_enum_value_with_desciption() {
-        let enum_value = {
-            let mut enum_value = EnumValue::new("CAT_TREE");
-            enum_value.description("Top bunk of a cat tree.");
-            enum_value
-        };
+        let enum_value = EnumValueBuilder::new("CAT_TREE")
+            .description("Top bunk of a cat tree.")
+            .build();
 
         assert_eq!(
             enum_value.to_string(),
@@ -128,12 +126,10 @@ mod tests {
     }
     #[test]
     fn it_encodes_an_enum_value_with_deprecated() {
-        let enum_value = {
-            let mut enum_value = EnumValue::new("CARDBOARD_BOX");
-            enum_value.description("Box nap\nspot.");
-            enum_value.deprecated("Box was recycled.");
-            enum_value
-        };
+        let enum_value = EnumValueBuilder::new("CARDBOARD_BOX")
+            .description("Box nap\nspot.")
+            .deprecated("Box was recycled.")
+            .build();
 
         assert_eq!(
             enum_value.to_string(),
@@ -147,12 +143,10 @@ mod tests {
 
     #[test]
     fn it_encodes_an_enum_value_with_deprecated_block_string_value() {
-        let enum_value = {
-            let mut enum_value = EnumValue::new("CARDBOARD_BOX");
-            enum_value.description("Box nap\nspot.");
-            enum_value.deprecated("Box was \"recycled\".");
-            enum_value
-        };
+        let enum_value = EnumValueBuilder::new("CARDBOARD_BOX")
+            .description("Box nap\nspot.")
+            .deprecated("Box was \"recycled\".")
+            .build();
 
         assert_eq!(
             enum_value.to_string(),

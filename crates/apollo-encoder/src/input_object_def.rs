@@ -12,25 +12,42 @@ use crate::{InputField, StringValue};
 /// **Note**: At the moment InputObjectTypeDefinition differs slightly from the
 /// spec. Instead of accepting InputValues as `field` parameter, we accept
 /// InputField.
-///
+#[derive(Debug, Clone)]
+pub struct InputObjectDef {
+    // Name must return a String.
+    name: String,
+    // Description may return a String or null.
+    description: StringValue,
+    // A vector of fields
+    fields: Vec<InputField>,
+}
+
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Type_, InputField, InputObjectDef};
+/// use apollo_encoder::{Type_, InputFieldBuilder, InputObjectDefBuilder};
 /// use indoc::indoc;
 ///
-/// let ty_1 = Type_::named_type("DanglerPoleToys");
+/// let field_1 = {
+///     let ty = Type_::named_type("DanglerPoleToys");
+///     let ty = Type_::list(Box::new(ty));
 ///
-/// let ty_2 = Type_::list(Box::new(ty_1));
-/// let mut field = InputField::new("toys", ty_2);
-/// field.default("\"Cat Dangler Pole Bird\"");
-/// let ty_3 = Type_::named_type("FavouriteSpots");
-/// let mut field_2 = InputField::new("playSpot", ty_3);
-/// field_2.description("Best playime spots, e.g. tree, bed.");
+///     InputFieldBuilder::new("toys", ty)
+///         .default("\"Cat Dangler Pole Bird\"")
+///         .build()
+/// };
+/// let field_2 = {
+///     let ty = Type_::named_type("FavouriteSpots");
 ///
-/// let mut input_def = InputObjectDef::new("PlayTime");
-/// input_def.field(field);
-/// input_def.field(field_2);
-/// input_def.description("Cat playtime input");
+///     InputFieldBuilder::new("playSpot", ty)
+///         .description("Best playime spots, e.g. tree, bed.")
+///         .build()
+/// };
+///
+/// let input_def = InputObjectDefBuilder::new("PlayTime")
+///     .field(field_1)
+///     .field(field_2)
+///     .description("Cat playtime input")
+///     .build();
 ///
 /// assert_eq!(
 ///     input_def.to_string(),
@@ -44,16 +61,6 @@ use crate::{InputField, StringValue};
 ///     "#}
 /// );
 /// ```
-#[derive(Debug, Clone)]
-pub struct InputObjectDef {
-    // Name must return a String.
-    name: String,
-    // Description may return a String or null.
-    description: StringValue,
-    // A vector of fields
-    fields: Vec<InputField>,
-}
-
 #[derive(Debug, Clone)]
 pub struct InputObjectDefBuilder {
     // Name must return a String.
@@ -113,8 +120,7 @@ impl fmt::Display for InputObjectDef {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{InputField, Type_};
+    use crate::{InputFieldBuilder, InputObjectDefBuilder, Type_};
     use indoc::indoc;
     use pretty_assertions::assert_eq;
 
@@ -124,25 +130,23 @@ mod tests {
             let ty = Type_::named_type("DanglerPoleToys");
             let ty = Type_::list(Box::new(ty));
 
-            let mut field = InputField::new("toys", ty);
-            field.default("\"Cat Dangler Pole Bird\"");
-            field
+            InputFieldBuilder::new("toys", ty)
+                .default("\"Cat Dangler Pole Bird\"")
+                .build()
         };
 
         let field_2 = {
             let ty = Type_::named_type("FavouriteSpots");
 
-            let mut field = InputField::new("playSpot", ty);
-            field.description("Best playime spots, e.g. tree, bed.");
-            field
+            InputFieldBuilder::new("playSpot", ty)
+                .description("Best playime spots, e.g. tree, bed.")
+                .build()
         };
 
-        let input_def = {
-            let mut input_def = InputObjectDef::new("PlayTime");
-            input_def.field(field_1);
-            input_def.field(field_2);
-            input_def
-        };
+        let input_def = InputObjectDefBuilder::new("PlayTime")
+            .field(field_1)
+            .field(field_2)
+            .build();
 
         assert_eq!(
             input_def.to_string(),
@@ -162,26 +166,24 @@ mod tests {
             let ty = Type_::named_type("DanglerPoleToys");
             let ty = Type_::list(Box::new(ty));
 
-            let mut field = InputField::new("toys", ty);
-            field.default("\"Cat Dangler Pole Bird\"");
-            field
+            InputFieldBuilder::new("toys", ty)
+                .default("\"Cat Dangler Pole Bird\"")
+                .build()
         };
 
         let field_2 = {
             let ty = Type_::named_type("FavouriteSpots");
 
-            let mut field = InputField::new("playSpot", ty);
-            field.description("Best playime spots, e.g. tree, bed.");
-            field
+            InputFieldBuilder::new("playSpot", ty)
+                .description("Best playime spots, e.g. tree, bed.")
+                .build()
         };
 
-        let input_def = {
-            let mut input_def = InputObjectDef::new("PlayTime");
-            input_def.field(field_1);
-            input_def.field(field_2);
-            input_def.description("Cat playtime input");
-            input_def
-        };
+        let input_def = InputObjectDefBuilder::new("PlayTime")
+            .field(field_1)
+            .field(field_2)
+            .description("Cat playtime input")
+            .build();
 
         assert_eq!(
             input_def.to_string(),

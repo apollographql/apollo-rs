@@ -8,28 +8,6 @@ use crate::{InputValue, StringValue};
 ///     Description? **directive @** Name Arguments Definition? **repeatable**? **on** DirectiveLocations
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Type-System.Directives).
-///
-/// ### Example
-/// ```rust
-/// use apollo_encoder::{Directive};
-/// use indoc::indoc;
-///
-/// let mut directive = Directive::new("infer");
-/// directive.description("Infer field types\nfrom field values.");
-/// directive.location("OBJECT");
-/// directive.location("FIELD_DEFINITION");
-/// directive.location("INPUT_FIELD_DEFINITION");
-///
-/// assert_eq!(
-///     directive.to_string(),
-///     r#""""
-/// Infer field types
-/// from field values.
-/// """
-/// directive @infer on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
-/// "#
-/// );
-/// ```
 #[derive(Debug)]
 pub struct Directive {
     // Name must return a String.
@@ -44,6 +22,28 @@ pub struct Directive {
     locations: Vec<String>,
 }
 
+/// ### Example
+/// ```rust
+/// use apollo_encoder::{DirectiveBuilder};
+/// use indoc::indoc;
+///
+/// let directive = DirectiveBuilder::new("infer")
+///     .description("Infer field types\nfrom field values.")
+///     .location("OBJECT")
+///     .location("FIELD_DEFINITION")
+///     .location("INPUT_FIELD_DEFINITION")
+///     .build();
+///
+/// assert_eq!(
+///     directive.to_string(),
+///     r#""""
+/// Infer field types
+/// from field values.
+/// """
+/// directive @infer on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+/// "#
+/// );
+/// ```
 #[derive(Debug)]
 pub struct DirectiveBuilder {
     // Name must return a String.
@@ -129,19 +129,15 @@ impl fmt::Display for Directive {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    // use indoc::indoc;
-    use crate::Type_;
+    use crate::{DirectiveBuilder, InputValueBuilder, Type_};
     use pretty_assertions::assert_eq;
 
     #[test]
     fn it_encodes_directives_for_a_single_location() {
-        let directive = {
-            let mut directive = Directive::new("infer");
-            directive.description("Infer field types from field values.");
-            directive.location("OBJECT");
-            directive
-        };
+        let directive = DirectiveBuilder::new("infer")
+            .description("Infer field types from field values.")
+            .location("OBJECT")
+            .build();
 
         assert_eq!(
             directive.to_string(),
@@ -153,14 +149,12 @@ directive @infer on OBJECT
 
     #[test]
     fn it_encodes_directives_for_multiple_location() {
-        let directive = {
-            let mut directive = Directive::new("infer");
-            directive.description("Infer field types\nfrom field values.");
-            directive.location("OBJECT");
-            directive.location("FIELD_DEFINITION");
-            directive.location("INPUT_FIELD_DEFINITION");
-            directive
-        };
+        let directive = DirectiveBuilder::new("infer")
+            .description("Infer field types\nfrom field values.")
+            .location("OBJECT")
+            .location("FIELD_DEFINITION")
+            .location("INPUT_FIELD_DEFINITION")
+            .build();
 
         assert_eq!(
             directive.to_string(),
@@ -175,17 +169,18 @@ directive @infer on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 
     #[test]
     fn it_encodes_directives_with_arguments() {
-        let directive = {
+        let arg = {
             let ty = Type_::named_type("SpaceProgram");
             let ty = Type_::list(Box::new(ty));
-            let arg = InputValue::new("cat", ty);
 
-            let mut directive = Directive::new("infer");
-            directive.description("Infer field types from field values.");
-            directive.location("OBJECT");
-            directive.arg(arg);
-            directive
+            InputValueBuilder::new("cat", ty).build()
         };
+
+        let directive = DirectiveBuilder::new("infer")
+            .description("Infer field types from field values.")
+            .location("OBJECT")
+            .arg(arg)
+            .build();
 
         assert_eq!(
             directive.to_string(),

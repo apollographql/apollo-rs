@@ -8,16 +8,27 @@ use crate::StringValue;
 ///     Description? **schema** Directives? **{** RootOperationTypeDefinition* **}**
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Schema).
-///
+#[derive(Debug, Clone)]
+pub struct SchemaDef {
+    // Description may be a String.
+    description: StringValue,
+    // The vector of fields in a schema to represent root operation type
+    // definition.
+    query: Option<String>,
+    mutation: Option<String>,
+    subscription: Option<String>,
+}
+
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{SchemaDef};
+/// use apollo_encoder::SchemaDefBuilder;
 /// use indoc::indoc;
 ///
-/// let mut schema_def = SchemaDef::new();
-/// schema_def.query("TryingToFindCatQuery");
-/// schema_def.mutation("MyMutation");
-/// schema_def.subscription("MySubscription");
+/// let schema_def = SchemaDefBuilder::new()
+///     .query("TryingToFindCatQuery")
+///     .mutation("MyMutation")
+///     .subscription("MySubscription")
+///     .build();
 ///
 /// assert_eq!(
 ///    schema_def.to_string(),
@@ -30,17 +41,6 @@ use crate::StringValue;
 ///    "#}
 /// );
 /// ```
-#[derive(Debug, Clone)]
-pub struct SchemaDef {
-    // Description may be a String.
-    description: StringValue,
-    // The vector of fields in a schema to represent root operation type
-    // definition.
-    query: Option<String>,
-    mutation: Option<String>,
-    subscription: Option<String>,
-}
-
 #[derive(Debug, Clone)]
 pub struct SchemaDefBuilder {
     // Description may be a String.
@@ -123,19 +123,17 @@ impl fmt::Display for SchemaDef {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::SchemaDefBuilder;
     use indoc::indoc;
     use pretty_assertions::assert_eq;
 
     #[test]
     fn it_encodes_schema_with_mutation_and_subscription() {
-        let schema_def = {
-            let mut schema_def = SchemaDef::new();
-            schema_def.query("TryingToFindCatQuery");
-            schema_def.mutation("MyMutation");
-            schema_def.subscription("MySubscription");
-            schema_def
-        };
+        let schema_def = SchemaDefBuilder::new()
+            .query("TryingToFindCatQuery")
+            .mutation("MyMutation")
+            .subscription("MySubscription")
+            .build();
 
         assert_eq!(
             schema_def.to_string(),

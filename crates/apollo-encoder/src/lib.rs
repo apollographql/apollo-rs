@@ -35,41 +35,47 @@
 //!
 //! ## Example
 //! ```rust
-//! use apollo_encoder::{Schema, Field, UnionDef, EnumValue, Directive, EnumDef, Type_};
+//! use apollo_encoder::{Schema, FieldBuilder, UnionDefBuilder, EnumValueBuilder, DirectiveBuilder, EnumDefBuilder, Type_};
 //! use indoc::indoc;
 //!
-//! let mut schema = Schema::new();
+//! let directive = DirectiveBuilder::new("provideTreat")
+//!     .description("Ensures cats get treats.")
+//!     .location("OBJECT")
+//!     .location("FIELD_DEFINITION")
+//!     .location("INPUT_FIELD_DEFINITION")
+//!     .build();
 //!
-//! // Create a Directive Definition.
-//! let mut directive = Directive::new("provideTreat");
-//! directive.description("Ensures cats get treats.");
-//! directive.location("OBJECT");
-//! directive.location("FIELD_DEFINITION");
-//! directive.location("INPUT_FIELD_DEFINITION");
-//! schema.directive(directive);
-
-//! // Create an Enum Definition
-//! let mut enum_ty_1 = EnumValue::new("CatTree");
-//! enum_ty_1.description("Top bunk of a cat tree.");
-//! let enum_ty_2 = EnumValue::new("Bed");
-//! let mut enum_ty_3 = EnumValue::new("CardboardBox");
-//! enum_ty_3.deprecated("Box was recycled.");
+//! let enum_def = {
+//!     let enum_ty_1 = EnumValueBuilder::new("CatTree")
+//!         .description("Top bunk of a cat tree.")
+//!         .build();
+//!     let enum_ty_2 = EnumValueBuilder::new("Bed").build();
+//!     let enum_ty_3 = EnumValueBuilder::new("CardboardBox")
+//!         .deprecated("Box was recycled.")
+//!         .build();
 //!
-//! let mut enum_def = EnumDef::new("NapSpots");
-//! enum_def.description("Favourite cat\nnap spots.");
-//! enum_def.value(enum_ty_1);
-//! enum_def.value(enum_ty_2);
-//! enum_def.value(enum_ty_3);
-//! schema.enum_(enum_def);
-//! // Union Definition
-//! let mut union_def = UnionDef::new("Cat");
-//! union_def.description("A union of all cats represented within a household.");
-//! union_def.member("NORI");
-//! union_def.member("CHASHU");
-//! schema.union(union_def);
+//!     EnumDefBuilder::new("NapSpots")
+//!         .description("Favourite cat\nnap spots.")
+//!         .value(enum_ty_1)
+//!         .value(enum_ty_2)
+//!         .value(enum_ty_3)
+//!         .build()
+//! };
+//!
+//! let union_def = UnionDefBuilder::new("Cat")
+//!     .description("A union of all cats represented within a household.")
+//!     .member("NORI")
+//!     .member("CHASHU")
+//!     .build();
+//!
+//! let schema = Schema::new()
+//!     .directive(directive)
+//!     .enum_(enum_def)
+//!     .union(union_def)
+//!     .finish();
 //!
 //! assert_eq!(
-//!     schema.finish(),
+//!     schema,
 //!     indoc! { r#"
 //!         "Ensures cats get treats."
 //!         directive @provideTreat on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
@@ -121,18 +127,18 @@ mod schema_def;
 mod string_value;
 mod union_def;
 
-pub use directive_def::Directive;
-pub use enum_def::EnumDef;
-pub use enum_value::EnumValue;
-pub use field::Field;
+pub use directive_def::{Directive, DirectiveBuilder};
+pub use enum_def::{EnumDef, EnumDefBuilder};
+pub use enum_value::{EnumValue, EnumValueBuilder};
+pub use field::{Field, FieldBuilder};
 pub use field_value::Type_;
-pub use input_field::InputField;
-pub use input_object_def::InputObjectDef;
-pub use input_value::InputValue;
-pub use interface_def::InterfaceDef;
-pub use object_def::ObjectDef;
-pub use scalar_def::ScalarDef;
+pub use input_field::{InputField, InputFieldBuilder};
+pub use input_object_def::{InputObjectDef, InputObjectDefBuilder};
+pub use input_value::{InputValue, InputValueBuilder};
+pub use interface_def::{InterfaceDef, InterfaceDefBuilder};
+pub use object_def::{ObjectDef, ObjectDefBuilder};
+pub use scalar_def::{ScalarDef, ScalarDefBuilder};
 pub use schema::Schema;
-pub use schema_def::SchemaDef;
+pub use schema_def::{SchemaDef, SchemaDefBuilder};
 pub use string_value::StringValue;
-pub use union_def::UnionDef;
+pub use union_def::{UnionDef, UnionDefBuilder};

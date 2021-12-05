@@ -14,23 +14,6 @@ use crate::{StringValue, Type_};
 ///     Description? Name **:** Type DefaultValue? Directives?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-The-__InputValue-Type).
-///
-/// ### Example
-/// ```rust
-/// use apollo_encoder::{Type_, InputValue};
-///
-/// let ty_1 = Type_::named_type("SpaceProgram");
-///
-/// let ty_2 = Type_::list(Box::new(ty_1));
-/// let mut value = InputValue::new("cat", ty_2);
-/// value.description("Very good cats");
-/// value.deprecated("Cats are no longer sent to space.");
-///
-/// assert_eq!(
-///     value.to_string(),
-///     r#""Very good cats" cat: [SpaceProgram] @deprecated(reason: "Cats are no longer sent to space.")"#
-/// );
-/// ```
 #[derive(Debug, PartialEq, Clone)]
 pub struct InputValue {
     // Name must return a String.
@@ -50,6 +33,22 @@ pub struct InputValue {
     deprecation_reason: Option<String>,
 }
 
+/// ### Example
+/// ```rust
+/// use apollo_encoder::{Type_, InputValueBuilder};
+///
+/// let ty = Type_::named_type("SpaceProgram");
+/// let ty = Type_::list(Box::new(ty));
+/// let value = InputValueBuilder::new("cat", ty)
+///     .description("Very good cats")
+///     .deprecated("Cats are no longer sent to space.")
+///     .build();
+///
+/// assert_eq!(
+///     value.to_string(),
+///     r#""Very good cats" cat: [SpaceProgram] @deprecated(reason: "Cats are no longer sent to space.")"#
+/// );
+/// ```
 #[derive(Debug, Clone)]
 pub struct InputValueBuilder {
     // Name must return a String.
@@ -137,32 +136,28 @@ impl fmt::Display for InputValue {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::{InputValueBuilder, Type_};
     use pretty_assertions::assert_eq;
 
     #[test]
     fn it_encodes_simple_values() {
-        let value = {
-            let ty = Type_::named_type("SpaceProgram");
-            let ty = Type_::list(Box::new(ty));
-            let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::named_type("SpaceProgram");
+        let ty = Type_::list(Box::new(ty));
+        let ty = Type_::non_null(Box::new(ty));
 
-            InputValue::new("spaceCat", ty)
-        };
+        let value = InputValueBuilder::new("spaceCat", ty).build();
 
         assert_eq!(value.to_string(), r#"spaceCat: [SpaceProgram]!"#);
     }
 
     #[test]
     fn it_encodes_input_values_with_default() {
-        let value = {
-            let ty = Type_::named_type("Breed");
-            let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::named_type("Breed");
+        let ty = Type_::non_null(Box::new(ty));
 
-            let mut value = InputValue::new("spaceCat", ty);
-            value.default("\"Norwegian Forest\"");
-            value
-        };
+        let value = InputValueBuilder::new("spaceCat", ty)
+            .default("\"Norwegian Forest\"")
+            .build();
 
         assert_eq!(
             value.to_string(),
@@ -172,15 +167,13 @@ mod tests {
 
     #[test]
     fn it_encodes_value_with_deprecation() {
-        let value = {
-            let ty = Type_::named_type("SpaceProgram");
-            let ty = Type_::list(Box::new(ty));
+        let ty = Type_::named_type("SpaceProgram");
+        let ty = Type_::list(Box::new(ty));
 
-            let mut value = InputValue::new("cat", ty);
-            value.description("Very good cats");
-            value.deprecated("Cats are no longer sent to space.");
-            value
-        };
+        let value = InputValueBuilder::new("cat", ty)
+            .description("Very good cats")
+            .deprecated("Cats are no longer sent to space.")
+            .build();
 
         assert_eq!(
             value.to_string(),
@@ -190,16 +183,14 @@ mod tests {
 
     #[test]
     fn it_encodes_valueuments_with_description() {
-        let value = {
-            let ty = Type_::named_type("SpaceProgram");
-            let ty = Type_::non_null(Box::new(ty));
-            let ty = Type_::list(Box::new(ty));
-            let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::named_type("SpaceProgram");
+        let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::list(Box::new(ty));
+        let ty = Type_::non_null(Box::new(ty));
 
-            let mut value = InputValue::new("spaceCat", ty);
-            value.description("Very good space cats");
-            value
-        };
+        let value = InputValueBuilder::new("spaceCat", ty)
+            .description("Very good space cats")
+            .build();
 
         assert_eq!(
             value.to_string(),

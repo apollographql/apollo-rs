@@ -85,9 +85,10 @@ impl fmt::Display for StringValue {
 fn is_block_string_character(s: &str) -> bool {
     s.contains('\n') || s.contains('"') || s.contains('\r')
 }
+
 #[cfg(test)]
 mod test {
-    use super::*;
+    use crate::StringValue;
     use pretty_assertions::assert_eq;
 
     #[test]

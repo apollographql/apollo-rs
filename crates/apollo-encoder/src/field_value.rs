@@ -10,9 +10,7 @@ use std::fmt::{self, Display};
 /// use apollo_encoder::{Type_};
 ///
 /// let field_ty = Type_::named_type("String");
-///
 /// let list = Type_::list(Box::new(field_ty));
-///
 /// let non_null = Type_::non_null(Box::new(list));
 ///
 /// assert_eq!(non_null.to_string(), "[String]!");
@@ -72,7 +70,7 @@ impl Display for Type_ {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::Type_;
     use pretty_assertions::assert_eq;
 
     #[test]

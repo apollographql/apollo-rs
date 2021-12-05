@@ -8,21 +8,6 @@ use crate::StringValue;
 ///     Description? **union** Name Directives? UnionDefMemberTypes?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-UnionDef).
-///
-/// ### Example
-/// ```rust
-/// use apollo_encoder::{UnionDef};
-///
-/// let mut union_ = UnionDef::new("Pet");
-/// union_.member("Cat");
-/// union_.member("Dog");
-///
-/// assert_eq!(
-///     union_.to_string(),
-/// r#"union Pet = Cat | Dog
-/// "#
-/// );
-/// ```
 #[derive(Debug, PartialEq, Clone)]
 pub struct UnionDef {
     // Name must return a String.
@@ -33,6 +18,21 @@ pub struct UnionDef {
     members: Vec<String>,
 }
 
+/// ### Example
+/// ```rust
+/// use apollo_encoder::UnionDefBuilder;
+///
+/// let union_ = UnionDefBuilder::new("Pet")
+///     .member("Cat")
+///     .member("Dog")
+///     .build();
+///
+/// assert_eq!(
+///     union_.to_string(),
+/// r#"union Pet = Cat | Dog
+/// "#
+/// );
+/// ```
 #[derive(Debug, Clone)]
 pub struct UnionDefBuilder {
     // Name must return a String.
@@ -96,19 +96,17 @@ impl fmt::Display for UnionDef {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::UnionDefBuilder;
     // use indoc::indoc;
     use pretty_assertions::assert_eq;
 
     #[test]
     fn it_encodes_union_with_description() {
-        let union_ = {
-            let mut union_ = UnionDef::new("Pet");
-            union_.description("A union of all animals in a household.");
-            union_.member("Cat");
-            union_.member("Dog");
-            union_
-        };
+        let union_ = UnionDefBuilder::new("Pet")
+            .description("A union of all animals in a household.")
+            .member("Cat")
+            .member("Dog")
+            .build();
 
         assert_eq!(
             union_.to_string(),

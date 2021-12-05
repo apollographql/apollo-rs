@@ -7,26 +7,6 @@ use crate::{InputValue, StringValue, Type_};
 ///     Description? Name ArgumentsDefinition? **:** TypeDirectives?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-The-__Field-Type).
-///
-/// ### Example
-/// ```rust
-/// use apollo_encoder::{Type_, Field, InputValue};
-///
-/// let ty_1 = Type_::named_type("CatBreed");
-///
-/// let mut field = Field::new("cat", ty_1);
-///
-/// let value_1 = Type_::named_type("CatBreed");
-///
-/// let arg = InputValue::new("breed", value_1);
-///
-/// field.arg(arg);
-///
-/// assert_eq!(
-///     field.to_string(),
-///     r#"  cat(breed: CatBreed): CatBreed"#
-/// );
-/// ```
 #[derive(Debug, PartialEq, Clone)]
 pub struct Field {
     // Name must return a String.
@@ -43,6 +23,26 @@ pub struct Field {
     deprecation_reason: StringValue,
 }
 
+/// ### Example
+/// ```rust
+/// use apollo_encoder::{Type_, FieldBuilder, InputValueBuilder};
+///
+/// let ty = Type_::named_type("CatBreed");
+/// let arg = {
+///     let ty = Type_::named_type("CatBreed");
+///
+///     InputValueBuilder::new("breed", ty).build()
+/// };
+///
+/// let field = FieldBuilder::new("cat", ty)
+///     .arg(arg)
+///     .build();
+///
+/// assert_eq!(
+///     field.to_string(),
+///     r#"  cat(breed: CatBreed): CatBreed"#
+/// );
+/// ```
 #[derive(Debug, Clone)]
 pub struct FieldBuilder {
     // Name must return a String.
@@ -137,33 +137,29 @@ impl fmt::Display for Field {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::{FieldBuilder, InputValueBuilder, Type_};
     use pretty_assertions::assert_eq;
 
     #[test]
     fn it_encodes_simple_fields() {
-        let field = {
-            let ty = Type_::named_type("SpaceProgram");
-            let ty = Type_::list(Box::new(ty));
-            let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::named_type("SpaceProgram");
+        let ty = Type_::list(Box::new(ty));
+        let ty = Type_::non_null(Box::new(ty));
 
-            Field::new("spaceCat", ty)
-        };
+        let field = FieldBuilder::new("spaceCat", ty).build();
 
         assert_eq!(field.to_string(), r#"  spaceCat: [SpaceProgram]!"#);
     }
 
     #[test]
     fn it_encodes_fields_with_deprecation() {
-        let field = {
-            let ty = Type_::named_type("SpaceProgram");
-            let ty = Type_::list(Box::new(ty));
+        let ty = Type_::named_type("SpaceProgram");
+        let ty = Type_::list(Box::new(ty));
 
-            let mut field = Field::new("cat", ty);
-            field.description("Very good cats");
-            field.deprecated("Cats are no longer sent to space.");
-            field
-        };
+        let field = FieldBuilder::new("cat", ty)
+            .description("Very good cats")
+            .deprecated("Cats are no longer sent to space.")
+            .build();
 
         assert_eq!(
             field.to_string(),
@@ -174,16 +170,14 @@ mod tests {
 
     #[test]
     fn it_encodes_fields_with_description() {
-        let field = {
-            let ty = Type_::named_type("SpaceProgram");
-            let ty = Type_::non_null(Box::new(ty));
-            let ty = Type_::list(Box::new(ty));
-            let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::named_type("SpaceProgram");
+        let ty = Type_::non_null(Box::new(ty));
+        let ty = Type_::list(Box::new(ty));
+        let ty = Type_::non_null(Box::new(ty));
 
-            let mut field = Field::new("spaceCat", ty);
-            field.description("Very good space cats");
-            field
-        };
+        let field = FieldBuilder::new("spaceCat", ty)
+            .description("Very good space cats")
+            .build();
 
         assert_eq!(
             field.to_string(),
@@ -195,27 +189,23 @@ mod tests {
     #[test]
     fn it_encodes_fields_with_valueuments() {
         let field = {
-            let ty = {
-                let ty = Type_::named_type("SpaceProgram");
-                let ty = Type_::non_null(Box::new(ty));
-                let ty = Type_::list(Box::new(ty));
-                let ty = Type_::non_null(Box::new(ty));
-                ty
-            };
-
-            let mut field = Field::new("spaceCat", ty);
-            field.description("Very good space cats");
+            let ty = Type_::named_type("SpaceProgram");
+            let ty = Type_::non_null(Box::new(ty));
+            let ty = Type_::list(Box::new(ty));
+            let ty = Type_::non_null(Box::new(ty));
 
             let arg = {
-                let value = Type_::named_type("SpaceProgram");
-                let value = Type_::list(Box::new(value));
+                let ty = Type_::named_type("SpaceProgram");
+                let ty = Type_::list(Box::new(ty));
 
-                let mut arg = InputValue::new("cat", value);
-                arg.deprecated("Cats are no longer sent to space.");
-                arg
+                InputValueBuilder::new("cat", ty)
+                    .deprecated("Cats are no longer sent to space.")
+                    .build()
             };
-            field.arg(arg);
-            field
+            FieldBuilder::new("spaceCat", ty)
+                .description("Very good space cats")
+                .arg(arg)
+                .build()
         };
 
         assert_eq!(

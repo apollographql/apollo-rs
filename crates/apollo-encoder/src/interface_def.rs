@@ -12,37 +12,57 @@ use crate::{Field, StringValue};
 ///     Description? **interface** Name ImplementsInterfaceDefs? Directives?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-InterfaceDef).
-///
+#[derive(Debug, Clone)]
+pub struct InterfaceDef {
+    // Name must return a String.
+    name: String,
+    // Description may return a String or null.
+    description: StringValue,
+    // The vector of interfaces that this interface implements.
+    interfaces: Vec<String>,
+    // The vector of fields required by this interface.
+    fields: Vec<Field>,
+}
+
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Type_, Field, InterfaceDef};
+/// use apollo_encoder::{Type_, FieldBuilder, InterfaceDefBuilder};
 /// use indoc::indoc;
 ///
-/// let ty_1 = Type_::named_type("String");
+/// let field_1 = {
+///     let ty = Type_::named_type("String");
 ///
-/// let ty_2 = Type_::named_type("String");
+///     FieldBuilder::new("main", ty)
+///         .description("Cat's main dish of a meal.")
+///         .build()
+/// };
 ///
-/// let ty_3 = Type_::non_null(Box::new(ty_2));
-/// let ty_4 = Type_::list(Box::new(ty_3));
-/// let ty_5 = Type_::non_null(Box::new(ty_4));
+/// let field_2 = {
+///     let ty = Type_::named_type("String");
+///     let ty = Type_::non_null(Box::new(ty));
+///     let ty = Type_::list(Box::new(ty));
+///     let ty = Type_::non_null(Box::new(ty));
 ///
-/// let ty_6 = Type_::named_type("Boolean");
+///     FieldBuilder::new("snack", ty)
+///         .description("Cat's post meal snack.")
+///         .build()
+/// };
 ///
-/// let mut field_1 = Field::new("main", ty_1);
-/// field_1.description("Cat's main dish of a meal.");
+/// let field_3 = {
+///     let ty = Type_::named_type("Boolean");
 ///
-/// let mut field_2 = Field::new("snack", ty_5);
-/// field_2.description("Cat's post meal snack.");
-///
-/// let mut field_3 = Field::new("pats", ty_6);
-/// field_3.description("Does cat get a pat after meal?");
+///     FieldBuilder::new("pats", ty)
+///         .description("Does cat get a pat after meal?")
+///         .build()
+/// };
 ///
 /// // a schema definition
-/// let mut interface = InterfaceDef::new("Meal");
-/// interface.description("Meal interface for various\nmeals during the day.");
-/// interface.field(field_1);
-/// interface.field(field_2);
-/// interface.field(field_3);
+/// let interface = InterfaceDefBuilder::new("Meal")
+///     .description("Meal interface for various\nmeals during the day.")
+///     .field(field_1)
+///     .field(field_2)
+///     .field(field_3)
+///     .build();
 ///
 /// assert_eq!(
 ///     interface.to_string(),
@@ -62,18 +82,6 @@ use crate::{Field, StringValue};
 ///     "# }
 /// );
 /// ```
-#[derive(Debug, Clone)]
-pub struct InterfaceDef {
-    // Name must return a String.
-    name: String,
-    // Description may return a String or null.
-    description: StringValue,
-    // The vector of interfaces that this interface implements.
-    interfaces: Vec<String>,
-    // The vector of fields required by this interface.
-    fields: Vec<Field>,
-}
-
 #[derive(Debug, Clone)]
 pub struct InterfaceDefBuilder {
     // Name must return a String.
@@ -150,8 +158,7 @@ impl fmt::Display for InterfaceDef {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::Type_;
+    use crate::{FieldBuilder, InterfaceDefBuilder, Type_};
     use indoc::indoc;
     use pretty_assertions::assert_eq;
 
@@ -160,9 +167,9 @@ mod tests {
         let field_1 = {
             let ty = Type_::named_type("String");
 
-            let mut field = Field::new("main", ty);
-            field.description("Cat's main dish of a meal.");
-            field
+            FieldBuilder::new("main", ty)
+                .description("Cat's main dish of a meal.")
+                .build()
         };
 
         let field_2 = {
@@ -171,28 +178,26 @@ mod tests {
             let ty = Type_::list(Box::new(ty));
             let ty = Type_::non_null(Box::new(ty));
 
-            let mut field = Field::new("snack", ty);
-            field.description("Cat's post meal snack.");
-            field
+            FieldBuilder::new("snack", ty)
+                .description("Cat's post meal snack.")
+                .build()
         };
 
         let field_3 = {
             let ty = Type_::named_type("Boolean");
 
-            let mut field = Field::new("pats", ty);
-            field.description("Does cat get a pat\nafter meal?");
-            field
+            FieldBuilder::new("pats", ty)
+                .description("Does cat get a pat\nafter meal?")
+                .build()
         };
 
         // a schema definition
-        let interface = {
-            let mut interface = InterfaceDef::new("Meal");
-            interface.description("Meal interface for various\nmeals during the day.");
-            interface.field(field_1);
-            interface.field(field_2);
-            interface.field(field_3);
-            interface
-        };
+        let interface = InterfaceDefBuilder::new("Meal")
+            .description("Meal interface for various\nmeals during the day.")
+            .field(field_1)
+            .field(field_2)
+            .field(field_3)
+            .build();
 
         assert_eq!(
             interface.to_string(),

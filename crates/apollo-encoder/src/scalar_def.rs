@@ -8,20 +8,6 @@ use crate::StringValue;
 ///     Description? **scalar** Name Directives?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Scalar).
-/// ### Example
-/// ```rust
-/// use apollo_encoder::ScalarDef;
-///
-/// let mut scalar = ScalarDef::new("NumberOfTreatsPerDay");
-/// scalar.description("Int representing number of treats received.");
-///
-/// assert_eq!(
-///     scalar.to_string(),
-///     r#""Int representing number of treats received."
-/// scalar NumberOfTreatsPerDay
-/// "#
-/// );
-/// ```
 #[derive(Debug, PartialEq, Clone)]
 pub struct ScalarDef {
     // Name must return a String.
@@ -30,6 +16,21 @@ pub struct ScalarDef {
     description: StringValue,
 }
 
+/// ### Example
+/// ```rust
+/// use apollo_encoder::ScalarDefBuilder;
+///
+/// let scalar = ScalarDefBuilder::new("NumberOfTreatsPerDay")
+///     .description("Int representing number of treats received.")
+///     .build();
+///
+/// assert_eq!(
+///     scalar.to_string(),
+///     r#""Int representing number of treats received."
+/// scalar NumberOfTreatsPerDay
+/// "#
+/// );
+/// ```
 #[derive(Debug, Clone)]
 pub struct ScalarDefBuilder {
     // Name must return a String.
@@ -73,12 +74,12 @@ impl fmt::Display for ScalarDef {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::ScalarDefBuilder;
     use pretty_assertions::assert_eq;
 
     #[test]
     fn it_encodes_scalar() {
-        let scalar = ScalarDef::new("NumberOfTreatsPerDay");
+        let scalar = ScalarDefBuilder::new("NumberOfTreatsPerDay").build();
 
         assert_eq!(
             scalar.to_string(),
@@ -89,11 +90,9 @@ mod tests {
 
     #[test]
     fn it_encodes_scalar_with_description() {
-        let scalar = {
-            let mut scalar = ScalarDef::new("NumberOfTreatsPerDay");
-            scalar.description("Int representing number of treats received.");
-            scalar
-        };
+        let scalar = ScalarDefBuilder::new("NumberOfTreatsPerDay")
+            .description("Int representing number of treats received.")
+            .build();
 
         assert_eq!(
             scalar.to_string(),
