@@ -37,9 +37,9 @@ pub struct EnumValue {
 
 impl EnumValue {
     /// Create a new instance of EnumValue.
-    pub fn new(name: String) -> Self {
+    pub fn new(name: &str) -> Self {
         Self {
-            name,
+            name: name.to_string(),
             is_deprecated: false,
             description: StringValue::Field { source: None },
             deprecation_reason: StringValue::Reason { source: None },
@@ -47,16 +47,18 @@ impl EnumValue {
     }
 
     /// Set the Enum Value's description.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Field {
-            source: description,
+            source: Some(description.to_string()),
         };
     }
 
     /// Set the Enum Value's deprecation properties.
-    pub fn deprecated(&mut self, reason: Option<String>) {
+    pub fn deprecated(&mut self, reason: &str) {
         self.is_deprecated = true;
-        self.deprecation_reason = StringValue::Reason { source: reason };
+        self.deprecation_reason = StringValue::Reason {
+            source: Some(reason.to_string()),
+        };
     }
 }
 

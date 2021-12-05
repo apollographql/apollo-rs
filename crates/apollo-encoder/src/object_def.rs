@@ -66,9 +66,9 @@ pub struct ObjectDef {
 
 impl ObjectDef {
     /// Create a new instance of ObjectDef with a name.
-    pub fn new(name: String) -> Self {
+    pub fn new(name: &str) -> Self {
         Self {
-            name,
+            name: name.to_string(),
             description: StringValue::Top { source: None },
             interfaces: Vec::new(),
             fields: Vec::new(),
@@ -76,15 +76,15 @@ impl ObjectDef {
     }
 
     /// Set the ObjectDef's description field.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Top {
-            source: description,
+            source: Some(description.to_string()),
         };
     }
 
     /// Set the interfaces ObjectDef implements.
-    pub fn interface(&mut self, interface: String) {
-        self.interfaces.push(interface)
+    pub fn interface(&mut self, interface: &str) {
+        self.interfaces.push(interface.to_string())
     }
 
     /// Push a Field to ObjectDef's fields vector.

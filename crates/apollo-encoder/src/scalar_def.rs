@@ -34,17 +34,17 @@ pub struct ScalarDef {
 
 impl ScalarDef {
     /// Create a new instance of Scalar Definition.
-    pub fn new(name: String) -> Self {
+    pub fn new(name: &str) -> Self {
         Self {
-            name,
+            name: name.to_string(),
             description: StringValue::Top { source: None },
         }
     }
 
     /// Set the ScalarDef's description.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Top {
-            source: description,
+            source: Some(description.to_string()),
         };
     }
 }

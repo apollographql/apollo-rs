@@ -49,10 +49,10 @@ pub struct Field {
 
 impl Field {
     /// Create a new instance of Field.
-    pub fn new(name: String, type_: Type_) -> Self {
+    pub fn new(name: &str, type_: Type_) -> Self {
         Self {
             description: StringValue::Field { source: None },
-            name,
+            name: name.to_string(),
             type_,
             args: Vec::new(),
             is_deprecated: false,
@@ -61,16 +61,18 @@ impl Field {
     }
 
     /// Set the Field's description.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Field {
-            source: description,
+            source: Some(description.to_string()),
         };
     }
 
     /// Set the Field's deprecation properties.
-    pub fn deprecated(&mut self, reason: Option<String>) {
+    pub fn deprecated(&mut self, reason: &str) {
         self.is_deprecated = true;
-        self.deprecation_reason = StringValue::Reason { source: reason };
+        self.deprecation_reason = StringValue::Reason {
+            source: Some(reason.to_string()),
+        };
     }
 
     /// Set the Field's arguments.

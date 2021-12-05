@@ -61,18 +61,18 @@ impl SchemaDef {
     }
 
     /// Set the schema def's query type.
-    pub fn query(&mut self, query: String) {
-        self.query = Some(query);
+    pub fn query(&mut self, query: &str) {
+        self.query = Some(query.to_string());
     }
 
     /// Set the schema def's mutation type.
-    pub fn mutation(&mut self, mutation: String) {
-        self.mutation = Some(mutation);
+    pub fn mutation(&mut self, mutation: &str) {
+        self.mutation = Some(mutation.to_string());
     }
 
     /// Set the schema def's subscription type.
-    pub fn subscription(&mut self, subscription: String) {
-        self.subscription = Some(subscription);
+    pub fn subscription(&mut self, subscription: &str) {
+        self.subscription = Some(subscription.to_string());
     }
 }
 

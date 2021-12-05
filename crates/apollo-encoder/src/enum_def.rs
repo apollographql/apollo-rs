@@ -50,18 +50,18 @@ pub struct EnumDef {
 
 impl EnumDef {
     /// Create a new instance of Enum Definition.
-    pub fn new(name: String) -> Self {
+    pub fn new(name: &str) -> Self {
         Self {
-            name,
+            name: name.to_string(),
             description: StringValue::Top { source: None },
             values: Vec::new(),
         }
     }
 
     /// Set the Enum Definition's description.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Top {
-            source: description,
+            source: Some(description.to_string()),
         };
     }
 

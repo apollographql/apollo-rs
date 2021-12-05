@@ -46,9 +46,9 @@ pub struct Directive {
 
 impl Directive {
     /// Create a new instance of Directive definition.
-    pub fn new(name: String) -> Self {
+    pub fn new(name: &str) -> Self {
         Self {
-            name,
+            name: name.to_string(),
             description: StringValue::Top { source: None },
             args: Vec::new(),
             locations: Vec::new(),
@@ -56,15 +56,15 @@ impl Directive {
     }
 
     /// Set the Directive's description.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Top {
-            source: description,
+            source: Some(description.to_string()),
         };
     }
 
     /// Set the Directive's location.
-    pub fn location(&mut self, location: String) {
-        self.locations.push(location);
+    pub fn location(&mut self, location: &str) {
+        self.locations.push(location.to_string());
     }
 
     /// Set the Directive's args.
