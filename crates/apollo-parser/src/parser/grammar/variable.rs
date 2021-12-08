@@ -29,7 +29,7 @@ pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
 
         if let Some(T![:]) = p.peek() {
             p.bump(S![:]);
-            if let Some(TokenKind::Name) = p.peek() {
+            if let Some(TokenKind::Name | TokenKind::LBracket) = p.peek() {
                 ty::ty(p);
                 if let Some(T![=]) = p.peek() {
                     value::default_value(p);
