@@ -60,18 +60,18 @@ pub struct InputObjectDef {
 
 impl InputObjectDef {
     /// Create a new instance of ObjectDef with a name.
-    pub fn new(name: String) -> Self {
+    pub fn new(name: &str) -> Self {
         Self {
-            name,
+            name: name.to_owned(),
             description: StringValue::Top { source: None },
             fields: Vec::new(),
         }
     }
 
     /// Set the InputObjectDef's description field.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Top {
-            source: description,
+            source: Some(description.to_owned()),
         };
     }
 

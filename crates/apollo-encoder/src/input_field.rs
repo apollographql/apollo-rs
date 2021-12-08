@@ -34,25 +34,25 @@ pub struct InputField {
 
 impl InputField {
     /// Create a new instance of InputField.
-    pub fn new(name: String, type_: Type_) -> Self {
+    pub fn new(name: &str, type_: Type_) -> Self {
         Self {
             description: StringValue::Field { source: None },
-            name,
+            name: name.to_owned(),
             type_,
             default_value: None,
         }
     }
 
     /// Set the InputField's description.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Field {
-            source: description,
+            source: Some(description.to_owned()),
         };
     }
 
     /// Set the InputField's default value.
-    pub fn default(&mut self, default: Option<String>) {
-        self.default_value = default;
+    pub fn default(&mut self, default: &str) {
+        self.default_value = Some(default.to_owned());
     }
 }
 

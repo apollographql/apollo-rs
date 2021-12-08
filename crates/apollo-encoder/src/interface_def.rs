@@ -84,9 +84,9 @@ pub struct InterfaceDef {
 
 impl InterfaceDef {
     /// Create a new instance of InterfaceDef.
-    pub fn new(name: String) -> Self {
+    pub fn new(name: &str) -> Self {
         Self {
-            name,
+            name: name.to_owned(),
             description: StringValue::Top { source: None },
             fields: Vec::new(),
             interfaces: Vec::new(),
@@ -94,15 +94,15 @@ impl InterfaceDef {
     }
 
     /// Set the schema def's description.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Top {
-            source: description,
+            source: Some(description.to_owned()),
         };
     }
 
     /// Set the interfaces ObjectDef implements.
-    pub fn interface(&mut self, interface: String) {
-        self.interfaces.push(interface)
+    pub fn interface(&mut self, interface: &str) {
+        self.interfaces.push(interface.to_owned())
     }
 
     /// Push a Field to schema def's fields vector.

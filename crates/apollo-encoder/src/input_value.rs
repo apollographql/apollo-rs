@@ -54,10 +54,10 @@ pub struct InputValue {
 
 impl InputValue {
     /// Create a new instance of InputValue.
-    pub fn new(name: String, type_: Type_) -> Self {
+    pub fn new(name: &str, type_: Type_) -> Self {
         Self {
             description: StringValue::Input { source: None },
-            name,
+            name: name.to_owned(),
             type_,
             is_deprecated: false,
             deprecation_reason: None,
@@ -66,21 +66,21 @@ impl InputValue {
     }
 
     /// Set the InputValue's description.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Input {
-            source: description,
+            source: Some(description.to_owned()),
         };
     }
 
     /// Set the InputValue's default value.
-    pub fn default(&mut self, default: Option<String>) {
-        self.default = default;
+    pub fn default(&mut self, default: &str) {
+        self.default = Some(default.to_owned());
     }
 
     /// Set the InputValue's deprecation properties.
-    pub fn deprecated(&mut self, reason: Option<String>) {
+    pub fn deprecated(&mut self, reason: &str) {
         self.is_deprecated = true;
-        self.deprecation_reason = reason;
+        self.deprecation_reason = Some(reason.to_owned());
     }
 }
 

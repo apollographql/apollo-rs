@@ -35,24 +35,24 @@ pub struct UnionDef {
 
 impl UnionDef {
     /// Create a new instance of a UnionDef.
-    pub fn new(name: String) -> Self {
+    pub fn new(name: &str) -> Self {
         Self {
-            name,
+            name: name.to_owned(),
             description: StringValue::Top { source: None },
             members: Vec::new(),
         }
     }
 
     /// Set the UnionDefs description.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Top {
-            source: description,
+            source: Some(description.to_owned()),
         };
     }
 
     /// Set a UnionDef member.
-    pub fn member(&mut self, member: String) {
-        self.members.push(member);
+    pub fn member(&mut self, member: &str) {
+        self.members.push(member.to_owned());
     }
 }
 

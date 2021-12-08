@@ -54,25 +54,25 @@ impl SchemaDef {
     }
 
     /// Set the SchemaDef's description.
-    pub fn description(&mut self, description: Option<String>) {
+    pub fn description(&mut self, description: &str) {
         self.description = StringValue::Top {
-            source: description,
+            source: Some(description.to_owned()),
         };
     }
 
     /// Set the schema def's query type.
-    pub fn query(&mut self, query: String) {
-        self.query = Some(query);
+    pub fn query(&mut self, query: &str) {
+        self.query = Some(query.to_owned());
     }
 
     /// Set the schema def's mutation type.
-    pub fn mutation(&mut self, mutation: String) {
-        self.mutation = Some(mutation);
+    pub fn mutation(&mut self, mutation: &str) {
+        self.mutation = Some(mutation.to_owned());
     }
 
     /// Set the schema def's subscription type.
-    pub fn subscription(&mut self, subscription: String) {
-        self.subscription = Some(subscription);
+    pub fn subscription(&mut self, subscription: &str) {
+        self.subscription = Some(subscription.to_owned());
     }
 }
 
