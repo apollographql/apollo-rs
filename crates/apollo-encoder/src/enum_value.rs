@@ -13,9 +13,9 @@ use crate::StringValue;
 /// ```rust
 /// use apollo_encoder::{EnumValue};
 ///
-/// let mut enum_ty = EnumValue::new("CARDBOARD_BOX".to_string());
-/// enum_ty.description(Some("Box nap spot.".to_string()));
-/// enum_ty.deprecated(Some("Box was recycled.".to_string()));
+/// let mut enum_ty = EnumValue::new("CARDBOARD_BOX");
+/// enum_ty.description("Box nap spot.");
+/// enum_ty.deprecated("Box was recycled.");
 ///
 /// assert_eq!(
 ///     enum_ty.to_string(),
@@ -87,14 +87,14 @@ mod tests {
 
     #[test]
     fn it_encodes_an_enum_value() {
-        let enum_ty = EnumValue::new("CAT_TREE".to_string());
+        let enum_ty = EnumValue::new("CAT_TREE");
         assert_eq!(enum_ty.to_string(), "  CAT_TREE");
     }
 
     #[test]
     fn it_encodes_an_enum_value_with_desciption() {
-        let mut enum_ty = EnumValue::new("CAT_TREE".to_string());
-        enum_ty.description(Some("Top bunk of a cat tree.".to_string()));
+        let mut enum_ty = EnumValue::new("CAT_TREE");
+        enum_ty.description("Top bunk of a cat tree.");
         assert_eq!(
             enum_ty.to_string(),
             r#"  "Top bunk of a cat tree."
@@ -103,9 +103,9 @@ mod tests {
     }
     #[test]
     fn it_encodes_an_enum_value_with_deprecated() {
-        let mut enum_ty = EnumValue::new("CARDBOARD_BOX".to_string());
-        enum_ty.description(Some("Box nap\nspot.".to_string()));
-        enum_ty.deprecated(Some("Box was recycled.".to_string()));
+        let mut enum_ty = EnumValue::new("CARDBOARD_BOX");
+        enum_ty.description("Box nap\nspot.");
+        enum_ty.deprecated("Box was recycled.");
 
         assert_eq!(
             enum_ty.to_string(),
@@ -119,9 +119,9 @@ mod tests {
 
     #[test]
     fn it_encodes_an_enum_value_with_deprecated_block_string_value() {
-        let mut enum_ty = EnumValue::new("CARDBOARD_BOX".to_string());
-        enum_ty.description(Some("Box nap\nspot.".to_string()));
-        enum_ty.deprecated(Some("Box was \"recycled\".".to_string()));
+        let mut enum_ty = EnumValue::new("CARDBOARD_BOX");
+        enum_ty.description("Box nap\nspot.");
+        enum_ty.deprecated("Box was \"recycled\".");
 
         assert_eq!(
             enum_ty.to_string(),

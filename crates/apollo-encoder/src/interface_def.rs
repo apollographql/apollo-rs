@@ -34,20 +34,18 @@ use crate::{Field, StringValue};
 ///     name: "Boolean".to_string(),
 /// };
 ///
-/// let mut field_1 = Field::new("main".to_string(), ty_1);
-/// field_1.description(Some("Cat's main dish of a meal.".to_string()));
+/// let mut field_1 = Field::new("main", ty_1);
+/// field_1.description("Cat's main dish of a meal.");
 ///
-/// let mut field_2 = Field::new("snack".to_string(), ty_5);
-/// field_2.description(Some("Cat's post meal snack.".to_string()));
+/// let mut field_2 = Field::new("snack", ty_5);
+/// field_2.description("Cat's post meal snack.");
 ///
-/// let mut field_3 = Field::new("pats".to_string(), ty_6);
-/// field_3.description(Some("Does cat get a pat after meal?".to_string()));
+/// let mut field_3 = Field::new("pats", ty_6);
+/// field_3.description("Does cat get a pat after meal?");
 ///
 /// // a schema definition
-/// let mut interface = InterfaceDef::new("Meal".to_string());
-/// interface.description(Some(
-///     "Meal interface for various\nmeals during the day.".to_string(),
-/// ));
+/// let mut interface = InterfaceDef::new("Meal");
+/// interface.description("Meal interface for various\nmeals during the day.");
 /// interface.field(field_1);
 /// interface.field(field_2);
 /// interface.field(field_3);
@@ -156,20 +154,18 @@ mod tests {
             name: "Boolean".to_string(),
         };
 
-        let mut field_1 = Field::new("main".to_string(), ty_1);
-        field_1.description(Some("Cat's main dish of a meal.".to_string()));
+        let mut field_1 = Field::new("main", ty_1);
+        field_1.description("Cat's main dish of a meal.");
 
-        let mut field_2 = Field::new("snack".to_string(), ty_5);
-        field_2.description(Some("Cat's post meal snack.".to_string()));
+        let mut field_2 = Field::new("snack", ty_5);
+        field_2.description("Cat's post meal snack.");
 
-        let mut field_3 = Field::new("pats".to_string(), ty_6);
-        field_3.description(Some("Does cat get a pat\nafter meal?".to_string()));
+        let mut field_3 = Field::new("pats", ty_6);
+        field_3.description("Does cat get a pat\nafter meal?");
 
         // a schema definition
-        let mut interface = InterfaceDef::new("Meal".to_string());
-        interface.description(Some(
-            "Meal interface for various\nmeals during the day.".to_string(),
-        ));
+        let mut interface = InterfaceDef::new("Meal");
+        interface.description("Meal interface for various\nmeals during the day.");
         interface.field(field_1);
         interface.field(field_2);
         interface.field(field_3);

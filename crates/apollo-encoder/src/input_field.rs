@@ -16,8 +16,8 @@ use crate::{StringValue, Type_};
 ///     name: "CatBreed".to_string(),
 /// };
 ///
-/// let mut field = InputField::new("cat".to_string(), ty_1);
-/// field.default(Some("\"Norwegian Forest\"".to_string()));
+/// let mut field = InputField::new("cat", ty_1);
+/// field.default("\"Norwegian Forest\"");
 ///
 /// assert_eq!(field.to_string(), r#"  cat: CatBreed = "Norwegian Forest""#);
 /// ```
@@ -80,8 +80,8 @@ mod tests {
             name: "CatBreed".to_string(),
         };
 
-        let mut field = InputField::new("cat".to_string(), ty_1);
-        field.default(Some("\"Norwegian Forest\"".to_string()));
+        let mut field = InputField::new("cat", ty_1);
+        field.default("\"Norwegian Forest\"");
 
         assert_eq!(field.to_string(), r#"  cat: CatBreed = "Norwegian Forest""#);
     }

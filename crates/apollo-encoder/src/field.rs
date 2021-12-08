@@ -16,13 +16,13 @@ use crate::{InputValue, StringValue, Type_};
 ///     name: "CatBreed".to_string(),
 /// };
 ///
-/// let mut field = Field::new("cat".to_string(), ty_1);
+/// let mut field = Field::new("cat", ty_1);
 ///
 /// let value_1 = Type_::NamedType {
 ///     name: "CatBreed".to_string(),
 /// };
 ///
-/// let arg = InputValue::new("breed".to_string(), value_1);
+/// let arg = InputValue::new("breed", value_1);
 ///
 /// field.arg(arg);
 ///
@@ -125,7 +125,7 @@ mod tests {
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
         let ty_3 = Type_::NonNull { ty: Box::new(ty_2) };
-        let field = Field::new("spaceCat".to_string(), ty_3);
+        let field = Field::new("spaceCat", ty_3);
 
         assert_eq!(field.to_string(), r#"  spaceCat: [SpaceProgram]!"#);
     }
@@ -137,9 +137,9 @@ mod tests {
         };
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let mut field = Field::new("cat".to_string(), ty_2);
-        field.description(Some("Very good cats".to_string()));
-        field.deprecated(Some("Cats are no longer sent to space.".to_string()));
+        let mut field = Field::new("cat", ty_2);
+        field.description("Very good cats");
+        field.deprecated("Cats are no longer sent to space.");
 
         assert_eq!(
             field.to_string(),
@@ -157,8 +157,8 @@ mod tests {
         let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
         let ty_3 = Type_::List { ty: Box::new(ty_2) };
         let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
-        let mut field = Field::new("spaceCat".to_string(), ty_4);
-        field.description(Some("Very good space cats".to_string()));
+        let mut field = Field::new("spaceCat", ty_4);
+        field.description("Very good space cats");
 
         assert_eq!(
             field.to_string(),
@@ -176,8 +176,8 @@ mod tests {
         let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
         let ty_3 = Type_::List { ty: Box::new(ty_2) };
         let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
-        let mut field = Field::new("spaceCat".to_string(), ty_4);
-        field.description(Some("Very good space cats".to_string()));
+        let mut field = Field::new("spaceCat", ty_4);
+        field.description("Very good space cats");
 
         let value_1 = Type_::NamedType {
             name: "SpaceProgram".to_string(),
@@ -186,8 +186,8 @@ mod tests {
         let value_2 = Type_::List {
             ty: Box::new(value_1),
         };
-        let mut arg = InputValue::new("cat".to_string(), value_2);
-        arg.deprecated(Some("Cats are no longer sent to space.".to_string()));
+        let mut arg = InputValue::new("cat", value_2);
+        arg.deprecated("Cats are no longer sent to space.");
         field.arg(arg);
 
         assert_eq!(

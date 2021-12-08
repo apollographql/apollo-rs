@@ -13,14 +13,14 @@ use crate::{EnumValue, StringValue};
 /// ```rust
 /// use apollo_encoder::{EnumValue, EnumDef};
 ///
-/// let mut enum_ty_1 = EnumValue::new("CAT_TREE".to_string());
-/// enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
-/// let enum_ty_2 = EnumValue::new("BED".to_string());
-/// let mut enum_ty_3 = EnumValue::new("CARDBOARD_BOX".to_string());
-/// enum_ty_3.deprecated(Some("Box was recycled.".to_string()));
+/// let mut enum_ty_1 = EnumValue::new("CAT_TREE");
+/// enum_ty_1.description("Top bunk of a cat tree.");
+/// let enum_ty_2 = EnumValue::new("BED");
+/// let mut enum_ty_3 = EnumValue::new("CARDBOARD_BOX");
+/// enum_ty_3.deprecated("Box was recycled.");
 ///
-/// let mut enum_ = EnumDef::new("NapSpots".to_string());
-/// enum_.description(Some("Favourite cat nap spots.".to_string()));
+/// let mut enum_ = EnumDef::new("NapSpots");
+/// enum_.description("Favourite cat nap spots.");
 /// enum_.value(enum_ty_1);
 /// enum_.value(enum_ty_2);
 /// enum_.value(enum_ty_3);
@@ -89,11 +89,11 @@ mod tests {
 
     #[test]
     fn it_encodes_a_simple_enum() {
-        let enum_ty_1 = EnumValue::new("CAT_TREE".to_string());
-        let enum_ty_2 = EnumValue::new("BED".to_string());
-        let enum_ty_3 = EnumValue::new("CARDBOARD_BOX".to_string());
+        let enum_ty_1 = EnumValue::new("CAT_TREE");
+        let enum_ty_2 = EnumValue::new("BED");
+        let enum_ty_3 = EnumValue::new("CARDBOARD_BOX");
 
-        let mut enum_ = EnumDef::new("NapSpots".to_string());
+        let mut enum_ = EnumDef::new("NapSpots");
         enum_.value(enum_ty_1);
         enum_.value(enum_ty_2);
         enum_.value(enum_ty_3);
@@ -110,14 +110,14 @@ mod tests {
     }
     #[test]
     fn it_encodes_enum_with_descriptions() {
-        let mut enum_ty_1 = EnumValue::new("CAT_TREE".to_string());
-        enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
-        let enum_ty_2 = EnumValue::new("BED".to_string());
-        let mut enum_ty_3 = EnumValue::new("CARDBOARD_BOX".to_string());
-        enum_ty_3.deprecated(Some("Box was recycled.".to_string()));
+        let mut enum_ty_1 = EnumValue::new("CAT_TREE");
+        enum_ty_1.description("Top bunk of a cat tree.");
+        let enum_ty_2 = EnumValue::new("BED");
+        let mut enum_ty_3 = EnumValue::new("CARDBOARD_BOX");
+        enum_ty_3.deprecated("Box was recycled.");
 
-        let mut enum_ = EnumDef::new("NapSpots".to_string());
-        enum_.description(Some("Favourite cat nap spots.".to_string()));
+        let mut enum_ = EnumDef::new("NapSpots");
+        enum_.description("Favourite cat nap spots.");
         enum_.value(enum_ty_1);
         enum_.value(enum_ty_2);
         enum_.value(enum_ty_3);

@@ -24,9 +24,9 @@ use crate::{StringValue, Type_};
 /// };
 ///
 /// let ty_2 = Type_::List { ty: Box::new(ty_1) };
-/// let mut value = InputValue::new("cat".to_string(), ty_2);
-/// value.description(Some("Very good cats".to_string()));
-/// value.deprecated(Some("Cats are no longer sent to space.".to_string()));
+/// let mut value = InputValue::new("cat", ty_2);
+/// value.description("Very good cats");
+/// value.deprecated("Cats are no longer sent to space.");
 ///
 /// assert_eq!(
 ///     value.to_string(),
@@ -120,7 +120,7 @@ mod tests {
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
         let ty_3 = Type_::NonNull { ty: Box::new(ty_2) };
-        let value = InputValue::new("spaceCat".to_string(), ty_3);
+        let value = InputValue::new("spaceCat", ty_3);
 
         assert_eq!(value.to_string(), r#"spaceCat: [SpaceProgram]!"#);
     }
@@ -132,8 +132,8 @@ mod tests {
         };
 
         let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
-        let mut value = InputValue::new("spaceCat".to_string(), ty_2);
-        value.default(Some("\"Norwegian Forest\"".to_string()));
+        let mut value = InputValue::new("spaceCat", ty_2);
+        value.default("\"Norwegian Forest\"");
 
         assert_eq!(
             value.to_string(),
@@ -148,9 +148,9 @@ mod tests {
         };
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let mut value = InputValue::new("cat".to_string(), ty_2);
-        value.description(Some("Very good cats".to_string()));
-        value.deprecated(Some("Cats are no longer sent to space.".to_string()));
+        let mut value = InputValue::new("cat", ty_2);
+        value.description("Very good cats");
+        value.deprecated("Cats are no longer sent to space.");
 
         assert_eq!(
             value.to_string(),
@@ -167,8 +167,8 @@ mod tests {
         let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
         let ty_3 = Type_::List { ty: Box::new(ty_2) };
         let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
-        let mut value = InputValue::new("spaceCat".to_string(), ty_4);
-        value.description(Some("Very good space cats".to_string()));
+        let mut value = InputValue::new("spaceCat", ty_4);
+        value.description("Very good space cats");
 
         assert_eq!(
             value.to_string(),

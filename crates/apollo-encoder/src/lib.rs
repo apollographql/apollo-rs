@@ -41,33 +41,31 @@
 //! let mut schema = Schema::new();
 //!
 //! // Create a Directive Definition.
-//! let mut directive = Directive::new("provideTreat".to_string());
-//! directive.description(Some("Ensures cats get treats.".to_string()));
-//! directive.location("OBJECT".to_string());
-//! directive.location("FIELD_DEFINITION".to_string());
-//! directive.location("INPUT_FIELD_DEFINITION".to_string());
+//! let mut directive = Directive::new("provideTreat");
+//! directive.description("Ensures cats get treats.");
+//! directive.location("OBJECT");
+//! directive.location("FIELD_DEFINITION");
+//! directive.location("INPUT_FIELD_DEFINITION");
 //! schema.directive(directive);
 
 //! // Create an Enum Definition
-//! let mut enum_ty_1 = EnumValue::new("CatTree".to_string());
-//! enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
-//! let enum_ty_2 = EnumValue::new("Bed".to_string());
-//! let mut enum_ty_3 = EnumValue::new("CardboardBox".to_string());
-//! enum_ty_3.deprecated(Some("Box was recycled.".to_string()));
+//! let mut enum_ty_1 = EnumValue::new("CatTree");
+//! enum_ty_1.description("Top bunk of a cat tree.");
+//! let enum_ty_2 = EnumValue::new("Bed");
+//! let mut enum_ty_3 = EnumValue::new("CardboardBox");
+//! enum_ty_3.deprecated("Box was recycled.");
 //!
-//! let mut enum_def = EnumDef::new("NapSpots".to_string());
-//! enum_def.description(Some("Favourite cat\nnap spots.".to_string()));
+//! let mut enum_def = EnumDef::new("NapSpots");
+//! enum_def.description("Favourite cat\nnap spots.");
 //! enum_def.value(enum_ty_1);
 //! enum_def.value(enum_ty_2);
 //! enum_def.value(enum_ty_3);
 //! schema.enum_(enum_def);
 //! // Union Definition
-//! let mut union_def = UnionDef::new("Cat".to_string());
-//! union_def.description(Some(
-//!     "A union of all cats represented within a household.".to_string(),
-//! ));
-//! union_def.member("NORI".to_string());
-//! union_def.member("CHASHU".to_string());
+//! let mut union_def = UnionDef::new("Cat");
+//! union_def.description("A union of all cats represented within a household.");
+//! union_def.member("NORI");
+//! union_def.member("CHASHU");
 //! schema.union(union_def);
 //!
 //! assert_eq!(
