@@ -23,6 +23,8 @@ pub(crate) fn selection_set(p: &mut Parser) {
 ///     FragmentSpread
 ///     InlineFragment
 pub(crate) fn selection(p: &mut Parser) {
+    let mut has_selection = false;
+
     while let Some(node) = p.peek() {
         match node {
             T![...] => {
@@ -31,6 +33,7 @@ pub(crate) fn selection(p: &mut Parser) {
                         "on" | "{" => fragment::inline_fragment(p),
                         _ => fragment::fragment_spread(p),
                     }
+                    has_selection = true;
                 } else {
                     p.err("expected an Inline Fragment or a Fragment Spread");
                 }
@@ -40,8 +43,14 @@ pub(crate) fn selection(p: &mut Parser) {
             }
             TokenKind::Name => {
                 field::field(p);
+                has_selection = true;
             }
-            _ => break,
+            _ => {
+                if !has_selection {
+                    p.err("exepcted at least one Selection in Selection Set");
+                }
+                break;
+            }
         }
     }
 }
@@ -188,5 +197,18 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             let matching = a.iter().zip(b.iter()).filter(|&(a, b)| a == b).count();
             matching == a.len() && matching == b.len()
         }
+    }
+
+    #[test]
+    fn it_errors_when_selection_set_is_empty() {
+        let schema = r#"
+        query($foo: Int) {}
+        "#;
+        let parser = Parser::new(schema);
+
+        let ast = parser.parse();
+
+        assert_eq!(ast.errors().len(), 1);
+        assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }
 }
