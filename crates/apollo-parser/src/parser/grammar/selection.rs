@@ -57,10 +57,7 @@ pub(crate) fn selection(p: &mut Parser) {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        ast::{Definition, Selection, SelectionSet, Value},
-        Parser, TokenText,
-    };
+    use crate::{ast, Parser, TokenText};
 
     #[test]
     fn fragment_spread_in_selection() {
@@ -82,17 +79,17 @@ mod test {
         let doc = ast.document();
 
         for def in doc.definitions() {
-            if let Definition::OperationDefinition(op_def) = def {
+            if let ast::Definition::OperationDefinition(op_def) = def {
                 if let Some(selection_set) = op_def.selection_set() {
                     for selection in selection_set.selections() {
                         match selection {
-                            Selection::Field(field) => {
+                            ast::Selection::Field(field) => {
                                 assert_eq!(
                                     "animal".to_string(),
                                     field.name().unwrap().text().to_string()
                                 );
                             }
-                            Selection::FragmentSpread(f_spread) => {
+                            ast::Selection::FragmentSpread(f_spread) => {
                                 assert_eq!(
                                     "snackSelection".to_string(),
                                     f_spread
@@ -104,7 +101,7 @@ mod test {
                                         .to_string()
                                 )
                             }
-                            Selection::InlineFragment(inline_fragment) => {
+                            ast::Selection::InlineFragment(inline_fragment) => {
                                 assert_eq!(
                                     "Pet".to_string(),
                                     inline_fragment
@@ -143,7 +140,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
         let doc = ast.document();
 
         for def in doc.definitions() {
-            if let Definition::OperationDefinition(op_def) = def {
+            if let ast::Definition::OperationDefinition(op_def) = def {
                 assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
 
                 let variable_defs = op_def.variable_definitions();
@@ -164,18 +161,18 @@ query GraphQuery($graph_id: ID!, $variant: String) {
 
         fn get_variables_from_selection(
             used_vars: &mut Vec<TokenText>,
-            selection_set: SelectionSet,
+            selection_set: ast::SelectionSet,
         ) -> &Vec<TokenText> {
             for selection in selection_set.selections() {
                 match selection {
-                    Selection::Field(field) => {
+                    ast::Selection::Field(field) => {
                         let arguments = field.arguments();
                         let mut vars: Vec<TokenText> = arguments
                             .iter()
                             .map(|a| a.arguments())
                             .flatten()
                             .filter_map(|v| {
-                                if let Value::Variable(var) = v.value()? {
+                                if let ast::Value::Variable(var) = v.value()? {
                                     dbg!(&var.name()?.text());
                                     return Some(var.name()?.text());
                                 }
@@ -196,6 +193,78 @@ query GraphQuery($graph_id: ID!, $variant: String) {
         fn do_variables_match(a: &[TokenText], b: &[TokenText]) -> bool {
             let matching = a.iter().zip(b.iter()).filter(|&(a, b)| a == b).count();
             matching == a.len() && matching == b.len()
+        }
+    }
+
+    #[test]
+    fn it_gets_nested_selection_set_fields() {
+        let query = r#"
+query SomeQuery(
+  $param1: String!
+  $param2: String!
+) {
+  item1(
+    param1: $param1
+    param2: $param2
+  ) {
+    id
+    ...Fragment1
+    ... on Fragment2 {
+      field3 {
+        field4
+      }
+    }
+  }
+}"#;
+        let parser = Parser::new(query);
+        let ast = parser.parse();
+
+        assert_eq!(ast.errors().len(), 0);
+
+        let doc = ast.document();
+        for def in doc.definitions() {
+            if let ast::Definition::OperationDefinition(op_def) = def {
+                let selection_set = op_def.selection_set().unwrap();
+                for selection in selection_set.selections() {
+                    if let ast::Selection::Field(field) = selection {
+                        assert_eq!("item1", field.name().unwrap().text().as_ref());
+                        let selection_set = field.selection_set().unwrap();
+                        for selection in selection_set.selections() {
+                            match selection {
+                                ast::Selection::Field(field) => {
+                                    assert_eq!("id", field.name().unwrap().text().as_ref());
+                                }
+                                ast::Selection::FragmentSpread(fragment_spread) => {
+                                    assert_eq!(
+                                        "Fragment1",
+                                        fragment_spread
+                                            .fragment_name()
+                                            .unwrap()
+                                            .name()
+                                            .unwrap()
+                                            .text()
+                                            .as_ref()
+                                    );
+                                }
+                                ast::Selection::InlineFragment(inline_fragment) => {
+                                    assert_eq!(
+                                        "Fragment2",
+                                        inline_fragment
+                                            .type_condition()
+                                            .unwrap()
+                                            .named_type()
+                                            .unwrap()
+                                            .name()
+                                            .unwrap()
+                                            .text()
+                                            .as_ref()
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

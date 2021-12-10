@@ -1,0 +1,105 @@
+- DOCUMENT@0..191
+    - OPERATION_DEFINITION@0..191
+        - OPERATION_TYPE@0..6
+            - query_KW@0..5 "query"
+            - WHITESPACE@5..6 " "
+        - NAME@6..15
+            - IDENT@6..15 "SomeQuery"
+        - VARIABLE_DEFINITIONS@15..55
+            - L_PAREN@15..16 "("
+            - WHITESPACE@16..19 "\n  "
+            - VARIABLE_DEFINITION@19..37
+                - VARIABLE@19..26
+                    - DOLLAR@19..20 "$"
+                    - NAME@20..26
+                        - IDENT@20..26 "param1"
+                - COLON@26..27 ":"
+                - WHITESPACE@27..28 " "
+                - NON_NULL_TYPE@28..37
+                    - WHITESPACE@28..31 "\n  "
+                    - NAMED_TYPE@31..37
+                        - NAME@31..37
+                            - IDENT@31..37 "String"
+            - VARIABLE_DEFINITION@37..53
+                - VARIABLE@37..44
+                    - DOLLAR@37..38 "$"
+                    - NAME@38..44
+                        - IDENT@38..44 "param2"
+                - COLON@44..45 ":"
+                - WHITESPACE@45..46 " "
+                - NON_NULL_TYPE@46..53
+                    - WHITESPACE@46..47 "\n"
+                    - NAMED_TYPE@47..53
+                        - NAME@47..53
+                            - IDENT@47..53 "String"
+            - R_PAREN@53..54 ")"
+            - WHITESPACE@54..55 " "
+        - SELECTION_SET@55..191
+            - L_CURLY@55..56 "{"
+            - WHITESPACE@56..59 "\n  "
+            - FIELD@59..190
+                - NAME@59..64
+                    - IDENT@59..64 "item1"
+                - ARGUMENTS@64..110
+                    - L_PAREN@64..65 "("
+                    - WHITESPACE@65..70 "\n    "
+                    - ARGUMENT@70..90
+                        - NAME@70..76
+                            - IDENT@70..76 "param1"
+                        - COLON@76..77 ":"
+                        - WHITESPACE@77..78 " "
+                        - VARIABLE@78..90
+                            - DOLLAR@78..79 "$"
+                            - NAME@79..90
+                                - IDENT@79..85 "param1"
+                                - WHITESPACE@85..90 "\n    "
+                    - ARGUMENT@90..108
+                        - NAME@90..96
+                            - IDENT@90..96 "param2"
+                        - COLON@96..97 ":"
+                        - WHITESPACE@97..98 " "
+                        - VARIABLE@98..108
+                            - DOLLAR@98..99 "$"
+                            - NAME@99..108
+                                - IDENT@99..105 "param2"
+                                - WHITESPACE@105..108 "\n  "
+                    - R_PAREN@108..109 ")"
+                    - WHITESPACE@109..110 " "
+                - SELECTION_SET@110..190
+                    - L_CURLY@110..111 "{"
+                    - WHITESPACE@111..116 "\n    "
+                    - FIELD@116..123
+                        - NAME@116..123
+                            - IDENT@116..118 "id"
+                            - WHITESPACE@118..123 "\n    "
+                    - INLINE_FRAGMENT@123..188
+                        - SPREAD@123..126 "..."
+                        - WHITESPACE@126..127 " "
+                        - TYPE_CONDITION@127..140
+                            - on_KW@127..129 "on"
+                            - WHITESPACE@129..130 " "
+                            - NAMED_TYPE@130..140
+                                - NAME@130..140
+                                    - IDENT@130..139 "Fragment1"
+                                    - WHITESPACE@139..140 " "
+                        - SELECTION_SET@140..188
+                            - L_CURLY@140..141 "{"
+                            - WHITESPACE@141..148 "\n      "
+                            - FIELD@148..184
+                                - NAME@148..155
+                                    - IDENT@148..154 "field3"
+                                    - WHITESPACE@154..155 " "
+                                - SELECTION_SET@155..184
+                                    - L_CURLY@155..156 "{"
+                                    - WHITESPACE@156..165 "\n        "
+                                    - FIELD@165..178
+                                        - NAME@165..178
+                                            - IDENT@165..171 "field4"
+                                            - WHITESPACE@171..178 "\n      "
+                                    - R_CURLY@178..179 "}"
+                                    - WHITESPACE@179..184 "\n    "
+                            - R_CURLY@184..185 "}"
+                            - WHITESPACE@185..188 "\n  "
+                    - R_CURLY@188..189 "}"
+                    - WHITESPACE@189..190 "\n"
+            - R_CURLY@190..191 "}"
