@@ -15,3 +15,6 @@ categories = [
     "web-programming",
 ]
 edition = "2021"
+
+[dependencies]
+apollo-parser = { path = "../apollo-parser" }
