@@ -18,3 +18,4 @@ edition = "2021"
 
 [dependencies]
 apollo-parser = { path = "../apollo-parser" }
+salsa = "0.16.1"

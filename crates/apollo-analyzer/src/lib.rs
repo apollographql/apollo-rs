@@ -1,8 +1,18 @@
+mod database;
 mod passes;
+
+use std::sync::Arc;
+
+pub use database::{Database, DatabaseTrait};
 
 use apollo_parser::SyntaxTree;
 
 pub fn check(ast: SyntaxTree) {
+    let mut db = Database::default();
+
+    db.set_input_string((), Arc::new("Hello, world".to_string()));
+
+    println!("Now, the length is {}.", db.length(()));
     passes::unused_variables::check(ast)
 }
 
