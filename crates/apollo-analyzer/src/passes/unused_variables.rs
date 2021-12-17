@@ -1,8 +1,6 @@
-use apollo_parser::{ast, SyntaxTree};
+use apollo_parser::ast;
 
-pub fn check(ast: SyntaxTree) {
-    let doc = ast.document();
-
+pub fn check(doc: &ast::Document) {
     for def in doc.definitions() {
         if let ast::Definition::OperationDefinition(op_def) = def {
             let variable_defs = op_def.variable_definitions();
