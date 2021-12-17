@@ -1,21 +1,59 @@
 mod database;
 mod passes;
 
-use std::sync::Arc;
+use std::{collections::HashSet, sync::Arc};
 
 pub use database::{Database, DatabaseTrait};
 
-use apollo_parser::SyntaxTree;
+use apollo_parser::{
+    ast::{self, AstNode},
+    SyntaxTree,
+};
+use miette::{Diagnostic, NamedSource, Report, SourceSpan};
+use thiserror::Error;
 
-pub fn validate(ast: SyntaxTree) {
+#[derive(Error, Debug, Diagnostic)]
+#[error("cannot find `{}` interface in this scope", self.ty)]
+#[diagnostic(code("apollo-parser: semantic error"))]
+struct GraphQLUndefinedInterfacesError {
+    ty: String,
+    #[source_code]
+    src: NamedSource,
+    message: String,
+    #[label("{}", self.message)]
+    span: SourceSpan,
+}
+
+pub fn validate(ast: SyntaxTree, src: &str) {
     let mut db = Database::default();
 
     db.set_input_string((), Arc::new("Hello, world".to_string()));
 
-    println!("Now, the length is {}.", db.length(()));
+    // println!("Now, the length is {}.", db.length(()));
     let doc = ast.document();
     passes::unused_variables::check(&doc);
-    passes::unused_implements_interfaces::check(&doc);
+    let (implements_interfaces, defined_interfaces) =
+        passes::unused_implements_interfaces::check(&doc);
+    if !implements_interfaces.is_empty() {
+        let undefined_interfaces: HashSet<ast::Name> = implements_interfaces
+            .difference(&defined_interfaces)
+            .cloned()
+            .collect();
+        for interface in undefined_interfaces {
+            let syntax = interface.syntax();
+            let index: usize = syntax.text_range().start().into();
+            let len: usize = syntax.text().len().into();
+
+            let err = Report::new(GraphQLUndefinedInterfacesError {
+                src: NamedSource::new("schema.graphql", src.to_owned()),
+                span: (index, len).into(),
+                message: "This interface is not defined.".to_string(),
+                ty: interface.text().to_string(),
+            });
+
+            println!("{:?}", err);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -36,7 +74,7 @@ type Person implements NamedEntity {
 
         assert_eq!(ast.errors().len(), 0);
 
-        validate(ast)
+        validate(ast, input)
     }
 
     #[test]
@@ -52,6 +90,6 @@ query ExampleQuery() {
 
         assert_eq!(ast.errors().len(), 0);
 
-        validate(ast)
+        validate(ast, input)
     }
 }

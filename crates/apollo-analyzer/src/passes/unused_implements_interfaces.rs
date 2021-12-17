@@ -2,23 +2,23 @@ use std::collections::HashSet;
 
 use apollo_parser::ast::{self, ImplementsInterfaces};
 
-pub fn check(doc: &ast::Document) -> (HashSet<String>, HashSet<String>) {
-    let defined_interfaces: HashSet<String> = doc
+pub fn check(doc: &ast::Document) -> (HashSet<ast::Name>, HashSet<ast::Name>) {
+    let defined_interfaces: HashSet<ast::Name> = doc
         .definitions()
         .filter_map(|def| {
             if let ast::Definition::InterfaceTypeDefinition(interface_def) = def {
-                interface_def.name()?.text().to_string();
+                interface_def.name()?;
             }
             None
         })
         .collect();
 
-    let implements_interfaces: HashSet<String> =
+    let implements_interfaces: HashSet<ast::Name> =
         doc.definitions().fold(HashSet::new(), |mut set, def| {
-            let extend = |set: &mut HashSet<String>, interface: Option<ImplementsInterfaces>| {
+            let extend = |set: &mut HashSet<ast::Name>, interface: Option<ImplementsInterfaces>| {
                 if let Some(interface) = interface {
                     let named_types = interface.named_types();
-                    let iter = named_types.filter_map(|n| Some(n.name()?.to_string()));
+                    let iter = named_types.filter_map(|n| n.name());
                     set.extend(iter);
                 }
             };
