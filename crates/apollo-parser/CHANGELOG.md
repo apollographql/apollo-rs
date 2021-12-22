@@ -18,7 +18,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-## BREAKING
+## Breaking
 - **impl Iterator for ast.errors() - [o0Ignition0o], [issue/119] [pull/120]**
 
   `ast.errors()` now return an Iterator. This makes it a bit easier for users to process any errors returned by the Parser. Below is the new usage example:
@@ -137,5 +137,3 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
   [lrlna]: https://github.com/lrlna
   [pull/137]: https://github.com/apollographql/apollo-rs/pull/137
-
-## Documentation
