@@ -50,6 +50,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 - **fix: properly create TYPE's NAMED_TYPE, LIST_TYPE, NON_NULL_TYPE - [lrlna], [issue/125] [pull/127]**
+
   Whenever a NAMED_TYPED, LIST_TYPE, NON_NULL_TYPE are created, they are
   automatically get created as part of the TYPE node, so we do not need to start
   it manually. This fix makes it possible to once again do:
@@ -64,6 +65,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [pull/127]: https://github.com/apollographql/apollo-rs/pull/127
 
 - **fix: create an error when SelectionSet is empty in operation definition - [lrlna], [pull/134]**
+
   An Operation Definition must have a selection set with values, so this query
   `query {}` should also come with an error.
 
@@ -71,6 +73,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [pull/134]: https://github.com/apollographql/apollo-rs/pull/134
 
 - **fix: variable definition can have a LIST_TYPE - [lrlna], [issue/131] [pull/135]**
+
   Variable definition was previously not accepting a LIST_TYPE, which is
   incorrect. This commit fixes this issue.
 
@@ -80,10 +83,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 - **chore: typo in README - [lrlna], [c598d3]**
+
   [lrlna]: https://github.com/lrlna
   [c598d3]: https://github.com/apollographql/apollo-rs/commit/c598d33bc9e80f767804bf5a88a7a1d6f400e832
 
 - **fuzzing for apollo-parser - [Geal], [pull/122]**
+
   The fuzz test checks for lexer and parser errors and stops early.
 
   The following fuzz-encountered errors are fixed:
@@ -104,10 +109,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [pull/122]: https://github.com/apollographql/apollo-rs/pull/122
 
 - **chore: run clippy in CI on benchmark directories - [lrlna], [pull/123]**
+
   [lrlna]: https://github.com/lrlna
   [pull/123]: https://github.com/apollographql/apollo-rs/pull/123
 
 - **chore: add tests for untermiated strings and invalid type system extensions - [lrlna], [pull/124]**
+
   Follows up on [#122] and adds tests for the incorrectly lexed and parsed
   inputs that fuzzing discovered.
 
@@ -119,10 +126,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [#122]: https://github.com/apollographql/apollo-rs/pull/122
 
 - **chore: allow dead code in xtask's ast_src - [lrlna], [pull/128]**
+
   [lrlna]: https://github.com/lrlna
   [pull/128]: https://github.com/apollographql/apollo-rs/pull/128
 
 - **chore: add a test for nested SELECTION_SETs - [lrlna], [pull/137]**
+
   This will mostly act as an example in case users are looking for how to work
   with nested selections and get their FIELD/INLINE_FRAGMENT/FRAGMENT_SPREAD.
 
