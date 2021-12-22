@@ -3,12 +3,9 @@ mod passes;
 
 use std::{collections::HashSet, sync::Arc};
 
-pub use database::{Database, DatabaseTrait};
+pub use database::{Database, SourceDatabase};
 
-use apollo_parser::{
-    ast::{self, AstNode},
-    SyntaxTree,
-};
+use apollo_parser::ast::{self, AstNode};
 use miette::{Diagnostic, NamedSource, Report, SourceSpan};
 use thiserror::Error;
 
@@ -24,13 +21,25 @@ struct GraphQLUndefinedInterfacesError {
     span: SourceSpan,
 }
 
-pub fn validate(ast: SyntaxTree, src: &str) {
+#[derive(Error, Debug, Diagnostic)]
+#[error("cannot find `{}` variable in this scope", self.ty)]
+#[diagnostic(code("apollo-parser: semantic error"))]
+struct GraphQLUndefinedVariablesError {
+    ty: String,
+    #[source_code]
+    src: NamedSource,
+    message: String,
+    #[label("{}", self.message)]
+    span: SourceSpan,
+}
+
+pub fn validate(src: &str) {
     let mut db = Database::default();
 
-    db.set_input_string((), Arc::new("Hello, world".to_string()));
+    db.set_input_string((), Arc::new(src.to_string()));
+    let doc = db.parse();
 
     // println!("Now, the length is {}.", db.length(()));
-    let doc = ast.document();
     passes::unused_variables::check(&doc);
     let (implements_interfaces, defined_interfaces) =
         passes::unused_implements_interfaces::check(&doc);
@@ -60,8 +69,6 @@ pub fn validate(ast: SyntaxTree, src: &str) {
 mod test {
     use super::*;
 
-    use apollo_parser::Parser;
-
     #[test]
     fn it_validates_undefined_interface_in_schema() {
         let input = r#"
@@ -69,12 +76,7 @@ type Person implements NamedEntity {
   name: String
   age: Int
 }"#;
-        let parser = Parser::new(input);
-        let ast = parser.parse();
-
-        assert_eq!(ast.errors().len(), 0);
-
-        validate(ast, input)
+        validate(input)
     }
 
     #[test]
@@ -85,11 +87,7 @@ query ExampleQuery() {
     name
   }
 }"#;
-        let parser = Parser::new(input);
-        let ast = parser.parse();
 
-        assert_eq!(ast.errors().len(), 0);
-
-        validate(ast, input)
+        validate(input)
     }
 }

@@ -1,11 +1,13 @@
 use apollo_parser::ast;
 
+// TODO: refactor to return the same thing as unused implements interfaces
+
 pub fn check(doc: &ast::Document) {
     for def in doc.definitions() {
         if let ast::Definition::OperationDefinition(op_def) = def {
             let variable_defs = op_def.variable_definitions();
             // We grab all the variables defined in the mutation
-            let variables: Vec<String> = variable_defs
+            let defined_variables: Vec<String> = variable_defs
                 .iter()
                 .map(|v| v.variable_definitions())
                 .flatten()
@@ -17,7 +19,7 @@ pub fn check(doc: &ast::Document) {
                 // Get the variables defined in the mutation's selection set.
                 let used_vars = get_variables_from_selection(&mut vec, selection_set);
                 // Compare the two sets of variables.
-                assert!(do_variables_match(&variables, used_vars));
+                assert!(do_variables_match(&defined_variables, used_vars));
             }
         }
     }
