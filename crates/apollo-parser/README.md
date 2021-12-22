@@ -22,14 +22,14 @@
 * Error resilience
   * lexing and parsing does not fail or `panic` if a lexical or a syntax error is found
 * GraphQL lexer
-* GraphQL parser 
+* GraphQL parser
 
 ## Getting started
 Add this to your `Cargo.toml` to start using `apollo-parser`:
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-parser = "0.1.0"
+apollo-parser = "0.2.0"
 ```
 
 Or using [cargo-edit]:
@@ -70,7 +70,7 @@ let doc = ast.document();
 
 ### Examples
 
-Two examples outlined here: 
+Two examples outlined here:
 * [Get field names in an object]
 * [Get variables used in a query]
 
@@ -107,7 +107,7 @@ for def in doc.definitions() {
 }
 ```
 
-#### Get variables used in a query 
+#### Get variables used in a query
 
 ```rust
 use apollo_parser::{ast, Parser};
@@ -121,17 +121,17 @@ let input = "
     }
   }
   ";
-  
+
   let parser = Parser::new(input);
   let ast = parser.parse();
   assert_eq!(0, ast.errors().len());
-  
+
   let doc = ast.document();
-  
+
   for def in doc.definitions() {
       if let ast::Definition::OperationDefinition(op_def) = def {
           assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
-  
+
           let variable_defs = op_def.variable_definitions();
           let variables: Vec<String> = variable_defs
               .iter()
