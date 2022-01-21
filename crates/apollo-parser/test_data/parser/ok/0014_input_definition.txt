@@ -1,11 +1,11 @@
-- DOCUMENT@0..53
-    - INPUT_OBJECT_TYPE_DEFINITION@0..53
+- DOCUMENT@0..54
+    - INPUT_OBJECT_TYPE_DEFINITION@0..54
         - input_KW@0..5 "input"
         - WHITESPACE@5..6 " "
         - NAME@6..25
             - IDENT@6..24 "ExampleInputObject"
             - WHITESPACE@24..25 " "
-        - INPUT_FIELDS_DEFINITION@25..53
+        - INPUT_FIELDS_DEFINITION@25..54
             - L_CURLY@25..26 "{"
             - WHITESPACE@26..31 "\n    "
             - INPUT_VALUE_DEFINITION@31..45
@@ -17,14 +17,15 @@
                     - WHITESPACE@34..39 "\n    "
                     - NAME@39..45
                         - IDENT@39..45 "String"
-            - INPUT_VALUE_DEFINITION@45..52
+            - INPUT_VALUE_DEFINITION@45..53
                 - NAME@45..46
                     - IDENT@45..46 "b"
                 - COLON@46..47 ":"
                 - WHITESPACE@47..48 " "
-                - NON_NULL_TYPE@48..52
+                - NON_NULL_TYPE@48..53
                     - WHITESPACE@48..49 "\n"
                     - NAMED_TYPE@49..52
                         - NAME@49..52
                             - IDENT@49..52 "Int"
-            - R_CURLY@52..53 "}"
+                    - BANG@52..53 "!"
+            - R_CURLY@53..54 "}"

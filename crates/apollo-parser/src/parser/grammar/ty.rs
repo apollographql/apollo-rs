@@ -64,9 +64,10 @@ pub(crate) fn ty(p: &mut Parser) {
                     process(types, p);
                 }
             }
-            Some((kind @ SyntaxKind::NON_NULL_TYPE, _)) => {
+            Some((kind @ SyntaxKind::NON_NULL_TYPE, token)) => {
                 let _non_null_g = p.start_node(kind);
                 process(types, p);
+                p.push_ast(S![!], token)
             }
             // Cannot use `name::name` or `named_type` function here as we
             // cannot bump from this function. Instead, the process function has
@@ -101,5 +102,38 @@ fn peek<T>(target: &VecDeque<T>) -> Option<&T> {
     match target.len() {
         0 => None,
         len => target.get(len - 1),
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{ast, Parser};
+
+    #[test]
+    fn it_parses_nested_wrapped_types_in_op_def_and_returns_matching_stringified_doc() {
+        let mutation = r#"
+mutation MyMutation($custId: [Int!]!) {
+  myMutation(custId: $custId)
+}"#;
+        let parser = Parser::new(mutation);
+        let ast = parser.parse();
+        assert!(ast.errors.is_empty());
+
+        let doc = ast.document();
+        assert_eq!(&mutation, &doc.to_string());
+
+        for definition in doc.definitions() {
+            if let ast::Definition::OperationDefinition(op_type) = definition {
+                for var in op_type
+                    .variable_definitions()
+                    .unwrap()
+                    .variable_definitions()
+                {
+                    if let ast::Type::NamedType(name) = var.ty().unwrap() {
+                        assert_eq!(name.to_string(), "[Int!]!")
+                    }
+                }
+            }
+        }
     }
 }
