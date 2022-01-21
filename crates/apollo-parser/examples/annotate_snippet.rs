@@ -27,7 +27,7 @@ fn parse_schema() -> ast::Document {
     // each err comes with the two pieces of data you need for diagnostics:
     // - message (err.message())
     // - index (err.index())
-    for err in ast.errors().into_iter() {
+    for err in ast.errors() {
         let snippet = Snippet {
             title: Some(Annotation {
                 label: Some(err.message()),
