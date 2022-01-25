@@ -36,11 +36,13 @@ pub(crate) fn ty(p: &mut Parser) {
                 if let Some(T![']']) = p.peek() {
                     types.push_back((S![']'], p.pop()));
                 }
+
                 types
             }
             TokenKind::Name => {
                 let mut types = VecDeque::new();
                 types.push_back((SyntaxKind::NAMED_TYPE, token));
+
                 types
             }
             // TODO(@lrlna): this should not panic
@@ -51,23 +53,34 @@ pub(crate) fn ty(p: &mut Parser) {
             types.push_front((SyntaxKind::NON_NULL_TYPE, p.pop()));
         }
 
+        // deal with ignored tokens
+        if let Some(TokenKind::Whitespace) = p.peek() {
+            types.push_back((SyntaxKind::WHITESPACE, p.pop()));
+        }
+
         types
     }
 
     fn process(types: &mut VecDeque<(SyntaxKind, Token)>, p: &mut Parser) {
+        dbg!(&types);
         match types.pop_front() {
             Some((kind @ S!['['], token)) => {
                 let _list_g = p.start_node(SyntaxKind::LIST_TYPE);
                 p.push_ast(kind, token);
                 process(types, p);
-                if let Some((_kind @ S![']'], _token)) = peek(types) {
+                while let Some((_kind @ S![']'], _t)) | Some((_kind @ SyntaxKind::WHITESPACE, _t)) =
+                    peek(types)
+                {
                     process(types, p);
                 }
             }
             Some((kind @ SyntaxKind::NON_NULL_TYPE, token)) => {
                 let _non_null_g = p.start_node(kind);
                 process(types, p);
-                p.push_ast(S![!], token)
+                p.push_ast(S![!], token);
+                while let Some((_kind @ SyntaxKind::WHITESPACE, _token)) = peek(types) {
+                    process(types, p);
+                }
             }
             // Cannot use `name::name` or `named_type` function here as we
             // cannot bump from this function. Instead, the process function has
@@ -78,9 +91,15 @@ pub(crate) fn ty(p: &mut Parser) {
                 let name_g = p.start_node(SyntaxKind::NAME);
                 name::validate_name(token.data().to_string(), p);
                 p.push_ast(SyntaxKind::IDENT, token);
+
+                while let Some((_kind @ SyntaxKind::WHITESPACE, _token)) = peek(types) {
+                    process(types, p);
+                }
+
                 name_g.finish_node();
                 named_g.finish_node();
             }
+            Some((SyntaxKind::WHITESPACE, token)) => p.push_ast(SyntaxKind::WHITESPACE, token),
             Some((kind @ S![']'], token)) => {
                 p.push_ast(kind, token);
             }
@@ -135,5 +154,37 @@ mutation MyMutation($custId: [Int!]!) {
                 }
             }
         }
+    }
+
+    #[test]
+    fn stringified_ast_matches_input_with_deeply_nested_wrapped_types() {
+        let mutation = r#"
+mutation MyMutation($a: Int $b: [Int] $c: String! $d: [Int!]!
+
+    $e: String
+    $f: [String]
+    $g: String!
+    $h: [String!]!
+) {
+  myMutation(custId: $a)
+}"#;
+        let parser = Parser::new(mutation);
+        let ast = parser.parse();
+
+        let doc = ast.document();
+        assert_eq!(&mutation, &doc.to_string());
+    }
+
+    #[test]
+    fn stringified_ast_matches_input_with_nested_wrapped_types() {
+        let mutation = r#"
+mutation MyMutation($a: String! ) {
+  myMutation(custId: $a)
+}"#;
+        let parser = Parser::new(mutation);
+        let ast = parser.parse();
+
+        let doc = ast.document();
+        assert_eq!(&mutation, &doc.to_string());
     }
 }

@@ -134,7 +134,7 @@ impl Parser {
     }
 
     /// Consume ignored tokens and add them to the AST.
-    fn bump_ignored(&mut self) {
+    pub(crate) fn bump_ignored(&mut self) {
         while let Some(TokenKind::Comment | TokenKind::Whitespace | TokenKind::Comma) = self.peek()
         {
             if let Some(TokenKind::Comment) = self.peek() {
