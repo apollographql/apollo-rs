@@ -31,7 +31,7 @@
 //! ```toml
 //! # Just an example, change to the necessary package version.
 //! [dependencies]
-//! apollo-parser = "0.2.0"
+//! apollo-parser = "0.2.1"
 //! ```
 //!
 //! Or using [cargo-edit]:
