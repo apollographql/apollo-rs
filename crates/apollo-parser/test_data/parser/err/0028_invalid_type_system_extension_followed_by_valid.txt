@@ -17,10 +17,10 @@
                     - IDENT@38..42 "name"
                 - COLON@42..43 ":"
                 - WHITESPACE@43..44 " "
-                - NAMED_TYPE@44..51
-                    - WHITESPACE@44..45 "\n"
-                    - NAME@45..51
-                        - IDENT@45..51 "String"
+                - NAMED_TYPE@44..50
+                    - NAME@44..50
+                        - IDENT@44..50 "String"
+                - WHITESPACE@50..51 "\n"
             - R_CURLY@51..52 "}"
 - ERROR@0:6 "Invalid Type System Extension. This extension cannot be applied." extend
 - ERROR@7:10 "expected definition" Cat

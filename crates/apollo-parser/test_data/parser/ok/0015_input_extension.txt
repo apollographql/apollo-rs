@@ -21,8 +21,8 @@
                     - IDENT@44..45 "a"
                 - COLON@45..46 ":"
                 - WHITESPACE@46..47 " "
-                - NAMED_TYPE@47..54
-                    - WHITESPACE@47..48 "\n"
-                    - NAME@48..54
-                        - IDENT@48..54 "String"
+                - NAMED_TYPE@47..53
+                    - NAME@47..53
+                        - IDENT@47..53 "String"
+                - WHITESPACE@53..54 "\n"
             - R_CURLY@54..55 "}"

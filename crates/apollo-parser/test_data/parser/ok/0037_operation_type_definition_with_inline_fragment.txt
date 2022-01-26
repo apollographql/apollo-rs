@@ -16,11 +16,11 @@
                 - COLON@26..27 ":"
                 - WHITESPACE@27..28 " "
                 - NON_NULL_TYPE@28..38
-                    - WHITESPACE@28..31 "\n  "
-                    - NAMED_TYPE@31..37
-                        - NAME@31..37
-                            - IDENT@31..37 "String"
-                    - BANG@37..38 "!"
+                    - NAMED_TYPE@28..34
+                        - NAME@28..34
+                            - IDENT@28..34 "String"
+                    - BANG@34..35 "!"
+                    - WHITESPACE@35..38 "\n  "
             - VARIABLE_DEFINITION@38..55
                 - VARIABLE@38..45
                     - DOLLAR@38..39 "$"
@@ -29,11 +29,11 @@
                 - COLON@45..46 ":"
                 - WHITESPACE@46..47 " "
                 - NON_NULL_TYPE@47..55
-                    - WHITESPACE@47..48 "\n"
-                    - NAMED_TYPE@48..54
-                        - NAME@48..54
-                            - IDENT@48..54 "String"
-                    - BANG@54..55 "!"
+                    - NAMED_TYPE@47..53
+                        - NAME@47..53
+                            - IDENT@47..53 "String"
+                    - BANG@53..54 "!"
+                    - WHITESPACE@54..55 "\n"
             - R_PAREN@55..56 ")"
             - WHITESPACE@56..57 " "
         - SELECTION_SET@57..193

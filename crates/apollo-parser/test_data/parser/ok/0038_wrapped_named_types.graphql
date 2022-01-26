@@ -5,3 +5,11 @@ type ObjectDef {
     d: [[[[[Int]]]]]
     d: [[[[[Int!]!]!]!]!]!
 }
+
+type ObjectDefTwo {
+    a: String,
+    b: Int!,
+    c: [Int!]!,
+    d: [[[[[Int]]]]],
+    d: [[[[[Int!]!]!]!]!]!,
+}
