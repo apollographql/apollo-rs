@@ -12,11 +12,11 @@
                     - IDENT@19..26 "isTreat"
                 - COLON@26..27 ":"
                 - WHITESPACE@27..28 " "
-                - NAMED_TYPE@28..37
-                    - COMMA@28..29 ","
-                    - WHITESPACE@29..30 " "
-                    - NAME@30..37
-                        - IDENT@30..37 "Boolean"
+                - NAMED_TYPE@28..35
+                    - NAME@28..35
+                        - IDENT@28..35 "Boolean"
+                - COMMA@35..36 ","
+                - WHITESPACE@36..37 " "
             - INPUT_VALUE_DEFINITION@37..54
                 - NAME@37..46
                     - IDENT@37..46 "treatKind"

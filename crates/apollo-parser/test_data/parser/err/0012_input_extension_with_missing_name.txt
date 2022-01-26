@@ -12,9 +12,9 @@
                     - IDENT@19..20 "a"
                 - COLON@20..21 ":"
                 - WHITESPACE@21..22 " "
-                - NAMED_TYPE@22..29
-                    - WHITESPACE@22..23 "\n"
-                    - NAME@23..29
-                        - IDENT@23..29 "String"
+                - NAMED_TYPE@22..28
+                    - NAME@22..28
+                        - IDENT@22..28 "String"
+                - WHITESPACE@28..29 "\n"
             - R_CURLY@29..30 "}"
 - ERROR@13:14 "expected a Name" {

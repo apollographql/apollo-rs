@@ -18,10 +18,10 @@
                             - IDENT@24..30 "userId"
                         - COLON@30..31 ":"
                         - WHITESPACE@31..32 " "
-                        - NAMED_TYPE@32..39
-                            - WHITESPACE@32..33 " "
-                            - NAME@33..39
-                                - IDENT@33..39 "String"
+                        - NAMED_TYPE@32..38
+                            - NAME@32..38
+                                - IDENT@32..38 "String"
+                        - WHITESPACE@38..39 " "
                         - DIRECTIVES@39..82
                             - DIRECTIVE@39..82
                                 - AT@39..40 "@"
@@ -40,8 +40,8 @@
                     - R_PAREN@82..83 ")"
                 - COLON@83..84 ":"
                 - WHITESPACE@84..85 " "
-                - NAMED_TYPE@85..90
-                    - WHITESPACE@85..86 "\n"
-                    - NAME@86..90
-                        - IDENT@86..90 "User"
+                - NAMED_TYPE@85..89
+                    - NAME@85..89
+                        - IDENT@85..89 "User"
+                - WHITESPACE@89..90 "\n"
             - R_CURLY@90..91 "}"

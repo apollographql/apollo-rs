@@ -173,7 +173,6 @@ query GraphQuery($graph_id: ID!, $variant: String) {
                             .flatten()
                             .filter_map(|v| {
                                 if let ast::Value::Variable(var) = v.value()? {
-                                    dbg!(&var.name()?.text());
                                     return Some(var.name()?.text());
                                 }
                                 None

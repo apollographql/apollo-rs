@@ -13,8 +13,8 @@
                     - IDENT@29..34 "value"
                 - COLON@34..35 ":"
                 - WHITESPACE@35..36 " "
-                - NAMED_TYPE@36..40
-                    - WHITESPACE@36..37 "\n"
-                    - NAME@37..40
-                        - IDENT@37..40 "Int"
+                - NAMED_TYPE@36..39
+                    - NAME@36..39
+                        - IDENT@36..39 "Int"
+                - WHITESPACE@39..40 "\n"
             - R_CURLY@40..41 "}"

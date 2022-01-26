@@ -26,26 +26,26 @@
                     - IDENT@98..102 "name"
                 - COLON@102..103 ":"
                 - WHITESPACE@103..104 " "
-                - NAMED_TYPE@104..115
-                    - WHITESPACE@104..109 "\n    "
-                    - NAME@109..115
-                        - IDENT@109..115 "String"
+                - NAMED_TYPE@104..110
+                    - NAME@104..110
+                        - IDENT@104..110 "String"
+                - WHITESPACE@110..115 "\n    "
             - FIELD_DEFINITION@115..128
                 - NAME@115..118
                     - IDENT@115..118 "age"
                 - COLON@118..119 ":"
                 - WHITESPACE@119..120 " "
-                - NAMED_TYPE@120..128
-                    - WHITESPACE@120..125 "\n    "
-                    - NAME@125..128
-                        - IDENT@125..128 "Int"
+                - NAMED_TYPE@120..123
+                    - NAME@120..123
+                        - IDENT@120..123 "Int"
+                - WHITESPACE@123..128 "\n    "
             - FIELD_DEFINITION@128..141
                 - NAME@128..135
                     - IDENT@128..135 "picture"
                 - COLON@135..136 ":"
                 - WHITESPACE@136..137 " "
-                - NAMED_TYPE@137..141
-                    - WHITESPACE@137..138 "\n"
-                    - NAME@138..141
-                        - IDENT@138..141 "Url"
+                - NAMED_TYPE@137..140
+                    - NAME@137..140
+                        - IDENT@137..140 "Url"
+                - WHITESPACE@140..141 "\n"
             - R_CURLY@141..142 "}"

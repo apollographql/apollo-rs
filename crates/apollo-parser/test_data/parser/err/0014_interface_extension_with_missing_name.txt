@@ -12,9 +12,9 @@
                     - IDENT@23..28 "value"
                 - COLON@28..29 ":"
                 - WHITESPACE@29..30 " "
-                - NAMED_TYPE@30..34
-                    - WHITESPACE@30..31 "\n"
-                    - NAME@31..34
-                        - IDENT@31..34 "Int"
+                - NAMED_TYPE@30..33
+                    - NAME@30..33
+                        - IDENT@30..33 "Int"
+                - WHITESPACE@33..34 "\n"
             - R_CURLY@34..35 "}"
 - ERROR@17:18 "expected a Name" {
