@@ -17,6 +17,59 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.2.1](https://crates.io/crates/apollo-parser/0.2.1) - 2021-01-26
+## Fixes
+- **fix(apollo-parser): add ignored tokens to TYPE nodes in correct place - [lrlna], [issue/143] [pull/153]**
+
+  This fixes the location of ignored tokens (COMMA, WHITESPACE) inside a TYPE node.
+
+  Before this commit this sort of query
+
+  ```graphql
+  mutation MyMutation($custId: Int!, $b: String) {
+    myMutation(custId: $custId)
+  }
+  ```
+
+  would result the `ast.document.to_string()` to have this output:
+
+  ```graphql
+  mutation MyMutation($custId: , Int!$b:  String) {
+      myMutation(custId: $custId)
+  }
+  ```
+
+  which is incorrect. The `to_string()` now results in the exact same output, as
+  the AST created is correct.
+
+  [lrlna]: https://github.com/lrlna
+  [issue/143]: https://github.com/apollographql/apollo-rs/issues/143
+  [pull/153]: https://github.com/apollographql/apollo-rs/pull/153
+
+- **fix(apollo-parser): bump BANG token when creating NON_NULL_TYPE - [lrlna], [issue/142] [pull/146]**
+
+  We are missing BANG token in the AST when a NON_NULL_TYPE gets created.
+  Although the node created is indeed NON_NULL_TYPE, it's also important to keep
+  the original set of tokens. The followin example now works:
+
+  ```rust
+  let mutation = r#"
+  mutation MyMutation($custId: Int!) {
+    myMutation(custId: $custId)
+  }"#;
+
+  let parser = Parser::new(mutation);
+  let ast = parser.parse();
+  assert_eq!(ast.errors.len(), 0);
+
+  let doc = ast.document();
+  assert_eq(&doc, &mutation);
+  ```
+
+  [lrlna]: https://github.com/lrlna
+  [issue/142]: https://github.com/apollographql/apollo-rs/issues/142
+  [pull/146]: https://github.com/apollographql/apollo-rs/pull/146
+
 # [0.2.0](https://crates.io/crates/apollo-parser/0.2.0) - 2021-12-22
 ## Breaking
 - **impl Iterator for ast.errors() - [o0Ignition0o], [issue/119] [pull/120]**
