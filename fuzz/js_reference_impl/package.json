@@ -1,0 +1,12 @@
+{
+  "name": "reference_impl",
+  "version": "0.0.1",
+  "description": "Call the reference impl from cli",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "graphql": "^16.3.0"
+  }
+}

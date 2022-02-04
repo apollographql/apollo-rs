@@ -30,3 +30,9 @@ name = "parser"
 path = "fuzz_targets/parser.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "vs_reference"
+path = "fuzz_targets/vs_reference.rs"
+test = false
+doc = false
