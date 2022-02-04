@@ -3,13 +3,8 @@ use apollo_parser::Parser;
 use libfuzzer_sys::fuzz_target;
 use std::panic;
 
-fuzz_target!(|data: &[u8]| {
-    let s = match std::str::from_utf8(data) {
-        Err(_) => return,
-        Ok(s) => s,
-    };
-
-    let parser = panic::catch_unwind(|| Parser::new(s));
+fuzz_target!(|data: &str| {
+    let parser = panic::catch_unwind(|| Parser::new(data));
 
     let parser = match parser {
         Err(_) => return,
