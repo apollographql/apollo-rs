@@ -9,6 +9,8 @@ use apollo_parser::ast::{self, AstNode};
 use miette::{Diagnostic, NamedSource, Report, SourceSpan};
 use thiserror::Error;
 
+use crate::database::Interner;
+
 #[derive(Error, Debug, Diagnostic)]
 #[error("cannot find `{}` interface in this scope", self.ty)]
 #[diagnostic(code("apollo-parser: semantic error"))]
@@ -37,6 +39,8 @@ pub fn validate(src: &str) {
     let mut db = Database::default();
 
     db.set_input_string((), Arc::new(src.to_string()));
+
+    db.document();
     let doc = db.parse();
 
     // println!("Now, the length is {}.", db.length(()));
@@ -68,6 +72,31 @@ pub fn validate(src: &str) {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn it_creates_context() {
+        let input = r#"
+interface NamedEntity {
+  name: String
+}
+
+interface ValuedEntity {
+  value: Int
+}
+
+type Person implements NamedEntity {
+  name: String
+  age: Int
+}
+
+type Business implements NamedEntity & ValuedEntity {
+  name: String
+  value: Int
+  employeeCount: Int
+}"#;
+
+        validate(input);
+    }
 
     #[test]
     fn it_validates_undefined_interface_in_schema() {
