@@ -35,13 +35,13 @@
 //!
 //! ## Example
 //! ```rust
-//! use apollo_encoder::{Schema, Field, UnionDef, EnumValue, Directive, EnumDef, Type_};
+//! use apollo_encoder::{Schema, Field, UnionDef, EnumValue, DirectiveDef, EnumDef, Type_};
 //! use indoc::indoc;
 //!
 //! let mut schema = Schema::new();
 //!
 //! // Create a Directive Definition.
-//! let mut directive = Directive::new("provideTreat".to_string());
+//! let mut directive = DirectiveDef::new("provideTreat".to_string());
 //! directive.description(Some("Ensures cats get treats.".to_string()));
 //! directive.location("OBJECT".to_string());
 //! directive.location("FIELD_DEFINITION".to_string());
@@ -53,7 +53,6 @@
 //! enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
 //! let enum_ty_2 = EnumValue::new("Bed".to_string());
 //! let mut enum_ty_3 = EnumValue::new("CardboardBox".to_string());
-//! enum_ty_3.deprecated(Some("Box was recycled.".to_string()));
 //!
 //! let mut enum_def = EnumDef::new("NapSpots".to_string());
 //! enum_def.description(Some("Favourite cat\nnap spots.".to_string()));
@@ -83,7 +82,7 @@
 //!           "Top bunk of a cat tree."
 //!           CatTree
 //!           Bed
-//!           CardboardBox @deprecated(reason: "Box was recycled.")
+//!           CardboardBox
 //!         }
 //!         "A union of all cats represented within a household."
 //!         union Cat = NORI | CHASHU
@@ -107,34 +106,51 @@
 #![deny(missing_debug_implementations, nonstandard_style)]
 #![warn(missing_docs, future_incompatible, unreachable_pub, rust_2018_idioms)]
 
+mod argument;
+mod directive;
 mod directive_def;
+mod document;
 mod enum_def;
 mod enum_value;
 mod field;
 mod field_value;
+mod fragment;
 mod input_field;
 mod input_object_def;
 mod input_value;
 mod interface_def;
 mod object_def;
+mod operation;
 mod scalar_def;
 mod schema;
 mod schema_def;
+mod selection_set;
 mod string_value;
 mod union_def;
+mod value;
+mod variable;
 
-pub use directive_def::Directive;
+pub use argument::Argument;
+pub use argument::ArgumentsDef;
+pub use directive::Directive;
+pub use directive_def::DirectiveDef;
+pub use document::Document;
 pub use enum_def::EnumDef;
 pub use enum_value::EnumValue;
-pub use field::Field;
+pub use field::{Field, FieldDef};
 pub use field_value::Type_;
+pub use fragment::{FragmentDef, FragmentSpread, InlineFragment, TypeCondition};
 pub use input_field::InputField;
 pub use input_object_def::InputObjectDef;
-pub use input_value::InputValue;
+pub use input_value::InputValueDef;
 pub use interface_def::InterfaceDef;
 pub use object_def::ObjectDef;
+pub use operation::{OperationDef, OperationType};
 pub use scalar_def::ScalarDef;
 pub use schema::Schema;
 pub use schema_def::SchemaDef;
+pub use selection_set::{Selection, SelectionSet};
 pub use string_value::StringValue;
 pub use union_def::UnionDef;
+pub use value::Value;
+pub use variable::VariableDef;

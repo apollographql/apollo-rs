@@ -1,5 +1,5 @@
 use crate::{
-    Directive, EnumDef, InputObjectDef, InterfaceDef, ObjectDef, ScalarDef, SchemaDef, UnionDef,
+    DirectiveDef, EnumDef, InputObjectDef, InterfaceDef, ObjectDef, ScalarDef, SchemaDef, UnionDef,
 };
 
 /// GraphQLSchema represented in Schema Definition Language.
@@ -33,6 +33,7 @@ use crate::{
 /// );
 /// ```
 #[derive(Debug)]
+// TODO delete in profit of Document
 pub struct Schema {
     buf: String,
 }
@@ -44,7 +45,7 @@ impl Schema {
     }
 
     /// Adds a new Directive Definition.
-    pub fn directive(&mut self, directive: Directive) {
+    pub fn directive(&mut self, directive: DirectiveDef) {
         self.buf.push_str(&directive.to_string());
     }
 
@@ -101,8 +102,8 @@ impl Default for Schema {
 #[cfg(test)]
 mod tests {
     use crate::{
-        Directive, EnumDef, EnumValue, Field, InputField, InputObjectDef, ObjectDef, ScalarDef,
-        Schema, SchemaDef, Type_, UnionDef,
+        Argument, Directive, DirectiveDef, EnumDef, EnumValue, FieldDef, InputField,
+        InputObjectDef, ObjectDef, ScalarDef, Schema, SchemaDef, Type_, UnionDef, Value,
     };
     use indoc::indoc;
     use pretty_assertions::assert_eq;
@@ -112,7 +113,7 @@ mod tests {
         let mut schema = Schema::new();
 
         // create a directive
-        let mut directive = Directive::new("provideTreat".to_string());
+        let mut directive = DirectiveDef::new("provideTreat".to_string());
         directive.description(Some("Ensures cats get treats.".to_string()));
         directive.location("OBJECT".to_string());
         directive.location("FIELD_DEFINITION".to_string());
@@ -133,7 +134,7 @@ mod tests {
             ty: Box::new(field_value),
         };
 
-        let mut field = Field::new("cat".to_string(), null_field);
+        let mut field = FieldDef::new("cat".to_string(), null_field);
         field.description(Some("Very good cats".to_string()));
 
         // Union Definition
@@ -152,20 +153,25 @@ mod tests {
             ty: Box::new(object_value),
         };
 
-        let mut object_field = Field::new("toys".to_string(), object_value_2);
-        object_field.deprecated(Some("Cats are too spoiled".to_string()));
+        let mut object_field = FieldDef::new("toys".to_string(), object_value_2);
+        let mut deprecated_directive = Directive::new(String::from("deprecated"));
+        deprecated_directive.arg(Argument::new(
+            String::from("reason"),
+            Value::String(String::from("Cats are too spoiled")),
+        ));
+        object_field.directive(deprecated_directive);
 
         let object_value_2 = Type_::NamedType {
             name: "FoodType".to_string(),
         };
 
-        let mut object_field_2 = Field::new("food".to_string(), object_value_2);
+        let mut object_field_2 = FieldDef::new("food".to_string(), object_value_2);
         object_field_2.description(Some("Dry or wet food?".to_string()));
 
         let object_field_3 = Type_::NamedType {
             name: "Boolean".to_string(),
         };
-        let object_field_3 = Field::new("catGrass".to_string(), object_field_3);
+        let object_field_3 = FieldDef::new("catGrass".to_string(), object_field_3);
 
         let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
         object_def.field(object_field);
@@ -179,7 +185,12 @@ mod tests {
         enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
         let enum_ty_2 = EnumValue::new("BED".to_string());
         let mut enum_ty_3 = EnumValue::new("CARDBOARD_BOX".to_string());
-        enum_ty_3.deprecated(Some("Box was recycled.".to_string()));
+        let mut deprecated_directive = Directive::new(String::from("deprecated"));
+        deprecated_directive.arg(Argument::new(
+            String::from("reason"),
+            Value::String(String::from("Box was recycled.")),
+        ));
+        enum_ty_3.directive(deprecated_directive);
 
         let mut enum_def = EnumDef::new("NapSpots".to_string());
         enum_def.description(Some("Favourite cat nap spots.".to_string()));

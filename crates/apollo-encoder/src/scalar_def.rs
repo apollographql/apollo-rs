@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::StringValue;
+use crate::{Directive, StringValue};
 /// Represents scalar types such as Int, String, and Boolean.
 /// Scalars cannot have fields.
 ///
@@ -30,6 +30,8 @@ pub struct ScalarDef {
     name: String,
     // Description may return a String or null.
     description: StringValue,
+    directives: Vec<Directive>,
+    extend: bool,
 }
 
 impl ScalarDef {
@@ -38,6 +40,8 @@ impl ScalarDef {
         Self {
             name,
             description: StringValue::Top { source: None },
+            directives: Vec::new(),
+            extend: false,
         }
     }
 
@@ -47,17 +51,38 @@ impl ScalarDef {
             source: description,
         };
     }
+
+    /// Add a directive.
+    pub fn directive(&mut self, directive: Directive) {
+        self.directives.push(directive);
+    }
+
+    /// Set the scalar as an extension
+    pub fn extend(&mut self) {
+        self.extend = true;
+    }
 }
 
 impl fmt::Display for ScalarDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description)?;
-        writeln!(f, "scalar {}", self.name)
+        if self.extend {
+            write!(f, "extend ")?;
+        } else {
+            write!(f, "{}", self.description)?;
+        }
+        write!(f, "scalar {}", self.name)?;
+        for directive in &self.directives {
+            write!(f, " {}", directive)?;
+        }
+        writeln!(f)
     }
 }
 
 #[cfg(test)]
 mod tests {
+
+    use crate::{Argument, Value};
+
     use super::*;
     use pretty_assertions::assert_eq;
 
@@ -82,6 +107,27 @@ mod tests {
             scalar.to_string(),
             r#""Int representing number of treats received."
 scalar NumberOfTreatsPerDay
+"#
+        );
+    }
+
+    #[test]
+    fn it_encodes_scalar_with_extend_directive() {
+        let mut scalar = ScalarDef::new("NumberOfTreatsPerDay".to_string());
+        scalar.description(Some(
+            "Int representing number of treats received.".to_string(),
+        ));
+        scalar.extend();
+        let mut directive = Directive::new(String::from("testDirective"));
+        directive.arg(Argument::new(
+            String::from("first"),
+            Value::String("one".to_string()),
+        ));
+        scalar.directive(directive);
+
+        assert_eq!(
+            scalar.to_string(),
+            r#"extend scalar NumberOfTreatsPerDay @testDirective(first: "one")
 "#
         );
     }

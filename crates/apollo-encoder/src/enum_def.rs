@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{EnumValue, StringValue};
+use crate::{Directive, EnumValue, StringValue};
 
 /// Enums are special scalars that can only have a defined set of values.
 ///
@@ -11,13 +11,15 @@ use crate::{EnumValue, StringValue};
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{EnumValue, EnumDef};
+/// use apollo_encoder::{Argument, Directive, EnumValue, EnumDef, Value};
 ///
 /// let mut enum_ty_1 = EnumValue::new("CAT_TREE".to_string());
 /// enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
 /// let enum_ty_2 = EnumValue::new("BED".to_string());
+/// let mut deprecated_directive = Directive::new(String::from("deprecated"));
+/// deprecated_directive.arg(Argument::new(String::from("reason"), Value::String(String::from("Box was recycled."))));
 /// let mut enum_ty_3 = EnumValue::new("CARDBOARD_BOX".to_string());
-/// enum_ty_3.deprecated(Some("Box was recycled.".to_string()));
+/// enum_ty_3.directive(deprecated_directive);
 ///
 /// let mut enum_ = EnumDef::new("NapSpots".to_string());
 /// enum_.description(Some("Favourite cat nap spots.".to_string()));
@@ -46,6 +48,9 @@ pub struct EnumDef {
     // A vector of EnumValue. There must be at least one and they must have
     // unique names.
     values: Vec<EnumValue>,
+    /// The vector of directives
+    directives: Vec<Directive>,
+    extend: bool,
 }
 
 impl EnumDef {
@@ -55,7 +60,14 @@ impl EnumDef {
             name,
             description: StringValue::Top { source: None },
             values: Vec::new(),
+            directives: Vec::new(),
+            extend: false,
         }
+    }
+
+    /// Set the enum type as an extension
+    pub fn extend(&mut self) {
+        self.extend = true;
     }
 
     /// Set the Enum Definition's description.
@@ -69,12 +81,28 @@ impl EnumDef {
     pub fn value(&mut self, value: EnumValue) {
         self.values.push(value)
     }
+
+    /// Add a directive.
+    pub fn directive(&mut self, directive: Directive) {
+        self.directives.push(directive)
+    }
 }
 
 impl fmt::Display for EnumDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description)?;
-        write!(f, "enum {} {{", self.name)?;
+        if self.extend {
+            write!(f, "extend ")?;
+        } else {
+            // No description when it's a extension
+            write!(f, "{}", self.description)?;
+        }
+
+        write!(f, "enum {}", self.name)?;
+        for directive in &self.directives {
+            write!(f, " {}", directive)?;
+        }
+
+        write!(f, " {{")?;
         for value in &self.values {
             write!(f, "\n{}", value)?;
         }
@@ -84,6 +112,8 @@ impl fmt::Display for EnumDef {
 
 #[cfg(test)]
 mod tests {
+    use crate::{Argument, Value};
+
     use super::*;
     use pretty_assertions::assert_eq;
 
@@ -114,18 +144,29 @@ mod tests {
         enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
         let enum_ty_2 = EnumValue::new("BED".to_string());
         let mut enum_ty_3 = EnumValue::new("CARDBOARD_BOX".to_string());
-        enum_ty_3.deprecated(Some("Box was recycled.".to_string()));
+        let mut deprecated_directive = Directive::new(String::from("deprecated"));
+        deprecated_directive.arg(Argument::new(
+            String::from("reason"),
+            Value::String(String::from("Box was recycled.")),
+        ));
+        enum_ty_3.directive(deprecated_directive);
+        let mut directive = Directive::new(String::from("testDirective"));
+        directive.arg(Argument::new(
+            String::from("first"),
+            Value::String("one".to_string()),
+        ));
 
         let mut enum_ = EnumDef::new("NapSpots".to_string());
         enum_.description(Some("Favourite cat nap spots.".to_string()));
         enum_.value(enum_ty_1);
         enum_.value(enum_ty_2);
         enum_.value(enum_ty_3);
+        enum_.directive(directive);
 
         assert_eq!(
             enum_.to_string(),
             r#""Favourite cat nap spots."
-enum NapSpots {
+enum NapSpots @testDirective(first: "one") {
   "Top bunk of a cat tree."
   CAT_TREE
   BED
