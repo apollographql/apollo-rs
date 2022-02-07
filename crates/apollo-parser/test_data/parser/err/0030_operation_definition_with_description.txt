@@ -1,0 +1,14 @@
+- DOCUMENT@0..15
+    - WHITESPACE@0..1 "\n"
+    - OPERATION_DEFINITION@1..15
+        - OPERATION_TYPE@1..7
+            - query_KW@1..6 "query"
+            - WHITESPACE@6..7 " "
+        - NAME@7..13
+            - IDENT@7..12 "empty"
+            - WHITESPACE@12..13 " "
+        - SELECTION_SET@13..15
+            - L_CURLY@13..14 "{"
+            - R_CURLY@14..15 "}"
+- ERROR@0:93 "expected an Operation Type or a Selection Set" "after this PR this should not be an issue: https://github.com/graphql/graphql-spec/pull/892"
+- ERROR@107:108 "exepcted at least one Selection in Selection Set" }
