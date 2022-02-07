@@ -65,7 +65,7 @@ pub(crate) fn operation_definition(p: &mut Parser) {
             }
         }
         Some(T!['{']) => selection::selection_set(p),
-        _ => p.err("expected an Operation Type or a Selection Set"),
+        _ => p.err_and_pop("expected an Operation Type or a Selection Set"),
     }
 }
 
@@ -82,5 +82,17 @@ pub(crate) fn operation_type(p: &mut Parser) {
             "mutation" => p.bump(SyntaxKind::mutation_KW),
             _ => p.err("expected either a 'mutation', a 'query', or a 'subscription'"),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::Parser;
+
+    #[test]
+    fn pop_when_peek_errored() {
+        let input = "\"s\"{";
+        let parser = Parser::new(input);
+        let _ = parser.parse();
     }
 }
