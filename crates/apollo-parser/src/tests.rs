@@ -62,11 +62,16 @@ fn assert_errors_are_present(errors: Iter<'_, Error>, path: &Path) {
 }
 
 fn assert_errors_are_absent(errors: Iter<'_, Error>, path: &Path) {
-    assert!(
-        errors.len() == 0,
-        "There should be no errors in the file {:?}",
-        path.display(),
-    );
+    if errors.len() > 0 {
+        println!(
+            "errors: {}",
+            errors
+                .map(|e| e.message())
+                .collect::<Vec<&str>>()
+                .join("\n")
+        );
+        panic!("There should be no errors in the file {:?}", path.display(),);
+    }
 }
 
 /// Concatenate tokens and errors.

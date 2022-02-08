@@ -1,4 +1,7 @@
 {
-    pet
-    ...snackSelection
+  pet
+  ...snackSelection
+  ... @J(N: 0) {
+    a
+  }
 }

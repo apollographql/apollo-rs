@@ -1,16 +1,45 @@
-- DOCUMENT@0..33
-    - OPERATION_DEFINITION@0..33
-        - SELECTION_SET@0..33
+- DOCUMENT@0..57
+    - OPERATION_DEFINITION@0..57
+        - SELECTION_SET@0..57
             - L_CURLY@0..1 "{"
-            - WHITESPACE@1..6 "\n    "
-            - FIELD@6..14
-                - NAME@6..14
-                    - IDENT@6..9 "pet"
-                    - WHITESPACE@9..14 "\n    "
-            - FRAGMENT_SPREAD@14..32
-                - SPREAD@14..17 "..."
-                - FRAGMENT_NAME@17..32
-                    - NAME@17..32
-                        - IDENT@17..31 "snackSelection"
-                        - WHITESPACE@31..32 "\n"
-            - R_CURLY@32..33 "}"
+            - WHITESPACE@1..4 "\n  "
+            - FIELD@4..10
+                - NAME@4..10
+                    - IDENT@4..7 "pet"
+                    - WHITESPACE@7..10 "\n  "
+            - FRAGMENT_SPREAD@10..30
+                - SPREAD@10..13 "..."
+                - FRAGMENT_NAME@13..30
+                    - NAME@13..30
+                        - IDENT@13..27 "snackSelection"
+                        - WHITESPACE@27..30 "\n  "
+            - INLINE_FRAGMENT@30..55
+                - SPREAD@30..33 "..."
+                - WHITESPACE@33..34 " "
+                - DIRECTIVES@34..43
+                    - DIRECTIVE@34..43
+                        - AT@34..35 "@"
+                        - NAME@35..36
+                            - IDENT@35..36 "J"
+                        - ARGUMENTS@36..43
+                            - L_PAREN@36..37 "("
+                            - ARGUMENT@37..41
+                                - NAME@37..38
+                                    - IDENT@37..38 "N"
+                                - COLON@38..39 ":"
+                                - WHITESPACE@39..40 " "
+                                - INT_VALUE@40..41
+                                    - INT@40..41 "0"
+                            - R_PAREN@41..42 ")"
+                            - WHITESPACE@42..43 " "
+                - SELECTION_SET@43..55
+                    - L_CURLY@43..44 "{"
+                    - WHITESPACE@44..49 "\n    "
+                    - FIELD@49..53
+                        - NAME@49..53
+                            - IDENT@49..50 "a"
+                            - WHITESPACE@50..53 "\n  "
+                    - R_CURLY@53..54 "}"
+                    - WHITESPACE@54..55 "\n"
+            - R_CURLY@55..56 "}"
+            - WHITESPACE@56..57 "\n"

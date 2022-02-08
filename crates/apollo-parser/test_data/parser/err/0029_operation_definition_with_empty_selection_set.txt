@@ -6,4 +6,4 @@
         - SELECTION_SET@6..8
             - L_CURLY@6..7 "{"
             - R_CURLY@7..8 "}"
-- ERROR@7:8 "exepcted at least one Selection in Selection Set" }
+- ERROR@7:8 "expected at least one Selection in Selection Set" }
