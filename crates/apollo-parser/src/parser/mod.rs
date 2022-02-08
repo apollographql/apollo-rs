@@ -244,6 +244,15 @@ impl Parser {
         self.tokens.last()
     }
 
+    /// Peek Token `n` and return it.
+    pub(crate) fn peek_token_n(&self, n: usize) -> Option<&Token> {
+        self.tokens
+            .iter()
+            .rev()
+            .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
+            .nth(n - 1)
+    }
+
     /// Peek Token `n` and return its TokenKind.
     pub(crate) fn peek_n(&self, n: usize) -> Option<TokenKind> {
         self.tokens

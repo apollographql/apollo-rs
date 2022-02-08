@@ -28,14 +28,22 @@ pub(crate) fn selection(p: &mut Parser) {
     while let Some(node) = p.peek() {
         match node {
             T![...] => {
-                if let Some(node) = p.peek_data_n(2) {
-                    match node.as_str() {
-                        "on" | "{" => fragment::inline_fragment(p),
-                        _ => fragment::fragment_spread(p),
+                let next_token = p.peek_token_n(2);
+                match next_token {
+                    Some(next_token) => {
+                        if next_token.kind() == TokenKind::Name && next_token.data() != "on" {
+                            fragment::fragment_spread(p);
+                        } else if matches!(
+                            next_token.kind(),
+                            TokenKind::At | TokenKind::Name | TokenKind::LCurly
+                        ) {
+                            fragment::inline_fragment(p);
+                        } else {
+                            p.err("expected an Inline Fragment or a Fragment Spread");
+                        }
+                        has_selection = true;
                     }
-                    has_selection = true;
-                } else {
-                    p.err("expected an Inline Fragment or a Fragment Spread");
+                    None => p.err("expected an Inline Fragment or a Fragment Spread"),
                 }
             }
             T!['{'] => {
@@ -47,7 +55,7 @@ pub(crate) fn selection(p: &mut Parser) {
             }
             _ => {
                 if !has_selection {
-                    p.err("exepcted at least one Selection in Selection Set");
+                    p.err("expected at least one Selection in Selection Set");
                 }
                 break;
             }
