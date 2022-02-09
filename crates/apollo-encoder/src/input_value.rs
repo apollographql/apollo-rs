@@ -2,11 +2,6 @@ use std::fmt;
 
 use crate::{Directive, StringValue, Type_};
 
-// NOTE(@lrlna): __InputValue is also meant to be used for InputFields on an
-// InputObject. We currently do not differentiate between InputFields and
-// Fields, so this is not applied directly to InputObjects. Once we are able to
-// walk an AST to encode a schema, we will want to make sure this struct is used
-// directly: InputObject --> InputField --> InputValue
 
 /// The __InputValueDef type represents field and directive arguments.
 ///

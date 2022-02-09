@@ -74,7 +74,7 @@ impl fmt::Display for FragmentDef {
     }
 }
 
-/// The __fragmentSpred type represents a fragment spreak that could be used as a field
+/// The __fragmentSpread type represents a named fragment used in a selection set.
 ///
 /// *FragmentSpread*:
 ///     ... FragmentName Directives?
@@ -120,7 +120,7 @@ impl fmt::Display for FragmentSpread {
     }
 }
 
-/// The __inlineFragment type represents an inline fragment that could be used as a field
+/// The __inlineFragment type represents an inline fragment in a selection set that could be used as a field
 ///
 /// *InlineFragment*:
 ///     ... TypeCondition? Directives? SelectionSet

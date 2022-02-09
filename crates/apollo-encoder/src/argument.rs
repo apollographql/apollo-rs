@@ -4,7 +4,7 @@ use crate::{InputValueDef, Value};
 
 /// The `__ArgumentsDef` type represents an arguments definition
 ///
-/// *DirectiveDefinition*:
+/// *ArgumentsDefinition*:
 ///     ( InputValueDefinition* )
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#ArgumentsDefinition).

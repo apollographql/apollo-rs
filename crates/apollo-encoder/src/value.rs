@@ -35,7 +35,7 @@ impl fmt::Display for Value {
             Self::Int(i) => write!(f, "{i}"),
             Self::Float(fl) => write!(f, "{fl}"),
             Self::String(s) => {
-                if s.contains('"') {
+                if s.contains('"') | s.contains('\n') | s.contains('\r') {
                     write!(f, r#""""{s}""""#)
                 } else {
                     write!(f, r#""{s}""#)

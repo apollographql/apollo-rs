@@ -56,8 +56,7 @@ impl SelectionSet {
     /// Should be used everywhere in this crate isntead of the Display implementation
     /// Display implementation is only useful as a public api
     pub(crate) fn format_with_indent(&self, mut indent_level: usize) -> String {
-        let mut text = String::new();
-        text.push_str("{\n");
+        let mut text = String::from("{\n");
         indent_level += 1;
         let indent = "  ".repeat(indent_level);
         for sel in &self.selections {

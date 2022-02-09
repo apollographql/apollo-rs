@@ -161,7 +161,7 @@ impl Field {
         self.selection_set = selection_set;
     }
 
-    /// Should be used everywhere in this crate isntead of the Display implementation
+    /// Should be used everywhere in this crate instead of the Display implementation
     /// Display implementation is only useful as a public api
     pub(crate) fn format_with_indent(&self, indent_level: usize) -> String {
         let mut text = String::new();
