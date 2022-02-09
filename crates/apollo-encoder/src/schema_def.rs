@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::StringValue;
+use crate::{Directive, StringValue};
 
 /// A GraphQL service’s collective type system capabilities are referred to as that service’s “schema”.
 ///
@@ -40,6 +40,9 @@ pub struct SchemaDef {
     query: Option<String>,
     mutation: Option<String>,
     subscription: Option<String>,
+    directives: Vec<Directive>,
+    // Extend a schema
+    extend: bool,
 }
 
 impl SchemaDef {
@@ -50,6 +53,8 @@ impl SchemaDef {
             query: None,
             mutation: None,
             subscription: None,
+            directives: Vec::new(),
+            extend: false,
         }
     }
 
@@ -58,6 +63,16 @@ impl SchemaDef {
         self.description = StringValue::Top {
             source: description,
         };
+    }
+
+    /// Add a directive.
+    pub fn directive(&mut self, directive: Directive) {
+        self.directives.push(directive);
+    }
+
+    /// Set as an extension
+    pub fn extend(&mut self) {
+        self.extend = true;
     }
 
     /// Set the schema def's query type.
@@ -84,9 +99,21 @@ impl Default for SchemaDef {
 
 impl fmt::Display for SchemaDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description)?;
+        if self.extend {
+            write!(f, "extend ")?;
+        } else {
+            // No description when it's an extension schema
+            write!(f, "{}", self.description)?;
+        }
 
-        writeln!(f, "schema {{")?;
+        write!(f, "schema")?;
+
+        for directive in &self.directives {
+            write!(f, " {}", directive)?;
+        }
+
+        writeln!(f, " {{")?;
+
         if let Some(query) = &self.query {
             writeln!(f, "  query: {}", query)?;
         }
@@ -120,6 +147,26 @@ mod tests {
             schema_def.to_string(),
             indoc! { r#"
             schema {
+              query: TryingToFindCatQuery
+              mutation: MyMutation
+              subscription: MySubscription
+            }
+        "#}
+        );
+    }
+
+    #[test]
+    fn it_encodes_extend_schema_with_mutation_and_subscription() {
+        let mut schema_def = SchemaDef::new();
+        schema_def.query("TryingToFindCatQuery".to_string());
+        schema_def.mutation("MyMutation".to_string());
+        schema_def.subscription("MySubscription".to_string());
+        schema_def.extend();
+
+        assert_eq!(
+            schema_def.to_string(),
+            indoc! { r#"
+            extend schema {
               query: TryingToFindCatQuery
               mutation: MyMutation
               subscription: MySubscription

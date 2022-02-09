@@ -18,7 +18,9 @@
 </div>
 
 ## Getting started
+
 Add this to your `Cargo.toml` to start using `apollo-encoder`:
+
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
@@ -26,19 +28,19 @@ apollo-encoder = "0.1.0"
 ```
 
 Or using [cargo-edit]:
+
 ```bash
 cargo add apollo-encoder
 ```
 
 ## Example
+
 ```rust
-use apollo_encoder::{Schema, Field, UnionDef, EnumValue, Directive, EnumDef, Type_};
+use apollo_encoder::{Schema, Field, UnionDef, EnumValue, DirectiveDef, EnumDef, Type_};
 use indoc::indoc;
-
 let mut schema = Schema::new();
-
 // Create a Directive Definition.
-let mut directive = Directive::new("provideTreat".to_string());
+let mut directive = DirectiveDef::new("provideTreat".to_string());
 directive.description(Some("Ensures cats get treats.".to_string()));
 directive.location("OBJECT".to_string());
 directive.location("FIELD_DEFINITION".to_string());
@@ -50,8 +52,6 @@ let mut enum_ty_1 = EnumValue::new("CatTree".to_string());
 enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
 let enum_ty_2 = EnumValue::new("Bed".to_string());
 let mut enum_ty_3 = EnumValue::new("CardboardBox".to_string());
-enum_ty_3.deprecated(Some("Box was recycled.".to_string()));
-
 let mut enum_def = EnumDef::new("NapSpots".to_string());
 enum_def.description(Some("Favourite cat\nnap spots.".to_string()));
 enum_def.value(enum_ty_1);
@@ -66,7 +66,6 @@ union_def.description(Some(
 union_def.member("NORI".to_string());
 union_def.member("CHASHU".to_string());
 schema.union(union_def);
-
 assert_eq!(
     schema.finish(),
     indoc! { r#"
@@ -80,14 +79,16 @@ assert_eq!(
           "Top bunk of a cat tree."
           CatTree
           Bed
-          CardboardBox @deprecated(reason: "Box was recycled.")
+          CardboardBox
         }
         "A union of all cats represented within a household."
         union Cat = NORI | CHASHU
     "# }
 );
 ```
+
 ## License
+
 Licensed under either of
 
 - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{StringValue, Type_};
+use crate::{Directive, StringValue, Type_};
 
 #[derive(Debug, PartialEq, Clone)]
 /// Input Field in a given Input Object.
@@ -30,6 +30,8 @@ pub struct InputField {
     type_: Type_,
     // Default value for this input field.
     default_value: Option<String>,
+    /// Contains all directives for this input value definition
+    directives: Vec<Directive>,
 }
 
 impl InputField {
@@ -40,6 +42,7 @@ impl InputField {
             name,
             type_,
             default_value: None,
+            directives: Vec::new(),
         }
     }
 
@@ -54,6 +57,11 @@ impl InputField {
     pub fn default(&mut self, default: Option<String>) {
         self.default_value = default;
     }
+
+    /// Add a directive.
+    pub fn directive(&mut self, directive: Directive) {
+        self.directives.push(directive)
+    }
 }
 
 impl fmt::Display for InputField {
@@ -65,12 +73,18 @@ impl fmt::Display for InputField {
             write!(f, " = {}", default)?;
         }
 
+        for directive in &self.directives {
+            write!(f, " {}", directive)?;
+        }
+
         Ok(())
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::{Argument, Value};
+
     use super::*;
     use pretty_assertions::assert_eq;
 
@@ -84,5 +98,22 @@ mod tests {
         field.default(Some("\"Norwegian Forest\"".to_string()));
 
         assert_eq!(field.to_string(), r#"  cat: CatBreed = "Norwegian Forest""#);
+    }
+    #[test]
+    fn it_encodes_fields_with_directives() {
+        let ty_1 = Type_::NamedType {
+            name: "CatBreed".to_string(),
+        };
+        let mut directive = Directive::new(String::from("testDirective"));
+        directive.arg(Argument::new(String::from("first"), Value::Int(1)));
+
+        let mut field = InputField::new("cat".to_string(), ty_1);
+        field.default(Some("\"Norwegian Forest\"".to_string()));
+        field.directive(directive);
+
+        assert_eq!(
+            field.to_string(),
+            r#"  cat: CatBreed = "Norwegian Forest" @testDirective(first: 1)"#
+        );
     }
 }
