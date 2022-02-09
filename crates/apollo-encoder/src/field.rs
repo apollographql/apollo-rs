@@ -164,8 +164,7 @@ impl Field {
     /// Should be used everywhere in this crate instead of the Display implementation
     /// Display implementation is only useful as a public api
     pub(crate) fn format_with_indent(&self, indent_level: usize) -> String {
-        let mut text = String::new();
-        text.push_str(&self.name.to_string());
+        let mut text = String::from(&self.name);
 
         if !self.args.is_empty() {
             for (i, arg) in self.args.iter().enumerate() {

@@ -102,7 +102,6 @@ impl fmt::Display for UnionDef {
 #[cfg(test)]
 mod tests {
     use super::*;
-    // use indoc::indoc;
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -116,6 +115,21 @@ mod tests {
             union_.to_string(),
             r#""A union of all animals in a household."
 union Pet = Cat | Dog
+"#
+        );
+    }
+
+    #[test]
+    fn it_encodes_union_extension() {
+        let mut union_ = UnionDef::new("Pet".to_string());
+        union_.description(Some("A union of all animals in a household.".to_string()));
+        union_.member("Cat".to_string());
+        union_.member("Dog".to_string());
+        union_.extend();
+
+        assert_eq!(
+            union_.to_string(),
+            r#"extend union Pet = Cat | Dog
 "#
         );
     }

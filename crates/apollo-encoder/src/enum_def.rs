@@ -175,4 +175,42 @@ enum NapSpots @testDirective(first: "one") {
 "#
         );
     }
+
+    #[test]
+    fn it_encodes_enum_extension() {
+        let mut enum_ty_1 = EnumValue::new("CAT_TREE".to_string());
+        enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
+        let enum_ty_2 = EnumValue::new("BED".to_string());
+        let mut enum_ty_3 = EnumValue::new("CARDBOARD_BOX".to_string());
+        let mut deprecated_directive = Directive::new(String::from("deprecated"));
+        deprecated_directive.arg(Argument::new(
+            String::from("reason"),
+            Value::String(String::from("Box was recycled.")),
+        ));
+        enum_ty_3.directive(deprecated_directive);
+        let mut directive = Directive::new(String::from("testDirective"));
+        directive.arg(Argument::new(
+            String::from("first"),
+            Value::String("one".to_string()),
+        ));
+
+        let mut enum_ = EnumDef::new("NapSpots".to_string());
+        enum_.description(Some("Favourite cat nap spots.".to_string()));
+        enum_.value(enum_ty_1);
+        enum_.value(enum_ty_2);
+        enum_.value(enum_ty_3);
+        enum_.directive(directive);
+        enum_.extend();
+
+        assert_eq!(
+            enum_.to_string(),
+            r#"extend enum NapSpots @testDirective(first: "one") {
+  "Top bunk of a cat tree."
+  CAT_TREE
+  BED
+  CARDBOARD_BOX @deprecated(reason: "Box was recycled.")
+}
+"#
+        );
+    }
 }

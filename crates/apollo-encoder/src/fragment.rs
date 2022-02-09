@@ -11,7 +11,7 @@ use crate::{Directive, SelectionSet};
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Field, InlineFragment, Selection, SelectionSet, TypeCondition};
+/// use apollo_encoder::{Field, FragmentDef, Selection, SelectionSet, TypeCondition};
 /// use indoc::indoc;
 ///
 /// let selections = vec![Selection::Field(Field::new(String::from("myField")))];
@@ -19,14 +19,16 @@ use crate::{Directive, SelectionSet};
 /// selections
 ///     .into_iter()
 ///     .for_each(|s| selection_set.selection(s));
-///
-/// let mut inline_fragment = InlineFragment::new(selection_set);
-/// inline_fragment.type_condition(Some(TypeCondition::new(String::from("User"))));
+/// let mut fragment_def = FragmentDef::new(
+///     String::from("myFragment"),
+///     TypeCondition::new(String::from("User")),
+///     selection_set,
+/// );
 ///
 /// assert_eq!(
-///     inline_fragment.to_string(),
+///     fragment_def.to_string(),
 ///     indoc! {r#"
-///         ... on User {
+///         fragment myFragment on User {
 ///           myField
 ///         }
 ///     "#}
@@ -64,7 +66,7 @@ impl fmt::Display for FragmentDef {
         for directive in &self.directives {
             write!(f, " {}", directive)?;
         }
-        writeln!(
+        write!(
             f,
             " {}",
             self.selection_set.format_with_indent(indent_level)
@@ -182,9 +184,8 @@ impl InlineFragment {
     /// Should be used everywhere in this crate isntead of the Display implementation
     /// Display implementation is only useful as a public api
     pub(crate) fn format_with_indent(&self, indent_level: usize) -> String {
-        let mut text = String::new();
+        let mut text = String::from("...");
 
-        text.push_str("...");
         if let Some(type_condition) = &self.type_condition {
             text.push_str(&format!(" {}", type_condition));
         }
@@ -202,7 +203,7 @@ impl InlineFragment {
 }
 
 // This impl is only useful when we generate only an InlineFragment
-// If it's used from a root element, we call `format_with_indent`
+// If it's used from a parent element, we call `format_with_indent`
 impl fmt::Display for InlineFragment {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let indent_level = 0;
@@ -252,7 +253,7 @@ impl fmt::Display for TypeCondition {
 mod tests {
     use indoc::indoc;
 
-    use crate::{field::Field, Selection};
+    use crate::{field::Field, Argument, Selection, Value};
 
     use super::*;
 
@@ -285,7 +286,7 @@ mod tests {
     }
 
     #[test]
-    fn it_encodes_fragment_definitions() {
+    fn it_encodes_deeper_inline_fragment() {
         let another_nested_field_bis = Field::new(String::from("anotherNestedBisField"));
 
         let mut another_nested_field = Field::new(String::from("anotherNestedField"));
@@ -334,6 +335,32 @@ mod tests {
                       }
                     }
                   }
+                }
+            "#}
+        );
+    }
+
+    #[test]
+    fn it_encodes_fragment_definition() {
+        let selections = vec![Selection::Field(Field::new(String::from("myField")))];
+        let mut selection_set = SelectionSet::new();
+        selections
+            .into_iter()
+            .for_each(|s| selection_set.selection(s));
+        let mut fragment_def = FragmentDef::new(
+            String::from("myFragment"),
+            TypeCondition::new(String::from("User")),
+            selection_set,
+        );
+        let mut directive = Directive::new(String::from("myDirective"));
+        directive.arg(Argument::new(String::from("first"), Value::Int(5)));
+        fragment_def.directive(directive);
+
+        assert_eq!(
+            fragment_def.to_string(),
+            indoc! {r#"
+                fragment myFragment on User @myDirective(first: 5) {
+                  myField
                 }
             "#}
         );

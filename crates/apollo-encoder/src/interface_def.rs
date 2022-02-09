@@ -226,4 +226,66 @@ mod tests {
             "# }
         );
     }
+
+    #[test]
+    fn it_encodes_interface_extension() {
+        let ty_1 = Type_::NamedType {
+            name: "String".to_string(),
+        };
+
+        let ty_2 = Type_::NamedType {
+            name: "String".to_string(),
+        };
+
+        let ty_3 = Type_::NonNull { ty: Box::new(ty_2) };
+        let ty_4 = Type_::List { ty: Box::new(ty_3) };
+        let ty_5 = Type_::NonNull { ty: Box::new(ty_4) };
+
+        let ty_6 = Type_::NamedType {
+            name: "Boolean".to_string(),
+        };
+
+        let mut field_1 = FieldDef::new("main".to_string(), ty_1);
+        field_1.description(Some("Cat's main dish of a meal.".to_string()));
+
+        let mut field_2 = FieldDef::new("snack".to_string(), ty_5);
+        field_2.description(Some("Cat's post meal snack.".to_string()));
+
+        let mut field_3 = FieldDef::new("pats".to_string(), ty_6);
+        field_3.description(Some("Does cat get a pat\nafter meal?".to_string()));
+
+        let mut directive = Directive::new(String::from("testDirective"));
+        directive.arg(Argument::new(
+            String::from("first"),
+            Value::String("one".to_string()),
+        ));
+
+        // a schema definition
+        let mut interface = InterfaceDef::new("Meal".to_string());
+        interface.description(Some(
+            "Meal interface for various\nmeals during the day.".to_string(),
+        ));
+        interface.field(field_1);
+        interface.field(field_2);
+        interface.field(field_3);
+        interface.directive(directive);
+        interface.extend();
+
+        assert_eq!(
+            interface.to_string(),
+            indoc! { r#"
+            extend interface Meal @testDirective(first: "one") {
+              "Cat's main dish of a meal."
+              main: String
+              "Cat's post meal snack."
+              snack: [String!]!
+              """
+              Does cat get a pat
+              after meal?
+              """
+              pats: Boolean
+            }
+            "# }
+        );
+    }
 }

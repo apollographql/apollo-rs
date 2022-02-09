@@ -77,7 +77,7 @@ impl SelectionSet {
 }
 
 // This impl is only useful when we generate only a SelectionSet
-// If it's used from a root element, we call `format_with_indent`
+// If it's used from a parent element, we call `format_with_indent`
 impl fmt::Display for SelectionSet {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let indent_level = 1;

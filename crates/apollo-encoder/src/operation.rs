@@ -58,6 +58,9 @@ pub struct OperationDef {
     variable_definitions: Vec<VariableDef>,
     directives: Vec<Directive>,
     selection_set: SelectionSet,
+    /// If a document contains only one operation and that operation is a query which defines no variables and
+    /// contains no directives then that operation may be represented in a short-hand form which omits the query keyword and operation name.
+    shorthand: bool,
 }
 
 impl OperationDef {
@@ -69,6 +72,7 @@ impl OperationDef {
             name: None,
             variable_definitions: Vec::new(),
             directives: Vec::new(),
+            shorthand: false,
         }
     }
 
@@ -86,36 +90,44 @@ impl OperationDef {
     pub fn directive(&mut self, directive: Directive) {
         self.directives.push(directive);
     }
+
+    /// Set this operation as a query shorthand
+    /// If a document contains only one operation and that operation is a query which defines no variables and
+    /// contains no directives then that operation may be represented in a short-hand form which omits the query keyword and operation name.
+    /// Be careful, it will automatically drop variable definitions and directives
+    pub fn shorthand(&mut self) {
+        self.shorthand = true;
+    }
 }
 
 impl fmt::Display for OperationDef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let indent_level = 0;
 
-        write!(f, "{}", self.operation_type)?;
-        if let Some(name) = &self.name {
-            write!(f, " {}", name)?;
-        }
-        if !self.variable_definitions.is_empty() {
-            write!(f, "(")?;
-            for (i, var_def) in self.variable_definitions.iter().enumerate() {
-                if i == self.variable_definitions.len() - 1 {
-                    write!(f, "{}", var_def)?;
-                } else {
-                    write!(f, "{}, ", var_def)?;
-                }
+        if !self.shorthand {
+            write!(f, "{}", self.operation_type)?;
+            if let Some(name) = &self.name {
+                write!(f, " {}", name)?;
             }
-            write!(f, ")")?;
-        }
-        for directive in &self.directives {
-            write!(f, " {}", directive)?;
+
+            if !self.variable_definitions.is_empty() {
+                write!(f, "(")?;
+                for (i, var_def) in self.variable_definitions.iter().enumerate() {
+                    if i == self.variable_definitions.len() - 1 {
+                        write!(f, "{}", var_def)?;
+                    } else {
+                        write!(f, "{}, ", var_def)?;
+                    }
+                }
+                write!(f, ")")?;
+            }
+            for directive in &self.directives {
+                write!(f, " {}", directive)?;
+            }
+            write!(f, " ")?;
         }
 
-        write!(
-            f,
-            " {}",
-            self.selection_set.format_with_indent(indent_level)
-        )?;
+        write!(f, "{}", self.selection_set.format_with_indent(indent_level))?;
 
         Ok(())
     }
@@ -186,6 +198,32 @@ mod tests {
             new_op.to_string(),
             indoc! { r#"
                 query($variable_def: [Int]) @testDirective(first: "one") {
+                  first
+                  second
+                }
+            "#}
+        );
+    }
+
+    #[test]
+    fn it_encodes_a_shorthand_query_operation() {
+        let selection_set = {
+            let sels = vec![
+                Selection::Field(Field::new(String::from("first"))),
+                Selection::Field(Field::new(String::from("second"))),
+            ];
+            let mut sel_set = SelectionSet::new();
+            sels.into_iter().for_each(|sel| sel_set.selection(sel));
+
+            sel_set
+        };
+        let mut new_op = OperationDef::new(OperationType::Query, selection_set);
+        new_op.shorthand();
+
+        assert_eq!(
+            new_op.to_string(),
+            indoc! { r#"
+                {
                   first
                   second
                 }
