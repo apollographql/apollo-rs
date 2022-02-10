@@ -1,7 +1,8 @@
 use std::fmt;
 
 use crate::{Argument, Directive, InputValueDef, SelectionSet, StringValue, Type_};
-/// The __FieldDef type represents each field definition in an Object definition or Interface type definition.
+/// The FieldDefinition type represents each field definition in an Object
+/// definition or Interface type definition.
 ///
 /// *FieldDefinition*:
 ///     Description? Name ArgumentsDefinition? **:** Type Directives?
@@ -10,13 +11,13 @@ use crate::{Argument, Directive, InputValueDef, SelectionSet, StringValue, Type_
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Type_, FieldDef, InputValueDef};
+/// use apollo_encoder::{Type_, FieldDefinition, InputValueDef};
 ///
 /// let ty_1 = Type_::NamedType {
 ///     name: "CatBreed".to_string(),
 /// };
 ///
-/// let mut field = FieldDef::new("cat".to_string(), ty_1);
+/// let mut field = FieldDefinition::new("cat".to_string(), ty_1);
 ///
 /// let value_1 = Type_::NamedType {
 ///     name: "CatBreed".to_string(),
@@ -32,7 +33,7 @@ use crate::{Argument, Directive, InputValueDef, SelectionSet, StringValue, Type_
 /// );
 /// ```
 #[derive(Debug, PartialEq, Clone)]
-pub struct FieldDef {
+pub struct FieldDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String.
@@ -45,7 +46,7 @@ pub struct FieldDef {
     directives: Vec<Directive>,
 }
 
-impl FieldDef {
+impl FieldDefinition {
     /// Create a new instance of Field.
     pub fn new(name: String, type_: Type_) -> Self {
         Self {
@@ -75,7 +76,7 @@ impl FieldDef {
     }
 }
 
-impl fmt::Display for FieldDef {
+impl fmt::Display for FieldDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description)?;
         write!(f, "  {}", self.name)?;
@@ -242,7 +243,7 @@ mod tests {
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
         let ty_3 = Type_::NonNull { ty: Box::new(ty_2) };
-        let field = FieldDef::new("spaceCat".to_string(), ty_3);
+        let field = FieldDefinition::new("spaceCat".to_string(), ty_3);
 
         assert_eq!(field.to_string(), r#"  spaceCat: [SpaceProgram]!"#);
     }
@@ -254,7 +255,7 @@ mod tests {
         };
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let mut field = FieldDef::new("cat".to_string(), ty_2);
+        let mut field = FieldDefinition::new("cat".to_string(), ty_2);
         let mut directive = Directive::new(String::from("testDirective"));
         directive.arg(Argument::new(String::from("first"), Value::Int(1)));
         field.description(Some("Very good cats".to_string()));
@@ -276,7 +277,7 @@ mod tests {
         let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
         let ty_3 = Type_::List { ty: Box::new(ty_2) };
         let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
-        let mut field = FieldDef::new("spaceCat".to_string(), ty_4);
+        let mut field = FieldDefinition::new("spaceCat".to_string(), ty_4);
         field.description(Some("Very good space cats".to_string()));
 
         assert_eq!(
@@ -295,7 +296,7 @@ mod tests {
         let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
         let ty_3 = Type_::List { ty: Box::new(ty_2) };
         let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
-        let mut field = FieldDef::new("spaceCat".to_string(), ty_4);
+        let mut field = FieldDefinition::new("spaceCat".to_string(), ty_4);
         field.description(Some("Very good space cats".to_string()));
 
         let value_1 = Type_::NamedType {

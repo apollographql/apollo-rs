@@ -2,18 +2,18 @@ use std::fmt;
 
 use crate::{Directive, StringValue};
 
-/// UnionDefs are an abstract type where no common fields are declared.
+/// UnionDefinitions are an abstract type where no common fields are declared.
 ///
 /// *UnionDefTypeDefinition*:
 ///     Description? **union** Name Directives? UnionDefMemberTypes?
 ///
-/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-UnionDef).
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#UnionTypeDefinition).
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{UnionDef};
+/// use apollo_encoder::UnionDefinition;
 ///
-/// let mut union_ = UnionDef::new("Pet".to_string());
+/// let mut union_ = UnionDefinition::new("Pet".to_string());
 /// union_.member("Cat".to_string());
 /// union_.member("Dog".to_string());
 ///
@@ -24,7 +24,7 @@ use crate::{Directive, StringValue};
 /// );
 /// ```
 #[derive(Debug, PartialEq, Clone)]
-pub struct UnionDef {
+pub struct UnionDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String.
@@ -36,7 +36,7 @@ pub struct UnionDef {
     extend: bool,
 }
 
-impl UnionDef {
+impl UnionDefinition {
     /// Create a new instance of a UnionDef.
     pub fn new(name: String) -> Self {
         Self {
@@ -71,7 +71,7 @@ impl UnionDef {
     }
 }
 
-impl fmt::Display for UnionDef {
+impl fmt::Display for UnionDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.extend {
             write!(f, "extend ")?;
@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn it_encodes_union_with_description() {
-        let mut union_ = UnionDef::new("Pet".to_string());
+        let mut union_ = UnionDefinition::new("Pet".to_string());
         union_.description(Some("A union of all animals in a household.".to_string()));
         union_.member("Cat".to_string());
         union_.member("Dog".to_string());
@@ -121,7 +121,7 @@ union Pet = Cat | Dog
 
     #[test]
     fn it_encodes_union_extension() {
-        let mut union_ = UnionDef::new("Pet".to_string());
+        let mut union_ = UnionDefinition::new("Pet".to_string());
         union_.description(Some("A union of all animals in a household.".to_string()));
         union_.member("Cat".to_string());
         union_.member("Dog".to_string());

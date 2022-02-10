@@ -1,7 +1,8 @@
 use crate::{Field, FragmentSpread, InlineFragment};
 use std::fmt;
 
-/// The __selectionSet type represents a selection_set type in a fragment spread, an operation or a field
+/// The SelectionSet type represents a selection_set type in a fragment spread,
+/// an operation or a field
 ///
 /// *SelectionSet*:
 ///     Selection*
@@ -92,7 +93,7 @@ impl fmt::Display for SelectionSet {
     }
 }
 
-/// The __selection type represents a selection in a selection set
+/// The Selection type represents a selection in a selection set
 /// *Selection*:
 ///     Field | FragmentSpread | InlineFragment
 ///

@@ -36,54 +36,46 @@ cargo add apollo-encoder
 ## Example
 
 ```rust
-use apollo_encoder::{Schema, Field, UnionDef, EnumValue, DirectiveDef, EnumDef, Type_};
+use apollo_encoder::{
+    Argument, Directive, Document, Field, OperationDefinition, OperationType, Selection, SelectionSet, Type_, Value,
+    VariableDefinition,
+};
 use indoc::indoc;
-let mut schema = Schema::new();
-// Create a Directive Definition.
-let mut directive = DirectiveDef::new("provideTreat".to_string());
-directive.description(Some("Ensures cats get treats.".to_string()));
-directive.location("OBJECT".to_string());
-directive.location("FIELD_DEFINITION".to_string());
-directive.location("INPUT_FIELD_DEFINITION".to_string());
-schema.directive(directive);
-
-// Create an Enum Definition
-let mut enum_ty_1 = EnumValue::new("CatTree".to_string());
-enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
-let enum_ty_2 = EnumValue::new("Bed".to_string());
-let mut enum_ty_3 = EnumValue::new("CardboardBox".to_string());
-let mut enum_def = EnumDef::new("NapSpots".to_string());
-enum_def.description(Some("Favourite cat\nnap spots.".to_string()));
-enum_def.value(enum_ty_1);
-enum_def.value(enum_ty_2);
-enum_def.value(enum_ty_3);
-schema.enum_(enum_def);
-// Union Definition
-let mut union_def = UnionDef::new("Cat".to_string());
-union_def.description(Some(
-    "A union of all cats represented within a household.".to_string(),
+let mut document = Document::new();
+let selection_set = {
+    let sels = vec![
+        Selection::Field(Field::new(String::from("first"))),
+        Selection::Field(Field::new(String::from("second"))),
+    ];
+    let mut sel_set = SelectionSet::new();
+    sels.into_iter().for_each(|sel| sel_set.selection(sel));
+    sel_set
+};
+let var_def = VariableDefinition::new(
+    String::from("variable_def"),
+    Type_::List {
+        ty: Box::new(Type_::NamedType {
+            name: String::from("Int"),
+        }),
+    },
+);
+let mut new_op = OperationDefinition::new(OperationType::Query, selection_set);
+let mut directive = Directive::new(String::from("testDirective"));
+directive.arg(Argument::new(
+    String::from("first"),
+    Value::String("one".to_string()),
 ));
-union_def.member("NORI".to_string());
-union_def.member("CHASHU".to_string());
-schema.union(union_def);
+new_op.variable_definition(var_def);
+new_op.directive(directive);
+document.operation(new_op);
 assert_eq!(
-    schema.finish(),
+    document.to_string(),
     indoc! { r#"
-        "Ensures cats get treats."
-        directive @provideTreat on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
-        """
-        Favourite cat
-        nap spots.
-        """
-        enum NapSpots {
-          "Top bunk of a cat tree."
-          CatTree
-          Bed
-          CardboardBox
+        query($variable_def: [Int]) @testDirective(first: "one") {
+          first
+          second
         }
-        "A union of all cats represented within a household."
-        union Cat = NORI | CHASHU
-    "# }
+    "#}
 );
 ```
 

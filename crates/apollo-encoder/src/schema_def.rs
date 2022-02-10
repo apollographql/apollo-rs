@@ -2,7 +2,8 @@ use std::fmt;
 
 use crate::{Directive, StringValue};
 
-/// A GraphQL service’s collective type system capabilities are referred to as that service’s “schema”.
+/// A GraphQL service’s collective type system capabilities are referred to as
+/// that service’s “schema”.
 ///
 /// *SchemaDefinition*:
 ///     Description? **schema** Directives? **{** RootOperationTypeDefinition* **}**
@@ -11,10 +12,10 @@ use crate::{Directive, StringValue};
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{SchemaDef};
+/// use apollo_encoder::{SchemaDefinition};
 /// use indoc::indoc;
 ///
-/// let mut schema_def = SchemaDef::new();
+/// let mut schema_def = SchemaDefinition::new();
 /// schema_def.query("TryingToFindCatQuery".to_string());
 /// schema_def.mutation("MyMutation".to_string());
 /// schema_def.subscription("MySubscription".to_string());
@@ -32,7 +33,7 @@ use crate::{Directive, StringValue};
 /// ```
 
 #[derive(Debug, Clone)]
-pub struct SchemaDef {
+pub struct SchemaDefinition {
     // Description may be a String.
     description: StringValue,
     // The vector of fields in a schema to represent root operation type
@@ -45,7 +46,7 @@ pub struct SchemaDef {
     extend: bool,
 }
 
-impl SchemaDef {
+impl SchemaDefinition {
     /// Create a new instance of SchemaDef.
     pub fn new() -> Self {
         Self {
@@ -91,13 +92,13 @@ impl SchemaDef {
     }
 }
 
-impl Default for SchemaDef {
+impl Default for SchemaDefinition {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl fmt::Display for SchemaDef {
+impl fmt::Display for SchemaDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.extend {
             write!(f, "extend ")?;
@@ -138,7 +139,7 @@ mod tests {
 
     #[test]
     fn it_encodes_schema_with_mutation_and_subscription() {
-        let mut schema_def = SchemaDef::new();
+        let mut schema_def = SchemaDefinition::new();
         schema_def.query("TryingToFindCatQuery".to_string());
         schema_def.mutation("MyMutation".to_string());
         schema_def.subscription("MySubscription".to_string());
@@ -157,7 +158,7 @@ mod tests {
 
     #[test]
     fn it_encodes_extend_schema_with_mutation_and_subscription() {
-        let mut schema_def = SchemaDef::new();
+        let mut schema_def = SchemaDefinition::new();
         schema_def.query("TryingToFindCatQuery".to_string());
         schema_def.mutation("MyMutation".to_string());
         schema_def.subscription("MySubscription".to_string());

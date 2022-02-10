@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::{Directive, Type_, Value};
 
-/// The __variableDef type represents a variable definition
+/// The VariableDefinition type represents a variable definition
 ///
 /// *VariableDefinition*:
 ///     VariableName : Type DefaultValue? Directives?
@@ -11,9 +11,9 @@ use crate::{Directive, Type_, Value};
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Type_, Value, VariableDef};
+/// use apollo_encoder::{Type_, Value, VariableDefinition};
 ///
-/// let mut variable = VariableDef::new(
+/// let mut variable = VariableDefinition::new(
 ///     String::from("my_var"),
 ///     Type_::NamedType {
 ///         name: String::from("MyType"),
@@ -30,15 +30,15 @@ use crate::{Directive, Type_, Value};
 /// );
 /// ```
 #[derive(Debug)]
-pub struct VariableDef {
+pub struct VariableDefinition {
     variable: String,
     ty: Type_,
     default_value: Option<Value>,
     directives: Vec<Directive>,
 }
 
-impl VariableDef {
-    /// Create an instance of VariableDef
+impl VariableDefinition {
+    /// Create an instance of VariableDefinition
     pub fn new(variable: String, ty: Type_) -> Self {
         Self {
             variable,
@@ -59,7 +59,7 @@ impl VariableDef {
     }
 }
 
-impl fmt::Display for VariableDef {
+impl fmt::Display for VariableDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "${}: {}", self.variable, self.ty)?;
 
@@ -81,7 +81,7 @@ mod tests {
 
     #[test]
     fn it_encodes_variable_definition() {
-        let mut variable = VariableDef::new(
+        let mut variable = VariableDefinition::new(
             String::from("my_var"),
             Type_::NamedType {
                 name: String::from("MyType"),

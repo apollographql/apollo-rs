@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::{InputValueDef, Value};
 
-/// The `__ArgumentsDef` type represents an arguments definition
+/// The `ArgumentsDefinition` type represents an arguments definition
 ///
 /// *ArgumentsDefinition*:
 ///     ( InputValueDefinition* )
@@ -11,7 +11,7 @@ use crate::{InputValueDef, Value};
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{ArgumentsDef, InputValueDef, Type_};
+/// use apollo_encoder::{ArgumentsDefinition, InputValueDef, Type_};
 /// use indoc::indoc;
 ///
 /// let input_value_defs = vec![
@@ -30,16 +30,16 @@ use crate::{InputValueDef, Value};
 ///         },
 ///     ),
 /// ];
-/// let arguments_def = ArgumentsDef::new(input_value_defs);
+/// let arguments_def = ArgumentsDefinition::new(input_value_defs);
 ///
 /// assert_eq!(arguments_def.to_string(), r#"(first: Int, second: [Int])"#);
 /// ```
 #[derive(Debug)]
-pub struct ArgumentsDef {
+pub struct ArgumentsDefinition {
     input_value_definitions: Vec<InputValueDef>,
 }
 
-impl ArgumentsDef {
+impl ArgumentsDefinition {
     /// Create a new instance of Argument definition.
     pub fn new(input_value_definitions: Vec<InputValueDef>) -> Self {
         Self {
@@ -48,7 +48,7 @@ impl ArgumentsDef {
     }
 }
 
-impl fmt::Display for ArgumentsDef {
+impl fmt::Display for ArgumentsDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "(")?;
         if self.input_value_definitions.len() == 1 {
@@ -66,7 +66,7 @@ impl fmt::Display for ArgumentsDef {
     }
 }
 
-/// The `__Argument` type represents an argument
+/// The `Argument` type represents an argument
 ///
 /// *Argument*:
 ///     Name: Value
@@ -130,7 +130,7 @@ mod tests {
                 },
             ),
         ];
-        let arguments_def = ArgumentsDef::new(input_value_defs);
+        let arguments_def = ArgumentsDefinition::new(input_value_defs);
 
         assert_eq!(arguments_def.to_string(), r#"(first: Int, second: [Int])"#);
     }

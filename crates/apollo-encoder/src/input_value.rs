@@ -2,8 +2,7 @@ use std::fmt;
 
 use crate::{Directive, StringValue, Type_};
 
-
-/// The __InputValueDef type represents field and directive arguments.
+/// The InputValueDefinition type represents field and directive arguments.
 ///
 /// *InputValueDefinition*:
 ///     Description? Name **:** Type DefaultValue? Directives?

@@ -11,7 +11,7 @@ use crate::{Directive, EnumValue, StringValue};
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Argument, Directive, EnumValue, EnumDef, Value};
+/// use apollo_encoder::{Argument, Directive, EnumValue, EnumDefinition, Value};
 ///
 /// let mut enum_ty_1 = EnumValue::new("CAT_TREE".to_string());
 /// enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
@@ -21,7 +21,7 @@ use crate::{Directive, EnumValue, StringValue};
 /// let mut enum_ty_3 = EnumValue::new("CARDBOARD_BOX".to_string());
 /// enum_ty_3.directive(deprecated_directive);
 ///
-/// let mut enum_ = EnumDef::new("NapSpots".to_string());
+/// let mut enum_ = EnumDefinition::new("NapSpots".to_string());
 /// enum_.description(Some("Favourite cat nap spots.".to_string()));
 /// enum_.value(enum_ty_1);
 /// enum_.value(enum_ty_2);
@@ -40,7 +40,7 @@ use crate::{Directive, EnumValue, StringValue};
 /// );
 /// ```
 #[derive(Debug, PartialEq, Clone)]
-pub struct EnumDef {
+pub struct EnumDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
@@ -53,7 +53,7 @@ pub struct EnumDef {
     extend: bool,
 }
 
-impl EnumDef {
+impl EnumDefinition {
     /// Create a new instance of Enum Definition.
     pub fn new(name: String) -> Self {
         Self {
@@ -88,7 +88,7 @@ impl EnumDef {
     }
 }
 
-impl fmt::Display for EnumDef {
+impl fmt::Display for EnumDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.extend {
             write!(f, "extend ")?;
@@ -123,7 +123,7 @@ mod tests {
         let enum_ty_2 = EnumValue::new("BED".to_string());
         let enum_ty_3 = EnumValue::new("CARDBOARD_BOX".to_string());
 
-        let mut enum_ = EnumDef::new("NapSpots".to_string());
+        let mut enum_ = EnumDefinition::new("NapSpots".to_string());
         enum_.value(enum_ty_1);
         enum_.value(enum_ty_2);
         enum_.value(enum_ty_3);
@@ -156,7 +156,7 @@ mod tests {
             Value::String("one".to_string()),
         ));
 
-        let mut enum_ = EnumDef::new("NapSpots".to_string());
+        let mut enum_ = EnumDefinition::new("NapSpots".to_string());
         enum_.description(Some("Favourite cat nap spots.".to_string()));
         enum_.value(enum_ty_1);
         enum_.value(enum_ty_2);
@@ -194,7 +194,7 @@ enum NapSpots @testDirective(first: "one") {
             Value::String("one".to_string()),
         ));
 
-        let mut enum_ = EnumDef::new("NapSpots".to_string());
+        let mut enum_ = EnumDefinition::new("NapSpots".to_string());
         enum_.description(Some("Favourite cat nap spots.".to_string()));
         enum_.value(enum_ty_1);
         enum_.value(enum_ty_2);
