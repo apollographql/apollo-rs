@@ -1,6 +1,12 @@
 use crate::{description::Description, directive::Directive, ty::Ty, DocumentBuilder};
 use arbitrary::Result;
 
+/// A GraphQL service’s collective type system capabilities are referred to as that service’s “schema”.
+///
+/// *SchemaDefinition*:
+///     Description? **schema** Directives? **{** RootOperationTypeDefinition* **}**
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Schema).
 #[derive(Debug)]
 pub struct SchemaDef {
     pub(crate) description: Option<Description>,

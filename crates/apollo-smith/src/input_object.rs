@@ -5,6 +5,16 @@ use crate::{
     DocumentBuilder,
 };
 
+/// Input objects are composite types used as inputs into queries defined as a list of named input values..
+///
+/// InputObjectTypeDefinition
+///     Description? **input** Name Directives? FieldsDefinition?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Input-Objects).
+///
+/// **Note**: At the moment InputObjectTypeDefinition differs slightly from the
+/// spec. Instead of accepting InputValues as `field` parameter, we accept
+/// InputField.
 #[derive(Debug, Clone)]
 pub struct InputObjectTypeDef {
     pub(crate) name: Name,

@@ -2,6 +2,13 @@ use arbitrary::Result;
 
 use crate::DocumentBuilder;
 
+/// The `__Description` type represents a description
+///
+/// *Description*:
+///     "string"
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Descriptions).
+///
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Description(String);
 

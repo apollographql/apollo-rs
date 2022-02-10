@@ -4,7 +4,6 @@ use once_cell::sync::Lazy;
 
 use crate::{input_value::InputValue, name::Name, DocumentBuilder};
 
-// TODO should be include in document builder when created ?
 static BUILTIN_SCALAR_NAMES: Lazy<[Ty; 5]> = Lazy::new(|| {
     [
         Ty::Named(Name::new(String::from("Int"))),
@@ -15,10 +14,17 @@ static BUILTIN_SCALAR_NAMES: Lazy<[Ty; 5]> = Lazy::new(|| {
     ]
 });
 
+/// Convenience Type_ implementation used when creating a Field.
+/// Can be a `NamedType`, a `NonNull` or a `List`.
+///
+/// This enum is resposible for encoding creating values such as `String!`, `[[[[String]!]!]!]!`, etc.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Ty {
+    /// The Non-Null field type.
     Named(Name),
+    /// The List field type.
     List(Box<Ty>),
+    /// The Named field type.
     NonNull(Box<Ty>),
 }
 

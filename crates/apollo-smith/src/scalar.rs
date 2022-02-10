@@ -2,6 +2,13 @@ use arbitrary::Result;
 
 use crate::{description::Description, directive::Directive, name::Name, DocumentBuilder};
 
+/// Represents scalar types such as Int, String, and Boolean.
+/// Scalars cannot have fields.
+///
+/// *ScalarTypeDefinition*:
+///     Description? **scalar** Name Directives?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Scalar).
 #[derive(Debug)]
 pub struct ScalarTypeDef {
     pub(crate) name: Name,

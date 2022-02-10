@@ -2,6 +2,12 @@ use arbitrary::Result;
 
 use crate::{directive::Directive, input_value::InputValue, name::Name, ty::Ty, DocumentBuilder};
 
+/// The __variableDef type represents a variable definition
+///
+/// *VariableDefinition*:
+///     VariableName : Type DefaultValue? Directives?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Variables).
 #[derive(Debug)]
 pub struct VariableDef {
     name: Name,

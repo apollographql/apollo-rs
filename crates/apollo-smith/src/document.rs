@@ -4,6 +4,22 @@ use crate::{
     operation::OperationDef, scalar::ScalarTypeDef, schema::SchemaDef, union::UnionTypeDef,
 };
 
+/// The `__Document` type represents a GraphQL document.A GraphQL Document describes a complete file or request string operated on by a GraphQL service or client.
+/// A document contains multiple definitions, either executable or representative of a GraphQL type system.
+///
+/// *Document*:
+///     OperationDefinition*
+///     FragmentDefinition*
+///     SchemaDefinition*
+///     ScalarTypeDefinition*
+///     ObjectTypeDefinition*
+///     InterfaceTypeDefinition*
+///     UnionTypeDefinition*
+///     EnumTypeDefinition*
+///     InputObjectDefinition*
+///     DirectiveDefinition*
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Document).
 #[derive(Debug)]
 pub struct Document {
     pub(crate) operation_definitions: Vec<OperationDef>,

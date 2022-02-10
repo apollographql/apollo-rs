@@ -7,6 +7,15 @@ use crate::{
     description::Description, directive::Directive, field::FieldDef, name::Name, DocumentBuilder,
 };
 
+/// Object types represent concrete instantiations of sets of fields.
+///
+/// The introspection types (e.g. `__Type`, `__Field`, etc) are examples of
+/// objects.
+///
+/// *ObjectTypeDefinition*:
+///     Description? **type** Name ImplementsInterfaces? Directives? FieldsDefinition?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Object).
 #[derive(Debug)]
 pub struct ObjectTypeDef {
     pub(crate) description: Option<Description>,

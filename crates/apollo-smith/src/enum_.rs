@@ -5,6 +5,12 @@ use arbitrary::Result;
 
 use crate::{description::Description, directive::Directive, name::Name, DocumentBuilder};
 
+/// Enums are special scalars that can only have a defined set of values.
+///
+/// *EnumTypeDefinition*:
+///     Description? **enum** Name Directives? EnumValuesDefinition?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Enums).
 #[derive(Debug, Clone)]
 pub struct EnumTypeDef {
     pub(crate) description: Option<Description>,
@@ -34,6 +40,12 @@ impl From<EnumTypeDef> for EnumDef {
     }
 }
 
+/// The __EnumValue type represents one of possible values of an enum.
+///
+/// *EnumValueDefinition*:
+///     Description? EnumValue Directives?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-The-__EnumValue-Type).
 #[derive(Debug, Clone)]
 pub struct EnumValueDefinition {
     pub(crate) description: Option<Description>,

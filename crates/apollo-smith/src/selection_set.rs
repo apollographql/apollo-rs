@@ -7,6 +7,12 @@ use crate::{
     DocumentBuilder,
 };
 
+/// The __selectionSet type represents a selection_set type in a fragment spread, an operation or a field
+///
+/// *SelectionSet*:
+///     Selection*
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Selection-Sets).
 #[derive(Debug)]
 pub struct SelectionSet {
     selections: Vec<Selection>,
@@ -24,10 +30,18 @@ impl From<SelectionSet> for apollo_encoder::SelectionSet {
     }
 }
 
+/// The __selection type represents a selection in a selection set
+/// *Selection*:
+///     Field | FragmentSpread | InlineFragment
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#Selection).
 #[derive(Debug)]
 pub enum Selection {
+    /// Represents a field
     Field(Field),
+    /// Represents a fragment spread
     FragmentSpread(FragmentSpread),
+    /// Represents an inline fragment
     InlineFragment(InlineFragment),
 }
 

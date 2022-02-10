@@ -4,6 +4,12 @@ use crate::{
     directive::Directive, name::Name, selection_set::SelectionSet, ty::Ty, DocumentBuilder,
 };
 
+/// The __fragmentDef type represents a fragment definition
+///
+/// *FragmentDefinition*:
+///     fragment FragmentName TypeCondition Directives? SelectionSet
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#FragmentDefinition).
 #[derive(Debug)]
 pub struct FragmentDef {
     pub(crate) name: Name,
@@ -28,6 +34,12 @@ impl From<FragmentDef> for apollo_encoder::FragmentDef {
     }
 }
 
+/// The __fragmentSpread type represents a named fragment used in a selection set.
+///
+/// *FragmentSpread*:
+///     ... FragmentName Directives?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#FragmentSpread).
 #[derive(Debug)]
 pub struct FragmentSpread {
     pub(crate) name: Name,
@@ -46,6 +58,12 @@ impl From<FragmentSpread> for apollo_encoder::FragmentSpread {
     }
 }
 
+/// The __inlineFragment type represents an inline fragment in a selection set that could be used as a field
+///
+/// *InlineFragment*:
+///     ... TypeCondition? Directives? SelectionSet
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Inline-Fragments).
 #[derive(Debug)]
 pub struct InlineFragment {
     pub(crate) type_condition: Option<TypeCondition>,
@@ -66,6 +84,12 @@ impl From<InlineFragment> for apollo_encoder::InlineFragment {
     }
 }
 
+/// The __typeCondition type represents where a fragment could be applied
+///
+/// *TypeCondition*:
+///     on NamedType
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#TypeCondition).
 #[derive(Debug)]
 pub struct TypeCondition {
     name: Name,

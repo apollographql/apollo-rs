@@ -12,6 +12,12 @@ use crate::{
     DocumentBuilder,
 };
 
+/// The __FieldDef type represents each field definition in an Object definition or Interface type definition.
+///
+/// *FieldDefinition*:
+///     Description? Name ArgumentsDefinition? **:** Type Directives?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#FieldDefinition).
 #[derive(Debug, Clone)]
 pub struct FieldDef {
     pub(crate) description: Option<Description>,
@@ -38,6 +44,12 @@ impl From<FieldDef> for apollo_encoder::FieldDef {
     }
 }
 
+/// The __Field type represents each field in an Object or Interface type.
+///
+/// *Field*:
+///     Alias? Name Arguments? Directives? SelectionSet?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Fields).
 #[derive(Debug)]
 pub struct Field {
     pub(crate) alias: Option<Name>,

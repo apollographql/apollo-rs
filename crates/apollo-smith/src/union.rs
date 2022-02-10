@@ -5,6 +5,12 @@ use arbitrary::Result;
 
 use crate::{description::Description, directive::Directive, name::Name, ty::Ty, DocumentBuilder};
 
+/// UnionDefs are an abstract type where no common fields are declared.
+///
+/// *UnionDefTypeDefinition*:
+///     Description? **union** Name Directives? UnionDefMemberTypes?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-UnionDef).
 #[derive(Debug)]
 pub struct UnionTypeDef {
     pub(crate) name: Name,

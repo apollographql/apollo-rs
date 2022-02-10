@@ -5,6 +5,12 @@ use crate::{
     DocumentBuilder,
 };
 
+/// The __operationDef type represents an operation definition
+///
+/// *OperationDefinition*:
+///     OperationType Name? VariableDefinitions? Directives? SelectionSet
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Operations).
 #[derive(Debug)]
 pub struct OperationDef {
     pub(crate) operation_type: OperationType,
@@ -32,6 +38,12 @@ impl From<OperationDef> for apollo_encoder::OperationDef {
     }
 }
 
+/// The __operationType type represents the kind of operation
+///
+/// *OperationType*:
+///     query | mutation | subscription
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#OperationType).
 #[derive(Debug, Arbitrary)]
 pub enum OperationType {
     Query,

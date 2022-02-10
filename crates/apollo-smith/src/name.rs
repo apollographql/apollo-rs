@@ -24,6 +24,14 @@ const RESERVED_KEYWORDS: &[&str] = &[
     "interface",
 ];
 
+/// Name is useful to name different elements.
+///
+/// GraphQL Documents are full of named things: operations, fields, arguments, types, directives, fragments, and variables.
+/// All names must follow the same grammatical form.
+/// Names in GraphQL are case-sensitive. That is to say name, Name, and NAME all refer to different names.
+/// Underscores are significant, which means other_name and othername are two different names
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#Name).
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Name {
     pub(crate) name: String,

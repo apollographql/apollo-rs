@@ -2,6 +2,7 @@ use crate::{description::Description, directive::Directive, name::Name, ty::Ty, 
 use arbitrary::Result;
 
 #[derive(Debug, Clone, PartialEq)]
+
 pub enum InputValue {
     Variable(Name),
     Int(i64),
@@ -60,6 +61,12 @@ impl From<InputValue> for String {
     }
 }
 
+/// The __InputValueDef type represents field and directive arguments.
+///
+/// *InputValueDefinition*:
+///     Description? Name **:** Type DefaultValue? Directives?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-The-__InputValue-Type).
 #[derive(Debug, Clone, PartialEq)]
 pub struct InputValueDef {
     pub(crate) description: Option<Description>,

@@ -9,6 +9,12 @@ use crate::{
     DocumentBuilder,
 };
 
+/// The `__DirectiveDef` type represents a Directive definition.
+///
+/// *DirectiveDefinition*:
+///     Description? **directive @** Name Arguments Definition? **repeatable**? **on** DirectiveLocations
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Type-System.Directives).
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectiveDef {
     pub(crate) description: Option<Description>,
@@ -40,6 +46,12 @@ impl From<DirectiveDef> for apollo_encoder::DirectiveDef {
     }
 }
 
+/// The `__Directive` type represents a Directive, it provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.
+///
+/// *Directive*:
+///     @ Name Arguments?
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Directives).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Directive {
     pub(crate) name: Name,
@@ -113,6 +125,7 @@ impl<'a> DocumentBuilder<'a> {
     }
 }
 
+/// The `__DirectiveLocation` type represents a Directive location.
 #[derive(Debug, Clone, PartialEq, Hash, Eq, Arbitrary)]
 pub enum DirectiveLocation {
     Query,

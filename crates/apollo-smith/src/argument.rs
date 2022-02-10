@@ -6,6 +6,13 @@ use crate::{
     DocumentBuilder,
 };
 
+/// The `__ArgumentsDef` type represents an arguments definition
+///
+/// *ArgumentsDefinition*:
+///     ( InputValueDefinition* )
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#ArgumentsDefinition).
+///
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArgumentsDef {
     pub(crate) input_value_definitions: Vec<InputValueDef>,
@@ -23,6 +30,12 @@ impl From<ArgumentsDef> for apollo_encoder::ArgumentsDef {
     }
 }
 
+/// The `__Argument` type represents an argument
+///
+/// *Argument*:
+///     Name: Value
+///
+/// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Arguments).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Argument {
     pub(crate) name: Name,
