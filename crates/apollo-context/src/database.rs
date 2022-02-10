@@ -20,7 +20,7 @@ pub trait SourceDatabase: Interner {
 
     fn document(&self) -> Arc<Document>;
 
-    fn all_definitions(&self, doc: ast::Document) -> Arc<Vec<Definition>>;
+    fn definitions(&self, doc: ast::Document) -> Arc<Vec<Definition>>;
 }
 
 fn parse_query(db: &dyn SourceDatabase) -> ast::Document {
@@ -33,13 +33,13 @@ fn parse_query(db: &dyn SourceDatabase) -> ast::Document {
 // this is top level entry to the source db
 fn document(db: &dyn SourceDatabase) -> Arc<Document> {
     let document = db.parse();
-    let definitions = db.all_definitions(document);
+    let definitions = db.definitions(document);
     let document_data = DocumentData { definitions };
 
     Arc::new(db.intern_document(document_data))
 }
 
-fn all_definitions(db: &dyn SourceDatabase, document: ast::Document) -> Arc<Vec<Definition>> {
+fn definitions(db: &dyn SourceDatabase, document: ast::Document) -> Arc<Vec<Definition>> {
     let definitions: Vec<_> = document
         .definitions()
         .map(|def| match def {
@@ -48,17 +48,6 @@ fn all_definitions(db: &dyn SourceDatabase, document: ast::Document) -> Arc<Vec<
                 let definition_data = DefinitionData::OperationDefinition(op_def);
                 db.intern_definition(definition_data)
             }
-            // ast::Definition::FragmentDefinition(def) => {
-            //     let name = def
-            //         .fragment_name()
-            //         .expect("not optional")
-            //         .name()
-            //         .expect("not optional")
-            //         .text()
-            //         .to_string();
-            //     let definition_data = DefinitionData { name };
-            //     db.intern_definition(definition_data)
-            // }
             _ => todo!(),
         })
         .collect();
@@ -66,15 +55,37 @@ fn all_definitions(db: &dyn SourceDatabase, document: ast::Document) -> Arc<Vec<
     Arc::new(definitions)
 }
 
-fn all_operations() {}
-
 fn operation_definition(
     db: &dyn SourceDatabase,
     op_def: ast::OperationDefinition,
 ) -> Arc<OperationDefinition> {
-    let name = op_def.name().expect("not optional").text().to_string();
-    let operation_def_data = OperationDefinitionData { ty: todo!(), name };
-    Arc::new(db.intern_operation(operation_def_data))
+    // check if there are already operations
+    // if there are operations, they must have names
+    // if there are no names, an error must be raised that all operations must have a name
+    let name = match op_def.name() {
+        Some(name) => name.to_string(),
+        None => String::from("query"),
+    };
+
+    let ty: OperationType = match op_def.operation_type() {
+        Some(op_type) => {
+            if op_type.query_token().is_some() {
+                OperationType::Query
+            } else if op_type.mutation_token().is_some() {
+                OperationType::Mutation
+            } else if op_type.subscription_token().is_some() {
+                OperationType::Subscription
+            } else {
+                OperationType::Query
+            }
+        }
+        None => OperationType::Query,
+    };
+
+    let operation_def_data = OperationDefinitionData { ty, name };
+    let operation_def = db.intern_operation_definition(operation_def_data);
+
+    Arc::new(operation_def)
 }
 
 #[salsa::query_group(InternerDatabase)]
@@ -84,7 +95,10 @@ pub trait Interner {
     #[salsa::interned]
     fn intern_definition(&self, definition: DefinitionData) -> Definition;
     #[salsa::interned]
-    fn intern_operation(&self, operation: OperationDefinitionData) -> OperationDefinition;
+    fn intern_operation_definition(
+        &self,
+        operation: OperationDefinitionData,
+    ) -> OperationDefinition;
 }
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct DocumentData {
@@ -106,7 +120,7 @@ impl salsa::InternKey for Document {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum DefinitionData {
-    OperationDefinition(Arc<Vec<OperationDefinition>>),
+    OperationDefinition(Arc<OperationDefinition>),
     FragmentDefinition,
 }
 
@@ -123,25 +137,21 @@ impl salsa::InternKey for Definition {
     }
 }
 
+// NOTE @lrlna: is there a way to query this straight up from definitions so we
+// don't have to keep a separate struct?
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct Operations(Arc<Vec<OperationDefinitionData>>);
 
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Operations {
-
-    // variables: Arc<Vec<VariableDefinition>>,
-    // directives: Arc<Vec<Directive>>,
-    // selection_set: Arc<Vec<Selection>>,
-}
-
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OperationDefinitionData {
     ty: OperationType,
-    name: Option<String>,
+    name: String,
     // variables: Arc<Vec<VariableDefinition>>,
     // directives: Arc<Vec<Directive>>,
     // selection_set: Arc<Vec<Selection>>,
 }
 
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OperationDefinition(salsa::InternId);
 
 impl salsa::InternKey for OperationDefinition {
@@ -155,21 +165,8 @@ impl salsa::InternKey for OperationDefinition {
 }
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-pub enum OperationTypeData {
+pub enum OperationType {
     Query,
     Mutation,
     Subscription,
-}
-
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-pub struct OperationType(salsa::InternId);
-
-impl salsa::InternKey for OperationType {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
-    }
 }
