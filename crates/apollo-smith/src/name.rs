@@ -83,7 +83,6 @@ impl<'a> DocumentBuilder<'a> {
             let gen_str = String::from_utf8(
                 (0..size)
                     .map(|curr_idx| {
-                        // TODO fix this by using choose
                         let idx = self.u.arbitrary::<usize>()?;
 
                         // Cannot start with a number
