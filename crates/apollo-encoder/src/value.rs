@@ -1,9 +1,10 @@
 use std::fmt;
 
-/// The __value type represents available values you could give as an input.
+/// The Value type represents available values you could give as an input.
 ///
 /// *Value*:
-///     Variable | IntValue | FloatValue | StringValue | BooleanValue | NullValue | EnumValue | ListValue | ObjectValue
+///     Variable | IntValue | FloatValue | StringValue | BooleanValue |
+///     NullValue | EnumValue | ListValue | ObjectValue
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#Value).
 #[derive(Debug, PartialEq, Clone)]

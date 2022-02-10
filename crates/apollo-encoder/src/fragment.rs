@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::{Directive, SelectionSet};
 
-/// The __fragmentDef type represents a fragment definition
+/// The FragmentDefinition type represents a fragment definition
 ///
 /// *FragmentDefinition*:
 ///     fragment FragmentName TypeCondition Directives? SelectionSet
@@ -11,7 +11,7 @@ use crate::{Directive, SelectionSet};
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Field, FragmentDef, Selection, SelectionSet, TypeCondition};
+/// use apollo_encoder::{Field, FragmentDefinition, Selection, SelectionSet, TypeCondition};
 /// use indoc::indoc;
 ///
 /// let selections = vec![Selection::Field(Field::new(String::from("myField")))];
@@ -19,7 +19,7 @@ use crate::{Directive, SelectionSet};
 /// selections
 ///     .into_iter()
 ///     .for_each(|s| selection_set.selection(s));
-/// let mut fragment_def = FragmentDef::new(
+/// let mut fragment_def = FragmentDefinition::new(
 ///     String::from("myFragment"),
 ///     TypeCondition::new(String::from("User")),
 ///     selection_set,
@@ -35,14 +35,14 @@ use crate::{Directive, SelectionSet};
 /// );
 /// ```
 #[derive(Debug)]
-pub struct FragmentDef {
+pub struct FragmentDefinition {
     name: String,
     type_condition: TypeCondition,
     directives: Vec<Directive>,
     selection_set: SelectionSet,
 }
 
-impl FragmentDef {
+impl FragmentDefinition {
     /// Create an instance of FragmentDeg
     pub fn new(name: String, type_condition: TypeCondition, selection_set: SelectionSet) -> Self {
         Self {
@@ -59,7 +59,7 @@ impl FragmentDef {
     }
 }
 
-impl fmt::Display for FragmentDef {
+impl fmt::Display for FragmentDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let indent_level = 0;
         write!(f, "fragment {} {}", self.name, self.type_condition)?;
@@ -76,7 +76,7 @@ impl fmt::Display for FragmentDef {
     }
 }
 
-/// The __fragmentSpread type represents a named fragment used in a selection set.
+/// The FragmentSpread type represents a named fragment used in a selection set.
 ///
 /// *FragmentSpread*:
 ///     ... FragmentName Directives?
@@ -122,7 +122,7 @@ impl fmt::Display for FragmentSpread {
     }
 }
 
-/// The __inlineFragment type represents an inline fragment in a selection set that could be used as a field
+/// The InlineFragment type represents an inline fragment in a selection set that could be used as a field
 ///
 /// *InlineFragment*:
 ///     ... TypeCondition? Directives? SelectionSet
@@ -225,7 +225,7 @@ impl fmt::Display for InlineFragment {
     }
 }
 
-/// The __typeCondition type represents where a fragment could be applied
+/// The TypeCondition type represents where a fragment could be applied
 ///
 /// *TypeCondition*:
 ///     on NamedType
@@ -347,7 +347,7 @@ mod tests {
         selections
             .into_iter()
             .for_each(|s| selection_set.selection(s));
-        let mut fragment_def = FragmentDef::new(
+        let mut fragment_def = FragmentDefinition::new(
             String::from("myFragment"),
             TypeCondition::new(String::from("User")),
             selection_set,

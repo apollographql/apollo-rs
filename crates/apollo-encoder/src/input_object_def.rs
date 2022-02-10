@@ -9,13 +9,9 @@ use crate::{Directive, InputField, StringValue};
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Input-Objects).
 ///
-/// **Note**: At the moment InputObjectTypeDefinition differs slightly from the
-/// spec. Instead of accepting InputValues as `field` parameter, we accept
-/// InputField.
-///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Type_, InputField, InputObjectDef};
+/// use apollo_encoder::{Type_, InputField, InputObjectDefinition};
 /// use indoc::indoc;
 ///
 /// let ty_1 = Type_::NamedType {
@@ -31,7 +27,7 @@ use crate::{Directive, InputField, StringValue};
 /// let mut field_2 = InputField::new("playSpot".to_string(), ty_3);
 /// field_2.description(Some("Best playime spots, e.g. tree, bed.".to_string()));
 ///
-/// let mut input_def = InputObjectDef::new("PlayTime".to_string());
+/// let mut input_def = InputObjectDefinition::new("PlayTime".to_string());
 /// input_def.field(field);
 /// input_def.field(field_2);
 /// input_def.description(Some("Cat playtime input".to_string()));
@@ -49,7 +45,7 @@ use crate::{Directive, InputField, StringValue};
 /// );
 /// ```
 #[derive(Debug, Clone)]
-pub struct InputObjectDef {
+pub struct InputObjectDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
@@ -61,7 +57,7 @@ pub struct InputObjectDef {
     extend: bool,
 }
 
-impl InputObjectDef {
+impl InputObjectDefinition {
     /// Create a new instance of ObjectDef with a name.
     pub fn new(name: String) -> Self {
         Self {
@@ -96,7 +92,7 @@ impl InputObjectDef {
     }
 }
 
-impl fmt::Display for InputObjectDef {
+impl fmt::Display for InputObjectDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.extend {
             write!(f, "extend ")?;
@@ -146,7 +142,7 @@ mod tests {
             Value::String("one".to_string()),
         ));
 
-        let mut input_def = InputObjectDef::new("PlayTime".to_string());
+        let mut input_def = InputObjectDefinition::new("PlayTime".to_string());
         input_def.field(field);
         input_def.field(field_2);
         input_def.directive(directive);
@@ -178,7 +174,7 @@ mod tests {
         let mut field_2 = InputField::new("playSpot".to_string(), ty_3);
         field_2.description(Some("Best playime spots, e.g. tree, bed.".to_string()));
 
-        let mut input_def = InputObjectDef::new("PlayTime".to_string());
+        let mut input_def = InputObjectDefinition::new("PlayTime".to_string());
         input_def.field(field);
         input_def.field(field_2);
         input_def.description(Some("Cat playtime input".to_string()));
@@ -211,7 +207,7 @@ mod tests {
         let mut field_2 = InputField::new("playSpot".to_string(), ty_3);
         field_2.description(Some("Best playime spots, e.g. tree, bed.".to_string()));
 
-        let mut input_def = InputObjectDef::new("PlayTime".to_string());
+        let mut input_def = InputObjectDefinition::new("PlayTime".to_string());
         input_def.field(field);
         input_def.field(field_2);
         input_def.description(Some("Cat playtime input".to_string()));

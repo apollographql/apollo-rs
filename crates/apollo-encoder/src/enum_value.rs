@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::{Directive, StringValue};
 
-/// The __EnumValue type represents one of possible values of an enum.
+/// The EnumValue type represents one of possible values of an enum.
 ///
 /// *EnumValueDefinition*:
 ///     Description? EnumValue Directives?
