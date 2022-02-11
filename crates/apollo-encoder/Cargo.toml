@@ -1,7 +1,10 @@
 [package]
 name = "apollo-encoder"
 version = "0.2.0"
-authors = ["Irina Shestak <shestak.irina@gmail.com>"]
+authors = [
+    "Irina Shestak <shestak.irina@gmail.com>",
+    "Benjamin Coenen <benjamin.coenen@apollographql.com>",
+]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
 documentation = "https://docs.rs/apollo-encoder"
