@@ -70,8 +70,8 @@ pub enum OperationType {
 pub struct VariableDefinitionData {
     pub name: String,
     // ty: Type_,
-    // default_value: Option<Value>,
-    // directives: Option<Arc<Vec<Directive>>>,
+    // default_value: Option<Arc<Value>>,
+    pub directives: Option<Arc<Vec<Directive>>>,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -90,13 +90,32 @@ impl salsa::InternKey for VariableDefinition {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct DirectiveData {
     pub name: String,
-    // pub arguments: Arc<Vec<Argument>>,
+    pub arguments: Option<Arc<Vec<Argument>>>,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Directive(salsa::InternId);
 
 impl salsa::InternKey for Directive {
+    fn from_intern_id(id: salsa::InternId) -> Self {
+        Self(id)
+    }
+
+    fn as_intern_id(&self) -> salsa::InternId {
+        self.0
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct ArgumentData {
+    pub name: String,
+    // pub value: Arc<Value>,
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct Argument(salsa::InternId);
+
+impl salsa::InternKey for Argument {
     fn from_intern_id(id: salsa::InternId) -> Self {
         Self(id)
     }
@@ -128,10 +147,10 @@ impl salsa::InternKey for Selection {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct FieldData {
-    // pub alias: Option<String>,
+    pub alias: Option<Arc<Alias>>,
     pub name: String,
-    // pub arguments: Option<Arc<Vec<Argument>>>,
-    // pub directives: Option<Arc<Vec<Directive>>>,
+    pub arguments: Option<Arc<Vec<Argument>>>,
+    pub directives: Option<Arc<Vec<Directive>>>,
     pub selection_set: Option<Arc<Vec<Selection>>>,
 }
 
@@ -139,6 +158,21 @@ pub struct FieldData {
 pub struct Field(salsa::InternId);
 
 impl salsa::InternKey for Field {
+    fn from_intern_id(id: salsa::InternId) -> Self {
+        Self(id)
+    }
+
+    fn as_intern_id(&self) -> salsa::InternId {
+        self.0
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct AliasData(pub String);
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct Alias(salsa::InternId);
+
+impl salsa::InternKey for Alias {
     fn from_intern_id(id: salsa::InternId) -> Self {
         Self(id)
     }

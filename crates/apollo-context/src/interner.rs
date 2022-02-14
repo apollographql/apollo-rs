@@ -28,4 +28,10 @@ pub trait Interner {
 
     #[salsa::interned]
     fn intern_directive(&self, directive: values::DirectiveData) -> values::Directive;
+
+    #[salsa::interned]
+    fn intern_alias(&self, directive: values::AliasData) -> values::Alias;
+
+    #[salsa::interned]
+    fn intern_argument(&self, directive: values::ArgumentData) -> values::Argument;
 }

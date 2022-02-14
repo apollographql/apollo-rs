@@ -78,7 +78,7 @@ fn operation_definition(
     let variables = variable_definitions(db, op_def.variable_definitions());
     let selections = op_def
         .selection_set()
-        .expect("Selection Set must be present")
+        .expect("Operation Definition must have a Selection Set")
         .selections();
     let selection_set = selection_set(db, selections);
     let directives = directives(db, op_def.directives());
@@ -139,8 +139,8 @@ fn variable_definition(
         .name()
         .expect("Variable must have a name")
         .to_string();
-    // let directives = directives(db, var.directives());
-    let var_data = VariableDefinitionData { name };
+    let directives = directives(db, var.directives());
+    let var_data = VariableDefinitionData { name, directives };
     db.intern_variable_definition(var_data)
 }
 
@@ -166,8 +166,35 @@ fn directive(db: &dyn SourceDatabase, directive: ast::Directive) -> Directive {
         .name()
         .expect("Directive must have a name")
         .to_string();
-    let directive_data = DirectiveData { name };
+    let arguments = arguments(db, directive.arguments());
+    let directive_data = DirectiveData { name, arguments };
     db.intern_directive(directive_data)
+}
+
+fn arguments(
+    db: &dyn SourceDatabase,
+    arguments: Option<ast::Arguments>,
+) -> Option<Arc<Vec<Argument>>> {
+    match arguments {
+        Some(arguments) => {
+            let arguments = arguments
+                .arguments()
+                .into_iter()
+                .map(|arg| argument(db, arg))
+                .collect();
+            Some(Arc::new(arguments))
+        }
+        None => None,
+    }
+}
+
+fn argument(db: &dyn SourceDatabase, argument: ast::Argument) -> Argument {
+    let name = argument
+        .name()
+        .expect("Argument must have a name")
+        .to_string();
+    let argument_data = ArgumentData { name };
+    db.intern_argument(argument_data)
 }
 
 fn selection_set(
@@ -183,20 +210,39 @@ fn selection_set(
 
 fn selection(db: &dyn SourceDatabase, selection: ast::Selection) -> Selection {
     match selection {
-        ast::Selection::Field(field) => {
-            let name = field.name().expect("Field must have a name").to_string();
-            let selection_set = field
-                .selection_set()
-                .map(|sel_set| selection_set(db, sel_set.selections()));
-            let field_data = FieldData {
-                name,
-                selection_set,
-            };
-            let interned_field = Arc::new(db.intern_field(field_data));
-            let selection_data = SelectionData::Field(interned_field);
+        ast::Selection::Field(sel_field) => {
+            let field = field(db, sel_field);
+            let selection_data = SelectionData::Field(field);
             db.intern_selection(selection_data)
         }
         ast::Selection::FragmentSpread(_) => unimplemented!(),
         ast::Selection::InlineFragment(_) => unimplemented!(),
     }
+}
+
+fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
+    let name = field.name().expect("Field must have a name").to_string();
+    let alias = alias(db, field.alias());
+    let selection_set = field
+        .selection_set()
+        .map(|sel_set| selection_set(db, sel_set.selections()));
+    let directives = directives(db, field.directives());
+    let arguments = arguments(db, field.arguments());
+
+    let field_data = FieldData {
+        name,
+        alias,
+        selection_set,
+        directives,
+        arguments,
+    };
+    Arc::new(db.intern_field(field_data))
+}
+
+fn alias(db: &dyn SourceDatabase, alias: Option<ast::Alias>) -> Option<Arc<Alias>> {
+    alias.map(|alias| {
+        let name = alias.name().expect("Alias must have a name").to_string();
+        let alias_data = AliasData(name);
+        Arc::new(db.intern_alias(alias_data))
+    })
 }
