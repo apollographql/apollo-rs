@@ -1,15 +1,16 @@
 mod database;
+mod interner;
 mod passes;
+mod values;
 
 use std::{collections::HashSet, sync::Arc};
 
 pub use database::{Database, SourceDatabase};
+pub use interner::Interner;
 
 use apollo_parser::ast::{self, AstNode};
 use miette::{Diagnostic, NamedSource, Report, SourceSpan};
 use thiserror::Error;
-
-use crate::database::Interner;
 
 #[derive(Error, Debug, Diagnostic)]
 #[error("cannot find `{}` interface in this scope", self.ty)]
@@ -40,33 +41,32 @@ pub fn validate(src: &str) {
 
     db.set_input_string((), Arc::new(src.to_string()));
 
-    db.document();
-    let doc = db.parse();
+    let _doc = db.document();
 
     // println!("Now, the length is {}.", db.length(()));
-    passes::unused_variables::check(&doc);
-    let (implements_interfaces, defined_interfaces) =
-        passes::unused_implements_interfaces::check(&doc);
-    if !implements_interfaces.is_empty() {
-        let undefined_interfaces: HashSet<ast::Name> = implements_interfaces
-            .difference(&defined_interfaces)
-            .cloned()
-            .collect();
-        for interface in undefined_interfaces {
-            let syntax = interface.syntax();
-            let index: usize = syntax.text_range().start().into();
-            let len: usize = syntax.text().len().into();
-
-            let err = Report::new(GraphQLUndefinedInterfacesError {
-                src: NamedSource::new("schema.graphql", src.to_owned()),
-                span: (index, len).into(),
-                message: "This interface is not defined.".to_string(),
-                ty: interface.text().to_string(),
-            });
-
-            println!("{:?}", err);
-        }
-    }
+    // passes::unused_variables::check(&doc);
+    // let (implements_interfaces, defined_interfaces) =
+    //     passes::unused_implements_interfaces::check(&doc);
+    // if !implements_interfaces.is_empty() {
+    //     let undefined_interfaces: HashSet<ast::Name> = implements_interfaces
+    //         .difference(&defined_interfaces)
+    //         .cloned()
+    //         .collect();
+    //     for interface in undefined_interfaces {
+    //         let syntax = interface.syntax();
+    //         let index: usize = syntax.text_range().start().into();
+    //         let len: usize = syntax.text().len().into();
+    //
+    //         let err = Report::new(GraphQLUndefinedInterfacesError {
+    //             src: NamedSource::new("schema.graphql", src.to_owned()),
+    //             span: (index, len).into(),
+    //             message: "This interface is not defined.".to_string(),
+    //             ty: interface.text().to_string(),
+    //         });
+    //
+    //         println!("{:?}", err);
+    //     }
+    // }
 }
 
 #[cfg(test)]

@@ -1,6 +1,14 @@
+// All .expect() calls are used for parts of the GraphQL grammar that are
+// non-optional and will have an error produced in the parser if they are missing.
+
 use std::sync::Arc;
 
 use apollo_parser::{ast, Parser};
+
+use crate::{
+    interner::{Interner, InternerDatabase},
+    values::*,
+};
 
 #[salsa::database(InternerDatabase, ASTDatabase)]
 #[derive(Default)]
@@ -66,107 +74,129 @@ fn operation_definition(
         Some(name) => name.to_string(),
         None => String::from("query"),
     };
+    let ty = operation_type(op_def.operation_type());
+    let variables = variable_definitions(db, op_def.variable_definitions());
+    let selections = op_def
+        .selection_set()
+        .expect("Selection Set must be present")
+        .selections();
+    let selection_set = selection_set(db, selections);
+    let directives = directives(db, op_def.directives());
 
-    let ty: OperationType = match op_def.operation_type() {
-        Some(op_type) => {
-            if op_type.query_token().is_some() {
+    let operation_def_data = OperationDefinitionData {
+        ty,
+        name,
+        variables,
+        selection_set,
+        directives,
+    };
+    let operation_def = db.intern_operation_definition(operation_def_data);
+
+    Arc::new(operation_def)
+}
+
+fn operation_type(op_type: Option<ast::OperationType>) -> OperationType {
+    match op_type {
+        Some(ty) => {
+            if ty.query_token().is_some() {
                 OperationType::Query
-            } else if op_type.mutation_token().is_some() {
+            } else if ty.mutation_token().is_some() {
                 OperationType::Mutation
-            } else if op_type.subscription_token().is_some() {
+            } else if ty.subscription_token().is_some() {
                 OperationType::Subscription
             } else {
                 OperationType::Query
             }
         }
         None => OperationType::Query,
-    };
-
-    let operation_def_data = OperationDefinitionData { ty, name };
-    let operation_def = db.intern_operation_definition(operation_def_data);
-
-    Arc::new(operation_def)
-}
-
-#[salsa::query_group(InternerDatabase)]
-pub trait Interner {
-    #[salsa::interned]
-    fn intern_document(&self, document: DocumentData) -> Document;
-    #[salsa::interned]
-    fn intern_definition(&self, definition: DefinitionData) -> Definition;
-    #[salsa::interned]
-    fn intern_operation_definition(
-        &self,
-        operation: OperationDefinitionData,
-    ) -> OperationDefinition;
-}
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct DocumentData {
-    definitions: Arc<Vec<Definition>>,
-}
-
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Document(salsa::InternId);
-
-impl salsa::InternKey for Document {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
     }
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum DefinitionData {
-    OperationDefinition(Arc<OperationDefinition>),
-    FragmentDefinition,
-}
-
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Definition(salsa::InternId);
-
-impl salsa::InternKey for Definition {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
+fn variable_definitions(
+    db: &dyn SourceDatabase,
+    variable_definitions: Option<ast::VariableDefinitions>,
+) -> Option<Arc<Vec<VariableDefinition>>> {
+    match variable_definitions {
+        Some(vars) => {
+            let variable_definitions = vars
+                .variable_definitions()
+                .into_iter()
+                .map(|var| variable_definition(db, var))
+                .collect();
+            Some(Arc::new(variable_definitions))
+        }
+        None => None,
     }
 }
 
-// NOTE @lrlna: is there a way to query this straight up from definitions so we
-// don't have to keep a separate struct?
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Operations(Arc<Vec<OperationDefinitionData>>);
-
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct OperationDefinitionData {
-    ty: OperationType,
-    name: String,
-    // variables: Arc<Vec<VariableDefinition>>,
-    // directives: Arc<Vec<Directive>>,
-    // selection_set: Arc<Vec<Selection>>,
+fn variable_definition(
+    db: &dyn SourceDatabase,
+    var: ast::VariableDefinition,
+) -> VariableDefinition {
+    let name = var
+        .variable()
+        .expect("Variable Definition must have a variable")
+        .name()
+        .expect("Variable must have a name")
+        .to_string();
+    // let directives = directives(db, var.directives());
+    let var_data = VariableDefinitionData { name };
+    db.intern_variable_definition(var_data)
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct OperationDefinition(salsa::InternId);
-
-impl salsa::InternKey for OperationDefinition {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
+fn directives(
+    db: &dyn SourceDatabase,
+    directives: Option<ast::Directives>,
+) -> Option<Arc<Vec<Directive>>> {
+    match directives {
+        Some(directives) => {
+            let directives = directives
+                .directives()
+                .into_iter()
+                .map(|dir| directive(db, dir))
+                .collect();
+            Some(Arc::new(directives))
+        }
+        None => None,
     }
 }
 
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-pub enum OperationType {
-    Query,
-    Mutation,
-    Subscription,
+fn directive(db: &dyn SourceDatabase, directive: ast::Directive) -> Directive {
+    let name = directive
+        .name()
+        .expect("Directive must have a name")
+        .to_string();
+    let directive_data = DirectiveData { name };
+    db.intern_directive(directive_data)
+}
+
+fn selection_set(
+    db: &dyn SourceDatabase,
+    selections: ast::AstChildren<ast::Selection>,
+) -> Arc<Vec<Selection>> {
+    let selections = selections
+        .into_iter()
+        .map(|sel| selection(db, sel))
+        .collect();
+    Arc::new(selections)
+}
+
+fn selection(db: &dyn SourceDatabase, selection: ast::Selection) -> Selection {
+    match selection {
+        ast::Selection::Field(field) => {
+            let name = field.name().expect("Field must have a name").to_string();
+            let selection_set = field
+                .selection_set()
+                .map(|sel_set| selection_set(db, sel_set.selections()));
+            let field_data = FieldData {
+                name,
+                selection_set,
+            };
+            let interned_field = Arc::new(db.intern_field(field_data));
+            let selection_data = SelectionData::Field(interned_field);
+            db.intern_selection(selection_data)
+        }
+        ast::Selection::FragmentSpread(_) => unimplemented!(),
+        ast::Selection::InlineFragment(_) => unimplemented!(),
+    }
 }
