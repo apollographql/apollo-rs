@@ -1,6 +1,6 @@
 use std::{collections::HashSet, hash::Hash};
 
-use apollo_encoder::{EnumDef, EnumValue};
+use apollo_encoder::{EnumDefinition, EnumValue};
 use arbitrary::Result;
 
 use crate::{description::Description, directive::Directive, name::Name, DocumentBuilder};
@@ -20,9 +20,9 @@ pub struct EnumTypeDef {
     pub(crate) extend: bool,
 }
 
-impl From<EnumTypeDef> for EnumDef {
+impl From<EnumTypeDef> for EnumDefinition {
     fn from(enum_: EnumTypeDef) -> Self {
-        let mut new_enum = EnumDef::new(enum_.name.into());
+        let mut new_enum = EnumDefinition::new(enum_.name.into());
         new_enum.description(enum_.description.map(String::from));
         enum_
             .enum_values_def

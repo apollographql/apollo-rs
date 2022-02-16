@@ -18,9 +18,10 @@ pub struct OperationDef {
     pub(crate) variable_definitions: Vec<VariableDef>,
     pub(crate) directives: Vec<Directive>,
     pub(crate) selection_set: SelectionSet,
+    pub(crate) shorthand: bool,
 }
 
-impl From<OperationDef> for apollo_encoder::OperationDef {
+impl From<OperationDef> for apollo_encoder::OperationDefinition {
     fn from(op_def: OperationDef) -> Self {
         let mut new_op_def = Self::new(op_def.operation_type.into(), op_def.selection_set.into());
         new_op_def.name(op_def.name.map(String::from));
@@ -28,7 +29,7 @@ impl From<OperationDef> for apollo_encoder::OperationDef {
             .variable_definitions
             .into_iter()
             .for_each(|var_def| new_op_def.variable_definition(var_def.into()));
-
+        op_def.shorthand.then(|| new_op_def.shorthand());
         op_def
             .directives
             .into_iter()
@@ -74,6 +75,7 @@ impl<'a> DocumentBuilder<'a> {
         let directives = self.directives()?;
         let selection_set = self.selection_set()?;
         let variable_definitions = self.variable_definitions()?;
+        let shorthand = self.operation_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
 
         Ok(OperationDef {
             operation_type,
@@ -81,6 +83,7 @@ impl<'a> DocumentBuilder<'a> {
             variable_definitions,
             directives,
             selection_set,
+            shorthand,
         })
     }
 }

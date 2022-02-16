@@ -24,7 +24,7 @@ pub struct DirectiveDef {
     pub(crate) directive_locations: HashSet<DirectiveLocation>,
 }
 
-impl From<DirectiveDef> for apollo_encoder::DirectiveDef {
+impl From<DirectiveDef> for apollo_encoder::DirectiveDefinition {
     fn from(dir_def: DirectiveDef) -> Self {
         let mut new_dir_def = Self::new(dir_def.name.into());
         new_dir_def.description(dir_def.description.map(String::from));

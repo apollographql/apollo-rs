@@ -67,7 +67,7 @@ impl<'a> DocumentBuilder<'a> {
 
     /// Choose an arbitrary existing `Ty` given a slice of existing types
     pub fn choose_ty(&mut self, existing_types: &[Ty]) -> Result<Ty> {
-        self._choose_ty(existing_types, true)
+        self.choose_ty_given_nullable(existing_types, true)
     }
 
     /// Choose an arbitrary existing named `Ty` given a slice of existing types
@@ -80,7 +80,7 @@ impl<'a> DocumentBuilder<'a> {
         Ok(self.u.choose(&used_type_names)?.to_owned().clone())
     }
 
-    fn _choose_ty(&mut self, existing_types: &[Ty], is_nullable: bool) -> Result<Ty> {
+    fn choose_ty_given_nullable(&mut self, existing_types: &[Ty], is_nullable: bool) -> Result<Ty> {
         let ty: Ty = match self.u.int_in_range(0..=2usize)? {
             // Named type
             0 => {
@@ -92,13 +92,17 @@ impl<'a> DocumentBuilder<'a> {
                 self.u.choose(&used_type_names)?.to_owned().clone()
             }
             // List type
-            1 => Ty::List(Box::new(self._choose_ty(existing_types, true)?)),
+            1 => Ty::List(Box::new(
+                self.choose_ty_given_nullable(existing_types, true)?,
+            )),
             // Non Null type
             2 => {
                 if is_nullable {
-                    Ty::NonNull(Box::new(self._choose_ty(existing_types, false)?))
+                    Ty::NonNull(Box::new(
+                        self.choose_ty_given_nullable(existing_types, false)?,
+                    ))
                 } else {
-                    self._choose_ty(existing_types, is_nullable)?
+                    self.choose_ty_given_nullable(existing_types, is_nullable)?
                 }
             }
             _ => unreachable!(),

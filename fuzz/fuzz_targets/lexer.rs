@@ -1,5 +1,5 @@
 #![no_main]
-use apollo_parser::Parser;
+use apollo_parser::Lexer;
 use apollo_rs_fuzz::{generate_valid_document, log_gql_doc};
 use libfuzzer_sys::fuzz_target;
 use log::debug;
@@ -13,21 +13,20 @@ fuzz_target!(|data: &[u8]| {
         }
     };
 
-    let parser = panic::catch_unwind(|| Parser::new(&doc_generated));
+    let lexer = panic::catch_unwind(|| Lexer::new(&doc_generated));
 
-    let parser = match parser {
+    let lexer = match lexer {
         Err(err) => {
             panic!("error {:?}", err);
         }
         Ok(p) => p,
     };
 
-    let tree = parser.parse();
-    // early return if the parser detected an error
+    // early return if the lexer detected an error
     let mut should_panic = false;
-    if tree.errors().len() > 0 {
+    if lexer.errors().len() > 0 {
         should_panic = true;
-        let errors = tree
+        let errors = lexer
             .errors()
             .map(|err| err.message())
             .collect::<Vec<&str>>()
@@ -35,7 +34,7 @@ fuzz_target!(|data: &[u8]| {
         debug!("======= DOCUMENT =======");
         debug!("{}", doc_generated);
         debug!("========================");
-        debug!("Parser errors ========== \n{:?}", errors);
+        debug!("Lexer errors =========== \n{:?}", errors);
         debug!("========================");
         log_gql_doc(&doc_generated, &errors);
     }

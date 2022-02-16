@@ -17,7 +17,7 @@ pub struct ScalarTypeDef {
     pub(crate) extend: bool,
 }
 
-impl From<ScalarTypeDef> for apollo_encoder::ScalarDef {
+impl From<ScalarTypeDef> for apollo_encoder::ScalarDefinition {
     fn from(scalar_def: ScalarTypeDef) -> Self {
         let mut new_scalar_def = Self::new(scalar_def.name.into());
         new_scalar_def.description(scalar_def.description.map(String::from));

@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use apollo_encoder::UnionDef;
+use apollo_encoder::UnionDefinition;
 use arbitrary::Result;
 
 use crate::{description::Description, directive::Directive, name::Name, ty::Ty, DocumentBuilder};
@@ -20,7 +20,7 @@ pub struct UnionTypeDef {
     pub(crate) extend: bool,
 }
 
-impl From<UnionTypeDef> for UnionDef {
+impl From<UnionTypeDef> for UnionDefinition {
     fn from(union_ty_def: UnionTypeDef) -> Self {
         let mut new_union_ty_def = Self::new(union_ty_def.name.into());
         new_union_ty_def.description(union_ty_def.description.map(String::from));

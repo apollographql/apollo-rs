@@ -23,3 +23,9 @@ name = "parser"
 path = "fuzz_targets/parser.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "lexer"
+path = "fuzz_targets/lexer.rs"
+test = false
+doc = false

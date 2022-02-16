@@ -26,7 +26,7 @@ pub struct InputObjectTypeDef {
     pub(crate) extend: bool,
 }
 
-impl From<InputObjectTypeDef> for apollo_encoder::InputObjectDef {
+impl From<InputObjectTypeDef> for apollo_encoder::InputObjectDefinition {
     fn from(input_object_def: InputObjectTypeDef) -> Self {
         let mut new_input_object_def = Self::new(input_object_def.name.into());
         new_input_object_def.description(input_object_def.description.map(String::from));

@@ -18,9 +18,9 @@ pub struct FragmentDef {
     pub(crate) selection_set: SelectionSet,
 }
 
-impl From<FragmentDef> for apollo_encoder::FragmentDef {
+impl From<FragmentDef> for apollo_encoder::FragmentDefinition {
     fn from(frag_def: FragmentDef) -> Self {
-        let mut new_frag_def = apollo_encoder::FragmentDef::new(
+        let mut new_frag_def = apollo_encoder::FragmentDefinition::new(
             frag_def.name.into(),
             frag_def.type_condition.into(),
             frag_def.selection_set.into(),

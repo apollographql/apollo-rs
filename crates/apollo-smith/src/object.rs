@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use apollo_encoder::ObjectDef;
+use apollo_encoder::ObjectDefinition;
 use arbitrary::Result;
 
 use crate::{
@@ -26,9 +26,9 @@ pub struct ObjectTypeDef {
     pub(crate) extend: bool,
 }
 
-impl From<ObjectTypeDef> for ObjectDef {
+impl From<ObjectTypeDef> for ObjectDefinition {
     fn from(val: ObjectTypeDef) -> Self {
-        let mut object_def = ObjectDef::new(val.name.into());
+        let mut object_def = ObjectDefinition::new(val.name.into());
         val.interface_impls
             .into_iter()
             .for_each(|itf| object_def.interface(itf.into()));
@@ -59,7 +59,7 @@ impl<'a> DocumentBuilder<'a> {
         let name = self.type_name()?;
 
         // ---- Interface
-        let interface_impls = self.interface_implements()?;
+        let interface_impls = self.implements_interfaces()?;
         let implements_fields: Vec<FieldDef> = interface_impls
             .iter()
             .flat_map(|itf_name| {

@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use apollo_encoder::InterfaceDef;
+use apollo_encoder::InterfaceDefinition;
 use arbitrary::Result;
 
 use crate::{
@@ -27,9 +27,9 @@ pub struct InterfaceTypeDef {
     pub(crate) extend: bool,
 }
 
-impl From<InterfaceTypeDef> for InterfaceDef {
+impl From<InterfaceTypeDef> for InterfaceDefinition {
     fn from(itf: InterfaceTypeDef) -> Self {
-        let mut itf_def = InterfaceDef::new(itf.name.into());
+        let mut itf_def = InterfaceDefinition::new(itf.name.into());
         itf_def.description(itf.description.map(String::from));
         itf.fields_def
             .into_iter()
@@ -60,7 +60,7 @@ impl<'a> DocumentBuilder<'a> {
         let name = self.type_name()?;
         let fields_def = self.fields_definition(&[])?;
         let directives = self.directives()?;
-        let interfaces = self.interface_implements()?;
+        let interfaces = self.implements_interfaces()?;
 
         Ok(InterfaceTypeDef {
             description,
@@ -73,7 +73,7 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `HashSet` of implemented interfaces
-    pub fn interface_implements(&mut self) -> Result<HashSet<Name>> {
+    pub fn implements_interfaces(&mut self) -> Result<HashSet<Name>> {
         if self.interface_type_defs.is_empty() {
             return Ok(HashSet::new());
         }

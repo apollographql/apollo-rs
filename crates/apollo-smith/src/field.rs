@@ -27,7 +27,7 @@ pub struct FieldDef {
     pub(crate) directives: Vec<Directive>,
 }
 
-impl From<FieldDef> for apollo_encoder::FieldDef {
+impl From<FieldDef> for apollo_encoder::FieldDefinition {
     fn from(val: FieldDef) -> Self {
         let mut field = Self::new(val.name.into(), val.ty.into());
         if let Some(arg) = val.arguments_definition {

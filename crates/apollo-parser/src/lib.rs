@@ -175,9 +175,8 @@ pub mod ast;
 mod error;
 mod parser;
 
-#[cfg(test)]
-pub(crate) use crate::lexer::Lexer;
-pub(crate) use crate::lexer::{Token, TokenKind};
+pub use crate::lexer::Lexer;
+pub use crate::lexer::{Token, TokenKind};
 pub(crate) use crate::parser::{
     SyntaxElement, SyntaxKind, SyntaxNode, SyntaxNodeChildren, SyntaxToken, TokenText,
 };

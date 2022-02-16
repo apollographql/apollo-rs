@@ -18,9 +18,9 @@ pub struct ArgumentsDef {
     pub(crate) input_value_definitions: Vec<InputValueDef>,
 }
 
-impl From<ArgumentsDef> for apollo_encoder::ArgumentsDef {
+impl From<ArgumentsDef> for apollo_encoder::ArgumentsDefinition {
     fn from(args_def: ArgumentsDef) -> Self {
-        apollo_encoder::ArgumentsDef::new(
+        apollo_encoder::ArgumentsDefinition::new(
             args_def
                 .input_value_definitions
                 .into_iter()
