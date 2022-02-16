@@ -38,8 +38,8 @@ apollo-smith = "0.1.0"
 ```
 
 Then, define your fuzz target so that it takes arbitrary
-`&[u8]`s as an argument, and create a `Document` thanks to the `DocumentBuilder`.
-The method `DocumentBuilder::new` takes a `&mut Unstructured` you can create thanks to
+`&[u8]`s as an argument, and create a `Document` using `DocumentBuilder`.
+The method `DocumentBuilder::new` takes a `&mut Unstructured` that you can create using
 the input bytes (`&[u8]`) provided in arguments and the [arbitrary crate](https://docs.rs/arbitrary).
 You then can call `finish()` method on your `DocumentBuilder` instance to get the GraphQL document as a `String`.
 
@@ -87,4 +87,4 @@ The design and implementation strategy of apollo-smith has been inspired by
   - Input values too
   - We could have duplicated names in variables
   - Add more special characters for description (", ', )
-- Recursive object type not already supported (example : `myType { inner: myType }`)
+- Recursive object type not yet supported (example : `myType { inner: myType }`)
