@@ -10,9 +10,9 @@ use crate::{Directive, StringValue};
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Scalar).
 /// ### Example
 /// ```rust
-/// use apollo_encoder::ScalarDef;
+/// use apollo_encoder::ScalarDefinition;
 ///
-/// let mut scalar = ScalarDef::new("NumberOfTreatsPerDay".to_string());
+/// let mut scalar = ScalarDefinition::new("NumberOfTreatsPerDay".to_string());
 /// scalar.description(Some(
 ///     "Int representing number of treats received.".to_string(),
 /// ));
@@ -25,7 +25,7 @@ use crate::{Directive, StringValue};
 /// );
 /// ```
 #[derive(Debug, PartialEq, Clone)]
-pub struct ScalarDef {
+pub struct ScalarDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
@@ -34,7 +34,7 @@ pub struct ScalarDef {
     extend: bool,
 }
 
-impl ScalarDef {
+impl ScalarDefinition {
     /// Create a new instance of Scalar Definition.
     pub fn new(name: String) -> Self {
         Self {
@@ -63,7 +63,7 @@ impl ScalarDef {
     }
 }
 
-impl fmt::Display for ScalarDef {
+impl fmt::Display for ScalarDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.extend {
             write!(f, "extend ")?;
@@ -88,7 +88,7 @@ mod tests {
 
     #[test]
     fn it_encodes_scalar() {
-        let scalar = ScalarDef::new("NumberOfTreatsPerDay".to_string());
+        let scalar = ScalarDefinition::new("NumberOfTreatsPerDay".to_string());
         assert_eq!(
             scalar.to_string(),
             r#"scalar NumberOfTreatsPerDay
@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn it_encodes_scalar_with_description() {
-        let mut scalar = ScalarDef::new("NumberOfTreatsPerDay".to_string());
+        let mut scalar = ScalarDefinition::new("NumberOfTreatsPerDay".to_string());
         scalar.description(Some(
             "Int representing number of treats received.".to_string(),
         ));
@@ -113,21 +113,21 @@ scalar NumberOfTreatsPerDay
 
     #[test]
     fn it_encodes_scalar_with_extend_directive() {
-        let mut scalar = ScalarDef::new("NumberOfTreatsPerDay".to_string());
+        let mut scalar = ScalarDefinition::new("NumberOfTreatsPerDay".to_string());
         scalar.description(Some(
             "Int representing number of treats received.".to_string(),
         ));
         scalar.extend();
-        let mut directive = Directive::new(String::from("testDirective"));
+        let mut directive = Directive::new(String::from("tag"));
         directive.arg(Argument::new(
-            String::from("first"),
-            Value::String("one".to_string()),
+            String::from("name"),
+            Value::String("team-admin".to_string()),
         ));
         scalar.directive(directive);
 
         assert_eq!(
             scalar.to_string(),
-            r#"extend scalar NumberOfTreatsPerDay @testDirective(first: "one")
+            r#"extend scalar NumberOfTreatsPerDay @tag(name: "team-admin")
 "#
         );
     }

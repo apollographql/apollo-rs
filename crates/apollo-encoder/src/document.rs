@@ -1,12 +1,15 @@
 use std::fmt;
 
 use crate::{
-    DirectiveDef, EnumDef, FragmentDef, InputObjectDef, InterfaceDef, ObjectDef, OperationDef,
-    ScalarDef, SchemaDef, UnionDef,
+    DirectiveDefinition, EnumDefinition, FragmentDefinition, InputObjectDefinition,
+    InterfaceDefinition, ObjectDefinition, OperationDefinition, ScalarDefinition, SchemaDefinition,
+    UnionDefinition,
 };
 
-/// The `__Document` type represents a GraphQL document.A GraphQL Document describes a complete file or request string operated on by a GraphQL service or client.
-/// A document contains multiple definitions, either executable or representative of a GraphQL type system.
+/// The `Document` type represents a GraphQL document. A GraphQL Document
+/// describes a complete file or request string operated on by a GraphQL service
+/// or client.  A document contains multiple definitions, either executable or
+/// representative of a GraphQL type system.
 ///
 /// *Document*:
 ///     OperationDefinition*
@@ -25,8 +28,8 @@ use crate::{
 /// ### Example
 /// ```rust
 /// use apollo_encoder::{
-///     Argument, Directive, Document, Field, OperationDef, OperationType, Selection, SelectionSet, Type_, Value,
-///     VariableDef,
+///     Argument, Directive, Document, Field, OperationDefinition, OperationType, Selection, SelectionSet, Type_, Value,
+///     VariableDefinition,
 /// };
 /// use indoc::indoc;
 ///
@@ -41,7 +44,7 @@ use crate::{
 ///
 ///     sel_set
 /// };
-/// let var_def = VariableDef::new(
+/// let var_def = VariableDefinition::new(
 ///     String::from("variable_def"),
 ///     Type_::List {
 ///         ty: Box::new(Type_::NamedType {
@@ -49,7 +52,7 @@ use crate::{
 ///         }),
 ///     },
 /// );
-/// let mut new_op = OperationDef::new(OperationType::Query, selection_set);
+/// let mut new_op = OperationDefinition::new(OperationType::Query, selection_set);
 /// let mut directive = Directive::new(String::from("testDirective"));
 /// directive.arg(Argument::new(
 ///     String::from("first"),
@@ -72,18 +75,18 @@ use crate::{
 /// ```
 #[derive(Debug, Default)]
 pub struct Document {
-    operation_definitions: Vec<OperationDef>,
-    fragment_definitions: Vec<FragmentDef>,
-    schema_definitions: Vec<SchemaDef>,
+    operation_definitions: Vec<OperationDefinition>,
+    fragment_definitions: Vec<FragmentDefinition>,
+    schema_definitions: Vec<SchemaDefinition>,
     // Type definitions
-    scalar_type_definitions: Vec<ScalarDef>,
-    object_type_definitions: Vec<ObjectDef>,
-    interface_type_definitions: Vec<InterfaceDef>,
-    union_type_definitions: Vec<UnionDef>,
-    enum_type_definitions: Vec<EnumDef>,
-    input_object_type_definitions: Vec<InputObjectDef>,
+    scalar_type_definitions: Vec<ScalarDefinition>,
+    object_type_definitions: Vec<ObjectDefinition>,
+    interface_type_definitions: Vec<InterfaceDefinition>,
+    union_type_definitions: Vec<UnionDefinition>,
+    enum_type_definitions: Vec<EnumDefinition>,
+    input_object_type_definitions: Vec<InputObjectDefinition>,
     // DirectiveDefs
-    directive_definitions: Vec<DirectiveDef>,
+    directive_definitions: Vec<DirectiveDefinition>,
 }
 
 impl Document {
@@ -93,48 +96,48 @@ impl Document {
     }
 
     /// Add operation
-    pub fn operation(&mut self, operation_definition: OperationDef) {
+    pub fn operation(&mut self, operation_definition: OperationDefinition) {
         self.operation_definitions.push(operation_definition);
     }
 
     /// Add fragment
-    pub fn fragment(&mut self, fragment_definition: FragmentDef) {
+    pub fn fragment(&mut self, fragment_definition: FragmentDefinition) {
         self.fragment_definitions.push(fragment_definition);
     }
 
     /// Add schema
-    pub fn schema(&mut self, schema_definition: SchemaDef) {
+    pub fn schema(&mut self, schema_definition: SchemaDefinition) {
         self.schema_definitions.push(schema_definition);
     }
     /// Add scalar
-    pub fn scalar(&mut self, scalar_type_definition: ScalarDef) {
+    pub fn scalar(&mut self, scalar_type_definition: ScalarDefinition) {
         self.scalar_type_definitions.push(scalar_type_definition);
     }
     /// Add object
-    pub fn object(&mut self, object_type_definition: ObjectDef) {
+    pub fn object(&mut self, object_type_definition: ObjectDefinition) {
         self.object_type_definitions.push(object_type_definition);
     }
     /// Add interface
-    pub fn interface(&mut self, interface_type_definition: InterfaceDef) {
+    pub fn interface(&mut self, interface_type_definition: InterfaceDefinition) {
         self.interface_type_definitions
             .push(interface_type_definition);
     }
     /// Add union
-    pub fn union(&mut self, union_type_definition: UnionDef) {
+    pub fn union(&mut self, union_type_definition: UnionDefinition) {
         self.union_type_definitions.push(union_type_definition);
     }
     /// Add enum
-    pub fn enum_(&mut self, enum_type_definition: EnumDef) {
+    pub fn enum_(&mut self, enum_type_definition: EnumDefinition) {
         self.enum_type_definitions.push(enum_type_definition);
     }
 
     /// Add input_object
-    pub fn input_object_(&mut self, input_object_type_definition: InputObjectDef) {
+    pub fn input_object_(&mut self, input_object_type_definition: InputObjectDefinition) {
         self.input_object_type_definitions
             .push(input_object_type_definition);
     }
     /// Add directive
-    pub fn directive(&mut self, directive_definition: DirectiveDef) {
+    pub fn directive(&mut self, directive_definition: DirectiveDefinition) {
         self.directive_definitions.push(directive_definition);
     }
 }
@@ -165,9 +168,6 @@ impl fmt::Display for Document {
         for enum_type_def in &self.enum_type_definitions {
             write!(f, "{}", enum_type_def)?;
         }
-        for union_type_def in &self.union_type_definitions {
-            write!(f, "{}", union_type_def)?;
-        }
         for input_object_type_def in &self.input_object_type_definitions {
             write!(f, "{}", input_object_type_def)?;
         }
@@ -182,8 +182,8 @@ impl fmt::Display for Document {
 #[cfg(test)]
 mod tests {
     use crate::{
-        Argument, Directive, Field, OperationType, Selection, SelectionSet, Type_, Value,
-        VariableDef,
+        Argument, Directive, EnumValue, Field, FragmentSpread, InlineFragment, OperationType,
+        Selection, SelectionSet, TypeCondition, Type_, Value, VariableDefinition,
     };
 
     use super::*;
@@ -202,7 +202,7 @@ mod tests {
 
             sel_set
         };
-        let var_def = VariableDef::new(
+        let var_def = VariableDefinition::new(
             String::from("variable_def"),
             Type_::List {
                 ty: Box::new(Type_::NamedType {
@@ -210,7 +210,7 @@ mod tests {
                 }),
             },
         );
-        let mut new_op = OperationDef::new(OperationType::Query, selection_set);
+        let mut new_op = OperationDefinition::new(OperationType::Query, selection_set);
         let mut directive = Directive::new(String::from("testDirective"));
         directive.arg(Argument::new(
             String::from("first"),
@@ -229,6 +229,116 @@ mod tests {
                   second
                 }
             "#}
+        );
+    }
+
+    #[test]
+    fn it_encodes_document_with_operation_and_fragments() {
+        let mut document = Document::new();
+
+        let mut droid_selection_set = SelectionSet::new();
+        let primary_function_field = Selection::Field(Field::new(String::from("primaryFunction")));
+        droid_selection_set.selection(primary_function_field);
+
+        let mut droid_inline_fragment = InlineFragment::new(droid_selection_set);
+        droid_inline_fragment.type_condition(Some(TypeCondition::new(String::from("Droid"))));
+
+        let comparison_fields_fragment_spread =
+            FragmentSpread::new(String::from("comparisonFields"));
+
+        let name_field = Field::new(String::from("name"));
+
+        let hero_selection_set = vec![
+            Selection::Field(name_field),
+            Selection::FragmentSpread(comparison_fields_fragment_spread),
+            Selection::InlineFragment(droid_inline_fragment),
+        ];
+
+        let mut hero_field = Field::new(String::from("hero"));
+        hero_field.selection_set(Some(SelectionSet::with_selections(hero_selection_set)));
+
+        let hero_for_episode_selection_set = vec![Selection::Field(hero_field)];
+        let mut hero_for_episode_operation = OperationDefinition::new(
+            OperationType::Query,
+            SelectionSet::with_selections(hero_for_episode_selection_set),
+        );
+        hero_for_episode_operation.name(Some(String::from("HeroForEpisode")));
+
+        document.operation(hero_for_episode_operation);
+
+        assert_eq!(
+            document.to_string(),
+            indoc! { r#"
+                query HeroForEpisode {
+                  hero {
+                    name
+                    ...comparisonFields
+                    ... on Droid {
+                      primaryFunction
+                    }
+                  }
+                }
+            "#}
+        );
+    }
+
+    #[test]
+    fn it_encodes_a_document_with_type_system_definition() {
+        let mut document = Document::new();
+
+        // Create a Directive Definition.
+        let mut directive_def = DirectiveDefinition::new("provideTreat".to_string());
+        directive_def.description(Some("Ensures cats get treats.".to_string()));
+        directive_def.location("OBJECT".to_string());
+        directive_def.location("FIELD_DEFINITION".to_string());
+        directive_def.location("INPUT_FIELD_DEFINITION".to_string());
+        document.directive(directive_def);
+
+        // Create an Enum Definition
+        let mut enum_ty_1 = EnumValue::new("CatTree".to_string());
+        enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
+        let enum_ty_2 = EnumValue::new("Bed".to_string());
+        let mut enum_ty_3 = EnumValue::new("CardboardBox".to_string());
+        let mut directive = Directive::new(String::from("deprecated"));
+        directive.arg(Argument::new(
+            String::from("reason"),
+            Value::String("Box was recycled.".to_string()),
+        ));
+        enum_ty_3.directive(directive);
+
+        let mut enum_def = EnumDefinition::new("NapSpots".to_string());
+        enum_def.description(Some("Favourite cat\nnap spots.".to_string()));
+        enum_def.value(enum_ty_1);
+        enum_def.value(enum_ty_2);
+        enum_def.value(enum_ty_3);
+        document.enum_(enum_def);
+        // Union Definition
+        let mut union_def = UnionDefinition::new("Pet".to_string());
+        union_def.description(Some(
+            "A union of all pets represented within a household.".to_string(),
+        ));
+        union_def.member("Cat".to_string());
+        union_def.member("Dog".to_string());
+        document.union(union_def);
+
+        assert_eq!(
+            document.to_string(),
+            indoc! { r#"
+        "A union of all pets represented within a household."
+        union Pet = Cat | Dog
+        """
+        Favourite cat
+        nap spots.
+        """
+        enum NapSpots {
+          "Top bunk of a cat tree."
+          CatTree
+          Bed
+          CardboardBox @deprecated(reason: "Box was recycled.")
+        }
+        "Ensures cats get treats."
+        directive @provideTreat on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+    "# }
         );
     }
 }

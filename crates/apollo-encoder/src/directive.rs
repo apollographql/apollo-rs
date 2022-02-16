@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::Argument;
 
-/// The `__Directive` type represents a Directive, it provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.
+/// The `Directive` type represents a Directive, it provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.
 ///
 /// *Directive*:
 ///     @ Name Arguments?

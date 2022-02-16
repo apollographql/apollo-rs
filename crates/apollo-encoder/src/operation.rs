@@ -1,8 +1,8 @@
 use std::fmt;
 
-use crate::{Directive, SelectionSet, VariableDef};
+use crate::{Directive, SelectionSet, VariableDefinition};
 
-/// The __operationDef type represents an operation definition
+/// The OperationDefinition type represents an operation definition
 ///
 /// *OperationDefinition*:
 ///     OperationType Name? VariableDefinitions? Directives? SelectionSet
@@ -11,7 +11,7 @@ use crate::{Directive, SelectionSet, VariableDef};
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Argument, Field, InlineFragment, Directive, OperationDef, OperationType, Selection, SelectionSet, TypeCondition, Type_, Value, VariableDef};
+/// use apollo_encoder::{Argument, Field, InlineFragment, Directive, OperationDefinition, OperationType, Selection, SelectionSet, TypeCondition, Type_, Value, VariableDefinition};
 /// use indoc::indoc;
 ///
 /// let selection_set = {
@@ -24,7 +24,7 @@ use crate::{Directive, SelectionSet, VariableDef};
 ///
 ///     sel_set
 /// };
-/// let var_def = VariableDef::new(
+/// let var_def = VariableDefinition::new(
 ///     String::from("variable_def"),
 ///     Type_::List {
 ///         ty: Box::new(Type_::NamedType {
@@ -32,7 +32,7 @@ use crate::{Directive, SelectionSet, VariableDef};
 ///         }),
 ///     },
 /// );
-/// let mut new_op = OperationDef::new(OperationType::Query, selection_set);
+/// let mut new_op = OperationDefinition::new(OperationType::Query, selection_set);
 /// let mut directive = Directive::new(String::from("testDirective"));
 /// directive.arg(Argument::new(
 ///     String::from("first"),
@@ -52,10 +52,10 @@ use crate::{Directive, SelectionSet, VariableDef};
 /// );
 /// ```
 #[derive(Debug)]
-pub struct OperationDef {
+pub struct OperationDefinition {
     operation_type: OperationType,
     name: Option<String>,
-    variable_definitions: Vec<VariableDef>,
+    variable_definitions: Vec<VariableDefinition>,
     directives: Vec<Directive>,
     selection_set: SelectionSet,
     /// If a document contains only one operation and that operation is a query which defines no variables and
@@ -63,7 +63,7 @@ pub struct OperationDef {
     shorthand: bool,
 }
 
-impl OperationDef {
+impl OperationDefinition {
     /// Create a new instance of OperationDef
     pub fn new(operation_type: OperationType, selection_set: SelectionSet) -> Self {
         Self {
@@ -82,7 +82,7 @@ impl OperationDef {
     }
 
     /// Add a variable definitions.
-    pub fn variable_definition(&mut self, variable_definition: VariableDef) {
+    pub fn variable_definition(&mut self, variable_definition: VariableDefinition) {
         self.variable_definitions.push(variable_definition);
     }
 
@@ -100,7 +100,7 @@ impl OperationDef {
     }
 }
 
-impl fmt::Display for OperationDef {
+impl fmt::Display for OperationDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let indent_level = 0;
 
@@ -133,7 +133,7 @@ impl fmt::Display for OperationDef {
     }
 }
 
-/// The __operationType type represents the kind of operation
+/// The OperationType type represents the kind of operation
 ///
 /// *OperationType*:
 ///     query | mutation | subscription
@@ -177,7 +177,7 @@ mod tests {
 
             sel_set
         };
-        let var_def = VariableDef::new(
+        let var_def = VariableDefinition::new(
             String::from("variable_def"),
             Type_::List {
                 ty: Box::new(Type_::NamedType {
@@ -185,7 +185,7 @@ mod tests {
                 }),
             },
         );
-        let mut new_op = OperationDef::new(OperationType::Query, selection_set);
+        let mut new_op = OperationDefinition::new(OperationType::Query, selection_set);
         let mut directive = Directive::new(String::from("testDirective"));
         directive.arg(Argument::new(
             String::from("first"),
@@ -217,7 +217,7 @@ mod tests {
 
             sel_set
         };
-        let mut new_op = OperationDef::new(OperationType::Query, selection_set);
+        let mut new_op = OperationDefinition::new(OperationType::Query, selection_set);
         new_op.shorthand();
 
         assert_eq!(
@@ -259,7 +259,7 @@ mod tests {
             .for_each(|s| selection_set.selection(s));
         // -------------------------
 
-        let var_def = VariableDef::new(
+        let var_def = VariableDefinition::new(
             String::from("variable_def"),
             Type_::List {
                 ty: Box::new(Type_::NamedType {
@@ -267,7 +267,7 @@ mod tests {
                 }),
             },
         );
-        let mut new_op = OperationDef::new(OperationType::Query, selection_set);
+        let mut new_op = OperationDefinition::new(OperationType::Query, selection_set);
         let mut directive = Directive::new(String::from("testDirective"));
         directive.arg(Argument::new(
             String::from("first"),

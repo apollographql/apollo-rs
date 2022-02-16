@@ -1,7 +1,7 @@
 use std::fmt;
 
-use crate::{Directive, FieldDef, StringValue};
-/// Object types represent concrete instantiations of sets of fields.
+use crate::{Directive, FieldDefinition, StringValue};
+/// ObjectDefinition types represent concrete instantiations of sets of fields.
 ///
 /// The introspection types (e.g. `__Type`, `__Field`, etc) are examples of
 /// objects.
@@ -13,7 +13,7 @@ use crate::{Directive, FieldDef, StringValue};
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Type_, FieldDef, ObjectDef};
+/// use apollo_encoder::{Type_, FieldDefinition, ObjectDefinition};
 /// use indoc::indoc;
 ///
 /// let ty_1 = Type_::NamedType {
@@ -21,19 +21,19 @@ use crate::{Directive, FieldDef, StringValue};
 /// };
 ///
 /// let ty_2 = Type_::List { ty: Box::new(ty_1) };
-/// let mut field = FieldDef::new("toys".to_string(), ty_2);
+/// let mut field = FieldDefinition::new("toys".to_string(), ty_2);
 /// let ty_3 = Type_::NamedType {
 ///     name: "FoodType".to_string(),
 /// };
-/// let mut field_2 = FieldDef::new("food".to_string(), ty_3);
+/// let mut field_2 = FieldDefinition::new("food".to_string(), ty_3);
 /// field_2.description(Some("Dry or wet food?".to_string()));
 ///
 /// let ty_4 = Type_::NamedType {
 ///     name: "Boolean".to_string(),
 /// };
-/// let field_3 = FieldDef::new("catGrass".to_string(), ty_4);
+/// let field_3 = FieldDefinition::new("catGrass".to_string(), ty_4);
 ///
-/// let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
+/// let mut object_def = ObjectDefinition::new("PetStoreTrip".to_string());
 /// object_def.field(field);
 /// object_def.field(field_2);
 /// object_def.field(field_3);
@@ -52,7 +52,7 @@ use crate::{Directive, FieldDef, StringValue};
 /// );
 /// ```
 #[derive(Debug)]
-pub struct ObjectDef {
+pub struct ObjectDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
@@ -60,13 +60,13 @@ pub struct ObjectDef {
     // The vector of interfaces that an object implements.
     interfaces: Vec<String>,
     // The vector of fields query‐able on this type.
-    fields: Vec<FieldDef>,
+    fields: Vec<FieldDefinition>,
     /// The vector of directives for this object
     directives: Vec<Directive>,
     extend: bool,
 }
 
-impl ObjectDef {
+impl ObjectDefinition {
     /// Create a new instance of ObjectDef with a name.
     pub fn new(name: String) -> Self {
         Self {
@@ -97,7 +97,7 @@ impl ObjectDef {
     }
 
     /// Push a Field to ObjectDef's fields vector.
-    pub fn field(&mut self, field: FieldDef) {
+    pub fn field(&mut self, field: FieldDefinition) {
         self.fields.push(field)
     }
 
@@ -107,7 +107,7 @@ impl ObjectDef {
     }
 }
 
-impl fmt::Display for ObjectDef {
+impl fmt::Display for ObjectDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.extend {
             write!(f, "extend ")?;
@@ -139,7 +139,7 @@ impl fmt::Display for ObjectDef {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Argument, FieldDef, Type_, Value};
+    use crate::{Argument, FieldDefinition, Type_, Value};
     use indoc::indoc;
     use pretty_assertions::assert_eq;
 
@@ -150,9 +150,9 @@ mod tests {
         };
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let field = FieldDef::new("toys".to_string(), ty_2);
+        let field = FieldDefinition::new("toys".to_string(), ty_2);
 
-        let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
+        let mut object_def = ObjectDefinition::new("PetStoreTrip".to_string());
         object_def.field(field);
         object_def.description(Some("What to get at Fressnapf?".to_string()));
 
@@ -173,7 +173,7 @@ mod tests {
             name: "DanglerPoleToys".to_string(),
         };
 
-        let mut field = FieldDef::new("toys".to_string(), ty_1);
+        let mut field = FieldDefinition::new("toys".to_string(), ty_1);
         let mut deprecated_directive = Directive::new(String::from("deprecated"));
         deprecated_directive.arg(Argument::new(
             String::from("reason"),
@@ -183,7 +183,7 @@ mod tests {
         ));
         field.directive(deprecated_directive);
 
-        let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
+        let mut object_def = ObjectDefinition::new("PetStoreTrip".to_string());
         object_def.field(field);
         object_def.description(Some("What to get at Fressnapf?".to_string()));
 
@@ -204,7 +204,7 @@ mod tests {
             name: "DanglerPoleToys".to_string(),
         };
 
-        let mut field = FieldDef::new("toys".to_string(), ty_1);
+        let mut field = FieldDefinition::new("toys".to_string(), ty_1);
         let mut deprecated_directive = Directive::new(String::from("deprecated"));
         deprecated_directive.arg(Argument::new(
             String::from("reason"),
@@ -214,7 +214,7 @@ mod tests {
         ));
         field.directive(deprecated_directive);
 
-        let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
+        let mut object_def = ObjectDefinition::new("PetStoreTrip".to_string());
         object_def.field(field);
         object_def.description(Some("What to get at Fressnapf?".to_string()));
         object_def.extend();
@@ -236,7 +236,7 @@ mod tests {
         };
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let mut field = FieldDef::new("toys".to_string(), ty_2);
+        let mut field = FieldDefinition::new("toys".to_string(), ty_2);
         let mut deprecated_directive = Directive::new(String::from("deprecated"));
         deprecated_directive.arg(Argument::new(
             String::from("reason"),
@@ -246,15 +246,15 @@ mod tests {
         let ty_3 = Type_::NamedType {
             name: "FoodType".to_string(),
         };
-        let mut field_2 = FieldDef::new("food".to_string(), ty_3);
+        let mut field_2 = FieldDefinition::new("food".to_string(), ty_3);
         field_2.description(Some("Dry or wet food?".to_string()));
 
         let ty_4 = Type_::NamedType {
             name: "Boolean".to_string(),
         };
-        let field_3 = FieldDef::new("catGrass".to_string(), ty_4);
+        let field_3 = FieldDefinition::new("catGrass".to_string(), ty_4);
 
-        let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
+        let mut object_def = ObjectDefinition::new("PetStoreTrip".to_string());
         object_def.field(field);
         object_def.field(field_2);
         object_def.field(field_3);
@@ -287,7 +287,7 @@ mod tests {
             Value::String("one".to_string()),
         ));
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let mut field = FieldDef::new("toys".to_string(), ty_2);
+        let mut field = FieldDefinition::new("toys".to_string(), ty_2);
         let mut deprecated_directive = Directive::new(String::from("deprecated"));
         deprecated_directive.arg(Argument::new(
             String::from("reason"),
@@ -297,15 +297,15 @@ mod tests {
         let ty_3 = Type_::NamedType {
             name: "FoodType".to_string(),
         };
-        let mut field_2 = FieldDef::new("food".to_string(), ty_3);
+        let mut field_2 = FieldDefinition::new("food".to_string(), ty_3);
         field_2.description(Some("Dry or wet food?".to_string()));
 
         let ty_4 = Type_::NamedType {
             name: "Boolean".to_string(),
         };
-        let field_3 = FieldDef::new("catGrass".to_string(), ty_4);
+        let field_3 = FieldDefinition::new("catGrass".to_string(), ty_4);
 
-        let mut object_def = ObjectDef::new("PetStoreTrip".to_string());
+        let mut object_def = ObjectDefinition::new("PetStoreTrip".to_string());
         object_def.field(field);
         object_def.field(field_2);
         object_def.field(field_3);
@@ -333,10 +333,10 @@ mod tests {
             name: "String".to_string(),
         };
 
-        let mut field = FieldDef::new("name".to_string(), ty_1);
+        let mut field = FieldDefinition::new("name".to_string(), ty_1);
         field.description(Some("multiline\ndescription".to_string()));
 
-        let mut object_def = ObjectDef::new("Book".to_string());
+        let mut object_def = ObjectDefinition::new("Book".to_string());
         object_def.field(field);
         object_def.description(Some("Book Object\nType".to_string()));
 
