@@ -36,7 +36,7 @@ impl fmt::Display for StringValue {
             StringValue::Top { source } => {
                 if let Some(description) = source {
                     if is_block_string_character(description) {
-                        writeln!(f, "\"\"\"\n{}\n\"\"\"", description)?
+                        writeln!(f, "\"\"\"\n{}\n\"\"\"", description.trim_matches('"'))?
                     } else {
                         writeln!(f, "\"{}\"", description)?
                     }
@@ -46,7 +46,8 @@ impl fmt::Display for StringValue {
                 if let Some(description) = source {
                     if is_block_string_character(description) {
                         write!(f, "  \"\"\"")?;
-                        for line in description.lines() {
+                        let desc = description.trim_matches('"');
+                        for line in desc.lines() {
                             write!(f, "\n  {}", line)?;
                         }
                         writeln!(f, "\n  \"\"\"")?;
@@ -58,7 +59,7 @@ impl fmt::Display for StringValue {
             StringValue::Input { source } => {
                 if let Some(description) = source {
                     if is_block_string_character(description) {
-                        write!(f, "\"\"\"\n{}\n\"\"\" ", description)?
+                        write!(f, "\"\"\"\n{}\n\"\"\" ", description.trim_matches('"'))?
                     } else {
                         write!(f, "\"{}\" ", description)?
                     }
@@ -68,7 +69,8 @@ impl fmt::Display for StringValue {
                 if let Some(description) = source {
                     if is_block_string_character(description) {
                         write!(f, "\n  \"\"\"")?;
-                        for line in description.lines() {
+                        let desc = description.trim_matches('"');
+                        for line in desc.lines() {
                             write!(f, "\n  {}", line)?;
                         }
                         write!(f, "\n  \"\"\"\n  ")?

@@ -21,6 +21,9 @@ fuzz_target!(|data: &[u8]| {
         }
         Ok(p) => p,
     };
+    debug!("======= DOCUMENT =======");
+    debug!("{}", doc_generated);
+    debug!("========================");
 
     let tree = parser.parse();
     // early return if the parser detected an error
@@ -32,9 +35,6 @@ fuzz_target!(|data: &[u8]| {
             .map(|err| err.message())
             .collect::<Vec<&str>>()
             .join("\n");
-        debug!("======= DOCUMENT =======");
-        debug!("{}", doc_generated);
-        debug!("========================");
         debug!("Parser errors ========== \n{:?}", errors);
         debug!("========================");
         log_gql_doc(&doc_generated, &errors);

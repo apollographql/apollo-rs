@@ -21,6 +21,9 @@ fuzz_target!(|data: &[u8]| {
         }
         Ok(p) => p,
     };
+    debug!("======= DOCUMENT =======");
+    debug!("{}", doc_generated);
+    debug!("========================");
 
     // early return if the lexer detected an error
     let mut should_panic = false;
