@@ -40,7 +40,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   """
   "#
     );
-  ```rust
 
   [bnjjj]: https://github.com/bnjjj
   [pull/168]: https://github.com/apollographql/apollo-rs/pull/168
