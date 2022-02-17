@@ -111,7 +111,8 @@ mod test {
     fn it_encodes_description_with_quotations() {
         let desc = StringValue::Top {
             source: Some(
-                "Favourite \"cat\" nap spots include: plant corner, pile of clothes.".to_string(),
+                "\"Favourite \"cat\" nap spots include: plant corner, pile of clothes.\""
+                    .to_string(),
             ),
         };
 
