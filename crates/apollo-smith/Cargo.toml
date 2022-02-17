@@ -9,6 +9,6 @@ repository = "https://github.com/apollographql/apollo-rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-apollo-encoder = { path = "../apollo-encoder", version = "0.2.0" }
+apollo-encoder = { path = "../apollo-encoder", version = "0.2.1" }
 arbitrary = { version = "1.0.3", features = ["derive"] }
 once_cell = "1.9.0"
