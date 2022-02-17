@@ -1,14 +1,13 @@
-mod database;
 mod interner;
 mod passes;
+mod queries;
 mod values;
 
-use std::{collections::HashSet, sync::Arc};
+use std::sync::Arc;
 
-pub use database::{Database, SourceDatabase};
 pub use interner::Interner;
+pub use queries::database::{Database, SourceDatabase};
 
-use apollo_parser::ast::{self, AstNode};
 use miette::{Diagnostic, NamedSource, Report, SourceSpan};
 use thiserror::Error;
 
@@ -41,7 +40,8 @@ pub fn validate(src: &str) {
 
     db.set_input_string((), Arc::new(src.to_string()));
 
-    let _doc = db.document();
+    let operations = db.operations();
+    dbg!(operations);
 
     // println!("Now, the length is {}.", db.length(()));
     // passes::unused_variables::check(&doc);
@@ -111,7 +111,7 @@ type Person implements NamedEntity {
     #[test]
     fn it_validates_undefined_variable_in_query() {
         let input = r#"
-query ExampleQuery() {
+query ExampleQuery($definedVariable: String) {
   topProducts(first: $undefinedVariable) {
     name
   }

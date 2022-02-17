@@ -20,35 +20,33 @@ impl salsa::Database for Database {}
 
 #[salsa::query_group(ASTDatabase)]
 pub trait SourceDatabase: Interner {
-    #[salsa::invoke(parse_query)]
-    fn parse(&self) -> ast::Document;
-
     #[salsa::input]
     fn input_string(&self, key: ()) -> Arc<String>;
 
-    fn document(&self) -> Arc<Document>;
+    fn document(&self) -> ast::Document;
 
-    fn definitions(&self, doc: ast::Document) -> Arc<Vec<Definition>>;
-}
+    fn definitions(&self) -> Arc<Vec<Definition>>;
 
-fn parse_query(db: &dyn SourceDatabase) -> ast::Document {
-    let input = db.input_string(());
+    fn operations(&self) -> Arc<Vec<OperationDefinitionData>>;
 
-    let parser = Parser::new(&input);
-    parser.parse().document()
+    fn find_operation(&self, name: String) -> Option<Arc<OperationDefinitionData>>;
+
+    fn find_fragment(&self, name: String) -> Option<Arc<FragmentDefinitionData>>;
+
+    fn fragments(&self) -> Arc<Vec<FragmentDefinitionData>>;
 }
 
 // this is top level entry to the source db
-fn document(db: &dyn SourceDatabase) -> Arc<Document> {
-    let document = db.parse();
-    let definitions = db.definitions(document);
-    let document_data = DocumentData { definitions };
+fn document(db: &dyn SourceDatabase) -> ast::Document {
+    let input = db.input_string(());
+    let parser = Parser::new(&input);
 
-    Arc::new(db.intern_document(document_data))
+    parser.parse().document()
 }
 
-fn definitions(db: &dyn SourceDatabase, document: ast::Document) -> Arc<Vec<Definition>> {
-    let definitions: Vec<_> = document
+fn definitions(db: &dyn SourceDatabase) -> Arc<Vec<Definition>> {
+    let definitions: Vec<_> = db
+        .document()
         .definitions()
         .map(|def| match def {
             ast::Definition::OperationDefinition(def) => {
@@ -56,11 +54,70 @@ fn definitions(db: &dyn SourceDatabase, document: ast::Document) -> Arc<Vec<Defi
                 let definition_data = DefinitionData::OperationDefinition(op_def);
                 db.intern_definition(definition_data)
             }
+            ast::Definition::FragmentDefinition(def) => {
+                let fragment_def = fragment_definition(db, def);
+                let definition_data = DefinitionData::FragmentDefinition(fragment_def);
+                db.intern_definition(definition_data)
+            }
             _ => todo!(),
         })
         .collect();
 
     Arc::new(definitions)
+}
+
+fn operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinitionData>> {
+    let operations = db
+        .definitions()
+        .iter()
+        .filter_map(|class| {
+            let class = db.lookup_intern_definition(*class);
+            match class {
+                DefinitionData::OperationDefinition(op_def) => {
+                    Some(db.lookup_intern_operation_definition(*op_def))
+                }
+                _ => None,
+            }
+        })
+        .collect();
+    Arc::new(operations)
+}
+
+fn find_operation(db: &dyn SourceDatabase, name: String) -> Option<Arc<OperationDefinitionData>> {
+    db.operations().iter().find_map(|op| {
+        if op.name == name {
+            Some(Arc::new(op.clone()))
+        } else {
+            None
+        }
+    })
+}
+
+fn fragments(db: &dyn SourceDatabase) -> Arc<Vec<FragmentDefinitionData>> {
+    let operations = db
+        .definitions()
+        .iter()
+        .filter_map(|class| {
+            let class = db.lookup_intern_definition(*class);
+            match class {
+                DefinitionData::FragmentDefinition(fragment_def) => {
+                    Some(db.lookup_intern_fragment_definition(*fragment_def))
+                }
+                _ => None,
+            }
+        })
+        .collect();
+    Arc::new(operations)
+}
+
+fn find_fragment(db: &dyn SourceDatabase, name: String) -> Option<Arc<FragmentDefinitionData>> {
+    db.fragments().iter().find_map(|fragment| {
+        if fragment.name == name {
+            Some(Arc::new(fragment.clone()))
+        } else {
+            None
+        }
+    })
 }
 
 fn operation_definition(
@@ -93,6 +150,39 @@ fn operation_definition(
     let operation_def = db.intern_operation_definition(operation_def_data);
 
     Arc::new(operation_def)
+}
+
+fn fragment_definition(
+    db: &dyn SourceDatabase,
+    fragment_def: ast::FragmentDefinition,
+) -> Arc<FragmentDefinition> {
+    let name = fragment_def
+        .fragment_name()
+        .expect("Fragment Definition must have a name")
+        .to_string();
+    let type_condition = fragment_def
+        .type_condition()
+        .expect("Fragment Definition must have a type condition")
+        .named_type()
+        .expect("Type Condition must have a name")
+        .to_string();
+    let selections = fragment_def
+        .selection_set()
+        .expect("Operation Definition must have a Selection Set")
+        .selections();
+    let selection_set = selection_set(db, selections);
+    let directives = directives(db, fragment_def.directives());
+
+    let fragment_def_data = FragmentDefinitionData {
+        name,
+        type_condition,
+        selection_set,
+        directives,
+    };
+
+    let fragment_def = db.intern_fragment_definition(fragment_def_data);
+
+    Arc::new(fragment_def)
 }
 
 fn operation_type(op_type: Option<ast::OperationType>) -> OperationType {

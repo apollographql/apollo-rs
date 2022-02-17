@@ -1,14 +1,15 @@
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct DocumentData {
-    pub definitions: Arc<Vec<Definition>>,
+pub enum DefinitionData {
+    OperationDefinition(Arc<OperationDefinition>),
+    FragmentDefinition(Arc<FragmentDefinition>),
 }
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Document(salsa::InternId);
+pub struct Definition(salsa::InternId);
 
-impl salsa::InternKey for Document {
+impl salsa::InternKey for Definition {
     fn from_intern_id(id: salsa::InternId) -> Self {
         Self(id)
     }
@@ -19,15 +20,17 @@ impl salsa::InternKey for Document {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum DefinitionData {
-    OperationDefinition(Arc<OperationDefinition>),
-    FragmentDefinition,
+pub struct FragmentDefinitionData {
+    pub name: String,
+    pub type_condition: String,
+    pub directives: Option<Arc<Vec<Directive>>>,
+    pub selection_set: Arc<Vec<Selection>>,
 }
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Definition(salsa::InternId);
+pub struct FragmentDefinition(salsa::InternId);
 
-impl salsa::InternKey for Definition {
+impl salsa::InternKey for FragmentDefinition {
     fn from_intern_id(id: salsa::InternId) -> Self {
         Self(id)
     }
@@ -46,7 +49,7 @@ pub struct OperationDefinitionData {
     pub selection_set: Arc<Vec<Selection>>,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OperationDefinition(salsa::InternId);
 
 impl salsa::InternKey for OperationDefinition {
