@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [0.2.1](https://crates.io/crates/apollo-encoder/0.2.0) - 2021-02-17
+# [0.2.1](https://crates.io/crates/apollo-encoder/0.2.1) - 2021-02-17
 ## Fixes
 
 - **Remove leading and ending `"` in `BlockStringCharacter` encoding - [bnjjj], [pull/168]**
