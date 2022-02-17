@@ -16,6 +16,7 @@ following crates currently exist:
 
 * [**`apollo-encoder`**](crates/apollo-encoder) - a library to generate GraphQL code (SDL).
 * [**`apollo-parser`**](crates/apollo-parser) - a library to parse the GraphQL query language.
+* [**`apollo-smith`**](crates/apollo-smith) - a test case generator to test GraphQL code (SDL).
 
 Please check out their respective READMEs for usage examples.
 
