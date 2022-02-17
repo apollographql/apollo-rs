@@ -9,6 +9,25 @@ use crate::{lexer::cursor::Cursor, Error};
 pub use token::Token;
 pub use token_kind::TokenKind;
 /// Parses tokens into text.
+/// ```rust
+/// use apollo_parser::Lexer;
+///
+/// let query = "
+/// {
+///     animal
+///     ...snackSelection
+///     ... on Pet {
+///       playmates {
+///         count
+///       }
+///     }
+/// }
+/// ";
+/// let lexer = Lexer::new(query);
+/// assert_eq!(lexer.errors().len(), 0);
+///
+/// let tokens = lexer.tokens();
+/// ```
 pub struct Lexer {
     tokens: Vec<Token>,
     errors: Vec<Error>,
