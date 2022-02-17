@@ -46,6 +46,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [bnjjj]: https://github.com/bnjjj
   [pull/168]: https://github.com/apollographql/apollo-rs/pull/168
 
+## Fixes
+- **add a getter for Directives in Variable Definitions - [lrlna], [pull/172]**
+
+  While the parser was correctly parsing and accounting for directives in a
+  variable definition, the getter for Directives in VariableDefinition type in the
+  AST was missing. This commit makes an addition to the graphql ungrammar, and by
+  extension the generated AST nodes API.
+
+  [lrlna]: https://github.com/lrlna
+  [pull/172]: https://github.com/apollographql/apollo-rs/pull/172
 
 # [0.2.2](https://crates.io/crates/apollo-parser/0.2.2) - 2021-02-11
 ## Fixes
