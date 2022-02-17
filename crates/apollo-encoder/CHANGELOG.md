@@ -40,11 +40,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   """
   "#
     );
-    ```
+  ```
 
   [bnjjj]: https://github.com/bnjjj
   [pull/168]: https://github.com/apollographql/apollo-rs/pull/168
-  
+
 # [0.2.0](https://crates.io/crates/apollo-encoder/0.2.0) - 2021-02-11
 
 > Important: 5 breaking changes below, indicated by **BREAKING**
