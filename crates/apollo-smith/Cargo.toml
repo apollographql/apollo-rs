@@ -5,6 +5,21 @@ edition = "2021"
 authors = ["Benjamin Coenen <benjamin.coenen@apollographql.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
+description = "A GraphQL test case generator."
+keywords = [
+    "graphql",
+    "fuzzer",
+    "graphql-tooling",
+    "apollographql",
+    "test-case-generator",
+]
+categories = [
+    "compilers",
+    "development-tools",
+    "parser-implementations",
+    "development-tools::testing",
+    "web-programming",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
