@@ -1,5 +1,3 @@
-# apollo-smith
-
  <div align="center">
    <h1><code>apollo-smith</code></h1>
 
