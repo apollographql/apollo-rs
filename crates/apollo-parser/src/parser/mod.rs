@@ -87,7 +87,7 @@ impl Parser {
         let mut tokens = Vec::new();
         let mut errors = Vec::new();
 
-        for s in lexer.tokens().to_owned() {
+        for s in lexer.tokens().iter().cloned() {
             tokens.push(s);
         }
 
