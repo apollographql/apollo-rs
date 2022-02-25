@@ -38,7 +38,7 @@ pub use field_value::Type_;
 pub use fragment::{FragmentDefinition, FragmentSpread, InlineFragment, TypeCondition};
 pub use input_field::InputField;
 pub use input_object_def::InputObjectDefinition;
-pub use input_value::InputValueDef;
+pub use input_value::InputValueDefinition;
 pub use interface_def::InterfaceDefinition;
 pub use object_def::ObjectDefinition;
 pub use operation::{OperationDefinition, OperationType};

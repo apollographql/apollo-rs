@@ -55,7 +55,7 @@ impl From<Document> for apollo_encoder::Document {
             .for_each(|union_type_def| new_doc.union(union_type_def.into()));
         doc.input_object_type_definitions
             .into_iter()
-            .for_each(|input_object_type_def| new_doc.input_object_(input_object_type_def.into()));
+            .for_each(|input_object_type_def| new_doc.input_object(input_object_type_def.into()));
         doc.interface_type_definitions
             .into_iter()
             .for_each(|interface_type_def| new_doc.interface(interface_type_def.into()));

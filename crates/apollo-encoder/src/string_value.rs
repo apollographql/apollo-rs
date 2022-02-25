@@ -36,7 +36,7 @@ impl fmt::Display for StringValue {
             StringValue::Top { source } => {
                 if let Some(description) = source {
                     if is_block_string_character(description) {
-                        writeln!(f, "\"\"\"\n{}\n\"\"\"", description.trim_matches('"'))?
+                        writeln!(f, "\"\"\"\n{}\n\"\"\"", trim_double_quotes(description))?
                     } else {
                         writeln!(f, "\"{}\"", description)?
                     }
@@ -46,7 +46,7 @@ impl fmt::Display for StringValue {
                 if let Some(description) = source {
                     if is_block_string_character(description) {
                         write!(f, "  \"\"\"")?;
-                        let desc = description.trim_matches('"');
+                        let desc = trim_double_quotes(description);
                         for line in desc.lines() {
                             write!(f, "\n  {}", line)?;
                         }
@@ -59,7 +59,7 @@ impl fmt::Display for StringValue {
             StringValue::Input { source } => {
                 if let Some(description) = source {
                     if is_block_string_character(description) {
-                        write!(f, "\"\"\"\n{}\n\"\"\" ", description.trim_matches('"'))?
+                        write!(f, "\"\"\"\n{}\n\"\"\" ", trim_double_quotes(description))?
                     } else {
                         write!(f, "\"{}\" ", description)?
                     }
@@ -69,7 +69,8 @@ impl fmt::Display for StringValue {
                 if let Some(description) = source {
                     if is_block_string_character(description) {
                         write!(f, "\n  \"\"\"")?;
-                        let desc = description.trim_matches('"');
+
+                        let desc = trim_double_quotes(description);
                         for line in desc.lines() {
                             write!(f, "\n  {}", line)?;
                         }
@@ -82,6 +83,28 @@ impl fmt::Display for StringValue {
         }
         write!(f, "")
     }
+}
+
+#[allow(clippy::nonminimal_bool)]
+fn trim_double_quotes(description: &str) -> String {
+    let desc_len = description.len();
+    if desc_len < 2 {
+        return description.to_string();
+    }
+    if &description[..1] != "\"" || &description[desc_len - 1..] != "\"" {
+        return description.to_string();
+    }
+    description
+        .chars()
+        .enumerate()
+        .filter_map(|(i, c)| {
+            if (i == 0 && c == '"') || (i == desc_len - 1 && c == '"') {
+                None
+            } else {
+                Some(c)
+            }
+        })
+        .collect()
 }
 
 fn is_block_string_character(s: &str) -> bool {
@@ -172,6 +195,18 @@ plant corner, pile of clothes.
             String::from(
                 "  \"\"\"\n  Favourite cat nap spots include:\r  plant corner,\r  pile of clothes.\n  \"\"\"\n"
             )
+        );
+    }
+
+    #[test]
+    fn it_encodes_indented_desciption_with_end_double_quotes() {
+        let desc = StringValue::Reason {
+            source: Some("One of my cat is called:\r \"Mozart\"".to_string()),
+        };
+
+        assert_eq!(
+            desc.to_string(),
+            String::from("\n  \"\"\"\n  One of my cat is called:\r \"Mozart\"\n  \"\"\"\n  ")
         );
     }
 }

@@ -132,7 +132,7 @@ impl Document {
     }
 
     /// Add input_object
-    pub fn input_object_(&mut self, input_object_type_definition: InputObjectDefinition) {
+    pub fn input_object(&mut self, input_object_type_definition: InputObjectDefinition) {
         self.input_object_type_definitions
             .push(input_object_type_definition);
     }
