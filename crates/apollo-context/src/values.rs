@@ -1,65 +1,26 @@
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum DefinitionData {
+pub enum Definition {
     OperationDefinition(Arc<OperationDefinition>),
     FragmentDefinition(Arc<FragmentDefinition>),
 }
 
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Definition(salsa::InternId);
-
-impl salsa::InternKey for Definition {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
-    }
-}
-
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct FragmentDefinitionData {
+pub struct FragmentDefinition {
     pub name: String,
     pub type_condition: String,
     pub directives: Option<Arc<Vec<Directive>>>,
     pub selection_set: Arc<Vec<Selection>>,
 }
 
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-pub struct FragmentDefinition(salsa::InternId);
-
-impl salsa::InternKey for FragmentDefinition {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
-    }
-}
-
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct OperationDefinitionData {
+pub struct OperationDefinition {
     pub ty: OperationType,
     pub name: String, // TODO @lrlna: Option<String>
     pub variables: Option<Arc<Vec<VariableDefinition>>>,
     pub directives: Option<Arc<Vec<Directive>>>,
     pub selection_set: Arc<Vec<Selection>>,
-}
-
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-pub struct OperationDefinition(salsa::InternId);
-
-impl salsa::InternKey for OperationDefinition {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
-    }
 }
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
@@ -70,7 +31,7 @@ pub enum OperationType {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct VariableDefinitionData {
+pub struct VariableDefinition {
     pub name: String,
     // ty: Type_,
     // default_value: Option<Arc<Value>>,
@@ -78,78 +39,25 @@ pub struct VariableDefinitionData {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct VariableDefinition(salsa::InternId);
-
-impl salsa::InternKey for VariableDefinition {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
-    }
-}
-
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct DirectiveData {
+pub struct Directive {
     pub name: String,
     pub arguments: Option<Arc<Vec<Argument>>>,
 }
-
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Directive(salsa::InternId);
-
-impl salsa::InternKey for Directive {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
-    }
-}
-
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct ArgumentData {
+pub struct Argument {
     pub name: String,
     // pub value: Arc<Value>,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Argument(salsa::InternId);
-
-impl salsa::InternKey for Argument {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
-    }
-}
-
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum SelectionData {
+pub enum Selection {
     Field(Arc<Field>),
     // FragmentSpread(Arc<FragmentSpread>),
     // InlineFragment(Arc<InlineFragment>),
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Selection(salsa::InternId);
-
-impl salsa::InternKey for Selection {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
-    }
-}
-
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct FieldData {
+pub struct Field {
     pub alias: Option<Arc<Alias>>,
     pub name: String,
     pub arguments: Option<Arc<Vec<Argument>>>,
@@ -158,29 +66,4 @@ pub struct FieldData {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Field(salsa::InternId);
-
-impl salsa::InternKey for Field {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
-    }
-}
-
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct AliasData(pub String);
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Alias(salsa::InternId);
-
-impl salsa::InternKey for Alias {
-    fn from_intern_id(id: salsa::InternId) -> Self {
-        Self(id)
-    }
-
-    fn as_intern_id(&self) -> salsa::InternId {
-        self.0
-    }
-}
+pub struct Alias(pub String);

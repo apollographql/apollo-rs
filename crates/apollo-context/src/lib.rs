@@ -1,14 +1,12 @@
-mod interner;
 mod passes;
 mod queries;
 mod values;
 
 use std::sync::Arc;
 
-pub use interner::Interner;
 pub use queries::database::{Database, SourceDatabase};
 
-use miette::{Diagnostic, NamedSource, Report, SourceSpan};
+use miette::{Diagnostic, NamedSource, SourceSpan};
 use thiserror::Error;
 
 #[derive(Error, Debug, Diagnostic)]
