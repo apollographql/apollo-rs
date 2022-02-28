@@ -3,7 +3,7 @@
 
 use std::sync::Arc;
 
-use apollo_parser::{ast, Parser};
+use apollo_parser::{ast, Parser, SyntaxTree};
 
 use crate::values::*;
 
@@ -20,7 +20,11 @@ pub trait SourceDatabase {
     #[salsa::input]
     fn input_string(&self, key: ()) -> Arc<String>;
 
-    fn document(&self) -> ast::Document;
+    fn parse(&self) -> Arc<SyntaxTree>;
+
+    fn document(&self) -> Arc<ast::Document>;
+
+    fn syntax_errors(&self) -> Arc<Vec<Error>>;
 
     fn definitions(&self) -> Arc<Vec<ast::Definition>>;
 
@@ -34,37 +38,39 @@ pub trait SourceDatabase {
 }
 
 // this is top level entry to the source db
-fn document(db: &dyn SourceDatabase) -> ast::Document {
+fn parse(db: &dyn SourceDatabase) -> Arc<SyntaxTree> {
     let input = db.input_string(());
     let parser = Parser::new(&input);
-
-    parser.parse().document()
+    Arc::new(parser.parse())
 }
 
-// fn definitions(db: &dyn SourceDatabase) -> Arc<Vec<Definition>> {
-//     let definitions: Vec<_> = db
-//         .document()
-//         .definitions()
-//         .map(|def| match def {
-//             ast::Definition::OperationDefinition(def) => {
-//                 let op_def = operation_definition(db, def);
-//                 Definition::OperationDefinition(op_def)
-//             }
-//             ast::Definition::FragmentDefinition(def) => {
-//                 let fragment_def = fragment_definition(db, def);
-//                 Definition::FragmentDefinition(fragment_def)
-//             }
-//             _ => todo!(),
-//         })
-//         .collect();
-//
-//     Arc::new(definitions)
-// }
+// NOTE: a very expensive clone - should more tightly couple the parser and the
+// source database for a cleaner solution
+fn document(db: &dyn SourceDatabase) -> Arc<ast::Document> {
+    Arc::new(db.parse().as_ref().clone().document())
+}
+
+fn syntax_errors(db: &dyn SourceDatabase) -> Arc<Vec<Error>> {
+    let errors = db
+        .parse()
+        .errors()
+        .into_iter()
+        .map(|err| Error {
+            message: err.message().to_string(),
+            data: err.data().to_string(),
+            index: err.index(),
+        })
+        .collect();
+    Arc::new(errors)
+}
 
 fn definitions(db: &dyn SourceDatabase) -> Arc<Vec<ast::Definition>> {
     Arc::new(db.document().definitions().into_iter().collect())
 }
 
+// NOTE: we might want to the values::OperationDefinition creation even further.
+// At the moment all fields in this struct are created here, instead individual
+// queries for selection_set, variables, directives etc can be created.
 fn operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .definitions()
@@ -196,7 +202,7 @@ fn variable_definitions(
             let variable_definitions = vars
                 .variable_definitions()
                 .into_iter()
-                .map(|var| variable_definition(var))
+                .map(variable_definition)
                 .collect();
             Some(Arc::new(variable_definitions))
         }
@@ -218,11 +224,7 @@ fn variable_definition(var: ast::VariableDefinition) -> VariableDefinition {
 fn directives(directives: Option<ast::Directives>) -> Option<Arc<Vec<Directive>>> {
     match directives {
         Some(directives) => {
-            let directives = directives
-                .directives()
-                .into_iter()
-                .map(|dir| directive(dir))
-                .collect();
+            let directives = directives.directives().into_iter().map(directive).collect();
             Some(Arc::new(directives))
         }
         None => None,
@@ -241,11 +243,7 @@ fn directive(directive: ast::Directive) -> Directive {
 fn arguments(arguments: Option<ast::Arguments>) -> Option<Arc<Vec<Argument>>> {
     match arguments {
         Some(arguments) => {
-            let arguments = arguments
-                .arguments()
-                .into_iter()
-                .map(|arg| argument(arg))
-                .collect();
+            let arguments = arguments.arguments().into_iter().map(argument).collect();
             Some(Arc::new(arguments))
         }
         None => None,

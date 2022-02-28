@@ -1,6 +1,13 @@
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct Error {
+    pub message: String,
+    pub data: String,
+    pub index: usize,
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Definition {
     OperationDefinition(Arc<OperationDefinition>),
     FragmentDefinition(Arc<FragmentDefinition>),
