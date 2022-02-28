@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{InputValueDef, Value};
+use crate::{InputValueDefinition, Value};
 
 /// The `ArgumentsDefinition` type represents an arguments definition
 ///
@@ -11,17 +11,17 @@ use crate::{InputValueDef, Value};
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{ArgumentsDefinition, InputValueDef, Type_};
+/// use apollo_encoder::{ArgumentsDefinition, InputValueDefinition, Type_};
 /// use indoc::indoc;
 ///
 /// let input_value_defs = vec![
-///     InputValueDef::new(
+///     InputValueDefinition::new(
 ///         String::from("first"),
 ///         Type_::NamedType {
 ///             name: String::from("Int"),
 ///         },
 ///     ),
-///     InputValueDef::new(
+///     InputValueDefinition::new(
 ///         String::from("second"),
 ///         Type_::List {
 ///             ty: Box::new(Type_::NamedType {
@@ -36,12 +36,12 @@ use crate::{InputValueDef, Value};
 /// ```
 #[derive(Debug)]
 pub struct ArgumentsDefinition {
-    input_value_definitions: Vec<InputValueDef>,
+    input_value_definitions: Vec<InputValueDefinition>,
 }
 
 impl ArgumentsDefinition {
     /// Create a new instance of Argument definition.
-    pub fn new(input_value_definitions: Vec<InputValueDef>) -> Self {
+    pub fn new(input_value_definitions: Vec<InputValueDefinition>) -> Self {
         Self {
             input_value_definitions,
         }
@@ -115,13 +115,13 @@ mod tests {
     #[test]
     fn it_encodes_arguments_definitions() {
         let input_value_defs = vec![
-            InputValueDef::new(
+            InputValueDefinition::new(
                 String::from("first"),
                 Type_::NamedType {
                     name: String::from("Int"),
                 },
             ),
-            InputValueDef::new(
+            InputValueDefinition::new(
                 String::from("second"),
                 Type_::List {
                     ty: Box::new(Type_::NamedType {

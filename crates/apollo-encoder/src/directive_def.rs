@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{InputValueDef, StringValue};
+use crate::{InputValueDefinition, StringValue};
 
 /// The `DirectiveDefinition` type represents a Directive definition.
 ///
@@ -38,7 +38,7 @@ pub struct DirectiveDefinition {
     description: StringValue,
     // Args returns a Vector of __InputValue representing the arguments this
     // directive accepts.
-    args: Vec<InputValueDef>,
+    args: Vec<InputValueDefinition>,
     // Locations returns a List of __DirectiveLocation representing the valid
     // locations this directive may be placed.
     locations: Vec<String>,
@@ -71,7 +71,7 @@ impl DirectiveDefinition {
     }
 
     /// Set the Directive's args.
-    pub fn arg(&mut self, arg: InputValueDef) {
+    pub fn arg(&mut self, arg: InputValueDefinition) {
         self.args.push(arg);
     }
 
@@ -162,7 +162,7 @@ directive @infer on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
         };
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let arg = InputValueDef::new("cat".to_string(), ty_2);
+        let arg = InputValueDefinition::new("cat".to_string(), ty_2);
         directive.arg(arg);
 
         assert_eq!(

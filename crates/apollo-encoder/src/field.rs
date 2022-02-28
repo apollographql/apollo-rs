@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{Argument, Directive, InputValueDef, SelectionSet, StringValue, Type_};
+use crate::{Argument, Directive, InputValueDefinition, SelectionSet, StringValue, Type_};
 /// The FieldDefinition type represents each field definition in an Object
 /// definition or Interface type definition.
 ///
@@ -11,7 +11,7 @@ use crate::{Argument, Directive, InputValueDef, SelectionSet, StringValue, Type_
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Type_, FieldDefinition, InputValueDef};
+/// use apollo_encoder::{Type_, FieldDefinition, InputValueDefinition};
 ///
 /// let ty_1 = Type_::NamedType {
 ///     name: "CatBreed".to_string(),
@@ -23,7 +23,7 @@ use crate::{Argument, Directive, InputValueDef, SelectionSet, StringValue, Type_
 ///     name: "CatBreed".to_string(),
 /// };
 ///
-/// let arg = InputValueDef::new("breed".to_string(), value_1);
+/// let arg = InputValueDefinition::new("breed".to_string(), value_1);
 ///
 /// field.arg(arg);
 ///
@@ -39,7 +39,7 @@ pub struct FieldDefinition {
     // Description may return a String.
     description: StringValue,
     // Args returns a List of __InputValue representing the arguments this field accepts.
-    args: Vec<InputValueDef>,
+    args: Vec<InputValueDefinition>,
     // Type must return a __Type that represents the type of value returned by this field.
     type_: Type_,
     /// Contains all directives.
@@ -66,7 +66,7 @@ impl FieldDefinition {
     }
 
     /// Set the Field's arguments.
-    pub fn arg(&mut self, arg: InputValueDef) {
+    pub fn arg(&mut self, arg: InputValueDefinition) {
         self.args.push(arg);
     }
 
@@ -306,7 +306,7 @@ mod tests {
         let value_2 = Type_::List {
             ty: Box::new(value_1),
         };
-        let mut arg = InputValueDef::new("cat".to_string(), value_2);
+        let mut arg = InputValueDefinition::new("cat".to_string(), value_2);
         let mut deprecated_directive = Directive::new(String::from("deprecated"));
         deprecated_directive.arg(Argument::new(
             String::from("reason"),

@@ -284,8 +284,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
                 let variable_defs = op_def.variable_definitions();
                 let variables: Vec<String> = variable_defs
                     .iter()
-                    .map(|v| v.variable_definitions())
-                    .flatten()
+                    .flat_map(|v| v.variable_definitions())
                     .filter_map(|v| Some(v.variable()?.text().to_string()))
                     .collect();
                 assert_eq!(

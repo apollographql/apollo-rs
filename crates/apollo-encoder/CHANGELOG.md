@@ -17,6 +17,40 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+
+# [0.2.2] (unreleased)
+## Fixes
+- **Remove leading and ending `"` in `BlockStringCharacter` encoding only when it starts and end with a `"` - [bnjjj], [pull/182]**
+  This ensures that a StringValue of type BlockStringCharacter, like the one in
+  the test example below, does not getting encoded with an additional `"` ending
+  up with `""""` leading set of characters.
+
+  ```rust
+  let desc = StringValue::Reason {
+            source: Some("One of my cat is called:\r \"Mozart\"".to_string()),
+        };
+
+        assert_eq!(
+            desc.to_string(),
+            String::from("\n  \"\"\"\n  One of my cat is called:\r \"Mozart\"\n  \"\"\"\n  ")
+        );
+    );
+  ```
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/168]: https://github.com/apollographql/apollo-rs/pull/182
+
+## BREAKING
+- **Rename `InputValueDef` into `InputValueDefinition` for consistency - [bnjjj], [pull/182]**
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/168]: https://github.com/apollographql/apollo-rs/pull/182
+
+- **Rename `input_object_` method into `input_object` on `Document` - [bnjjj], [pull/182]**
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/168]: https://github.com/apollographql/apollo-rs/pull/182
+
 # [0.2.1](https://crates.io/crates/apollo-encoder/0.2.1) - 2021-02-17
 ## Fixes
 

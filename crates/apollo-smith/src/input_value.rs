@@ -76,7 +76,7 @@ pub struct InputValueDef {
     pub(crate) directives: Vec<Directive>,
 }
 
-impl From<InputValueDef> for apollo_encoder::InputValueDef {
+impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
     fn from(input_val: InputValueDef) -> Self {
         let mut new_input_val = Self::new(input_val.name.into(), input_val.ty.into());
         new_input_val.description(input_val.description.map(String::from));

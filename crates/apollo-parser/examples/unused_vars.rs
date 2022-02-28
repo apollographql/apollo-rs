@@ -23,8 +23,7 @@ fn are_variables_unused() {
             // We grab all the variables defined in the mutation
             let variables: Vec<String> = variable_defs
                 .iter()
-                .map(|v| v.variable_definitions())
-                .flatten()
+                .flat_map(|v| v.variable_definitions())
                 .filter_map(|v| Some(v.variable()?.text().to_string()))
                 .collect();
 
@@ -49,8 +48,7 @@ fn get_variables_from_selection(
                 let arguments = field.arguments();
                 let mut vars: Vec<String> = arguments
                     .iter()
-                    .map(|a| a.arguments())
-                    .flatten()
+                    .flat_map(|a| a.arguments())
                     .filter_map(|v| {
                         if let ast::Value::Variable(var) = v.value()? {
                             return Some(var.text().to_string());

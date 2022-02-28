@@ -154,8 +154,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
                 let variable_defs = op_def.variable_definitions();
                 let variables: Vec<TokenText> = variable_defs
                     .iter()
-                    .map(|v| v.variable_definitions())
-                    .flatten()
+                    .flat_map(|v| v.variable_definitions())
                     .filter_map(|v| Some(v.variable()?.name()?.text()))
                     .collect();
 
@@ -177,8 +176,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
                         let arguments = field.arguments();
                         let mut vars: Vec<TokenText> = arguments
                             .iter()
-                            .map(|a| a.arguments())
-                            .flatten()
+                            .flat_map(|a| a.arguments())
                             .filter_map(|v| {
                                 if let ast::Value::Variable(var) = v.value()? {
                                     return Some(var.name()?.text());

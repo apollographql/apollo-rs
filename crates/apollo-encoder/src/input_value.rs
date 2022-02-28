@@ -11,14 +11,14 @@ use crate::{Directive, StringValue, Type_};
 ///
 /// ### Example
 /// ```rust
-/// use apollo_encoder::{Type_, InputValueDef};
+/// use apollo_encoder::{Type_, InputValueDefinition};
 ///
 /// let ty_1 = Type_::NamedType {
 ///     name: "SpaceProgram".to_string(),
 /// };
 ///
 /// let ty_2 = Type_::List { ty: Box::new(ty_1) };
-/// let mut value = InputValueDef::new("cat".to_string(), ty_2);
+/// let mut value = InputValueDefinition::new("cat".to_string(), ty_2);
 /// value.description(Some("Very good cats".to_string()));
 ///
 /// assert_eq!(
@@ -27,7 +27,7 @@ use crate::{Directive, StringValue, Type_};
 /// );
 /// ```
 #[derive(Debug, PartialEq, Clone)]
-pub struct InputValueDef {
+pub struct InputValueDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String.
@@ -43,7 +43,7 @@ pub struct InputValueDef {
     directives: Vec<Directive>,
 }
 
-impl InputValueDef {
+impl InputValueDefinition {
     /// Create a new instance of InputValueDef.
     pub fn new(name: String, type_: Type_) -> Self {
         Self {
@@ -73,7 +73,7 @@ impl InputValueDef {
     }
 }
 
-impl fmt::Display for InputValueDef {
+impl fmt::Display for InputValueDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description)?;
 
@@ -106,7 +106,7 @@ mod tests {
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
         let ty_3 = Type_::NonNull { ty: Box::new(ty_2) };
-        let value = InputValueDef::new("spaceCat".to_string(), ty_3);
+        let value = InputValueDefinition::new("spaceCat".to_string(), ty_3);
 
         assert_eq!(value.to_string(), r#"spaceCat: [SpaceProgram]!"#);
     }
@@ -118,7 +118,7 @@ mod tests {
         };
 
         let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
-        let mut value = InputValueDef::new("spaceCat".to_string(), ty_2);
+        let mut value = InputValueDefinition::new("spaceCat".to_string(), ty_2);
         value.default(Some("\"Norwegian Forest\"".to_string()));
 
         assert_eq!(
@@ -134,7 +134,7 @@ mod tests {
         };
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
-        let mut value = InputValueDef::new("cat".to_string(), ty_2);
+        let mut value = InputValueDefinition::new("cat".to_string(), ty_2);
         let mut directive = Directive::new(String::from("testDirective"));
         directive.arg(Argument::new(String::from("first"), Value::Int(1)));
         value.description(Some("Very good cats".to_string()));
@@ -155,7 +155,7 @@ mod tests {
         let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
         let ty_3 = Type_::List { ty: Box::new(ty_2) };
         let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
-        let mut value = InputValueDef::new("spaceCat".to_string(), ty_4);
+        let mut value = InputValueDefinition::new("spaceCat".to_string(), ty_4);
         value.description(Some("Very good space cats".to_string()));
 
         assert_eq!(
