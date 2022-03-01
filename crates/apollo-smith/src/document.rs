@@ -73,6 +73,69 @@ impl From<Document> for apollo_encoder::Document {
     }
 }
 
+// Maybe under a feature flag ?
+impl From<apollo_parser::ast::Document> for Document {
+    fn from(doc: apollo_parser::ast::Document) -> Self {
+        // All commented parts are TODO
+        // The main goal is to support minimal federation demo schema
+        // doc.fragment_definitions
+        //     .into_iter()
+        //     .for_each(|fragment_def| new_doc.fragment(fragment_def.into()));
+
+        // doc.scalar_type_definitions
+        //     .into_iter()
+        //     .for_each(|scalar_type_def| new_doc.scalar(scalar_type_def.into()));
+        let mut enum_defs = Vec::new();
+        let mut object_defs = Vec::new();
+        let mut schema_defs = Vec::new();
+
+        for definition in doc.definitions() {
+            match definition {
+                apollo_parser::ast::Definition::EnumTypeDefinition(enum_def) => {
+                    enum_defs.push(EnumTypeDef::from(enum_def));
+                }
+                apollo_parser::ast::Definition::ObjectTypeDefinition(obj_def) => {
+                    object_defs.push(ObjectTypeDef::from(obj_def));
+                }
+                apollo_parser::ast::Definition::SchemaDefinition(schema_def) => {
+                    schema_defs.push(SchemaDef::from(schema_def));
+                }
+                // TODO
+                // apollo_parser::ast::Definition::ScalarTypeDefinition(_) => todo!(),
+                // apollo_parser::ast::Definition::InterfaceTypeDefinition(_) => todo!(),
+                // apollo_parser::ast::Definition::UnionTypeDefinition(_) => todo!(),
+                // apollo_parser::ast::Definition::InputObjectTypeDefinition(_) => todo!(),
+                // apollo_parser::ast::Definition::ScalarTypeExtension(_) => todo!(),
+                // apollo_parser::ast::Definition::DirectiveDefinition(_) => todo!(),
+                // apollo_parser::ast::Definition::FragmentDefinition(_) => todo!(),
+                // apollo_parser::ast::Definition::InterfaceTypeExtension(_) => todo!(),
+                // apollo_parser::ast::Definition::SchemaExtension(_) => todo!(),
+                // apollo_parser::ast::Definition::EnumTypeExtension(_) => todo!(),
+                // apollo_parser::ast::Definition::ObjectTypeExtension(_) => todo!(),
+                // apollo_parser::ast::Definition::UnionTypeExtension(_) => todo!(),
+                // apollo_parser::ast::Definition::OperationDefinition(_) => todo!(),
+                // apollo_parser::ast::Definition::InputObjectTypeExtension(_) => todo!(),
+                _ => {
+                    // TODO
+                }
+            }
+        }
+
+        Self {
+            operation_definitions: Vec::new(),
+            fragment_definitions: Vec::new(),
+            schema_definitions: schema_defs,
+            scalar_type_definitions: Vec::new(),
+            object_type_definitions: object_defs,
+            interface_type_definitions: Vec::new(),
+            union_type_definitions: Vec::new(),
+            enum_type_definitions: enum_defs,
+            input_object_type_definitions: Vec::new(),
+            directive_definitions: Vec::new(),
+        }
+    }
+}
+
 impl From<Document> for String {
     fn from(doc: Document) -> Self {
         apollo_encoder::Document::from(doc).to_string()

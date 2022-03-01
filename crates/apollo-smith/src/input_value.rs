@@ -33,6 +33,36 @@ impl From<InputValue> for apollo_encoder::Value {
     }
 }
 
+impl From<apollo_parser::ast::DefaultValue> for InputValue {
+    fn from(default_val: apollo_parser::ast::DefaultValue) -> Self {
+        default_val.value().unwrap().into()
+    }
+}
+
+impl From<apollo_parser::ast::Value> for InputValue {
+    fn from(value: apollo_parser::ast::Value) -> Self {
+        match value {
+            apollo_parser::ast::Value::Variable(variable) => {
+                Self::Variable(variable.name().unwrap().into())
+            }
+            apollo_parser::ast::Value::StringValue(val) => Self::String(val.into()),
+            apollo_parser::ast::Value::FloatValue(val) => Self::Float(val.into()),
+            apollo_parser::ast::Value::IntValue(val) => Self::Int(val.into()),
+            apollo_parser::ast::Value::BooleanValue(val) => Self::Boolean(val.into()),
+            apollo_parser::ast::Value::NullValue(val) => Self::Null,
+            apollo_parser::ast::Value::EnumValue(val) => Self::Enum(val.name().unwrap().into()),
+            apollo_parser::ast::Value::ListValue(val) => {
+                Self::List(val.values().map(Self::from).collect())
+            }
+            apollo_parser::ast::Value::ObjectValue(val) => Self::Object(
+                val.object_fields()
+                    .map(|of| (of.name().unwrap().into(), of.value().unwrap().into()))
+                    .collect(),
+            ),
+        }
+    }
+}
+
 impl From<InputValue> for String {
     fn from(input_val: InputValue) -> Self {
         match input_val {
@@ -87,6 +117,19 @@ impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
             .for_each(|directive| new_input_val.directive(directive.into()));
 
         new_input_val
+    }
+}
+
+impl From<apollo_parser::ast::InputValueDefinition> for InputValueDef {
+    fn from(input_val_def: apollo_parser::ast::InputValueDefinition) -> Self {
+        Self {
+            description: input_val_def.description().map(Description::from),
+            name: input_val_def.name().unwrap().into(),
+            ty: input_val_def.ty().unwrap().into(),
+            default_value: input_val_def.default_value().map(InputValue::from),
+            // TODO
+            directives: Vec::new(),
+        }
     }
 }
 
@@ -146,6 +189,67 @@ impl<'a> DocumentBuilder<'a> {
             // Variable TODO: only generate valid variable name (existing variables)
             8 => InputValue::Variable(self.name()?),
             _ => unreachable!(),
+        };
+
+        Ok(val)
+    }
+
+    pub fn input_value_for_type(&mut self, ty: &Ty) -> Result<InputValue> {
+        let gen_val = |doc_builder: &mut DocumentBuilder<'_>| -> Result<InputValue> {
+            if ty.is_builtin() {
+                match ty.name().name.as_str() {
+                    "String" => Ok(InputValue::String(doc_builder.u.arbitrary::<String>()?)),
+                    "Int" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
+                    "Float" => Ok(InputValue::Float(doc_builder.u.arbitrary()?)),
+                    "Boolean" => Ok(InputValue::Boolean(doc_builder.u.arbitrary()?)),
+                    "ID" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
+                    other => {
+                        unreachable!("{} is not a builtin", other);
+                    }
+                }
+            } else if let Some(enum_) = doc_builder
+                .enum_type_defs
+                .iter()
+                .find(|e| &e.name == ty.name())
+                .cloned()
+            {
+                Ok(InputValue::Enum(
+                    doc_builder.arbitrary_variant(&enum_)?.clone(),
+                ))
+            } else if let Some(object_ty) = doc_builder
+                .object_type_defs
+                .iter()
+                .find(|o| &o.name == ty.name())
+                .cloned()
+            {
+                Ok(InputValue::Object(
+                    object_ty
+                        .fields_def
+                        .iter()
+                        .map(|field_def| {
+                            Ok((
+                                field_def.name.clone(),
+                                doc_builder.input_value_for_type(&field_def.ty)?,
+                            ))
+                        })
+                        .collect::<Result<Vec<_>>>()?,
+                ))
+            } else {
+                todo!()
+            }
+        };
+
+        let val = match ty {
+            Ty::Named(_) => gen_val(self)?,
+            Ty::List(_) => {
+                let nb_elt = self.u.int_in_range(0..=10usize)?;
+                InputValue::List(
+                    (0..nb_elt)
+                        .map(|_| gen_val(self))
+                        .collect::<Result<Vec<InputValue>>>()?,
+                )
+            }
+            Ty::NonNull(_) => gen_val(self)?,
         };
 
         Ok(val)
@@ -211,5 +315,100 @@ impl<'a> DocumentBuilder<'a> {
             default_value,
             directives,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use arbitrary::Unstructured;
+
+    use crate::{field::FieldDef, ObjectTypeDef};
+
+    use super::*;
+
+    #[test]
+    fn test_input_value_for_type() {
+        let mut u = Unstructured::new(&([1, 2, 3, 4, 5, 6, 7]));
+        let mut document_builder = DocumentBuilder {
+            u: &mut u,
+            input_object_type_defs: Vec::new(),
+            object_type_defs: Vec::new(),
+            interface_type_defs: Vec::new(),
+            union_type_defs: Vec::new(),
+            enum_type_defs: Vec::new(),
+            scalar_type_defs: Vec::new(),
+            schema_defs: Vec::new(),
+            directive_defs: Vec::new(),
+            operation_defs: Vec::new(),
+            fragment_defs: Vec::new(),
+            stack: Vec::new(),
+        };
+        let my_nested_type = ObjectTypeDef {
+            description: None,
+            name: Name {
+                name: String::from("my_nested_object"),
+            },
+            interface_impls: HashSet::new(),
+            directives: Vec::new(),
+            fields_def: vec![FieldDef {
+                description: None,
+                name: Name {
+                    name: String::from("value"),
+                },
+                arguments_definition: None,
+                ty: Ty::Named(Name {
+                    name: String::from("String"),
+                }),
+                directives: Vec::new(),
+            }],
+            extend: false,
+        };
+
+        let my_object_type = ObjectTypeDef {
+            description: None,
+            name: Name {
+                name: String::from("my_object"),
+            },
+            interface_impls: HashSet::new(),
+            directives: Vec::new(),
+            fields_def: vec![FieldDef {
+                description: None,
+                name: Name {
+                    name: String::from("first"),
+                },
+                arguments_definition: None,
+                ty: Ty::List(Box::new(Ty::Named(Name {
+                    name: String::from("my_nested_object"),
+                }))),
+                directives: Vec::new(),
+            }],
+            extend: false,
+        };
+        document_builder.object_type_defs.push(my_nested_type);
+        document_builder.object_type_defs.push(my_object_type);
+
+        let my_type_to_find = Ty::List(Box::new(Ty::Named(Name {
+            name: String::from("my_object"),
+        })));
+        document_builder.object_type_defs.iter().find(|o| {
+            let res = &o.name == my_type_to_find.name();
+
+            res
+        });
+
+        let input_val = document_builder
+            .input_value_for_type(&Ty::List(Box::new(Ty::Named(Name {
+                name: String::from("my_object"),
+            }))))
+            .unwrap();
+
+        let input_val_str = apollo_encoder::Value::from(input_val).to_string();
+
+        assert_eq!(
+            input_val_str.as_str(),
+            "[{ first: [{ value: \"\u{3}\u{4}\" }, { value: \"\" }] }]"
+        );
     }
 }

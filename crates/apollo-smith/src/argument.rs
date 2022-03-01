@@ -30,6 +30,17 @@ impl From<ArgumentsDef> for apollo_encoder::ArgumentsDefinition {
     }
 }
 
+impl From<apollo_parser::ast::ArgumentsDefinition> for ArgumentsDef {
+    fn from(args_def: apollo_parser::ast::ArgumentsDefinition) -> Self {
+        Self {
+            input_value_definitions: args_def
+                .input_value_definitions()
+                .map(InputValueDef::from)
+                .collect(),
+        }
+    }
+}
+
 /// The `__Argument` type represents an argument
 ///
 /// *Argument*:
@@ -59,9 +70,28 @@ impl<'a> DocumentBuilder<'a> {
         Ok(arguments)
     }
 
+    /// Create an arbitrary vector of `Argument` given ArgumentsDef
+    pub fn arguments_with_def(&mut self, args_def: &ArgumentsDef) -> Result<Vec<Argument>> {
+        let arguments = args_def
+            .input_value_definitions
+            .iter()
+            .map(|input_val_def| self.argument_with_def(input_val_def))
+            .collect::<Result<Vec<_>>>()?;
+
+        Ok(arguments)
+    }
+
     /// Create an arbitrary `Argument`
     pub fn argument(&mut self) -> Result<Argument> {
         let name = self.name()?;
+        let value = self.input_value()?;
+
+        Ok(Argument { name, value })
+    }
+
+    /// Create an arbitrary `Argument`
+    pub fn argument_with_def(&mut self, input_val_def: &InputValueDef) -> Result<Argument> {
+        let name = input_val_def.name.clone();
         let value = self.input_value()?;
 
         Ok(Argument { name, value })

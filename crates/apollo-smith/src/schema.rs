@@ -7,7 +7,7 @@ use arbitrary::Result;
 ///     Description? **schema** Directives? **{** RootOperationTypeDefinition* **}**
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Schema).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SchemaDef {
     pub(crate) description: Option<Description>,
     pub(crate) directives: Vec<Directive>,
@@ -39,6 +39,37 @@ impl From<SchemaDef> for apollo_encoder::SchemaDefinition {
         }
 
         new_schema_def
+    }
+}
+
+impl From<apollo_parser::ast::SchemaDefinition> for SchemaDef {
+    fn from(schema_def: apollo_parser::ast::SchemaDefinition) -> Self {
+        let mut query = None;
+        let mut mutation = None;
+        let mut subcription = None;
+        for root_op in schema_def.root_operation_type_definitions() {
+            let op_type = root_op.operation_type().unwrap();
+            let named_type = root_op.named_type().unwrap();
+            if op_type.query_token().is_some() {
+                query = named_type.into();
+            } else if op_type.mutation_token().is_some() {
+                mutation = named_type.into();
+            } else if op_type.subscription_token().is_some() {
+                subcription = named_type.into();
+            } else {
+                panic!("operation type must be one of query|mutation|subscription");
+            }
+        }
+        Self {
+            // TODO https://github.com/apollographql/apollo-rs/issues/185
+            description: None,
+            // TODO
+            directives: Vec::new(),
+            query: query.map(Ty::from),
+            mutation: mutation.map(Ty::from),
+            subscription: subcription.map(Ty::from),
+            extend: bool::default(),
+        }
     }
 }
 

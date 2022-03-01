@@ -9,7 +9,7 @@ use crate::{
     name::Name,
     selection_set::SelectionSet,
     ty::Ty,
-    DocumentBuilder,
+    DocumentBuilder, ObjectTypeDef,
 };
 
 /// The __FieldDef type represents each field definition in an Object definition or Interface type definition.
@@ -41,6 +41,22 @@ impl From<FieldDef> for apollo_encoder::FieldDefinition {
             .for_each(|directive| field.directive(directive.into()));
 
         field
+    }
+}
+
+impl From<apollo_parser::ast::FieldDefinition> for FieldDef {
+    fn from(field_def: apollo_parser::ast::FieldDefinition) -> Self {
+        Self {
+            description: field_def.description().map(Description::from),
+            name: field_def
+                .name()
+                .expect("field definition must have a name")
+                .into(),
+            arguments_definition: field_def.arguments_definition().map(ArgumentsDef::from),
+            ty: field_def.ty().unwrap().into(),
+            // TODO
+            directives: Vec::new(),
+        }
     }
 }
 
@@ -134,6 +150,48 @@ impl<'a> DocumentBuilder<'a> {
             .unwrap_or(false)
             .then(|| self.selection_set())
             .transpose()?;
+
+        Ok(Field {
+            alias,
+            name,
+            args,
+            directives,
+            selection_set,
+        })
+    }
+
+    /// Create an arbitrary `Field` given an object type
+    pub fn field(&mut self) -> Result<Field> {
+        let type_def = self.stack.last().cloned().unwrap();
+        let object_ty = type_def.as_object().unwrap();
+        let choosen_field_def = self.u.choose(&object_ty.fields_def)?;
+        let alias = self
+            .u
+            .arbitrary()
+            .unwrap_or(false)
+            .then(|| self.name())
+            .transpose()?;
+
+        let name = choosen_field_def.name.clone();
+        let args = choosen_field_def
+            .arguments_definition
+            .clone()
+            .map(|args_def| self.arguments_with_def(&args_def))
+            .unwrap_or_else(|| Ok(vec![]))?;
+        let directives = self.directives()?;
+
+        let selection_set = if !choosen_field_def.ty.is_builtin() {
+            // Put current ty on the stack
+            if self.stack_ty(&choosen_field_def.ty) {
+                let res = Some(self.selection_set()?);
+                self.stack.pop();
+                res
+            } else {
+                None
+            }
+        } else {
+            None
+        };
 
         Ok(Field {
             alias,

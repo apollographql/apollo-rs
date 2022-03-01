@@ -73,8 +73,11 @@ impl From<Directive> for apollo_encoder::Directive {
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary vector of `Directive`
     pub fn directives(&mut self) -> Result<Vec<Directive>> {
-        // TODO choose only existing directives
-        let num_directives = self.u.int_in_range(0..=4)?;
+        if self.directive_defs.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let num_directives = self.u.int_in_range(0..=(self.directive_defs.len() - 1))?;
         let directives = (0..num_directives)
             .map(|_| self.directive())
             .collect::<Result<Vec<_>>>()?;
@@ -84,8 +87,14 @@ impl<'a> DocumentBuilder<'a> {
 
     /// Create an arbitrary `Directive`
     pub fn directive(&mut self) -> Result<Directive> {
-        let name = self.name()?;
-        let arguments = self.arguments()?;
+        let directive_def = self.u.choose(&self.directive_defs)?;
+
+        let name = directive_def.name.clone();
+        let arguments = directive_def
+            .arguments_definition
+            .clone()
+            .map(|args_def| self.arguments_with_def(&args_def))
+            .unwrap_or_else(|| Ok(vec![]))?;
 
         Ok(Directive { name, arguments })
     }

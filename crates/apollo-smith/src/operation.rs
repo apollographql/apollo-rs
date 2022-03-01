@@ -1,8 +1,10 @@
+use std::fmt::Display;
+
 use arbitrary::{Arbitrary, Result};
 
 use crate::{
     directive::Directive, name::Name, selection_set::SelectionSet, variable::VariableDef,
-    DocumentBuilder,
+    DocumentBuilder, SchemaDef,
 };
 
 /// The __operationDef type represents an operation definition
@@ -39,13 +41,19 @@ impl From<OperationDef> for apollo_encoder::OperationDefinition {
     }
 }
 
+impl From<OperationDef> for String {
+    fn from(op_def: OperationDef) -> Self {
+        apollo_encoder::OperationDefinition::from(op_def).to_string()
+    }
+}
+
 /// The __operationType type represents the kind of operation
 ///
 /// *OperationType*:
 ///     query | mutation | subscription
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#OperationType).
-#[derive(Debug, Arbitrary)]
+#[derive(Debug, Arbitrary, Clone, Copy)]
 pub enum OperationType {
     Query,
     Mutation,
@@ -71,6 +79,7 @@ impl<'a> DocumentBuilder<'a> {
             .unwrap_or(false)
             .then(|| self.type_name())
             .transpose()?;
+
         let operation_type = self.u.arbitrary()?;
         let directives = self.directives()?;
         let selection_set = self.selection_set()?;
@@ -79,6 +88,54 @@ impl<'a> DocumentBuilder<'a> {
 
         Ok(OperationDef {
             operation_type,
+            name,
+            variable_definitions,
+            directives,
+            selection_set,
+            shorthand,
+        })
+    }
+
+    /// Create an arbitrary `OperationDef` given a `SchemaDef`
+    pub fn operation_definition_from_schema(&mut self) -> Result<OperationDef> {
+        let schema = self.schema_defs.last().cloned().unwrap();
+        let name = self
+            .u
+            .arbitrary()
+            .unwrap_or(false)
+            .then(|| self.type_name())
+            .transpose()?;
+        let available_operations = {
+            let mut ops = vec![];
+            if let Some(query) = &schema.query {
+                ops.push((OperationType::Query, query));
+            }
+            if let Some(mutation) = &schema.mutation {
+                ops.push((OperationType::Mutation, mutation));
+            }
+            if let Some(subscription) = &schema.subscription {
+                ops.push((OperationType::Subscription, subscription));
+            }
+
+            ops
+        };
+        let (operation_type, choosen_ty) = self.u.choose(&available_operations)?;
+        let directives = self.directives()?;
+
+        // Stack
+        self.stack_ty(choosen_ty);
+
+        let selection_set = self.selection_set()?;
+
+        self.stack.pop();
+
+        // TODO
+        let variable_definitions = vec![];
+
+        let shorthand = self.operation_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
+
+        Ok(OperationDef {
+            operation_type: *operation_type,
             name,
             variable_definitions,
             directives,

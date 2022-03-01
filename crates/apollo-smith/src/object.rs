@@ -16,7 +16,7 @@ use crate::{
 ///     Description? **type** Name ImplementsInterfaces? Directives? FieldsDefinition?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Object).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ObjectTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
@@ -44,6 +44,29 @@ impl From<ObjectTypeDef> for ObjectDefinition {
         }
 
         object_def
+    }
+}
+
+impl From<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
+    fn from(object_def: apollo_parser::ast::ObjectTypeDefinition) -> Self {
+        Self {
+            name: object_def
+                .name()
+                .expect("object type definition must have a name")
+                .into(),
+            description: object_def.description().map(Description::from),
+            // TODO
+            directives: Vec::new(),
+            // TODO
+            interface_impls: HashSet::new(),
+            extend: false,
+            fields_def: object_def
+                .fields_definition()
+                .expect("object type definition must have fields definition")
+                .field_definitions()
+                .map(FieldDef::from)
+                .collect(),
+        }
     }
 }
 

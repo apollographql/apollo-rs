@@ -125,7 +125,7 @@ impl<'a> DocumentBuilder<'a> {
             .filter(|f| excludes.contains(&f.name))
             .collect();
 
-        let name = if !available_fragment.is_empty() {
+        let name = if available_fragment.is_empty() {
             return Ok(None);
         } else {
             self.u.choose(&available_fragment)?.name.clone()
@@ -156,14 +156,25 @@ impl<'a> DocumentBuilder<'a> {
 
     /// Create an arbitrary `TypeCondition`
     pub fn type_condition(&mut self) -> Result<TypeCondition> {
-        let named_types: Vec<Ty> = self
-            .list_existing_object_types()
-            .into_iter()
-            .filter(Ty::is_named)
-            .collect();
+        let last_element = self
+            .stack
+            .last()
+            .and_then(|last_element| last_element.as_object());
+        match last_element {
+            Some(last_element) => Ok(TypeCondition {
+                name: last_element.name.clone(),
+            }),
+            None => {
+                let named_types: Vec<Ty> = self
+                    .list_existing_object_types()
+                    .into_iter()
+                    .filter(Ty::is_named)
+                    .collect();
 
-        Ok(TypeCondition {
-            name: self.choose_named_ty(&named_types)?.name().clone(),
-        })
+                Ok(TypeCondition {
+                    name: self.choose_named_ty(&named_types)?.name().clone(),
+                })
+            }
+        }
     }
 }

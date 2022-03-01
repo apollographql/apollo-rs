@@ -43,6 +43,14 @@ impl From<Name> for String {
     }
 }
 
+impl From<apollo_parser::ast::Name> for Name {
+    fn from(name: apollo_parser::ast::Name) -> Self {
+        Self {
+            name: name.ident_token().unwrap().to_string(),
+        }
+    }
+}
+
 impl Name {
     pub const fn new(name: String) -> Self {
         Self { name }

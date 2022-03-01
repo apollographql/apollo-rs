@@ -21,6 +21,18 @@ impl From<Description> for String {
     }
 }
 
+impl From<apollo_parser::ast::Description> for Description {
+    fn from(desc: apollo_parser::ast::Description) -> Self {
+        Description(StringValue::from(desc.to_string()))
+    }
+}
+
+impl From<String> for Description {
+    fn from(desc: String) -> Self {
+        Description(StringValue::from(desc))
+    }
+}
+
 /// The `__StringValue` type represents a sequence of characters
 ///
 /// *StringValue*:
@@ -42,6 +54,16 @@ impl From<StringValue> for String {
             StringValue::Block(str_val) => format!(r#""""{str_val}""""#),
             StringValue::Line(str_val) => format!(r#"{str_val}""#),
         }
+    }
+}
+
+impl From<String> for StringValue {
+    fn from(str_value: String) -> Self {
+        // TODO check
+        if str_value.contains(['"', '\t', '\r', '\n']) {
+            return StringValue::Block(str_value);
+        }
+        StringValue::Line(str_value)
     }
 }
 

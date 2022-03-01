@@ -40,6 +40,26 @@ impl From<EnumTypeDef> for EnumDefinition {
     }
 }
 
+impl From<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
+    fn from(enum_def: apollo_parser::ast::EnumTypeDefinition) -> Self {
+        Self {
+            description: enum_def
+                .description()
+                .map(|d| Description::from(d.to_string())),
+            name: enum_def.name().unwrap().into(),
+            // TODO
+            directives: Vec::new(),
+            enum_values_def: enum_def
+                .enum_values_definition()
+                .expect("must have enum values definition")
+                .enum_value_definitions()
+                .map(|ev| EnumValueDefinition::from(ev))
+                .collect(),
+            extend: false,
+        }
+    }
+}
+
 /// The __EnumValue type represents one of possible values of an enum.
 ///
 /// *EnumValueDefinition*:
@@ -63,6 +83,22 @@ impl From<EnumValueDefinition> for EnumValue {
             .for_each(|directive| new_enum_val.directive(directive.into()));
 
         new_enum_val
+    }
+}
+
+impl From<apollo_parser::ast::EnumValueDefinition> for EnumValueDefinition {
+    fn from(enum_value_def: apollo_parser::ast::EnumValueDefinition) -> Self {
+        Self {
+            description: enum_value_def.description().map(Description::from),
+            value: enum_value_def
+                .enum_value()
+                .expect("enum value def must have enum value")
+                .name()
+                .expect("enum value mus have a name")
+                .into(),
+            // TODO
+            directives: Vec::new(),
+        }
     }
 }
 
