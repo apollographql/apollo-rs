@@ -53,7 +53,7 @@ impl From<OperationDef> for String {
 ///     query | mutation | subscription
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#OperationType).
-#[derive(Debug, Arbitrary, Clone, Copy)]
+#[derive(Debug, Arbitrary, Clone, Copy, PartialEq)]
 pub enum OperationType {
     Query,
     Mutation,
@@ -84,7 +84,9 @@ impl<'a> DocumentBuilder<'a> {
         let directives = self.directives()?;
         let selection_set = self.selection_set()?;
         let variable_definitions = self.variable_definitions()?;
-        let shorthand = self.operation_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
+        let shorthand = self.operation_defs.is_empty()
+            && operation_type == OperationType::Query
+            && self.u.arbitrary().unwrap_or(false);
 
         Ok(OperationDef {
             operation_type,
@@ -110,12 +112,13 @@ impl<'a> DocumentBuilder<'a> {
             if let Some(query) = &schema.query {
                 ops.push((OperationType::Query, query));
             }
-            if let Some(mutation) = &schema.mutation {
-                ops.push((OperationType::Mutation, mutation));
-            }
-            if let Some(subscription) = &schema.subscription {
-                ops.push((OperationType::Subscription, subscription));
-            }
+            // TODO re-enable them. The issue is about argumentsDef
+            // if let Some(mutation) = &schema.mutation {
+            //     ops.push((OperationType::Mutation, mutation));
+            // }
+            // if let Some(subscription) = &schema.subscription {
+            //     ops.push((OperationType::Subscription, subscription));
+            // }
 
             ops
         };
@@ -132,7 +135,9 @@ impl<'a> DocumentBuilder<'a> {
         // TODO
         let variable_definitions = vec![];
 
-        let shorthand = self.operation_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
+        let shorthand = self.operation_defs.is_empty()
+            && operation_type == &OperationType::Query
+            && self.u.arbitrary().unwrap_or(false);
 
         Ok(OperationDef {
             operation_type: *operation_type,
