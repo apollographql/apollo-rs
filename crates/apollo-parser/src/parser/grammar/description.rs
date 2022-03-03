@@ -33,15 +33,13 @@ type Query {
         let document = ast.document();
         for definition in document.definitions() {
             if let ast::Definition::ObjectTypeDefinition(obj_def) = definition {
-                assert_eq!(
-                    obj_def
-                        .description()
-                        .unwrap()
-                        .string_value()
-                        .unwrap()
-                        .into(),
-                    "description for Query object type"
-                );
+                let desc: String = obj_def
+                    .description()
+                    .unwrap()
+                    .string_value()
+                    .unwrap()
+                    .into();
+                assert_eq!(desc, String::from("\ndescription for Query object type\n"));
                 return;
             }
         }
