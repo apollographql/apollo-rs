@@ -35,11 +35,11 @@ struct GraphQLUndefinedVariablesError {
     span: SourceSpan,
 }
 
-pub struct Context {
+pub struct ApolloCompiler {
     db: Database,
 }
 
-impl Context {
+impl ApolloCompiler {
     pub fn new(input: &str) -> Self {
         let mut db = Database::default();
         let input = input.to_string();
@@ -158,7 +158,7 @@ fragment vipCustomer on User {
 }
 "#;
 
-        let ctx = Context::new(input);
+        let ctx = ApolloCompiler::new(input);
         // let errors = ctx.validate();
 
         let operation_names: Vec<String> =

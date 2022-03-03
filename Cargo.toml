@@ -3,7 +3,7 @@ members = [
     "xtask/",
     "crates/apollo-encoder",
     "crates/apollo-parser",
-    "crates/apollo-context",
+    "crates/apollo-compiler",
     "crates/apollo-smith",
     "fuzz",
 ]
