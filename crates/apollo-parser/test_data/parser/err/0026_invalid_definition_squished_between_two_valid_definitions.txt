@@ -16,8 +16,9 @@
             - WHITESPACE@25..30 "\n    "
             - ENUM_VALUE_DEFINITION@30..72
                 - DESCRIPTION@30..62
-                    - STRING_VALUE@30..57 "\"\"\"\n    description\n    \"\"\""
-                    - WHITESPACE@57..62 "\n    "
+                    - STRING_VALUE@30..62
+                        - STRING@30..57 "\"\"\"\n    description\n    \"\"\""
+                        - WHITESPACE@57..62 "\n    "
                 - ENUM_VALUE@62..72
                     - NAME@62..72
                         - IDENT@62..67 "NORTH"
