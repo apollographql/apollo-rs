@@ -4,6 +4,8 @@ mod values;
 
 use std::sync::Arc;
 
+use apollo_parser::{ast, SyntaxTree};
+use queries::database::FragmentsQuery;
 pub use queries::database::{Database, SourceDatabase};
 
 use miette::{Diagnostic, NamedSource, SourceSpan};
@@ -31,6 +33,39 @@ struct GraphQLUndefinedVariablesError {
     message: String,
     #[label("{}", self.message)]
     span: SourceSpan,
+}
+
+pub struct Context {
+    db: Database,
+}
+
+impl Context {
+    pub fn new(input: &str) -> Self {
+        let mut db = Database::default();
+        let input = input.to_string();
+        db.set_input_string((), Arc::new(input));
+        Self { db }
+    }
+
+    pub fn parse(&self) -> Arc<SyntaxTree> {
+        self.db.parse()
+    }
+
+    pub fn syntax_errors(&self) -> Arc<Vec<values::Error>> {
+        self.db.syntax_errors()
+    }
+
+    pub fn definitions(&self) -> Arc<Vec<ast::Definition>> {
+        self.db.definitions()
+    }
+
+    pub fn operations(&self) -> Arc<Vec<values::OperationDefinition>> {
+        self.db.operations()
+    }
+
+    pub fn fragments(&self) -> Arc<Vec<values::FragmentDefinition>> {
+        self.db.fragments()
+    }
 }
 
 pub fn validate(src: &str) {
@@ -113,8 +148,26 @@ query ExampleQuery($definedVariable: String) {
   topProducts(first: $undefinedVariable) {
     name
   }
-}"#;
+}
 
-        validate(input)
+fragment vipCustomer on User {
+  id
+  name
+  profilePic(size: 50)
+  status
+}
+"#;
+
+        let ctx = Context::new(input);
+        let operations: Vec<String> = ctx.operations().iter().map(|op| op.name.clone()).collect();
+        assert_eq!(["ExampleQuery"], operations.as_slice());
+        let fragments: Vec<String> = ctx
+            .fragments()
+            .iter()
+            .map(|fragment| fragment.name.clone())
+            .collect();
+        assert_eq!(["vipCustomer"], fragments.as_slice());
+        // let operation_variables = ctx.operations().find_one("ExampleQuery").variables();
+        // let fragment_fields = ctx.fragments().find_one("friendFields").fields();
     }
 }

@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use crate::SourceDatabase;
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Error {
     pub message: String,
@@ -28,6 +30,18 @@ pub struct OperationDefinition {
     pub variables: Option<Arc<Vec<VariableDefinition>>>,
     pub directives: Option<Arc<Vec<Directive>>>,
     pub selection_set: Arc<Vec<Selection>>,
+}
+
+impl OperationDefinition {
+    pub fn find_one(db: &dyn SourceDatabase, name: String) -> Option<Arc<OperationDefinition>> {
+        db.operations().iter().find_map(|op| {
+            if op.name == name {
+                Some(Arc::new(op.clone()))
+            } else {
+                None
+            }
+        })
+    }
 }
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]

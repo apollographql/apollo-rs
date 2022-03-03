@@ -155,6 +155,9 @@ fn fragment_definition(
     let name = fragment_def
         .fragment_name()
         .expect("Fragment Definition must have a name")
+        .name()
+        .expect("Name must have text")
+        .text()
         .to_string();
     let type_condition = fragment_def
         .type_condition()
