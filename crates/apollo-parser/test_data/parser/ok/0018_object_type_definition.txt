@@ -1,8 +1,9 @@
 - DOCUMENT@0..142
     - OBJECT_TYPE_DEFINITION@0..142
         - DESCRIPTION@0..22
-            - STRING_VALUE@0..21 "\"description of type\""
-            - WHITESPACE@21..22 "\n"
+            - STRING_VALUE@0..22
+                - STRING@0..21 "\"description of type\""
+                - WHITESPACE@21..22 "\n"
         - type_KW@22..26 "type"
         - WHITESPACE@26..27 " "
         - NAME@27..34
@@ -20,8 +21,9 @@
             - WHITESPACE@52..57 "\n    "
             - FIELD_DEFINITION@57..115
                 - DESCRIPTION@57..98
-                    - STRING_VALUE@57..93 "\"\"\"\n    description of field\n    \"\"\""
-                    - WHITESPACE@93..98 "\n    "
+                    - STRING_VALUE@57..98
+                        - STRING@57..93 "\"\"\"\n    description of field\n    \"\"\""
+                        - WHITESPACE@93..98 "\n    "
                 - NAME@98..102
                     - IDENT@98..102 "name"
                 - COLON@102..103 ":"

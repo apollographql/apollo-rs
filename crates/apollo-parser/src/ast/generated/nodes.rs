@@ -68,6 +68,7 @@ pub struct SchemaDefinition {
     pub(crate) syntax: SyntaxNode,
 }
 impl SchemaDefinition {
+    pub fn description(&self) -> Option<Description> { support::child(&self.syntax) }
     pub fn schema_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![schema]) }
     pub fn directives(&self) -> Option<Directives> { support::child(&self.syntax) }
     pub fn l_curly_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S!['{']) }
@@ -485,6 +486,13 @@ impl Directive {
     pub fn arguments(&self) -> Option<Arguments> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Description {
+    pub(crate) syntax: SyntaxNode,
+}
+impl Description {
+    pub fn string_value(&self) -> Option<StringValue> { support::child(&self.syntax) }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RootOperationTypeDefinition {
     pub(crate) syntax: SyntaxNode,
 }
@@ -492,13 +500,6 @@ impl RootOperationTypeDefinition {
     pub fn operation_type(&self) -> Option<OperationType> { support::child(&self.syntax) }
     pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![:]) }
     pub fn named_type(&self) -> Option<NamedType> { support::child(&self.syntax) }
-}
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Description {
-    pub(crate) syntax: SyntaxNode,
-}
-impl Description {
-    pub fn string_value(&self) -> Option<StringValue> { support::child(&self.syntax) }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ImplementsInterfaces {
@@ -1218,8 +1219,8 @@ impl AstNode for Directive {
     }
     fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for RootOperationTypeDefinition {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == ROOT_OPERATION_TYPE_DEFINITION }
+impl AstNode for Description {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == DESCRIPTION }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -1229,8 +1230,8 @@ impl AstNode for RootOperationTypeDefinition {
     }
     fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for Description {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == DESCRIPTION }
+impl AstNode for RootOperationTypeDefinition {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == ROOT_OPERATION_TYPE_DEFINITION }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -1888,12 +1889,12 @@ impl std::fmt::Display for Directive {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for RootOperationTypeDefinition {
+impl std::fmt::Display for Description {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for Description {
+impl std::fmt::Display for RootOperationTypeDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
