@@ -6,5 +6,43 @@ use crate::{Parser, SyntaxKind};
 ///     StringValue
 pub(crate) fn description(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DESCRIPTION);
-    p.bump(SyntaxKind::STRING_VALUE)
+    let _g_string = p.start_node(SyntaxKind::STRING_VALUE);
+    p.bump(SyntaxKind::STRING)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ast;
+
+    use super::*;
+    #[test]
+    fn it_can_access_definition_description() {
+        let schema = r#"
+"""
+description for Query object type
+"""
+type Query {
+  bestSellers(category: ProductCategory = ALL): [Product] @join__field(graph: PRODUCTS)
+}
+        "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+
+        assert!(ast.errors.is_empty());
+
+        let document = ast.document();
+        for definition in document.definitions() {
+            if let ast::Definition::ObjectTypeDefinition(obj_def) = definition {
+                let desc: String = obj_def
+                    .description()
+                    .unwrap()
+                    .string_value()
+                    .unwrap()
+                    .into();
+                assert_eq!(desc, String::from("\ndescription for Query object type\n"));
+                return;
+            }
+        }
+        panic!("object type definition has not been catched");
+    }
 }

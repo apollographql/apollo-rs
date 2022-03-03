@@ -721,7 +721,7 @@
             - FIELD_DEFINITION@1390..1483
                 - NAME@1390..1394
                     - IDENT@1390..1394 "name"
-                - ARGUMENTS@1394..1419
+                - ARGUMENTS_DEFINITION@1394..1419
                     - L_PAREN@1394..1395 "("
                     - INPUT_VALUE_DEFINITION@1395..1418
                         - NAME@1395..1404
@@ -1987,7 +1987,7 @@
             - FIELD_DEFINITION@3607..3686
                 - NAME@3607..3618
                     - IDENT@3607..3618 "userAccount"
-                - ARGUMENTS@3618..3631
+                - ARGUMENTS_DEFINITION@3618..3631
                     - L_PAREN@3618..3619 "("
                     - INPUT_VALUE_DEFINITION@3619..3630
                         - NAME@3619..3621
@@ -2071,7 +2071,7 @@
             - FIELD_DEFINITION@3749..3831
                 - NAME@3749..3754
                     - IDENT@3749..3754 "login"
-                - ARGUMENTS@3754..3792
+                - ARGUMENTS_DEFINITION@3754..3792
                     - L_PAREN@3754..3755 "("
                     - INPUT_VALUE_DEFINITION@3755..3774
                         - NAME@3755..3763
@@ -2122,7 +2122,7 @@
             - FIELD_DEFINITION@3831..3914
                 - NAME@3831..3844
                     - IDENT@3831..3844 "reviewProduct"
-                - ARGUMENTS@3844..3873
+                - ARGUMENTS_DEFINITION@3844..3873
                     - L_PAREN@3844..3845 "("
                     - INPUT_VALUE_DEFINITION@3845..3859
                         - NAME@3845..3848
@@ -2173,7 +2173,7 @@
             - FIELD_DEFINITION@3914..3994
                 - NAME@3914..3926
                     - IDENT@3914..3926 "updateReview"
-                - ARGUMENTS@3926..3954
+                - ARGUMENTS_DEFINITION@3926..3954
                     - L_PAREN@3926..3927 "("
                     - INPUT_VALUE_DEFINITION@3927..3953
                         - NAME@3927..3933
@@ -2212,7 +2212,7 @@
             - FIELD_DEFINITION@3994..4054
                 - NAME@3994..4006
                     - IDENT@3994..4006 "deleteReview"
-                - ARGUMENTS@4006..4015
+                - ARGUMENTS_DEFINITION@4006..4015
                     - L_PAREN@4006..4007 "("
                     - INPUT_VALUE_DEFINITION@4007..4014
                         - NAME@4007..4009
@@ -2567,7 +2567,7 @@
             - FIELD_DEFINITION@4684..4736
                 - NAME@4684..4688
                     - IDENT@4684..4688 "user"
-                - ARGUMENTS@4688..4697
+                - ARGUMENTS_DEFINITION@4688..4697
                     - L_PAREN@4688..4689 "("
                     - INPUT_VALUE_DEFINITION@4689..4696
                         - NAME@4689..4691
@@ -2632,7 +2632,7 @@
             - FIELD_DEFINITION@4777..4832
                 - NAME@4777..4781
                     - IDENT@4777..4781 "book"
-                - ARGUMENTS@4781..4796
+                - ARGUMENTS_DEFINITION@4781..4796
                     - L_PAREN@4781..4782 "("
                     - INPUT_VALUE_DEFINITION@4782..4795
                         - NAME@4782..4786
@@ -2700,7 +2700,7 @@
             - FIELD_DEFINITION@4875..4930
                 - NAME@4875..4882
                     - IDENT@4875..4882 "library"
-                - ARGUMENTS@4882..4891
+                - ARGUMENTS_DEFINITION@4882..4891
                     - L_PAREN@4882..4883 "("
                     - INPUT_VALUE_DEFINITION@4883..4890
                         - NAME@4883..4885
@@ -2767,7 +2767,7 @@
             - FIELD_DEFINITION@4975..5037
                 - NAME@4975..4982
                     - IDENT@4975..4982 "product"
-                - ARGUMENTS@4982..4996
+                - ARGUMENTS_DEFINITION@4982..4996
                     - L_PAREN@4982..4983 "("
                     - INPUT_VALUE_DEFINITION@4983..4995
                         - NAME@4983..4986
@@ -2806,7 +2806,7 @@
             - FIELD_DEFINITION@5037..5098
                 - NAME@5037..5044
                     - IDENT@5037..5044 "vehicle"
-                - ARGUMENTS@5044..5057
+                - ARGUMENTS_DEFINITION@5044..5057
                     - L_PAREN@5044..5045 "("
                     - INPUT_VALUE_DEFINITION@5045..5056
                         - NAME@5045..5047
@@ -2845,7 +2845,7 @@
             - FIELD_DEFINITION@5098..5168
                 - NAME@5098..5109
                     - IDENT@5098..5109 "topProducts"
-                - ARGUMENTS@5109..5125
+                - ARGUMENTS_DEFINITION@5109..5125
                     - L_PAREN@5109..5110 "("
                     - INPUT_VALUE_DEFINITION@5110..5124
                         - NAME@5110..5115
@@ -2891,7 +2891,7 @@
             - FIELD_DEFINITION@5168..5230
                 - NAME@5168..5175
                     - IDENT@5168..5175 "topCars"
-                - ARGUMENTS@5175..5191
+                - ARGUMENTS_DEFINITION@5175..5191
                     - L_PAREN@5175..5176 "("
                     - INPUT_VALUE_DEFINITION@5176..5190
                         - NAME@5176..5181
@@ -2937,7 +2937,7 @@
             - FIELD_DEFINITION@5230..5296
                 - NAME@5230..5240
                     - IDENT@5230..5240 "topReviews"
-                - ARGUMENTS@5240..5256
+                - ARGUMENTS_DEFINITION@5240..5256
                     - L_PAREN@5240..5241 "("
                     - INPUT_VALUE_DEFINITION@5241..5255
                         - NAME@5241..5246
@@ -3064,7 +3064,7 @@
             - FIELD_DEFINITION@5422..5491
                 - NAME@5422..5426
                     - IDENT@5422..5426 "body"
-                - ARGUMENTS@5426..5451
+                - ARGUMENTS_DEFINITION@5426..5451
                     - L_PAREN@5426..5427 "("
                     - INPUT_VALUE_DEFINITION@5427..5450
                         - NAME@5427..5433
@@ -3628,7 +3628,7 @@
             - FIELD_DEFINITION@6425..6491
                 - NAME@6425..6434
                     - IDENT@6425..6434 "birthDate"
-                - ARGUMENTS@6434..6450
+                - ARGUMENTS_DEFINITION@6434..6450
                     - L_PAREN@6434..6435 "("
                     - INPUT_VALUE_DEFINITION@6435..6449
                         - NAME@6435..6441

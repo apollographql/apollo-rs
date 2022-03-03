@@ -11,7 +11,7 @@
             - FIELD_DEFINITION@18..90
                 - NAME@18..23
                     - IDENT@18..23 "login"
-                - ARGUMENTS@23..83
+                - ARGUMENTS_DEFINITION@23..83
                     - L_PAREN@23..24 "("
                     - INPUT_VALUE_DEFINITION@24..82
                         - NAME@24..30

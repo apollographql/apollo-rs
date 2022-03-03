@@ -42,8 +42,58 @@ pub(crate) fn arguments(p: &mut Parser) {
 /// *ArgumentsDefinition*:
 ///     **(** InputValueDefinition* **)**
 pub(crate) fn arguments_definition(p: &mut Parser) {
-    let _g = p.start_node(SyntaxKind::ARGUMENTS);
+    let _g = p.start_node(SyntaxKind::ARGUMENTS_DEFINITION);
     p.bump(S!['(']);
     input::input_value_definition(p, false);
     p.expect(T![')'], S![')']);
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ast;
+
+    use super::*;
+
+    #[test]
+    fn it_can_access_arguments_in_fields() {
+        let schema = r#"
+type Query {
+  bestSellers(category: ProductCategory = ALL): [Product] @join__field(graph: PRODUCTS)
+  categories: [Department] @join__field(graph: PRODUCTS)
+  product(id: ID!): Product @join__field(graph: PRODUCTS)
+}
+        "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+
+        assert!(ast.errors.is_empty());
+
+        let document = ast.document();
+        for definition in document.definitions() {
+            if let ast::Definition::ObjectTypeDefinition(obj_def) = definition {
+                for field in obj_def.fields_definition().unwrap().field_definitions() {
+                    if field.name().unwrap().to_string() == "bestSellers" {
+                        let argument = field
+                            .arguments_definition()
+                            .unwrap()
+                            .input_value_definitions()
+                            .into_iter()
+                            .next()
+                            .unwrap();
+                        assert_eq!(argument.name().unwrap().to_string(), "category");
+                        assert_eq!(argument.ty().unwrap().to_string(), "ProductCategory");
+                        assert_eq!(
+                            argument
+                                .default_value()
+                                .unwrap()
+                                .value()
+                                .unwrap()
+                                .to_string(),
+                            "ALL"
+                        );
+                    }
+                }
+            }
+        }
+    }
 }

@@ -157,7 +157,7 @@ Directive =
   '@' Name Arguments?
 
 SchemaDefinition =
-  'schema' Directives? '{' RootOperationTypeDefinition* '}'
+  Description? 'schema' Directives? '{' RootOperationTypeDefinition* '}'
 
 SchemaExtension =
   'extend' 'schema' Directives? '{' RootOperationTypeDefinition* '}'
