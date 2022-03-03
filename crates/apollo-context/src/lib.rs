@@ -159,15 +159,35 @@ fragment vipCustomer on User {
 "#;
 
         let ctx = Context::new(input);
-        let operations: Vec<String> = ctx.operations().iter().map(|op| op.name.clone()).collect();
-        assert_eq!(["ExampleQuery"], operations.as_slice());
+        // let errors = ctx.validate();
+
+        let operation_names: Vec<String> =
+            ctx.operations().iter().map(|op| op.name.clone()).collect();
+        assert_eq!(["ExampleQuery"], operation_names.as_slice());
         let fragments: Vec<String> = ctx
             .fragments()
             .iter()
             .map(|fragment| fragment.name.clone())
             .collect();
         assert_eq!(["vipCustomer"], fragments.as_slice());
-        // let operation_variables = ctx.operations().find_one("ExampleQuery").variables();
-        // let fragment_fields = ctx.fragments().find_one("friendFields").fields();
+
+        // let operation_variables = ctx.operations().find_one("ExampleQuery").variables().find_one("definedVariable").ty();
+        // let operation_variables = ctx.operations().find_one("ExampleQuery")?.variables();
+        // let fragment_fields = ctx.fragments().find_one("friendFields")?.fields();
+    }
+}
+
+struct Operations {
+    inner: Arc<Vec<_>>,
+}
+
+impl Operations {
+    pub fn find(&self) -> Option<_>;
+}
+
+impl Deref for Operations {
+    type Deref = Arc<Vec<_>>;
+    fn deref(&self) -> Self::Deref {
+        &self.inner
     }
 }

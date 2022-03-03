@@ -42,6 +42,12 @@ impl OperationDefinition {
             }
         })
     }
+
+    pub fn variables(
+        db: &dyn SourceDatabase,
+        name: String,
+    ) -> Option<Arc<Vec<VariableDefinition>>> {
+    }
 }
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
