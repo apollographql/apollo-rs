@@ -16,10 +16,10 @@ mod tests {
 
     use super::*;
     #[test]
-    fn it_can_access_arguments_in_fields() {
+    fn it_can_access_definition_description() {
         let schema = r#"
 """
-What a dumb description
+description for Query object type
 """
 type Query {
   bestSellers(category: ProductCategory = ALL): [Product] @join__field(graph: PRODUCTS)
@@ -39,8 +39,8 @@ type Query {
                         .unwrap()
                         .string_value()
                         .unwrap()
-                        .to_string(),
-                    "\"\"\"\nWhat a dumb description\n\"\"\"\n"
+                        .into(),
+                    "description for Query object type"
                 );
                 return;
             }
