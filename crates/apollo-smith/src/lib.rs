@@ -20,11 +20,12 @@ pub(crate) mod ty;
 pub(crate) mod union;
 pub(crate) mod variable;
 
-use std::fmt::Debug;
+use std::{collections::HashMap, fmt::Debug};
 
 use arbitrary::Unstructured;
 
 pub use arbitrary::Result;
+use argument::Argument;
 pub use directive::DirectiveDef;
 pub use document::Document;
 pub use enum_::EnumTypeDef;
@@ -72,6 +73,8 @@ pub struct DocumentBuilder<'a> {
     pub(crate) fragment_defs: Vec<FragmentDef>,
     // A stack to set current TypeDef
     pub(crate) stack: Vec<TypeDefinition>,
+    // Useful to keep the same arguments for a specific field
+    pub(crate) choosen_arguments: HashMap<Name, Vec<Argument>>,
 }
 
 impl<'a> Debug for DocumentBuilder<'a> {
@@ -107,6 +110,7 @@ impl<'a> DocumentBuilder<'a> {
             union_type_defs: Vec::new(),
             input_object_type_defs: Vec::new(),
             stack: Vec::new(),
+            choosen_arguments: HashMap::new(),
         };
 
         for _ in 0..builder.u.int_in_range(1..=50)? {
@@ -178,6 +182,7 @@ impl<'a> DocumentBuilder<'a> {
             union_type_defs: document.union_type_definitions,
             input_object_type_defs: document.input_object_type_definitions,
             stack: Vec::new(),
+            choosen_arguments: HashMap::new(),
         };
 
         Ok(builder)

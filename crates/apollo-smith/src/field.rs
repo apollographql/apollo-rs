@@ -164,6 +164,7 @@ impl<'a> DocumentBuilder<'a> {
     pub fn field(&mut self) -> Result<Field> {
         let type_def = self.stack.last().cloned().unwrap();
         let object_ty = type_def.as_object().unwrap();
+
         let choosen_field_def = self.u.choose(&object_ty.fields_def)?;
         let alias = self
             .u
@@ -173,11 +174,20 @@ impl<'a> DocumentBuilder<'a> {
             .transpose()?;
 
         let name = choosen_field_def.name.clone();
-        let args = choosen_field_def
-            .arguments_definition
-            .clone()
-            .map(|args_def| self.arguments_with_def(&args_def))
-            .unwrap_or_else(|| Ok(vec![]))?;
+        // To not have same selection with different arguments
+        let args = match self.choosen_arguments.get(&name) {
+            Some(args) => args.clone(),
+            None => {
+                let args = choosen_field_def
+                    .arguments_definition
+                    .clone()
+                    .map(|args_def| self.arguments_with_def(&args_def))
+                    .unwrap_or_else(|| Ok(vec![]))?;
+                self.choosen_arguments.insert(name.clone(), args.clone());
+
+                args
+            }
+        };
         let directives = self.directives()?;
 
         let selection_set = if !choosen_field_def.ty.is_builtin() {

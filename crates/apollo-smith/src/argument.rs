@@ -92,7 +92,7 @@ impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `Argument`
     pub fn argument_with_def(&mut self, input_val_def: &InputValueDef) -> Result<Argument> {
         let name = input_val_def.name.clone();
-        let value = self.input_value()?;
+        let value = self.input_value_for_type(&input_val_def.ty)?;
 
         Ok(Argument { name, value })
     }

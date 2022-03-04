@@ -5,7 +5,7 @@ use arbitrary::Result;
 
 pub enum InputValue {
     Variable(Name),
-    Int(i64),
+    Int(i32),
     Float(f64),
     String(String),
     Boolean(bool),
@@ -198,7 +198,7 @@ impl<'a> DocumentBuilder<'a> {
         let gen_val = |doc_builder: &mut DocumentBuilder<'_>| -> Result<InputValue> {
             if ty.is_builtin() {
                 match ty.name().name.as_str() {
-                    "String" => Ok(InputValue::String(doc_builder.u.arbitrary::<String>()?)),
+                    "String" => Ok(InputValue::String(doc_builder.limited_string(1000)?)),
                     "Int" => Ok(InputValue::Int(doc_builder.u.arbitrary()?)),
                     "Float" => Ok(InputValue::Float(doc_builder.u.arbitrary()?)),
                     "Boolean" => Ok(InputValue::Boolean(doc_builder.u.arbitrary()?)),
@@ -320,7 +320,7 @@ impl<'a> DocumentBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
+    use std::collections::{HashMap, HashSet};
 
     use arbitrary::Unstructured;
 
@@ -344,6 +344,7 @@ mod tests {
             operation_defs: Vec::new(),
             fragment_defs: Vec::new(),
             stack: Vec::new(),
+            choosen_arguments: HashMap::new(),
         };
         let my_nested_type = ObjectTypeDef {
             description: None,

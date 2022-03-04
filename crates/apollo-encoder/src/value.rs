@@ -12,7 +12,7 @@ pub enum Value {
     /// Name of a variable example: `varName`
     Variable(String),
     /// Int value example: `7`
-    Int(i64),
+    Int(i32),
     /// Float value example: `25.4`
     Float(f64),
     /// String value example: `"My string"`
@@ -82,16 +82,16 @@ macro_rules! to_number_value {
 
 // Numbers
 to_number_value!(
-    {i64, i64, Int},
-    {i32, i64, Int},
-    {i16, i64, Int},
-    {i8, i64, Int},
-    {isize, i64, Int},
-    {u64, i64, Int},
-    {u32, i64, Int},
-    {u16, i64, Int},
-    {u8, i64, Int},
-    {usize, i64, Int},
+    {i64, i32, Int},
+    {i32, i32, Int},
+    {i16, i32, Int},
+    {i8, i32, Int},
+    {isize, i32, Int},
+    {u64, i32, Int},
+    {u32, i32, Int},
+    {u16, i32, Int},
+    {u8, i32, Int},
+    {usize, i32, Int},
     {f64, f64, Float},
     {f32, f64, Float}
 );

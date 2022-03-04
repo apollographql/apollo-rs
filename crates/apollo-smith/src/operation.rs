@@ -112,13 +112,12 @@ impl<'a> DocumentBuilder<'a> {
             if let Some(query) = &schema.query {
                 ops.push((OperationType::Query, query));
             }
-            // TODO re-enable them. The issue is about argumentsDef
-            // if let Some(mutation) = &schema.mutation {
-            //     ops.push((OperationType::Mutation, mutation));
-            // }
-            // if let Some(subscription) = &schema.subscription {
-            //     ops.push((OperationType::Subscription, subscription));
-            // }
+            if let Some(mutation) = &schema.mutation {
+                ops.push((OperationType::Mutation, mutation));
+            }
+            if let Some(subscription) = &schema.subscription {
+                ops.push((OperationType::Subscription, subscription));
+            }
 
             ops
         };

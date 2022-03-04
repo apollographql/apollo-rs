@@ -42,6 +42,13 @@ impl Into<i64> for ast::IntValue {
     }
 }
 
+impl Into<i32> for ast::IntValue {
+    fn into(self) -> i32 {
+        let text = text_of_first_token(self.syntax());
+        text.parse().expect("Cannot parse IntValue")
+    }
+}
+
 impl Into<f64> for ast::FloatValue {
     fn into(self) -> f64 {
         let text = text_of_first_token(self.syntax());
