@@ -1,9 +1,12 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use arbitrary::{Arbitrary, Result};
 
 use crate::{
-    directive::Directive, name::Name, selection_set::SelectionSet, variable::VariableDef,
+    directive::{Directive, DirectiveLocation},
+    name::Name,
+    selection_set::SelectionSet,
+    variable::VariableDef,
     DocumentBuilder, SchemaDef,
 };
 
@@ -18,7 +21,7 @@ pub struct OperationDef {
     pub(crate) operation_type: OperationType,
     pub(crate) name: Option<Name>,
     pub(crate) variable_definitions: Vec<VariableDef>,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) selection_set: SelectionSet,
     pub(crate) shorthand: bool,
 }
@@ -35,7 +38,7 @@ impl From<OperationDef> for apollo_encoder::OperationDefinition {
         op_def
             .directives
             .into_iter()
-            .for_each(|directive| new_op_def.directive(directive.into()));
+            .for_each(|(_, directive)| new_op_def.directive(directive.into()));
 
         new_op_def
     }
@@ -81,7 +84,12 @@ impl<'a> DocumentBuilder<'a> {
             .transpose()?;
 
         let operation_type = self.u.arbitrary()?;
-        let directives = self.directives()?;
+        let directive_location = match operation_type {
+            OperationType::Query => DirectiveLocation::Query,
+            OperationType::Mutation => DirectiveLocation::Mutation,
+            OperationType::Subscription => DirectiveLocation::Subscription,
+        };
+        let directives = self.directives(directive_location)?;
         let selection_set = self.selection_set()?;
         let variable_definitions = self.variable_definitions()?;
         let shorthand = self.operation_defs.is_empty()
@@ -122,7 +130,12 @@ impl<'a> DocumentBuilder<'a> {
             ops
         };
         let (operation_type, choosen_ty) = self.u.choose(&available_operations)?;
-        let directives = self.directives()?;
+        let directive_location = match operation_type {
+            OperationType::Query => DirectiveLocation::Query,
+            OperationType::Mutation => DirectiveLocation::Mutation,
+            OperationType::Subscription => DirectiveLocation::Subscription,
+        };
+        let directives = self.directives(directive_location)?;
 
         // Stack
         self.stack_ty(choosen_ty);

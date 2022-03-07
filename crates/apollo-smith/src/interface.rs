@@ -1,10 +1,14 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use apollo_encoder::InterfaceDefinition;
 use arbitrary::Result;
 
 use crate::{
-    description::Description, directive::Directive, field::FieldDef, name::Name, DocumentBuilder,
+    description::Description,
+    directive::{Directive, DirectiveLocation},
+    field::FieldDef,
+    name::Name,
+    DocumentBuilder,
 };
 
 /// InterfaceTypeDef is an abstract type where there are common fields declared.
@@ -22,7 +26,7 @@ pub struct InterfaceTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
     pub(crate) interfaces: HashSet<Name>,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) fields_def: Vec<FieldDef>,
     pub(crate) extend: bool,
 }
@@ -36,7 +40,7 @@ impl From<InterfaceTypeDef> for InterfaceDefinition {
             .for_each(|f| itf_def.field(f.into()));
         itf.directives
             .into_iter()
-            .for_each(|directive| itf_def.directive(directive.into()));
+            .for_each(|(_, directive)| itf_def.directive(directive.into()));
         itf.interfaces
             .into_iter()
             .for_each(|interface| itf_def.interface(interface.into()));
@@ -59,7 +63,7 @@ impl<'a> DocumentBuilder<'a> {
             .transpose()?;
         let name = self.type_name()?;
         let fields_def = self.fields_definition(&[])?;
-        let directives = self.directives()?;
+        let directives = self.directives(DirectiveLocation::Interface)?;
         let interfaces = self.implements_interfaces()?;
 
         Ok(InterfaceTypeDef {

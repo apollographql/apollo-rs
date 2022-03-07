@@ -1,7 +1,12 @@
+use std::collections::HashMap;
+
 use arbitrary::Result;
 
 use crate::{
-    description::Description, directive::Directive, input_value::InputValueDef, name::Name,
+    description::Description,
+    directive::{Directive, DirectiveLocation},
+    input_value::InputValueDef,
+    name::Name,
     DocumentBuilder,
 };
 
@@ -22,7 +27,7 @@ pub struct InputObjectTypeDef {
     // A vector of fields
     pub(crate) fields: Vec<InputValueDef>,
     /// Contains all directives.
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) extend: bool,
 }
 
@@ -37,7 +42,7 @@ impl From<InputObjectTypeDef> for apollo_encoder::InputObjectDefinition {
         input_object_def
             .directives
             .into_iter()
-            .for_each(|directive| new_input_object_def.directive(directive.into()));
+            .for_each(|(_, directive)| new_input_object_def.directive(directive.into()));
         input_object_def
             .fields
             .into_iter()
@@ -61,7 +66,7 @@ impl<'a> DocumentBuilder<'a> {
 
         Ok(InputObjectTypeDef {
             description,
-            directives: self.directives()?,
+            directives: self.directives(DirectiveLocation::InputObject)?,
             name,
             extend: self.u.arbitrary().unwrap_or(false),
             fields,

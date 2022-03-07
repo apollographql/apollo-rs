@@ -59,6 +59,15 @@ impl From<Argument> for apollo_encoder::Argument {
     }
 }
 
+impl From<apollo_parser::ast::Argument> for Argument {
+    fn from(argument: apollo_parser::ast::Argument) -> Self {
+        Self {
+            name: argument.name().unwrap().into(),
+            value: argument.value().unwrap().into(),
+        }
+    }
+}
+
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary vector of `Argument`
     pub fn arguments(&mut self) -> Result<Vec<Argument>> {

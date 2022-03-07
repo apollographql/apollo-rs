@@ -1,4 +1,12 @@
-use crate::{description::Description, directive::Directive, name::Name, ty::Ty, DocumentBuilder};
+use std::collections::HashMap;
+
+use crate::{
+    description::Description,
+    directive::{Directive, DirectiveLocation},
+    name::Name,
+    ty::Ty,
+    DocumentBuilder,
+};
 use arbitrary::Result;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -103,7 +111,7 @@ pub struct InputValueDef {
     pub(crate) name: Name,
     pub(crate) ty: Ty,
     pub(crate) default_value: Option<InputValue>,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
 }
 
 impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
@@ -114,7 +122,7 @@ impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
         input_val
             .directives
             .into_iter()
-            .for_each(|directive| new_input_val.directive(directive.into()));
+            .for_each(|(_, directive)| new_input_val.directive(directive.into()));
 
         new_input_val
     }
@@ -127,8 +135,14 @@ impl From<apollo_parser::ast::InputValueDefinition> for InputValueDef {
             name: input_val_def.name().unwrap().into(),
             ty: input_val_def.ty().unwrap().into(),
             default_value: input_val_def.default_value().map(InputValue::from),
-            // TODO
-            directives: Vec::new(),
+            directives: input_val_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
         }
     }
 }
@@ -141,7 +155,7 @@ impl From<InputValueDef> for apollo_encoder::InputField {
         input_val
             .directives
             .into_iter()
-            .for_each(|directive| new_input_val.directive(directive.into()));
+            .for_each(|(_, directive)| new_input_val.directive(directive.into()));
 
         new_input_val
     }
@@ -269,7 +283,8 @@ impl<'a> DocumentBuilder<'a> {
                 .transpose()?;
             let name = self.name_with_index(i)?;
             let ty = self.choose_ty(&self.list_existing_types())?;
-            let directives = self.directives()?;
+            // TODO: incorrect because input_values_def is called from different locations
+            let directives = self.directives(DirectiveLocation::InputFieldDefinition)?;
             // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
             let default_value = self
                 .u
@@ -299,7 +314,8 @@ impl<'a> DocumentBuilder<'a> {
             .transpose()?;
         let name = self.name()?;
         let ty = self.choose_ty(&self.list_existing_types())?;
-        let directives = self.directives()?;
+        // TODO: incorrect because input_values_def is called from different locations
+        let directives = self.directives(DirectiveLocation::InputFieldDefinition)?;
         // TODO: FIXME: it's not correct I need to generate default value corresponding to the ty above
         let default_value = self
             .u
@@ -352,7 +368,7 @@ mod tests {
                 name: String::from("my_nested_object"),
             },
             interface_impls: HashSet::new(),
-            directives: Vec::new(),
+            directives: HashMap::new(),
             fields_def: vec![FieldDef {
                 description: None,
                 name: Name {
@@ -362,7 +378,7 @@ mod tests {
                 ty: Ty::Named(Name {
                     name: String::from("String"),
                 }),
-                directives: Vec::new(),
+                directives: HashMap::new(),
             }],
             extend: false,
         };
@@ -373,7 +389,7 @@ mod tests {
                 name: String::from("my_object"),
             },
             interface_impls: HashSet::new(),
-            directives: Vec::new(),
+            directives: HashMap::new(),
             fields_def: vec![FieldDef {
                 description: None,
                 name: Name {
@@ -383,7 +399,7 @@ mod tests {
                 ty: Ty::List(Box::new(Ty::Named(Name {
                     name: String::from("my_nested_object"),
                 }))),
-                directives: Vec::new(),
+                directives: HashMap::new(),
             }],
             extend: false,
         };

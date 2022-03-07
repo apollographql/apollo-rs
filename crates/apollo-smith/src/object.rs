@@ -1,10 +1,14 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use apollo_encoder::ObjectDefinition;
 use arbitrary::Result;
 
 use crate::{
-    description::Description, directive::Directive, field::FieldDef, name::Name, DocumentBuilder,
+    description::Description,
+    directive::{Directive, DirectiveLocation},
+    field::FieldDef,
+    name::Name,
+    DocumentBuilder,
 };
 
 /// Object types represent concrete instantiations of sets of fields.
@@ -21,7 +25,7 @@ pub struct ObjectTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
     pub(crate) interface_impls: HashSet<Name>,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) fields_def: Vec<FieldDef>,
     pub(crate) extend: bool,
 }
@@ -38,7 +42,7 @@ impl From<ObjectTypeDef> for ObjectDefinition {
         object_def.description(val.description.map(String::from));
         val.directives
             .into_iter()
-            .for_each(|directive| object_def.directive(directive.into()));
+            .for_each(|(_, directive)| object_def.directive(directive.into()));
         if val.extend {
             object_def.extend();
         }
@@ -55,8 +59,14 @@ impl From<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
                 .expect("object type definition must have a name")
                 .into(),
             description: object_def.description().map(Description::from),
-            // TODO
-            directives: Vec::new(),
+            directives: object_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
             // TODO
             interface_impls: HashSet::new(),
             extend: false,
@@ -106,7 +116,7 @@ impl<'a> DocumentBuilder<'a> {
 
         Ok(ObjectTypeDef {
             description,
-            directives: self.directives()?,
+            directives: self.directives(DirectiveLocation::Object)?,
             interface_impls,
             name,
             fields_def,

@@ -1,9 +1,15 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use apollo_encoder::UnionDefinition;
 use arbitrary::Result;
 
-use crate::{description::Description, directive::Directive, name::Name, ty::Ty, DocumentBuilder};
+use crate::{
+    description::Description,
+    directive::{Directive, DirectiveLocation},
+    name::Name,
+    ty::Ty,
+    DocumentBuilder,
+};
 
 /// UnionDefs are an abstract type where no common fields are declared.
 ///
@@ -16,7 +22,7 @@ pub struct UnionTypeDef {
     pub(crate) name: Name,
     pub(crate) description: Option<Description>,
     pub(crate) members: HashSet<Ty>,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) extend: bool,
 }
 
@@ -31,7 +37,7 @@ impl From<UnionTypeDef> for UnionDefinition {
         union_ty_def
             .directives
             .into_iter()
-            .for_each(|directive| new_union_ty_def.directive(directive.into()));
+            .for_each(|(_, directive)| new_union_ty_def.directive(directive.into()));
 
         if union_ty_def.extend {
             new_union_ty_def.extend();
@@ -51,7 +57,7 @@ impl<'a> DocumentBuilder<'a> {
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let directives = self.directives()?;
+        let directives = self.directives(DirectiveLocation::Union)?;
         let extend = self.u.arbitrary().unwrap_or(false);
         let mut existing_types = self.list_existing_object_types();
         existing_types.extend(

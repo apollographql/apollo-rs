@@ -1,15 +1,15 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use arbitrary::Result;
 
 use crate::{
     argument::{Argument, ArgumentsDef},
     description::Description,
-    directive::Directive,
+    directive::{Directive, DirectiveLocation},
     name::Name,
     selection_set::SelectionSet,
     ty::Ty,
-    DocumentBuilder, ObjectTypeDef,
+    DocumentBuilder,
 };
 
 /// The __FieldDef type represents each field definition in an Object definition or Interface type definition.
@@ -24,7 +24,7 @@ pub struct FieldDef {
     pub(crate) name: Name,
     pub(crate) arguments_definition: Option<ArgumentsDef>,
     pub(crate) ty: Ty,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
 }
 
 impl From<FieldDef> for apollo_encoder::FieldDefinition {
@@ -38,7 +38,7 @@ impl From<FieldDef> for apollo_encoder::FieldDefinition {
         field.description(val.description.map(String::from));
         val.directives
             .into_iter()
-            .for_each(|directive| field.directive(directive.into()));
+            .for_each(|(dir_name, directive)| field.directive(directive.into()));
 
         field
     }
@@ -54,8 +54,14 @@ impl From<apollo_parser::ast::FieldDefinition> for FieldDef {
                 .into(),
             arguments_definition: field_def.arguments_definition().map(ArgumentsDef::from),
             ty: field_def.ty().unwrap().into(),
-            // TODO
-            directives: Vec::new(),
+            directives: field_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
         }
     }
 }
@@ -71,7 +77,7 @@ pub struct Field {
     pub(crate) alias: Option<Name>,
     pub(crate) name: Name,
     pub(crate) args: Vec<Argument>,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) selection_set: Option<SelectionSet>,
 }
 
@@ -86,7 +92,7 @@ impl From<Field> for apollo_encoder::Field {
         field
             .directives
             .into_iter()
-            .for_each(|directive| new_field.directive(directive.into()));
+            .for_each(|(_, directive)| new_field.directive(directive.into()));
         new_field.selection_set(field.selection_set.map(Into::into));
 
         new_field
@@ -127,7 +133,7 @@ impl<'a> DocumentBuilder<'a> {
                         .then(|| self.arguments_definition())
                         .transpose()?,
                     ty: self.choose_ty(&available_types)?,
-                    directives: self.directives()?,
+                    directives: self.directives(DirectiveLocation::FieldDefinition)?,
                 })
             })
             .collect()
@@ -143,7 +149,7 @@ impl<'a> DocumentBuilder<'a> {
             .transpose()?;
         let name = self.name_with_index(index)?;
         let args = self.arguments()?;
-        let directives = self.directives()?;
+        let directives = self.directives(DirectiveLocation::FieldDefinition)?;
         let selection_set = self
             .u
             .arbitrary()
@@ -188,7 +194,7 @@ impl<'a> DocumentBuilder<'a> {
                 args
             }
         };
-        let directives = self.directives()?;
+        let directives = self.directives(DirectiveLocation::Field)?;
 
         let selection_set = if !choosen_field_def.ty.is_builtin() {
             // Put current ty on the stack

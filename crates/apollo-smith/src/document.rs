@@ -88,6 +88,7 @@ impl From<apollo_parser::ast::Document> for Document {
         let mut enum_defs = Vec::new();
         let mut object_defs = Vec::new();
         let mut schema_defs = Vec::new();
+        let mut directive_defs = Vec::new();
 
         for definition in doc.definitions() {
             match definition {
@@ -99,6 +100,9 @@ impl From<apollo_parser::ast::Document> for Document {
                 }
                 apollo_parser::ast::Definition::SchemaDefinition(schema_def) => {
                     schema_defs.push(SchemaDef::from(schema_def));
+                }
+                apollo_parser::ast::Definition::DirectiveDefinition(dir_def) => {
+                    directive_defs.push(DirectiveDef::from(dir_def));
                 }
                 // TODO
                 // apollo_parser::ast::Definition::ScalarTypeDefinition(_) => todo!(),
@@ -131,7 +135,7 @@ impl From<apollo_parser::ast::Document> for Document {
             union_type_definitions: Vec::new(),
             enum_type_definitions: enum_defs,
             input_object_type_definitions: Vec::new(),
-            directive_definitions: Vec::new(),
+            directive_definitions: directive_defs,
         }
     }
 }

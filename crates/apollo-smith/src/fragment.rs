@@ -1,7 +1,13 @@
+use std::collections::HashMap;
+
 use arbitrary::Result;
 
 use crate::{
-    directive::Directive, name::Name, selection_set::SelectionSet, ty::Ty, DocumentBuilder,
+    directive::{Directive, DirectiveLocation},
+    name::Name,
+    selection_set::SelectionSet,
+    ty::Ty,
+    DocumentBuilder,
 };
 
 /// The __fragmentDef type represents a fragment definition
@@ -14,7 +20,7 @@ use crate::{
 pub struct FragmentDef {
     pub(crate) name: Name,
     pub(crate) type_condition: TypeCondition,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) selection_set: SelectionSet,
 }
 
@@ -28,7 +34,7 @@ impl From<FragmentDef> for apollo_encoder::FragmentDefinition {
         frag_def
             .directives
             .into_iter()
-            .for_each(|directive| new_frag_def.directive(directive.into()));
+            .for_each(|(_, directive)| new_frag_def.directive(directive.into()));
 
         new_frag_def
     }
@@ -43,7 +49,7 @@ impl From<FragmentDef> for apollo_encoder::FragmentDefinition {
 #[derive(Debug)]
 pub struct FragmentSpread {
     pub(crate) name: Name,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
 }
 
 impl From<FragmentSpread> for apollo_encoder::FragmentSpread {
@@ -52,7 +58,7 @@ impl From<FragmentSpread> for apollo_encoder::FragmentSpread {
         fragment_spread
             .directives
             .into_iter()
-            .for_each(|directive| new_fragment_spread.directive(directive.into()));
+            .for_each(|(_, directive)| new_fragment_spread.directive(directive.into()));
 
         new_fragment_spread
     }
@@ -67,7 +73,7 @@ impl From<FragmentSpread> for apollo_encoder::FragmentSpread {
 #[derive(Debug)]
 pub struct InlineFragment {
     pub(crate) type_condition: Option<TypeCondition>,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) selection_set: SelectionSet,
 }
 
@@ -78,7 +84,7 @@ impl From<InlineFragment> for apollo_encoder::InlineFragment {
         inline_fragment
             .directives
             .into_iter()
-            .for_each(|directive| new_inline_fragment.directive(directive.into()));
+            .for_each(|(_, directive)| new_inline_fragment.directive(directive.into()));
 
         new_inline_fragment
     }
@@ -105,7 +111,7 @@ impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `FragmentDef`
     pub fn fragment_definition(&mut self) -> Result<FragmentDef> {
         let name = self.type_name()?;
-        let directives = self.directives()?;
+        let directives = self.directives(DirectiveLocation::FragmentDefinition)?;
         let selection_set = self.selection_set()?;
         let type_condition = self.type_condition()?;
 
@@ -130,7 +136,7 @@ impl<'a> DocumentBuilder<'a> {
         } else {
             self.u.choose(&available_fragment)?.name.clone()
         };
-        let directives = self.directives()?;
+        let directives = self.directives(DirectiveLocation::FragmentSpread)?;
         excludes.push(name.clone());
 
         Ok(Some(FragmentSpread { name, directives }))
@@ -145,7 +151,7 @@ impl<'a> DocumentBuilder<'a> {
             .then(|| self.type_condition())
             .transpose()?;
         let selection_set = self.selection_set()?;
-        let directives = self.directives()?;
+        let directives = self.directives(DirectiveLocation::InlineFragment)?;
 
         Ok(InlineFragment {
             type_condition,

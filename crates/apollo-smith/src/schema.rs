@@ -1,4 +1,12 @@
-use crate::{description::Description, directive::Directive, ty::Ty, DocumentBuilder};
+use std::collections::HashMap;
+
+use crate::{
+    description::Description,
+    directive::{Directive, DirectiveLocation},
+    name::Name,
+    ty::Ty,
+    DocumentBuilder,
+};
 use arbitrary::Result;
 
 /// A GraphQL service’s collective type system capabilities are referred to as that service’s “schema”.
@@ -10,7 +18,7 @@ use arbitrary::Result;
 #[derive(Debug, Clone)]
 pub struct SchemaDef {
     pub(crate) description: Option<Description>,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) query: Option<Ty>,
     pub(crate) mutation: Option<Ty>,
     pub(crate) subscription: Option<Ty>,
@@ -24,7 +32,7 @@ impl From<SchemaDef> for apollo_encoder::SchemaDefinition {
         schema_def
             .directives
             .into_iter()
-            .for_each(|directive| new_schema_def.directive(directive.into()));
+            .for_each(|(_, directive)| new_schema_def.directive(directive.into()));
         if let Some(query) = schema_def.query {
             new_schema_def.query(apollo_encoder::Type_::from(query).to_string());
         }
@@ -63,8 +71,14 @@ impl From<apollo_parser::ast::SchemaDefinition> for SchemaDef {
         Self {
             // TODO https://github.com/apollographql/apollo-rs/issues/185
             description: None,
-            // TODO
-            directives: Vec::new(),
+            directives: schema_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
             query: query.map(Ty::from),
             mutation: mutation.map(Ty::from),
             subscription: subcription.map(Ty::from),
@@ -82,7 +96,7 @@ impl<'a> DocumentBuilder<'a> {
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let directives = self.directives()?;
+        let directives = self.directives(DirectiveLocation::Schema)?;
         let named_types: Vec<Ty> = self
             .list_existing_object_types()
             .into_iter()
