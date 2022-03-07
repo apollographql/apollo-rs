@@ -1,5 +1,5 @@
-mod passes;
 mod queries;
+mod validator;
 mod values;
 
 use std::sync::Arc;
@@ -9,6 +9,7 @@ pub use queries::database::{Database, SourceDatabase};
 
 use miette::{Diagnostic, NamedSource, SourceSpan};
 use thiserror::Error;
+use validator::Validator;
 
 #[derive(Error, Debug, Diagnostic)]
 #[error("cannot find `{}` interface in this scope", self.ty)]
@@ -48,6 +49,11 @@ impl ApolloCompiler {
 
     pub fn parse(&self) -> Arc<SyntaxTree> {
         self.db.parse()
+    }
+
+    pub fn validate(&self) -> Vec<values::Error> {
+        let validator = Validator::new(&self.db);
+        validator.validate()
     }
 
     pub fn syntax_errors(&self) -> Arc<Vec<values::Error>> {
