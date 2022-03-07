@@ -210,6 +210,6 @@ directive @example(isTreat: Boolean, treatKind: String) repeatable on FIELD | MU
                 return;
             }
         }
-        panic!("Directive definition has not been catched");
+        panic!("Expected AST to have a Directive Definition");
     }
 }
