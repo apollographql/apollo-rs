@@ -17,6 +17,46 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.2.4](https://crates.io/crates/apollo-parser/0.2.4) - 2021-03-07
+## Fixes
+- **correctly parse Arguments Definition - [bnjjj], [pull/187] closes [issue/186]**
+
+  `apollo-parser` was creating ARGUMENTS instead of ARGUMENTS_DEFINITION nodes
+  when parsing Arguments Definitions. This change fixes the incorrect parsing
+  and allows to iterate over arguments definitions returned by the AST.
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/187]: https://github.com/apollographql/apollo-rs/pull/187
+  [issue/186]: https://github.com/apollographql/apollo-rs/issues/186
+
+- **Add STRING_VALUE node to DESCRIPTION - [bnjjj], [pull/188] closes [issue/185]**
+
+  DESCRIPTION nodes are composed of STRING_VALUE nodes. The description string
+  was previously simply added to the DESCRIPTION node which was not spec
+  compliant.
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/188]: https://github.com/apollographql/apollo-rs/pull/188
+  [issue/185]: https://github.com/apollographql/apollo-rs/issues/185
+
+- **Schema Definition has a description - [bnjjj], [pull/188] closes [issue/185]**
+
+  `apollo-parser` was parsing descriptions in Schema Definitions, but the
+  graphql ungrammar did not account for a description node. This updates the
+  ungrammar, and provides an accessor method to Schema Definition's description.
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/188]: https://github.com/apollographql/apollo-rs/pull/188
+  [issue/185]: https://github.com/apollographql/apollo-rs/issues/185
+
+- **Add `repeatable` keyword to GraphQL ungrammar - [bnjjj], [pull/189]**
+
+  `repeatable` keyword was not able to be accessed programmatically from the
+  parsed AST for Directive Definitions, this is now fixed.
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/189]: https://github.com/apollographql/apollo-rs/pull/189
+
 # [0.2.3](https://crates.io/crates/apollo-parser/0.2.3) - 2021-02-17
 ## Features
 - **expose Lexer as a pub struct - [bnjjj], [pull/168]**
