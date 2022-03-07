@@ -183,3 +183,33 @@ pub(crate) fn directives(p: &mut Parser) {
         directive(p);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::ast;
+
+    use super::*;
+
+    #[test]
+    fn it_can_access_repeatable_kw_on_directive_definition() {
+        let schema = r#"
+directive @example(isTreat: Boolean, treatKind: String) repeatable on FIELD | MUTATION
+        "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+
+        assert!(ast.errors.is_empty());
+
+        let document = ast.document();
+        for definition in document.definitions() {
+            if let ast::Definition::DirectiveDefinition(dir_def) = definition {
+                assert_eq!(
+                    dir_def.repeatable_token().unwrap().kind(),
+                    SyntaxKind::repeatable_KW
+                );
+                return;
+            }
+        }
+        panic!("Directive definition has not been catched");
+    }
+}

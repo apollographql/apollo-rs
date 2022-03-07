@@ -60,6 +60,9 @@ impl DirectiveDefinition {
     pub fn arguments_definition(&self) -> Option<ArgumentsDefinition> {
         support::child(&self.syntax)
     }
+    pub fn repeatable_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, S![repeatable])
+    }
     pub fn on_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, S![on]) }
     pub fn directive_locations(&self) -> Option<DirectiveLocations> { support::child(&self.syntax) }
 }
