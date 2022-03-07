@@ -1,6 +1,4 @@
-use std::sync::Arc;
-
-use crate::SourceDatabase;
+use std::{ops::Deref, sync::Arc};
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Error {
@@ -10,43 +8,120 @@ pub struct Error {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub enum Definition {
-    OperationDefinition(Arc<OperationDefinition>),
-    FragmentDefinition(Arc<FragmentDefinition>),
+pub struct Fragments {
+    inner: Arc<Vec<FragmentDefinition>>,
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct FragmentDefinition {
-    pub name: String,
-    pub type_condition: String,
-    pub directives: Option<Arc<Vec<Directive>>>,
-    pub selection_set: Arc<Vec<Selection>>,
-}
+impl Fragments {
+    pub fn new(inner: Arc<Vec<FragmentDefinition>>) -> Self {
+        Self { inner }
+    }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct OperationDefinition {
-    pub ty: OperationType,
-    pub name: String, // TODO @lrlna: Option<String>
-    pub variables: Option<Arc<Vec<VariableDefinition>>>,
-    pub directives: Option<Arc<Vec<Directive>>>,
-    pub selection_set: Arc<Vec<Selection>>,
-}
-
-impl OperationDefinition {
-    pub fn find_one(db: &dyn SourceDatabase, name: String) -> Option<Arc<OperationDefinition>> {
-        db.operations().iter().find_map(|op| {
-            if op.name == name {
+    pub fn find(&self, name: &str) -> Option<Arc<FragmentDefinition>> {
+        self.inner.iter().find_map(|op| {
+            if op.name() == name {
                 Some(Arc::new(op.clone()))
             } else {
                 None
             }
         })
     }
+}
+impl Deref for Fragments {
+    type Target = Arc<Vec<FragmentDefinition>>;
 
-    pub fn variables(
-        db: &dyn SourceDatabase,
-        name: String,
-    ) -> Option<Arc<Vec<VariableDefinition>>> {
+    fn deref(&self) -> &Arc<Vec<FragmentDefinition>> {
+        &self.inner
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct FragmentDefinition {
+    pub(crate) name: String,
+    pub(crate) type_condition: String,
+    pub(crate) directives: Option<Arc<Vec<Directive>>>,
+    pub(crate) selection_set: Arc<Vec<Selection>>,
+}
+
+impl FragmentDefinition {
+    /// Get a reference to the fragment definition's name.
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    /// Get a reference to the fragment definition's type condition.
+    pub fn type_condition(&self) -> String {
+        self.type_condition.clone()
+    }
+
+    /// Get a reference to the fragment definition's directives.
+    pub fn directives(&self) -> Option<Arc<Vec<Directive>>> {
+        self.directives.clone()
+    }
+
+    /// Get a reference to the fragment definition's selection set.
+    pub fn selection_set(&self) -> Arc<Vec<Selection>> {
+        self.selection_set.clone()
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct Operations {
+    inner: Arc<Vec<OperationDefinition>>,
+}
+
+impl Operations {
+    pub fn new(inner: Arc<Vec<OperationDefinition>>) -> Self {
+        Self { inner }
+    }
+
+    pub fn find(&self, name: &str) -> Option<Arc<OperationDefinition>> {
+        self.inner.iter().find_map(|op| {
+            if op.name() == name {
+                Some(Arc::new(op.clone()))
+            } else {
+                None
+            }
+        })
+    }
+}
+
+impl Deref for Operations {
+    type Target = Arc<Vec<OperationDefinition>>;
+
+    fn deref(&self) -> &Arc<Vec<OperationDefinition>> {
+        &self.inner
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct OperationDefinition {
+    pub(crate) ty: OperationType,
+    pub(crate) name: String, // TODO @lrlna: Option<String>
+    pub(crate) variables: Option<Arc<Vec<VariableDefinition>>>,
+    pub(crate) directives: Option<Arc<Vec<Directive>>>,
+    pub(crate) selection_set: Arc<Vec<Selection>>,
+}
+
+impl OperationDefinition {
+    /// Get a mutable reference to the operation definition's variables.
+    pub fn variables(&self) -> Option<Arc<Vec<VariableDefinition>>> {
+        self.variables.clone()
+    }
+
+    /// Get a mutable reference to the operation definition's directives.
+    pub fn directives(&self) -> Option<Arc<Vec<Directive>>> {
+        self.directives.clone()
+    }
+
+    /// Get a mutable reference to the operation definition's name.
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    /// Get a reference to the operation definition's ty.
+    pub fn ty(&self) -> OperationType {
+        self.ty.clone() // ?? should we clone?
     }
 }
 

@@ -28,13 +28,9 @@ pub trait SourceDatabase {
 
     fn definitions(&self) -> Arc<Vec<ast::Definition>>;
 
-    fn operations(&self) -> Arc<Vec<OperationDefinition>>;
+    fn operations(&self) -> Operations;
 
-    fn find_operation(&self, name: String) -> Option<Arc<OperationDefinition>>;
-
-    fn find_fragment(&self, name: String) -> Option<Arc<FragmentDefinition>>;
-
-    fn fragments(&self) -> Arc<Vec<FragmentDefinition>>;
+    fn fragments(&self) -> Fragments;
 }
 
 // this is top level entry to the source db
@@ -71,7 +67,7 @@ fn definitions(db: &dyn SourceDatabase) -> Arc<Vec<ast::Definition>> {
 // NOTE: we might want to the values::OperationDefinition creation even further.
 // At the moment all fields in this struct are created here, instead individual
 // queries for selection_set, variables, directives etc can be created.
-fn operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
+fn operations(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .definitions()
         .iter()
@@ -82,20 +78,10 @@ fn operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
             _ => None,
         })
         .collect();
-    Arc::new(operations)
+    Operations::new(Arc::new(operations))
 }
 
-fn find_operation(db: &dyn SourceDatabase, name: String) -> Option<Arc<OperationDefinition>> {
-    db.operations().iter().find_map(|op| {
-        if op.name == name {
-            Some(Arc::new(op.clone()))
-        } else {
-            None
-        }
-    })
-}
-
-fn fragments(db: &dyn SourceDatabase) -> Arc<Vec<FragmentDefinition>> {
+fn fragments(db: &dyn SourceDatabase) -> Fragments {
     let operations: Vec<FragmentDefinition> = db
         .definitions()
         .iter()
@@ -106,17 +92,7 @@ fn fragments(db: &dyn SourceDatabase) -> Arc<Vec<FragmentDefinition>> {
             _ => None,
         })
         .collect();
-    Arc::new(operations)
-}
-
-fn find_fragment(db: &dyn SourceDatabase, name: String) -> Option<Arc<FragmentDefinition>> {
-    db.fragments().iter().find_map(|fragment| {
-        if fragment.name == name {
-            Some(Arc::new(fragment.clone()))
-        } else {
-            None
-        }
-    })
+    Fragments::new(Arc::new(operations))
 }
 
 fn operation_definition(

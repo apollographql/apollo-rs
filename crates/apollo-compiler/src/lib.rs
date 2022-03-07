@@ -5,7 +5,6 @@ mod values;
 use std::sync::Arc;
 
 use apollo_parser::{ast, SyntaxTree};
-use queries::database::FragmentsQuery;
 pub use queries::database::{Database, SourceDatabase};
 
 use miette::{Diagnostic, NamedSource, SourceSpan};
@@ -59,11 +58,11 @@ impl ApolloCompiler {
         self.db.definitions()
     }
 
-    pub fn operations(&self) -> Arc<Vec<values::OperationDefinition>> {
+    pub fn operations(&self) -> values::Operations {
         self.db.operations()
     }
 
-    pub fn fragments(&self) -> Arc<Vec<values::FragmentDefinition>> {
+    pub fn fragments(&self) -> values::Fragments {
         self.db.fragments()
     }
 }
@@ -161,33 +160,27 @@ fragment vipCustomer on User {
         let ctx = ApolloCompiler::new(input);
         // let errors = ctx.validate();
 
-        let operation_names: Vec<String> =
-            ctx.operations().iter().map(|op| op.name.clone()).collect();
+        let operation_names: Vec<String> = ctx.operations().iter().map(|op| op.name()).collect();
         assert_eq!(["ExampleQuery"], operation_names.as_slice());
         let fragments: Vec<String> = ctx
             .fragments()
             .iter()
-            .map(|fragment| fragment.name.clone())
+            .map(|fragment| fragment.name())
             .collect();
         assert_eq!(["vipCustomer"], fragments.as_slice());
 
-        // let operation_variables = ctx.operations().find_one("ExampleQuery").variables().find_one("definedVariable").ty();
-        // let operation_variables = ctx.operations().find_one("ExampleQuery")?.variables();
-        // let fragment_fields = ctx.fragments().find_one("friendFields")?.fields();
-    }
-}
-
-struct Operations {
-    inner: Arc<Vec<_>>,
-}
-
-impl Operations {
-    pub fn find(&self) -> Option<_>;
-}
-
-impl Deref for Operations {
-    type Deref = Arc<Vec<_>>;
-    fn deref(&self) -> Self::Deref {
-        &self.inner
+        let operation_variables: Vec<String> = ctx
+            .operations()
+            .find("ExampleQuery")
+            .unwrap()
+            .variables()
+            .unwrap()
+            .iter()
+            .map(|var| var.name.clone())
+            .collect();
+        assert_eq!(["definedVariable"], operation_variables.as_slice());
+        // let operation_variables = ctx.operations().find("ExampleQuery").variables().find("definedVariable").ty();
+        let fragment_fields = ctx.fragments().find("vipCustomer").unwrap();
+        dbg!(fragment_fields);
     }
 }
