@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display};
+use std::collections::HashMap;
 
 use arbitrary::{Arbitrary, Result};
 
@@ -7,7 +7,7 @@ use crate::{
     name::Name,
     selection_set::SelectionSet,
     variable::VariableDef,
-    DocumentBuilder, SchemaDef,
+    DocumentBuilder,
 };
 
 /// The __operationDef type represents an operation definition
@@ -50,6 +50,29 @@ impl From<OperationDef> for String {
     }
 }
 
+impl From<apollo_parser::ast::OperationDefinition> for OperationDef {
+    fn from(operation_def: apollo_parser::ast::OperationDefinition) -> Self {
+        Self {
+            name: operation_def.name().map(Name::from),
+            directives: operation_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            operation_type: operation_def
+                .operation_type()
+                .map(OperationType::from)
+                .unwrap_or(OperationType::Query),
+            variable_definitions: Vec::new(),
+            selection_set: operation_def.selection_set().unwrap().into(),
+            shorthand: operation_def.operation_type().is_none(),
+        }
+    }
+}
+
 /// The __operationType type represents the kind of operation
 ///
 /// *OperationType*:
@@ -69,6 +92,20 @@ impl From<OperationType> for apollo_encoder::OperationType {
             OperationType::Query => Self::Query,
             OperationType::Mutation => Self::Mutation,
             OperationType::Subscription => Self::Subscription,
+        }
+    }
+}
+
+impl From<apollo_parser::ast::OperationType> for OperationType {
+    fn from(op_type: apollo_parser::ast::OperationType) -> Self {
+        if op_type.query_token().is_some() {
+            Self::Query
+        } else if op_type.mutation_token().is_some() {
+            Self::Mutation
+        } else if op_type.subscription_token().is_some() {
+            Self::Subscription
+        } else {
+            Self::Query
         }
     }
 }

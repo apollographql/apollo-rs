@@ -40,6 +40,44 @@ impl From<ScalarTypeDef> for apollo_encoder::ScalarDefinition {
     }
 }
 
+impl From<apollo_parser::ast::ScalarTypeDefinition> for ScalarTypeDef {
+    fn from(scalar_def: apollo_parser::ast::ScalarTypeDefinition) -> Self {
+        Self {
+            description: scalar_def
+                .description()
+                .map(|d| Description::from(d.to_string())),
+            name: scalar_def.name().unwrap().into(),
+            directives: scalar_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            extend: false,
+        }
+    }
+}
+
+impl From<apollo_parser::ast::ScalarTypeExtension> for ScalarTypeDef {
+    fn from(scalar_def: apollo_parser::ast::ScalarTypeExtension) -> Self {
+        Self {
+            description: None,
+            name: scalar_def.name().unwrap().into(),
+            directives: scalar_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            extend: true,
+        }
+    }
+}
+
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `ScalarTypeDef`
     pub fn scalar_type_definition(&mut self) -> Result<ScalarTypeDef> {

@@ -2,11 +2,7 @@ use apollo_encoder::Type_;
 use arbitrary::Result;
 use once_cell::sync::Lazy;
 
-use crate::{
-    input_value::InputValue,
-    name::{self, Name},
-    DocumentBuilder,
-};
+use crate::{input_value::InputValue, name::Name, DocumentBuilder};
 
 static BUILTIN_SCALAR_NAMES: Lazy<[Ty; 5]> = Lazy::new(|| {
     [

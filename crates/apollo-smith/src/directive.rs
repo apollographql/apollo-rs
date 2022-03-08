@@ -54,8 +54,7 @@ impl From<apollo_parser::ast::DirectiveDefinition> for DirectiveDef {
                 .map(|d| Description::from(d.to_string())),
             name: directive_def.name().unwrap().into(),
             arguments_definition: directive_def.arguments_definition().map(ArgumentsDef::from),
-            // TODO, fixed by https://github.com/apollographql/apollo-rs/pull/189
-            repeatable: false,
+            repeatable: directive_def.repeatable_token().is_some(),
             directive_locations: directive_def
                 .directive_locations()
                 .map(|dls| {

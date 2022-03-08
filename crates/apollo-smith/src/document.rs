@@ -78,46 +78,53 @@ impl From<apollo_parser::ast::Document> for Document {
     fn from(doc: apollo_parser::ast::Document) -> Self {
         // All commented parts are TODO
         // The main goal is to support minimal federation demo schema
-        // doc.fragment_definitions
-        //     .into_iter()
-        //     .for_each(|fragment_def| new_doc.fragment(fragment_def.into()));
-
-        // doc.scalar_type_definitions
-        //     .into_iter()
-        //     .for_each(|scalar_type_def| new_doc.scalar(scalar_type_def.into()));
         let mut enum_defs = Vec::new();
         let mut object_defs = Vec::new();
         let mut schema_defs = Vec::new();
         let mut directive_defs = Vec::new();
+        let mut scalar_defs = Vec::new();
+        let mut operation_defs = Vec::new();
 
         for definition in doc.definitions() {
             match definition {
                 apollo_parser::ast::Definition::EnumTypeDefinition(enum_def) => {
                     enum_defs.push(EnumTypeDef::from(enum_def));
                 }
+                apollo_parser::ast::Definition::EnumTypeExtension(enum_def) => {
+                    enum_defs.push(EnumTypeDef::from(enum_def));
+                }
                 apollo_parser::ast::Definition::ObjectTypeDefinition(obj_def) => {
+                    object_defs.push(ObjectTypeDef::from(obj_def));
+                }
+                apollo_parser::ast::Definition::ObjectTypeExtension(obj_def) => {
                     object_defs.push(ObjectTypeDef::from(obj_def));
                 }
                 apollo_parser::ast::Definition::SchemaDefinition(schema_def) => {
                     schema_defs.push(SchemaDef::from(schema_def));
                 }
+                apollo_parser::ast::Definition::SchemaExtension(schema_def) => {
+                    schema_defs.push(SchemaDef::from(schema_def));
+                }
                 apollo_parser::ast::Definition::DirectiveDefinition(dir_def) => {
                     directive_defs.push(DirectiveDef::from(dir_def));
                 }
+                apollo_parser::ast::Definition::ScalarTypeDefinition(scalar_def) => {
+                    scalar_defs.push(ScalarTypeDef::from(scalar_def))
+                }
+                apollo_parser::ast::Definition::ScalarTypeExtension(scalar_def) => {
+                    scalar_defs.push(ScalarTypeDef::from(scalar_def))
+                }
+                apollo_parser::ast::Definition::OperationDefinition(operation_def) => {
+                    operation_defs.push(OperationDef::from(operation_def))
+                }
                 // TODO
-                // apollo_parser::ast::Definition::ScalarTypeDefinition(_) => todo!(),
                 // apollo_parser::ast::Definition::InterfaceTypeDefinition(_) => todo!(),
                 // apollo_parser::ast::Definition::UnionTypeDefinition(_) => todo!(),
                 // apollo_parser::ast::Definition::InputObjectTypeDefinition(_) => todo!(),
-                // apollo_parser::ast::Definition::ScalarTypeExtension(_) => todo!(),
                 // apollo_parser::ast::Definition::DirectiveDefinition(_) => todo!(),
                 // apollo_parser::ast::Definition::FragmentDefinition(_) => todo!(),
                 // apollo_parser::ast::Definition::InterfaceTypeExtension(_) => todo!(),
-                // apollo_parser::ast::Definition::SchemaExtension(_) => todo!(),
-                // apollo_parser::ast::Definition::EnumTypeExtension(_) => todo!(),
-                // apollo_parser::ast::Definition::ObjectTypeExtension(_) => todo!(),
                 // apollo_parser::ast::Definition::UnionTypeExtension(_) => todo!(),
-                // apollo_parser::ast::Definition::OperationDefinition(_) => todo!(),
                 // apollo_parser::ast::Definition::InputObjectTypeExtension(_) => todo!(),
                 _ => {
                     // TODO

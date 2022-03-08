@@ -57,7 +57,7 @@ impl From<apollo_parser::ast::Value> for InputValue {
             apollo_parser::ast::Value::FloatValue(val) => Self::Float(val.into()),
             apollo_parser::ast::Value::IntValue(val) => Self::Int(val.into()),
             apollo_parser::ast::Value::BooleanValue(val) => Self::Boolean(val.into()),
-            apollo_parser::ast::Value::NullValue(val) => Self::Null,
+            apollo_parser::ast::Value::NullValue(_val) => Self::Null,
             apollo_parser::ast::Value::EnumValue(val) => Self::Enum(val.name().unwrap().into()),
             apollo_parser::ast::Value::ListValue(val) => {
                 Self::List(val.values().map(Self::from).collect())

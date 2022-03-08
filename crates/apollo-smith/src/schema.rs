@@ -69,7 +69,42 @@ impl From<apollo_parser::ast::SchemaDefinition> for SchemaDef {
             }
         }
         Self {
-            // TODO https://github.com/apollographql/apollo-rs/issues/185
+            description: schema_def.description().map(Description::from),
+            directives: schema_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            query: query.map(Ty::from),
+            mutation: mutation.map(Ty::from),
+            subscription: subcription.map(Ty::from),
+            extend: false,
+        }
+    }
+}
+
+impl From<apollo_parser::ast::SchemaExtension> for SchemaDef {
+    fn from(schema_def: apollo_parser::ast::SchemaExtension) -> Self {
+        let mut query = None;
+        let mut mutation = None;
+        let mut subcription = None;
+        for root_op in schema_def.root_operation_type_definitions() {
+            let op_type = root_op.operation_type().unwrap();
+            let named_type = root_op.named_type().unwrap();
+            if op_type.query_token().is_some() {
+                query = named_type.into();
+            } else if op_type.mutation_token().is_some() {
+                mutation = named_type.into();
+            } else if op_type.subscription_token().is_some() {
+                subcription = named_type.into();
+            } else {
+                panic!("operation type must be one of query|mutation|subscription");
+            }
+        }
+        Self {
             description: None,
             directives: schema_def
                 .directives()
@@ -82,7 +117,7 @@ impl From<apollo_parser::ast::SchemaDefinition> for SchemaDef {
             query: query.map(Ty::from),
             mutation: mutation.map(Ty::from),
             subscription: subcription.map(Ty::from),
-            extend: bool::default(),
+            extend: true,
         }
     }
 }

@@ -64,6 +64,27 @@ impl From<FragmentSpread> for apollo_encoder::FragmentSpread {
     }
 }
 
+impl From<apollo_parser::ast::FragmentSpread> for FragmentSpread {
+    fn from(fragment_spread: apollo_parser::ast::FragmentSpread) -> Self {
+        Self {
+            name: fragment_spread
+                .fragment_name()
+                .unwrap()
+                .name()
+                .unwrap()
+                .into(),
+            directives: fragment_spread
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+        }
+    }
+}
+
 /// The __inlineFragment type represents an inline fragment in a selection set that could be used as a field
 ///
 /// *InlineFragment*:
@@ -90,6 +111,26 @@ impl From<InlineFragment> for apollo_encoder::InlineFragment {
     }
 }
 
+impl From<apollo_parser::ast::InlineFragment> for InlineFragment {
+    fn from(inline_fragment: apollo_parser::ast::InlineFragment) -> Self {
+        Self {
+            directives: inline_fragment
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            selection_set: inline_fragment
+                .selection_set()
+                .map(SelectionSet::from)
+                .unwrap(),
+            type_condition: inline_fragment.type_condition().map(TypeCondition::from),
+        }
+    }
+}
+
 /// The __typeCondition type represents where a fragment could be applied
 ///
 /// *TypeCondition*:
@@ -104,6 +145,14 @@ pub struct TypeCondition {
 impl From<TypeCondition> for apollo_encoder::TypeCondition {
     fn from(ty_cond: TypeCondition) -> Self {
         Self::new(ty_cond.name.into())
+    }
+}
+
+impl From<apollo_parser::ast::TypeCondition> for TypeCondition {
+    fn from(type_condition: apollo_parser::ast::TypeCondition) -> Self {
+        Self {
+            name: type_condition.named_type().unwrap().name().unwrap().into(),
+        }
     }
 }
 

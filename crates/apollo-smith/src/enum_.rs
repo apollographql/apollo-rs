@@ -74,6 +74,30 @@ impl From<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
     }
 }
 
+impl From<apollo_parser::ast::EnumTypeExtension> for EnumTypeDef {
+    fn from(enum_def: apollo_parser::ast::EnumTypeExtension) -> Self {
+        Self {
+            description: None,
+            name: enum_def.name().unwrap().into(),
+            directives: enum_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            enum_values_def: enum_def
+                .enum_values_definition()
+                .expect("must have enum values definition")
+                .enum_value_definitions()
+                .map(EnumValueDefinition::from)
+                .collect(),
+            extend: true,
+        }
+    }
+}
+
 /// The __EnumValue type represents one of possible values of an enum.
 ///
 /// *EnumValueDefinition*:

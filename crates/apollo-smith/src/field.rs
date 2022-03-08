@@ -38,7 +38,7 @@ impl From<FieldDef> for apollo_encoder::FieldDefinition {
         field.description(val.description.map(String::from));
         val.directives
             .into_iter()
-            .for_each(|(dir_name, directive)| field.directive(directive.into()));
+            .for_each(|(_dir_name, directive)| field.directive(directive.into()));
 
         field
     }
@@ -96,6 +96,28 @@ impl From<Field> for apollo_encoder::Field {
         new_field.selection_set(field.selection_set.map(Into::into));
 
         new_field
+    }
+}
+
+impl From<apollo_parser::ast::Field> for Field {
+    fn from(field: apollo_parser::ast::Field) -> Self {
+        Self {
+            alias: field.alias().map(|alias| alias.name().unwrap().into()),
+            name: field.name().unwrap().into(),
+            args: field
+                .arguments()
+                .map(|arguments| arguments.arguments().map(Argument::from).collect())
+                .unwrap_or_default(),
+            directives: field
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            selection_set: field.selection_set().map(SelectionSet::from),
+        }
     }
 }
 

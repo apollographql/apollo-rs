@@ -80,6 +80,35 @@ impl From<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
     }
 }
 
+impl From<apollo_parser::ast::ObjectTypeExtension> for ObjectTypeDef {
+    fn from(object_def: apollo_parser::ast::ObjectTypeExtension) -> Self {
+        Self {
+            name: object_def
+                .name()
+                .expect("object type definition must have a name")
+                .into(),
+            description: None,
+            directives: object_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            // TODO
+            interface_impls: HashSet::new(),
+            extend: true,
+            fields_def: object_def
+                .fields_definition()
+                .expect("object type definition must have fields definition")
+                .field_definitions()
+                .map(FieldDef::from)
+                .collect(),
+        }
+    }
+}
+
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `ObjectTypeDef`
     pub fn object_type_definition(&mut self) -> Result<ObjectTypeDef> {

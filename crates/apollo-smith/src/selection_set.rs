@@ -30,6 +30,14 @@ impl From<SelectionSet> for apollo_encoder::SelectionSet {
     }
 }
 
+impl From<apollo_parser::ast::SelectionSet> for SelectionSet {
+    fn from(selection_set: apollo_parser::ast::SelectionSet) -> Self {
+        Self {
+            selections: selection_set.selections().map(Selection::from).collect(),
+        }
+    }
+}
+
 /// The __selection type represents a selection in a selection set
 /// *Selection*:
 ///     Field | FragmentSpread | InlineFragment
@@ -59,6 +67,20 @@ impl From<Selection> for apollo_encoder::Selection {
     }
 }
 
+impl From<apollo_parser::ast::Selection> for Selection {
+    fn from(selection: apollo_parser::ast::Selection) -> Self {
+        match selection {
+            apollo_parser::ast::Selection::Field(field) => Self::Field(field.into()),
+            apollo_parser::ast::Selection::FragmentSpread(fragment_spread) => {
+                Self::FragmentSpread(fragment_spread.into())
+            }
+            apollo_parser::ast::Selection::InlineFragment(inline_fragment) => {
+                Self::InlineFragment(inline_fragment.into())
+            }
+        }
+    }
+}
+
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `SelectionSet`
     pub fn selection_set(&mut self) -> Result<SelectionSet> {
@@ -69,14 +91,13 @@ impl<'a> DocumentBuilder<'a> {
             .map(|o| o.as_object().unwrap().fields_def.len())
             .unwrap_or(7);
         let selections = (0..self.u.int_in_range(2..=selection_nb)?)
-            .map(|i| self.selection(i, &mut exclude_names)) // TODO do not generate duplication variable name
+            .map(|_| self.selection(&mut exclude_names)) // TODO do not generate duplication variable name
             .collect::<Result<Vec<_>>>()?;
         Ok(SelectionSet { selections })
     }
 
     /// Create an arbitrary `Selection`
-    pub fn selection(&mut self, index: usize, excludes: &mut Vec<Name>) -> Result<Selection> {
-        // TODO take only selection set field available
+    pub fn selection(&mut self, excludes: &mut Vec<Name>) -> Result<Selection> {
         let selection = match self.u.int_in_range(0..=2usize)? {
             0 => Selection::Field(self.field()?),
             1 => match self.fragment_spread(excludes)? {
