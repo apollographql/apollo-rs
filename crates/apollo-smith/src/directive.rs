@@ -59,7 +59,7 @@ impl From<apollo_parser::ast::DirectiveDefinition> for DirectiveDef {
                 .directive_locations()
                 .map(|dls| {
                     dls.directive_locations()
-                        .map(|dl| DirectiveLocation::from(dl.to_string().trim().to_string()))
+                        .map(|dl| DirectiveLocation::from(dl.token_string().unwrap().to_string()))
                         .collect()
                 })
                 .unwrap_or_default(),

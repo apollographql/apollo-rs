@@ -26,6 +26,52 @@ impl ast::EnumValue {
     }
 }
 
+impl ast::DirectiveLocation {
+    pub fn token_string(self) -> Option<&'static str> {
+        if self.query_token().is_some() {
+            Some("QUERY")
+        } else if self.mutation_token().is_some() {
+            Some("MUTATION")
+        } else if self.subscription_token().is_some() {
+            Some("SUBSCRIPTION")
+        } else if self.field_token().is_some() {
+            Some("FIELD")
+        } else if self.fragment_definition_token().is_some() {
+            Some("FRAGMENT_DEFINITION")
+        } else if self.fragment_spread_token().is_some() {
+            Some("FRAGMENT_SPREAD")
+        } else if self.inline_fragment_token().is_some() {
+            Some("INLINE_FRAGMENT")
+        } else if self.variable_definition_token().is_some() {
+            Some("VARIABLE_DEFINITION")
+        } else if self.schema_token().is_some() {
+            Some("SCHEMA")
+        } else if self.scalar_token().is_some() {
+            Some("SCALAR")
+        } else if self.object_token().is_some() {
+            Some("OBJECT")
+        } else if self.field_definition_token().is_some() {
+            Some("FIELD_DEFINITION")
+        } else if self.argument_definition_token().is_some() {
+            Some("ARGUMENT_DEFINITION")
+        } else if self.interface_token().is_some() {
+            Some("INTERFACE")
+        } else if self.union_token().is_some() {
+            Some("UNION")
+        } else if self.enum_token().is_some() {
+            Some("ENUM")
+        } else if self.enum_value_token().is_some() {
+            Some("ENUM_VALUE")
+        } else if self.input_object_token().is_some() {
+            Some("INPUT_OBJECT")
+        } else if self.input_field_definition_token().is_some() {
+            Some("INPUT_FIELD_DEFINITION")
+        } else {
+            None
+        }
+    }
+}
+
 impl Into<String> for ast::StringValue {
     fn into(self) -> String {
         let text = text_of_first_token(self.syntax());
