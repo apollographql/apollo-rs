@@ -256,7 +256,7 @@ InputObjectTypeExtension =
   | 'extend' 'input' Name Directives?
 
 DirectiveDefinition =
-  Description? 'directive' '@' Name ArgumentsDefinition? 'on' DirectiveLocations
+  Description? 'directive' '@' Name ArgumentsDefinition? 'repeatable'? 'on' DirectiveLocations
 
 // In the spec, DirectiveLocations is defined as an enum of:
 // DirectiveLocations
