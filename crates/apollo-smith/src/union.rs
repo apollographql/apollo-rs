@@ -21,7 +21,7 @@ use crate::{
 pub struct UnionTypeDef {
     pub(crate) name: Name,
     pub(crate) description: Option<Description>,
-    pub(crate) members: HashSet<Ty>,
+    pub(crate) members: HashSet<Name>,
     pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) extend: bool,
 }
@@ -33,7 +33,7 @@ impl From<UnionTypeDef> for UnionDefinition {
         union_ty_def
             .members
             .into_iter()
-            .for_each(|member| new_union_ty_def.member(member.name().clone().into()));
+            .for_each(|member| new_union_ty_def.member(member.into()));
         union_ty_def
             .directives
             .into_iter()
@@ -44,6 +44,68 @@ impl From<UnionTypeDef> for UnionDefinition {
         }
 
         new_union_ty_def
+    }
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::UnionTypeDefinition> for UnionTypeDef {
+    fn from(union_def: apollo_parser::ast::UnionTypeDefinition) -> Self {
+        Self {
+            name: union_def
+                .name()
+                .expect("object type definition must have a name")
+                .into(),
+            description: union_def.description().map(Description::from),
+            directives: union_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            extend: false,
+            members: union_def
+                .union_member_types()
+                .map(|members| {
+                    members
+                        .named_types()
+                        .map(|n| n.name().unwrap().into())
+                        .collect()
+                })
+                .unwrap_or_default(),
+        }
+    }
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::UnionTypeExtension> for UnionTypeDef {
+    fn from(union_def: apollo_parser::ast::UnionTypeExtension) -> Self {
+        Self {
+            name: union_def
+                .name()
+                .expect("object type definition must have a name")
+                .into(),
+            description: None,
+            directives: union_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            extend: true,
+            members: union_def
+                .union_member_types()
+                .map(|members| {
+                    members
+                        .named_types()
+                        .map(|n| n.name().unwrap().into())
+                        .collect()
+                })
+                .unwrap_or_default(),
+        }
     }
 }
 
@@ -67,7 +129,7 @@ impl<'a> DocumentBuilder<'a> {
         );
 
         let members = (0..self.u.int_in_range(2..=10)?)
-            .map(|_| self.choose_named_ty(&existing_types))
+            .map(|_| Ok(self.choose_named_ty(&existing_types)?.name().clone()))
             .collect::<Result<HashSet<_>>>()?;
 
         Ok(UnionTypeDef {

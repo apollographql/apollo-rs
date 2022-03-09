@@ -40,6 +40,25 @@ impl From<FragmentDef> for apollo_encoder::FragmentDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::FragmentDefinition> for FragmentDef {
+    fn from(fragment_def: apollo_parser::ast::FragmentDefinition) -> Self {
+        Self {
+            name: fragment_def.fragment_name().unwrap().name().unwrap().into(),
+            directives: fragment_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            type_condition: fragment_def.type_condition().unwrap().into(),
+            selection_set: fragment_def.selection_set().unwrap().into(),
+        }
+    }
+}
+
 /// The __fragmentSpread type represents a named fragment used in a selection set.
 ///
 /// *FragmentSpread*:
@@ -64,6 +83,7 @@ impl From<FragmentSpread> for apollo_encoder::FragmentSpread {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::FragmentSpread> for FragmentSpread {
     fn from(fragment_spread: apollo_parser::ast::FragmentSpread) -> Self {
         Self {
@@ -111,6 +131,7 @@ impl From<InlineFragment> for apollo_encoder::InlineFragment {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::InlineFragment> for InlineFragment {
     fn from(inline_fragment: apollo_parser::ast::InlineFragment) -> Self {
         Self {
@@ -148,6 +169,7 @@ impl From<TypeCondition> for apollo_encoder::TypeCondition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::TypeCondition> for TypeCondition {
     fn from(type_condition: apollo_parser::ast::TypeCondition) -> Self {
         Self {
@@ -211,10 +233,7 @@ impl<'a> DocumentBuilder<'a> {
 
     /// Create an arbitrary `TypeCondition`
     pub fn type_condition(&mut self) -> Result<TypeCondition> {
-        let last_element = self
-            .stack
-            .last()
-            .and_then(|last_element| last_element.as_object());
+        let last_element = self.stack.last();
         match last_element {
             Some(last_element) => Ok(TypeCondition {
                 name: last_element.name.clone(),

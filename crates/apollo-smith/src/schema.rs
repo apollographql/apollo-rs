@@ -50,6 +50,7 @@ impl From<SchemaDef> for apollo_encoder::SchemaDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::SchemaDefinition> for SchemaDef {
     fn from(schema_def: apollo_parser::ast::SchemaDefinition) -> Self {
         let mut query = None;
@@ -86,6 +87,7 @@ impl From<apollo_parser::ast::SchemaDefinition> for SchemaDef {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::SchemaExtension> for SchemaDef {
     fn from(schema_def: apollo_parser::ast::SchemaExtension) -> Self {
         let mut query = None;

@@ -27,7 +27,7 @@ impl From<InputValue> for apollo_encoder::Value {
     fn from(input_value: InputValue) -> Self {
         match input_value {
             InputValue::Variable(v) => Self::Variable(v.into()),
-            InputValue::Int(i) => Self::Int(i),
+            InputValue::Int(i) => Self::Int(i.into()),
             InputValue::Float(f) => Self::Float(f),
             InputValue::String(s) => Self::String(s),
             InputValue::Boolean(b) => Self::Boolean(b),
@@ -41,12 +41,14 @@ impl From<InputValue> for apollo_encoder::Value {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::DefaultValue> for InputValue {
     fn from(default_val: apollo_parser::ast::DefaultValue) -> Self {
         default_val.value().unwrap().into()
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::Value> for InputValue {
     fn from(value: apollo_parser::ast::Value) -> Self {
         match value {
@@ -128,6 +130,7 @@ impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::InputValueDefinition> for InputValueDef {
     fn from(input_val_def: apollo_parser::ast::InputValueDefinition) -> Self {
         Self {
@@ -360,7 +363,8 @@ mod tests {
             operation_defs: Vec::new(),
             fragment_defs: Vec::new(),
             stack: Vec::new(),
-            choosen_arguments: HashMap::new(),
+            chosen_arguments: HashMap::new(),
+            chosen_aliases: HashMap::new(),
         };
         let my_nested_type = ObjectTypeDef {
             description: None,

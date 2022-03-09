@@ -48,6 +48,7 @@ impl From<EnumTypeDef> for EnumDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
     fn from(enum_def: apollo_parser::ast::EnumTypeDefinition) -> Self {
         Self {
@@ -74,6 +75,7 @@ impl From<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::EnumTypeExtension> for EnumTypeDef {
     fn from(enum_def: apollo_parser::ast::EnumTypeExtension) -> Self {
         Self {
@@ -124,6 +126,7 @@ impl From<EnumValueDefinition> for EnumValue {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::EnumValueDefinition> for EnumValueDefinition {
     fn from(enum_value_def: apollo_parser::ast::EnumValueDefinition) -> Self {
         Self {

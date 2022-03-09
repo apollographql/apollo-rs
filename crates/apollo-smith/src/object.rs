@@ -51,6 +51,7 @@ impl From<ObjectTypeDef> for ObjectDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
     fn from(object_def: apollo_parser::ast::ObjectTypeDefinition) -> Self {
         Self {
@@ -67,8 +68,15 @@ impl From<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
                         .collect()
                 })
                 .unwrap_or_default(),
-            // TODO
-            interface_impls: HashSet::new(),
+            interface_impls: object_def
+                .implements_interfaces()
+                .map(|impl_int| {
+                    impl_int
+                        .named_types()
+                        .map(|n| n.name().unwrap().into())
+                        .collect()
+                })
+                .unwrap_or_default(),
             extend: false,
             fields_def: object_def
                 .fields_definition()
@@ -80,6 +88,7 @@ impl From<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::ObjectTypeExtension> for ObjectTypeDef {
     fn from(object_def: apollo_parser::ast::ObjectTypeExtension) -> Self {
         Self {
@@ -96,8 +105,15 @@ impl From<apollo_parser::ast::ObjectTypeExtension> for ObjectTypeDef {
                         .collect()
                 })
                 .unwrap_or_default(),
-            // TODO
-            interface_impls: HashSet::new(),
+            interface_impls: object_def
+                .implements_interfaces()
+                .map(|impl_int| {
+                    impl_int
+                        .named_types()
+                        .map(|n| n.name().unwrap().into())
+                        .collect()
+                })
+                .unwrap_or_default(),
             extend: true,
             fields_def: object_def
                 .fields_definition()

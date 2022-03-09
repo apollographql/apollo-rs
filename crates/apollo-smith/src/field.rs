@@ -44,6 +44,7 @@ impl From<FieldDef> for apollo_encoder::FieldDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::FieldDefinition> for FieldDef {
     fn from(field_def: apollo_parser::ast::FieldDefinition) -> Self {
         Self {
@@ -99,6 +100,7 @@ impl From<Field> for apollo_encoder::Field {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::Field> for Field {
     fn from(field: apollo_parser::ast::Field) -> Self {
         Self {
@@ -161,66 +163,42 @@ impl<'a> DocumentBuilder<'a> {
             .collect()
     }
 
-    /// Create an arbitrary `Field` given an index to put in the name of the field (to avoid duplicated fields)
-    pub fn field_with_index(&mut self, index: usize) -> Result<Field> {
-        let alias = self
+    /// Create an arbitrary `Field` given an object type
+    pub fn field(&mut self, index: usize) -> Result<Field> {
+        let object_ty = self
+            .stack
+            .last()
+            .cloned()
+            .expect("an object type must be added on the stack");
+
+        let chosen_field_def = self.u.choose(&object_ty.fields_def)?;
+        let mut alias = self
             .u
             .arbitrary()
             .unwrap_or(false)
             .then(|| self.name_with_index(index))
             .transpose()?;
-        let name = self.name_with_index(index)?;
-        let args = self.arguments()?;
-        let directives = self.directives(DirectiveLocation::FieldDefinition)?;
-        let selection_set = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.selection_set())
-            .transpose()?;
 
-        Ok(Field {
-            alias,
-            name,
-            args,
-            directives,
-            selection_set,
-        })
-    }
-
-    /// Create an arbitrary `Field` given an object type
-    pub fn field(&mut self) -> Result<Field> {
-        let type_def = self.stack.last().cloned().unwrap();
-        let object_ty = type_def.as_object().unwrap();
-
-        let choosen_field_def = self.u.choose(&object_ty.fields_def)?;
-        let alias = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.name())
-            .transpose()?;
-
-        let name = choosen_field_def.name.clone();
+        let name = chosen_field_def.name.clone();
         // To not have same selection with different arguments
-        let args = match self.choosen_arguments.get(&name) {
+        let args = match self.chosen_arguments.get(&name) {
             Some(args) => args.clone(),
             None => {
-                let args = choosen_field_def
+                let args = chosen_field_def
                     .arguments_definition
                     .clone()
                     .map(|args_def| self.arguments_with_def(&args_def))
                     .unwrap_or_else(|| Ok(vec![]))?;
-                self.choosen_arguments.insert(name.clone(), args.clone());
+                self.chosen_arguments.insert(name.clone(), args.clone());
 
                 args
             }
         };
         let directives = self.directives(DirectiveLocation::Field)?;
 
-        let selection_set = if !choosen_field_def.ty.is_builtin() {
+        let selection_set = if !chosen_field_def.ty.is_builtin() {
             // Put current ty on the stack
-            if self.stack_ty(&choosen_field_def.ty) {
+            if self.stack_ty(&chosen_field_def.ty) {
                 let res = Some(self.selection_set()?);
                 self.stack.pop();
                 res
@@ -230,6 +208,32 @@ impl<'a> DocumentBuilder<'a> {
         } else {
             None
         };
+
+        // To not choose different alias name for the same field
+        // Useful in this situation
+        // {
+        //  me {
+        //      T1: name
+        //  }
+        //  me {
+        //    T0: id
+        //    T1: id
+        //  }
+        // }
+        if let Some(alias_name) = alias.take() {
+            match self.chosen_aliases.get(&alias_name) {
+                None => {
+                    self.chosen_aliases.insert(alias_name.clone(), name.clone());
+                    alias = Some(alias_name);
+                }
+                Some(original_field_name) => {
+                    // If the alias point to the same original field name then we can keep this alias, if not we don't use it
+                    if original_field_name == &name {
+                        alias = Some(alias_name);
+                    }
+                }
+            }
+        }
 
         Ok(Field {
             alias,

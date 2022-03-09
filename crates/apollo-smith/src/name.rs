@@ -43,6 +43,7 @@ impl From<Name> for String {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::Name> for Name {
     fn from(name: apollo_parser::ast::Name) -> Self {
         Self {

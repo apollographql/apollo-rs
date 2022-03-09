@@ -46,6 +46,7 @@ impl From<DirectiveDef> for apollo_encoder::DirectiveDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::DirectiveDefinition> for DirectiveDef {
     fn from(directive_def: apollo_parser::ast::DirectiveDefinition) -> Self {
         Self {
@@ -91,6 +92,7 @@ impl From<Directive> for apollo_encoder::Directive {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::Directive> for Directive {
     fn from(directive: apollo_parser::ast::Directive) -> Self {
         Self {

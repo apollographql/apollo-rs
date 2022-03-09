@@ -30,6 +30,7 @@ impl From<ArgumentsDef> for apollo_encoder::ArgumentsDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::ArgumentsDefinition> for ArgumentsDef {
     fn from(args_def: apollo_parser::ast::ArgumentsDefinition) -> Self {
         Self {
@@ -59,6 +60,7 @@ impl From<Argument> for apollo_encoder::Argument {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::Argument> for Argument {
     fn from(argument: apollo_parser::ast::Argument) -> Self {
         Self {

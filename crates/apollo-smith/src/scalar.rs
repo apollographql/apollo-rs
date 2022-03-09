@@ -40,6 +40,7 @@ impl From<ScalarTypeDef> for apollo_encoder::ScalarDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::ScalarTypeDefinition> for ScalarTypeDef {
     fn from(scalar_def: apollo_parser::ast::ScalarTypeDefinition) -> Self {
         Self {
@@ -60,6 +61,7 @@ impl From<apollo_parser::ast::ScalarTypeDefinition> for ScalarTypeDef {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::ScalarTypeExtension> for ScalarTypeDef {
     fn from(scalar_def: apollo_parser::ast::ScalarTypeExtension) -> Self {
         Self {

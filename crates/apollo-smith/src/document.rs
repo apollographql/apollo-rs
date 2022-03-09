@@ -73,17 +73,19 @@ impl From<Document> for apollo_encoder::Document {
     }
 }
 
-// Maybe under a feature flag ?
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::Document> for Document {
     fn from(doc: apollo_parser::ast::Document) -> Self {
-        // All commented parts are TODO
-        // The main goal is to support minimal federation demo schema
         let mut enum_defs = Vec::new();
         let mut object_defs = Vec::new();
         let mut schema_defs = Vec::new();
         let mut directive_defs = Vec::new();
         let mut scalar_defs = Vec::new();
         let mut operation_defs = Vec::new();
+        let mut interface_defs = Vec::new();
+        let mut union_defs = Vec::new();
+        let mut input_object_defs = Vec::new();
+        let mut fragment_defs = Vec::new();
 
         for definition in doc.definitions() {
             match definition {
@@ -117,31 +119,40 @@ impl From<apollo_parser::ast::Document> for Document {
                 apollo_parser::ast::Definition::OperationDefinition(operation_def) => {
                     operation_defs.push(OperationDef::from(operation_def))
                 }
-                // TODO
-                // apollo_parser::ast::Definition::InterfaceTypeDefinition(_) => todo!(),
-                // apollo_parser::ast::Definition::UnionTypeDefinition(_) => todo!(),
-                // apollo_parser::ast::Definition::InputObjectTypeDefinition(_) => todo!(),
-                // apollo_parser::ast::Definition::DirectiveDefinition(_) => todo!(),
-                // apollo_parser::ast::Definition::FragmentDefinition(_) => todo!(),
-                // apollo_parser::ast::Definition::InterfaceTypeExtension(_) => todo!(),
-                // apollo_parser::ast::Definition::UnionTypeExtension(_) => todo!(),
-                // apollo_parser::ast::Definition::InputObjectTypeExtension(_) => todo!(),
-                _ => {
-                    // TODO
+                apollo_parser::ast::Definition::InterfaceTypeDefinition(interface_def) => {
+                    interface_defs.push(InterfaceTypeDef::from(interface_def))
+                }
+                apollo_parser::ast::Definition::InterfaceTypeExtension(interface_def) => {
+                    interface_defs.push(InterfaceTypeDef::from(interface_def))
+                }
+                apollo_parser::ast::Definition::UnionTypeDefinition(union_def) => {
+                    union_defs.push(UnionTypeDef::from(union_def))
+                }
+                apollo_parser::ast::Definition::UnionTypeExtension(union_def) => {
+                    union_defs.push(UnionTypeDef::from(union_def))
+                }
+                apollo_parser::ast::Definition::InputObjectTypeDefinition(input_object_def) => {
+                    input_object_defs.push(InputObjectTypeDef::from(input_object_def))
+                }
+                apollo_parser::ast::Definition::InputObjectTypeExtension(input_object_def) => {
+                    input_object_defs.push(InputObjectTypeDef::from(input_object_def))
+                }
+                apollo_parser::ast::Definition::FragmentDefinition(fragment_def) => {
+                    fragment_defs.push(FragmentDef::from(fragment_def))
                 }
             }
         }
 
         Self {
-            operation_definitions: Vec::new(),
+            operation_definitions: operation_defs,
             fragment_definitions: Vec::new(),
             schema_definitions: schema_defs,
-            scalar_type_definitions: Vec::new(),
+            scalar_type_definitions: scalar_defs,
             object_type_definitions: object_defs,
-            interface_type_definitions: Vec::new(),
-            union_type_definitions: Vec::new(),
+            interface_type_definitions: interface_defs,
+            union_type_definitions: union_defs,
             enum_type_definitions: enum_defs,
-            input_object_type_definitions: Vec::new(),
+            input_object_type_definitions: input_object_defs,
             directive_definitions: directive_defs,
         }
     }

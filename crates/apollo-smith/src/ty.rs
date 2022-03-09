@@ -42,6 +42,7 @@ impl From<Ty> for Type_ {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::Type> for Ty {
     fn from(ty: apollo_parser::ast::Type) -> Self {
         match ty {
@@ -64,6 +65,7 @@ impl From<apollo_parser::ast::Type> for Ty {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::NamedType> for Ty {
     fn from(ty: apollo_parser::ast::NamedType) -> Self {
         Self::Named(ty.name().unwrap().into())

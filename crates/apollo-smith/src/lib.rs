@@ -71,10 +71,12 @@ pub struct DocumentBuilder<'a> {
     pub(crate) directive_defs: Vec<DirectiveDef>,
     pub(crate) operation_defs: Vec<OperationDef>,
     pub(crate) fragment_defs: Vec<FragmentDef>,
-    // A stack to set current TypeDef
-    pub(crate) stack: Vec<TypeDefinition>,
+    // A stack to set current ObjectTypeDef
+    pub(crate) stack: Vec<ObjectTypeDef>,
     // Useful to keep the same arguments for a specific field
-    pub(crate) choosen_arguments: HashMap<Name, Vec<Argument>>,
+    pub(crate) chosen_arguments: HashMap<Name, Vec<Argument>>,
+    // Useful to keep the same aliases for a specific field name
+    pub(crate) chosen_aliases: HashMap<Name, Name>,
 }
 
 impl<'a> Debug for DocumentBuilder<'a> {
@@ -110,7 +112,8 @@ impl<'a> DocumentBuilder<'a> {
             union_type_defs: Vec::new(),
             input_object_type_defs: Vec::new(),
             stack: Vec::new(),
-            choosen_arguments: HashMap::new(),
+            chosen_arguments: HashMap::new(),
+            chosen_aliases: HashMap::new(),
         };
 
         for _ in 0..builder.u.int_in_range(1..=50)? {
@@ -182,7 +185,8 @@ impl<'a> DocumentBuilder<'a> {
             union_type_defs: document.union_type_definitions,
             input_object_type_defs: document.input_object_type_definitions,
             stack: Vec::new(),
-            choosen_arguments: HashMap::new(),
+            chosen_arguments: HashMap::new(),
+            chosen_aliases: HashMap::new(),
         };
 
         Ok(builder)
@@ -216,7 +220,7 @@ impl<'a> DocumentBuilder<'a> {
             .find(|object_ty_def| &object_ty_def.name == type_name)
             .cloned()
         {
-            self.stack.push(TypeDefinition::Object(object_ty));
+            self.stack.push(object_ty);
             true
         } else if let Some(_enum_ty) = self
             .enum_type_defs
@@ -227,29 +231,6 @@ impl<'a> DocumentBuilder<'a> {
             false
         } else {
             todo!("need to implement for union, scalar, ...")
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub(crate) enum TypeDefinition {
-    Enum(EnumTypeDef),
-    Object(ObjectTypeDef),
-}
-
-impl TypeDefinition {
-    pub(crate) fn as_object(&self) -> Option<&ObjectTypeDef> {
-        if let Self::Object(v) = self {
-            Some(v)
-        } else {
-            None
-        }
-    }
-
-    pub(crate) fn need_selection_set(&self) -> bool {
-        match self {
-            TypeDefinition::Enum(_) => false,
-            TypeDefinition::Object(_) => true,
         }
     }
 }

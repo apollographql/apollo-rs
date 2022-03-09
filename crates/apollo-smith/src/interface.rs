@@ -52,6 +52,78 @@ impl From<InterfaceTypeDef> for InterfaceDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::InterfaceTypeDefinition> for InterfaceTypeDef {
+    fn from(interface_def: apollo_parser::ast::InterfaceTypeDefinition) -> Self {
+        Self {
+            name: interface_def
+                .name()
+                .expect("object type definition must have a name")
+                .into(),
+            description: interface_def.description().map(Description::from),
+            directives: interface_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            extend: false,
+            fields_def: interface_def
+                .fields_definition()
+                .expect("object type definition must have fields definition")
+                .field_definitions()
+                .map(FieldDef::from)
+                .collect(),
+            interfaces: interface_def
+                .implements_interfaces()
+                .map(|itfs| {
+                    itfs.named_types()
+                        .map(|named_type| named_type.name().unwrap().into())
+                        .collect()
+                })
+                .unwrap_or_default(),
+        }
+    }
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::InterfaceTypeExtension> for InterfaceTypeDef {
+    fn from(interface_def: apollo_parser::ast::InterfaceTypeExtension) -> Self {
+        Self {
+            name: interface_def
+                .name()
+                .expect("object type definition must have a name")
+                .into(),
+            description: None,
+            directives: interface_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            extend: true,
+            fields_def: interface_def
+                .fields_definition()
+                .expect("object type definition must have fields definition")
+                .field_definitions()
+                .map(FieldDef::from)
+                .collect(),
+            interfaces: interface_def
+                .implements_interfaces()
+                .map(|itfs| {
+                    itfs.named_types()
+                        .map(|named_type| named_type.name().unwrap().into())
+                        .collect()
+                })
+                .unwrap_or_default(),
+        }
+    }
+}
+
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `InterfaceTypeDef`
     pub fn interface_type_definition(&mut self) -> Result<InterfaceTypeDef> {

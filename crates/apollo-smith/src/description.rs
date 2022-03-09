@@ -21,6 +21,7 @@ impl From<Description> for String {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::Description> for Description {
     fn from(desc: apollo_parser::ast::Description) -> Self {
         Description(StringValue::from(desc.to_string()))

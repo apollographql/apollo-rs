@@ -52,6 +52,68 @@ impl From<InputObjectTypeDef> for apollo_encoder::InputObjectDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::InputObjectTypeDefinition> for InputObjectTypeDef {
+    fn from(input_object: apollo_parser::ast::InputObjectTypeDefinition) -> Self {
+        Self {
+            name: input_object
+                .name()
+                .expect("object type definition must have a name")
+                .into(),
+            description: input_object.description().map(Description::from),
+            directives: input_object
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            extend: false,
+            fields: input_object
+                .input_fields_definition()
+                .map(|input_fields| {
+                    input_fields
+                        .input_value_definitions()
+                        .map(InputValueDef::from)
+                        .collect()
+                })
+                .unwrap_or_default(),
+        }
+    }
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::InputObjectTypeExtension> for InputObjectTypeDef {
+    fn from(input_object: apollo_parser::ast::InputObjectTypeExtension) -> Self {
+        Self {
+            name: input_object
+                .name()
+                .expect("object type definition must have a name")
+                .into(),
+            directives: input_object
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            extend: true,
+            fields: input_object
+                .input_fields_definition()
+                .map(|input_fields| {
+                    input_fields
+                        .input_value_definitions()
+                        .map(InputValueDef::from)
+                        .collect()
+                })
+                .unwrap_or_default(),
+            description: None,
+        }
+    }
+}
+
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `InputObjectTypeDef`
     pub fn input_object_type_definition(&mut self) -> Result<InputObjectTypeDef> {

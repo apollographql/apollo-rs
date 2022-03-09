@@ -50,6 +50,7 @@ impl From<OperationDef> for String {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::OperationDefinition> for OperationDef {
     fn from(operation_def: apollo_parser::ast::OperationDefinition) -> Self {
         Self {
@@ -96,6 +97,7 @@ impl From<OperationType> for apollo_encoder::OperationType {
     }
 }
 
+#[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::OperationType> for OperationType {
     fn from(op_type: apollo_parser::ast::OperationType) -> Self {
         if op_type.query_token().is_some() {
@@ -166,7 +168,7 @@ impl<'a> DocumentBuilder<'a> {
 
             ops
         };
-        let (operation_type, choosen_ty) = self.u.choose(&available_operations)?;
+        let (operation_type, chosen_ty) = self.u.choose(&available_operations)?;
         let directive_location = match operation_type {
             OperationType::Query => DirectiveLocation::Query,
             OperationType::Mutation => DirectiveLocation::Mutation,
@@ -175,11 +177,20 @@ impl<'a> DocumentBuilder<'a> {
         let directives = self.directives(directive_location)?;
 
         // Stack
-        self.stack_ty(choosen_ty);
+        self.stack_ty(chosen_ty);
 
         let selection_set = self.selection_set()?;
 
         self.stack.pop();
+        // Clear the chosen arguments for an operation
+        self.chosen_arguments.clear();
+        // Clear the chosen aliases for field in an operation
+        self.chosen_aliases.clear();
+
+        assert!(
+            self.stack.is_empty(),
+            "the stack must be empty at the end of an operation definition"
+        );
 
         // TODO
         let variable_definitions = vec![];
