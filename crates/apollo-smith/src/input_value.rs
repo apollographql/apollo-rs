@@ -27,7 +27,7 @@ impl From<InputValue> for apollo_encoder::Value {
     fn from(input_value: InputValue) -> Self {
         match input_value {
             InputValue::Variable(v) => Self::Variable(v.into()),
-            InputValue::Int(i) => Self::Int(i.into()),
+            InputValue::Int(i) => Self::Int(i),
             InputValue::Float(f) => Self::Float(f),
             InputValue::String(s) => Self::String(s),
             InputValue::Boolean(b) => Self::Boolean(b),
