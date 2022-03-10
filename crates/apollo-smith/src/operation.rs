@@ -114,7 +114,7 @@ impl From<apollo_parser::ast::OperationType> for OperationType {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `OperationDef`
-    pub fn operation_definition(&mut self) -> Result<OperationDef> {
+    pub fn operation_definition_bis(&mut self) -> Result<OperationDef> {
         let name = self
             .u
             .arbitrary()
@@ -145,9 +145,12 @@ impl<'a> DocumentBuilder<'a> {
         })
     }
 
-    /// Create an arbitrary `OperationDef` given a `SchemaDef`
-    pub fn operation_definition_from_schema(&mut self) -> Result<OperationDef> {
-        let schema = self.schema_defs.last().cloned().unwrap();
+    /// Create an arbitrary `OperationDef` taking the last `SchemaDef`
+    pub fn operation_definition(&mut self) -> Result<Option<OperationDef>> {
+        let schema = match self.schema_def.clone() {
+            Some(schema_def) => schema_def,
+            None => return Ok(None),
+        };
         let name = self
             .u
             .arbitrary()
@@ -199,13 +202,13 @@ impl<'a> DocumentBuilder<'a> {
             && operation_type == &OperationType::Query
             && self.u.arbitrary().unwrap_or(false);
 
-        Ok(OperationDef {
+        Ok(Some(OperationDef {
             operation_type: *operation_type,
             name,
             variable_definitions,
             directives,
             selection_set,
             shorthand,
-        })
+        }))
     }
 }

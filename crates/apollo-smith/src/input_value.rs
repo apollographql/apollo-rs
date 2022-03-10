@@ -358,7 +358,7 @@ mod tests {
             union_type_defs: Vec::new(),
             enum_type_defs: Vec::new(),
             scalar_type_defs: Vec::new(),
-            schema_defs: Vec::new(),
+            schema_def: None,
             directive_defs: Vec::new(),
             operation_defs: Vec::new(),
             fragment_defs: Vec::new(),

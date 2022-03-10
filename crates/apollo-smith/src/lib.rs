@@ -67,7 +67,7 @@ pub struct DocumentBuilder<'a> {
     pub(crate) union_type_defs: Vec<UnionTypeDef>,
     pub(crate) enum_type_defs: Vec<EnumTypeDef>,
     pub(crate) scalar_type_defs: Vec<ScalarTypeDef>,
-    pub(crate) schema_defs: Vec<SchemaDef>,
+    pub(crate) schema_def: Option<SchemaDef>,
     pub(crate) directive_defs: Vec<DirectiveDef>,
     pub(crate) operation_defs: Vec<OperationDef>,
     pub(crate) fragment_defs: Vec<FragmentDef>,
@@ -88,7 +88,7 @@ impl<'a> Debug for DocumentBuilder<'a> {
             .field("union_type_defs", &self.union_type_defs)
             .field("enum_type_defs", &self.enum_type_defs)
             .field("scalar_type_defs", &self.scalar_type_defs)
-            .field("schema_defs", &self.schema_defs)
+            .field("schema_def", &self.schema_def)
             .field("directive_defs", &self.directive_defs)
             .field("operation_defs", &self.operation_defs)
             .field("fragment_defs", &self.fragment_defs)
@@ -104,7 +104,7 @@ impl<'a> DocumentBuilder<'a> {
             object_type_defs: Vec::new(),
             interface_type_defs: Vec::new(),
             enum_type_defs: Vec::new(),
-            schema_defs: Vec::new(),
+            schema_def: None,
             directive_defs: Vec::new(),
             operation_defs: Vec::new(),
             fragment_defs: Vec::new(),
@@ -152,18 +152,19 @@ impl<'a> DocumentBuilder<'a> {
         }
 
         for _ in 0..builder.u.int_in_range(1..=50)? {
-            let schema_def = builder.schema_definition()?;
-            builder.schema_defs.push(schema_def);
-        }
-
-        for _ in 0..builder.u.int_in_range(1..=50)? {
             let directive_def = builder.directive_def()?;
             builder.directive_defs.push(directive_def);
         }
 
+        let schema_def = builder.schema_definition()?;
+        builder.schema_def = Some(schema_def);
+
         for _ in 0..builder.u.int_in_range(1..=50)? {
             let operation_def = builder.operation_definition()?;
-            builder.operation_defs.push(operation_def);
+            // Could be None if there is no schema definition (in this case it never happens)
+            if let Some(operation_def) = operation_def {
+                builder.operation_defs.push(operation_def);
+            }
         }
 
         Ok(builder)
@@ -177,7 +178,7 @@ impl<'a> DocumentBuilder<'a> {
             object_type_defs: document.object_type_definitions,
             interface_type_defs: document.interface_type_definitions,
             enum_type_defs: document.enum_type_definitions,
-            schema_defs: document.schema_definitions,
+            schema_def: document.schema_definition,
             directive_defs: document.directive_definitions,
             operation_defs: document.operation_definitions,
             fragment_defs: document.fragment_definitions,
@@ -195,7 +196,7 @@ impl<'a> DocumentBuilder<'a> {
     /// Convert a `DocumentBuilder` into a GraphQL `Document`
     pub fn finish(self) -> Document {
         Document {
-            schema_definitions: self.schema_defs,
+            schema_definition: self.schema_def,
             object_type_definitions: self.object_type_defs,
             interface_type_definitions: self.interface_type_defs,
             enum_type_definitions: self.enum_type_defs,

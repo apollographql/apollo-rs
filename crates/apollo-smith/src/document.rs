@@ -24,7 +24,7 @@ use crate::{
 pub struct Document {
     pub(crate) operation_definitions: Vec<OperationDef>,
     pub(crate) fragment_definitions: Vec<FragmentDef>,
-    pub(crate) schema_definitions: Vec<SchemaDef>,
+    pub(crate) schema_definition: Option<SchemaDef>,
     // Type definitions
     pub(crate) scalar_type_definitions: Vec<ScalarTypeDef>,
     pub(crate) object_type_definitions: Vec<ObjectTypeDef>,
@@ -44,9 +44,9 @@ impl From<Document> for apollo_encoder::Document {
         doc.scalar_type_definitions
             .into_iter()
             .for_each(|scalar_type_def| new_doc.scalar(scalar_type_def.into()));
-        doc.schema_definitions
-            .into_iter()
-            .for_each(|schema_def| new_doc.schema(schema_def.into()));
+        if let Some(schema_def) = doc.schema_definition {
+            new_doc.schema(schema_def.into());
+        }
         doc.object_type_definitions
             .into_iter()
             .for_each(|object_type_def| new_doc.object(object_type_def.into()));
@@ -78,7 +78,7 @@ impl From<apollo_parser::ast::Document> for Document {
     fn from(doc: apollo_parser::ast::Document) -> Self {
         let mut enum_defs = Vec::new();
         let mut object_defs = Vec::new();
-        let mut schema_defs = Vec::new();
+        let mut schema_def = None;
         let mut directive_defs = Vec::new();
         let mut scalar_defs = Vec::new();
         let mut operation_defs = Vec::new();
@@ -101,11 +101,11 @@ impl From<apollo_parser::ast::Document> for Document {
                 apollo_parser::ast::Definition::ObjectTypeExtension(obj_def) => {
                     object_defs.push(ObjectTypeDef::from(obj_def));
                 }
-                apollo_parser::ast::Definition::SchemaDefinition(schema_def) => {
-                    schema_defs.push(SchemaDef::from(schema_def));
+                apollo_parser::ast::Definition::SchemaDefinition(schema_definition) => {
+                    schema_def = Some(SchemaDef::from(schema_definition));
                 }
-                apollo_parser::ast::Definition::SchemaExtension(schema_def) => {
-                    schema_defs.push(SchemaDef::from(schema_def));
+                apollo_parser::ast::Definition::SchemaExtension(schema_definition) => {
+                    schema_def = Some(SchemaDef::from(schema_definition));
                 }
                 apollo_parser::ast::Definition::DirectiveDefinition(dir_def) => {
                     directive_defs.push(DirectiveDef::from(dir_def));
@@ -146,7 +146,7 @@ impl From<apollo_parser::ast::Document> for Document {
         Self {
             operation_definitions: operation_defs,
             fragment_definitions: Vec::new(),
-            schema_definitions: schema_defs,
+            schema_definition: schema_def,
             scalar_type_definitions: scalar_defs,
             object_type_definitions: object_defs,
             interface_type_definitions: interface_defs,
