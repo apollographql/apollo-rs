@@ -259,7 +259,7 @@ impl<'a> DocumentBuilder<'a> {
         let val = match ty {
             Ty::Named(_) => gen_val(self)?,
             Ty::List(_) => {
-                let nb_elt = self.u.int_in_range(0..=10usize)?;
+                let nb_elt = self.u.int_in_range(1..=25usize)?;
                 InputValue::List(
                     (0..nb_elt)
                         .map(|_| gen_val(self))
@@ -349,7 +349,11 @@ mod tests {
 
     #[test]
     fn test_input_value_for_type() {
-        let mut u = Unstructured::new(&([1, 2, 3, 4, 5, 6, 7]));
+        let data: Vec<u8> = (0..=5000usize)
+            .into_iter()
+            .map(|n| (n % 255) as u8)
+            .collect();
+        let mut u = Unstructured::new(&data);
         let mut document_builder = DocumentBuilder {
             u: &mut u,
             input_object_type_defs: Vec::new(),
@@ -429,7 +433,7 @@ mod tests {
 
         assert_eq!(
             input_val_str.as_str(),
-            "[{ first: [{ value: \"\u{3}\u{4}\" }, { value: \"\" }] }]"
+            "[{ first: [{ value: \"womkigecaYWUSQOMKIGECA86420zxvtcaYWUSQOMKIGECA86420zxvtrpnljhfdbKIGECA86420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531_ywusqomkigeNLJHFDB97531_ywusqomkigecaYWUSQOM531_ywusqomkigecaYWUSQOMKIGECA8vqomkigecaYWUSQOMKIGECA86420zxvtcaYWUSQOMKIGECA86420zxvtrpnljhfdbKIGECA86420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531_ywusqomkigeNLJHFDB97531_ywusqomkigecaYWUSQOM531_ywusqomkigecaYWUSQOMKIGECA8vqomki\" }, { value: \"a86420zxvtrpnljhfdbZXVTRPN9420zxvtrpnljhfdbZXVTRPNLJHFDB97rpnljhfdbZXVTRPNLJHFDB97531_ywugbZXVTRPNLJHFDB97531kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\" }] }]"
         );
     }
 }
