@@ -181,10 +181,14 @@ impl From<apollo_parser::ast::TypeCondition> for TypeCondition {
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `FragmentDef`
     pub fn fragment_definition(&mut self) -> Result<FragmentDef> {
+        // TODO: also choose between enum/scalars/object
+        let selected_object_type_name = self.u.choose(&self.object_type_defs)?.name.clone();
+        let _ = self.stack_ty(&Ty::Named(selected_object_type_name));
         let name = self.type_name()?;
         let directives = self.directives(DirectiveLocation::FragmentDefinition)?;
         let selection_set = self.selection_set()?;
         let type_condition = self.type_condition()?;
+        self.stack.pop();
 
         Ok(FragmentDef {
             name,

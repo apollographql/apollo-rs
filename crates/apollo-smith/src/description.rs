@@ -70,7 +70,10 @@ impl From<String> for StringValue {
 
 impl Arbitrary<'_> for StringValue {
     fn arbitrary(u: &mut arbitrary::Unstructured<'_>) -> Result<Self> {
-        let arbitrary_str = limited_string_desc(u, 100)?;
+        let mut arbitrary_str = limited_string_desc(u, 100)?;
+        if arbitrary_str.trim_matches('"').is_empty() {
+            arbitrary_str.push_str(&format!("{}", u.arbitrary::<usize>()?));
+        }
         let variant_idx = u.int_in_range(0..=1usize)?;
         let str_value = match variant_idx {
             0 => Self::Block(arbitrary_str),

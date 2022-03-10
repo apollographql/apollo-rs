@@ -113,38 +113,6 @@ impl From<apollo_parser::ast::OperationType> for OperationType {
 }
 
 impl<'a> DocumentBuilder<'a> {
-    /// Create an arbitrary `OperationDef`
-    pub fn operation_definition_bis(&mut self) -> Result<OperationDef> {
-        let name = self
-            .u
-            .arbitrary()
-            .unwrap_or(false)
-            .then(|| self.type_name())
-            .transpose()?;
-
-        let operation_type = self.u.arbitrary()?;
-        let directive_location = match operation_type {
-            OperationType::Query => DirectiveLocation::Query,
-            OperationType::Mutation => DirectiveLocation::Mutation,
-            OperationType::Subscription => DirectiveLocation::Subscription,
-        };
-        let directives = self.directives(directive_location)?;
-        let selection_set = self.selection_set()?;
-        let variable_definitions = self.variable_definitions()?;
-        let shorthand = self.operation_defs.is_empty()
-            && operation_type == OperationType::Query
-            && self.u.arbitrary().unwrap_or(false);
-
-        Ok(OperationDef {
-            operation_type,
-            name,
-            variable_definitions,
-            directives,
-            selection_set,
-            shorthand,
-        })
-    }
-
     /// Create an arbitrary `OperationDef` taking the last `SchemaDef`
     pub fn operation_definition(&mut self) -> Result<Option<OperationDef>> {
         let schema = match self.schema_def.clone() {
@@ -171,6 +139,7 @@ impl<'a> DocumentBuilder<'a> {
 
             ops
         };
+
         let (operation_type, chosen_ty) = self.u.choose(&available_operations)?;
         let directive_location = match operation_type {
             OperationType::Query => DirectiveLocation::Query,

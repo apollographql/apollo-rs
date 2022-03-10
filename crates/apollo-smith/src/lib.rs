@@ -117,11 +117,6 @@ impl<'a> DocumentBuilder<'a> {
         };
 
         for _ in 0..builder.u.int_in_range(1..=50)? {
-            let fragment_def = builder.fragment_definition()?;
-            builder.fragment_defs.push(fragment_def);
-        }
-
-        for _ in 0..builder.u.int_in_range(1..=50)? {
             let scalar_type_def = builder.scalar_type_definition()?;
             builder.scalar_type_defs.push(scalar_type_def);
         }
@@ -149,6 +144,11 @@ impl<'a> DocumentBuilder<'a> {
         for _ in 0..builder.u.int_in_range(1..=50)? {
             let input_object_type_def = builder.input_object_type_definition()?;
             builder.input_object_type_defs.push(input_object_type_def);
+        }
+
+        for _ in 0..builder.u.int_in_range(1..=50)? {
+            let fragment_def = builder.fragment_definition()?;
+            builder.fragment_defs.push(fragment_def);
         }
 
         for _ in 0..builder.u.int_in_range(1..=50)? {

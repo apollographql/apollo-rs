@@ -137,26 +137,30 @@ impl<'a> DocumentBuilder<'a> {
         let named_types: Vec<Ty> = self
             .list_existing_object_types()
             .into_iter()
-            .filter(Ty::is_named)
+            .filter(|ty| ty.is_named() && !ty.is_builtin())
             .collect();
 
         let arbitrary_idx: usize = self.u.arbitrary::<usize>()?;
 
         let mut query = (arbitrary_idx % 2 == 0)
-            .then(|| self.choose_named_ty(&named_types))
-            .transpose()?;
+            .then(|| self.u.choose(&named_types))
+            .transpose()?
+            .cloned();
         let mut mutation = (arbitrary_idx % 3 == 0)
-            .then(|| self.choose_named_ty(&named_types))
-            .transpose()?;
+            .then(|| self.u.choose(&named_types))
+            .transpose()?
+            .cloned();
         let mut subscription = (arbitrary_idx % 5 == 0)
-            .then(|| self.choose_named_ty(&named_types))
-            .transpose()?;
+            .then(|| self.u.choose(&named_types))
+            .transpose()?
+            .cloned();
         // If no one has been filled
         if let (None, None, None) = (&query, &mutation, &subscription) {
-            match self.u.int_in_range(0..=2usize)? {
-                0 => query = Some(self.choose_named_ty(&named_types)?),
-                1 => mutation = Some(self.choose_named_ty(&named_types)?),
-                2 => subscription = Some(self.choose_named_ty(&named_types)?),
+            let arbitrary_op_type_idx = self.u.int_in_range(0..=2usize)?;
+            match arbitrary_op_type_idx {
+                0 => query = Some(self.u.choose(&named_types)?.clone()),
+                1 => mutation = Some(self.u.choose(&named_types)?.clone()),
+                2 => subscription = Some(self.u.choose(&named_types)?.clone()),
                 _ => unreachable!(),
             }
         }
