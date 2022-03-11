@@ -1,3 +1,4 @@
+mod diagnostics;
 mod queries;
 mod validator;
 mod values;
@@ -7,33 +8,8 @@ use std::sync::Arc;
 use apollo_parser::{ast, SyntaxTree};
 pub use queries::database::{Database, SourceDatabase};
 
-use miette::{Diagnostic, NamedSource, SourceSpan};
-use thiserror::Error;
+use diagnostics::ApolloDiagnostic;
 use validator::Validator;
-
-#[derive(Error, Debug, Diagnostic)]
-#[error("cannot find `{}` interface in this scope", self.ty)]
-#[diagnostic(code("apollo-parser: semantic error"))]
-struct GraphQLUndefinedInterfacesError {
-    ty: String,
-    #[source_code]
-    src: NamedSource,
-    message: String,
-    #[label("{}", self.message)]
-    span: SourceSpan,
-}
-
-#[derive(Error, Debug, Diagnostic)]
-#[error("cannot find `{}` variable in this scope", self.ty)]
-#[diagnostic(code("apollo-parser: semantic error"))]
-struct GraphQLUndefinedVariablesError {
-    ty: String,
-    #[source_code]
-    src: NamedSource,
-    message: String,
-    #[label("{}", self.message)]
-    span: SourceSpan,
-}
 
 pub struct ApolloCompiler {
     db: Database,
@@ -51,12 +27,12 @@ impl ApolloCompiler {
         self.db.parse()
     }
 
-    pub fn validate(&self) -> Vec<values::Error> {
+    pub fn validate(&self) -> Vec<ApolloDiagnostic> {
         let validator = Validator::new(&self.db);
         validator.validate()
     }
 
-    pub fn syntax_errors(&self) -> Arc<Vec<values::Error>> {
+    pub fn syntax_errors(&self) -> Arc<Vec<ApolloDiagnostic>> {
         self.db.syntax_errors()
     }
 
@@ -166,7 +142,8 @@ fragment vipCustomer on User {
         let ctx = ApolloCompiler::new(input);
         // let errors = ctx.validate();
 
-        let operation_names: Vec<String> = ctx.operations().iter().map(|op| op.name()).collect();
+        let operation_names: Vec<String> =
+            ctx.operations().iter().filter_map(|op| op.name()).collect();
         assert_eq!(["ExampleQuery"], operation_names.as_slice());
         let fragments: Vec<String> = ctx
             .fragments()

@@ -1,11 +1,12 @@
-use crate::{values, SourceDatabase};
+use crate::{ApolloDiagnostic, SourceDatabase};
 
+pub mod operation_name;
 pub mod unused_implements_interfaces;
 pub mod unused_variables;
 
 pub struct Validator<'a> {
     db: &'a dyn SourceDatabase,
-    errors: Vec<values::Error>,
+    errors: Vec<ApolloDiagnostic>,
 }
 
 impl<'a> Validator<'a> {
@@ -16,7 +17,7 @@ impl<'a> Validator<'a> {
         }
     }
 
-    pub fn validate(&self) -> Vec<values::Error> {
+    pub fn validate(&self) -> Vec<ApolloDiagnostic> {
         todo!()
     }
 }

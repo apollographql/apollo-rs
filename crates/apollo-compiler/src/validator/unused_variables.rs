@@ -1,8 +1,15 @@
 use apollo_parser::ast;
 
+use crate::SourceDatabase;
+
 // TODO: refactor to return the same thing as unused implements interfaces
 
-pub fn check(doc: &ast::Document) {
+pub fn check(db: &dyn SourceDatabase) {
+    db.operations().iter().map(|op| {
+        if let Some(name) = op.name() {
+            let defined_vars = db.operation_definition_variable_names(name);
+        }
+    });
     for def in doc.definitions() {
         if let ast::Definition::OperationDefinition(op_def) = def {
             let variable_defs = op_def.variable_definitions();
