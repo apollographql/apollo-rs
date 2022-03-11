@@ -1,11 +1,6 @@
-use std::{ops::Deref, sync::Arc};
+use std::{collections::HashSet, ops::Deref, sync::Arc};
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Error {
-    pub message: String,
-    pub data: String,
-    pub index: usize,
-}
+use ordered_float::{self, OrderedFloat};
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Fragments {
@@ -75,13 +70,17 @@ impl Operations {
         Self { inner }
     }
 
+    // NOTE: this should only be a wrapper around a find_operation method on the
+    // SourceDatabase so this function is also memoized.  How do we get access
+    // to SourceDatabase from this struct impl gracefully here?
     pub fn find(&self, name: &str) -> Option<Arc<OperationDefinition>> {
         self.inner.iter().find_map(|op| {
-            if op.name() == name {
-                Some(Arc::new(op.clone()))
-            } else {
-                None
+            if let Some(n) = op.name() {
+                if n == name {
+                    return Some(Arc::new(op.clone()));
+                }
             }
+            None
         })
     }
 }
@@ -97,7 +96,7 @@ impl Deref for Operations {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OperationDefinition {
     pub(crate) ty: OperationType,
-    pub(crate) name: String, // TODO @lrlna: Option<String>
+    pub(crate) name: Option<String>,
     pub(crate) variables: Option<Arc<Vec<VariableDefinition>>>,
     pub(crate) directives: Option<Arc<Vec<Directive>>>,
     pub(crate) selection_set: Arc<Vec<Selection>>,
@@ -115,7 +114,7 @@ impl OperationDefinition {
     }
 
     /// Get a mutable reference to the operation definition's name.
-    pub fn name(&self) -> String {
+    pub fn name(&self) -> Option<String> {
         self.name.clone()
     }
 
@@ -136,8 +135,15 @@ pub enum OperationType {
 pub struct VariableDefinition {
     pub name: String,
     // ty: Type_,
-    // default_value: Option<Arc<Value>>,
+    pub default_value: Option<Value>,
     pub directives: Option<Arc<Vec<Directive>>>,
+}
+
+impl VariableDefinition {
+    /// Get a mutable reference to the variable definition's name.
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -148,7 +154,20 @@ pub struct Directive {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Argument {
     pub name: String,
-    // pub value: Arc<Value>,
+    pub value: Value,
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum Value {
+    Variable(String),
+    Int(i64),
+    Float(Float),
+    String(String),
+    Boolean(bool),
+    Null,
+    Enum(String),
+    List(Vec<Value>),
+    Object(Vec<(String, Value)>),
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -169,3 +188,16 @@ pub struct Field {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Alias(pub String);
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct Float {
+    inner: ordered_float::OrderedFloat<f64>,
+}
+
+impl Float {
+    pub fn new(float: f64) -> Self {
+        Self {
+            inner: OrderedFloat(float),
+        }
+    }
+}

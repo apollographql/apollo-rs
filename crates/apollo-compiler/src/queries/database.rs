@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use apollo_parser::{ast, Parser, SyntaxTree};
 
+use crate::diagnostics::ApolloDiagnostic;
 use crate::values::*;
 
 #[salsa::database(ASTDatabase)]
@@ -24,11 +25,17 @@ pub trait SourceDatabase {
 
     fn document(&self) -> Arc<ast::Document>;
 
-    fn syntax_errors(&self) -> Arc<Vec<Error>>;
+    fn syntax_errors(&self) -> Arc<Vec<ApolloDiagnostic>>;
 
     fn definitions(&self) -> Arc<Vec<ast::Definition>>;
 
     fn operations(&self) -> Operations;
+
+    fn find_operation(&self, name: String) -> Option<Arc<OperationDefinition>>;
+
+    fn operation_definition_variable_names(&self, name: String) -> Option<Arc<Vec<String>>>;
+
+    fn operation_definitions_names(&self) -> Arc<Vec<String>>;
 
     fn fragments(&self) -> Fragments;
 }
@@ -46,12 +53,12 @@ fn document(db: &dyn SourceDatabase) -> Arc<ast::Document> {
     Arc::new(db.parse().as_ref().clone().document())
 }
 
-fn syntax_errors(db: &dyn SourceDatabase) -> Arc<Vec<Error>> {
+fn syntax_errors(db: &dyn SourceDatabase) -> Arc<Vec<ApolloDiagnostic>> {
     let errors = db
         .parse()
         .errors()
         .into_iter()
-        .map(|err| Error {
+        .map(|err| ApolloDiagnostic::SyntaxError {
             message: err.message().to_string(),
             data: err.data().to_string(),
             index: err.index(),
@@ -95,6 +102,34 @@ fn fragments(db: &dyn SourceDatabase) -> Fragments {
     Fragments::new(Arc::new(operations))
 }
 
+fn find_operation(db: &dyn SourceDatabase, name: String) -> Option<Arc<OperationDefinition>> {
+    db.operations().iter().find_map(|op| {
+        if let Some(n) = op.name() {
+            if n == name {
+                return Some(Arc::new(op.clone()));
+            }
+        }
+        None
+    })
+}
+
+fn operation_definitions_names(db: &dyn SourceDatabase) -> Arc<Vec<String>> {
+    Arc::new(db.operations().iter().filter_map(|n| n.name()).collect())
+}
+
+fn operation_definition_variable_names(
+    db: &dyn SourceDatabase,
+    op_name: String,
+) -> Option<Arc<Vec<String>>> {
+    let vars: Vec<String> = db
+        .find_operation(op_name)?
+        .variables()?
+        .iter()
+        .filter_map(|v| Some(v.name()))
+        .collect();
+    Some(Arc::new(vars))
+}
+
 fn operation_definition(
     db: &dyn SourceDatabase,
     op_def: ast::OperationDefinition,
@@ -102,10 +137,7 @@ fn operation_definition(
     // check if there are already operations
     // if there are operations, they must have names
     // if there are no names, an error must be raised that all operations must have a name
-    let name = match op_def.name() {
-        Some(name) => name.to_string(),
-        None => String::from("query"),
-    };
+    let name = op_def.name().map(|name| name.to_string());
     let ty = operation_type(op_def.operation_type());
     let variables = variable_definitions(op_def.variable_definitions());
     let selections = op_def
@@ -197,7 +229,15 @@ fn variable_definition(var: ast::VariableDefinition) -> VariableDefinition {
         .expect("Variable must have a name")
         .to_string();
     let directives = directives(var.directives());
-    VariableDefinition { name, directives }
+    let default_value = match var.default_value() {
+        Some(val) => Some(value(val.value().expect("Default Value must have a value"))),
+        None => None,
+    };
+    VariableDefinition {
+        name,
+        directives,
+        default_value,
+    }
 }
 
 fn directives(directives: Option<ast::Directives>) -> Option<Arc<Vec<Directive>>> {
@@ -234,7 +274,51 @@ fn argument(argument: ast::Argument) -> Argument {
         .name()
         .expect("Argument must have a name")
         .to_string();
-    Argument { name }
+    let value = value(argument.value().expect("Argument must have a value"));
+    Argument { name, value }
+}
+
+fn value(val: ast::Value) -> Value {
+    let val = match val {
+        ast::Value::Variable(var) => Value::Variable(
+            var.name()
+                .expect("Variable must have a name")
+                .text()
+                .to_string(),
+        ),
+        ast::Value::StringValue(string_val) => Value::Variable(string_val.into()),
+        ast::Value::FloatValue(float) => Value::Float(Float::new(float.into())),
+        ast::Value::IntValue(int) => Value::Int(int.into()),
+        ast::Value::BooleanValue(bool) => Value::Boolean(bool.into()),
+        ast::Value::NullValue(null) => Value::Null,
+        ast::Value::EnumValue(enum_) => Value::Enum(
+            enum_
+                .name()
+                .expect("Enum Value must have a name")
+                .text()
+                .to_string(),
+        ),
+        ast::Value::ListValue(list) => {
+            let list: Vec<Value> = list.values().map(value).collect();
+            Value::List(list)
+        }
+        ast::Value::ObjectValue(object) => {
+            let object_values: Vec<(String, Value)> = object
+                .object_fields()
+                .map(|o| {
+                    let name = o
+                        .name()
+                        .expect("Object Value must have a name")
+                        .text()
+                        .to_string();
+                    let value = value(o.value().expect("Object Value must have a value"));
+                    (name, value)
+                })
+                .collect();
+            Value::Object(object_values)
+        }
+    };
+    val
 }
 
 fn selection_set(
