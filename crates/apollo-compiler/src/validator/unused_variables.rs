@@ -7,7 +7,7 @@ use crate::SourceDatabase;
 pub fn check(db: &dyn SourceDatabase) {
     db.operations().iter().map(|op| {
         if let Some(name) = op.name() {
-            let defined_vars = db.operation_definition_variable_names(name);
+            let defined_vars = db.operation_definition_defined_variables(name);
         }
     });
     for def in doc.definitions() {

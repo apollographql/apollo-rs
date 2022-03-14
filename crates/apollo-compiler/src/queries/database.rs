@@ -33,7 +33,9 @@ pub trait SourceDatabase {
 
     fn find_operation(&self, name: String) -> Option<Arc<OperationDefinition>>;
 
-    fn operation_definition_variable_names(&self, name: String) -> Option<Arc<Vec<String>>>;
+    fn operation_definition_defined_variables(&self, name: String) -> Option<Arc<Vec<String>>>;
+
+    fn operation_fields(&self, name: String) -> Option<Arc<Vec<Field>>>;
 
     fn operation_definitions_names(&self) -> Arc<Vec<String>>;
 
@@ -117,7 +119,7 @@ fn operation_definitions_names(db: &dyn SourceDatabase) -> Arc<Vec<String>> {
     Arc::new(db.operations().iter().filter_map(|n| n.name()).collect())
 }
 
-fn operation_definition_variable_names(
+fn operation_definition_defined_variables(
     db: &dyn SourceDatabase,
     op_name: String,
 ) -> Option<Arc<Vec<String>>> {
@@ -126,6 +128,37 @@ fn operation_definition_variable_names(
         .variables()?
         .iter()
         .filter_map(|v| Some(v.name()))
+        .collect();
+    Some(Arc::new(vars))
+}
+
+fn operation_fields(db: &dyn SourceDatabase, op_name: String) -> Option<Arc<Vec<Field>>> {
+    let fields: Vec<Field> = db
+        .find_operation(op_name)?
+        .selection_set()
+        .iter()
+        .filter_map(|sel| match sel {
+            Selection::Field(field) => Some(field.as_ref().clone()),
+        })
+        .collect();
+    Some(Arc::new(fields))
+}
+
+fn operation_definition_in_use_variables(
+    db: &dyn SourceDatabase,
+    op_name: String,
+) -> Option<Arc<Vec<String>>> {
+    let vars = db
+        .operation_fields(op_name)?
+        .iter()
+        .map(|field| {
+            field.arguments()?.iter().filter_map(|arg| match arg.value {
+                Value::Variable(_) => todo!(),
+                Value::List(_) => todo!(),
+                Value::Object(_) => todo!(),
+                _ => None,
+            })
+        })
         .collect();
     Some(Arc::new(vars))
 }

@@ -122,6 +122,10 @@ impl OperationDefinition {
     pub fn ty(&self) -> OperationType {
         self.ty.clone() // ?? should we clone?
     }
+
+    pub fn selection_set(&self) -> Arc<Vec<Selection>> {
+        self.selection_set.clone()
+    }
 }
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
@@ -184,6 +188,13 @@ pub struct Field {
     pub arguments: Option<Arc<Vec<Argument>>>,
     pub directives: Option<Arc<Vec<Directive>>>,
     pub selection_set: Option<Arc<Vec<Selection>>>,
+}
+
+impl Field {
+    /// Get a reference to the field's arguments.
+    pub fn arguments(&self) -> Option<Arc<Vec<Argument>>> {
+        self.arguments.clone()
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
