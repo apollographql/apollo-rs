@@ -28,8 +28,8 @@ impl ApolloCompiler {
     }
 
     pub fn validate(&self) -> Vec<ApolloDiagnostic> {
-        let validator = Validator::new(&self.db);
-        validator.validate()
+        let mut validator = Validator::new(&self.db);
+        validator.validate().into()
     }
 
     pub fn syntax_errors(&self) -> Arc<Vec<ApolloDiagnostic>> {
@@ -140,7 +140,8 @@ fragment vipCustomer on User {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        // let errors = ctx.validate();
+        let errors = ctx.validate();
+        dbg!(&errors);
 
         let operation_names: Vec<String> =
             ctx.operations().iter().filter_map(|op| op.name()).collect();
@@ -163,7 +164,11 @@ fragment vipCustomer on User {
             .collect();
         assert_eq!(["definedVariable"], operation_variables.as_slice());
         // let operation_variables = ctx.operations().find("ExampleQuery").variables().find("definedVariable").ty();
-        let fragment_fields = ctx.fragments().find("vipCustomer").unwrap();
-        dbg!(fragment_fields);
+        let fragment_type_cond = ctx
+            .fragments()
+            .find("vipCustomer")
+            .unwrap()
+            .type_condition();
+        assert_eq!("User", fragment_type_cond);
     }
 }

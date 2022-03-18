@@ -17,7 +17,14 @@ impl<'a> Validator<'a> {
         }
     }
 
-    pub fn validate(&self) -> Vec<ApolloDiagnostic> {
-        todo!()
+    pub fn validate(&mut self) -> &mut [ApolloDiagnostic] {
+        self.extend_errors(operation_name::check(self.db));
+        self.extend_errors(unused_variables::check(self.db));
+        self.errors.as_mut()
+    }
+
+    /// Set the validator's errors.
+    pub fn extend_errors(&mut self, errors: Vec<ApolloDiagnostic>) {
+        self.errors.extend(errors);
     }
 }

@@ -1,6 +1,7 @@
 // All .expect() calls are used for parts of the GraphQL grammar that are
 // non-optional and will have an error produced in the parser if they are missing.
 
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use apollo_parser::{ast, Parser, SyntaxTree};
@@ -33,7 +34,9 @@ pub trait SourceDatabase {
 
     fn find_operation(&self, name: String) -> Option<Arc<OperationDefinition>>;
 
-    fn operation_definition_defined_variables(&self, name: String) -> Option<Arc<Vec<String>>>;
+    fn operation_definition_defined_variables(&self, name: String) -> Option<Arc<HashSet<String>>>;
+
+    fn operation_definition_in_use_variables(&self, name: String) -> Option<Arc<HashSet<String>>>;
 
     fn operation_fields(&self, name: String) -> Option<Arc<Vec<Field>>>;
 
@@ -122,12 +125,12 @@ fn operation_definitions_names(db: &dyn SourceDatabase) -> Arc<Vec<String>> {
 fn operation_definition_defined_variables(
     db: &dyn SourceDatabase,
     op_name: String,
-) -> Option<Arc<Vec<String>>> {
-    let vars: Vec<String> = db
+) -> Option<Arc<HashSet<String>>> {
+    let vars: HashSet<String> = db
         .find_operation(op_name)?
         .variables()?
         .iter()
-        .filter_map(|v| Some(v.name()))
+        .map(|v| v.name())
         .collect();
     Some(Arc::new(vars))
 }
@@ -137,30 +140,50 @@ fn operation_fields(db: &dyn SourceDatabase, op_name: String) -> Option<Arc<Vec<
         .find_operation(op_name)?
         .selection_set()
         .iter()
-        .filter_map(|sel| match sel {
-            Selection::Field(field) => Some(field.as_ref().clone()),
+        .map(|sel| match sel {
+            Selection::Field(field) => field.as_ref().clone(),
         })
         .collect();
     Some(Arc::new(fields))
 }
 
+// NOTE: potentially want to return a hashmap of variables and their types?
 fn operation_definition_in_use_variables(
     db: &dyn SourceDatabase,
     op_name: String,
-) -> Option<Arc<Vec<String>>> {
+) -> Option<Arc<HashSet<String>>> {
+    // TODO: once FragmentSpread and InlineFragment are added, get their fields
+    // and combine all variable usage.
     let vars = db
         .operation_fields(op_name)?
         .iter()
-        .map(|field| {
-            field.arguments()?.iter().filter_map(|arg| match arg.value {
-                Value::Variable(_) => todo!(),
-                Value::List(_) => todo!(),
-                Value::Object(_) => todo!(),
-                _ => None,
-            })
+        .flat_map(|field| {
+            if let Some(args) = field.arguments() {
+                let vars: Vec<String> = args
+                    .iter()
+                    .flat_map(|arg| get_field_variable_value(arg.value.clone()))
+                    .collect();
+                return vars;
+            }
+            Vec::new()
         })
         .collect();
     Some(Arc::new(vars))
+}
+
+fn get_field_variable_value(val: Value) -> Vec<String> {
+    match val {
+        Value::Variable(var) => vec![var],
+        Value::List(list) => list
+            .iter()
+            .flat_map(|val| get_field_variable_value(val.clone()))
+            .collect(),
+        Value::Object(obj) => obj
+            .iter()
+            .flat_map(|val| get_field_variable_value(val.1.clone()))
+            .collect(),
+        _ => Vec::new(),
+    }
 }
 
 fn operation_definition(
@@ -205,6 +228,9 @@ fn fragment_definition(
         .expect("Fragment Definition must have a type condition")
         .named_type()
         .expect("Type Condition must have a name")
+        .name()
+        .expect("Name must have text")
+        .text()
         .to_string();
     let selections = fragment_def
         .selection_set()
@@ -312,7 +338,7 @@ fn argument(argument: ast::Argument) -> Argument {
 }
 
 fn value(val: ast::Value) -> Value {
-    let val = match val {
+    match val {
         ast::Value::Variable(var) => Value::Variable(
             var.name()
                 .expect("Variable must have a name")
@@ -323,7 +349,7 @@ fn value(val: ast::Value) -> Value {
         ast::Value::FloatValue(float) => Value::Float(Float::new(float.into())),
         ast::Value::IntValue(int) => Value::Int(int.into()),
         ast::Value::BooleanValue(bool) => Value::Boolean(bool.into()),
-        ast::Value::NullValue(null) => Value::Null,
+        ast::Value::NullValue(_) => Value::Null,
         ast::Value::EnumValue(enum_) => Value::Enum(
             enum_
                 .name()
@@ -350,8 +376,7 @@ fn value(val: ast::Value) -> Value {
                 .collect();
             Value::Object(object_values)
         }
-    };
-    val
+    }
 }
 
 fn selection_set(

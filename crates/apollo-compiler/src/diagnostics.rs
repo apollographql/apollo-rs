@@ -5,7 +5,14 @@ use thiserror::Error;
 pub enum ApolloDiagnostic {
     MissingIdent(String),
     UndefinedInterfacesError,
-    UndefinedVariablesError,
+    UndefinedVariablesError {
+        message: String,
+        variable: String,
+    },
+    UnusedVariablesWarning {
+        message: String,
+        variable: String,
+    },
     SyntaxError {
         message: String,
         data: String,
@@ -25,14 +32,14 @@ struct UndefinedInterfacesError {
     span: SourceSpan,
 }
 
-#[derive(Error, Debug, Diagnostic)]
-#[error("cannot find `{}` variable in this scope", self.ty)]
-#[diagnostic(code("apollo-parser: semantic error"))]
-struct UndefinedVariablesError {
-    ty: String,
-    #[source_code]
-    src: NamedSource,
-    message: String,
-    #[label("{}", self.message)]
-    span: SourceSpan,
-}
+// #[derive(Error, Debug, Diagnostic)]
+// #[error("cannot find `{}` variable in this scope", self.ty)]
+// #[diagnostic(code("apollo-parser: semantic error"))]
+// struct UndefinedVariablesError {
+//     ty: String,
+//     #[source_code]
+//     src: NamedSource,
+//     message: String,
+//     #[label("{}", self.message)]
+//     span: SourceSpan,
+// }
