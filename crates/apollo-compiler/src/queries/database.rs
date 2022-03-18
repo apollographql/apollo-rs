@@ -288,14 +288,57 @@ fn variable_definition(var: ast::VariableDefinition) -> VariableDefinition {
         .expect("Variable must have a name")
         .to_string();
     let directives = directives(var.directives());
-    let default_value = match var.default_value() {
-        Some(val) => Some(value(val.value().expect("Default Value must have a value"))),
-        None => None,
-    };
+    let default_value = var
+        .default_value()
+        .map(|val| value(val.value().expect("Default Value must have a value")));
+    let ty = ty(var.ty().expect("Variable Definition must have a type"));
+
     VariableDefinition {
         name,
         directives,
+        ty,
         default_value,
+    }
+}
+
+fn ty(ty_: ast::Type) -> Type {
+    match ty_ {
+        ast::Type::NamedType(name) => Type::Named {
+            name: name
+                .name()
+                .expect("NamedType must have text")
+                .text()
+                .to_string(),
+        },
+        ast::Type::ListType(list) => Type::List {
+            ty: Box::new(ty(list.ty().expect("List Type must have a type"))),
+        },
+        ast::Type::NonNullType(non_null) => {
+            if let Some(name) = non_null.named_type() {
+                let named_type = Type::Named {
+                    name: name
+                        .name()
+                        .expect("NamedType must have text")
+                        .text()
+                        .to_string(),
+                };
+                Type::NonNull {
+                    ty: Box::new(named_type),
+                }
+            } else if let Some(list) = non_null.list_type() {
+                let list_type = Type::List {
+                    ty: Box::new(ty(list.ty().expect("List Type must have a type"))),
+                };
+                Type::NonNull {
+                    ty: Box::new(list_type),
+                }
+            } else {
+                // TODO: parser should have caught an error if there wasn't
+                // either a named type or list type. Figure out a graceful way
+                // to surface this error from the parser.
+                panic!("Parser should have caught this error");
+            }
+        }
     }
 }
 

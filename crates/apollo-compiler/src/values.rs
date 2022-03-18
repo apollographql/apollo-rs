@@ -1,4 +1,4 @@
-use std::{collections::HashSet, ops::Deref, sync::Arc};
+use std::{ops::Deref, sync::Arc};
 
 use ordered_float::{self, OrderedFloat};
 
@@ -120,7 +120,7 @@ impl OperationDefinition {
 
     /// Get a reference to the operation definition's ty.
     pub fn ty(&self) -> OperationType {
-        self.ty.clone() // ?? should we clone?
+        self.ty
     }
 
     pub fn selection_set(&self) -> Arc<Vec<Selection>> {
@@ -138,7 +138,7 @@ pub enum OperationType {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct VariableDefinition {
     pub name: String,
-    // ty: Type_,
+    pub ty: Type,
     pub default_value: Option<Value>,
     pub directives: Option<Arc<Vec<Directive>>>,
 }
@@ -148,6 +148,13 @@ impl VariableDefinition {
     pub fn name(&self) -> String {
         self.name.clone()
     }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum Type {
+    NonNull { ty: Box<Type> },
+    List { ty: Box<Type> },
+    Named { name: String },
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
