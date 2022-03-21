@@ -1,11 +1,11 @@
 version: 2.1
 
 # Circle CI dependencies.
-# Rust Orb: https://github.com/CircleCI-Public/rust-orb 
-# Github Orb: https://github.com/CircleCI-Public/github-cli-orb 
+# Rust Orb: https://github.com/CircleCI-Public/rust-orb
+# Github Orb: https://github.com/CircleCI-Public/github-cli-orb
 orbs:
   rust: circleci/rust@1.6.0
-  gh: circleci/github-cli@1.0.4
+  gh: circleci/github-cli@2.0.0
 
 # We run jobs on the following platforms: linux, macos and windows.
 # These are their specifications:
@@ -35,7 +35,7 @@ workflows:
   lint:
     jobs:
       - lint:
-          name: Lint 
+          name: Lint
           matrix:
             parameters:
               platform: [linux]
@@ -43,7 +43,7 @@ workflows:
   test:
     jobs:
       - test:
-          name: Test (<< matrix.rust_channel >> rust on << matrix.platform >>)  
+          name: Test (<< matrix.rust_channel >> rust on << matrix.platform >>)
           matrix:
             parameters:
               platform: [linux, macos, windows]
