@@ -207,21 +207,7 @@ impl InlineFragment {
 impl fmt::Display for InlineFragment {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let indent_level = 0;
-        write!(f, "...")?;
-        if let Some(type_condition) = &self.type_condition {
-            write!(f, " {}", type_condition)?;
-        }
-        for directive in &self.directives {
-            write!(f, " {}", directive)?;
-        }
-
-        write!(
-            f,
-            " {}",
-            self.selection_set.format_with_indent(indent_level)
-        )?;
-
-        Ok(())
+        write!(f, "{}", self.format_with_indent(indent_level))
     }
 }
 
