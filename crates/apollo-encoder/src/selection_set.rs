@@ -139,8 +139,10 @@ mod tests {
 
     #[test]
     fn it_encodes_selection_set() {
+        let mut aliased_field = Field::new(String::from("myField"));
+        aliased_field.alias(Some(String::from("myAlias")));
         let selections = vec![
-            Selection::Field(Field::new(String::from("myField"))),
+            Selection::Field(aliased_field),
             Selection::FragmentSpread(FragmentSpread::new(String::from("myFragment"))),
         ];
         let mut selection_set = SelectionSet::new();
@@ -152,7 +154,7 @@ mod tests {
             selection_set.to_string(),
             indoc! {r#"
                 {
-                  myField
+                  myAlias: myField
                   ...myFragment
                 }
             "#}

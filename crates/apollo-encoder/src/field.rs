@@ -196,30 +196,7 @@ impl Field {
 impl fmt::Display for Field {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let indent_level = 0;
-
-        if let Some(alias) = &self.alias {
-            write!(f, "{}: ", alias)?;
-        }
-        write!(f, "{}", self.name)?;
-
-        if !self.args.is_empty() {
-            for (i, arg) in self.args.iter().enumerate() {
-                match i {
-                    0 => write!(f, "({}", arg)?,
-                    _ => write!(f, ", {}", arg)?,
-                }
-            }
-            write!(f, ")")?;
-        }
-
-        for directive in &self.directives {
-            write!(f, " {}", directive)?;
-        }
-        if let Some(sel_set) = &self.selection_set {
-            write!(f, " {}", sel_set.format_with_indent(indent_level))?;
-        }
-
-        Ok(())
+        write!(f, "{}", self.format_with_indent(indent_level))
     }
 }
 
