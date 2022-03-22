@@ -112,7 +112,23 @@ impl From<apollo_parser::ast::UnionTypeExtension> for UnionTypeDef {
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `UnionTypeDef`
     pub fn union_type_definition(&mut self) -> Result<UnionTypeDef> {
-        let name = self.type_name()?;
+        let extend = !self.union_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
+        let name = if extend {
+            let available_unions: Vec<&Name> = self
+                .union_type_defs
+                .iter()
+                .filter_map(|union| {
+                    if union.extend {
+                        None
+                    } else {
+                        Some(&union.name)
+                    }
+                })
+                .collect();
+            (*self.u.choose(&available_unions)?).clone()
+        } else {
+            self.type_name()?
+        };
         let description = self
             .u
             .arbitrary()

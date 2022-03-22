@@ -83,7 +83,23 @@ impl From<apollo_parser::ast::ScalarTypeExtension> for ScalarTypeDef {
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `ScalarTypeDef`
     pub fn scalar_type_definition(&mut self) -> Result<ScalarTypeDef> {
-        let name = self.type_name()?;
+        let extend = !self.scalar_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
+        let name = if extend {
+            let available_scalars: Vec<&Name> = self
+                .scalar_type_defs
+                .iter()
+                .filter_map(|scalar| {
+                    if scalar.extend {
+                        None
+                    } else {
+                        Some(&scalar.name)
+                    }
+                })
+                .collect();
+            (*self.u.choose(&available_scalars)?).clone()
+        } else {
+            self.type_name()?
+        };
         let description = self
             .u
             .arbitrary()

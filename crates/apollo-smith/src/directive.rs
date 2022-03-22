@@ -60,7 +60,7 @@ impl From<apollo_parser::ast::DirectiveDefinition> for DirectiveDef {
                 .directive_locations()
                 .map(|dls| {
                     dls.directive_locations()
-                        .map(|dl| DirectiveLocation::from(dl.token_string().unwrap().to_string()))
+                        .map(|dl| DirectiveLocation::from(dl.text().unwrap().to_string()))
                         .collect()
                 })
                 .unwrap_or_default(),
@@ -261,7 +261,7 @@ impl From<String> for DirectiveLocation {
             "INPUT_OBJECT" => DirectiveLocation::InputObject,
             "INPUT_FIELD_DEFINITION" => DirectiveLocation::InputFieldDefinition,
             other => unreachable!(
-                "cannot have another kind of directive location -- {}",
+                "cannot have {} as a directive location. Documentation: https://spec.graphql.org/October2021/#DirectiveLocation",
                 other
             ),
         }

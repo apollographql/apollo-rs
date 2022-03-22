@@ -43,7 +43,7 @@ and add `apollo-smith` to your Cargo.toml:
 ## fuzz/Cargo.toml
 
 [dependencies]
-apollo-smith = "0.1.0"
+apollo-smith = "0.2.0"
 ```
 
 It can then be used in a `fuzz_target` along with the [`arbitrary`] crate,
@@ -71,6 +71,17 @@ and fuzzed with the following command:
 
 ```shell
 $ cargo +nightly fuzz run my_apollo_smith_fuzz_target
+```
+
+## Feature flags
+
+If you need the integration with `apollo-parser` and be able to convert structs from `apollo-parser` crate into structs for `apollo-smith` you can just enable the feature `apollo-parser` in your `Cargo.toml`. You will then have all `From` implementations to convert structs.
+
+```toml
+## Cargo.toml
+
+[dependencies]
+apollo-smith = { version = "0.2.0", features = ["apollo-parser"] }
 ```
 
 ## Limitations

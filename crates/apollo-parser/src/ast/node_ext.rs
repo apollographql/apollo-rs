@@ -2,6 +2,8 @@
 // into an AST Node. Should this change, we can remove this lint again.
 #![allow(clippy::from_over_into)]
 
+use rowan::{GreenToken, SyntaxKind};
+
 use crate::{ast, ast::AstNode, SyntaxNode, TokenText};
 
 impl ast::Name {
@@ -27,8 +29,8 @@ impl ast::EnumValue {
 }
 
 impl ast::DirectiveLocation {
-    pub fn token_string(self) -> Option<&'static str> {
-        if self.query_token().is_some() {
+    pub fn text(self) -> Option<TokenText> {
+        let txt = if self.query_token().is_some() {
             Some("QUERY")
         } else if self.mutation_token().is_some() {
             Some("MUTATION")
@@ -68,7 +70,14 @@ impl ast::DirectiveLocation {
             Some("INPUT_FIELD_DEFINITION")
         } else {
             None
-        }
+        };
+
+        txt.map(|txt| {
+            TokenText(GreenToken::new(
+                SyntaxKind(crate::SyntaxKind::DIRECTIVE_LOCATION as u16),
+                txt,
+            ))
+        })
     }
 }
 
@@ -78,13 +87,6 @@ impl Into<String> for ast::StringValue {
         text.trim_start_matches('"')
             .trim_end_matches('"')
             .to_string()
-    }
-}
-
-impl Into<i64> for ast::IntValue {
-    fn into(self) -> i64 {
-        let text = text_of_first_token(self.syntax());
-        text.parse().expect("Cannot parse IntValue")
     }
 }
 

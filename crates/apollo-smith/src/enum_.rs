@@ -166,13 +166,23 @@ impl Hash for EnumValueDefinition {
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `EnumTypeDef`
     pub fn enum_type_definition(&mut self) -> Result<EnumTypeDef> {
+        let extend = !self.enum_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let description = self
             .u
             .arbitrary()
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let name = self.type_name()?;
+        let name = if extend {
+            let available_enums: Vec<&Name> = self
+                .enum_type_defs
+                .iter()
+                .filter_map(|enm| if enm.extend { None } else { Some(&enm.name) })
+                .collect();
+            (*self.u.choose(&available_enums)?).clone()
+        } else {
+            self.type_name()?
+        };
         let enum_values_def = self.enum_values_definition()?;
         let directives = self.directives(DirectiveLocation::Enum)?;
 
@@ -181,7 +191,7 @@ impl<'a> DocumentBuilder<'a> {
             name,
             enum_values_def,
             directives,
-            extend: self.u.arbitrary().unwrap_or(false),
+            extend,
         })
     }
 

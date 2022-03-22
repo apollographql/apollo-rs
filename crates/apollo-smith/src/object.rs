@@ -24,7 +24,7 @@ use crate::{
 pub struct ObjectTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
-    pub(crate) interface_impls: HashSet<Name>,
+    pub(crate) implements_interfaces: HashSet<Name>,
     pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) fields_def: Vec<FieldDef>,
     pub(crate) extend: bool,
@@ -33,7 +33,7 @@ pub struct ObjectTypeDef {
 impl From<ObjectTypeDef> for ObjectDefinition {
     fn from(val: ObjectTypeDef) -> Self {
         let mut object_def = ObjectDefinition::new(val.name.into());
-        val.interface_impls
+        val.implements_interfaces
             .into_iter()
             .for_each(|itf| object_def.interface(itf.into()));
         val.fields_def
@@ -68,7 +68,7 @@ impl From<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
                         .collect()
                 })
                 .unwrap_or_default(),
-            interface_impls: object_def
+            implements_interfaces: object_def
                 .implements_interfaces()
                 .map(|impl_int| {
                     impl_int
@@ -105,7 +105,7 @@ impl From<apollo_parser::ast::ObjectTypeExtension> for ObjectTypeDef {
                         .collect()
                 })
                 .unwrap_or_default(),
-            interface_impls: object_def
+            implements_interfaces: object_def
                 .implements_interfaces()
                 .map(|impl_int| {
                     impl_int
@@ -128,13 +128,29 @@ impl From<apollo_parser::ast::ObjectTypeExtension> for ObjectTypeDef {
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `ObjectTypeDef`
     pub fn object_type_definition(&mut self) -> Result<ObjectTypeDef> {
+        let extend = !self.object_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let description = self
             .u
             .arbitrary()
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let name = self.type_name()?;
+        let name = if extend {
+            let available_objects: Vec<&Name> = self
+                .object_type_defs
+                .iter()
+                .filter_map(|object| {
+                    if object.extend {
+                        None
+                    } else {
+                        Some(&object.name)
+                    }
+                })
+                .collect();
+            (*self.u.choose(&available_objects)?).clone()
+        } else {
+            self.type_name()?
+        };
 
         // ---- Interface
         let interface_impls = self.implements_interfaces()?;
@@ -162,10 +178,10 @@ impl<'a> DocumentBuilder<'a> {
         Ok(ObjectTypeDef {
             description,
             directives: self.directives(DirectiveLocation::Object)?,
-            interface_impls,
+            implements_interfaces: interface_impls,
             name,
             fields_def,
-            extend: self.u.arbitrary().unwrap_or(false),
+            extend,
         })
     }
 }

@@ -127,13 +127,23 @@ impl From<apollo_parser::ast::InterfaceTypeExtension> for InterfaceTypeDef {
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `InterfaceTypeDef`
     pub fn interface_type_definition(&mut self) -> Result<InterfaceTypeDef> {
+        let extend = !self.interface_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let description = self
             .u
             .arbitrary()
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let name = self.type_name()?;
+        let name = if extend {
+            let available_itfs: Vec<&Name> = self
+                .interface_type_defs
+                .iter()
+                .filter_map(|itf| if itf.extend { None } else { Some(&itf.name) })
+                .collect();
+            (*self.u.choose(&available_itfs)?).clone()
+        } else {
+            self.type_name()?
+        };
         let fields_def = self.fields_definition(&[])?;
         let directives = self.directives(DirectiveLocation::Interface)?;
         let interfaces = self.implements_interfaces()?;
@@ -143,7 +153,7 @@ impl<'a> DocumentBuilder<'a> {
             name,
             fields_def,
             directives,
-            extend: self.u.arbitrary().unwrap_or(false),
+            extend,
             interfaces,
         })
     }

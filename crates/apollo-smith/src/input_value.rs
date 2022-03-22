@@ -375,7 +375,7 @@ mod tests {
             name: Name {
                 name: String::from("my_nested_object"),
             },
-            interface_impls: HashSet::new(),
+            implements_interfaces: HashSet::new(),
             directives: HashMap::new(),
             fields_def: vec![FieldDef {
                 description: None,
@@ -396,7 +396,7 @@ mod tests {
             name: Name {
                 name: String::from("my_object"),
             },
-            interface_impls: HashSet::new(),
+            implements_interfaces: HashSet::new(),
             directives: HashMap::new(),
             fields_def: vec![FieldDef {
                 description: None,

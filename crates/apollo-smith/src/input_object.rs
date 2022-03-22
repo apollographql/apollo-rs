@@ -117,20 +117,36 @@ impl From<apollo_parser::ast::InputObjectTypeExtension> for InputObjectTypeDef {
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `InputObjectTypeDef`
     pub fn input_object_type_definition(&mut self) -> Result<InputObjectTypeDef> {
+        let extend = !self.input_object_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
+        let name = if extend {
+            let available_input_objects: Vec<&Name> = self
+                .input_object_type_defs
+                .iter()
+                .filter_map(|input_object| {
+                    if input_object.extend {
+                        None
+                    } else {
+                        Some(&input_object.name)
+                    }
+                })
+                .collect();
+            (*self.u.choose(&available_input_objects)?).clone()
+        } else {
+            self.type_name()?
+        };
         let description = self
             .u
             .arbitrary()
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let name = self.type_name()?;
         let fields = self.input_values_def()?;
 
         Ok(InputObjectTypeDef {
             description,
             directives: self.directives(DirectiveLocation::InputObject)?,
             name,
-            extend: self.u.arbitrary().unwrap_or(false),
+            extend,
             fields,
         })
     }
