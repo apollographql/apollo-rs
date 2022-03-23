@@ -184,8 +184,8 @@ pub enum Value {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Selection {
     Field(Arc<Field>),
-    // FragmentSpread(Arc<FragmentSpread>),
-    // InlineFragment(Arc<InlineFragment>),
+    FragmentSpread(Arc<FragmentSpread>),
+    InlineFragment(Arc<InlineFragment>),
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -202,6 +202,19 @@ impl Field {
     pub fn arguments(&self) -> Option<Arc<Vec<Argument>>> {
         self.arguments.clone()
     }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct InlineFragment {
+    pub type_condition: Option<String>,
+    pub directives: Option<Arc<Vec<Directive>>>,
+    pub selection_set: Arc<Vec<Selection>>,
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct FragmentSpread {
+    pub name: String,
+    pub directives: Option<Arc<Vec<Directive>>>,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]

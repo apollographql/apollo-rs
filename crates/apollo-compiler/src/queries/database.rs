@@ -140,8 +140,9 @@ fn operation_fields(db: &dyn SourceDatabase, op_name: String) -> Option<Arc<Vec<
         .find_operation(op_name)?
         .selection_set()
         .iter()
-        .map(|sel| match sel {
-            Selection::Field(field) => field.as_ref().clone(),
+        .filter_map(|sel| match sel {
+            Selection::Field(field) => Some(field.as_ref().clone()),
+            _ => None,
         })
         .collect();
     Some(Arc::new(fields))
@@ -439,9 +440,54 @@ fn selection(db: &dyn SourceDatabase, selection: ast::Selection) -> Selection {
             let field = field(db, sel_field);
             Selection::Field(field)
         }
-        ast::Selection::FragmentSpread(_) => unimplemented!(),
-        ast::Selection::InlineFragment(_) => unimplemented!(),
+        ast::Selection::FragmentSpread(fragment) => {
+            let fragment_spread = fragment_spread(fragment);
+            Selection::FragmentSpread(fragment_spread)
+        }
+        ast::Selection::InlineFragment(fragment) => {
+            let inline_fragment = inline_fragment(db, fragment);
+            Selection::InlineFragment(inline_fragment)
+        }
     }
+}
+
+fn inline_fragment(db: &dyn SourceDatabase, fragment: ast::InlineFragment) -> Arc<InlineFragment> {
+    let type_condition = fragment.type_condition().map(|tc| {
+        tc.named_type()
+            .expect("Type Condition must have a name")
+            .name()
+            .expect("Name must have text")
+            .text()
+            .to_string()
+    });
+    let directives = directives(fragment.directives());
+    let selection_set: Arc<Vec<Selection>> = selection_set(
+        db,
+        fragment
+            .selection_set()
+            .expect("Inline Fragment must have a selection set")
+            .selections(),
+    );
+
+    let fragment_data = InlineFragment {
+        type_condition,
+        directives,
+        selection_set,
+    };
+    Arc::new(fragment_data)
+}
+
+fn fragment_spread(fragment: ast::FragmentSpread) -> Arc<FragmentSpread> {
+    let name = fragment
+        .fragment_name()
+        .expect("Fragment Spread must have a name")
+        .name()
+        .expect("Name must have text")
+        .text()
+        .to_string();
+    let directives = directives(fragment.directives());
+    let fragment_data = FragmentSpread { name, directives };
+    Arc::new(fragment_data)
 }
 
 fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
