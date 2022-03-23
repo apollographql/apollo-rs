@@ -1,7 +1,7 @@
 mod diagnostics;
 mod queries;
 mod validator;
-mod values;
+pub mod values;
 
 use std::sync::Arc;
 
