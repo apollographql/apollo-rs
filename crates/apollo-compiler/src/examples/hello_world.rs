@@ -1,6 +1,8 @@
+use apollo_compiler::{ApolloCompiler, ApolloDiagnostics};
+
 fn main() {
     let ctx = ApolloCompiler::new(input);
-    // let errors = ctx.validate();
+    let errors = ctx.validate();
 
     let operation_names: Vec<String> = ctx.operations().iter().filter_map(|op| op.name()).collect();
     assert_eq!(["ExampleQuery"], operation_names.as_slice());
