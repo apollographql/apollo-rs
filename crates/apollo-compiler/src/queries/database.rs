@@ -32,6 +32,12 @@ pub trait SourceDatabase {
 
     fn operations(&self) -> Operations;
 
+    fn query(&self) -> Operations;
+
+    fn mutations(&self) -> Operations;
+
+    fn subscriptions(&self) -> Operations;
+
     fn find_operation(&self, name: String) -> Option<Arc<OperationDefinition>>;
 
     fn operation_definition_defined_variables(&self, name: String) -> Option<Arc<HashSet<String>>>;
@@ -96,8 +102,14 @@ fn operations(db: &dyn SourceDatabase) -> Operations {
 fn subscriptions(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .operations()
-        .into_iter()
-        .filter(|op| op.ty == OperationType::Subscription)
+        .iter()
+        .filter_map(|op| {
+            if op.ty == OperationType::Subscription {
+                Some(op.clone())
+            } else {
+                None
+            }
+        })
         .collect();
     Operations::new(Arc::new(operations))
 }
@@ -105,8 +117,14 @@ fn subscriptions(db: &dyn SourceDatabase) -> Operations {
 fn mutations(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .operations()
-        .into_iter()
-        .filter(|op| op.ty == OperationType::Mutation)
+        .iter()
+        .filter_map(|op| {
+            if op.ty == OperationType::Mutation {
+                Some(op.clone())
+            } else {
+                None
+            }
+        })
         .collect();
     Operations::new(Arc::new(operations))
 }
@@ -114,8 +132,14 @@ fn mutations(db: &dyn SourceDatabase) -> Operations {
 fn query(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .operations()
-        .into_iter()
-        .filter(|op| op.ty == OperationType::Query)
+        .iter()
+        .filter_map(|op| {
+            if op.ty == OperationType::Query {
+                Some(op.clone())
+            } else {
+                None
+            }
+        })
         .collect();
     Operations::new(Arc::new(operations))
 }
@@ -149,6 +173,7 @@ fn operation_definitions_names(db: &dyn SourceDatabase) -> Arc<Vec<String>> {
     Arc::new(db.operations().iter().filter_map(|n| n.name()).collect())
 }
 
+// NOTE: potentially want to return a hashmap of variables and their types?
 fn operation_definition_defined_variables(
     db: &dyn SourceDatabase,
     op_name: String,
