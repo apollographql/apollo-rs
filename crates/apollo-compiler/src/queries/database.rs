@@ -93,8 +93,35 @@ fn operations(db: &dyn SourceDatabase) -> Operations {
     Operations::new(Arc::new(operations))
 }
 
+fn subscriptions(db: &dyn SourceDatabase) -> Operations {
+    let operations = db
+        .operations()
+        .into_iter()
+        .filter(|op| op.ty == OperationType::Subscription)
+        .collect();
+    Operations::new(Arc::new(operations))
+}
+
+fn mutations(db: &dyn SourceDatabase) -> Operations {
+    let operations = db
+        .operations()
+        .into_iter()
+        .filter(|op| op.ty == OperationType::Mutation)
+        .collect();
+    Operations::new(Arc::new(operations))
+}
+
+fn query(db: &dyn SourceDatabase) -> Operations {
+    let operations = db
+        .operations()
+        .into_iter()
+        .filter(|op| op.ty == OperationType::Query)
+        .collect();
+    Operations::new(Arc::new(operations))
+}
+
 fn fragments(db: &dyn SourceDatabase) -> Fragments {
-    let operations: Vec<FragmentDefinition> = db
+    let fragments: Vec<FragmentDefinition> = db
         .definitions()
         .iter()
         .filter_map(|definition| match definition {
@@ -104,7 +131,7 @@ fn fragments(db: &dyn SourceDatabase) -> Fragments {
             _ => None,
         })
         .collect();
-    Fragments::new(Arc::new(operations))
+    Fragments::new(Arc::new(fragments))
 }
 
 fn find_operation(db: &dyn SourceDatabase, name: String) -> Option<Arc<OperationDefinition>> {

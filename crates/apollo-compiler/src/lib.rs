@@ -1,12 +1,14 @@
 mod diagnostics;
 mod queries;
 mod validator;
-pub mod values;
 
 use std::sync::Arc;
 
 use apollo_parser::{ast, SyntaxTree};
-pub use queries::database::{Database, SourceDatabase};
+pub use queries::{
+    database::{Database, SourceDatabase},
+    values,
+};
 
 use diagnostics::ApolloDiagnostic;
 use validator::Validator;
