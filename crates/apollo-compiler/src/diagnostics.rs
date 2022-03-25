@@ -5,6 +5,7 @@ use thiserror::Error;
 pub enum ApolloDiagnostic {
     MissingIdent(String),
     UndefinedInterfacesError,
+    SingleRootField(String),
     UndefinedVariablesError {
         message: String,
         variable: String,
