@@ -1,7 +1,12 @@
+use std::collections::HashMap;
+
 use arbitrary::{Arbitrary, Result};
 
 use crate::{
-    directive::Directive, name::Name, selection_set::SelectionSet, variable::VariableDef,
+    directive::{Directive, DirectiveLocation},
+    name::Name,
+    selection_set::SelectionSet,
+    variable::VariableDef,
     DocumentBuilder,
 };
 
@@ -16,7 +21,7 @@ pub struct OperationDef {
     pub(crate) operation_type: OperationType,
     pub(crate) name: Option<Name>,
     pub(crate) variable_definitions: Vec<VariableDef>,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) selection_set: SelectionSet,
     pub(crate) shorthand: bool,
 }
@@ -33,9 +38,39 @@ impl From<OperationDef> for apollo_encoder::OperationDefinition {
         op_def
             .directives
             .into_iter()
-            .for_each(|directive| new_op_def.directive(directive.into()));
+            .for_each(|(_, directive)| new_op_def.directive(directive.into()));
 
         new_op_def
+    }
+}
+
+impl From<OperationDef> for String {
+    fn from(op_def: OperationDef) -> Self {
+        apollo_encoder::OperationDefinition::from(op_def).to_string()
+    }
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::OperationDefinition> for OperationDef {
+    fn from(operation_def: apollo_parser::ast::OperationDefinition) -> Self {
+        Self {
+            name: operation_def.name().map(Name::from),
+            directives: operation_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            operation_type: operation_def
+                .operation_type()
+                .map(OperationType::from)
+                .unwrap_or(OperationType::Query),
+            variable_definitions: Vec::new(),
+            selection_set: operation_def.selection_set().unwrap().into(),
+            shorthand: operation_def.operation_type().is_none(),
+        }
     }
 }
 
@@ -45,7 +80,7 @@ impl From<OperationDef> for apollo_encoder::OperationDefinition {
 ///     query | mutation | subscription
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#OperationType).
-#[derive(Debug, Arbitrary)]
+#[derive(Debug, Arbitrary, Clone, Copy, PartialEq)]
 pub enum OperationType {
     Query,
     Mutation,
@@ -62,28 +97,87 @@ impl From<OperationType> for apollo_encoder::OperationType {
     }
 }
 
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::OperationType> for OperationType {
+    fn from(op_type: apollo_parser::ast::OperationType) -> Self {
+        if op_type.query_token().is_some() {
+            Self::Query
+        } else if op_type.mutation_token().is_some() {
+            Self::Mutation
+        } else if op_type.subscription_token().is_some() {
+            Self::Subscription
+        } else {
+            Self::Query
+        }
+    }
+}
+
 impl<'a> DocumentBuilder<'a> {
-    /// Create an arbitrary `OperationDef`
-    pub fn operation_definition(&mut self) -> Result<OperationDef> {
+    /// Create an arbitrary `OperationDef` taking the last `SchemaDef`
+    pub fn operation_definition(&mut self) -> Result<Option<OperationDef>> {
+        let schema = match self.schema_def.clone() {
+            Some(schema_def) => schema_def,
+            None => return Ok(None),
+        };
         let name = self
             .u
             .arbitrary()
             .unwrap_or(false)
             .then(|| self.type_name())
             .transpose()?;
-        let operation_type = self.u.arbitrary()?;
-        let directives = self.directives()?;
-        let selection_set = self.selection_set()?;
-        let variable_definitions = self.variable_definitions()?;
-        let shorthand = self.operation_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
+        let available_operations = {
+            let mut ops = vec![];
+            if let Some(query) = &schema.query {
+                ops.push((OperationType::Query, query));
+            }
+            if let Some(mutation) = &schema.mutation {
+                ops.push((OperationType::Mutation, mutation));
+            }
+            if let Some(subscription) = &schema.subscription {
+                ops.push((OperationType::Subscription, subscription));
+            }
 
-        Ok(OperationDef {
-            operation_type,
+            ops
+        };
+
+        let (operation_type, chosen_ty) = self.u.choose(&available_operations)?;
+        let directive_location = match operation_type {
+            OperationType::Query => DirectiveLocation::Query,
+            OperationType::Mutation => DirectiveLocation::Mutation,
+            OperationType::Subscription => DirectiveLocation::Subscription,
+        };
+        let directives = self.directives(directive_location)?;
+
+        // Stack
+        self.stack_ty(chosen_ty);
+
+        let selection_set = self.selection_set()?;
+
+        self.stack.pop();
+        // Clear the chosen arguments for an operation
+        self.chosen_arguments.clear();
+        // Clear the chosen aliases for field in an operation
+        self.chosen_aliases.clear();
+
+        assert!(
+            self.stack.is_empty(),
+            "the stack must be empty at the end of an operation definition"
+        );
+
+        // TODO
+        let variable_definitions = vec![];
+
+        let shorthand = self.operation_defs.is_empty()
+            && operation_type == &OperationType::Query
+            && self.u.arbitrary().unwrap_or(false);
+
+        Ok(Some(OperationDef {
+            operation_type: *operation_type,
             name,
             variable_definitions,
             directives,
             selection_set,
             shorthand,
-        })
+        }))
     }
 }

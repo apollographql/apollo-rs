@@ -8,7 +8,7 @@ use std::panic;
 fuzz_target!(|data: &[u8]| {
     let doc_generated = match generate_valid_document(data) {
         Ok(d) => d,
-        Err(_) => {
+        Err(_err) => {
             return;
         }
     };

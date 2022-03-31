@@ -30,6 +30,18 @@ impl From<ArgumentsDef> for apollo_encoder::ArgumentsDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::ArgumentsDefinition> for ArgumentsDef {
+    fn from(args_def: apollo_parser::ast::ArgumentsDefinition) -> Self {
+        Self {
+            input_value_definitions: args_def
+                .input_value_definitions()
+                .map(InputValueDef::from)
+                .collect(),
+        }
+    }
+}
+
 /// The `__Argument` type represents an argument
 ///
 /// *Argument*:
@@ -48,6 +60,16 @@ impl From<Argument> for apollo_encoder::Argument {
     }
 }
 
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::Argument> for Argument {
+    fn from(argument: apollo_parser::ast::Argument) -> Self {
+        Self {
+            name: argument.name().unwrap().into(),
+            value: argument.value().unwrap().into(),
+        }
+    }
+}
+
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary vector of `Argument`
     pub fn arguments(&mut self) -> Result<Vec<Argument>> {
@@ -59,10 +81,29 @@ impl<'a> DocumentBuilder<'a> {
         Ok(arguments)
     }
 
+    /// Create an arbitrary vector of `Argument` given ArgumentsDef
+    pub fn arguments_with_def(&mut self, args_def: &ArgumentsDef) -> Result<Vec<Argument>> {
+        let arguments = args_def
+            .input_value_definitions
+            .iter()
+            .map(|input_val_def| self.argument_with_def(input_val_def))
+            .collect::<Result<Vec<_>>>()?;
+
+        Ok(arguments)
+    }
+
     /// Create an arbitrary `Argument`
     pub fn argument(&mut self) -> Result<Argument> {
         let name = self.name()?;
         let value = self.input_value()?;
+
+        Ok(Argument { name, value })
+    }
+
+    /// Create an arbitrary `Argument`
+    pub fn argument_with_def(&mut self, input_val_def: &InputValueDef) -> Result<Argument> {
+        let name = input_val_def.name.clone();
+        let value = self.input_value_for_type(&input_val_def.ty)?;
 
         Ok(Argument { name, value })
     }

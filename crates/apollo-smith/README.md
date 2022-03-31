@@ -43,7 +43,7 @@ and add `apollo-smith` to your Cargo.toml:
 ## fuzz/Cargo.toml
 
 [dependencies]
-apollo-smith = "0.1.0"
+apollo-smith = "0.2.0"
 ```
 
 It can then be used in a `fuzz_target` along with the [`arbitrary`] crate,
@@ -71,6 +71,51 @@ and fuzzed with the following command:
 
 ```shell
 $ cargo +nightly fuzz run my_apollo_smith_fuzz_target
+```
+
+## Generate valid operation using `apollo-smith` with `apollo-parser` given a GraphQL schema
+
+```rust,compile_fail
+use std::fs;
+
+use apollo_parser::Parser;
+use apollo_smith::{Document, DocumentBuilder};
+
+use libfuzzer_sys::arbitrary::{Result, Unstructured};
+
+/// This generate an arbitrary valid GraphQL operation
+pub fn generate_valid_operation(input: &[u8]) {
+
+    let parser = Parser::new(&fs::read_to_string("supergraph.graphql").expect("cannot read file"));
+
+    let tree = parser.parse();
+    if !tree.errors().is_empty() {
+        panic!("cannot parse the graphql file");
+    }
+
+    let mut u = Unstructured::new(input);
+    
+    // Convert `apollo_parser::Document` into `apollo_smith::Document`
+    // This needs the feature `parser-impl` enabled on `apollo_smith` in `Cargo.toml` 
+    let apollo_smith_doc = Document::from(tree.document());
+    
+    // Create a `DocumentBuilder` given an existing document to be able to be compliant with a specific schema for example
+    let mut gql_doc = DocumentBuilder::with_document(&mut u, apollo_smith_doc)?;
+    let operation_def = gql_doc.operation_definition()?.unwrap();
+
+    Ok(operation_def.into())
+}
+```
+
+## Feature flags
+
+If you need the integration with `apollo-parser` and be able to convert structs from `apollo-parser` crate into structs for `apollo-smith` you can just enable the feature `parser-impl` in your `Cargo.toml`. You will then have all `From` implementations to convert structs.
+
+```toml
+## Cargo.toml
+
+[dependencies]
+apollo-smith = { version = "0.2.0", features = ["parser-impl"] }
 ```
 
 ## Limitations

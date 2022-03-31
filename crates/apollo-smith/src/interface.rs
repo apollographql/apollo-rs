@@ -1,10 +1,14 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use apollo_encoder::InterfaceDefinition;
 use arbitrary::Result;
 
 use crate::{
-    description::Description, directive::Directive, field::FieldDef, name::Name, DocumentBuilder,
+    description::Description,
+    directive::{Directive, DirectiveLocation},
+    field::FieldDef,
+    name::Name,
+    DocumentBuilder,
 };
 
 /// InterfaceTypeDef is an abstract type where there are common fields declared.
@@ -22,7 +26,7 @@ pub struct InterfaceTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
     pub(crate) interfaces: HashSet<Name>,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) fields_def: Vec<FieldDef>,
     pub(crate) extend: bool,
 }
@@ -36,7 +40,7 @@ impl From<InterfaceTypeDef> for InterfaceDefinition {
             .for_each(|f| itf_def.field(f.into()));
         itf.directives
             .into_iter()
-            .for_each(|directive| itf_def.directive(directive.into()));
+            .for_each(|(_, directive)| itf_def.directive(directive.into()));
         itf.interfaces
             .into_iter()
             .for_each(|interface| itf_def.interface(interface.into()));
@@ -48,18 +52,100 @@ impl From<InterfaceTypeDef> for InterfaceDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::InterfaceTypeDefinition> for InterfaceTypeDef {
+    fn from(interface_def: apollo_parser::ast::InterfaceTypeDefinition) -> Self {
+        Self {
+            name: interface_def
+                .name()
+                .expect("object type definition must have a name")
+                .into(),
+            description: interface_def.description().map(Description::from),
+            directives: interface_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            extend: false,
+            fields_def: interface_def
+                .fields_definition()
+                .expect("object type definition must have fields definition")
+                .field_definitions()
+                .map(FieldDef::from)
+                .collect(),
+            interfaces: interface_def
+                .implements_interfaces()
+                .map(|itfs| {
+                    itfs.named_types()
+                        .map(|named_type| named_type.name().unwrap().into())
+                        .collect()
+                })
+                .unwrap_or_default(),
+        }
+    }
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::InterfaceTypeExtension> for InterfaceTypeDef {
+    fn from(interface_def: apollo_parser::ast::InterfaceTypeExtension) -> Self {
+        Self {
+            name: interface_def
+                .name()
+                .expect("object type definition must have a name")
+                .into(),
+            description: None,
+            directives: interface_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            extend: true,
+            fields_def: interface_def
+                .fields_definition()
+                .expect("object type definition must have fields definition")
+                .field_definitions()
+                .map(FieldDef::from)
+                .collect(),
+            interfaces: interface_def
+                .implements_interfaces()
+                .map(|itfs| {
+                    itfs.named_types()
+                        .map(|named_type| named_type.name().unwrap().into())
+                        .collect()
+                })
+                .unwrap_or_default(),
+        }
+    }
+}
+
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `InterfaceTypeDef`
     pub fn interface_type_definition(&mut self) -> Result<InterfaceTypeDef> {
+        let extend = !self.interface_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let description = self
             .u
             .arbitrary()
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let name = self.type_name()?;
+        let name = if extend {
+            let available_itfs: Vec<&Name> = self
+                .interface_type_defs
+                .iter()
+                .filter_map(|itf| if itf.extend { None } else { Some(&itf.name) })
+                .collect();
+            (*self.u.choose(&available_itfs)?).clone()
+        } else {
+            self.type_name()?
+        };
         let fields_def = self.fields_definition(&[])?;
-        let directives = self.directives()?;
+        let directives = self.directives(DirectiveLocation::Interface)?;
         let interfaces = self.implements_interfaces()?;
 
         Ok(InterfaceTypeDef {
@@ -67,7 +153,7 @@ impl<'a> DocumentBuilder<'a> {
             name,
             fields_def,
             directives,
-            extend: self.u.arbitrary().unwrap_or(false),
+            extend,
             interfaces,
         })
     }

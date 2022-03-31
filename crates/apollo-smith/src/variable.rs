@@ -1,6 +1,14 @@
+use std::collections::HashMap;
+
 use arbitrary::Result;
 
-use crate::{directive::Directive, input_value::InputValue, name::Name, ty::Ty, DocumentBuilder};
+use crate::{
+    directive::{Directive, DirectiveLocation},
+    input_value::InputValue,
+    name::Name,
+    ty::Ty,
+    DocumentBuilder,
+};
 
 /// The __variableDef type represents a variable definition
 ///
@@ -13,7 +21,7 @@ pub struct VariableDef {
     name: Name,
     ty: Ty,
     default_value: Option<InputValue>,
-    directives: Vec<Directive>,
+    directives: HashMap<Name, Directive>,
 }
 
 impl From<VariableDef> for apollo_encoder::VariableDefinition {
@@ -23,7 +31,7 @@ impl From<VariableDef> for apollo_encoder::VariableDefinition {
         var_def
             .directives
             .into_iter()
-            .for_each(|directive| new_var_def.directive(directive.into()));
+            .for_each(|(_, directive)| new_var_def.directive(directive.into()));
 
         new_var_def
     }
@@ -47,7 +55,7 @@ impl<'a> DocumentBuilder<'a> {
             .unwrap_or(false)
             .then(|| self.input_value())
             .transpose()?;
-        let directives = self.directives()?;
+        let directives = self.directives(DirectiveLocation::VariableDefinition)?;
 
         Ok(VariableDef {
             name,

@@ -192,7 +192,7 @@ enum Test @dir__one(int_value: -10) {
                         if let ast::Value::IntValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
-                            let i: i64 = val.into();
+                            let i: i32 = val.into();
                             assert_eq!(i, -10);
                         }
                     }

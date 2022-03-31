@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use arbitrary::{Arbitrary, Result};
 
@@ -46,6 +46,28 @@ impl From<DirectiveDef> for apollo_encoder::DirectiveDefinition {
     }
 }
 
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::DirectiveDefinition> for DirectiveDef {
+    fn from(directive_def: apollo_parser::ast::DirectiveDefinition) -> Self {
+        Self {
+            description: directive_def
+                .description()
+                .map(|d| Description::from(d.to_string())),
+            name: directive_def.name().unwrap().into(),
+            arguments_definition: directive_def.arguments_definition().map(ArgumentsDef::from),
+            repeatable: directive_def.repeatable_token().is_some(),
+            directive_locations: directive_def
+                .directive_locations()
+                .map(|dls| {
+                    dls.directive_locations()
+                        .map(|dl| DirectiveLocation::from(dl.text().unwrap().to_string()))
+                        .collect()
+                })
+                .unwrap_or_default(),
+        }
+    }
+}
+
 /// The `__Directive` type represents a Directive, it provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.
 ///
 /// *Directive*:
@@ -70,24 +92,66 @@ impl From<Directive> for apollo_encoder::Directive {
     }
 }
 
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::Directive> for Directive {
+    fn from(directive: apollo_parser::ast::Directive) -> Self {
+        Self {
+            name: directive.name().unwrap().into(),
+            arguments: directive
+                .arguments()
+                .map(|args| args.arguments().map(Argument::from).collect())
+                .unwrap_or_default(),
+        }
+    }
+}
+
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary vector of `Directive`
-    pub fn directives(&mut self) -> Result<Vec<Directive>> {
-        // TODO choose only existing directives
-        let num_directives = self.u.int_in_range(0..=4)?;
+    pub fn directives(
+        &mut self,
+        directive_location: DirectiveLocation,
+    ) -> Result<HashMap<Name, Directive>> {
+        if self.directive_defs.is_empty() {
+            return Ok(HashMap::new());
+        }
+
+        let num_directives = self.u.int_in_range(0..=(self.directive_defs.len() - 1))?;
         let directives = (0..num_directives)
-            .map(|_| self.directive())
-            .collect::<Result<Vec<_>>>()?;
+            .map(|_| self.directive(directive_location))
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .flat_map(|d| d.map(|d| (d.name.clone(), d)))
+            .collect();
 
         Ok(directives)
     }
 
-    /// Create an arbitrary `Directive`
-    pub fn directive(&mut self) -> Result<Directive> {
-        let name = self.name()?;
-        let arguments = self.arguments()?;
+    /// Create an arbitrary `Directive` given a directive location
+    pub fn directive(
+        &mut self,
+        directive_location: DirectiveLocation,
+    ) -> Result<Option<Directive>> {
+        let available_directive_defs: Vec<&DirectiveDef> = self
+            .directive_defs
+            .iter()
+            .filter(|dd| {
+                dd.directive_locations.is_empty()
+                    || dd.directive_locations.contains(&directive_location)
+            })
+            .collect();
+        if available_directive_defs.is_empty() {
+            return Ok(None);
+        }
+        let directive_def = self.u.choose(&available_directive_defs)?;
 
-        Ok(Directive { name, arguments })
+        let name = directive_def.name.clone();
+        let arguments = directive_def
+            .arguments_definition
+            .clone()
+            .map(|args_def| self.arguments_with_def(&args_def))
+            .unwrap_or_else(|| Ok(vec![]))?;
+
+        Ok(Some(Directive { name, arguments }))
     }
 
     /// Create an arbitrary `DirectiveDef`
@@ -126,7 +190,7 @@ impl<'a> DocumentBuilder<'a> {
 }
 
 /// The `__DirectiveLocation` type represents a Directive location.
-#[derive(Debug, Clone, PartialEq, Hash, Eq, Arbitrary)]
+#[derive(Debug, Clone, PartialEq, Hash, Eq, Arbitrary, Copy)]
 pub enum DirectiveLocation {
     Query,
     Mutation,
@@ -171,6 +235,35 @@ impl From<DirectiveLocation> for String {
             DirectiveLocation::EnumValue => String::from("ENUM_VALUE"),
             DirectiveLocation::InputObject => String::from("INPUT_OBJECT"),
             DirectiveLocation::InputFieldDefinition => String::from("INPUT_FIELD_DEFINITION"),
+        }
+    }
+}
+impl From<String> for DirectiveLocation {
+    fn from(dl: String) -> Self {
+        match dl.as_str() {
+            "QUERY" => DirectiveLocation::Query,
+            "MUTATION" => DirectiveLocation::Mutation,
+            "SUBSCRIPTION" => DirectiveLocation::Subscription,
+            "FIELD" => DirectiveLocation::Field,
+            "FRAGMENT_DEFINITION" => DirectiveLocation::FragmentDefinition,
+            "FRAGMENT_SPREAD" => DirectiveLocation::FragmentSpread,
+            "INLINE_FRAGMENT" => DirectiveLocation::InlineFragment,
+            "VARIABLE_DEFINITION" => DirectiveLocation::VariableDefinition,
+            "SCHEMA" => DirectiveLocation::Schema,
+            "SCALAR" => DirectiveLocation::Scalar,
+            "OBJECT" => DirectiveLocation::Object,
+            "FIELD_DEFINITION" => DirectiveLocation::FieldDefinition,
+            "ARGUMENT_DEFINITION" => DirectiveLocation::ArgumentDefinition,
+            "INTERFACE" => DirectiveLocation::Interface,
+            "UNION" => DirectiveLocation::Union,
+            "ENUM" => DirectiveLocation::Enum,
+            "ENUM_VALUE" => DirectiveLocation::EnumValue,
+            "INPUT_OBJECT" => DirectiveLocation::InputObject,
+            "INPUT_FIELD_DEFINITION" => DirectiveLocation::InputFieldDefinition,
+            other => unreachable!(
+                "cannot have {} as a directive location. Documentation: https://spec.graphql.org/October2021/#DirectiveLocation",
+                other
+            ),
         }
     }
 }

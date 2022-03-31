@@ -24,7 +24,7 @@ use crate::{
 pub struct Document {
     pub(crate) operation_definitions: Vec<OperationDef>,
     pub(crate) fragment_definitions: Vec<FragmentDef>,
-    pub(crate) schema_definitions: Vec<SchemaDef>,
+    pub(crate) schema_definition: Option<SchemaDef>,
     // Type definitions
     pub(crate) scalar_type_definitions: Vec<ScalarTypeDef>,
     pub(crate) object_type_definitions: Vec<ObjectTypeDef>,
@@ -44,9 +44,9 @@ impl From<Document> for apollo_encoder::Document {
         doc.scalar_type_definitions
             .into_iter()
             .for_each(|scalar_type_def| new_doc.scalar(scalar_type_def.into()));
-        doc.schema_definitions
-            .into_iter()
-            .for_each(|schema_def| new_doc.schema(schema_def.into()));
+        if let Some(schema_def) = doc.schema_definition {
+            new_doc.schema(schema_def.into());
+        }
         doc.object_type_definitions
             .into_iter()
             .for_each(|object_type_def| new_doc.object(object_type_def.into()));
@@ -70,6 +70,91 @@ impl From<Document> for apollo_encoder::Document {
             .for_each(|operation_def| new_doc.operation(operation_def.into()));
 
         new_doc
+    }
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::Document> for Document {
+    fn from(doc: apollo_parser::ast::Document) -> Self {
+        let mut enum_defs = Vec::new();
+        let mut object_defs = Vec::new();
+        let mut schema_def = None;
+        let mut directive_defs = Vec::new();
+        let mut scalar_defs = Vec::new();
+        let mut operation_defs = Vec::new();
+        let mut interface_defs = Vec::new();
+        let mut union_defs = Vec::new();
+        let mut input_object_defs = Vec::new();
+        let mut fragment_defs = Vec::new();
+
+        for definition in doc.definitions() {
+            match definition {
+                apollo_parser::ast::Definition::EnumTypeDefinition(enum_def) => {
+                    enum_defs.push(EnumTypeDef::from(enum_def));
+                }
+                apollo_parser::ast::Definition::EnumTypeExtension(enum_def) => {
+                    enum_defs.push(EnumTypeDef::from(enum_def));
+                }
+                apollo_parser::ast::Definition::ObjectTypeDefinition(obj_def) => {
+                    object_defs.push(ObjectTypeDef::from(obj_def));
+                }
+                apollo_parser::ast::Definition::ObjectTypeExtension(obj_def) => {
+                    object_defs.push(ObjectTypeDef::from(obj_def));
+                }
+                apollo_parser::ast::Definition::SchemaDefinition(schema_definition) => {
+                    schema_def = Some(SchemaDef::from(schema_definition));
+                }
+                apollo_parser::ast::Definition::SchemaExtension(schema_definition) => {
+                    schema_def = Some(SchemaDef::from(schema_definition));
+                }
+                apollo_parser::ast::Definition::DirectiveDefinition(dir_def) => {
+                    directive_defs.push(DirectiveDef::from(dir_def));
+                }
+                apollo_parser::ast::Definition::ScalarTypeDefinition(scalar_def) => {
+                    scalar_defs.push(ScalarTypeDef::from(scalar_def))
+                }
+                apollo_parser::ast::Definition::ScalarTypeExtension(scalar_def) => {
+                    scalar_defs.push(ScalarTypeDef::from(scalar_def))
+                }
+                apollo_parser::ast::Definition::OperationDefinition(operation_def) => {
+                    operation_defs.push(OperationDef::from(operation_def))
+                }
+                apollo_parser::ast::Definition::InterfaceTypeDefinition(interface_def) => {
+                    interface_defs.push(InterfaceTypeDef::from(interface_def))
+                }
+                apollo_parser::ast::Definition::InterfaceTypeExtension(interface_def) => {
+                    interface_defs.push(InterfaceTypeDef::from(interface_def))
+                }
+                apollo_parser::ast::Definition::UnionTypeDefinition(union_def) => {
+                    union_defs.push(UnionTypeDef::from(union_def))
+                }
+                apollo_parser::ast::Definition::UnionTypeExtension(union_def) => {
+                    union_defs.push(UnionTypeDef::from(union_def))
+                }
+                apollo_parser::ast::Definition::InputObjectTypeDefinition(input_object_def) => {
+                    input_object_defs.push(InputObjectTypeDef::from(input_object_def))
+                }
+                apollo_parser::ast::Definition::InputObjectTypeExtension(input_object_def) => {
+                    input_object_defs.push(InputObjectTypeDef::from(input_object_def))
+                }
+                apollo_parser::ast::Definition::FragmentDefinition(fragment_def) => {
+                    fragment_defs.push(FragmentDef::from(fragment_def))
+                }
+            }
+        }
+
+        Self {
+            operation_definitions: operation_defs,
+            fragment_definitions: Vec::new(),
+            schema_definition: schema_def,
+            scalar_type_definitions: scalar_defs,
+            object_type_definitions: object_defs,
+            interface_type_definitions: interface_defs,
+            union_type_definitions: union_defs,
+            enum_type_definitions: enum_defs,
+            input_object_type_definitions: input_object_defs,
+            directive_definitions: directive_defs,
+        }
     }
 }
 

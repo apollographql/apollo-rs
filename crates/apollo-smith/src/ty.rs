@@ -42,6 +42,36 @@ impl From<Ty> for Type_ {
     }
 }
 
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::Type> for Ty {
+    fn from(ty: apollo_parser::ast::Type) -> Self {
+        match ty {
+            apollo_parser::ast::Type::NamedType(named_ty) => named_ty.into(),
+            apollo_parser::ast::Type::ListType(list_type) => {
+                Self::List(Box::new(list_type.ty().unwrap().into()))
+            }
+            apollo_parser::ast::Type::NonNullType(non_null) => {
+                if let Some(named_ty) = non_null.named_type() {
+                    Self::NonNull(Box::new(named_ty.into()))
+                } else if let Some(list_type) = non_null.list_type() {
+                    Self::NonNull(Box::new(Self::List(Box::new(
+                        list_type.ty().unwrap().into(),
+                    ))))
+                } else {
+                    panic!("a non null type must have a type")
+                }
+            }
+        }
+    }
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::NamedType> for Ty {
+    fn from(ty: apollo_parser::ast::NamedType) -> Self {
+        Self::Named(ty.name().unwrap().into())
+    }
+}
+
 impl Ty {
     pub(crate) fn name(&self) -> &Name {
         match self {
@@ -56,6 +86,10 @@ impl Ty {
     /// [`Named`]: Ty::Named
     pub fn is_named(&self) -> bool {
         matches!(self, Self::Named(..))
+    }
+
+    pub(crate) fn is_builtin(&self) -> bool {
+        BUILTIN_SCALAR_NAMES.contains(&Ty::Named(self.name().clone()))
     }
 }
 

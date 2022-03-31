@@ -1,9 +1,17 @@
-use std::{collections::HashSet, hash::Hash};
+use std::{
+    collections::{HashMap, HashSet},
+    hash::Hash,
+};
 
 use apollo_encoder::{EnumDefinition, EnumValue};
 use arbitrary::Result;
 
-use crate::{description::Description, directive::Directive, name::Name, DocumentBuilder};
+use crate::{
+    description::Description,
+    directive::{Directive, DirectiveLocation},
+    name::Name,
+    DocumentBuilder,
+};
 
 /// Enums are special scalars that can only have a defined set of values.
 ///
@@ -15,7 +23,7 @@ use crate::{description::Description, directive::Directive, name::Name, Document
 pub struct EnumTypeDef {
     pub(crate) description: Option<Description>,
     pub(crate) name: Name,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
     pub(crate) enum_values_def: HashSet<EnumValueDefinition>,
     pub(crate) extend: bool,
 }
@@ -31,12 +39,64 @@ impl From<EnumTypeDef> for EnumDefinition {
         enum_
             .directives
             .into_iter()
-            .for_each(|directive| new_enum.directive(directive.into()));
+            .for_each(|(_, directive)| new_enum.directive(directive.into()));
         if enum_.extend {
             new_enum.extend();
         }
 
         new_enum
+    }
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
+    fn from(enum_def: apollo_parser::ast::EnumTypeDefinition) -> Self {
+        Self {
+            description: enum_def
+                .description()
+                .map(|d| Description::from(d.to_string())),
+            name: enum_def.name().unwrap().into(),
+            directives: enum_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            enum_values_def: enum_def
+                .enum_values_definition()
+                .expect("must have enum values definition")
+                .enum_value_definitions()
+                .map(EnumValueDefinition::from)
+                .collect(),
+            extend: false,
+        }
+    }
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::EnumTypeExtension> for EnumTypeDef {
+    fn from(enum_def: apollo_parser::ast::EnumTypeExtension) -> Self {
+        Self {
+            description: None,
+            name: enum_def.name().unwrap().into(),
+            directives: enum_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            enum_values_def: enum_def
+                .enum_values_definition()
+                .expect("must have enum values definition")
+                .enum_value_definitions()
+                .map(EnumValueDefinition::from)
+                .collect(),
+            extend: true,
+        }
     }
 }
 
@@ -50,7 +110,7 @@ impl From<EnumTypeDef> for EnumDefinition {
 pub struct EnumValueDefinition {
     pub(crate) description: Option<Description>,
     pub(crate) value: Name,
-    pub(crate) directives: Vec<Directive>,
+    pub(crate) directives: HashMap<Name, Directive>,
 }
 
 impl From<EnumValueDefinition> for EnumValue {
@@ -60,9 +120,32 @@ impl From<EnumValueDefinition> for EnumValue {
         enum_val
             .directives
             .into_iter()
-            .for_each(|directive| new_enum_val.directive(directive.into()));
+            .for_each(|(_, directive)| new_enum_val.directive(directive.into()));
 
         new_enum_val
+    }
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::EnumValueDefinition> for EnumValueDefinition {
+    fn from(enum_value_def: apollo_parser::ast::EnumValueDefinition) -> Self {
+        Self {
+            description: enum_value_def.description().map(Description::from),
+            value: enum_value_def
+                .enum_value()
+                .expect("enum value def must have enum value")
+                .name()
+                .expect("enum value mus have a name")
+                .into(),
+            directives: enum_value_def
+                .directives()
+                .map(|d| {
+                    d.directives()
+                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+        }
     }
 }
 
@@ -83,22 +166,32 @@ impl Hash for EnumValueDefinition {
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `EnumTypeDef`
     pub fn enum_type_definition(&mut self) -> Result<EnumTypeDef> {
+        let extend = !self.enum_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let description = self
             .u
             .arbitrary()
             .unwrap_or(false)
             .then(|| self.description())
             .transpose()?;
-        let name = self.type_name()?;
+        let name = if extend {
+            let available_enums: Vec<&Name> = self
+                .enum_type_defs
+                .iter()
+                .filter_map(|enm| if enm.extend { None } else { Some(&enm.name) })
+                .collect();
+            (*self.u.choose(&available_enums)?).clone()
+        } else {
+            self.type_name()?
+        };
         let enum_values_def = self.enum_values_definition()?;
-        let directives = self.directives()?;
+        let directives = self.directives(DirectiveLocation::Enum)?;
 
         Ok(EnumTypeDef {
             description,
             name,
             enum_values_def,
             directives,
-            extend: self.u.arbitrary().unwrap_or(false),
+            extend,
         })
     }
 
@@ -129,7 +222,7 @@ impl<'a> DocumentBuilder<'a> {
                 .then(|| self.description())
                 .transpose()?;
             let value = self.name_with_index(i)?;
-            let directives = self.directives()?;
+            let directives = self.directives(DirectiveLocation::EnumValue)?;
 
             enum_values_def.insert(EnumValueDefinition {
                 description,
