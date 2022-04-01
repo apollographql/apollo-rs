@@ -17,6 +17,57 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+
+# [0.2.5](https://crates.io/crates/apollo-parser/0.2.5) - 2021-04-01
+
+> Important: 1 breaking change below, indicated by **BREAKING**
+
+## BREAKING
+- **GraphQL Int Values are cast to i32 - [bnjjj], [pull/197]**
+  AST's Int Values have an `Into` implementation to their Rust type. They were
+  previously converted to i64, which is not compliant with the spec. Int Values
+  are now converted to i32.
+  ```rust
+  if let ast::Value::IntValue(val) =
+      argument.value().expect("Cannot get argument value.")
+  {
+      let i: i32 = val.into();
+  }
+  ```
+  [bnjjj]: https://github.com/bnjjj
+  [pull/197]: https://github.com/apollographql/apollo-rs/pull/197
+
+## Features
+- **Adds a .text() method to ast::DirectiveLocation - [bnjjj], [pull/197]**
+  `DirectiveLocation` can now additionally be accessed with a `.text()` method.
+
+  ```rust
+  let schema = r#"directive @example on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT"#;
+  let parser = Parser::new(schema);
+  let ast = parser.parse();
+
+  assert!(ast.errors.is_empty());
+
+  let document = ast.document();
+  for definition in document.definitions() {
+      if let ast::Definition::DirectiveDefinition(dir_def) = definition {
+          let dir_locations: Vec<String> = dir_def
+              .directive_locations()
+              .unwrap()
+              .directive_locations()
+              .map(|loc| loc.text().unwrap().to_string())
+              .collect();
+          assert_eq!(
+              dir_locations,
+              ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"]
+          );
+          return;
+      }
+  }
+  ```
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/197]: https://github.com/apollographql/apollo-rs/pull/197
 # [0.2.4](https://crates.io/crates/apollo-parser/0.2.4) - 2021-03-07
 ## Fixes
 - **correctly parse Arguments Definition - [bnjjj], [pull/187] closes [issue/186]**
