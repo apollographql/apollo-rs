@@ -4,7 +4,7 @@ All notable changes to `apollo-encoder` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- # [x.x.x] (unreleased) - 2021-mm-dd
+<!-- # [x.x.x] (unreleased) - 2022-mm-dd
 
 > Important: X breaking changes below, indicated by **BREAKING**
 
@@ -18,17 +18,45 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.2.3](https://crates.io/crates/apollo-encoder/0.2.3) - 2022-04-01
+
+> Important: 1 breaking change below, indicated by **BREAKING**
+
+## BREAKING
+
+- **GraphQL Int Value is an i32 - [bnjjj], [pull/197]**
+  We previously represented Int Values as i64, which is not compliant with the spec. This is now rectified.
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/197]: https://github.com/apollographql/apollo-rs/pull/197
+
+## Features
+
+- **Support 'alias' on fields - [bnjjj], [pull/191]**
+
+  ```rust
+  // results in "smallImage: displayImage" encoding
+  let mut aliased_field = Field::new(String::from("displayImage"));
+  aliased_field.alias(Some(String::from("smallImage")));
+  ```
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/191]: https://github.com/apollographql/apollo-rs/pull/191
+
+
 # [0.2.2](https://crates.io/crates/apollo-encoder/0.2.2) - 2022-02-28
+
+> Important: 2 breaking changes below, indicated by **BREAKING**
 ## BREAKING
 - **Rename `InputValueDef` into `InputValueDefinition` for consistency - [bnjjj], [pull/182]**
 
   [bnjjj]: https://github.com/bnjjj
-  [pull/168]: https://github.com/apollographql/apollo-rs/pull/182
+  [pull/182]: https://github.com/apollographql/apollo-rs/pull/182
 
 - **Rename `input_object_` method into `input_object` on `Document` - [bnjjj], [pull/182]**
 
   [bnjjj]: https://github.com/bnjjj
-  [pull/168]: https://github.com/apollographql/apollo-rs/pull/182
+  [pull/182]: https://github.com/apollographql/apollo-rs/pull/182
 
 ## Fixes
 - **Remove leading and ending `"` in `BlockStringCharacter` encoding only when it starts and end with a `"` - [bnjjj], [pull/182]**
