@@ -43,7 +43,7 @@ and add `apollo-smith` to your Cargo.toml:
 ## fuzz/Cargo.toml
 
 [dependencies]
-apollo-smith = "0.2.0"
+apollo-smith = "0.1.1"
 ```
 
 It can then be used in a `fuzz_target` along with the [`arbitrary`] crate,
@@ -73,7 +73,17 @@ and fuzzed with the following command:
 $ cargo +nightly fuzz run my_apollo_smith_fuzz_target
 ```
 
-## Generate valid operation using `apollo-smith` with `apollo-parser` given a GraphQL schema
+## Using `apollo-smith` with `apollo-parser`
+
+You can use `apollo-parser` to generate valid operations in `apollo-smith`. This
+can be done with the `parser-impl` feature flag.
+
+```toml
+## Cargo.toml
+
+[dependencies]
+apollo-smith = { version = "0.1.1", features = ["parser-impl"] }
+```
 
 ```rust,compile_fail
 use std::fs;
@@ -94,12 +104,11 @@ pub fn generate_valid_operation(input: &[u8]) {
     }
 
     let mut u = Unstructured::new(input);
-    
-    // Convert `apollo_parser::Document` into `apollo_smith::Document`
-    // This needs the feature `parser-impl` enabled on `apollo_smith` in `Cargo.toml` 
+
+    // Convert `apollo_parser::Document` into `apollo_smith::Document`.
     let apollo_smith_doc = Document::from(tree.document());
-    
-    // Create a `DocumentBuilder` given an existing document to be able to be compliant with a specific schema for example
+
+    // Create a `DocumentBuilder` given an existing document to match a schema.
     let mut gql_doc = DocumentBuilder::with_document(&mut u, apollo_smith_doc)?;
     let operation_def = gql_doc.operation_definition()?.unwrap();
 
@@ -108,14 +117,15 @@ pub fn generate_valid_operation(input: &[u8]) {
 ```
 
 ## Feature flags
-
-If you need the integration with `apollo-parser` and be able to convert structs from `apollo-parser` crate into structs for `apollo-smith` you can just enable the feature `parser-impl` in your `Cargo.toml`. You will then have all `From` implementations to convert structs.
+Enable `parser-impl` feature in `apollo-smith` is used to convert
+`apollo-parser` types to `apollo-smith` types. This is useful when you require
+the test-case generator to generate documents based on a given schema.
 
 ```toml
 ## Cargo.toml
 
 [dependencies]
-apollo-smith = { version = "0.2.0", features = ["parser-impl"] }
+apollo-smith = { version = "0.1.1", features = ["parser-impl"] }
 ```
 
 ## Limitations
