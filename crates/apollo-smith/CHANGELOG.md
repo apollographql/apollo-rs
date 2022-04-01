@@ -5,7 +5,7 @@ All notable changes to `apollo-smith` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- # [x.x.x] (unreleased) - 2021-mm-dd
+<!-- # [x.x.x] (unreleased) - 2022-mm-dd
 
 > Important: X breaking changes below, indicated by **BREAKING**
 
@@ -18,6 +18,68 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+
+# [0.1.1](https://crates.io/crates/apollo-smith/0.1.1) - 2022-04-01
+## Features
+- **Add `parser-impl` feature flag - [bnjjj], [pull/197]**
+  `parser-impl` feature in `apollo-smith` is used to convert
+  `apollo-parser` types to `apollo-smith` types. This is useful when you require
+  the test-case generator to generate documents based on a given schema.
+
+  ```toml
+  ## Cargo.toml
+
+  [dependencies]
+  apollo-smith = { version = "0.1.1", features = ["parser-impl"] }
+  ```
+
+  ```rust
+  use std::fs;
+
+  use apollo_parser::Parser;
+  use apollo_smith::{Document, DocumentBuilder};
+
+  use libfuzzer_sys::arbitrary::{Result, Unstructured};
+
+  /// This generate an arbitrary valid GraphQL operation
+  pub fn generate_valid_operation(input: &[u8]) {
+
+      let parser = Parser::new(&fs::read_to_string("supergraph.graphql").expect("cannot read file"));
+
+      let tree = parser.parse();
+      if !tree.errors().is_empty() {
+          panic!("cannot parse the graphql file");
+      }
+
+      let mut u = Unstructured::new(input);
+
+      // Convert `apollo_parser::Document` into `apollo_smith::Document`.
+      let apollo_smith_doc = Document::from(tree.document());
+
+      // Create a `DocumentBuilder` given an existing document to match a schema.
+      let mut gql_doc = DocumentBuilder::with_document(&mut u, apollo_smith_doc)?;
+      let operation_def = gql_doc.operation_definition()?.unwrap();
+
+      Ok(operation_def.into())
+  }
+  ```
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/197]: https://github.com/apollographql/apollo-rs/pull/197
+
+- **Introduces semantic validations to the test-case generation - [bnjjj], [pull/197]**
+
+  Semantic validations currently include:
+    - Directives used in the document must already be defined
+    - Directives must be unique in a given Directive Location
+    - Default values must be of correct type
+    - Input values must be of correct type
+    - All type extensions are applied to an existing type
+    - Field arguments in fragments and operation definitions must be defined on
+      original type and must be of correct type
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/197]: https://github.com/apollographql/apollo-rs/pull/197
 
 # [0.1.0](https://crates.io/crates/apollo-smith/0.1.0) - 2021-02-18
 
