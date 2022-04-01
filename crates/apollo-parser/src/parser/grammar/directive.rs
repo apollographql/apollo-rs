@@ -88,7 +88,7 @@ pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
             }
             "FRAGMENT_SPREAD" => {
                 let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
-                p.bump(SyntaxKind::FRAGMENT_DEFINITION_KW);
+                p.bump(SyntaxKind::FRAGMENT_SPREAD_KW);
             }
             "INLINE_FRAGMENT" => {
                 let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATION);
@@ -206,6 +206,35 @@ directive @example(isTreat: Boolean, treatKind: String) repeatable on FIELD | MU
                 assert_eq!(
                     dir_def.repeatable_token().unwrap().kind(),
                     SyntaxKind::repeatable_KW
+                );
+                return;
+            }
+        }
+        panic!("Expected AST to have a Directive Definition");
+    }
+
+    #[test]
+    fn it_can_access_directive_location_on_directive_definition() {
+        let schema = r#"
+directive @example on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+        "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+
+        assert!(ast.errors.is_empty());
+
+        let document = ast.document();
+        for definition in document.definitions() {
+            if let ast::Definition::DirectiveDefinition(dir_def) = definition {
+                let dir_locations: Vec<String> = dir_def
+                    .directive_locations()
+                    .unwrap()
+                    .directive_locations()
+                    .map(|loc| loc.text().unwrap().to_string())
+                    .collect();
+                assert_eq!(
+                    dir_locations,
+                    ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"]
                 );
                 return;
             }
