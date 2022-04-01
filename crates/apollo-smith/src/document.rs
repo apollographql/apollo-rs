@@ -145,7 +145,7 @@ impl From<apollo_parser::ast::Document> for Document {
 
         Self {
             operation_definitions: operation_defs,
-            fragment_definitions: Vec::new(),
+            fragment_definitions: fragment_defs,
             schema_definition: schema_def,
             scalar_type_definitions: scalar_defs,
             object_type_definitions: object_defs,
