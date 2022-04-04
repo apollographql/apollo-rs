@@ -1,7 +1,12 @@
-use crate::{ApolloDiagnostic, SourceDatabase};
+use crate::{values::Field, ApolloDiagnostic, SourceDatabase};
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     let mut errors = Vec::new();
+    // It is possible to have an unnamed (anonymous) operation definition only
+    // if there is **one** operation definition.
+    //
+    // Return a Missing Indent error if there are multiple operations and one or
+    // more are missing a name.
     if db.operations().len() > 1 {
         let missing_ident: Vec<ApolloDiagnostic> = db
             .operations()
@@ -18,21 +23,25 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         errors.extend(missing_ident);
     }
 
+    // A Subscription operation definition can only have **one** root level field.
     if db.subscriptions().len() >= 1 {
         let single_root_field: Vec<ApolloDiagnostic> = db
             .subscriptions()
             .iter()
             .filter_map(|op| {
-                if op.fields() > 1 {
-                    return Some(ApolloDiagnostic::SingleRootField(
-                        "Subscription operations can only have one root field".into(),
-                    ));
+                let mut top_level_fields: Vec<Field> = op.fields(db)?.as_ref().clone();
+                top_level_fields.extend(op.fields_in_inline_fragments(db)?.as_ref().clone());
+                top_level_fields.extend(op.fields_in_fragment_spread(db)?.as_ref().clone());
+                if top_level_fields.len() > 1 {
+                    Some(ApolloDiagnostic::SingleRootField(
+                        "Subscription operations can only have one root field {}".into(),
+                    ))
                 } else {
                     None
                 }
-                // if op.fields() > 1 || op.fragment_spread().fields() > 1 || op.inline_fragment().fields().
             })
             .collect();
+        errors.extend(single_root_field);
     }
 
     errors

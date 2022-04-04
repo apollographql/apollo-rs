@@ -5,6 +5,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use apollo_parser::{ast, Parser, SyntaxTree};
+use uuid::Uuid;
 
 use crate::diagnostics::ApolloDiagnostic;
 use crate::values::*;
@@ -38,13 +39,21 @@ pub trait SourceDatabase {
 
     fn subscriptions(&self) -> Operations;
 
-    fn find_operation(&self, name: String) -> Option<Arc<OperationDefinition>>;
+    fn find_operation(&self, id: Uuid) -> Option<Arc<OperationDefinition>>;
 
-    fn operation_definition_defined_variables(&self, name: String) -> Option<Arc<HashSet<String>>>;
+    fn find_fragment(&self, id: Uuid) -> Option<Arc<FragmentDefinition>>;
 
-    fn operation_definition_in_use_variables(&self, name: String) -> Option<Arc<HashSet<String>>>;
+    fn find_fragment_by_name(&self, name: String) -> Option<Arc<FragmentDefinition>>;
 
-    fn operation_fields(&self, name: String) -> Option<Arc<Vec<Field>>>;
+    fn operation_definition_defined_variables(&self, id: Uuid) -> Option<Arc<HashSet<String>>>;
+
+    fn operation_definition_in_use_variables(&self, id: Uuid) -> Option<Arc<HashSet<String>>>;
+
+    fn operation_fields(&self, id: Uuid) -> Option<Arc<Vec<Field>>>;
+
+    fn operation_inline_fragment_fields(&self, id: Uuid) -> Option<Arc<Vec<Field>>>;
+
+    fn operation_fragment_spread_fields(&self, id: Uuid) -> Option<Arc<Vec<Field>>>;
 
     fn operation_definitions_names(&self) -> Arc<Vec<String>>;
 
@@ -144,26 +153,10 @@ fn query(db: &dyn SourceDatabase) -> Operations {
     Operations::new(Arc::new(operations))
 }
 
-fn fragments(db: &dyn SourceDatabase) -> Fragments {
-    let fragments: Vec<FragmentDefinition> = db
-        .definitions()
-        .iter()
-        .filter_map(|definition| match definition {
-            ast::Definition::FragmentDefinition(fragment_def) => {
-                Some(fragment_definition(db, fragment_def.clone()))
-            }
-            _ => None,
-        })
-        .collect();
-    Fragments::new(Arc::new(fragments))
-}
-
-fn find_operation(db: &dyn SourceDatabase, name: String) -> Option<Arc<OperationDefinition>> {
+fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefinition>> {
     db.operations().iter().find_map(|op| {
-        if let Some(n) = op.name() {
-            if n == name {
-                return Some(Arc::new(op.clone()));
-            }
+        if id == op.id() {
+            return Some(Arc::new(op.clone()));
         }
         None
     })
@@ -176,10 +169,10 @@ fn operation_definitions_names(db: &dyn SourceDatabase) -> Arc<Vec<String>> {
 // NOTE: potentially want to return a hashmap of variables and their types?
 fn operation_definition_defined_variables(
     db: &dyn SourceDatabase,
-    op_name: String,
+    id: Uuid,
 ) -> Option<Arc<HashSet<String>>> {
     let vars: HashSet<String> = db
-        .find_operation(op_name)?
+        .find_operation(id)?
         .variables()?
         .iter()
         .map(|v| v.name())
@@ -187,9 +180,9 @@ fn operation_definition_defined_variables(
     Some(Arc::new(vars))
 }
 
-fn operation_fields(db: &dyn SourceDatabase, op_name: String) -> Option<Arc<Vec<Field>>> {
+fn operation_fields(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<Vec<Field>>> {
     let fields: Vec<Field> = db
-        .find_operation(op_name)?
+        .find_operation(id)?
         .selection_set()
         .iter()
         .filter_map(|sel| match sel {
@@ -200,15 +193,64 @@ fn operation_fields(db: &dyn SourceDatabase, op_name: String) -> Option<Arc<Vec<
     Some(Arc::new(fields))
 }
 
+fn operation_inline_fragment_fields(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<Vec<Field>>> {
+    let fields: Vec<Field> = db
+        .find_operation(id)?
+        .selection_set()
+        .iter()
+        .filter_map(|sel| match sel {
+            Selection::InlineFragment(fragment) => {
+                let fields: Vec<Field> = fragment
+                    .selection_set()
+                    .iter()
+                    .filter_map(|sel| match sel {
+                        Selection::Field(field) => Some(field.as_ref().clone()),
+                        _ => None,
+                    })
+                    .collect();
+                Some(fields)
+            }
+            _ => None,
+        })
+        .flatten()
+        .collect();
+    Some(Arc::new(fields))
+}
+
+fn operation_fragment_spread_fields(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<Vec<Field>>> {
+    let fields: Vec<Field> = db
+        .find_operation(id)?
+        .selection_set()
+        .iter()
+        .filter_map(|sel| match sel {
+            Selection::FragmentSpread(fragment_spread) => {
+                let fragment = db.find_fragment(fragment_spread.fragment_id()?)?;
+                let fields: Vec<Field> = fragment
+                    .selection_set()
+                    .iter()
+                    .filter_map(|sel| match sel {
+                        Selection::Field(field) => Some(field.as_ref().clone()),
+                        _ => None,
+                    })
+                    .collect();
+                Some(fields)
+            }
+            _ => None,
+        })
+        .flatten()
+        .collect();
+    Some(Arc::new(fields))
+}
+
 // NOTE: potentially want to return a hashmap of variables and their types?
 fn operation_definition_in_use_variables(
     db: &dyn SourceDatabase,
-    op_name: String,
+    id: Uuid,
 ) -> Option<Arc<HashSet<String>>> {
     // TODO: once FragmentSpread and InlineFragment are added, get their fields
     // and combine all variable usage.
     let vars = db
-        .operation_fields(op_name)?
+        .operation_fields(id)?
         .iter()
         .flat_map(|field| {
             if let Some(args) = field.arguments() {
@@ -239,6 +281,38 @@ fn get_field_variable_value(val: Value) -> Vec<String> {
     }
 }
 
+fn fragments(db: &dyn SourceDatabase) -> Fragments {
+    let fragments: Vec<FragmentDefinition> = db
+        .definitions()
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::FragmentDefinition(fragment_def) => {
+                Some(fragment_definition(db, fragment_def.clone()))
+            }
+            _ => None,
+        })
+        .collect();
+    Fragments::new(Arc::new(fragments))
+}
+
+fn find_fragment(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<FragmentDefinition>> {
+    db.fragments().iter().find_map(|fragment| {
+        if id == fragment.id() {
+            return Some(Arc::new(fragment.clone()));
+        }
+        None
+    })
+}
+
+fn find_fragment_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<FragmentDefinition>> {
+    db.fragments().iter().find_map(|fragment| {
+        if name == fragment.name() {
+            return Some(Arc::new(fragment.clone()));
+        }
+        None
+    })
+}
+
 fn operation_definition(
     db: &dyn SourceDatabase,
     op_def: ast::OperationDefinition,
@@ -257,6 +331,7 @@ fn operation_definition(
     let directives = directives(op_def.directives());
 
     OperationDefinition {
+        id: Uuid::new_v4(),
         ty,
         name,
         variables,
@@ -293,6 +368,7 @@ fn fragment_definition(
     let directives = directives(fragment_def.directives());
 
     FragmentDefinition {
+        id: Uuid::new_v4(),
         name,
         type_condition,
         selection_set,
@@ -493,7 +569,7 @@ fn selection(db: &dyn SourceDatabase, selection: ast::Selection) -> Selection {
             Selection::Field(field)
         }
         ast::Selection::FragmentSpread(fragment) => {
-            let fragment_spread = fragment_spread(fragment);
+            let fragment_spread = fragment_spread(db, fragment);
             Selection::FragmentSpread(fragment_spread)
         }
         ast::Selection::InlineFragment(fragment) => {
@@ -529,7 +605,7 @@ fn inline_fragment(db: &dyn SourceDatabase, fragment: ast::InlineFragment) -> Ar
     Arc::new(fragment_data)
 }
 
-fn fragment_spread(fragment: ast::FragmentSpread) -> Arc<FragmentSpread> {
+fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Arc<FragmentSpread> {
     let name = fragment
         .fragment_name()
         .expect("Fragment Spread must have a name")
@@ -538,7 +614,17 @@ fn fragment_spread(fragment: ast::FragmentSpread) -> Arc<FragmentSpread> {
         .text()
         .to_string();
     let directives = directives(fragment.directives());
-    let fragment_data = FragmentSpread { name, directives };
+    // NOTE @lrlna: this should just be Uuid.  If we can't find the framgment we
+    // are looking for when populating this field, we should throw a semantic
+    // error.
+    let fragment_id = db
+        .find_fragment_by_name(name.clone())
+        .map(|fragment| fragment.id());
+    let fragment_data = FragmentSpread {
+        name,
+        directives,
+        fragment_id,
+    };
     Arc::new(fragment_data)
 }
 

@@ -1,6 +1,9 @@
 use std::{ops::Deref, sync::Arc};
 
 use ordered_float::{self, OrderedFloat};
+use uuid::Uuid;
+
+use crate::SourceDatabase;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Fragments {
@@ -32,6 +35,7 @@ impl Deref for Fragments {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct FragmentDefinition {
+    pub(crate) id: Uuid,
     pub(crate) name: String,
     pub(crate) type_condition: String,
     pub(crate) directives: Option<Arc<Vec<Directive>>>,
@@ -39,22 +43,27 @@ pub struct FragmentDefinition {
 }
 
 impl FragmentDefinition {
-    /// Get a reference to the fragment definition's name.
+    /// Get fragment definition's name.
     pub fn name(&self) -> String {
         self.name.clone()
     }
 
-    /// Get a reference to the fragment definition's type condition.
+    /// Get fragment definition's id.
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+
+    /// Get fragment definition's type condition.
     pub fn type_condition(&self) -> String {
         self.type_condition.clone()
     }
 
-    /// Get a reference to the fragment definition's directives.
+    /// Get fragment definition's directives.
     pub fn directives(&self) -> Option<Arc<Vec<Directive>>> {
         self.directives.clone()
     }
 
-    /// Get a reference to the fragment definition's selection set.
+    /// Get fragment definition's selection set.
     pub fn selection_set(&self) -> Arc<Vec<Selection>> {
         self.selection_set.clone()
     }
@@ -95,6 +104,7 @@ impl Deref for Operations {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OperationDefinition {
+    pub(crate) id: Uuid,
     pub(crate) ty: OperationType,
     pub(crate) name: Option<String>,
     pub(crate) variables: Option<Arc<Vec<VariableDefinition>>>,
@@ -106,6 +116,9 @@ impl OperationDefinition {
     /// Get a mutable reference to the operation definition's variables.
     pub fn variables(&self) -> Option<Arc<Vec<VariableDefinition>>> {
         self.variables.clone()
+    }
+    pub fn id(&self) -> Uuid {
+        self.id
     }
 
     /// Get a mutable reference to the operation definition's directives.
@@ -125,6 +138,23 @@ impl OperationDefinition {
 
     pub fn selection_set(&self) -> Arc<Vec<Selection>> {
         self.selection_set.clone()
+    }
+
+    pub fn fields(&self, db: &dyn SourceDatabase) -> Option<Arc<Vec<Field>>> {
+        db.operation_fields(self.id)
+    }
+
+    // NOTE @lrlna: this could possible live under the inline_fragment impl
+    // i.e. op.fragment_spread().fields(), op.inline_fragments().fields()
+    //
+    // We will need to figure out how to store operation definition id on its
+    // fragment spreads and inline fragments to do this
+    pub fn fields_in_inline_fragments(&self, db: &dyn SourceDatabase) -> Option<Arc<Vec<Field>>> {
+        db.operation_inline_fragment_fields(self.id)
+    }
+
+    pub fn fields_in_fragment_spread(&self, db: &dyn SourceDatabase) -> Option<Arc<Vec<Field>>> {
+        db.operation_fragment_spread_fields(self.id)
     }
 }
 
@@ -171,7 +201,7 @@ pub struct Argument {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Value {
     Variable(String),
-    Int(i64),
+    Int(i32),
     Float(Float),
     String(String),
     Boolean(bool),
@@ -211,10 +241,38 @@ pub struct InlineFragment {
     pub selection_set: Arc<Vec<Selection>>,
 }
 
+impl InlineFragment {
+    /// Get inline fragment's type condition.
+    pub fn type_condition(&self) -> Option<String> {
+        self.type_condition.clone()
+    }
+
+    /// Get inline fragment's directives.
+    pub fn directives(&self) -> Option<Arc<Vec<Directive>>> {
+        self.directives.clone()
+    }
+
+    /// Get inline fragment's selection set.
+    pub fn selection_set(&self) -> Arc<Vec<Selection>> {
+        self.selection_set.clone()
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct FragmentSpread {
     pub name: String,
     pub directives: Option<Arc<Vec<Directive>>>,
+    // NOTE @lrlna: this should just be Uuid.  If we can't find the framgment we
+    // are looking for when populating this field, we should throw a semantic
+    // error.
+    pub fragment_id: Option<Uuid>,
+}
+
+impl FragmentSpread {
+    /// Get the fragment spread's fragment id.
+    pub fn fragment_id(&self) -> Option<Uuid> {
+        self.fragment_id
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
