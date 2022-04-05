@@ -47,6 +47,8 @@ pub struct FragmentDefinition {
 // the underlying values, as what's important is that the values are Arc<>'d in
 // the database.
 impl FragmentDefinition {
+    // NOTE @lrlna: can this just be a getter for a reference? what are the
+    // repercussions of this?
     /// Get fragment definition's name.
     pub fn name(&self) -> String {
         self.name.clone()
