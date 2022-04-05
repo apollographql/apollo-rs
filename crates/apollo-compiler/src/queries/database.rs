@@ -18,6 +18,10 @@ pub struct Database {
 
 impl salsa::Database for Database {}
 
+// NOTE @lrlna: this is the root database.
+// In the long run we will create child databases based on definitions: i.e.
+// OperationDefinition DB, ObjectTypeDefinition etc. This is mostly going to be
+// useful for readability of this code.
 #[salsa::query_group(ASTDatabase)]
 pub trait SourceDatabase {
     #[salsa::input]
@@ -27,13 +31,13 @@ pub trait SourceDatabase {
 
     fn document(&self) -> Arc<ast::Document>;
 
-    fn syntax_errors(&self) -> Arc<Vec<ApolloDiagnostic>>;
+    fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
 
     fn definitions(&self) -> Arc<Vec<ast::Definition>>;
 
     fn operations(&self) -> Operations;
 
-    fn query(&self) -> Operations;
+    fn queries(&self) -> Operations;
 
     fn mutations(&self) -> Operations;
 
@@ -73,9 +77,8 @@ fn document(db: &dyn SourceDatabase) -> Arc<ast::Document> {
     Arc::new(db.parse().as_ref().clone().document())
 }
 
-fn syntax_errors(db: &dyn SourceDatabase) -> Arc<Vec<ApolloDiagnostic>> {
-    let errors = db
-        .parse()
+fn syntax_errors(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+    db.parse()
         .errors()
         .into_iter()
         .map(|err| ApolloDiagnostic::SyntaxError {
@@ -83,8 +86,7 @@ fn syntax_errors(db: &dyn SourceDatabase) -> Arc<Vec<ApolloDiagnostic>> {
             data: err.data().to_string(),
             index: err.index(),
         })
-        .collect();
-    Arc::new(errors)
+        .collect()
 }
 
 fn definitions(db: &dyn SourceDatabase) -> Arc<Vec<ast::Definition>> {
@@ -138,7 +140,7 @@ fn mutations(db: &dyn SourceDatabase) -> Operations {
     Operations::new(Arc::new(operations))
 }
 
-fn query(db: &dyn SourceDatabase) -> Operations {
+fn queries(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .operations()
         .iter()

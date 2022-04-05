@@ -42,6 +42,10 @@ pub struct FragmentDefinition {
     pub(crate) selection_set: Arc<Vec<Selection>>,
 }
 
+// NOTE @lrlna: all the getter methods here return the exact types that are
+// stored in salsa's DB, Arc<>'s and all. In the long run, this should return
+// the underlying values, as what's important is that the values are Arc<>'d in
+// the database.
 impl FragmentDefinition {
     /// Get fragment definition's name.
     pub fn name(&self) -> String {
@@ -144,8 +148,9 @@ impl OperationDefinition {
         db.operation_fields(self.id)
     }
 
-    // NOTE @lrlna: this is quite messy. it should live under the inline_fragment impl
-    // i.e. op.fragment_spread().fields(), op.inline_fragments().fields()
+    // NOTE @lrlna: this is quite messy. it should live under the
+    // inline_fragment/fragment_spread impls, i.e. op.fragment_spread().fields(),
+    // op.inline_fragments().fields()
     //
     // We will need to figure out how to store operation definition id on its
     // fragment spreads and inline fragments to do this

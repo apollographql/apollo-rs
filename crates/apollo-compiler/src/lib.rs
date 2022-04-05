@@ -34,7 +34,7 @@ impl ApolloCompiler {
         validator.validate().into()
     }
 
-    pub fn syntax_errors(&self) -> Arc<Vec<ApolloDiagnostic>> {
+    pub fn syntax_errors(&self) -> Vec<ApolloDiagnostic> {
         self.db.syntax_errors()
     }
 

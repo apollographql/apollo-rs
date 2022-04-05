@@ -1,11 +1,16 @@
-use miette::{Diagnostic, NamedSource, SourceSpan};
-use thiserror::Error;
-
+// NOTE @lrlna: only syntax errors currently have the source data.
+//
+// TODO: figure out a nice way of going back to the AST and get its source data
+// given a current Value, which will make sure the rest of the diagnostics have
+// source data.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
     MissingIdent(String),
-    UndefinedInterfacesError,
     SingleRootField(String),
+    UniqueOperationDefinition {
+        message: String,
+        operation: String,
+    },
     UndefinedVariablesError {
         message: String,
         variable: String,
@@ -20,27 +25,3 @@ pub enum ApolloDiagnostic {
         index: usize,
     },
 }
-
-#[derive(Error, Debug, Diagnostic)]
-#[error("cannot find `{}` interface in this scope", self.ty)]
-#[diagnostic(code("apollo-parser: semantic error"))]
-struct UndefinedInterfacesError {
-    ty: String,
-    #[source_code]
-    src: NamedSource,
-    message: String,
-    #[label("{}", self.message)]
-    span: SourceSpan,
-}
-
-// #[derive(Error, Debug, Diagnostic)]
-// #[error("cannot find `{}` variable in this scope", self.ty)]
-// #[diagnostic(code("apollo-parser: semantic error"))]
-// struct UndefinedVariablesError {
-//     ty: String,
-//     #[source_code]
-//     src: NamedSource,
-//     message: String,
-//     #[label("{}", self.message)]
-//     span: SourceSpan,
-// }
