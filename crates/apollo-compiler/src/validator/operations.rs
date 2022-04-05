@@ -23,7 +23,29 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         errors.extend(missing_ident);
     }
 
-    // A Subscription operation definition can only have **one** root level field.
+    // Operation definitions must have unique names.
+    //
+    // Return a Unique Operation Definition error in case of a duplicate name.
+    let duplicate_operations: Vec<ApolloDiagnostic> = db
+        .operations()
+        .iter()
+        .filter_map(|op| {
+            if let Some(name) = op.name() {
+                if let Some(_dup) = db.operations().iter().find(|dup| dup.name() == op.name()) {
+                    return Some(ApolloDiagnostic::UniqueOperationDefinition {
+                        message: "Operation Definitions must have unique names".into(),
+                        operation: name,
+                    });
+                }
+            }
+            None
+        })
+        .collect();
+
+    errors.extend(duplicate_operations);
+
+    // A Subscription operation definition can only have **one** root level
+    // field.
     if db.subscriptions().len() >= 1 {
         let single_root_field: Vec<ApolloDiagnostic> = db
             .subscriptions()
