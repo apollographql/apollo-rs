@@ -144,7 +144,7 @@ impl OperationDefinition {
         db.operation_fields(self.id)
     }
 
-    // NOTE @lrlna: this could possible live under the inline_fragment impl
+    // NOTE @lrlna: this is quite messy. it should live under the inline_fragment impl
     // i.e. op.fragment_spread().fields(), op.inline_fragments().fields()
     //
     // We will need to figure out how to store operation definition id on its
