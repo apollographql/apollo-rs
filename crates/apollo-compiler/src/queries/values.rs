@@ -73,6 +73,15 @@ impl FragmentDefinition {
     pub fn selection_set(&self) -> Arc<Vec<Selection>> {
         self.selection_set.clone()
     }
+
+    pub fn variables(&self, db: &dyn SourceDatabase) -> Arc<Vec<Variable>> {
+        let vars = self
+            .selection_set
+            .iter()
+            .flat_map(|sel| sel.variables(db).as_ref().clone())
+            .collect();
+        Arc::new(vars)
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -231,9 +240,11 @@ pub struct Argument {
     pub value: Value,
 }
 
+type Variable = String;
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Value {
-    Variable(String),
+    Variable(Variable),
     Int(i32),
     Float(Float),
     String(String),
@@ -244,11 +255,31 @@ pub enum Value {
     Object(Vec<(String, Value)>),
 }
 
+impl Value {
+    /// Returns `true` if the value is [`Variable`].
+    ///
+    /// [`Variable`]: Value::Variable
+    #[must_use]
+    pub fn is_variable(&self) -> bool {
+        matches!(self, Self::Variable(..))
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Selection {
     Field(Arc<Field>),
     FragmentSpread(Arc<FragmentSpread>),
     InlineFragment(Arc<InlineFragment>),
+}
+
+impl Selection {
+    pub fn variables(&self, db: &dyn SourceDatabase) -> Arc<Vec<Variable>> {
+        match self {
+            Selection::Field(field) => field.variables(db),
+            Selection::FragmentSpread(fragment_spread) => fragment_spread.variables(db),
+            Selection::InlineFragment(inline_fragment) => inline_fragment.variables(db),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -264,6 +295,26 @@ impl Field {
     /// Get a reference to the field's arguments.
     pub fn arguments(&self) -> Option<Arc<Vec<Argument>>> {
         self.arguments.clone()
+    }
+
+    pub fn variables(&self, db: &dyn SourceDatabase) -> Arc<Vec<Variable>> {
+        let mut vars = match &self.arguments {
+            Some(arguments) => arguments
+                .iter()
+                .filter_map(|arg| match arg.value.clone() {
+                    Value::Variable(var) => Some(var as Variable),
+                    _ => None,
+                })
+                .collect(),
+            None => Vec::new(),
+        };
+        if let Some(selection_set) = &self.selection_set {
+            let iter = selection_set
+                .iter()
+                .flat_map(|sel| sel.variables(db).as_ref().clone());
+            vars.extend(iter);
+        }
+        Arc::new(vars)
     }
 }
 
@@ -289,6 +340,15 @@ impl InlineFragment {
     pub fn selection_set(&self) -> Arc<Vec<Selection>> {
         self.selection_set.clone()
     }
+
+    pub fn variables(&self, db: &dyn SourceDatabase) -> Arc<Vec<Variable>> {
+        let vars = self
+            .selection_set
+            .iter()
+            .flat_map(|sel| sel.variables(db).as_ref().clone())
+            .collect();
+        Arc::new(vars)
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -302,9 +362,20 @@ pub struct FragmentSpread {
 }
 
 impl FragmentSpread {
-    /// Get the fragment spread's fragment id.
-    pub fn fragment_id(&self) -> Option<Uuid> {
-        self.fragment_id
+    pub fn fragment(&self, db: &dyn SourceDatabase) -> Option<Arc<FragmentDefinition>> {
+        db.find_fragment(self.fragment_id?)
+    }
+
+    pub fn variables(&self, db: &dyn SourceDatabase) -> Arc<Vec<Variable>> {
+        let vars = match self.fragment(db) {
+            Some(fragment) => fragment
+                .selection_set
+                .iter()
+                .flat_map(|sel| sel.variables(db).as_ref().clone())
+                .collect(),
+            None => Vec::new(),
+        };
+        Arc::new(vars)
     }
 }
 

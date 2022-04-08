@@ -3,12 +3,17 @@ use crate::{
     SourceDatabase,
 };
 
+// check in scope
+// check in use
+// compare the two
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     db.operations()
         .iter()
-        .filter_map(|op| {
-            let defined_vars = db.operation_definition_defined_variables(op.id())?;
-            let used_vars = db.operation_definition_in_use_variables(op.id())?;
+        .flat_map(|op| {
+            let defined_vars = db
+                .operation_definition_variables(op.id())
+                .unwrap_or_default();
+            let used_vars = db.selection_variables(op.id()).unwrap_or_default();
             let undefined_vars = used_vars.difference(&defined_vars);
             let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
                 .map(|undefined_var| {
@@ -20,18 +25,15 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 .collect();
 
             let unused_vars = defined_vars.difference(&used_vars);
-            let warnings: Vec<ApolloDiagnostic> = unused_vars
-                .map(|unused_var| {
-                    ApolloDiagnostic::Warning(WarningDiagnostic::UnusedVariable {
-                        message: "unused variable".into(),
-                        variable: unused_var.into(),
-                    })
+            let warnings = unused_vars.map(|unused_var| {
+                ApolloDiagnostic::Warning(WarningDiagnostic::UnusedVariable {
+                    message: "unused variable".into(),
+                    variable: unused_var.into(),
                 })
-                .collect();
+            });
 
             diagnostics.extend(warnings);
-            Some(diagnostics)
+            diagnostics
         })
-        .flatten()
         .collect()
 }

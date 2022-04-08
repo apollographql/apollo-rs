@@ -49,17 +49,15 @@ pub trait SourceDatabase {
 
     fn find_fragment_by_name(&self, name: String) -> Option<Arc<FragmentDefinition>>;
 
-    fn operation_definition_defined_variables(&self, id: Uuid) -> Option<Arc<HashSet<String>>>;
+    fn operation_definition_variables(&self, id: Uuid) -> Option<Arc<HashSet<String>>>;
 
-    fn operation_definition_in_use_variables(&self, id: Uuid) -> Option<Arc<HashSet<String>>>;
+    fn selection_variables(&self, id: Uuid) -> Option<Arc<HashSet<String>>>;
 
     fn operation_fields(&self, id: Uuid) -> Option<Arc<Vec<Field>>>;
 
     fn operation_inline_fragment_fields(&self, id: Uuid) -> Option<Arc<Vec<Field>>>;
 
     fn operation_fragment_spread_fields(&self, id: Uuid) -> Option<Arc<Vec<Field>>>;
-
-    fn operation_definitions_names(&self) -> Arc<Vec<String>>;
 
     fn fragments(&self) -> Fragments;
 }
@@ -148,12 +146,8 @@ fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefi
     })
 }
 
-fn operation_definitions_names(db: &dyn SourceDatabase) -> Arc<Vec<String>> {
-    Arc::new(db.operations().iter().filter_map(|n| n.name()).collect())
-}
-
-// NOTE: potentially want to return a hashmap of variables and their types?
-fn operation_definition_defined_variables(
+// NOTE: potentially want to return a hashset of variables and their types?
+fn operation_definition_variables(
     db: &dyn SourceDatabase,
     id: Uuid,
 ) -> Option<Arc<HashSet<String>>> {
@@ -210,8 +204,8 @@ fn operation_fragment_spread_fields(db: &dyn SourceDatabase, id: Uuid) -> Option
         .iter()
         .filter_map(|sel| match sel {
             Selection::FragmentSpread(fragment_spread) => {
-                let fragment = db.find_fragment(fragment_spread.fragment_id()?)?;
-                let fields: Vec<Field> = fragment
+                let fields: Vec<Field> = fragment_spread
+                    .fragment(db)?
                     .selection_set()
                     .iter()
                     .filter_map(|sel| match sel {
@@ -229,10 +223,7 @@ fn operation_fragment_spread_fields(db: &dyn SourceDatabase, id: Uuid) -> Option
 }
 
 // NOTE: potentially want to return a hashmap of variables and their types?
-fn operation_definition_in_use_variables(
-    db: &dyn SourceDatabase,
-    id: Uuid,
-) -> Option<Arc<HashSet<String>>> {
+fn selection_variables(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<HashSet<String>>> {
     // TODO: once FragmentSpread and InlineFragment are added, get their fields
     // and combine all variable usage.
     let vars = db
