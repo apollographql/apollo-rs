@@ -1,4 +1,4 @@
-- DOCUMENT@0..106
+- DOCUMENT@0..107
     - OPERATION_DEFINITION@0..43
         - OPERATION_TYPE@0..6
             - query_KW@0..5 "query"
@@ -24,14 +24,14 @@
                     - WHITESPACE@39..40 "\n"
             - R_CURLY@40..41 "}"
             - WHITESPACE@41..43 "\n\n"
-    - OPERATION_DEFINITION@43..106
+    - OPERATION_DEFINITION@43..107
         - OPERATION_TYPE@43..49
             - query_KW@43..48 "query"
             - WHITESPACE@48..49 " "
         - NAME@49..62
             - IDENT@49..61 "getOwnerName"
             - WHITESPACE@61..62 " "
-        - SELECTION_SET@62..106
+        - SELECTION_SET@62..107
             - L_CURLY@62..63 "{"
             - WHITESPACE@63..66 "\n  "
             - FIELD@66..105
@@ -57,4 +57,5 @@
                     - R_CURLY@103..104 "}"
                     - WHITESPACE@104..105 "\n"
             - R_CURLY@105..106 "}"
+            - WHITESPACE@106..107 "\n"
 
