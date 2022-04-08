@@ -172,6 +172,32 @@ pub enum OperationType {
     Subscription,
 }
 
+impl OperationType {
+    /// Returns `true` if the operation type is [`Query`].
+    ///
+    /// [`Query`]: OperationType::Query
+    #[must_use]
+    pub fn is_query(&self) -> bool {
+        matches!(self, Self::Query)
+    }
+
+    /// Returns `true` if the operation type is [`Mutation`].
+    ///
+    /// [`Mutation`]: OperationType::Mutation
+    #[must_use]
+    pub fn is_mutation(&self) -> bool {
+        matches!(self, Self::Mutation)
+    }
+
+    /// Returns `true` if the operation type is [`Subscription`].
+    ///
+    /// [`Subscription`]: OperationType::Subscription
+    #[must_use]
+    pub fn is_subscription(&self) -> bool {
+        matches!(self, Self::Subscription)
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct VariableDefinition {
     pub name: String,

@@ -116,13 +116,7 @@ fn subscriptions(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| {
-            if op.ty == OperationType::Subscription {
-                Some(op.clone())
-            } else {
-                None
-            }
-        })
+        .filter_map(|op| op.ty.is_subscription().then(|| op.clone()))
         .collect();
     Operations::new(Arc::new(operations))
 }
@@ -131,13 +125,7 @@ fn mutations(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| {
-            if op.ty == OperationType::Mutation {
-                Some(op.clone())
-            } else {
-                None
-            }
-        })
+        .filter_map(|op| op.ty.is_mutation().then(|| op.clone()))
         .collect();
     Operations::new(Arc::new(operations))
 }
@@ -146,13 +134,7 @@ fn queries(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| {
-            if op.ty == OperationType::Query {
-                Some(op.clone())
-            } else {
-                None
-            }
-        })
+        .filter_map(|op| op.ty.is_query().then(|| op.clone()))
         .collect();
     Operations::new(Arc::new(operations))
 }
