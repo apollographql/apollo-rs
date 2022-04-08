@@ -1,6 +1,8 @@
 mod diagnostics;
 mod queries;
-mod validator;
+#[cfg(test)]
+mod tests;
+mod validation;
 
 use std::sync::Arc;
 
@@ -11,7 +13,7 @@ pub use queries::{
 };
 
 use diagnostics::ApolloDiagnostic;
-use validator::Validator;
+use validation::Validator;
 
 pub struct ApolloCompiler {
     db: Database,
@@ -29,6 +31,7 @@ impl ApolloCompiler {
         self.db.parse()
     }
 
+    // should probably return an iter here
     pub fn validate(&self) -> Vec<ApolloDiagnostic> {
         let mut validator = Validator::new(&self.db);
         validator.validate().into()
@@ -115,62 +118,97 @@ type Business implements NamedEntity & ValuedEntity {
     }
 
     #[test]
-    fn it_validates_undefined_interface_in_schema() {
+    fn it_fails_validation_with_duplicate_operation_names() {
         let input = r#"
-type Person implements NamedEntity {
-  name: String
-  age: Int
-}"#;
-        validate(input)
-    }
-
-    #[test]
-    fn it_validates_undefined_variable_in_query() {
-        let input = r#"
-query ExampleQuery($definedVariable: String) {
-  topProducts(first: $undefinedVariable) {
+query getName {
+  cat {
     name
   }
 }
 
-fragment vipCustomer on User {
-  id
-  name
-  profilePic(size: 50)
-  status
+query getName {
+  cat {
+    owner {
+      name
+    }
+  }
 }
 "#;
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+        assert_eq!(errors.len(), 1);
+    }
 
+    #[test]
+    fn it_validates_unique_operation_names() {
+        let input = r#"
+query getCatName {
+  cat {
+    name
+  }
+}
+
+query getOwnerName {
+  cat {
+    owner {
+      name
+    }
+  }
+}
+"#;
         let ctx = ApolloCompiler::new(input);
         let errors = ctx.validate();
         dbg!(&errors);
-
-        let operation_names: Vec<String> =
-            ctx.operations().iter().filter_map(|op| op.name()).collect();
-        assert_eq!(["ExampleQuery"], operation_names.as_slice());
-        let fragments: Vec<String> = ctx
-            .fragments()
-            .iter()
-            .map(|fragment| fragment.name())
-            .collect();
-        assert_eq!(["vipCustomer"], fragments.as_slice());
-
-        let operation_variables: Vec<String> = ctx
-            .operations()
-            .find("ExampleQuery")
-            .unwrap()
-            .variables()
-            .unwrap()
-            .iter()
-            .map(|var| var.name.clone())
-            .collect();
-        assert_eq!(["definedVariable"], operation_variables.as_slice());
-        // let operation_variables = ctx.operations().find("ExampleQuery").variables().find("definedVariable").ty();
-        let fragment_type_cond = ctx
-            .fragments()
-            .find("vipCustomer")
-            .unwrap()
-            .type_condition();
-        assert_eq!("User", fragment_type_cond);
+        assert!(errors.is_empty());
     }
+
+    //     #[test]
+    //     fn it_validates_undefined_variable_in_query() {
+    //         let input = r#"
+    // query ExampleQuery($definedVariable: String) {
+    //   topProducts(first: $undefinedVariable) {
+    //     name
+    //   }
+    // }
+    //
+    // fragment vipCustomer on User {
+    //   id
+    //   name
+    //   profilePic(size: 50)
+    //   status
+    // }
+    // "#;
+    //
+    //         let ctx = ApolloCompiler::new(input);
+    //         let errors = ctx.validate();
+    //         dbg!(&errors);
+    //
+    //         let operation_names: Vec<String> =
+    //             ctx.operations().iter().filter_map(|op| op.name()).collect();
+    //         assert_eq!(["ExampleQuery"], operation_names.as_slice());
+    //         let fragments: Vec<String> = ctx
+    //             .fragments()
+    //             .iter()
+    //             .map(|fragment| fragment.name())
+    //             .collect();
+    //         assert_eq!(["vipCustomer"], fragments.as_slice());
+    //
+    //         let operation_variables: Vec<String> = ctx
+    //             .operations()
+    //             .find("ExampleQuery")
+    //             .unwrap()
+    //             .variables()
+    //             .unwrap()
+    //             .iter()
+    //             .map(|var| var.name.clone())
+    //             .collect();
+    //         assert_eq!(["definedVariable"], operation_variables.as_slice());
+    //         // let operation_variables = ctx.operations().find("ExampleQuery").variables().find("definedVariable").ty();
+    //         let fragment_type_cond = ctx
+    //             .fragments()
+    //             .find("vipCustomer")
+    //             .unwrap()
+    //             .type_condition();
+    //         assert_eq!("User", fragment_type_cond);
+    //     }
 }

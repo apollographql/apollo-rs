@@ -5,17 +5,21 @@
 // source data.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
+    Error(ErrorDiagnostic),
+    Warning(WarningDiagnostic),
+    Hint(HintDiagnostic),
+    Suggestion(SuggestionDiagnostic),
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum ErrorDiagnostic {
     MissingIdent(String),
     SingleRootField(String),
     UniqueOperationDefinition {
         message: String,
         operation: String,
     },
-    UndefinedVariablesError {
-        message: String,
-        variable: String,
-    },
-    UnusedVariablesWarning {
+    UndefinedVariable {
         message: String,
         variable: String,
     },
@@ -25,3 +29,14 @@ pub enum ApolloDiagnostic {
         index: usize,
     },
 }
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum WarningDiagnostic {
+    UnusedVariable { message: String, variable: String },
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum HintDiagnostic {}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum SuggestionDiagnostic {}

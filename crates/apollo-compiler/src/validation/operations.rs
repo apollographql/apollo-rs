@@ -1,4 +1,6 @@
-use crate::{values::Field, ApolloDiagnostic, SourceDatabase};
+use std::collections::HashSet;
+
+use crate::{diagnostics::ErrorDiagnostic, values, ApolloDiagnostic, SourceDatabase};
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     let mut errors = Vec::new();
@@ -13,9 +15,9 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
             .iter()
             .filter_map(|op| {
                 if op.name().is_none() {
-                    return Some(ApolloDiagnostic::MissingIdent(
+                    return Some(ApolloDiagnostic::Error(ErrorDiagnostic::MissingIdent(
                         "Missing operation name".into(),
-                    ));
+                    )));
                 }
                 None
             })
@@ -26,23 +28,21 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     // Operation definitions must have unique names.
     //
     // Return a Unique Operation Definition error in case of a duplicate name.
-    let duplicate_operations: Vec<ApolloDiagnostic> = db
-        .operations()
-        .iter()
-        .filter_map(|op| {
-            if let Some(name) = op.name() {
-                if let Some(_dup) = db.operations().iter().find(|dup| dup.name() == op.name()) {
-                    return Some(ApolloDiagnostic::UniqueOperationDefinition {
+    let mut seen = HashSet::new();
+    for op in db.operations().iter() {
+        if let Some(name) = op.name() {
+            if seen.contains(&name) {
+                errors.push(ApolloDiagnostic::Error(
+                    ErrorDiagnostic::UniqueOperationDefinition {
                         message: "Operation Definitions must have unique names".into(),
                         operation: name,
-                    });
-                }
+                    },
+                ));
+            } else {
+                seen.insert(name);
             }
-            None
-        })
-        .collect();
-
-    errors.extend(duplicate_operations);
+        }
+    }
 
     // A Subscription operation definition can only have **one** root level
     // field.
@@ -51,13 +51,13 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
             .subscriptions()
             .iter()
             .filter_map(|op| {
-                let mut top_level_fields: Vec<Field> = op.fields(db)?.as_ref().clone();
+                let mut top_level_fields: Vec<values::Field> = op.fields(db)?.as_ref().clone();
                 top_level_fields.extend(op.fields_in_inline_fragments(db)?.as_ref().clone());
                 top_level_fields.extend(op.fields_in_fragment_spread(db)?.as_ref().clone());
                 if top_level_fields.len() > 1 {
-                    Some(ApolloDiagnostic::SingleRootField(
+                    Some(ApolloDiagnostic::Error(ErrorDiagnostic::SingleRootField(
                         "Subscription operations can only have one root field {}".into(),
-                    ))
+                    )))
                 } else {
                     None
                 }

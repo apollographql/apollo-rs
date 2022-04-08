@@ -18,14 +18,9 @@ impl<'a> Validator<'a> {
     }
 
     pub fn validate(&mut self) -> &mut [ApolloDiagnostic] {
-        self.extend_errors(self.db.syntax_errors());
-        self.extend_errors(operations::check(self.db));
-        self.extend_errors(unused_variables::check(self.db));
+        self.errors.extend(self.db.syntax_errors());
+        self.errors.extend(operations::check(self.db));
+        self.errors.extend(unused_variables::check(self.db));
         self.errors.as_mut()
-    }
-
-    /// Set the validator's errors.
-    pub fn extend_errors(&mut self, errors: Vec<ApolloDiagnostic>) {
-        self.errors.extend(errors);
     }
 }

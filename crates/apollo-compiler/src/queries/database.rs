@@ -7,7 +7,7 @@ use std::sync::Arc;
 use apollo_parser::{ast, Parser, SyntaxTree};
 use uuid::Uuid;
 
-use crate::diagnostics::ApolloDiagnostic;
+use crate::diagnostics::{ApolloDiagnostic, ErrorDiagnostic};
 use crate::values::*;
 
 #[salsa::database(ASTDatabase)]
@@ -81,10 +81,12 @@ fn syntax_errors(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     db.parse()
         .errors()
         .into_iter()
-        .map(|err| ApolloDiagnostic::SyntaxError {
-            message: err.message().to_string(),
-            data: err.data().to_string(),
-            index: err.index(),
+        .map(|err| {
+            ApolloDiagnostic::Error(ErrorDiagnostic::SyntaxError {
+                message: err.message().to_string(),
+                data: err.data().to_string(),
+                index: err.index(),
+            })
         })
         .collect()
 }
