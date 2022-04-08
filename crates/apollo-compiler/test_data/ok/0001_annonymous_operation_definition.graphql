@@ -1,0 +1,6 @@
+
+query {
+  cat {
+    name
+  }
+}

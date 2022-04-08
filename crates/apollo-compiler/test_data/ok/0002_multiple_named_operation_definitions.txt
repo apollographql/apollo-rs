@@ -1,0 +1,60 @@
+- DOCUMENT@0..106
+    - OPERATION_DEFINITION@0..43
+        - OPERATION_TYPE@0..6
+            - query_KW@0..5 "query"
+            - WHITESPACE@5..6 " "
+        - NAME@6..17
+            - IDENT@6..16 "getCatName"
+            - WHITESPACE@16..17 " "
+        - SELECTION_SET@17..43
+            - L_CURLY@17..18 "{"
+            - WHITESPACE@18..21 "\n  "
+            - FIELD@21..40
+                - NAME@21..25
+                    - IDENT@21..24 "cat"
+                    - WHITESPACE@24..25 " "
+                - SELECTION_SET@25..40
+                    - L_CURLY@25..26 "{"
+                    - WHITESPACE@26..31 "\n    "
+                    - FIELD@31..38
+                        - NAME@31..38
+                            - IDENT@31..35 "name"
+                            - WHITESPACE@35..38 "\n  "
+                    - R_CURLY@38..39 "}"
+                    - WHITESPACE@39..40 "\n"
+            - R_CURLY@40..41 "}"
+            - WHITESPACE@41..43 "\n\n"
+    - OPERATION_DEFINITION@43..106
+        - OPERATION_TYPE@43..49
+            - query_KW@43..48 "query"
+            - WHITESPACE@48..49 " "
+        - NAME@49..62
+            - IDENT@49..61 "getOwnerName"
+            - WHITESPACE@61..62 " "
+        - SELECTION_SET@62..106
+            - L_CURLY@62..63 "{"
+            - WHITESPACE@63..66 "\n  "
+            - FIELD@66..105
+                - NAME@66..70
+                    - IDENT@66..69 "cat"
+                    - WHITESPACE@69..70 " "
+                - SELECTION_SET@70..105
+                    - L_CURLY@70..71 "{"
+                    - WHITESPACE@71..76 "\n    "
+                    - FIELD@76..103
+                        - NAME@76..82
+                            - IDENT@76..81 "owner"
+                            - WHITESPACE@81..82 " "
+                        - SELECTION_SET@82..103
+                            - L_CURLY@82..83 "{"
+                            - WHITESPACE@83..90 "\n      "
+                            - FIELD@90..99
+                                - NAME@90..99
+                                    - IDENT@90..94 "name"
+                                    - WHITESPACE@94..99 "\n    "
+                            - R_CURLY@99..100 "}"
+                            - WHITESPACE@100..103 "\n  "
+                    - R_CURLY@103..104 "}"
+                    - WHITESPACE@104..105 "\n"
+            - R_CURLY@105..106 "}"
+

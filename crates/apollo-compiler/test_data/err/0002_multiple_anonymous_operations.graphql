@@ -1,0 +1,13 @@
+query {
+  cat {
+    name
+  }
+}
+
+mutation {
+  cat {
+    owner {
+      name
+    }
+  }
+}

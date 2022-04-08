@@ -21,3 +21,6 @@ apollo-parser = { path = "../apollo-parser" }
 salsa = "0.16.1"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 ordered-float = { version = "2.10.0", features = ["std"] }
+
+[dev-dependencies]
+expect-test = "1.1"
