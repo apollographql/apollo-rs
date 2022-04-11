@@ -46,6 +46,9 @@ pub(crate) fn directive_definition(p: &mut Parser) {
 
     if let Some(TokenKind::Name | T![|]) = p.peek() {
         let _g = p.start_node(SyntaxKind::DIRECTIVE_LOCATIONS);
+        if let Some(T![|]) = p.peek() {
+            p.bump(S![|]);
+        }
         directive_locations(p, false);
     } else {
         p.err("expected valid Directive Location");
@@ -60,7 +63,7 @@ pub(crate) fn directive_definition(p: &mut Parser) {
 pub(crate) fn directive_locations(p: &mut Parser, is_location: bool) {
     if let Some(T![|]) = p.peek() {
         p.bump(S![|]);
-        directive_locations(p, is_location)
+        directive_locations(p, false);
     }
 
     if let Some(TokenKind::Name) = p.peek() {
@@ -220,7 +223,6 @@ directive @example on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
         "#;
         let parser = Parser::new(schema);
         let ast = parser.parse();
-
         assert!(ast.errors.is_empty());
 
         let document = ast.document();
@@ -240,5 +242,69 @@ directive @example on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
             }
         }
         panic!("Expected AST to have a Directive Definition");
+    }
+
+    #[test]
+    fn it_can_access_multiline_directive_location_on_directive_definition() {
+        let schema = r#"
+directive @example on
+| FIELD
+| FRAGMENT_SPREAD
+| INLINE_FRAGMENT
+        "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+        assert!(ast.errors.is_empty());
+
+        let document = ast.document();
+        for definition in document.definitions() {
+            if let ast::Definition::DirectiveDefinition(dir_def) = definition {
+                let dir_locations: Vec<String> = dir_def
+                    .directive_locations()
+                    .unwrap()
+                    .directive_locations()
+                    .map(|loc| loc.text().unwrap().to_string())
+                    .collect();
+                assert_eq!(
+                    dir_locations,
+                    ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"]
+                );
+                return;
+            }
+        }
+        panic!("Expected AST to have a Directive Definition");
+    }
+
+    #[test]
+    fn it_can_access_multiline_directive_location_on_directive_definition_with_error() {
+        let schema = r#"
+directive @example on
+| FIELD
+| FRAGMENT_SPREAD
+| INLINE_FRAGMENT |
+        "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+        assert!(!ast.errors.is_empty());
+
+        let schema = r#"
+directive @example on
+|| FIELD
+| FRAGMENT_SPREAD
+| INLINE_FRAGMENT
+        "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+        assert!(!ast.errors.is_empty());
+
+        let schema = r#"
+directive @example on
+| FIELD
+|| FRAGMENT_SPREAD
+| INLINE_FRAGMENT
+        "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+        assert!(!ast.errors.is_empty());
     }
 }
