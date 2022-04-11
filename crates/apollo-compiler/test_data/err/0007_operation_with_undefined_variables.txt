@@ -1,0 +1,1 @@
+[Error(UndefinedVariable { message: "Variable undefined", variable: "undefinedVariable" })]

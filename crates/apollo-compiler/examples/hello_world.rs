@@ -17,7 +17,9 @@ fn compile_query() -> Option<Arc<values::FragmentDefinition>> {
     let operation_variables: Vec<String> = ctx
         .operations()
         .find("ExampleQuery")?
-        .variables()?
+        .as_ref()
+        .clone()
+        .variables?
         .iter()
         .map(|var| var.name())
         .collect();

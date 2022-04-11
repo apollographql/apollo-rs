@@ -1,0 +1,8 @@
+query ExampleQuery($variable: Int) {
+  topProducts {
+    name
+  }
+  ... on Product {
+      price(setPrice: $value)
+  }
+}

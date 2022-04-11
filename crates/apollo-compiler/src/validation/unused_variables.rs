@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::{
     diagnostics::{ApolloDiagnostic, ErrorDiagnostic, WarningDiagnostic},
     SourceDatabase,
@@ -10,10 +12,19 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     db.operations()
         .iter()
         .flat_map(|op| {
-            let defined_vars = db
-                .operation_definition_variables(op.id())
-                .unwrap_or_default();
-            let used_vars = db.selection_variables(op.id()).unwrap_or_default();
+            let defined_vars: HashSet<String> = op
+                .variables
+                .clone()
+                .unwrap_or_default()
+                .iter()
+                .map(|var| var.name.clone())
+                .collect();
+            let used_vars: HashSet<String> = op
+                .selection_set
+                .clone()
+                .iter()
+                .flat_map(|sel| sel.variables(db).as_ref().clone())
+                .collect();
             let undefined_vars = used_vars.difference(&defined_vars);
             let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
                 .map(|undefined_var| {

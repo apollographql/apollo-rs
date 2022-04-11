@@ -119,19 +119,15 @@ impl Deref for Operations {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OperationDefinition {
-    pub(crate) id: Uuid,
-    pub(crate) ty: OperationType,
-    pub(crate) name: Option<String>,
-    pub(crate) variables: Option<Arc<Vec<VariableDefinition>>>,
-    pub(crate) directives: Option<Arc<Vec<Directive>>>,
-    pub(crate) selection_set: Arc<Vec<Selection>>,
+    pub id: Uuid,
+    pub ty: OperationType,
+    pub name: Option<String>,
+    pub variables: Option<Arc<Vec<VariableDefinition>>>,
+    pub directives: Option<Arc<Vec<Directive>>>,
+    pub selection_set: Arc<Vec<Selection>>,
 }
 
 impl OperationDefinition {
-    /// Get a mutable reference to the operation definition's variables.
-    pub fn variables(&self) -> Option<Arc<Vec<VariableDefinition>>> {
-        self.variables.clone()
-    }
     pub fn id(&self) -> Uuid {
         self.id
     }
@@ -240,7 +236,7 @@ pub struct Argument {
     pub value: Value,
 }
 
-type Variable = String;
+pub type Variable = String;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Value {

@@ -1,0 +1,1 @@
+[Error(UndefinedVariable { message: "Variable undefined", variable: "value" }), Warning(UnusedVariable { message: "unused variable", variable: "variable" })]

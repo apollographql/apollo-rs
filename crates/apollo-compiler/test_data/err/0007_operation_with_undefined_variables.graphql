@@ -1,0 +1,5 @@
+query ExampleQuery {
+  topProducts(first: $undefinedVariable) {
+    name
+  }
+}

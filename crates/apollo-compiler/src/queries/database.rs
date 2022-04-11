@@ -49,7 +49,7 @@ pub trait SourceDatabase {
 
     fn find_fragment_by_name(&self, name: String) -> Option<Arc<FragmentDefinition>>;
 
-    fn operation_definition_variables(&self, id: Uuid) -> Option<Arc<HashSet<String>>>;
+    fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<String>>;
 
     fn selection_variables(&self, id: Uuid) -> Option<Arc<HashSet<String>>>;
 
@@ -147,17 +147,15 @@ fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefi
 }
 
 // NOTE: potentially want to return a hashset of variables and their types?
-fn operation_definition_variables(
-    db: &dyn SourceDatabase,
-    id: Uuid,
-) -> Option<Arc<HashSet<String>>> {
-    let vars: HashSet<String> = db
-        .find_operation(id)?
-        .variables()?
-        .iter()
-        .map(|v| v.name())
-        .collect();
-    Some(Arc::new(vars))
+fn operation_definition_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<Variable>> {
+    let vars: HashSet<String> = match db.find_operation(id) {
+        Some(op) => match op.variables.clone() {
+            Some(vars) => vars.iter().map(|v| v.name.clone()).collect(),
+            None => todo!(),
+        },
+        None => HashSet::new(),
+    };
+    Arc::new(vars)
 }
 
 fn operation_fields(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<Vec<Field>>> {
