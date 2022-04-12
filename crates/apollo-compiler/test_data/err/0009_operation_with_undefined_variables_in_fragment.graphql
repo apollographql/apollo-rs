@@ -1,0 +1,13 @@
+query ExampleQuery($variable: Int) {
+  topProducts {
+    name
+  }
+  ... multipleSubscriptions
+}
+
+fragment multipleSubscriptions on Subscription {
+  newMessage {
+    body
+    sender(attribute: $value)
+  }
+}

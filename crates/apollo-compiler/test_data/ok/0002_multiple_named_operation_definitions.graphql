@@ -1,0 +1,13 @@
+query getCatName {
+  cat {
+    name
+  }
+}
+
+query getOwnerName {
+  cat {
+    owner {
+      name
+    }
+  }
+}

@@ -1,0 +1,1 @@
+[Error(SyntaxError { message: "expected at least one Selection in Selection Set", data: "}", index: 15 }), Error(SyntaxError { message: "expected Type Condition", data: "{", index: 39 })]

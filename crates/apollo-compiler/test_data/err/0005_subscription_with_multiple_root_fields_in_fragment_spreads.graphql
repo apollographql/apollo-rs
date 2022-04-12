@@ -1,0 +1,11 @@
+subscription sub {
+  ...multipleSubscriptions
+}
+
+fragment multipleSubscriptions on Subscription {
+  newMessage {
+    body
+    sender
+  }
+  disallowedSecondRootField
+}

@@ -1,0 +1,9 @@
+subscription sub {
+    ... on Subscription {
+        newMessage {
+          body
+          sender
+        }
+        disallowedSecondRootField
+    }
+}

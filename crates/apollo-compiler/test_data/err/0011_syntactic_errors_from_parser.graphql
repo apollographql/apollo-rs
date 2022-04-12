@@ -1,0 +1,6 @@
+query getName {}
+
+fragment fragmentOne {
+    name
+    birthday
+}

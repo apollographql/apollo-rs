@@ -1,0 +1,12 @@
+query ExampleQuery($definedVariable: String) {
+  topProducts(first: $undefinedVariable) {
+    name
+  }
+}
+
+fragment vipCustomer on User {
+  id
+  name
+  profilePic(size: 50)
+  status
+}
