@@ -37,6 +37,8 @@ use super::GraphQLLanguage;
 /// let nodes: Vec<_> = doc.definitions().into_iter().collect();
 /// assert_eq!(nodes.len(), 1);
 /// ```
+
+#[derive(PartialEq, Eq, Clone)]
 pub struct SyntaxTree {
     pub(crate) ast: rowan::SyntaxNode<GraphQLLanguage>,
     pub(crate) errors: Vec<crate::Error>,
