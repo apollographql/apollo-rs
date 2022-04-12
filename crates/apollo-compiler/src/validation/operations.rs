@@ -68,3 +68,52 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
 
     errors
 }
+
+#[cfg(test)]
+mod test {
+    use crate::ApolloCompiler;
+
+    #[test]
+    fn it_fails_validation_with_duplicate_operation_names() {
+        let input = r#"
+query getName {
+  cat {
+    name
+  }
+}
+
+query getName {
+  cat {
+    owner {
+      name
+    }
+  }
+}
+"#;
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+        assert_eq!(errors.len(), 1);
+    }
+
+    #[test]
+    fn it_validates_unique_operation_names() {
+        let input = r#"
+query getCatName {
+  cat {
+    name
+  }
+}
+
+query getOwnerName {
+  cat {
+    owner {
+      name
+    }
+  }
+}
+"#;
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+        assert!(errors.is_empty());
+    }
+}

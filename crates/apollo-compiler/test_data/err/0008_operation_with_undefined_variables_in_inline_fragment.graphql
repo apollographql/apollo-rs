@@ -1,4 +1,4 @@
-query ExampleQuery($variable: Int) {
+query ExampleQuery {
   topProducts {
     name
   }

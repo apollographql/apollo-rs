@@ -43,3 +43,60 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         })
         .collect()
 }
+
+#[cfg(test)]
+mod test {
+    use crate::ApolloCompiler;
+
+    #[test]
+    fn it_raises_undefined_variable_in_query_error() {
+        let input = r#"
+query ExampleQuery {
+  topProducts(first: $undefinedVariable) {
+    name
+  }
+
+  ... VipCustomer on User {
+    id
+    name
+    profilePic(size: $dimensions)
+    status
+  }
+
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+
+        assert_eq!(diagnostics.len(), 2);
+    }
+
+    #[test]
+    fn it_raises_undefined_variable_in_query_in_fragments_error() {
+        let input = r#"
+query ExampleQuery {
+  topProducts {
+    name
+  }
+
+  ... on User {
+    id
+    name
+    status(membership: $goldStatus)
+  }
+
+  ... fragmentOne
+}
+
+fragment fragmentOne on User {
+    profilePic(size: $dimensions)
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+
+        assert_eq!(diagnostics.len(), 2);
+    }
+}

@@ -1,0 +1,6 @@
+query ExampleQuery($unusedVariable: Int) {
+  topProducts {
+    name
+  }
+  ... multipleSubscriptions
+}
