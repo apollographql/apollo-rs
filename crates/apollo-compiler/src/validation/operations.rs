@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::{diagnostics::ErrorDiagnostic, values, ApolloDiagnostic, SourceDatabase};
+use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, SourceDatabase};
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     let mut errors = Vec::new();
@@ -35,7 +35,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 errors.push(ApolloDiagnostic::Error(
                     ErrorDiagnostic::UniqueOperationDefinition {
                         message: "Operation Definitions must have unique names".into(),
-                        operation: name,
+                        operation: name.to_string(),
                     },
                 ));
             } else {
@@ -51,10 +51,10 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
             .subscriptions()
             .iter()
             .filter_map(|op| {
-                let mut top_level_fields: Vec<values::Field> = op.fields(db)?.as_ref().clone();
-                top_level_fields.extend(op.fields_in_inline_fragments(db)?.as_ref().clone());
-                top_level_fields.extend(op.fields_in_fragment_spread(db)?.as_ref().clone());
-                if top_level_fields.len() > 1 {
+                let mut fields = op.fields(db).as_ref().clone();
+                fields.extend(op.fields_in_inline_fragments(db).as_ref().clone());
+                fields.extend(op.fields_in_fragment_spread(db).as_ref().clone());
+                if fields.len() > 1 {
                     Some(ApolloDiagnostic::Error(ErrorDiagnostic::SingleRootField(
                         "Subscription operations can only have one root field {}".into(),
                     )))

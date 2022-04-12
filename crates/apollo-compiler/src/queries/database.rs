@@ -51,13 +51,13 @@ pub trait SourceDatabase {
 
     fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<String>>;
 
-    fn selection_variables(&self, id: Uuid) -> Option<Arc<HashSet<String>>>;
+    fn selection_variables(&self, id: Uuid) -> Arc<HashSet<String>>;
 
-    fn operation_fields(&self, id: Uuid) -> Option<Arc<Vec<Field>>>;
+    fn operation_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
-    fn operation_inline_fragment_fields(&self, id: Uuid) -> Option<Arc<Vec<Field>>>;
+    fn operation_inline_fragment_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
-    fn operation_fragment_spread_fields(&self, id: Uuid) -> Option<Arc<Vec<Field>>>;
+    fn operation_fragment_spread_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
     fn fragments(&self) -> Fragments;
 }
@@ -139,7 +139,7 @@ fn queries(db: &dyn SourceDatabase) -> Operations {
 
 fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefinition>> {
     db.operations().iter().find_map(|op| {
-        if id == op.id() {
+        if &id == op.id() {
             return Some(Arc::new(op.clone()));
         }
         None
@@ -149,96 +149,97 @@ fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefi
 // NOTE: potentially want to return a hashset of variables and their types?
 fn operation_definition_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<Variable>> {
     let vars: HashSet<String> = match db.find_operation(id) {
-        Some(op) => match op.variables.clone() {
-            Some(vars) => vars.iter().map(|v| v.name.clone()).collect(),
-            None => todo!(),
-        },
+        Some(op) => op.variables().iter().map(|v| v.name()).collect(),
         None => HashSet::new(),
     };
     Arc::new(vars)
 }
 
-fn operation_fields(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<Vec<Field>>> {
-    let fields: Vec<Field> = db
-        .find_operation(id)?
-        .selection_set()
-        .iter()
-        .filter_map(|sel| match sel {
-            Selection::Field(field) => Some(field.as_ref().clone()),
-            _ => None,
-        })
-        .collect();
-    Some(Arc::new(fields))
+fn operation_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Vec<Field>> {
+    let fields = match db.find_operation(id) {
+        Some(op) => op
+            .selection_set()
+            .iter()
+            .filter_map(|sel| match sel {
+                Selection::Field(field) => Some(field.as_ref().clone()),
+                _ => None,
+            })
+            .collect(),
+        None => Vec::new(),
+    };
+    Arc::new(fields)
 }
 
-fn operation_inline_fragment_fields(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<Vec<Field>>> {
-    let fields: Vec<Field> = db
-        .find_operation(id)?
-        .selection_set()
-        .iter()
-        .filter_map(|sel| match sel {
-            Selection::InlineFragment(fragment) => {
-                let fields: Vec<Field> = fragment
-                    .selection_set()
-                    .iter()
-                    .filter_map(|sel| match sel {
-                        Selection::Field(field) => Some(field.as_ref().clone()),
-                        _ => None,
-                    })
-                    .collect();
-                Some(fields)
-            }
-            _ => None,
-        })
-        .flatten()
-        .collect();
-    Some(Arc::new(fields))
+fn operation_inline_fragment_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Vec<Field>> {
+    let fields: Vec<Field> = match db.find_operation(id) {
+        Some(op) => op
+            .selection_set()
+            .iter()
+            .filter_map(|sel| match sel {
+                Selection::InlineFragment(fragment) => {
+                    let fields: Vec<Field> = fragment
+                        .selection_set()
+                        .iter()
+                        .filter_map(|sel| match sel {
+                            Selection::Field(field) => Some(field.as_ref().clone()),
+                            _ => None,
+                        })
+                        .collect();
+                    Some(fields)
+                }
+                _ => None,
+            })
+            .flatten()
+            .collect(),
+        None => Vec::new(),
+    };
+    Arc::new(fields)
 }
 
-fn operation_fragment_spread_fields(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<Vec<Field>>> {
-    let fields: Vec<Field> = db
-        .find_operation(id)?
-        .selection_set()
-        .iter()
-        .filter_map(|sel| match sel {
-            Selection::FragmentSpread(fragment_spread) => {
-                let fields: Vec<Field> = fragment_spread
-                    .fragment(db)?
-                    .selection_set()
-                    .iter()
-                    .filter_map(|sel| match sel {
-                        Selection::Field(field) => Some(field.as_ref().clone()),
-                        _ => None,
-                    })
-                    .collect();
-                Some(fields)
-            }
-            _ => None,
-        })
-        .flatten()
-        .collect();
-    Some(Arc::new(fields))
+fn operation_fragment_spread_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Vec<Field>> {
+    let fields: Vec<Field> = match db.find_operation(id) {
+        Some(op) => op
+            .selection_set()
+            .iter()
+            .filter_map(|sel| match sel {
+                Selection::FragmentSpread(fragment_spread) => {
+                    let fields: Vec<Field> = fragment_spread
+                        .fragment(db)?
+                        .selection_set()
+                        .iter()
+                        .filter_map(|sel| match sel {
+                            Selection::Field(field) => Some(field.as_ref().clone()),
+                            _ => None,
+                        })
+                        .collect();
+                    Some(fields)
+                }
+                _ => None,
+            })
+            .flatten()
+            .collect(),
+        None => Vec::new(),
+    };
+    Arc::new(fields)
 }
 
 // NOTE: potentially want to return a hashmap of variables and their types?
-fn selection_variables(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<HashSet<String>>> {
+fn selection_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<String>> {
     // TODO: once FragmentSpread and InlineFragment are added, get their fields
     // and combine all variable usage.
     let vars = db
-        .operation_fields(id)?
+        .operation_fields(id)
         .iter()
         .flat_map(|field| {
-            if let Some(args) = field.arguments() {
-                let vars: Vec<String> = args
-                    .iter()
-                    .flat_map(|arg| get_field_variable_value(arg.value.clone()))
-                    .collect();
-                return vars;
-            }
-            Vec::new()
+            let vars: Vec<_> = field
+                .arguments()
+                .iter()
+                .flat_map(|arg| get_field_variable_value(arg.value.clone()))
+                .collect();
+            vars
         })
         .collect();
-    Some(Arc::new(vars))
+    Arc::new(vars)
 }
 
 fn get_field_variable_value(val: Value) -> Vec<String> {
@@ -272,7 +273,7 @@ fn fragments(db: &dyn SourceDatabase) -> Fragments {
 
 fn find_fragment(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<FragmentDefinition>> {
     db.fragments().iter().find_map(|fragment| {
-        if id == fragment.id() {
+        if &id == fragment.id() {
             return Some(Arc::new(fragment.clone()));
         }
         None
@@ -298,11 +299,7 @@ fn operation_definition(
     let name = op_def.name().map(|name| name.to_string());
     let ty = operation_type(op_def.operation_type());
     let variables = variable_definitions(op_def.variable_definitions());
-    let selections = op_def
-        .selection_set()
-        .expect("Operation Definition must have a Selection Set")
-        .selections();
-    let selection_set = selection_set(db, selections);
+    let selection_set = selection_set(db, op_def.selection_set());
     let directives = directives(op_def.directives());
 
     OperationDefinition {
@@ -335,11 +332,7 @@ fn fragment_definition(
         .expect("Name must have text")
         .text()
         .to_string();
-    let selections = fragment_def
-        .selection_set()
-        .expect("Operation Definition must have a Selection Set")
-        .selections();
-    let selection_set = selection_set(db, selections);
+    let selection_set = selection_set(db, fragment_def.selection_set());
     let directives = directives(fragment_def.directives());
 
     FragmentDefinition {
@@ -370,7 +363,7 @@ fn operation_type(op_type: Option<ast::OperationType>) -> OperationType {
 
 fn variable_definitions(
     variable_definitions: Option<ast::VariableDefinitions>,
-) -> Option<Arc<Vec<VariableDefinition>>> {
+) -> Arc<Vec<VariableDefinition>> {
     match variable_definitions {
         Some(vars) => {
             let variable_definitions = vars
@@ -378,9 +371,9 @@ fn variable_definitions(
                 .into_iter()
                 .map(variable_definition)
                 .collect();
-            Some(Arc::new(variable_definitions))
+            Arc::new(variable_definitions)
         }
-        None => None,
+        None => Arc::new(Vec::new()),
     }
 }
 
@@ -390,6 +383,7 @@ fn variable_definition(var: ast::VariableDefinition) -> VariableDefinition {
         .expect("Variable Definition must have a variable")
         .name()
         .expect("Variable must have a name")
+        .text()
         .to_string();
     let directives = directives(var.directives());
     let default_value = var
@@ -446,13 +440,13 @@ fn ty(ty_: ast::Type) -> Type {
     }
 }
 
-fn directives(directives: Option<ast::Directives>) -> Option<Arc<Vec<Directive>>> {
+fn directives(directives: Option<ast::Directives>) -> Arc<Vec<Directive>> {
     match directives {
         Some(directives) => {
             let directives = directives.directives().into_iter().map(directive).collect();
-            Some(Arc::new(directives))
+            Arc::new(directives)
         }
-        None => None,
+        None => Arc::new(Vec::new()),
     }
 }
 
@@ -465,13 +459,13 @@ fn directive(directive: ast::Directive) -> Directive {
     Directive { name, arguments }
 }
 
-fn arguments(arguments: Option<ast::Arguments>) -> Option<Arc<Vec<Argument>>> {
+fn arguments(arguments: Option<ast::Arguments>) -> Arc<Vec<Argument>> {
     match arguments {
         Some(arguments) => {
             let arguments = arguments.arguments().into_iter().map(argument).collect();
-            Some(Arc::new(arguments))
+            Arc::new(arguments)
         }
-        None => None,
+        None => Arc::new(Vec::new()),
     }
 }
 
@@ -528,13 +522,17 @@ fn value(val: ast::Value) -> Value {
 
 fn selection_set(
     db: &dyn SourceDatabase,
-    selections: ast::AstChildren<ast::Selection>,
+    selections: Option<ast::SelectionSet>,
 ) -> Arc<Vec<Selection>> {
-    let selections = selections
-        .into_iter()
-        .map(|sel| selection(db, sel))
-        .collect();
-    Arc::new(selections)
+    let selection_set = match selections {
+        Some(sel) => sel
+            .selections()
+            .into_iter()
+            .map(|sel| selection(db, sel))
+            .collect(),
+        None => Vec::new(),
+    };
+    Arc::new(selection_set)
 }
 
 fn selection(db: &dyn SourceDatabase, selection: ast::Selection) -> Selection {
@@ -564,13 +562,7 @@ fn inline_fragment(db: &dyn SourceDatabase, fragment: ast::InlineFragment) -> Ar
             .to_string()
     });
     let directives = directives(fragment.directives());
-    let selection_set: Arc<Vec<Selection>> = selection_set(
-        db,
-        fragment
-            .selection_set()
-            .expect("Inline Fragment must have a selection set")
-            .selections(),
-    );
+    let selection_set: Arc<Vec<Selection>> = selection_set(db, fragment.selection_set());
 
     let fragment_data = InlineFragment {
         type_condition,
@@ -594,7 +586,7 @@ fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Ar
     // error.
     let fragment_id = db
         .find_fragment_by_name(name.clone())
-        .map(|fragment| fragment.id());
+        .map(|fragment| *fragment.id());
     let fragment_data = FragmentSpread {
         name,
         directives,
@@ -606,9 +598,7 @@ fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Ar
 fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
     let name = field.name().expect("Field must have a name").to_string();
     let alias = alias(field.alias());
-    let selection_set = field
-        .selection_set()
-        .map(|sel_set| selection_set(db, sel_set.selections()));
+    let selection_set = selection_set(db, field.selection_set());
     let directives = directives(field.directives());
     let arguments = arguments(field.arguments());
 

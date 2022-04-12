@@ -15,10 +15,10 @@ impl Fragments {
         Self { inner }
     }
 
-    pub fn find(&self, name: &str) -> Option<Arc<FragmentDefinition>> {
+    pub fn find(&self, name: &str) -> Option<FragmentDefinition> {
         self.inner.iter().find_map(|op| {
             if op.name() == name {
-                Some(Arc::new(op.clone()))
+                Some(op.clone())
             } else {
                 None
             }
@@ -38,7 +38,7 @@ pub struct FragmentDefinition {
     pub(crate) id: Uuid,
     pub(crate) name: String,
     pub(crate) type_condition: String,
-    pub(crate) directives: Option<Arc<Vec<Directive>>>,
+    pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) selection_set: Arc<Vec<Selection>>,
 }
 
@@ -47,40 +47,43 @@ pub struct FragmentDefinition {
 // the underlying values, as what's important is that the values are Arc<>'d in
 // the database.
 impl FragmentDefinition {
-    // NOTE @lrlna: can this just be a getter for a reference? what are the
-    // repercussions of this?
-    /// Get fragment definition's name.
-    pub fn name(&self) -> String {
-        self.name.clone()
+    /// Get the fragment definition's id.
+    pub fn id(&self) -> &Uuid {
+        &self.id
     }
 
-    /// Get fragment definition's id.
-    pub fn id(&self) -> Uuid {
-        self.id
+    /// Get a reference to the fragment definition's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
     }
 
-    /// Get fragment definition's type condition.
-    pub fn type_condition(&self) -> String {
-        self.type_condition.clone()
+    /// Get a reference to fragment definition's type condition.
+    pub fn type_condition(&self) -> &str {
+        self.type_condition.as_ref()
     }
 
     /// Get fragment definition's directives.
-    pub fn directives(&self) -> Option<Arc<Vec<Directive>>> {
-        self.directives.clone()
+    /// TODO: is this good??
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
     }
 
-    /// Get fragment definition's selection set.
-    pub fn selection_set(&self) -> Arc<Vec<Selection>> {
-        self.selection_set.clone()
+    /// Get a reference to fragment definition's selection set.
+    /// TODO: is this good??
+    pub fn selection_set(&self) -> &[Selection] {
+        self.selection_set.as_ref()
     }
 
-    pub fn variables(&self, db: &dyn SourceDatabase) -> Arc<Vec<Variable>> {
-        let vars = self
-            .selection_set
+    // NOTE @lrlna: we will need to think and implement scope for fragment
+    // definitions used/defined variables, as defined variables change based on
+    // which operation definition the fragment is used in.
+
+    /// Get variables used in a fragment definition.
+    pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
+        self.selection_set
             .iter()
-            .flat_map(|sel| sel.variables(db).as_ref().clone())
-            .collect();
-        Arc::new(vars)
+            .flat_map(|sel| sel.variables(db))
+            .collect()
     }
 }
 
@@ -97,11 +100,11 @@ impl Operations {
     // NOTE: this should only be a wrapper around a find_operation method on the
     // SourceDatabase so this function is also memoized.  How do we get access
     // to SourceDatabase from this struct impl gracefully here?
-    pub fn find(&self, name: &str) -> Option<Arc<OperationDefinition>> {
+    pub fn find(&self, name: &str) -> Option<OperationDefinition> {
         self.inner.iter().find_map(|op| {
             if let Some(n) = op.name() {
                 if n == name {
-                    return Some(Arc::new(op.clone()));
+                    return Some(op.clone());
                 }
             }
             None
@@ -119,39 +122,46 @@ impl Deref for Operations {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OperationDefinition {
-    pub id: Uuid,
-    pub ty: OperationType,
-    pub name: Option<String>,
-    pub variables: Option<Arc<Vec<VariableDefinition>>>,
-    pub directives: Option<Arc<Vec<Directive>>>,
-    pub selection_set: Arc<Vec<Selection>>,
+    pub(crate) id: Uuid,
+    pub(crate) ty: OperationType,
+    pub(crate) name: Option<String>,
+    pub(crate) variables: Arc<Vec<VariableDefinition>>,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) selection_set: Arc<Vec<Selection>>,
 }
 
 impl OperationDefinition {
-    pub fn id(&self) -> Uuid {
-        self.id
-    }
-
-    /// Get a mutable reference to the operation definition's directives.
-    pub fn directives(&self) -> Option<Arc<Vec<Directive>>> {
-        self.directives.clone()
-    }
-
-    /// Get a mutable reference to the operation definition's name.
-    pub fn name(&self) -> Option<String> {
-        self.name.clone()
+    pub fn id(&self) -> &Uuid {
+        &self.id
     }
 
     /// Get a reference to the operation definition's ty.
-    pub fn ty(&self) -> OperationType {
-        self.ty
+    pub fn ty(&self) -> &OperationType {
+        &self.ty
     }
 
-    pub fn selection_set(&self) -> Arc<Vec<Selection>> {
-        self.selection_set.clone()
+    /// Get a mutable reference to the operation definition's name.
+    pub fn name(&self) -> Option<&String> {
+        self.name.as_ref()
     }
 
-    pub fn fields(&self, db: &dyn SourceDatabase) -> Option<Arc<Vec<Field>>> {
+    /// Get a reference to the operation definition's variables.
+    pub fn variables(&self) -> &[VariableDefinition] {
+        self.variables.as_ref()
+    }
+
+    /// Get a mutable reference to the operation definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
+    /// Get a reference to the operation definition's selection set.
+    pub fn selection_set(&self) -> &[Selection] {
+        self.selection_set.as_ref()
+    }
+
+    /// Get fields in the operation definition.
+    pub fn fields(&self, db: &dyn SourceDatabase) -> Arc<Vec<Field>> {
         db.operation_fields(self.id)
     }
 
@@ -161,11 +171,11 @@ impl OperationDefinition {
     //
     // We will need to figure out how to store operation definition id on its
     // fragment spreads and inline fragments to do this
-    pub fn fields_in_inline_fragments(&self, db: &dyn SourceDatabase) -> Option<Arc<Vec<Field>>> {
+    pub fn fields_in_inline_fragments(&self, db: &dyn SourceDatabase) -> Arc<Vec<Field>> {
         db.operation_inline_fragment_fields(self.id)
     }
 
-    pub fn fields_in_fragment_spread(&self, db: &dyn SourceDatabase) -> Option<Arc<Vec<Field>>> {
+    pub fn fields_in_fragment_spread(&self, db: &dyn SourceDatabase) -> Arc<Vec<Field>> {
         db.operation_fragment_spread_fields(self.id)
     }
 }
@@ -205,16 +215,31 @@ impl OperationType {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct VariableDefinition {
-    pub name: String,
-    pub ty: Type,
-    pub default_value: Option<Value>,
-    pub directives: Option<Arc<Vec<Directive>>>,
+    pub(crate) name: String,
+    pub(crate) ty: Type,
+    pub(crate) default_value: Option<Value>,
+    pub(crate) directives: Arc<Vec<Directive>>,
 }
 
 impl VariableDefinition {
     /// Get a mutable reference to the variable definition's name.
     pub fn name(&self) -> String {
         self.name.clone()
+    }
+
+    /// Get a reference to the variable definition's ty.
+    pub fn ty(&self) -> &Type {
+        &self.ty
+    }
+
+    /// Get a reference to the variable definition's default value.
+    pub fn default_value(&self) -> Option<&Value> {
+        self.default_value.as_ref()
+    }
+
+    /// Get a reference to the variable definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
     }
 }
 
@@ -225,15 +250,65 @@ pub enum Type {
     Named { name: String },
 }
 
+impl Type {
+    /// Returns `true` if the type is [`NonNull`].
+    ///
+    /// [`NonNull`]: Type::NonNull
+    #[must_use]
+    pub fn is_non_null(&self) -> bool {
+        matches!(self, Self::NonNull { .. })
+    }
+
+    /// Returns `true` if the type is [`Named`].
+    ///
+    /// [`Named`]: Type::Named
+    #[must_use]
+    pub fn is_named(&self) -> bool {
+        matches!(self, Self::Named { .. })
+    }
+
+    /// Returns `true` if the type is [`List`].
+    ///
+    /// [`List`]: Type::List
+    #[must_use]
+    pub fn is_list(&self) -> bool {
+        matches!(self, Self::List { .. })
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Directive {
-    pub name: String,
-    pub arguments: Option<Arc<Vec<Argument>>>,
+    pub(crate) name: String,
+    pub(crate) arguments: Arc<Vec<Argument>>,
+}
+
+impl Directive {
+    /// Get a reference to the directive's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+
+    /// Get a reference to the directive's arguments.
+    pub fn arguments(&self) -> &[Argument] {
+        self.arguments.as_ref()
+    }
 }
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Argument {
-    pub name: String,
-    pub value: Value,
+    pub(crate) name: String,
+    pub(crate) value: Value,
+}
+
+impl Argument {
+    /// Get a reference to the argument's value.
+    pub fn value(&self) -> &Value {
+        &self.value
+    }
+
+    /// Get a reference to the argument's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
 }
 
 pub type Variable = String;
@@ -267,90 +342,131 @@ pub enum Selection {
     FragmentSpread(Arc<FragmentSpread>),
     InlineFragment(Arc<InlineFragment>),
 }
-
 impl Selection {
-    pub fn variables(&self, db: &dyn SourceDatabase) -> Arc<Vec<Variable>> {
+    /// Get variables used in the selection set.
+    pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
         match self {
             Selection::Field(field) => field.variables(db),
             Selection::FragmentSpread(fragment_spread) => fragment_spread.variables(db),
             Selection::InlineFragment(inline_fragment) => inline_fragment.variables(db),
         }
     }
+
+    /// Returns `true` if the selection is [`Field`].
+    ///
+    /// [`Field`]: Selection::Field
+    #[must_use]
+    pub fn is_field(&self) -> bool {
+        matches!(self, Self::Field(..))
+    }
+
+    /// Returns `true` if the selection is [`FragmentSpread`].
+    ///
+    /// [`FragmentSpread`]: Selection::FragmentSpread
+    #[must_use]
+    pub fn is_fragment_spread(&self) -> bool {
+        matches!(self, Self::FragmentSpread(..))
+    }
+
+    /// Returns `true` if the selection is [`InlineFragment`].
+    ///
+    /// [`InlineFragment`]: Selection::InlineFragment
+    #[must_use]
+    pub fn is_inline_fragment(&self) -> bool {
+        matches!(self, Self::InlineFragment(..))
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Field {
-    pub alias: Option<Arc<Alias>>,
-    pub name: String,
-    pub arguments: Option<Arc<Vec<Argument>>>,
-    pub directives: Option<Arc<Vec<Directive>>>,
-    pub selection_set: Option<Arc<Vec<Selection>>>,
+    pub(crate) alias: Option<Arc<Alias>>,
+    pub(crate) name: String,
+    pub(crate) arguments: Arc<Vec<Argument>>,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) selection_set: Arc<Vec<Selection>>,
 }
 
 impl Field {
-    /// Get a reference to the field's arguments.
-    pub fn arguments(&self) -> Option<Arc<Vec<Argument>>> {
-        self.arguments.clone()
+    /// Get a reference to the field's alias.
+    pub fn alias(&self) -> Option<&Alias> {
+        match &self.alias {
+            Some(alias) => Some(alias.as_ref()),
+            None => None,
+        }
     }
 
-    pub fn variables(&self, db: &dyn SourceDatabase) -> Arc<Vec<Variable>> {
-        let mut vars = match &self.arguments {
-            Some(arguments) => arguments
-                .iter()
-                .filter_map(|arg| match arg.value.clone() {
-                    Value::Variable(var) => Some(var as Variable),
-                    _ => None,
-                })
-                .collect(),
-            None => Vec::new(),
-        };
-        if let Some(selection_set) = &self.selection_set {
-            let iter = selection_set
-                .iter()
-                .flat_map(|sel| sel.variables(db).as_ref().clone());
-            vars.extend(iter);
-        }
-        Arc::new(vars)
+    /// Get a reference to the field's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+    /// Get a reference to the field's arguments.
+    pub fn arguments(&self) -> &[Argument] {
+        self.arguments.as_ref()
+    }
+
+    /// Get a reference to the field's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
+    /// Get a reference to the field's selection set.
+    pub fn selection_set(&self) -> &[Selection] {
+        self.selection_set.as_ref()
+    }
+
+    /// Get variables used in the field.
+    pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
+        let mut vars: Vec<_> = self
+            .arguments
+            .iter()
+            .filter_map(|arg| match arg.value() {
+                Value::Variable(var) => Some(String::from(var)),
+                _ => None,
+            })
+            .collect();
+        let iter = self.selection_set.iter().flat_map(|sel| sel.variables(db));
+        vars.extend(iter);
+        vars
     }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct InlineFragment {
-    pub type_condition: Option<String>,
-    pub directives: Option<Arc<Vec<Directive>>>,
-    pub selection_set: Arc<Vec<Selection>>,
+    pub(crate) type_condition: Option<String>,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) selection_set: Arc<Vec<Selection>>,
 }
 
 impl InlineFragment {
-    /// Get inline fragment's type condition.
-    pub fn type_condition(&self) -> Option<String> {
-        self.type_condition.clone()
+    /// Get a reference to inline fragment's type condition.
+    pub fn type_condition(&self) -> Option<&String> {
+        self.type_condition.as_ref()
     }
 
-    /// Get inline fragment's directives.
-    pub fn directives(&self) -> Option<Arc<Vec<Directive>>> {
-        self.directives.clone()
+    /// Get a reference to inline fragment's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
     }
 
-    /// Get inline fragment's selection set.
-    pub fn selection_set(&self) -> Arc<Vec<Selection>> {
-        self.selection_set.clone()
+    /// Get a reference inline fragment's selection set.
+    pub fn selection_set(&self) -> &[Selection] {
+        self.selection_set.as_ref()
     }
 
-    pub fn variables(&self, db: &dyn SourceDatabase) -> Arc<Vec<Variable>> {
+    pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
         let vars = self
             .selection_set
             .iter()
-            .flat_map(|sel| sel.variables(db).as_ref().clone())
+            .flat_map(|sel| sel.variables(db))
             .collect();
-        Arc::new(vars)
+        vars
     }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct FragmentSpread {
     pub name: String,
-    pub directives: Option<Arc<Vec<Directive>>>,
+    pub directives: Arc<Vec<Directive>>,
     // NOTE @lrlna: this should just be Uuid.  If we can't find the framgment we
     // are looking for when populating this field, we should throw a semantic
     // error.
@@ -362,16 +478,16 @@ impl FragmentSpread {
         db.find_fragment(self.fragment_id?)
     }
 
-    pub fn variables(&self, db: &dyn SourceDatabase) -> Arc<Vec<Variable>> {
+    pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
         let vars = match self.fragment(db) {
             Some(fragment) => fragment
                 .selection_set
                 .iter()
-                .flat_map(|sel| sel.variables(db).as_ref().clone())
+                .flat_map(|sel| sel.variables(db))
                 .collect(),
             None => Vec::new(),
         };
-        Arc::new(vars)
+        vars
     }
 }
 
