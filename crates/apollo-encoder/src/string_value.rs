@@ -59,7 +59,7 @@ impl fmt::Display for StringValue {
             StringValue::Input { source } => {
                 if let Some(description) = source {
                     if is_block_string_character(description) {
-                        write!(f, "\"\"\"\n{}\n\"\"\" ", trim_double_quotes(description))?
+                        write!(f, "\"\"\"{}\"\"\" ", trim_double_quotes(description))?
                     } else {
                         write!(f, "\"{}\" ", description)?
                     }

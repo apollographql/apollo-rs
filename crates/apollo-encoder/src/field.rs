@@ -268,7 +268,7 @@ mod tests {
     }
 
     #[test]
-    fn it_encodes_fields_with_valueuments() {
+    fn it_encodes_fields_with_value_arguments() {
         let ty_1 = Type_::NamedType {
             name: "SpaceProgram".to_string(),
         };
@@ -276,8 +276,8 @@ mod tests {
         let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
         let ty_3 = Type_::List { ty: Box::new(ty_2) };
         let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
-        let mut field = FieldDefinition::new("spaceCat".to_string(), ty_4);
-        field.description(Some("Very good space cats".to_string()));
+        let mut field_definition = FieldDefinition::new("spaceCat".to_string(), ty_4);
+        field_definition.description(Some("Very good space cats".to_string()));
 
         let value_1 = Type_::NamedType {
             name: "SpaceProgram".to_string(),
@@ -293,12 +293,42 @@ mod tests {
             Value::String(String::from("Cats are no longer sent to space.")),
         ));
         arg.directive(deprecated_directive);
-        field.arg(arg);
+        field_definition.arg(arg);
 
         assert_eq!(
-            field.to_string(),
+            field_definition.to_string(),
             r#"  "Very good space cats"
   spaceCat(cat: [SpaceProgram] @deprecated(reason: "Cats are no longer sent to space.")): [SpaceProgram!]!"#
+        );
+    }
+
+    #[test]
+    fn it_encodes_fields_with_argument_descriptions() {
+        let ty = Type_::NamedType {
+            name: "Cat".to_string(),
+        };
+
+        let mut field_definition = FieldDefinition::new("spaceCat".to_string(), ty);
+
+        let value = Type_::NamedType {
+            name: "Treat".to_string(),
+        };
+
+        let mut arg = InputValueDefinition::new("treat".to_string(), value);
+        arg.description(Some("The type of treats given in space".to_string()));
+        field_definition.arg(arg);
+
+        let value = Type_::NamedType {
+            name: "Int".to_string(),
+        };
+
+        let mut arg = InputValueDefinition::new("age".to_string(), value);
+        arg.description(Some("Optimal age of a \"space\" cat".to_string()));
+        field_definition.arg(arg);
+
+        assert_eq!(
+            field_definition.to_string(),
+            r#"  spaceCat("The type of treats given in space" treat: Treat, """Optimal age of a "space" cat""" age: Int): Cat"#
         );
     }
 }
