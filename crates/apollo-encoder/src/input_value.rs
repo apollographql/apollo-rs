@@ -64,9 +64,9 @@ impl InputValueDefinition {
         });
     }
 
-    /// Set the InputValueDefinition's default value.
-    pub fn default(&mut self, default: Option<String>) {
-        self.default = default;
+    /// Set the InputValueDef's default value.
+    pub fn default(&mut self, default: String) {
+        self.default = Some(default);
     }
 
     /// Add a directive to InputValueDefinition.
@@ -128,7 +128,7 @@ mod tests {
 
         let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
         let mut value = InputValueDefinition::new("spaceCat".to_string(), ty_2);
-        value.default(Some("\"Norwegian Forest\"".to_string()));
+        value.default("\"Norwegian Forest\"".to_string());
 
         assert_eq!(
             value.to_string(),

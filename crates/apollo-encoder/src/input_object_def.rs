@@ -130,7 +130,7 @@ mod tests {
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
         let mut field = InputField::new("toys".to_string(), ty_2);
-        field.default(Some("\"Cat Dangler Pole Bird\"".to_string()));
+        field.default("\"Cat Dangler Pole Bird\"".to_string());
         let ty_3 = Type_::NamedType {
             name: "FavouriteSpots".to_string(),
         };
@@ -167,7 +167,7 @@ mod tests {
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
         let mut field = InputField::new("toys".to_string(), ty_2);
-        field.default(Some("\"Cat Dangler Pole Bird\"".to_string()));
+        field.default("\"Cat Dangler Pole Bird\"".to_string());
         let ty_3 = Type_::NamedType {
             name: "FavouriteSpots".to_string(),
         };
@@ -200,7 +200,7 @@ mod tests {
 
         let ty_2 = Type_::List { ty: Box::new(ty_1) };
         let mut field = InputField::new("toys".to_string(), ty_2);
-        field.default(Some("\"Cat Dangler Pole Bird\"".to_string()));
+        field.default("\"Cat Dangler Pole Bird\"".to_string());
         let ty_3 = Type_::NamedType {
             name: "FavouriteSpots".to_string(),
         };

@@ -49,8 +49,8 @@ impl VariableDefinition {
     }
 
     /// Set a default value to the variable
-    pub fn default_value(&mut self, default_value: Option<Value>) {
-        self.default_value = default_value;
+    pub fn default_value(&mut self, default_value: Value) {
+        self.default_value = Some(default_value);
     }
 
     /// Add a directive
@@ -87,10 +87,10 @@ mod tests {
                 name: String::from("MyType"),
             },
         );
-        variable.default_value(Some(Value::Object(vec![
+        variable.default_value(Value::Object(vec![
             (String::from("first"), Value::Int(25)),
             (String::from("second"), Value::String(String::from("test"))),
-        ])));
+        ]));
 
         assert_eq!(
             variable.to_string(),

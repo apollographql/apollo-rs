@@ -54,8 +54,8 @@ impl InputField {
     }
 
     /// Set the InputField's default value.
-    pub fn default(&mut self, default: Option<String>) {
-        self.default_value = default;
+    pub fn default(&mut self, default: String) {
+        self.default_value = Some(default);
     }
 
     /// Add a directive.
@@ -97,7 +97,7 @@ mod tests {
         };
 
         let mut field = InputField::new("cat".to_string(), ty_1);
-        field.default(Some("\"Norwegian Forest\"".to_string()));
+        field.default("\"Norwegian Forest\"".to_string());
 
         assert_eq!(field.to_string(), r#"  cat: CatBreed = "Norwegian Forest""#);
     }
@@ -110,7 +110,7 @@ mod tests {
         directive.arg(Argument::new(String::from("first"), Value::Int(1)));
 
         let mut field = InputField::new("cat".to_string(), ty_1);
-        field.default(Some("\"Norwegian Forest\"".to_string()));
+        field.default("\"Norwegian Forest\"".to_string());
         field.directive(directive);
 
         assert_eq!(
