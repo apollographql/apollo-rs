@@ -19,10 +19,10 @@ use crate::{Directive, Type_, Value};
 ///         name: String::from("MyType"),
 ///     },
 /// );
-/// variable.default_value(Some(Value::Object(vec![
+/// variable.default_value(Value::Object(vec![
 ///     (String::from("first"), Value::Int(25)),
 ///     (String::from("second"), Value::String(String::from("test"))),
-/// ])));
+/// ]));
 ///
 /// assert_eq!(
 ///     variable.to_string(),
