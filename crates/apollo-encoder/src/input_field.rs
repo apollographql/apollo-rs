@@ -25,7 +25,7 @@ pub struct InputField {
     // Name must return a String.
     name: String,
     // Description may return a String.
-    description: StringValue,
+    description: Option<StringValue>,
     // Type must return a __Type that represents the type of value returned by this field.
     type_: Type_,
     // Default value for this input field.
@@ -38,7 +38,7 @@ impl InputField {
     /// Create a new instance of InputField.
     pub fn new(name: String, type_: Type_) -> Self {
         Self {
-            description: StringValue::Field { source: None },
+            description: None,
             name,
             type_,
             default_value: None,
@@ -47,10 +47,10 @@ impl InputField {
     }
 
     /// Set the InputField's description.
-    pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Field {
+    pub fn description(&mut self, description: String) {
+        self.description = Some(StringValue::Field {
             source: description,
-        };
+        });
     }
 
     /// Set the InputField's default value.
@@ -66,7 +66,9 @@ impl InputField {
 
 impl fmt::Display for InputField {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description)?;
+        if let Some(description) = &self.description {
+            write!(f, "{}", description)?;
+        }
 
         write!(f, "  {}: {}", self.name, self.type_)?;
         if let Some(default) = &self.default_value {

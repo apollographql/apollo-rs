@@ -37,7 +37,7 @@ pub struct FieldDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String.
-    description: StringValue,
+    description: Option<StringValue>,
     // Args returns a List of __InputValue representing the arguments this field accepts.
     args: Vec<InputValueDefinition>,
     // Type must return a __Type that represents the type of value returned by this field.
@@ -50,7 +50,7 @@ impl FieldDefinition {
     /// Create a new instance of Field.
     pub fn new(name: String, type_: Type_) -> Self {
         Self {
-            description: StringValue::Field { source: None },
+            description: None,
             name,
             type_,
             args: Vec::new(),
@@ -59,10 +59,10 @@ impl FieldDefinition {
     }
 
     /// Set the Field's description.
-    pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Field {
+    pub fn description(&mut self, description: String) {
+        self.description = Some(StringValue::Field {
             source: description,
-        };
+        });
     }
 
     /// Set the Field's arguments.
@@ -78,7 +78,9 @@ impl FieldDefinition {
 
 impl fmt::Display for FieldDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description)?;
+        if let Some(description) = &self.description {
+            write!(f, "{}", description)?;
+        }
         write!(f, "  {}", self.name)?;
 
         if !self.args.is_empty() {
@@ -238,7 +240,7 @@ mod tests {
         let mut field = FieldDefinition::new("cat".to_string(), ty_2);
         let mut directive = Directive::new(String::from("testDirective"));
         directive.arg(Argument::new(String::from("first"), Value::Int(1)));
-        field.description(Some("Very good cats".to_string()));
+        field.description("Very good cats".to_string());
         field.directive(directive);
 
         assert_eq!(
@@ -258,7 +260,7 @@ mod tests {
         let ty_3 = Type_::List { ty: Box::new(ty_2) };
         let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
         let mut field = FieldDefinition::new("spaceCat".to_string(), ty_4);
-        field.description(Some("Very good space cats".to_string()));
+        field.description("Very good space cats".to_string());
 
         assert_eq!(
             field.to_string(),
@@ -277,7 +279,7 @@ mod tests {
         let ty_3 = Type_::List { ty: Box::new(ty_2) };
         let ty_4 = Type_::NonNull { ty: Box::new(ty_3) };
         let mut field_definition = FieldDefinition::new("spaceCat".to_string(), ty_4);
-        field_definition.description(Some("Very good space cats".to_string()));
+        field_definition.description("Very good space cats".to_string());
 
         let value_1 = Type_::NamedType {
             name: "SpaceProgram".to_string(),
@@ -315,7 +317,7 @@ mod tests {
         };
 
         let mut arg = InputValueDefinition::new("treat".to_string(), value);
-        arg.description(Some("The type of treats given in space".to_string()));
+        arg.description("The type of treats given in space".to_string());
         field_definition.arg(arg);
 
         let value = Type_::NamedType {
@@ -323,7 +325,7 @@ mod tests {
         };
 
         let mut arg = InputValueDefinition::new("age".to_string(), value);
-        arg.description(Some("Optimal age of a \"space\" cat".to_string()));
+        arg.description("Optimal age of a \"space\" cat".to_string());
         field_definition.arg(arg);
 
         assert_eq!(

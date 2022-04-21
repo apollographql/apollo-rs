@@ -25,12 +25,12 @@ use crate::{Directive, InputField, StringValue};
 ///     name: "FavouriteSpots".to_string(),
 /// };
 /// let mut field_2 = InputField::new("playSpot".to_string(), ty_3);
-/// field_2.description(Some("Best playime spots, e.g. tree, bed.".to_string()));
+/// field_2.description("Best playime spots, e.g. tree, bed.".to_string());
 ///
 /// let mut input_def = InputObjectDefinition::new("PlayTime".to_string());
 /// input_def.field(field);
 /// input_def.field(field_2);
-/// input_def.description(Some("Cat playtime input".to_string()));
+/// input_def.description("Cat playtime input".to_string());
 ///
 /// assert_eq!(
 ///     input_def.to_string(),
@@ -49,7 +49,7 @@ pub struct InputObjectDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: StringValue,
+    description: Option<StringValue>,
     // A vector of fields
     fields: Vec<InputField>,
     /// Contains all directives.
@@ -62,7 +62,7 @@ impl InputObjectDefinition {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: StringValue::Top { source: None },
+            description: None,
             fields: Vec::new(),
             directives: Vec::new(),
             extend: false,
@@ -75,10 +75,10 @@ impl InputObjectDefinition {
     }
 
     /// Set the InputObjectDef's description field.
-    pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
+    pub fn description(&mut self, description: String) {
+        self.description = Some(StringValue::Top {
             source: description,
-        };
+        });
     }
 
     /// Push a Field to InputObjectDef's fields vector.
@@ -96,9 +96,9 @@ impl fmt::Display for InputObjectDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.extend {
             write!(f, "extend ")?;
-        } else {
-            // No description when it's a extension
-            write!(f, "{}", self.description)?;
+        // No description when it's a extension
+        } else if let Some(description) = &self.description {
+            write!(f, "{}", description)?;
         }
 
         write!(f, "input {}", &self.name)?;
@@ -135,7 +135,7 @@ mod tests {
             name: "FavouriteSpots".to_string(),
         };
         let mut field_2 = InputField::new("playSpot".to_string(), ty_3);
-        field_2.description(Some("Best playime spots, e.g. tree, bed.".to_string()));
+        field_2.description("Best playime spots, e.g. tree, bed.".to_string());
         let mut directive = Directive::new(String::from("testDirective"));
         directive.arg(Argument::new(
             String::from("first"),
@@ -172,12 +172,12 @@ mod tests {
             name: "FavouriteSpots".to_string(),
         };
         let mut field_2 = InputField::new("playSpot".to_string(), ty_3);
-        field_2.description(Some("Best playime spots, e.g. tree, bed.".to_string()));
+        field_2.description("Best playime spots, e.g. tree, bed.".to_string());
 
         let mut input_def = InputObjectDefinition::new("PlayTime".to_string());
         input_def.field(field);
         input_def.field(field_2);
-        input_def.description(Some("Cat playtime input".to_string()));
+        input_def.description("Cat playtime input".to_string());
 
         assert_eq!(
             input_def.to_string(),
@@ -205,12 +205,12 @@ mod tests {
             name: "FavouriteSpots".to_string(),
         };
         let mut field_2 = InputField::new("playSpot".to_string(), ty_3);
-        field_2.description(Some("Best playime spots, e.g. tree, bed.".to_string()));
+        field_2.description("Best playime spots, e.g. tree, bed.".to_string());
 
         let mut input_def = InputObjectDefinition::new("PlayTime".to_string());
         input_def.field(field);
         input_def.field(field_2);
-        input_def.description(Some("Cat playtime input".to_string()));
+        input_def.description("Cat playtime input".to_string());
         input_def.extend();
 
         assert_eq!(

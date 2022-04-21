@@ -35,19 +35,19 @@ use crate::{Directive, FieldDefinition, StringValue};
 /// };
 ///
 /// let mut field_1 = FieldDefinition::new("main".to_string(), ty_1);
-/// field_1.description(Some("Cat's main dish of a meal.".to_string()));
+/// field_1.description("Cat's main dish of a meal.".to_string());
 ///
 /// let mut field_2 = FieldDefinition::new("snack".to_string(), ty_5);
-/// field_2.description(Some("Cat's post meal snack.".to_string()));
+/// field_2.description("Cat's post meal snack.".to_string());
 ///
 /// let mut field_3 = FieldDefinition::new("pats".to_string(), ty_6);
-/// field_3.description(Some("Does cat get a pat after meal?".to_string()));
+/// field_3.description("Does cat get a pat after meal?".to_string());
 ///
 /// // a schema definition
 /// let mut interface = InterfaceDefinition::new("Meal".to_string());
-/// interface.description(Some(
+/// interface.description(
 ///     "Meal interface for various\nmeals during the day.".to_string(),
-/// ));
+/// );
 /// interface.field(field_1);
 /// interface.field(field_2);
 /// interface.field(field_3);
@@ -75,7 +75,7 @@ pub struct InterfaceDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: StringValue,
+    description: Option<StringValue>,
     // The vector of interfaces that this interface implements.
     interfaces: Vec<String>,
     // The vector of fields required by this interface.
@@ -90,7 +90,7 @@ impl InterfaceDefinition {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: StringValue::Top { source: None },
+            description: None,
             fields: Vec::new(),
             interfaces: Vec::new(),
             directives: Vec::new(),
@@ -99,10 +99,10 @@ impl InterfaceDefinition {
     }
 
     /// Set the schema def's description.
-    pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
+    pub fn description(&mut self, description: String) {
+        self.description = Some(StringValue::Top {
             source: description,
-        };
+        });
     }
 
     /// Set the interfaces ObjectDef implements.
@@ -132,7 +132,9 @@ impl fmt::Display for InterfaceDefinition {
             write!(f, "extend ")?;
         } else {
             // No description when it's a extension
-            write!(f, "{}", self.description)?;
+            if let Some(description) = &self.description {
+                write!(f, "{}", description)?;
+            }
         }
 
         write!(f, "interface {}", &self.name)?;
@@ -181,13 +183,13 @@ mod tests {
         };
 
         let mut field_1 = FieldDefinition::new("main".to_string(), ty_1);
-        field_1.description(Some("Cat's main dish of a meal.".to_string()));
+        field_1.description("Cat's main dish of a meal.".to_string());
 
         let mut field_2 = FieldDefinition::new("snack".to_string(), ty_5);
-        field_2.description(Some("Cat's post meal snack.".to_string()));
+        field_2.description("Cat's post meal snack.".to_string());
 
         let mut field_3 = FieldDefinition::new("pats".to_string(), ty_6);
-        field_3.description(Some("Does cat get a pat\nafter meal?".to_string()));
+        field_3.description("Does cat get a pat\nafter meal?".to_string());
 
         let mut directive = Directive::new(String::from("testDirective"));
         directive.arg(Argument::new(
@@ -197,9 +199,7 @@ mod tests {
 
         // a schema definition
         let mut interface = InterfaceDefinition::new("Meal".to_string());
-        interface.description(Some(
-            "Meal interface for various\nmeals during the day.".to_string(),
-        ));
+        interface.description("Meal interface for various\nmeals during the day.".to_string());
         interface.field(field_1);
         interface.field(field_2);
         interface.field(field_3);
@@ -246,13 +246,13 @@ mod tests {
         };
 
         let mut field_1 = FieldDefinition::new("main".to_string(), ty_1);
-        field_1.description(Some("Cat's main dish of a meal.".to_string()));
+        field_1.description("Cat's main dish of a meal.".to_string());
 
         let mut field_2 = FieldDefinition::new("snack".to_string(), ty_5);
-        field_2.description(Some("Cat's post meal snack.".to_string()));
+        field_2.description("Cat's post meal snack.".to_string());
 
         let mut field_3 = FieldDefinition::new("pats".to_string(), ty_6);
-        field_3.description(Some("Does cat get a pat\nafter meal?".to_string()));
+        field_3.description("Does cat get a pat\nafter meal?".to_string());
 
         let mut directive = Directive::new(String::from("testDirective"));
         directive.arg(Argument::new(
@@ -262,9 +262,7 @@ mod tests {
 
         // a schema definition
         let mut interface = InterfaceDefinition::new("Meal".to_string());
-        interface.description(Some(
-            "Meal interface for various\nmeals during the day.".to_string(),
-        ));
+        interface.description("Meal interface for various\nmeals during the day.".to_string());
         interface.field(field_1);
         interface.field(field_2);
         interface.field(field_3);

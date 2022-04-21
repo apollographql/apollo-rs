@@ -8,25 +8,19 @@ pub enum StringValue {
     /// Top-level description.
     Top {
         /// Description.
-        source: Option<String>,
+        source: String,
     },
     /// Field-level description.
     /// This description gets additional leading spaces.
     Field {
         /// Description.
-        source: Option<String>,
+        source: String,
     },
     /// Input-level description.
     /// This description get an additional space at the end.
     Input {
         /// Description.
-        source: Option<String>,
-    },
-    /// Reason-level description.
-    /// Like `Input` variant, but without the space.
-    Reason {
-        /// Description.
-        source: Option<String>,
+        source: String,
     },
 }
 
@@ -34,50 +28,34 @@ impl fmt::Display for StringValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             StringValue::Top { source } => {
-                if let Some(description) = source {
-                    if is_block_string_character(description) {
-                        writeln!(f, "\"\"\"\n{}\n\"\"\"", trim_double_quotes(description))?
-                    } else {
-                        writeln!(f, "\"{}\"", description)?
-                    }
+                if is_block_string_character(source) {
+                    writeln!(f, "\"\"\"\n{}\n\"\"\"", trim_double_quotes(source))?
+                } else {
+                    writeln!(f, "\"{}\"", source)?
                 }
             }
             StringValue::Field { source } => {
-                if let Some(description) = source {
-                    if is_block_string_character(description) {
-                        write!(f, "  \"\"\"")?;
-                        let desc = trim_double_quotes(description);
-                        for line in desc.lines() {
-                            write!(f, "\n  {}", line)?;
-                        }
-                        writeln!(f, "\n  \"\"\"")?;
-                    } else {
-                        writeln!(f, "  \"{}\"", description)?
+                if is_block_string_character(source) {
+                    write!(f, "  \"\"\"")?;
+                    let desc = trim_double_quotes(source);
+                    for line in desc.lines() {
+                        write!(f, "\n  {}", line)?;
                     }
+                    writeln!(f, "\n  \"\"\"")?;
+                } else {
+                    writeln!(f, "  \"{}\"", source)?
                 }
             }
             StringValue::Input { source } => {
-                if let Some(description) = source {
-                    if is_block_string_character(description) {
-                        write!(f, "\"\"\"{}\"\"\" ", trim_double_quotes(description))?
-                    } else {
-                        write!(f, "\"{}\" ", description)?
+                if is_block_string_character(source) {
+                    write!(f, "\"\"\"")?;
+                    let desc = trim_double_quotes(source);
+                    for line in desc.lines() {
+                        write!(f, "\n    {}", line)?;
                     }
-                }
-            }
-            StringValue::Reason { source } => {
-                if let Some(description) = source {
-                    if is_block_string_character(description) {
-                        write!(f, "\n  \"\"\"")?;
-
-                        let desc = trim_double_quotes(description);
-                        for line in desc.lines() {
-                            write!(f, "\n  {}", line)?;
-                        }
-                        write!(f, "\n  \"\"\"\n  ")?
-                    } else {
-                        write!(f, " \"{}\"", description)?
-                    }
+                    write!(f, "\n    \"\"\"")?
+                } else {
+                    write!(f, "\"{}\"", source)?
                 }
             }
         }
@@ -118,9 +96,7 @@ mod test {
     #[test]
     fn it_encodes_description_without_block_string_character() {
         let desc = StringValue::Top {
-            source: Some(
-                "Favourite cat nap spots include: plant corner, pile of clothes.".to_string(),
-            ),
+            source: "Favourite cat nap spots include: plant corner, pile of clothes.".to_string(),
         };
 
         assert_eq!(
@@ -133,10 +109,8 @@ mod test {
     #[test]
     fn it_encodes_description_with_quotations() {
         let desc = StringValue::Top {
-            source: Some(
-                "\"Favourite \"cat\" nap spots include: plant corner, pile of clothes.\""
-                    .to_string(),
-            ),
+            source: "\"Favourite \"cat\" nap spots include: plant corner, pile of clothes.\""
+                .to_string(),
         };
 
         assert_eq!(
@@ -151,9 +125,7 @@ Favourite "cat" nap spots include: plant corner, pile of clothes.
     #[test]
     fn it_encodes_description_with_new_line() {
         let desc = StringValue::Top {
-            source: Some(
-                "Favourite cat nap spots include:\nplant corner, pile of clothes.".to_string(),
-            ),
+            source: "Favourite cat nap spots include:\nplant corner, pile of clothes.".to_string(),
         };
 
         assert_eq!(
@@ -169,9 +141,7 @@ plant corner, pile of clothes.
     #[test]
     fn it_encodes_description_with_carriage_return() {
         let desc = StringValue::Top {
-            source: Some(
-                "Favourite cat nap spots include:\rplant corner,\rpile of clothes.".to_string(),
-            ),
+            source: "Favourite cat nap spots include:\rplant corner,\rpile of clothes.".to_string(),
         };
 
         assert_eq!(
@@ -185,9 +155,8 @@ plant corner, pile of clothes.
     #[test]
     fn it_encodes_indented_desciption() {
         let desc = StringValue::Field {
-            source: Some(
-                "Favourite cat nap spots include:\r  plant corner,\r  pile of clothes.".to_string(),
-            ),
+            source: "Favourite cat nap spots include:\r  plant corner,\r  pile of clothes."
+                .to_string(),
         };
 
         assert_eq!(
@@ -195,18 +164,6 @@ plant corner, pile of clothes.
             String::from(
                 "  \"\"\"\n  Favourite cat nap spots include:\r  plant corner,\r  pile of clothes.\n  \"\"\"\n"
             )
-        );
-    }
-
-    #[test]
-    fn it_encodes_indented_desciption_with_end_double_quotes() {
-        let desc = StringValue::Reason {
-            source: Some("One of my cat is called:\r \"Mozart\"".to_string()),
-        };
-
-        assert_eq!(
-            desc.to_string(),
-            String::from("\n  \"\"\"\n  One of my cat is called:\r \"Mozart\"\n  \"\"\"\n  ")
         );
     }
 }

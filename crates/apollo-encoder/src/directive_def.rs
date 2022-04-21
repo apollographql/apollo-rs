@@ -15,7 +15,7 @@ use crate::{InputValueDefinition, StringValue};
 /// use indoc::indoc;
 ///
 /// let mut directive = DirectiveDefinition::new("infer".to_string());
-/// directive.description(Some("Infer field types\nfrom field values.".to_string()));
+/// directive.description("Infer field types\nfrom field values.".to_string());
 /// directive.location("OBJECT".to_string());
 /// directive.location("FIELD_DEFINITION".to_string());
 /// directive.location("INPUT_FIELD_DEFINITION".to_string());
@@ -35,7 +35,7 @@ pub struct DirectiveDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: StringValue,
+    description: Option<StringValue>,
     // Args returns a Vector of __InputValue representing the arguments this
     // directive accepts.
     args: Vec<InputValueDefinition>,
@@ -51,7 +51,7 @@ impl DirectiveDefinition {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: StringValue::Top { source: None },
+            description: None,
             args: Vec::new(),
             locations: Vec::new(),
             repeatable: false,
@@ -59,10 +59,10 @@ impl DirectiveDefinition {
     }
 
     /// Set the Directive's description.
-    pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
+    pub fn description(&mut self, description: String) {
+        self.description = Some(StringValue::Top {
             source: description,
-        };
+        });
     }
 
     /// Set the Directive's location.
@@ -83,7 +83,9 @@ impl DirectiveDefinition {
 
 impl fmt::Display for DirectiveDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.description)?;
+        if let Some(description) = &self.description {
+            write!(f, "{}", description)?;
+        }
         write!(f, "directive @{}", self.name)?;
 
         if !self.args.is_empty() {
@@ -121,7 +123,7 @@ mod tests {
     #[test]
     fn it_encodes_directives_for_a_single_location() {
         let mut directive = DirectiveDefinition::new("infer".to_string());
-        directive.description(Some("Infer field types from field values.".to_string()));
+        directive.description("Infer field types from field values.".to_string());
         directive.location("OBJECT".to_string());
 
         assert_eq!(
@@ -135,7 +137,7 @@ directive @infer on OBJECT
     #[test]
     fn it_encodes_directives_for_multiple_location() {
         let mut directive = DirectiveDefinition::new("infer".to_string());
-        directive.description(Some("Infer field types\nfrom field values.".to_string()));
+        directive.description("Infer field types\nfrom field values.".to_string());
         directive.location("OBJECT".to_string());
         directive.location("FIELD_DEFINITION".to_string());
         directive.location("INPUT_FIELD_DEFINITION".to_string());
@@ -154,7 +156,7 @@ directive @infer on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
     #[test]
     fn it_encodes_directives_with_arguments() {
         let mut directive = DirectiveDefinition::new("infer".to_string());
-        directive.description(Some("Infer field types from field values.".to_string()));
+        directive.description("Infer field types from field values.".to_string());
         directive.location("OBJECT".to_string());
 
         let ty_1 = Type_::NamedType {

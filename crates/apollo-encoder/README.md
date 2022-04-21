@@ -103,7 +103,7 @@ let mut document = Document::new();
 
 // Create a Directive Definition.
 let mut directive_def = DirectiveDefinition::new("provideTreat".to_string());
-directive_def.description(Some("Ensures cats get treats.".to_string()));
+directive_def.description("Ensures cats get treats.".to_string());
 directive_def.location("OBJECT".to_string());
 directive_def.location("FIELD_DEFINITION".to_string());
 directive_def.location("INPUT_FIELD_DEFINITION".to_string());
@@ -111,7 +111,7 @@ document.directive(directive_def);
 
 // Create an Enum Definition
 let mut enum_ty_1 = EnumValue::new("CatTree".to_string());
-enum_ty_1.description(Some("Top bunk of a cat tree.".to_string()));
+enum_ty_1.description("Top bunk of a cat tree.".to_string());
 let enum_ty_2 = EnumValue::new("Bed".to_string());
 let mut enum_ty_3 = EnumValue::new("CardboardBox".to_string());
 let mut directive = Directive::new(String::from("deprecated"));
@@ -122,16 +122,16 @@ directive.arg(Argument::new(
 enum_ty_3.directive(directive);
 
 let mut enum_def = EnumDefinition::new("NapSpots".to_string());
-enum_def.description(Some("Favourite cat\nnap spots.".to_string()));
+enum_def.description("Favourite cat\nnap spots.".to_string());
 enum_def.value(enum_ty_1);
 enum_def.value(enum_ty_2);
 enum_def.value(enum_ty_3);
 document.enum_(enum_def);
 // Union Definition
 let mut union_def = UnionDefinition::new("Pet".to_string());
-union_def.description(Some(
+union_def.description(
     "A union of all pets represented within a household.".to_string(),
-));
+);
 union_def.member("Cat".to_string());
 union_def.member("Dog".to_string());
 document.union(union_def);

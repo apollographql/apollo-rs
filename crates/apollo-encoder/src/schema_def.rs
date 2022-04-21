@@ -35,7 +35,7 @@ use crate::{Directive, StringValue};
 #[derive(Debug, Clone)]
 pub struct SchemaDefinition {
     // Description may be a String.
-    description: StringValue,
+    description: Option<StringValue>,
     // The vector of fields in a schema to represent root operation type
     // definition.
     query: Option<String>,
@@ -50,7 +50,7 @@ impl SchemaDefinition {
     /// Create a new instance of SchemaDef.
     pub fn new() -> Self {
         Self {
-            description: StringValue::Top { source: None },
+            description: None,
             query: None,
             mutation: None,
             subscription: None,
@@ -60,10 +60,10 @@ impl SchemaDefinition {
     }
 
     /// Set the SchemaDef's description.
-    pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
+    pub fn description(&mut self, description: String) {
+        self.description = Some(StringValue::Top {
             source: description,
-        };
+        });
     }
 
     /// Add a directive.
@@ -102,9 +102,9 @@ impl fmt::Display for SchemaDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.extend {
             write!(f, "extend ")?;
-        } else {
-            // No description when it's an extension schema
-            write!(f, "{}", self.description)?;
+        // No description when it's an extension schema
+        } else if let Some(description) = &self.description {
+            write!(f, "{}", description)?;
         }
 
         write!(f, "schema")?;
