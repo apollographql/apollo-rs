@@ -40,7 +40,7 @@ pub struct InputValueDefinition {
     // the default value used by this input value in the condition a value is
     // not provided at runtime. If this input value has no default value,
     // returns null.
-    default: Option<String>,
+    default_value: Option<String>,
     /// Contains all directives for this input value definition
     directives: Vec<Directive>,
 }
@@ -52,7 +52,7 @@ impl InputValueDefinition {
             description: None,
             name,
             type_,
-            default: None,
+            default_value: None,
             directives: Vec::new(),
         }
     }
@@ -65,8 +65,8 @@ impl InputValueDefinition {
     }
 
     /// Set the InputValueDef's default value.
-    pub fn default(&mut self, default: String) {
-        self.default = Some(default);
+    pub fn default_value(&mut self, default_value: String) {
+        self.default_value = Some(default_value);
     }
 
     /// Add a directive to InputValueDefinition.
@@ -88,7 +88,7 @@ impl fmt::Display for InputValueDefinition {
             }
         }
 
-        if let Some(default) = &self.default {
+        if let Some(default) = &self.default_value {
             write!(f, " = {}", default)?;
         }
 
@@ -128,7 +128,7 @@ mod tests {
 
         let ty_2 = Type_::NonNull { ty: Box::new(ty_1) };
         let mut value = InputValueDefinition::new("spaceCat".to_string(), ty_2);
-        value.default("\"Norwegian Forest\"".to_string());
+        value.default_value("\"Norwegian Forest\"".to_string());
 
         assert_eq!(
             value.to_string(),
