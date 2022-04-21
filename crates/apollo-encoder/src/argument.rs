@@ -30,39 +30,67 @@ use crate::{InputValueDefinition, Value};
 ///         },
 ///     ),
 /// ];
-/// let arguments_def = ArgumentsDefinition::new(input_value_defs);
+/// let arguments_def = ArgumentsDefinition::with_values(input_value_defs);
 ///
 /// assert_eq!(arguments_def.to_string(), r#"(first: Int, second: [Int])"#);
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct ArgumentsDefinition {
-    input_value_definitions: Vec<InputValueDefinition>,
+    pub(crate) input_values: Vec<InputValueDefinition>,
 }
 
 impl ArgumentsDefinition {
     /// Create a new instance of Argument definition.
-    pub fn new(input_value_definitions: Vec<InputValueDefinition>) -> Self {
+    pub fn new() -> Self {
         Self {
-            input_value_definitions,
+            input_values: Vec::new(),
         }
+    }
+
+    /// Create a new instance of ArgumentsDefinition given Input Value Definitions.
+    pub fn with_values(input_values: Vec<InputValueDefinition>) -> Self {
+        Self { input_values }
+    }
+
+    /// Add an InputValueDefinition to Arguments Definition
+    pub fn input_value(&mut self, input_value: InputValueDefinition) {
+        self.input_values.push(input_value)
     }
 }
 
 impl fmt::Display for ArgumentsDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "(")?;
-        if self.input_value_definitions.len() == 1 {
-            write!(f, "{}, ", self.input_value_definitions[0])?;
-        } else {
-            for (i, input_val_def) in self.input_value_definitions.iter().enumerate() {
-                if i != self.input_value_definitions.len() - 1 {
-                    write!(f, "{}, ", input_val_def)?;
+        for (i, input_val_def) in self.input_values.iter().enumerate() {
+            // this branch multilines input value definitions, like this:
+            //   two(
+            //     """This is a description of the \`argument\` argument."""
+            //     argument: InputType!
+            //   ): Type
+            if input_val_def.description.is_some() {
+                if i != self.input_values.len() - 1 {
+                    write!(f, "{},", input_val_def)?;
                 } else {
-                    write!(f, "{}", input_val_def)?;
+                    writeln!(f, "{}", input_val_def)?;
                 }
+            // with no descriptions we single line input value definitions:
+            //   two(argument: InputType!): Type
+            } else if i != self.input_values.len() - 1 {
+                write!(f, "{}, ", input_val_def)?;
+            } else {
+                write!(f, "{}", input_val_def)?;
             }
         }
-        write!(f, ")")
+
+        if self
+            .input_values
+            .iter()
+            .any(|input| input.description.is_some())
+        {
+            write!(f, "  )")
+        } else {
+            write!(f, ")")
+        }
     }
 }
 
@@ -130,7 +158,7 @@ mod tests {
                 },
             ),
         ];
-        let arguments_def = ArgumentsDefinition::new(input_value_defs);
+        let arguments_def = ArgumentsDefinition::with_values(input_value_defs);
 
         assert_eq!(arguments_def.to_string(), r#"(first: Int, second: [Int])"#);
     }

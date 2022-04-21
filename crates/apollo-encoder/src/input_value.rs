@@ -23,7 +23,9 @@ use crate::{Directive, StringValue, Type_};
 ///
 /// assert_eq!(
 ///     value.to_string(),
-///     r#""Very good cats" cat: [SpaceProgram]"#
+///     r#"
+///     "Very good cats"
+///     cat: [SpaceProgram]"#
 /// );
 /// ```
 #[derive(Debug, PartialEq, Clone)]

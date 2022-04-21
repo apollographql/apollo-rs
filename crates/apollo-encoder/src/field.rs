@@ -1,6 +1,9 @@
 use std::fmt;
 
-use crate::{Argument, Directive, InputValueDefinition, SelectionSet, StringValue, Type_};
+use crate::{
+    Argument, ArgumentsDefinition, Directive, InputValueDefinition, SelectionSet, StringValue,
+    Type_,
+};
 /// The FieldDefinition type represents each field definition in an Object
 /// definition or Interface type definition.
 ///
@@ -39,7 +42,7 @@ pub struct FieldDefinition {
     // Description may return a String.
     description: Option<StringValue>,
     // Args returns a List of __InputValue representing the arguments this field accepts.
-    args: Vec<InputValueDefinition>,
+    args: ArgumentsDefinition,
     // Type must return a __Type that represents the type of value returned by this field.
     type_: Type_,
     /// Contains all directives.
@@ -53,7 +56,7 @@ impl FieldDefinition {
             description: None,
             name,
             type_,
-            args: Vec::new(),
+            args: ArgumentsDefinition::new(),
             directives: Vec::new(),
         }
     }
@@ -67,7 +70,7 @@ impl FieldDefinition {
 
     /// Set the Field's arguments.
     pub fn arg(&mut self, arg: InputValueDefinition) {
-        self.args.push(arg);
+        self.args.input_value(arg);
     }
 
     /// Add a directive.
@@ -83,14 +86,8 @@ impl fmt::Display for FieldDefinition {
         }
         write!(f, "  {}", self.name)?;
 
-        if !self.args.is_empty() {
-            for (i, arg) in self.args.iter().enumerate() {
-                match i {
-                    0 => write!(f, "({}", arg)?,
-                    _ => write!(f, ", {}", arg)?,
-                }
-            }
-            write!(f, ")")?;
+        if !self.args.input_values.is_empty() {
+            write!(f, "{}", self.args)?;
         }
 
         write!(f, ": {}", self.type_)?;
@@ -330,7 +327,14 @@ mod tests {
 
         assert_eq!(
             field_definition.to_string(),
-            r#"  spaceCat("The type of treats given in space" treat: Treat, """Optimal age of a "space" cat""" age: Int): Cat"#
+            r#"  spaceCat(
+    "The type of treats given in space"
+    treat: Treat,
+    """
+    Optimal age of a "space" cat
+    """
+    age: Int
+  ): Cat"#
         );
     }
 }

@@ -301,7 +301,15 @@ mod tests {
         let ty_4 = Type_::NamedType {
             name: "Boolean".to_string(),
         };
-        let field_3 = FieldDefinition::new("catGrass".to_string(), ty_4);
+        let mut field_3 = FieldDefinition::new("catGrass".to_string(), ty_4);
+
+        let value = Type_::NamedType {
+            name: "Boolean".to_string(),
+        };
+
+        let mut arg = InputValueDefinition::new("fresh".to_string(), value);
+        arg.description("How fresh is this grass".to_string());
+        field_3.arg(arg);
 
         let mut object_def = ObjectDefinition::new("PetStoreTrip".to_string());
         object_def.field(field);
@@ -319,7 +327,65 @@ mod tests {
                   toys: [DanglerPoleToys] @deprecated(reason: "Cats are too spoiled")
                   "Dry or wet food?"
                   food: FoodType
-                  catGrass: Boolean
+                  catGrass(
+                    "How fresh is this grass"
+                    fresh: Boolean
+                  ): Boolean
+                }
+            "#}
+        );
+    }
+
+    #[test]
+    fn it_encodes_object_with_input_value_definition_fields() {
+        let ty_1 = Type_::NamedType {
+            name: "DanglerPoleToys".to_string(),
+        };
+
+        let ty_2 = Type_::List { ty: Box::new(ty_1) };
+        let field = FieldDefinition::new("toys".to_string(), ty_2);
+
+        let ty_4 = Type_::NamedType {
+            name: "Boolean".to_string(),
+        };
+        let mut field_3 = FieldDefinition::new("catGrass".to_string(), ty_4);
+
+        let value = Type_::NamedType {
+            name: "Boolean".to_string(),
+        };
+
+        let mut arg = InputValueDefinition::new("fresh".to_string(), value);
+        arg.description("How fresh is this grass".to_string());
+        field_3.arg(arg);
+
+        let value = Type_::NamedType {
+            name: "Int".to_string(),
+        };
+
+        let mut arg = InputValueDefinition::new("quantity".to_string(), value);
+        arg.description("Number of pots\ngrowing at a given time".to_string());
+        field_3.arg(arg);
+
+        let mut object_def = ObjectDefinition::new("PetStoreTrip".to_string());
+        object_def.field(field);
+        object_def.field(field_3);
+        object_def.description("Shopping list for cats at the pet store.".to_string());
+
+        assert_eq!(
+            object_def.to_string(),
+            indoc! { r#"
+                "Shopping list for cats at the pet store."
+                type PetStoreTrip {
+                  toys: [DanglerPoleToys]
+                  catGrass(
+                    "How fresh is this grass"
+                    fresh: Boolean,
+                    """
+                    Number of pots
+                    growing at a given time
+                    """
+                    quantity: Int
+                  ): Boolean
                 }
             "#}
         );
