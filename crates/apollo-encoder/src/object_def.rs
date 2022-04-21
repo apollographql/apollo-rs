@@ -26,7 +26,7 @@ use crate::{Directive, FieldDefinition, StringValue};
 ///     name: "FoodType".to_string(),
 /// };
 /// let mut field_2 = FieldDefinition::new("food".to_string(), ty_3);
-/// field_2.description(Some("Dry or wet food?".to_string()));
+/// field_2.description("Dry or wet food?".to_string());
 ///
 /// let ty_4 = Type_::NamedType {
 ///     name: "Boolean".to_string(),
@@ -56,7 +56,7 @@ pub struct ObjectDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String or null.
-    description: StringValue,
+    description: Option<StringValue>,
     // The vector of interfaces that an object implements.
     interfaces: Vec<String>,
     // The vector of fields query‐able on this type.
@@ -71,7 +71,7 @@ impl ObjectDefinition {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: StringValue::Top { source: None },
+            description: None,
             interfaces: Vec::new(),
             fields: Vec::new(),
             directives: Vec::new(),
@@ -80,10 +80,10 @@ impl ObjectDefinition {
     }
 
     /// Set the ObjectDef's description field.
-    pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
+    pub fn description(&mut self, description: String) {
+        self.description = Some(StringValue::Top {
             source: description,
-        };
+        });
     }
 
     /// Add a directive on ObjectDef.
@@ -111,9 +111,9 @@ impl fmt::Display for ObjectDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.extend {
             write!(f, "extend ")?;
-        } else {
-            // No description when it's a extension
-            write!(f, "{}", self.description)?;
+        // No description when it's a extension
+        } else if let Some(description) = &self.description {
+            write!(f, "{}", description)?;
         }
 
         write!(f, "type {}", &self.name)?;
@@ -139,7 +139,7 @@ impl fmt::Display for ObjectDefinition {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Argument, FieldDefinition, Type_, Value};
+    use crate::{Argument, FieldDefinition, InputValueDefinition, Type_, Value};
     use indoc::indoc;
     use pretty_assertions::assert_eq;
 
@@ -154,7 +154,7 @@ mod tests {
 
         let mut object_def = ObjectDefinition::new("PetStoreTrip".to_string());
         object_def.field(field);
-        object_def.description(Some("What to get at Fressnapf?".to_string()));
+        object_def.description("What to get at Fressnapf?".to_string());
 
         assert_eq!(
             object_def.to_string(),
@@ -185,7 +185,7 @@ mod tests {
 
         let mut object_def = ObjectDefinition::new("PetStoreTrip".to_string());
         object_def.field(field);
-        object_def.description(Some("What to get at Fressnapf?".to_string()));
+        object_def.description("What to get at Fressnapf?".to_string());
 
         assert_eq!(
             object_def.to_string(),
@@ -208,22 +208,20 @@ mod tests {
         let mut deprecated_directive = Directive::new(String::from("deprecated"));
         deprecated_directive.arg(Argument::new(
             String::from("reason"),
-            Value::String(String::from(
-                "\"DanglerPoleToys\" are no longer interesting",
-            )),
+            Value::String(String::from("DanglerPoleToys are no longer interesting")),
         ));
         field.directive(deprecated_directive);
 
         let mut object_def = ObjectDefinition::new("PetStoreTrip".to_string());
         object_def.field(field);
-        object_def.description(Some("What to get at Fressnapf?".to_string()));
+        object_def.description("What to get at Fressnapf?".to_string());
         object_def.extend();
 
         assert_eq!(
             object_def.to_string(),
             indoc! { r#"
                 extend type PetStoreTrip {
-                  toys: DanglerPoleToys @deprecated(reason: """"DanglerPoleToys" are no longer interesting""")
+                  toys: DanglerPoleToys @deprecated(reason: "DanglerPoleToys are no longer interesting")
                 }
             "#}
         );
@@ -247,7 +245,7 @@ mod tests {
             name: "FoodType".to_string(),
         };
         let mut field_2 = FieldDefinition::new("food".to_string(), ty_3);
-        field_2.description(Some("Dry or wet food?".to_string()));
+        field_2.description("Dry or wet food?".to_string());
 
         let ty_4 = Type_::NamedType {
             name: "Boolean".to_string(),
@@ -258,7 +256,7 @@ mod tests {
         object_def.field(field);
         object_def.field(field_2);
         object_def.field(field_3);
-        object_def.description(Some("Shopping list for cats at the pet store.".to_string()));
+        object_def.description("Shopping list for cats at the pet store.".to_string());
         object_def.interface("ShoppingTrip".to_string());
 
         assert_eq!(
@@ -298,7 +296,7 @@ mod tests {
             name: "FoodType".to_string(),
         };
         let mut field_2 = FieldDefinition::new("food".to_string(), ty_3);
-        field_2.description(Some("Dry or wet food?".to_string()));
+        field_2.description("Dry or wet food?".to_string());
 
         let ty_4 = Type_::NamedType {
             name: "Boolean".to_string(),
@@ -309,7 +307,7 @@ mod tests {
         object_def.field(field);
         object_def.field(field_2);
         object_def.field(field_3);
-        object_def.description(Some("Shopping list for cats at the pet store.".to_string()));
+        object_def.description("Shopping list for cats at the pet store.".to_string());
         object_def.interface("ShoppingTrip".to_string());
         object_def.directive(directive);
 
@@ -334,11 +332,11 @@ mod tests {
         };
 
         let mut field = FieldDefinition::new("name".to_string(), ty_1);
-        field.description(Some("multiline\ndescription".to_string()));
+        field.description("multiline\ndescription".to_string());
 
         let mut object_def = ObjectDefinition::new("Book".to_string());
         object_def.field(field);
-        object_def.description(Some("Book Object\nType".to_string()));
+        object_def.description("Book Object\nType".to_string());
 
         assert_eq!(
             object_def.to_string(),

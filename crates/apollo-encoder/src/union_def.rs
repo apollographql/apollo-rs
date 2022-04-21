@@ -28,7 +28,7 @@ pub struct UnionDefinition {
     // Name must return a String.
     name: String,
     // Description may return a String.
-    description: StringValue,
+    description: Option<StringValue>,
     // The vector of members that can be represented within this union.
     members: Vec<String>,
     /// Contains all directives.
@@ -41,7 +41,7 @@ impl UnionDefinition {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            description: StringValue::Top { source: None },
+            description: None,
             members: Vec::new(),
             extend: false,
             directives: Vec::new(),
@@ -54,10 +54,10 @@ impl UnionDefinition {
     }
 
     /// Set the UnionDefs description.
-    pub fn description(&mut self, description: Option<String>) {
-        self.description = StringValue::Top {
+    pub fn description(&mut self, description: String) {
+        self.description = Some(StringValue::Top {
             source: description,
-        };
+        });
     }
 
     /// Add a directive
@@ -75,9 +75,9 @@ impl fmt::Display for UnionDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.extend {
             write!(f, "extend ")?;
-        } else {
-            // No description when it's a extension
-            write!(f, "{}", self.description)?;
+        // No description when it's a extension
+        } else if let Some(description) = &self.description {
+            write!(f, "{}", description)?;
         }
 
         write!(f, "union {}", self.name)?;
@@ -107,7 +107,7 @@ mod tests {
     #[test]
     fn it_encodes_union_with_description() {
         let mut union_ = UnionDefinition::new("Pet".to_string());
-        union_.description(Some("A union of all animals in a household.".to_string()));
+        union_.description("A union of all animals in a household.".to_string());
         union_.member("Cat".to_string());
         union_.member("Dog".to_string());
 
@@ -122,7 +122,7 @@ union Pet = Cat | Dog
     #[test]
     fn it_encodes_union_extension() {
         let mut union_ = UnionDefinition::new("Pet".to_string());
-        union_.description(Some("A union of all animals in a household.".to_string()));
+        union_.description("A union of all animals in a household.".to_string());
         union_.member("Cat".to_string());
         union_.member("Dog".to_string());
         union_.extend();
