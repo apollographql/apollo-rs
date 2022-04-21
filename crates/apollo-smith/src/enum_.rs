@@ -31,7 +31,9 @@ pub struct EnumTypeDef {
 impl From<EnumTypeDef> for EnumDefinition {
     fn from(enum_: EnumTypeDef) -> Self {
         let mut new_enum = EnumDefinition::new(enum_.name.into());
-        new_enum.description(enum_.description.map(String::from));
+        if let Some(description) = enum_.description {
+            new_enum.description(description.into())
+        }
         enum_
             .enum_values_def
             .into_iter()
@@ -116,7 +118,9 @@ pub struct EnumValueDefinition {
 impl From<EnumValueDefinition> for EnumValue {
     fn from(enum_val: EnumValueDefinition) -> Self {
         let mut new_enum_val = Self::new(enum_val.value.into());
-        new_enum_val.description(enum_val.description.map(String::from));
+        if let Some(description) = enum_val.description {
+            new_enum_val.description(description.into())
+        }
         enum_val
             .directives
             .into_iter()

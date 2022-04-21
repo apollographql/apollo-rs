@@ -35,7 +35,9 @@ impl From<FieldDef> for apollo_encoder::FieldDefinition {
                 .into_iter()
                 .for_each(|input_val| field.arg(input_val.into()));
         }
-        field.description(val.description.map(String::from));
+        if let Some(description) = val.description {
+            field.description(description.into());
+        }
         val.directives
             .into_iter()
             .for_each(|(_dir_name, directive)| field.directive(directive.into()));

@@ -29,7 +29,9 @@ pub struct UnionTypeDef {
 impl From<UnionTypeDef> for UnionDefinition {
     fn from(union_ty_def: UnionTypeDef) -> Self {
         let mut new_union_ty_def = Self::new(union_ty_def.name.into());
-        new_union_ty_def.description(union_ty_def.description.map(String::from));
+        if let Some(description) = union_ty_def.description {
+            new_union_ty_def.description(description.into())
+        }
         union_ty_def
             .members
             .into_iter()

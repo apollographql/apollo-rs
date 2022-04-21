@@ -33,13 +33,16 @@ pub struct ObjectTypeDef {
 impl From<ObjectTypeDef> for ObjectDefinition {
     fn from(val: ObjectTypeDef) -> Self {
         let mut object_def = ObjectDefinition::new(val.name.into());
+        if let Some(description) = val.description {
+            object_def.description(description.into())
+        }
         val.implements_interfaces
             .into_iter()
             .for_each(|itf| object_def.interface(itf.into()));
         val.fields_def
             .into_iter()
             .for_each(|fd| object_def.field(fd.into()));
-        object_def.description(val.description.map(String::from));
+
         val.directives
             .into_iter()
             .for_each(|(_, directive)| object_def.directive(directive.into()));

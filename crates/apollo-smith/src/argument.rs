@@ -20,7 +20,7 @@ pub struct ArgumentsDef {
 
 impl From<ArgumentsDef> for apollo_encoder::ArgumentsDefinition {
     fn from(args_def: ArgumentsDef) -> Self {
-        apollo_encoder::ArgumentsDefinition::new(
+        apollo_encoder::ArgumentsDefinition::with_values(
             args_def
                 .input_value_definitions
                 .into_iter()

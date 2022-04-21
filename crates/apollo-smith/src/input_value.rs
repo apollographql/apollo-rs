@@ -119,7 +119,9 @@ pub struct InputValueDef {
 impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
     fn from(input_val: InputValueDef) -> Self {
         let mut new_input_val = Self::new(input_val.name.into(), input_val.ty.into());
-        new_input_val.description(input_val.description.map(String::from));
+        if let Some(description) = input_val.description {
+            new_input_val.description(description.into())
+        }
         new_input_val.default(input_val.default_value.map(String::from));
         input_val
             .directives
@@ -153,7 +155,9 @@ impl From<apollo_parser::ast::InputValueDefinition> for InputValueDef {
 impl From<InputValueDef> for apollo_encoder::InputField {
     fn from(input_val: InputValueDef) -> Self {
         let mut new_input_val = Self::new(input_val.name.into(), input_val.ty.into());
-        new_input_val.description(input_val.description.map(String::from));
+        if let Some(description) = input_val.description {
+            new_input_val.description(description.into())
+        }
         new_input_val.default(input_val.default_value.map(String::from));
         input_val
             .directives
