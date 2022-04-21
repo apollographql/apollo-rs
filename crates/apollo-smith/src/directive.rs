@@ -27,7 +27,9 @@ pub struct DirectiveDef {
 impl From<DirectiveDef> for apollo_encoder::DirectiveDefinition {
     fn from(dir_def: DirectiveDef) -> Self {
         let mut new_dir_def = Self::new(dir_def.name.into());
-        new_dir_def.description(dir_def.description.map(String::from));
+        if let Some(description) = dir_def.description {
+            new_dir_def.description(description.into())
+        }
         if let Some(args_def) = dir_def.arguments_definition {
             args_def
                 .input_value_definitions

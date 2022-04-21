@@ -27,7 +27,9 @@ pub struct ScalarTypeDef {
 impl From<ScalarTypeDef> for apollo_encoder::ScalarDefinition {
     fn from(scalar_def: ScalarTypeDef) -> Self {
         let mut new_scalar_def = Self::new(scalar_def.name.into());
-        new_scalar_def.description(scalar_def.description.map(String::from));
+        if let Some(description) = scalar_def.description {
+            new_scalar_def.description(description.into());
+        }
         scalar_def
             .directives
             .into_iter()

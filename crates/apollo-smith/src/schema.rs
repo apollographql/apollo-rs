@@ -28,7 +28,9 @@ pub struct SchemaDef {
 impl From<SchemaDef> for apollo_encoder::SchemaDefinition {
     fn from(schema_def: SchemaDef) -> Self {
         let mut new_schema_def = Self::new();
-        new_schema_def.description(schema_def.description.map(String::from));
+        if let Some(description) = schema_def.description {
+            new_schema_def.description(description.into())
+        }
         schema_def
             .directives
             .into_iter()
