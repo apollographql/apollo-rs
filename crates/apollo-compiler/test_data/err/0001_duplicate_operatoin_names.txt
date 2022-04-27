@@ -1,1 +1,1 @@
-[Error(UniqueOperationDefinition { message: "Operation Definitions must have unique names", operation: "getName " })]
+[Error(UniqueOperationDefinition { message: "Operation Definitions must have unique names", operation: "getName" })]
