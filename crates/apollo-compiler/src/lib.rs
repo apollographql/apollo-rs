@@ -16,7 +16,7 @@ use diagnostics::ApolloDiagnostic;
 use validation::Validator;
 
 pub struct ApolloCompiler {
-    db: Database,
+    pub db: Database,
 }
 
 impl ApolloCompiler {
@@ -97,6 +97,32 @@ fragment vipCustomer on User {
         assert_eq!(
             ["definedVariable", "definedVariable2"],
             operation_variables.as_slice()
+        );
+    }
+
+    #[test]
+    fn it_accesses_fields() {
+        let input = r#"
+query ExampleQuery {
+  name
+  price
+  dimensions
+  size
+  weight
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+
+        assert!(errors.is_empty());
+
+        let operations = ctx.operations();
+        let fields = operations.find("ExampleQuery").unwrap().fields(&ctx.db);
+        let field_names: Vec<&str> = fields.iter().map(|f| f.name()).collect();
+        assert_eq!(
+            field_names,
+            ["name", "price", "dimensions", "size", "weight"]
         );
     }
 }

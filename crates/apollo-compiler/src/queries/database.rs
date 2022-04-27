@@ -296,7 +296,7 @@ fn operation_definition(
     // check if there are already operations
     // if there are operations, they must have names
     // if there are no names, an error must be raised that all operations must have a name
-    let name = op_def.name().map(|name| name.to_string());
+    let name = op_def.name().map(|name| name.text().to_string());
     let ty = operation_type(op_def.operation_type());
     let variables = variable_definitions(op_def.variable_definitions());
     let selection_set = selection_set(db, op_def.selection_set());
@@ -596,7 +596,11 @@ fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Ar
 }
 
 fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
-    let name = field.name().expect("Field must have a name").to_string();
+    let name = field
+        .name()
+        .expect("Field must have a name")
+        .text()
+        .to_string();
     let alias = alias(field.alias());
     let selection_set = selection_set(db, field.selection_set());
     let directives = directives(field.directives());
