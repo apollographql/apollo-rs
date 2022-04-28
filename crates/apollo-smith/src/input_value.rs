@@ -122,7 +122,9 @@ impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
         if let Some(description) = input_val.description {
             new_input_val.description(description.into())
         }
-        new_input_val.default(input_val.default_value.map(String::from));
+        if let Some(default) = input_val.default_value {
+            new_input_val.default_value(default.into())
+        }
         input_val
             .directives
             .into_iter()
@@ -158,7 +160,9 @@ impl From<InputValueDef> for apollo_encoder::InputField {
         if let Some(description) = input_val.description {
             new_input_val.description(description.into())
         }
-        new_input_val.default(input_val.default_value.map(String::from));
+        if let Some(default) = input_val.default_value {
+            new_input_val.default_value(default.into())
+        }
         input_val
             .directives
             .into_iter()

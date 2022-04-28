@@ -27,7 +27,9 @@ pub struct VariableDef {
 impl From<VariableDef> for apollo_encoder::VariableDefinition {
     fn from(var_def: VariableDef) -> Self {
         let mut new_var_def = Self::new(var_def.name.into(), var_def.ty.into());
-        new_var_def.default_value(var_def.default_value.map(Into::into));
+        if let Some(default) = var_def.default_value {
+            new_var_def.default_value(default.into())
+        }
         var_def
             .directives
             .into_iter()
