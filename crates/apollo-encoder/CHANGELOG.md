@@ -20,7 +20,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [0.3.0](https://crates.io/crates/apollo-encoder/0.3.0) - 2022-04-28
 
-> Important: 2 breaking change below, indicated by **BREAKING**
+> Important: 4 breaking change below, indicated by **BREAKING**
 
 ## BREAKING
 
