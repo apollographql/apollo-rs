@@ -18,6 +18,107 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.3.0](https://crates.io/crates/apollo-encoder/0.3.0) - 2022-04-28
+
+> Important: 4 breaking change below, indicated by **BREAKING**
+
+## BREAKING
+
+- **ArgumentsDefinition::new() creates an empty instance of ArgumentsDefinition - [lrlna], [pull/207]**
+
+  ArgumentsDefinition::new() now takes no arguments and creates a default empty
+  vector of input value definitions. Previously, `::new()` would accept a vector of input value definitions. This API is now represented as `::with_values()`.
+
+  [lrlna]: https://github.com/lrlna
+  [pull/207]: https://github.com/apollographql/apollo-rs/pull/207
+
+- **all descriptions setters accept paramater of type String - [lrlna], [pull/207]**
+
+  Previously all descriptions were set with a parameter of type
+  `Option<String>`, which was not very user-friendly.
+
+  ```rust
+  let mut directive_def = DirectiveDefinition::new("provideTreat".to_string());
+  directive_def.description("Ensures cats get treats.".to_string());
+  ```
+
+  [lrlna]: https://github.com/lrlna
+  [pull/207]: https://github.com/apollographql/apollo-rs/pull/207
+
+- **all default setters accept paramater of type String - [lrlna], [pull/208]**
+
+  Similarly to above, previously all defaults were set with a parameter of type
+  `Option<String>`. All defaults now accept `String`.
+
+  [lrlna]: https://github.com/lrlna
+  [pull/208]: https://github.com/apollographql/apollo-rs/pull/208
+
+- **all default value setters are renamed to `default_value` - [lrlna], [pull/208]**
+  
+  Previously used "default" setters represented "default_value". Renaming the
+  setters directly to `default_value` aligns with the spec.
+
+  ```rust
+    let ty = Type_::NamedType { name: "CatBreed".to_string() };
+    let mut field = InputField::new("cat".to_string(), ty);
+    field.default_value("Norwegian Forest".to_string());
+  ```
+
+  [lrlna]: https://github.com/lrlna
+  [pull/208]: https://github.com/apollographql/apollo-rs/pull/208
+
+## Features
+- **ArgumentsDefinition input value setter - [lrlna], [pull/207]**
+  
+  Individual input value definitions can be set with `input_value` setter:
+
+  ```rust
+  let input_value = InputValueDefinition::new(
+      String::from("first"),
+      Type_::NamedType {
+          name: String::from("Int"),
+      },
+  );
+  let args_definition = ArgumentsDefinition::new();
+  args_definition.input_value(input_value);
+  ```
+
+  [lrlna]: https://github.com/lrlna
+  [pull/207]: https://github.com/apollographql/apollo-rs/pull/207
+
+## Fixes
+
+- **Use a more readable serialisation for input value definitions - [lrlna], [pull/207]**
+  
+  If any of the input value definitions in a given field definition comes with a
+  description, we will multiline all input value definitions. That is to say,
+  instead of serializing arguments definition like this:
+
+  ```graphql
+  type Foo {
+    "This is a description of the \`one\` field."
+    one("This is a description of the \`argument\` argument." argument: InputType!): Type
+  }
+  ```
+
+  we serialize it as:
+
+  ```graphql
+  type Foo {
+    "This is a description of the \`one\` field."
+    one(
+      "This is a description of the \`argument\` argument."
+      argument: InputType!
+    ): Type
+  }
+  ```
+  
+  This makes it a lot more readable, especially for users with a large number of
+  input value definitions with descriptions.
+
+  [lrlna]: https://github.com/lrlna
+  [pull/207]: https://github.com/apollographql/apollo-rs/pull/207
+
 # [0.2.3](https://crates.io/crates/apollo-encoder/0.2.3) - 2022-04-01
 
 > Important: 1 breaking change below, indicated by **BREAKING**
