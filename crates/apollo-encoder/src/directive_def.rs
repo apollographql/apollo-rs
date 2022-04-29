@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{InputValueDefinition, StringValue};
+use crate::{ArgumentsDefinition, InputValueDefinition, StringValue};
 
 /// The `DirectiveDefinition` type represents a Directive definition.
 ///
@@ -38,7 +38,7 @@ pub struct DirectiveDefinition {
     description: Option<StringValue>,
     // Args returns a Vector of __InputValue representing the arguments this
     // directive accepts.
-    args: Vec<InputValueDefinition>,
+    args: ArgumentsDefinition,
     // Locations returns a List of __DirectiveLocation representing the valid
     // locations this directive may be placed.
     locations: Vec<String>,
@@ -52,7 +52,7 @@ impl DirectiveDefinition {
         Self {
             name,
             description: None,
-            args: Vec::new(),
+            args: ArgumentsDefinition::new(),
             locations: Vec::new(),
             repeatable: false,
         }
@@ -72,7 +72,7 @@ impl DirectiveDefinition {
 
     /// Set the Directive's args.
     pub fn arg(&mut self, arg: InputValueDefinition) {
-        self.args.push(arg);
+        self.args.input_value(arg);
     }
 
     /// Set the Directive's repeatable
@@ -88,14 +88,8 @@ impl fmt::Display for DirectiveDefinition {
         }
         write!(f, "directive @{}", self.name)?;
 
-        if !self.args.is_empty() {
-            for (i, arg) in self.args.iter().enumerate() {
-                match i {
-                    0 => write!(f, "({}", arg)?,
-                    _ => write!(f, ", {}", arg)?,
-                }
-            }
-            write!(f, ")")?;
+        if !self.args.input_values.is_empty() {
+            write!(f, "{}", self.args)?;
         }
 
         if self.repeatable {
@@ -171,6 +165,32 @@ directive @infer on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
             directive.to_string(),
             r#""Infer field types from field values."
 directive @infer(cat: [SpaceProgram]) on OBJECT
+"#
+        );
+    }
+
+    #[test]
+    fn it_encodes_directives_with_arguments_with_description() {
+        let mut directive = DirectiveDefinition::new("infer".to_string());
+        directive.description("Infer field types from field values.".to_string());
+        directive.location("OBJECT".to_string());
+
+        let ty_1 = Type_::NamedType {
+            name: "SpaceProgram".to_string(),
+        };
+
+        let ty_2 = Type_::List { ty: Box::new(ty_1) };
+        let mut arg = InputValueDefinition::new("cat".to_string(), ty_2);
+        arg.description("Space Program for flying cats".to_string());
+        directive.arg(arg);
+
+        assert_eq!(
+            directive.to_string(),
+            r#""Infer field types from field values."
+directive @infer(
+    "Space Program for flying cats"
+    cat: [SpaceProgram]
+  ) on OBJECT
 "#
         );
     }
