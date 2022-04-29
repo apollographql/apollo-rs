@@ -506,3 +506,16 @@ impl Float {
         }
     }
 }
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct SchemaDefinition {
+    pub(crate) description: Option<String>,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) root_operation_type_definition: Arc<Vec<RootOperationTypeDefinition>>,
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct RootOperationTypeDefinition {
+    pub(crate) operation_type: OperationType,
+    pub(crate) named_type: Type,
+}

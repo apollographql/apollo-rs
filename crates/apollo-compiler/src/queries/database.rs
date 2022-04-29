@@ -4,6 +4,7 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use apollo_parser::ast::AstChildren;
 use apollo_parser::{ast, Parser, SyntaxTree};
 use uuid::Uuid;
 
@@ -37,6 +38,10 @@ pub trait SourceDatabase {
 
     fn operations(&self) -> Operations;
 
+    fn fragments(&self) -> Fragments;
+
+    fn schema(&self) -> Arc<Vec<SchemaDefinition>>;
+
     fn queries(&self) -> Operations;
 
     fn mutations(&self) -> Operations;
@@ -58,8 +63,6 @@ pub trait SourceDatabase {
     fn operation_inline_fragment_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
     fn operation_fragment_spread_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
-
-    fn fragments(&self) -> Fragments;
 }
 
 // this is top level entry to the source db
@@ -289,6 +292,18 @@ fn find_fragment_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<Fr
     })
 }
 
+fn schema(db: &dyn SourceDatabase) -> Arc<Vec<SchemaDefinition>> {
+    let schema: Vec<SchemaDefinition> = db
+        .definitions()
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::SchemaDefinition(schema) => Some(schema_definition(schema.clone())),
+            _ => None,
+        })
+        .collect();
+    Arc::new(schema)
+}
+
 fn operation_definition(
     db: &dyn SourceDatabase,
     op_def: ast::OperationDefinition,
@@ -342,6 +357,49 @@ fn fragment_definition(
         selection_set,
         directives,
     }
+}
+
+fn schema_definition(schema_def: ast::SchemaDefinition) -> SchemaDefinition {
+    let description = schema_def.description().map(|desc| {
+        desc.string_value()
+            .expect("Description must have text")
+            .into()
+    });
+    let directives = directives(schema_def.directives());
+    let root_operation_type_definition =
+        root_operation_type_definition(schema_def.root_operation_type_definitions());
+
+    SchemaDefinition {
+        description,
+        directives,
+        root_operation_type_definition,
+    }
+}
+
+fn root_operation_type_definition(
+    root_type_def: AstChildren<ast::RootOperationTypeDefinition>,
+) -> Arc<Vec<RootOperationTypeDefinition>> {
+    let type_defs: Vec<RootOperationTypeDefinition> = root_type_def
+        .into_iter()
+        .map(|ty| {
+            let operation_type = operation_type(ty.operation_type());
+            let named_type = Type::Named {
+                name: ty
+                    .named_type()
+                    .expect("Root Operation Type Definition must have Named Type.")
+                    .name()
+                    .expect("Name must have text")
+                    .text()
+                    .to_string(),
+            };
+            RootOperationTypeDefinition {
+                operation_type,
+                named_type,
+            }
+        })
+        .collect();
+
+    Arc::new(type_defs)
 }
 
 fn operation_type(op_type: Option<ast::OperationType>) -> OperationType {
