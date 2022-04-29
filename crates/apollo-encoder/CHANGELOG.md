@@ -17,6 +17,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.3.1](https://crates.io/crates/apollo-encoder/0.3.1) - 2022-04-29
+
+## Fixes
+- **directive definition args are of ArgumentsDefinition type - [lrlna], [pull/211]**
+
+  Directive Definition incorrectly had a `Vec<InputValueDefinition>` for internal
+  arguments type instead of `ArgumentsDefinition`. This commit aligns this bit to
+  the spec and uses `ArgumentsDefinition` as type.
+  
+  [lrlna]: https://github.com/lrlna
+  [pull/211]: https://github.com/apollographql/apollo-rs/pull/211
 
 # [0.3.0](https://crates.io/crates/apollo-encoder/0.3.0) - 2022-04-28
 
