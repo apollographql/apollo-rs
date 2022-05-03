@@ -29,6 +29,7 @@ use argument::Argument;
 pub use directive::DirectiveDef;
 pub use document::Document;
 pub use enum_::EnumTypeDef;
+use field::FieldDef;
 pub use fragment::FragmentDef;
 pub use input_object::InputObjectTypeDef;
 pub use interface::InterfaceTypeDef;
@@ -72,7 +73,7 @@ pub struct DocumentBuilder<'a> {
     pub(crate) operation_defs: Vec<OperationDef>,
     pub(crate) fragment_defs: Vec<FragmentDef>,
     // A stack to set current ObjectTypeDef
-    pub(crate) stack: Vec<ObjectTypeDef>,
+    pub(crate) stack: Vec<Box<dyn StackedEntity>>,
     // Useful to keep the same arguments for a specific field
     pub(crate) chosen_arguments: HashMap<Name, Vec<Argument>>,
     // Useful to keep the same aliases for a specific field name
@@ -221,7 +222,15 @@ impl<'a> DocumentBuilder<'a> {
             .find(|object_ty_def| &object_ty_def.name == type_name)
             .cloned()
         {
-            self.stack.push(object_ty);
+            self.stack.push(Box::new(object_ty));
+            true
+        } else if let Some(itf_type) = self
+            .interface_type_defs
+            .iter()
+            .find(|itf_type_def| &itf_type_def.name == type_name)
+            .cloned()
+        {
+            self.stack.push(Box::new(itf_type));
             true
         } else if let Some(_enum_ty) = self
             .enum_type_defs
@@ -231,7 +240,12 @@ impl<'a> DocumentBuilder<'a> {
         {
             false
         } else {
-            todo!("need to implement for union, scalar, ...")
+            todo!("'{:?}' need to implement for union, scalar, ...", type_name);
         }
     }
+}
+
+pub(crate) trait StackedEntity {
+    fn name(&self) -> &Name;
+    fn fields_def(&self) -> &[FieldDef];
 }

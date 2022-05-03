@@ -240,7 +240,7 @@ impl<'a> DocumentBuilder<'a> {
         let last_element = self.stack.last();
         match last_element {
             Some(last_element) => Ok(TypeCondition {
-                name: last_element.name.clone(),
+                name: last_element.name().clone(),
             }),
             None => {
                 let named_types: Vec<Ty> = self

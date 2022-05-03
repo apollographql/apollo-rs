@@ -167,13 +167,13 @@ impl<'a> DocumentBuilder<'a> {
 
     /// Create an arbitrary `Field` given an object type
     pub fn field(&mut self, index: usize) -> Result<Field> {
-        let object_ty = self
+        let fields_defs = self
             .stack
             .last()
-            .cloned()
-            .expect("an object type must be added on the stack");
+            .expect("an object type must be added on the stack")
+            .fields_def();
 
-        let chosen_field_def = self.u.choose(&object_ty.fields_def)?;
+        let chosen_field_def = self.u.choose(fields_defs)?.clone();
         let mut alias = self
             .u
             .arbitrary()

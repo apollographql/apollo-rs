@@ -87,7 +87,10 @@ impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `SelectionSet`
     pub fn selection_set(&mut self) -> Result<SelectionSet> {
         let mut exclude_names = Vec::new();
-        let selection_nb = self.stack.last().map(|o| o.fields_def.len()).unwrap_or(7);
+        let selection_nb = std::cmp::max(
+            self.stack.last().map(|o| o.fields_def().len()).unwrap_or(7),
+            3,
+        );
         let selections = (0..self.u.int_in_range(2..=selection_nb)?)
             .map(|index| self.selection(index, &mut exclude_names)) // TODO do not generate duplication variable name
             .collect::<Result<Vec<_>>>()?;
