@@ -8,7 +8,7 @@ use crate::{
     directive::{Directive, DirectiveLocation},
     field::FieldDef,
     name::Name,
-    DocumentBuilder,
+    DocumentBuilder, StackedEntity,
 };
 
 /// Object types represent concrete instantiations of sets of fields.
@@ -186,5 +186,15 @@ impl<'a> DocumentBuilder<'a> {
             fields_def,
             extend,
         })
+    }
+}
+
+impl StackedEntity for ObjectTypeDef {
+    fn name(&self) -> &Name {
+        &self.name
+    }
+
+    fn fields_def(&self) -> &[FieldDef] {
+        &self.fields_def
     }
 }
