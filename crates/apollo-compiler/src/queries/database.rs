@@ -376,6 +376,16 @@ fn schema_definition(schema_def: ast::SchemaDefinition) -> SchemaDefinition {
     }
 }
 
+fn schema_extension(db: &dyn SourceDatabase) {
+    let schema = db.schema();
+    db.definitions()
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::SchemaExtension(schema_ext) => todo!(),
+            _ => None,
+        });
+}
+
 fn root_operation_type_definition(
     root_type_def: AstChildren<ast::RootOperationTypeDefinition>,
 ) -> Arc<Vec<RootOperationTypeDefinition>> {
