@@ -313,6 +313,8 @@ impl Argument {
 
 pub type Variable = String;
 
+pub type DefaultValue = Value;
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Value {
     Variable(Variable),
@@ -507,7 +509,7 @@ impl Float {
     }
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Debug, Hash, PartialEq, Default, Eq)]
 pub struct SchemaDefinition {
     pub(crate) description: Option<String>,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -518,4 +520,52 @@ pub struct SchemaDefinition {
 pub struct RootOperationTypeDefinition {
     pub(crate) operation_type: OperationType,
     pub(crate) named_type: Type,
+}
+
+impl Default for RootOperationTypeDefinition {
+    fn default() -> Self {
+        Self {
+            operation_type: OperationType::Query,
+            named_type: Type::Named {
+                name: "Query".to_string(),
+            },
+        }
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct ObjectTypeDefinition {
+    pub(crate) description: Option<String>,
+    pub(crate) name: String,
+    pub(crate) implements_interfaces: ImplementsInterfaces,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct ImplementsInterfaces {
+    pub(crate) interfaces: Arc<Vec<Type>>,
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct FieldDefinition {
+    pub(crate) description: Option<String>,
+    pub(crate) name: String,
+    pub(crate) arguments: ArgumentsDefinition,
+    pub(crate) ty: Type,
+    pub(crate) directives: Arc<Vec<Directive>>,
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct ArgumentsDefinition {
+    pub(crate) input_values: Arc<Vec<InputValueDefinition>>,
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct InputValueDefinition {
+    pub(crate) description: Option<String>,
+    pub(crate) name: String,
+    pub(crate) ty: Type,
+    pub(crate) default_value: Option<DefaultValue>,
+    pub(crate) directives: Arc<Vec<Directive>>,
 }

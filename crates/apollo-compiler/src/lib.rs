@@ -52,6 +52,14 @@ impl ApolloCompiler {
     pub fn fragments(&self) -> values::Fragments {
         self.db.fragments()
     }
+
+    pub fn schema(&self) -> Arc<values::SchemaDefinition> {
+        self.db.schema()
+    }
+
+    pub fn object_types(&self) -> Arc<Vec<values::ObjectTypeDefinition>> {
+        self.db.object_types()
+    }
 }
 
 #[cfg(test)]
