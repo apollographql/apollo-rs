@@ -274,6 +274,30 @@ impl Type {
     pub fn is_list(&self) -> bool {
         matches!(self, Self::List { .. })
     }
+
+    pub fn name(&self) -> String {
+        match self {
+            Type::NonNull { ty } => get_name(*ty.clone()),
+            Type::List { ty } => get_name(*ty.clone()),
+            Type::Named { name } => name.to_owned(),
+        }
+    }
+}
+
+fn get_name(ty: Type) -> String {
+    match ty {
+        Type::NonNull { ty } => match *ty {
+            Type::NonNull { ty } => get_name(*ty),
+            Type::List { ty } => get_name(*ty),
+            Type::Named { name } => name,
+        },
+        Type::List { ty } => match *ty {
+            Type::NonNull { ty } => get_name(*ty),
+            Type::List { ty } => get_name(*ty),
+            Type::Named { name } => name,
+        },
+        Type::Named { name } => name,
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -516,15 +540,72 @@ pub struct SchemaDefinition {
     pub(crate) root_operation_type_definition: Arc<Vec<RootOperationTypeDefinition>>,
 }
 
+impl SchemaDefinition {
+    /// Get a reference to the schema definition's root operation type definition.
+    pub fn root_operation_type_definition(&self) -> &[RootOperationTypeDefinition] {
+        self.root_operation_type_definition.as_ref()
+    }
+
+    /// Set the schema definition's root operation type definition.
+    pub fn set_root_operation_type_definition(&mut self, op: RootOperationTypeDefinition) {
+        let mut ops = self.root_operation_type_definition.as_ref().clone();
+        ops.push(op);
+    }
+    // NOTE(@lrlna): potentially have the following fns on the database itself
+    // so they are memoised as well
+
+    /// Get Schema's query object type definition.
+    pub fn query(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+        self.root_operation_type_definition().iter().find_map(|op| {
+            if op.operation_type.is_query() {
+                db.find_object_type(op.object_type_id?)
+            } else {
+                None
+            }
+        })
+    }
+
+    /// Get Schema's mutation object type definition.
+    pub fn mutation(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+        self.root_operation_type_definition().iter().find_map(|op| {
+            if op.operation_type.is_mutation() {
+                db.find_object_type(op.object_type_id?)
+            } else {
+                None
+            }
+        })
+    }
+
+    /// Get Schema's subscription object type definition.
+    pub fn subscription(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+        self.root_operation_type_definition().iter().find_map(|op| {
+            if op.operation_type.is_subscription() {
+                db.find_object_type(op.object_type_id?)
+            } else {
+                None
+            }
+        })
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct RootOperationTypeDefinition {
+    pub(crate) object_type_id: Option<Uuid>,
     pub(crate) operation_type: OperationType,
     pub(crate) named_type: Type,
+}
+
+impl RootOperationTypeDefinition {
+    /// Get a reference to the root operation type definition's named type.
+    pub fn named_type(&self) -> &Type {
+        &self.named_type
+    }
 }
 
 impl Default for RootOperationTypeDefinition {
     fn default() -> Self {
         Self {
+            object_type_id: None,
             operation_type: OperationType::Query,
             named_type: Type::Named {
                 name: "Query".to_string(),
@@ -535,11 +616,24 @@ impl Default for RootOperationTypeDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ObjectTypeDefinition {
+    pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: String,
     pub(crate) implements_interfaces: ImplementsInterfaces,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
+}
+
+impl ObjectTypeDefinition {
+    /// Get the object type definition's id.
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
+    /// Get a reference to the object type definition's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]

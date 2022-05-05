@@ -44,17 +44,21 @@ pub trait SourceDatabase {
 
     fn object_types(&self) -> Arc<Vec<ObjectTypeDefinition>>;
 
-    fn queries(&self) -> Operations;
+    fn query_operations(&self) -> Operations;
 
-    fn mutations(&self) -> Operations;
+    fn mutation_operations(&self) -> Operations;
 
-    fn subscriptions(&self) -> Operations;
+    fn subscription_operations(&self) -> Operations;
 
     fn find_operation(&self, id: Uuid) -> Option<Arc<OperationDefinition>>;
 
     fn find_fragment(&self, id: Uuid) -> Option<Arc<FragmentDefinition>>;
 
     fn find_fragment_by_name(&self, name: String) -> Option<Arc<FragmentDefinition>>;
+
+    fn find_object_type(&self, id: Uuid) -> Option<Arc<ObjectTypeDefinition>>;
+
+    fn find_object_type_by_name(&self, name: String) -> Option<Arc<ObjectTypeDefinition>>;
 
     fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<String>>;
 
@@ -115,7 +119,16 @@ fn operations(db: &dyn SourceDatabase) -> Operations {
     Operations::new(Arc::new(operations))
 }
 
-fn subscriptions(db: &dyn SourceDatabase) -> Operations {
+fn query_operations(db: &dyn SourceDatabase) -> Operations {
+    let operations = db
+        .operations()
+        .iter()
+        .filter_map(|op| op.ty.is_query().then(|| op.clone()))
+        .collect();
+    Operations::new(Arc::new(operations))
+}
+
+fn subscription_operations(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .operations()
         .iter()
@@ -124,20 +137,11 @@ fn subscriptions(db: &dyn SourceDatabase) -> Operations {
     Operations::new(Arc::new(operations))
 }
 
-fn mutations(db: &dyn SourceDatabase) -> Operations {
+fn mutation_operations(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .operations()
         .iter()
         .filter_map(|op| op.ty.is_mutation().then(|| op.clone()))
-        .collect();
-    Operations::new(Arc::new(operations))
-}
-
-fn queries(db: &dyn SourceDatabase) -> Operations {
-    let operations = db
-        .operations()
-        .iter()
-        .filter_map(|op| op.ty.is_query().then(|| op.clone()))
         .collect();
     Operations::new(Arc::new(operations))
 }
@@ -302,7 +306,7 @@ fn schema(db: &dyn SourceDatabase) -> Arc<SchemaDefinition> {
             ast::Definition::SchemaDefinition(schema) => Some(schema.clone()),
             _ => None,
         });
-    let schema_def = schema.map_or(SchemaDefinition::default(), schema_definition);
+    let schema_def = schema.map_or(SchemaDefinition::default(), |s| schema_definition(db, s));
     Arc::new(schema_def)
 }
 
@@ -312,12 +316,33 @@ fn object_types(db: &dyn SourceDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
         .iter()
         .filter_map(|definition| match definition {
             ast::Definition::ObjectTypeDefinition(obj_def) => {
-                Some(object_type_definition(obj_def.clone()))
+                Some(object_type_definition(db, obj_def.clone()))
             }
             _ => None,
         })
         .collect();
     Arc::new(objects)
+}
+
+fn find_object_type(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<ObjectTypeDefinition>> {
+    db.object_types().iter().find_map(|object_type| {
+        if &id == object_type.id() {
+            return Some(Arc::new(object_type.clone()));
+        }
+        None
+    })
+}
+
+fn find_object_type_by_name(
+    db: &dyn SourceDatabase,
+    name: String,
+) -> Option<Arc<ObjectTypeDefinition>> {
+    db.object_types().iter().find_map(|object_type| {
+        if name == object_type.name() {
+            return Some(Arc::new(object_type.clone()));
+        }
+        None
+    })
 }
 
 fn operation_definition(
@@ -374,11 +399,14 @@ fn fragment_definition(
     }
 }
 
-fn schema_definition(schema_def: ast::SchemaDefinition) -> SchemaDefinition {
+fn schema_definition(
+    db: &dyn SourceDatabase,
+    schema_def: ast::SchemaDefinition,
+) -> SchemaDefinition {
     let description = description(schema_def.description());
     let directives = directives(schema_def.directives());
     let root_operation_type_definition =
-        root_operation_type_definition(schema_def.root_operation_type_definitions());
+        root_operation_type_definition(db, schema_def.root_operation_type_definitions());
 
     SchemaDefinition {
         description,
@@ -387,19 +415,58 @@ fn schema_definition(schema_def: ast::SchemaDefinition) -> SchemaDefinition {
     }
 }
 
-fn object_type_definition(obj_def: ast::ObjectTypeDefinition) -> ObjectTypeDefinition {
+fn object_type_definition(
+    db: &dyn SourceDatabase,
+    obj_def: ast::ObjectTypeDefinition,
+) -> ObjectTypeDefinition {
+    let id = Uuid::new_v4();
     let description = description(obj_def.description());
     let name = name(obj_def.name());
     let implements_interfaces = implements_interfaces(obj_def.implements_interfaces());
     let directives = directives(obj_def.directives());
     let fields_definition = fields_definition(obj_def.fields_definition());
 
+    add_object_type_id_to_schema(db, id, &name);
+
     ObjectTypeDefinition {
+        id,
         description,
         name,
         implements_interfaces,
         directives,
         fields_definition,
+    }
+}
+
+fn add_object_type_id_to_schema(db: &dyn SourceDatabase, id: Uuid, name: &str) {
+    // Schema Definition does not have to be present in the SDL if ObjectType name is
+    // - Query
+    // - Subscription
+    // - Mutation
+    //
+    // Compiler's internal schema, however, should have a reference to these
+    // object types if they are present
+    if let Some(mut root_op) = db
+        .schema()
+        .root_operation_type_definition()
+        .iter()
+        .find(|op| op.named_type().name() == name)
+        .cloned()
+    {
+        root_op.object_type_id = Some(id)
+    } else if matches!(name, "Query" | "Subscription" | "Mutation") {
+        let operation_type = match_operation_type(name);
+        let root_op = RootOperationTypeDefinition {
+            object_type_id: Some(id),
+            operation_type,
+            named_type: Type::Named {
+                name: name.to_string(),
+            },
+        };
+        db.schema()
+            .as_ref()
+            .clone()
+            .set_root_operation_type_definition(root_op);
     }
 }
 
@@ -495,6 +562,7 @@ fn default_value(default_value: Option<ast::DefaultValue>) -> Option<DefaultValu
 }
 
 fn root_operation_type_definition(
+    db: &dyn SourceDatabase,
     root_type_def: AstChildren<ast::RootOperationTypeDefinition>,
 ) -> Arc<Vec<RootOperationTypeDefinition>> {
     let type_defs: Vec<RootOperationTypeDefinition> = root_type_def
@@ -506,7 +574,12 @@ fn root_operation_type_definition(
                     .expect("Root Operation Type Definition must have Named Type.")
                     .name(),
             );
+            let object_type_id = db
+                .find_object_type_by_name(named_type.name())
+                .map(|object_type| *object_type.id());
+
             RootOperationTypeDefinition {
+                object_type_id,
                 operation_type,
                 named_type,
             }
@@ -530,6 +603,15 @@ fn operation_type(op_type: Option<ast::OperationType>) -> OperationType {
             }
         }
         None => OperationType::Query,
+    }
+}
+fn match_operation_type(name: &str) -> OperationType {
+    if name == "Subscription" {
+        OperationType::Subscription
+    } else if name == "Mutation" {
+        OperationType::Mutation
+    } else {
+        OperationType::Query
     }
 }
 
