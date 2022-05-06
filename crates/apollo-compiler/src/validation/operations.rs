@@ -46,9 +46,9 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
 
     // A Subscription operation definition can only have **one** root level
     // field.
-    if db.subscriptions().len() >= 1 {
+    if db.subscription_operations().len() >= 1 {
         let single_root_field: Vec<ApolloDiagnostic> = db
-            .subscriptions()
+            .subscription_operations()
             .iter()
             .filter_map(|op| {
                 let mut fields = op.fields(db).as_ref().clone();
