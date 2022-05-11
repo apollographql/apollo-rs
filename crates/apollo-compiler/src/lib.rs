@@ -133,4 +133,40 @@ query ExampleQuery {
             ["name", "price", "dimensions", "size", "weight"]
         );
     }
+
+    #[test]
+    fn it_accesses_schema_operation_types() {
+        let input = r#"
+schema {
+  query: customPetQuery,
+  subscription: customPetQuery,
+}
+
+type customPetQuery {
+  name: String,
+  age: Int
+}
+
+type Subscription {
+  changeInPetHousehold: Result
+}
+
+type Mutation {
+  addPet (name: String!, petType: PetType): Result!
+}
+
+type Result {
+  id: String
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+
+        dbg!(&errors);
+        assert!(errors.is_empty());
+
+        let schema = ctx.schema();
+        dbg!(schema);
+    }
 }

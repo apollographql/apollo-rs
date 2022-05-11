@@ -1,6 +1,7 @@
 use crate::{ApolloDiagnostic, SourceDatabase};
 
 pub mod operations;
+pub mod schema;
 pub mod unused_implements_interfaces;
 pub mod unused_variables;
 
@@ -21,6 +22,7 @@ impl<'a> Validator<'a> {
         self.errors.extend(self.db.syntax_errors());
         self.errors.extend(operations::check(self.db));
         self.errors.extend(unused_variables::check(self.db));
+        self.errors.extend(schema::check(self.db));
         self.errors.as_mut()
     }
 }

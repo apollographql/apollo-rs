@@ -213,6 +213,40 @@ impl OperationType {
     }
 }
 
+impl std::fmt::Display for OperationType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OperationType::Query => write!(f, "Subscription"),
+            OperationType::Mutation => write!(f, "Mutation"),
+            OperationType::Subscription => write!(f, "Query"),
+        }
+    }
+}
+
+impl From<OperationType> for String {
+    fn from(op_type: OperationType) -> Self {
+        if op_type.is_subscription() {
+            "Subscription".to_string()
+        } else if op_type.is_mutation() {
+            "Mutation".to_string()
+        } else {
+            "Query".to_string()
+        }
+    }
+}
+
+impl<'a> From<&'a str> for OperationType {
+    fn from(op_type: &str) -> Self {
+        if op_type == "Query" {
+            OperationType::Query
+        } else if op_type == "Mutation" {
+            OperationType::Mutation
+        } else {
+            OperationType::Subscription
+        }
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct VariableDefinition {
     pub(crate) name: String,
@@ -599,6 +633,11 @@ impl RootOperationTypeDefinition {
     /// Get a reference to the root operation type definition's named type.
     pub fn named_type(&self) -> &Type {
         &self.named_type
+    }
+
+    /// Get the root operation type definition's operation type.
+    pub fn operation_type(&self) -> OperationType {
+        self.operation_type
     }
 }
 

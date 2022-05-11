@@ -14,19 +14,29 @@ pub enum ApolloDiagnostic {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ErrorDiagnostic {
     MissingIdent(String),
+    QueryRootOperationType(String),
     SingleRootField(String),
-    UniqueOperationDefinition {
-        message: String,
-        operation: String,
-    },
-    UndefinedVariable {
-        message: String,
-        variable: String,
-    },
     SyntaxError {
         message: String,
         data: String,
         index: usize,
+    },
+    UniqueOperationDefinition {
+        message: String,
+        operation: String,
+    },
+    UniqueRootOperationType {
+        message: String,
+        named_type: String,
+        operation_type: String,
+    },
+    UnsupportedOperation {
+        message: String,
+        operation: Option<String>,
+    },
+    UndefinedVariable {
+        message: String,
+        variable: String,
     },
 }
 

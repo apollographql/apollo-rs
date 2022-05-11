@@ -316,7 +316,7 @@ fn object_types(db: &dyn SourceDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
         .iter()
         .filter_map(|definition| match definition {
             ast::Definition::ObjectTypeDefinition(obj_def) => {
-                Some(object_type_definition(db, obj_def.clone()))
+                Some(object_type_definition(obj_def.clone()))
             }
             _ => None,
         })
@@ -415,18 +415,13 @@ fn schema_definition(
     }
 }
 
-fn object_type_definition(
-    db: &dyn SourceDatabase,
-    obj_def: ast::ObjectTypeDefinition,
-) -> ObjectTypeDefinition {
+fn object_type_definition(obj_def: ast::ObjectTypeDefinition) -> ObjectTypeDefinition {
     let id = Uuid::new_v4();
     let description = description(obj_def.description());
     let name = name(obj_def.name());
     let implements_interfaces = implements_interfaces(obj_def.implements_interfaces());
     let directives = directives(obj_def.directives());
     let fields_definition = fields_definition(obj_def.fields_definition());
-
-    add_object_type_id_to_schema(db, id, &name);
 
     ObjectTypeDefinition {
         id,
@@ -438,7 +433,10 @@ fn object_type_definition(
     }
 }
 
-fn add_object_type_id_to_schema(db: &dyn SourceDatabase, id: Uuid, name: &str) {
+fn add_object_type_id_to_schema(
+    db: &dyn SourceDatabase,
+    mut root_type_defs: Vec<RootOperationTypeDefinition>,
+) -> Vec<RootOperationTypeDefinition> {
     // Schema Definition does not have to be present in the SDL if ObjectType name is
     // - Query
     // - Subscription
@@ -446,28 +444,38 @@ fn add_object_type_id_to_schema(db: &dyn SourceDatabase, id: Uuid, name: &str) {
     //
     // Compiler's internal schema, however, should have a reference to these
     // object types if they are present
-    if let Some(mut root_op) = db
-        .schema()
-        .root_operation_type_definition()
+    let type_defs: Vec<RootOperationTypeDefinition> = db
+        .object_types()
         .iter()
-        .find(|op| op.named_type().name() == name)
-        .cloned()
-    {
-        root_op.object_type_id = Some(id)
-    } else if matches!(name, "Query" | "Subscription" | "Mutation") {
-        let operation_type = match_operation_type(name);
-        let root_op = RootOperationTypeDefinition {
-            object_type_id: Some(id),
-            operation_type,
-            named_type: Type::Named {
-                name: name.to_string(),
-            },
-        };
-        db.schema()
-            .as_ref()
-            .clone()
-            .set_root_operation_type_definition(root_op);
-    }
+        .filter_map(|obj_type| {
+            let obj_name = obj_type.name();
+            if matches!(obj_name, "Query" | "Subscription" | "Mutation") {
+                let operation_type = obj_name.into();
+                Some(RootOperationTypeDefinition {
+                    object_type_id: Some(*obj_type.id()),
+                    operation_type,
+                    named_type: Type::Named {
+                        name: obj_name.to_string(),
+                    },
+                })
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    root_type_defs.extend(type_defs);
+    root_type_defs
+    // if let Some(mut root_op) = db
+    //     .schema()
+    //     .root_operation_type_definition()
+    //     .iter()
+    //     .find(|op| op.named_type().name() == name)
+    //     .cloned()
+    // {
+    //     root_op.object_type_id = Some(id)
+    //     // } else if matches!(name, "Query" | "Subscription" | "Mutation") {
+    // }
 }
 
 fn implements_interfaces(
@@ -577,7 +585,6 @@ fn root_operation_type_definition(
             let object_type_id = db
                 .find_object_type_by_name(named_type.name())
                 .map(|object_type| *object_type.id());
-
             RootOperationTypeDefinition {
                 object_type_id,
                 operation_type,
@@ -585,6 +592,16 @@ fn root_operation_type_definition(
             }
         })
         .collect();
+
+    // NOTE(@lrlna):
+    //
+    // "Query", "Subscription", "Mutation" object type definitions do not need
+    // to be explicitly defined in a schema definition, but are implicitly
+    // added.
+    //
+    // There will be a time when we need to distinguish between implicit and
+    // explicit definitions for validation purposes.
+    let type_defs = add_object_type_id_to_schema(db, type_defs);
 
     Arc::new(type_defs)
 }
@@ -603,15 +620,6 @@ fn operation_type(op_type: Option<ast::OperationType>) -> OperationType {
             }
         }
         None => OperationType::Query,
-    }
-}
-fn match_operation_type(name: &str) -> OperationType {
-    if name == "Subscription" {
-        OperationType::Subscription
-    } else if name == "Mutation" {
-        OperationType::Mutation
-    } else {
-        OperationType::Query
     }
 }
 

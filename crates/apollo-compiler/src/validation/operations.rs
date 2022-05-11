@@ -66,6 +66,54 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         errors.extend(single_root_field);
     }
 
+    // All query, subscription and mutation operations must be against legally
+    // defined schema root operation types.
+    //
+    //   * subscription operation - subscription root operation
+    if db.subscription_operations().len() >= 1 && db.schema().subscription(db).is_none() {
+        let unsupported_ops: Vec<ApolloDiagnostic> = db
+            .subscription_operations()
+            .iter()
+            .map(|op| {
+                ApolloDiagnostic::Error(ErrorDiagnostic::UnsupportedOperation {
+                    message: "Subscription operation not supported by the schema".into(),
+                    operation: op.name().map(|s| s.to_string()),
+                })
+            })
+            .collect();
+        errors.extend(unsupported_ops)
+    }
+    //
+    //   * query operation - query root operation
+    if db.query_operations().len() >= 1 && db.schema().query(db).is_none() {
+        let unsupported_ops: Vec<ApolloDiagnostic> = db
+            .query_operations()
+            .iter()
+            .map(|op| {
+                ApolloDiagnostic::Error(ErrorDiagnostic::UnsupportedOperation {
+                    message: "Query operation not supported by the schema".into(),
+                    operation: op.name().map(|s| s.to_string()),
+                })
+            })
+            .collect();
+        errors.extend(unsupported_ops)
+    }
+    //
+    //   * mutation operation - mutation root operation
+    if db.mutation_operations().len() >= 1 && db.schema().mutation(db).is_none() {
+        let unsupported_ops: Vec<ApolloDiagnostic> = db
+            .mutation_operations()
+            .iter()
+            .map(|op| {
+                ApolloDiagnostic::Error(ErrorDiagnostic::UnsupportedOperation {
+                    message: "Mutation operation not supported by the schema".into(),
+                    operation: op.name().map(|s| s.to_string()),
+                })
+            })
+            .collect();
+        errors.extend(unsupported_ops)
+    }
+
     errors
 }
 
