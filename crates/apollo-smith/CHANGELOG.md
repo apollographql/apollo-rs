@@ -18,6 +18,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.1.3](https://crates.io/crates/apollo-smith/0.1.3) - 2022-05-12
+
+## Fixes
+- **add interface definition to internal stack - [bnjjj], [pull/213]**
+
+  Added support of interface definition in the stack to fill an operation with
+  correct fields.
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/213]: https://github.com/apollographql/apollo-rs/pull/213
+
 # [0.1.2](https://crates.io/crates/apollo-smith/0.1.2) - 2022-04-28
 
 ## Maintenance
@@ -25,7 +36,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `apollo-encoder`'s 0.3.0 changes `desciption` and `default-value` setters to
   accept String as a parameter. This changes the internals of apollo-smith
   accordingly.
-  
+
   [lrlna]: https://github.com/lrlna
   [pull/207]: https://github.com/apollographql/apollo-rs/pull/207
   [pull/208]: https://github.com/apollographql/apollo-rs/pull/208
