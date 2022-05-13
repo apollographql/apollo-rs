@@ -157,7 +157,7 @@ ScalarTypeDefinition =
   Description? 'scalar' Name Directives?
 ```
 
-Our entire tree is defines in [graphql.ungram]. Using the `ungrammar`
+Our entire tree is defined in [graphql.ungram]. Using the `ungrammar`
 definitions, we then create an entire `nodes.rs` file, like the snippet below,
 using [`xtask`] in [codegen/gen_syntax_nodes]. We also generate
 `SyntaxKind`([codegen/gen_syntax_kinds]) that we use when creating nodes in the
@@ -198,7 +198,7 @@ the syntax tree using the above `name()` getter method:
 use apollo_parser::Parser;
 use apollo_parser::ast::{Definition, ObjectTypeDefinition};
 
-// Let's create a GraphQL document with just an scalar type definition.
+// Let's create a GraphQL document with just a scalar type definition.
 let gql = r#"scalar UUID @specifiedBy(url: "cats.com/cool-kitten-schema")"#;
 
 // Parse the input data.
