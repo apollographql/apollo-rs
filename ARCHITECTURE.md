@@ -163,9 +163,8 @@ using [`xtask`] in [codegen/gen_syntax_nodes]. We also generate
 `SyntaxKind`([codegen/gen_syntax_kinds]) that we use when creating nodes in the
 untyped syntax tree. 
 
-To illustrate how a definition in `ungrammar` becomes a struct, let's look at `ScalarTypeDefinition` 
-below. Given the definition, we can then generate a struct with applicable accessor methods for 
-`Description`, scalar token, `Name` and `Directives`.
+Given the definition, we can then generate a struct with applicable accessor methods for `Description`, 
+scalar token, `Name` and `Directives`.
 
 ```rust
 // generated nodes.rs file
