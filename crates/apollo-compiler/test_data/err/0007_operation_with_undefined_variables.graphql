@@ -3,3 +3,11 @@ query ExampleQuery {
     name
   }
 }
+
+type Query {
+  topProducts(first: Int): TopProduct,
+}
+
+type TopProduct {
+  name: String
+}

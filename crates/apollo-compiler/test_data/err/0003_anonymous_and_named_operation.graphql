@@ -5,9 +5,17 @@ query {
 }
 
 mutation getName {
-  cat {
+  addPet {
     owner {
       name
     }
   }
+}
+
+type Query {
+  cat: String
+}
+
+type Mutation {
+  addPet (name: String!, petType: PetType): Result!
 }

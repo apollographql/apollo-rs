@@ -4,3 +4,7 @@ fragment fragmentOne {
     name
     birthday
 }
+
+type Query {
+  topProducts(first: Int): Product,
+}

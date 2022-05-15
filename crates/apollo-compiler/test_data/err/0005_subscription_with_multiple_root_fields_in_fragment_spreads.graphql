@@ -9,3 +9,12 @@ fragment multipleSubscriptions on Subscription {
   }
   disallowedSecondRootField
 }
+
+type Subscription {
+  newMessage: Result
+}
+
+type Result {
+  body: String,
+  sender: String
+}

@@ -11,3 +11,12 @@ fragment multipleSubscriptions on Subscription {
     sender(attribute: $value)
   }
 }
+
+type Query {
+  topProducts(first: Int): Product,
+}
+
+type Product {
+  name: String
+  price(setPrice: Int): Int
+}

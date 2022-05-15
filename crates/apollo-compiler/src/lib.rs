@@ -139,7 +139,6 @@ query ExampleQuery {
         let input = r#"
 schema {
   query: customPetQuery,
-  subscription: customPetQuery,
 }
 
 type customPetQuery {

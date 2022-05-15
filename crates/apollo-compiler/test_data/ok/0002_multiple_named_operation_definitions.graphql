@@ -11,3 +11,17 @@ query getOwnerName {
     }
   }
 }
+
+
+type Query {
+  cat: Pet
+}
+
+type Pet {
+  name: String,
+  owner: PetOwner
+}
+
+type PetOwner {
+  name: String
+}
