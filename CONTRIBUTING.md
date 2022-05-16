@@ -110,7 +110,7 @@ Contributors can disagree with one another so long as they trust that those
 disagreements are in good faith and everyone is working towards a common goal.
 
 ## Bad actors
-All contributors to tacitly agree to abide by both the letter and spirit of the
+All contributors tacitly agree to abide by both the letter and spirit of the
 [Code of Conduct]. Failure, or unwillingness, to do so will result in
 contributions being respectfully declined.
 

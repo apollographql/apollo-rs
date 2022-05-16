@@ -4,7 +4,7 @@ While this is a non-exhaustive list, current large features we are planning on b
 
 1. **Semantic Analysis and Validation**
     We will be building a separate structure on top of the the AST created by
-    the parser to allow for more effient schema querying. This will include more
+    the parser to allow for more efficient schema querying. This will include more
     easily accessible information about queries, mutations, types and their
     subtypes, directives etc.
 
