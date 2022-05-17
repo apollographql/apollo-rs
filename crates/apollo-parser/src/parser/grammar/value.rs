@@ -294,4 +294,49 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             }
         }
     }
+
+    #[test]
+    fn it_parse_mutation_with_escaped_char() {
+        let input = r#"mutation {
+            createStore(draft: {
+              name: [{ locale: "en", value: "\"my store\"" }]
+            }) {
+              name(locale: "en")
+            }
+          }"#;
+        let parser = Parser::new(input);
+        let ast = parser.parse();
+
+        assert!(ast.errors().next().is_none());
+    }
+
+    #[test]
+    fn it_parse_mutation_without_escaped_char() {
+        let input = r#"mutation {
+            createStore(draft: {
+              name: [{ locale: "en", value: "my store" }]
+            }) {
+              name(locale: "en")
+            }
+          }"#;
+        let parser = Parser::new(input);
+        let ast = parser.parse();
+
+        assert!(ast.errors().next().is_none());
+    }
+
+    #[test]
+    fn it_parse_mutation_without_escaped_char_with_error() {
+        let input = r#"mutation {
+            createStore(draft: {
+              name: [{ locale: "en", value: "\"my store" }]
+            }) {
+              name(locale: "en")
+            }
+          }"#;
+        let parser = Parser::new(input);
+        let ast = parser.parse();
+
+        assert!(ast.errors().next().is_none());
+    }
 }

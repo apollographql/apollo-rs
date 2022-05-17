@@ -135,12 +135,15 @@ impl Cursor<'_> {
             '"' => self.block_string_value(buf, c),
             t => {
                 buf.push(t);
+                let mut was_backslash = t == '\\';
 
                 while !self.is_eof() {
                     let c = self.bump().unwrap();
                     if c == '"' {
                         buf.push(c);
-                        break;
+                        if !was_backslash {
+                            break;
+                        }
                     } else if is_escaped_char(c)
                         || is_source_char(c) && c != '\\' && c != '"' && !is_line_terminator(c)
                     {
@@ -149,6 +152,7 @@ impl Cursor<'_> {
                     } else {
                         break;
                     }
+                    was_backslash = c == '\\';
                 }
 
                 Ok(Token::new(TokenKind::StringValue, buf))
@@ -413,5 +417,14 @@ mod test {
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
         dbg!(lexer_1.errors);
+    }
+
+    #[test]
+    fn tests_escaped_char() {
+        let gql_1 = r#"
+        { name: "\"my store\"" }
+        "#;
+        let lexer_1 = Lexer::new(gql_1);
+        assert!(lexer_1.errors.is_empty());
     }
 }
