@@ -1,0 +1,22 @@
+schema {
+  query: customPetQuery,
+  subscription: customPetSubscription
+  mutation: customPetMutation
+}
+
+type customPetQuery {
+  name: String,
+  age: Int
+}
+
+type customPetSubscription {
+  changeInPetHousehold: Result
+}
+
+type customPetMutation {
+  addPet (name: String!, petType: PetType): Result!
+}
+
+type Result {
+  id: String
+}

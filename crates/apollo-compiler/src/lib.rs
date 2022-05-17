@@ -70,7 +70,6 @@ mod test {
     fn it_accesses_operation_definition_parts() {
         let input = r#"
 query ExampleQuery($definedVariable: Int, $definedVariable2: Boolean) {
-
   topProducts(first: $definedVariable) {
     name
   }
@@ -82,6 +81,10 @@ fragment vipCustomer on User {
   name
   profilePic(size: 50)
   status(activity: $definedVariable2)
+}
+
+type Query {
+    topProducts: Products
 }
 "#;
 
@@ -117,6 +120,14 @@ query ExampleQuery {
   dimensions
   size
   weight
+}
+
+type Query {
+  name: String
+  price: Int
+  dimensions: Int
+  size: Int
+  weight: Int
 }
 "#;
 
@@ -162,7 +173,6 @@ type Result {
         let ctx = ApolloCompiler::new(input);
         let errors = ctx.validate();
 
-        dbg!(&errors);
         assert!(errors.is_empty());
 
         let schema = ctx.schema();

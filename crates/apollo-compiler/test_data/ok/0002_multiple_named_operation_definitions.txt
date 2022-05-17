@@ -1,4 +1,4 @@
-- DOCUMENT@0..107
+- DOCUMENT@0..217
     - OPERATION_DEFINITION@0..43
         - OPERATION_TYPE@0..6
             - query_KW@0..5 "query"
@@ -24,14 +24,14 @@
                     - WHITESPACE@39..40 "\n"
             - R_CURLY@40..41 "}"
             - WHITESPACE@41..43 "\n\n"
-    - OPERATION_DEFINITION@43..107
+    - OPERATION_DEFINITION@43..109
         - OPERATION_TYPE@43..49
             - query_KW@43..48 "query"
             - WHITESPACE@48..49 " "
         - NAME@49..62
             - IDENT@49..61 "getOwnerName"
             - WHITESPACE@61..62 " "
-        - SELECTION_SET@62..107
+        - SELECTION_SET@62..109
             - L_CURLY@62..63 "{"
             - WHITESPACE@63..66 "\n  "
             - FIELD@66..105
@@ -57,5 +57,75 @@
                     - R_CURLY@103..104 "}"
                     - WHITESPACE@104..105 "\n"
             - R_CURLY@105..106 "}"
-            - WHITESPACE@106..107 "\n"
+            - WHITESPACE@106..109 "\n\n\n"
+    - OBJECT_TYPE_DEFINITION@109..136
+        - type_KW@109..113 "type"
+        - WHITESPACE@113..114 " "
+        - NAME@114..120
+            - IDENT@114..119 "Query"
+            - WHITESPACE@119..120 " "
+        - FIELDS_DEFINITION@120..136
+            - L_CURLY@120..121 "{"
+            - WHITESPACE@121..124 "\n  "
+            - FIELD_DEFINITION@124..133
+                - NAME@124..127
+                    - IDENT@124..127 "cat"
+                - COLON@127..128 ":"
+                - WHITESPACE@128..129 " "
+                - NAMED_TYPE@129..132
+                    - NAME@129..132
+                        - IDENT@129..132 "Pet"
+                - WHITESPACE@132..133 "\n"
+            - R_CURLY@133..134 "}"
+            - WHITESPACE@134..136 "\n\n"
+    - OBJECT_TYPE_DEFINITION@136..184
+        - type_KW@136..140 "type"
+        - WHITESPACE@140..141 " "
+        - NAME@141..145
+            - IDENT@141..144 "Pet"
+            - WHITESPACE@144..145 " "
+        - FIELDS_DEFINITION@145..184
+            - L_CURLY@145..146 "{"
+            - WHITESPACE@146..149 "\n  "
+            - FIELD_DEFINITION@149..165
+                - NAME@149..153
+                    - IDENT@149..153 "name"
+                - COLON@153..154 ":"
+                - WHITESPACE@154..155 " "
+                - NAMED_TYPE@155..161
+                    - NAME@155..161
+                        - IDENT@155..161 "String"
+                - COMMA@161..162 ","
+                - WHITESPACE@162..165 "\n  "
+            - FIELD_DEFINITION@165..181
+                - NAME@165..170
+                    - IDENT@165..170 "owner"
+                - COLON@170..171 ":"
+                - WHITESPACE@171..172 " "
+                - NAMED_TYPE@172..180
+                    - NAME@172..180
+                        - IDENT@172..180 "PetOwner"
+                - WHITESPACE@180..181 "\n"
+            - R_CURLY@181..182 "}"
+            - WHITESPACE@182..184 "\n\n"
+    - OBJECT_TYPE_DEFINITION@184..217
+        - type_KW@184..188 "type"
+        - WHITESPACE@188..189 " "
+        - NAME@189..198
+            - IDENT@189..197 "PetOwner"
+            - WHITESPACE@197..198 " "
+        - FIELDS_DEFINITION@198..217
+            - L_CURLY@198..199 "{"
+            - WHITESPACE@199..202 "\n  "
+            - FIELD_DEFINITION@202..215
+                - NAME@202..206
+                    - IDENT@202..206 "name"
+                - COLON@206..207 ":"
+                - WHITESPACE@207..208 " "
+                - NAMED_TYPE@208..214
+                    - NAME@208..214
+                        - IDENT@208..214 "String"
+                - WHITESPACE@214..215 "\n"
+            - R_CURLY@215..216 "}"
+            - WHITESPACE@216..217 "\n"
 

@@ -581,9 +581,10 @@ impl SchemaDefinition {
     }
 
     /// Set the schema definition's root operation type definition.
-    pub fn set_root_operation_type_definition(&mut self, op: RootOperationTypeDefinition) {
-        let mut ops = self.root_operation_type_definition.as_ref().clone();
-        ops.push(op);
+    pub(crate) fn set_root_operation_type_definition(&mut self, op: RootOperationTypeDefinition) {
+        Arc::get_mut(&mut self.root_operation_type_definition)
+            .unwrap()
+            .push(op)
     }
     // NOTE(@lrlna): potentially have the following fns on the database itself
     // so they are memoised as well

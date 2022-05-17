@@ -137,6 +137,10 @@ query getName {
     }
   }
 }
+
+type Query {
+  cat: Pet
+}
 "#;
         let ctx = ApolloCompiler::new(input);
         let errors = ctx.validate();
@@ -158,6 +162,10 @@ query getOwnerName {
       name
     }
   }
+}
+
+type Query {
+  cat: Pet
 }
 "#;
         let ctx = ApolloCompiler::new(input);

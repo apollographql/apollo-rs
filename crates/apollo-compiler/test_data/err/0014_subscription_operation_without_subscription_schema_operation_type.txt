@@ -1,0 +1,1 @@
+[Error(UnsupportedOperation { message: "Subscription operation not supported by the schema", operation: Some("messageSubscription") })]

@@ -16,3 +16,7 @@ type Result {
   body: String,
   sender: String
 }
+
+type Query {
+  message: String
+}

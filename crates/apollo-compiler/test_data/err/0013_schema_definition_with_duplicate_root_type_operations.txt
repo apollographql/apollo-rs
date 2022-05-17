@@ -1,0 +1,1 @@
+[Error(UniqueRootOperationType { message: "Root Operation Types must be unique", named_type: "customPetQuery", operation_type: "Query" })]

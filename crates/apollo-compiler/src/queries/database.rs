@@ -306,7 +306,21 @@ fn schema(db: &dyn SourceDatabase) -> Arc<SchemaDefinition> {
             ast::Definition::SchemaDefinition(schema) => Some(schema.clone()),
             _ => None,
         });
-    let schema_def = schema.map_or(SchemaDefinition::default(), |s| schema_definition(db, s));
+    let mut schema_def = schema.map_or(SchemaDefinition::default(), |s| schema_definition(db, s));
+
+    // NOTE(@lrlna):
+    //
+    // "Query", "Subscription", "Mutation" object type definitions do not need
+    // to be explicitly defined in a schema definition, but are implicitly
+    // added.
+    //
+    // There will be a time when we need to distinguish between implicit and
+    // explicit definitions for validation purposes.
+    let type_defs = add_object_type_id_to_schema(db);
+    type_defs
+        .iter()
+        .for_each(|ty| schema_def.set_root_operation_type_definition(ty.clone()));
+
     Arc::new(schema_def)
 }
 
@@ -433,10 +447,7 @@ fn object_type_definition(obj_def: ast::ObjectTypeDefinition) -> ObjectTypeDefin
     }
 }
 
-fn add_object_type_id_to_schema(
-    db: &dyn SourceDatabase,
-    mut root_type_defs: Vec<RootOperationTypeDefinition>,
-) -> Vec<RootOperationTypeDefinition> {
+fn add_object_type_id_to_schema(db: &dyn SourceDatabase) -> Arc<Vec<RootOperationTypeDefinition>> {
     // Schema Definition does not have to be present in the SDL if ObjectType name is
     // - Query
     // - Subscription
@@ -464,18 +475,7 @@ fn add_object_type_id_to_schema(
         })
         .collect();
 
-    root_type_defs.extend(type_defs);
-    root_type_defs
-    // if let Some(mut root_op) = db
-    //     .schema()
-    //     .root_operation_type_definition()
-    //     .iter()
-    //     .find(|op| op.named_type().name() == name)
-    //     .cloned()
-    // {
-    //     root_op.object_type_id = Some(id)
-    //     // } else if matches!(name, "Query" | "Subscription" | "Mutation") {
-    // }
+    Arc::new(type_defs)
 }
 
 fn implements_interfaces(
@@ -592,16 +592,6 @@ fn root_operation_type_definition(
             }
         })
         .collect();
-
-    // NOTE(@lrlna):
-    //
-    // "Query", "Subscription", "Mutation" object type definitions do not need
-    // to be explicitly defined in a schema definition, but are implicitly
-    // added.
-    //
-    // There will be a time when we need to distinguish between implicit and
-    // explicit definitions for validation purposes.
-    let type_defs = add_object_type_id_to_schema(db, type_defs);
 
     Arc::new(type_defs)
 }

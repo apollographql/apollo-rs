@@ -1,0 +1,15 @@
+subscription messageSubscription {
+  newMessage {
+    body
+    sender
+  }
+}
+
+schema {
+  query: customPetQuery,
+}
+
+type customPetQuery {
+  name: String,
+  age: Int
+}
