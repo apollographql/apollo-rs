@@ -4,6 +4,7 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use apollo_parser::ast::AstChildren;
 use apollo_parser::{ast, Parser, SyntaxTree};
 use uuid::Uuid;
 
@@ -37,17 +38,27 @@ pub trait SourceDatabase {
 
     fn operations(&self) -> Operations;
 
-    fn queries(&self) -> Operations;
+    fn fragments(&self) -> Fragments;
 
-    fn mutations(&self) -> Operations;
+    fn schema(&self) -> Arc<SchemaDefinition>;
 
-    fn subscriptions(&self) -> Operations;
+    fn object_types(&self) -> Arc<Vec<ObjectTypeDefinition>>;
+
+    fn query_operations(&self) -> Operations;
+
+    fn mutation_operations(&self) -> Operations;
+
+    fn subscription_operations(&self) -> Operations;
 
     fn find_operation(&self, id: Uuid) -> Option<Arc<OperationDefinition>>;
 
     fn find_fragment(&self, id: Uuid) -> Option<Arc<FragmentDefinition>>;
 
     fn find_fragment_by_name(&self, name: String) -> Option<Arc<FragmentDefinition>>;
+
+    fn find_object_type(&self, id: Uuid) -> Option<Arc<ObjectTypeDefinition>>;
+
+    fn find_object_type_by_name(&self, name: String) -> Option<Arc<ObjectTypeDefinition>>;
 
     fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<String>>;
 
@@ -58,8 +69,6 @@ pub trait SourceDatabase {
     fn operation_inline_fragment_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
     fn operation_fragment_spread_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
-
-    fn fragments(&self) -> Fragments;
 }
 
 // this is top level entry to the source db
@@ -110,7 +119,16 @@ fn operations(db: &dyn SourceDatabase) -> Operations {
     Operations::new(Arc::new(operations))
 }
 
-fn subscriptions(db: &dyn SourceDatabase) -> Operations {
+fn query_operations(db: &dyn SourceDatabase) -> Operations {
+    let operations = db
+        .operations()
+        .iter()
+        .filter_map(|op| op.ty.is_query().then(|| op.clone()))
+        .collect();
+    Operations::new(Arc::new(operations))
+}
+
+fn subscription_operations(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .operations()
         .iter()
@@ -119,20 +137,11 @@ fn subscriptions(db: &dyn SourceDatabase) -> Operations {
     Operations::new(Arc::new(operations))
 }
 
-fn mutations(db: &dyn SourceDatabase) -> Operations {
+fn mutation_operations(db: &dyn SourceDatabase) -> Operations {
     let operations = db
         .operations()
         .iter()
         .filter_map(|op| op.ty.is_mutation().then(|| op.clone()))
-        .collect();
-    Operations::new(Arc::new(operations))
-}
-
-fn queries(db: &dyn SourceDatabase) -> Operations {
-    let operations = db
-        .operations()
-        .iter()
-        .filter_map(|op| op.ty.is_query().then(|| op.clone()))
         .collect();
     Operations::new(Arc::new(operations))
 }
@@ -289,6 +298,67 @@ fn find_fragment_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<Fr
     })
 }
 
+fn schema(db: &dyn SourceDatabase) -> Arc<SchemaDefinition> {
+    let schema = db
+        .definitions()
+        .iter()
+        .find_map(|definition| match definition {
+            ast::Definition::SchemaDefinition(schema) => Some(schema.clone()),
+            _ => None,
+        });
+    let mut schema_def = schema.map_or(SchemaDefinition::default(), |s| schema_definition(db, s));
+
+    // NOTE(@lrlna):
+    //
+    // "Query", "Subscription", "Mutation" object type definitions do not need
+    // to be explicitly defined in a schema definition, but are implicitly
+    // added.
+    //
+    // There will be a time when we need to distinguish between implicit and
+    // explicit definitions for validation purposes.
+    let type_defs = add_object_type_id_to_schema(db);
+    type_defs
+        .iter()
+        .for_each(|ty| schema_def.set_root_operation_type_definition(ty.clone()));
+
+    Arc::new(schema_def)
+}
+
+fn object_types(db: &dyn SourceDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
+    let objects = db
+        .definitions()
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::ObjectTypeDefinition(obj_def) => {
+                Some(object_type_definition(obj_def.clone()))
+            }
+            _ => None,
+        })
+        .collect();
+    Arc::new(objects)
+}
+
+fn find_object_type(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<ObjectTypeDefinition>> {
+    db.object_types().iter().find_map(|object_type| {
+        if &id == object_type.id() {
+            return Some(Arc::new(object_type.clone()));
+        }
+        None
+    })
+}
+
+fn find_object_type_by_name(
+    db: &dyn SourceDatabase,
+    name: String,
+) -> Option<Arc<ObjectTypeDefinition>> {
+    db.object_types().iter().find_map(|object_type| {
+        if name == object_type.name() {
+            return Some(Arc::new(object_type.clone()));
+        }
+        None
+    })
+}
+
 fn operation_definition(
     db: &dyn SourceDatabase,
     op_def: ast::OperationDefinition,
@@ -316,13 +386,12 @@ fn fragment_definition(
     db: &dyn SourceDatabase,
     fragment_def: ast::FragmentDefinition,
 ) -> FragmentDefinition {
-    let name = fragment_def
-        .fragment_name()
-        .expect("Fragment Definition must have a name")
-        .name()
-        .expect("Name must have text")
-        .text()
-        .to_string();
+    let name = name(
+        fragment_def
+            .fragment_name()
+            .expect("Fragment Definition must have a name")
+            .name(),
+    );
     let type_condition = fragment_def
         .type_condition()
         .expect("Fragment Definition must have a type condition")
@@ -342,6 +411,189 @@ fn fragment_definition(
         selection_set,
         directives,
     }
+}
+
+fn schema_definition(
+    db: &dyn SourceDatabase,
+    schema_def: ast::SchemaDefinition,
+) -> SchemaDefinition {
+    let description = description(schema_def.description());
+    let directives = directives(schema_def.directives());
+    let root_operation_type_definition =
+        root_operation_type_definition(db, schema_def.root_operation_type_definitions());
+
+    SchemaDefinition {
+        description,
+        directives,
+        root_operation_type_definition,
+    }
+}
+
+fn object_type_definition(obj_def: ast::ObjectTypeDefinition) -> ObjectTypeDefinition {
+    let id = Uuid::new_v4();
+    let description = description(obj_def.description());
+    let name = name(obj_def.name());
+    let implements_interfaces = implements_interfaces(obj_def.implements_interfaces());
+    let directives = directives(obj_def.directives());
+    let fields_definition = fields_definition(obj_def.fields_definition());
+
+    ObjectTypeDefinition {
+        id,
+        description,
+        name,
+        implements_interfaces,
+        directives,
+        fields_definition,
+    }
+}
+
+fn add_object_type_id_to_schema(db: &dyn SourceDatabase) -> Arc<Vec<RootOperationTypeDefinition>> {
+    // Schema Definition does not have to be present in the SDL if ObjectType name is
+    // - Query
+    // - Subscription
+    // - Mutation
+    //
+    // Compiler's internal schema, however, should have a reference to these
+    // object types if they are present
+    let type_defs: Vec<RootOperationTypeDefinition> = db
+        .object_types()
+        .iter()
+        .filter_map(|obj_type| {
+            let obj_name = obj_type.name();
+            if matches!(obj_name, "Query" | "Subscription" | "Mutation") {
+                let operation_type = obj_name.into();
+                Some(RootOperationTypeDefinition {
+                    object_type_id: Some(*obj_type.id()),
+                    operation_type,
+                    named_type: Type::Named {
+                        name: obj_name.to_string(),
+                    },
+                })
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    Arc::new(type_defs)
+}
+
+fn implements_interfaces(
+    implements_interfaces: Option<ast::ImplementsInterfaces>,
+) -> ImplementsInterfaces {
+    let interfaces: Vec<Type> = implements_interfaces
+        .iter()
+        .flat_map(|interfaces| {
+            let types: Vec<Type> = interfaces
+                .named_types()
+                .map(|n| Type::Named {
+                    name: n.name().expect("Name must have text").text().to_string(),
+                })
+                .collect();
+            types
+        })
+        .collect();
+
+    ImplementsInterfaces {
+        interfaces: Arc::new(interfaces),
+    }
+}
+
+fn fields_definition(
+    fields_definition: Option<ast::FieldsDefinition>,
+) -> Arc<Vec<FieldDefinition>> {
+    match fields_definition {
+        Some(fields_def) => {
+            let fields: Vec<FieldDefinition> = fields_def
+                .field_definitions()
+                .map(|field| {
+                    let description = description(field.description());
+                    let name = name(field.name());
+                    let arguments = arguments_definition(field.arguments_definition());
+                    let ty = ty(field.ty().expect("Field must have a type"));
+                    let directives = directives(field.directives());
+
+                    FieldDefinition {
+                        description,
+                        name,
+                        arguments,
+                        ty,
+                        directives,
+                    }
+                })
+                .collect();
+            Arc::new(fields)
+        }
+        None => Arc::new(Vec::new()),
+    }
+}
+
+fn arguments_definition(
+    arguments_definition: Option<ast::ArgumentsDefinition>,
+) -> ArgumentsDefinition {
+    match arguments_definition {
+        Some(arguments) => {
+            let input_values = input_value_definitions(arguments.input_value_definitions());
+            ArgumentsDefinition { input_values }
+        }
+        None => ArgumentsDefinition {
+            input_values: Arc::new(Vec::new()),
+        },
+    }
+}
+
+fn input_value_definitions(
+    input_values: AstChildren<ast::InputValueDefinition>,
+) -> Arc<Vec<InputValueDefinition>> {
+    let input_values: Vec<InputValueDefinition> = input_values
+        .map(|input| {
+            let description = description(input.description());
+            let name = name(input.name());
+            let ty = ty(input.ty().expect("Input Definition must have a type"));
+            let default_value = default_value(input.default_value());
+            let directives = directives(input.directives());
+
+            InputValueDefinition {
+                description,
+                name,
+                ty,
+                default_value,
+                directives,
+            }
+        })
+        .collect();
+    Arc::new(input_values)
+}
+
+fn default_value(default_value: Option<ast::DefaultValue>) -> Option<DefaultValue> {
+    default_value.map(|val| value(val.value().expect("Default Value must have a value token")))
+}
+
+fn root_operation_type_definition(
+    db: &dyn SourceDatabase,
+    root_type_def: AstChildren<ast::RootOperationTypeDefinition>,
+) -> Arc<Vec<RootOperationTypeDefinition>> {
+    let type_defs: Vec<RootOperationTypeDefinition> = root_type_def
+        .into_iter()
+        .map(|ty| {
+            let operation_type = operation_type(ty.operation_type());
+            let named_type = named_type(
+                ty.named_type()
+                    .expect("Root Operation Type Definition must have Named Type.")
+                    .name(),
+            );
+            let object_type_id = db
+                .find_object_type_by_name(named_type.name())
+                .map(|object_type| *object_type.id());
+            RootOperationTypeDefinition {
+                object_type_id,
+                operation_type,
+                named_type,
+            }
+        })
+        .collect();
+
+    Arc::new(type_defs)
 }
 
 fn operation_type(op_type: Option<ast::OperationType>) -> OperationType {
@@ -378,17 +630,13 @@ fn variable_definitions(
 }
 
 fn variable_definition(var: ast::VariableDefinition) -> VariableDefinition {
-    let name = var
-        .variable()
-        .expect("Variable Definition must have a variable")
-        .name()
-        .expect("Variable must have a name")
-        .text()
-        .to_string();
+    let name = name(
+        var.variable()
+            .expect("Variable Definition must have a variable")
+            .name(),
+    );
     let directives = directives(var.directives());
-    let default_value = var
-        .default_value()
-        .map(|val| value(val.value().expect("Default Value must have a value")));
+    let default_value = default_value(var.default_value());
     let ty = ty(var.ty().expect("Variable Definition must have a type"));
 
     VariableDefinition {
@@ -401,25 +649,13 @@ fn variable_definition(var: ast::VariableDefinition) -> VariableDefinition {
 
 fn ty(ty_: ast::Type) -> Type {
     match ty_ {
-        ast::Type::NamedType(name) => Type::Named {
-            name: name
-                .name()
-                .expect("NamedType must have text")
-                .text()
-                .to_string(),
-        },
+        ast::Type::NamedType(name) => named_type(name.name()),
         ast::Type::ListType(list) => Type::List {
             ty: Box::new(ty(list.ty().expect("List Type must have a type"))),
         },
         ast::Type::NonNullType(non_null) => {
-            if let Some(name) = non_null.named_type() {
-                let named_type = Type::Named {
-                    name: name
-                        .name()
-                        .expect("NamedType must have text")
-                        .text()
-                        .to_string(),
-                };
+            if let Some(n) = non_null.named_type() {
+                let named_type = named_type(n.name());
                 Type::NonNull {
                     ty: Box::new(named_type),
                 }
@@ -440,6 +676,10 @@ fn ty(ty_: ast::Type) -> Type {
     }
 }
 
+fn named_type(n: Option<ast::Name>) -> Type {
+    Type::Named { name: name(n) }
+}
+
 fn directives(directives: Option<ast::Directives>) -> Arc<Vec<Directive>> {
     match directives {
         Some(directives) => {
@@ -451,10 +691,7 @@ fn directives(directives: Option<ast::Directives>) -> Arc<Vec<Directive>> {
 }
 
 fn directive(directive: ast::Directive) -> Directive {
-    let name = directive
-        .name()
-        .expect("Directive must have a name")
-        .to_string();
+    let name = name(directive.name());
     let arguments = arguments(directive.arguments());
     Directive { name, arguments }
 }
@@ -470,34 +707,20 @@ fn arguments(arguments: Option<ast::Arguments>) -> Arc<Vec<Argument>> {
 }
 
 fn argument(argument: ast::Argument) -> Argument {
-    let name = argument
-        .name()
-        .expect("Argument must have a name")
-        .to_string();
+    let name = name(argument.name());
     let value = value(argument.value().expect("Argument must have a value"));
     Argument { name, value }
 }
 
 fn value(val: ast::Value) -> Value {
     match val {
-        ast::Value::Variable(var) => Value::Variable(
-            var.name()
-                .expect("Variable must have a name")
-                .text()
-                .to_string(),
-        ),
+        ast::Value::Variable(var) => Value::Variable(name(var.name())),
         ast::Value::StringValue(string_val) => Value::Variable(string_val.into()),
         ast::Value::FloatValue(float) => Value::Float(Float::new(float.into())),
         ast::Value::IntValue(int) => Value::Int(int.into()),
         ast::Value::BooleanValue(bool) => Value::Boolean(bool.into()),
         ast::Value::NullValue(_) => Value::Null,
-        ast::Value::EnumValue(enum_) => Value::Enum(
-            enum_
-                .name()
-                .expect("Enum Value must have a name")
-                .text()
-                .to_string(),
-        ),
+        ast::Value::EnumValue(enum_) => Value::Enum(name(enum_.name())),
         ast::Value::ListValue(list) => {
             let list: Vec<Value> = list.values().map(value).collect();
             Value::List(list)
@@ -506,11 +729,7 @@ fn value(val: ast::Value) -> Value {
             let object_values: Vec<(String, Value)> = object
                 .object_fields()
                 .map(|o| {
-                    let name = o
-                        .name()
-                        .expect("Object Value must have a name")
-                        .text()
-                        .to_string();
+                    let name = name(o.name());
                     let value = value(o.value().expect("Object Value must have a value"));
                     (name, value)
                 })
@@ -573,13 +792,12 @@ fn inline_fragment(db: &dyn SourceDatabase, fragment: ast::InlineFragment) -> Ar
 }
 
 fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Arc<FragmentSpread> {
-    let name = fragment
-        .fragment_name()
-        .expect("Fragment Spread must have a name")
-        .name()
-        .expect("Name must have text")
-        .text()
-        .to_string();
+    let name = name(
+        fragment
+            .fragment_name()
+            .expect("Fragment Spread must have a name")
+            .name(),
+    );
     let directives = directives(fragment.directives());
     // NOTE @lrlna: this should just be Uuid.  If we can't find the framgment we
     // are looking for when populating this field, we should throw a semantic
@@ -596,11 +814,7 @@ fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Ar
 }
 
 fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
-    let name = field
-        .name()
-        .expect("Field must have a name")
-        .text()
-        .to_string();
+    let name = name(field.name());
     let alias = alias(field.alias());
     let selection_set = selection_set(db, field.selection_set());
     let directives = directives(field.directives());
@@ -614,6 +828,18 @@ fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
         arguments,
     };
     Arc::new(field_data)
+}
+
+fn name(name: Option<ast::Name>) -> String {
+    name.expect("Field must have a name").text().to_string()
+}
+
+fn description(description: Option<ast::Description>) -> Option<String> {
+    description.map(|desc| {
+        desc.string_value()
+            .expect("Description must have text")
+            .into()
+    })
 }
 
 fn alias(alias: Option<ast::Alias>) -> Option<Arc<Alias>> {

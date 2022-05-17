@@ -1,0 +1,1 @@
+[Error(UnsupportedOperation { message: "Mutation operation not supported by the schema", operation: Some("adoptAPetMutation") })]

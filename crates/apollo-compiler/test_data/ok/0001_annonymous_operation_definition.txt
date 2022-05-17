@@ -1,10 +1,10 @@
-- DOCUMENT@0..32
+- DOCUMENT@0..87
     - WHITESPACE@0..1 "\n"
-    - OPERATION_DEFINITION@1..32
+    - OPERATION_DEFINITION@1..33
         - OPERATION_TYPE@1..7
             - query_KW@1..6 "query"
             - WHITESPACE@6..7 " "
-        - SELECTION_SET@7..32
+        - SELECTION_SET@7..33
             - L_CURLY@7..8 "{"
             - WHITESPACE@8..11 "\n  "
             - FIELD@11..30
@@ -21,5 +21,44 @@
                     - R_CURLY@28..29 "}"
                     - WHITESPACE@29..30 "\n"
             - R_CURLY@30..31 "}"
-            - WHITESPACE@31..32 "\n"
+            - WHITESPACE@31..33 "\n\n"
+    - OBJECT_TYPE_DEFINITION@33..60
+        - type_KW@33..37 "type"
+        - WHITESPACE@37..38 " "
+        - NAME@38..44
+            - IDENT@38..43 "Query"
+            - WHITESPACE@43..44 " "
+        - FIELDS_DEFINITION@44..60
+            - L_CURLY@44..45 "{"
+            - WHITESPACE@45..48 "\n  "
+            - FIELD_DEFINITION@48..57
+                - NAME@48..51
+                    - IDENT@48..51 "cat"
+                - COLON@51..52 ":"
+                - WHITESPACE@52..53 " "
+                - NAMED_TYPE@53..56
+                    - NAME@53..56
+                        - IDENT@53..56 "Pet"
+                - WHITESPACE@56..57 "\n"
+            - R_CURLY@57..58 "}"
+            - WHITESPACE@58..60 "\n\n"
+    - OBJECT_TYPE_DEFINITION@60..87
+        - type_KW@60..64 "type"
+        - WHITESPACE@64..65 " "
+        - NAME@65..69
+            - IDENT@65..68 "Pet"
+            - WHITESPACE@68..69 " "
+        - FIELDS_DEFINITION@69..87
+            - L_CURLY@69..70 "{"
+            - WHITESPACE@70..73 "\n  "
+            - FIELD_DEFINITION@73..86
+                - NAME@73..77
+                    - IDENT@73..77 "name"
+                - COLON@77..78 ":"
+                - WHITESPACE@78..79 " "
+                - NAMED_TYPE@79..85
+                    - NAME@79..85
+                        - IDENT@79..85 "String"
+                - WHITESPACE@85..86 "\n"
+            - R_CURLY@86..87 "}"
 

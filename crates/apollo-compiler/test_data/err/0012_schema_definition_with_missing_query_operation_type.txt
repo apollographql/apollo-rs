@@ -1,0 +1,1 @@
+[Error(QueryRootOperationType("Missing query root operation type in schema definition"))]

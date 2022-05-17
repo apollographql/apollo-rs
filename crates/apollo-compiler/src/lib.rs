@@ -52,6 +52,14 @@ impl ApolloCompiler {
     pub fn fragments(&self) -> values::Fragments {
         self.db.fragments()
     }
+
+    pub fn schema(&self) -> Arc<values::SchemaDefinition> {
+        self.db.schema()
+    }
+
+    pub fn object_types(&self) -> Arc<Vec<values::ObjectTypeDefinition>> {
+        self.db.object_types()
+    }
 }
 
 #[cfg(test)]
@@ -62,7 +70,6 @@ mod test {
     fn it_accesses_operation_definition_parts() {
         let input = r#"
 query ExampleQuery($definedVariable: Int, $definedVariable2: Boolean) {
-
   topProducts(first: $definedVariable) {
     name
   }
@@ -74,6 +81,10 @@ fragment vipCustomer on User {
   name
   profilePic(size: 50)
   status(activity: $definedVariable2)
+}
+
+type Query {
+    topProducts: Products
 }
 "#;
 
@@ -110,6 +121,14 @@ query ExampleQuery {
   size
   weight
 }
+
+type Query {
+  name: String
+  price: Int
+  dimensions: Int
+  size: Int
+  weight: Int
+}
 "#;
 
         let ctx = ApolloCompiler::new(input);
@@ -124,5 +143,39 @@ query ExampleQuery {
             field_names,
             ["name", "price", "dimensions", "size", "weight"]
         );
+    }
+
+    #[test]
+    fn it_accesses_schema_operation_types() {
+        let input = r#"
+schema {
+  query: customPetQuery,
+}
+
+type customPetQuery {
+  name: String,
+  age: Int
+}
+
+type Subscription {
+  changeInPetHousehold: Result
+}
+
+type Mutation {
+  addPet (name: String!, petType: PetType): Result!
+}
+
+type Result {
+  id: String
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+
+        assert!(errors.is_empty());
+
+        let schema = ctx.schema();
+        dbg!(schema);
     }
 }

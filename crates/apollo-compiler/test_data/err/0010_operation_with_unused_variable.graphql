@@ -4,3 +4,12 @@ query ExampleQuery($unusedVariable: Int) {
   }
   ... multipleSubscriptions
 }
+
+type Query {
+  topProducts(first: Int): Product,
+}
+
+type Product {
+  name: String
+  price(setPrice: Int): Int
+}

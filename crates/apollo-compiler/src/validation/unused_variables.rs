@@ -64,6 +64,10 @@ query ExampleQuery {
   }
 
 }
+
+type Query {
+  topProducts: Products 
+}
 "#;
 
         let ctx = ApolloCompiler::new(input);
@@ -91,6 +95,10 @@ query ExampleQuery {
 
 fragment fragmentOne on User {
     profilePic(size: $dimensions)
+}
+
+type Query {
+  topProducts: Products 
 }
 "#;
 

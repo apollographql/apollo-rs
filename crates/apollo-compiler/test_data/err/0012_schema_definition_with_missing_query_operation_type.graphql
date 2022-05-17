@@ -1,0 +1,11 @@
+schema {
+  subscription: customSubscription
+}
+
+type customSubscription {
+  changeInPetHousehold: Result
+}
+
+type Result {
+  id: String
+}

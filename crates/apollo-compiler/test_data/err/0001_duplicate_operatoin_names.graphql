@@ -11,3 +11,7 @@ query getName {
     }
   }
 }
+
+type Query {
+  cat: String
+}
