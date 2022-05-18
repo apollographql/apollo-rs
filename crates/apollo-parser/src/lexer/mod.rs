@@ -139,6 +139,11 @@ impl Cursor<'_> {
 
                 while !self.is_eof() {
                     let c = self.bump().unwrap();
+
+                    if was_backslash && !is_escaped_char(c) && c != 'u' {
+                        return Err(Error::new("unexpected escaped character", c.to_string()));
+                    }
+
                     if c == '"' {
                         buf.push(c);
                         if !was_backslash {
@@ -423,6 +428,24 @@ mod test {
     fn tests_escaped_char() {
         let gql_1 = r#"
         { name: "\"my store\"" }
+        "#;
+        let lexer_1 = Lexer::new(gql_1);
+        assert!(lexer_1.errors.is_empty());
+    }
+
+    #[test]
+    fn tests_escaped_char_error() {
+        let gql_1 = r#"
+        { name: "\my store\"" }
+        "#;
+        let lexer_1 = Lexer::new(gql_1);
+        assert!(!lexer_1.errors.is_empty());
+    }
+
+    #[test]
+    fn tests_unicode_char() {
+        let gql_1 = r#"
+        { name: "\u{006D}y store\"" }
         "#;
         let lexer_1 = Lexer::new(gql_1);
         assert!(lexer_1.errors.is_empty());
