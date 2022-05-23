@@ -141,7 +141,7 @@ impl Cursor<'_> {
                     let c = self.bump().unwrap();
 
                     if was_backslash && !is_escaped_char(c) && c != 'u' {
-                        return Err(Error::new("unexpected escaped character", c.to_string()));
+                        self.add_err(Error::new("unexpected escaped character", c.to_string()));
                     }
 
                     if c == '"' {
@@ -158,6 +158,11 @@ impl Cursor<'_> {
                         break;
                     }
                     was_backslash = c == '\\';
+                }
+
+                if let Some(mut err) = self.err() {
+                    err.data = buf;
+                    return Err(err);
                 }
 
                 Ok(Token::new(TokenKind::StringValue, buf))
