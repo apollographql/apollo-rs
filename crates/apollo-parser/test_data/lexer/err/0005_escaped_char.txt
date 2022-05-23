@@ -1,0 +1,15 @@
+L_CURLY@0:1 "{"
+WHITESPACE@1:2 " "
+NAME@2:6 "name"
+COLON@6:7 ":"
+WHITESPACE@7:8 " "
+NAME@10:12 "my"
+WHITESPACE@12:13 " "
+NAME@13:18 "store"
+STRING_VALUE@19:21 "\"\""
+WHITESPACE@21:22 " "
+R_CURLY@22:23 "}"
+EOF@23:23
+ERROR@8:9 "unexpected escaped character" m
+ERROR@9:10 "Unexpected character" \
+ERROR@18:19 "Unexpected character" \

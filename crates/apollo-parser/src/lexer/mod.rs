@@ -423,31 +423,4 @@ mod test {
         dbg!(lexer_1.tokens);
         dbg!(lexer_1.errors);
     }
-
-    #[test]
-    fn tests_escaped_char() {
-        let gql_1 = r#"
-        { name: "\"my store\"" }
-        "#;
-        let lexer_1 = Lexer::new(gql_1);
-        assert!(lexer_1.errors.is_empty());
-    }
-
-    #[test]
-    fn tests_escaped_char_error() {
-        let gql_1 = r#"
-        { name: "\my store\"" }
-        "#;
-        let lexer_1 = Lexer::new(gql_1);
-        assert!(!lexer_1.errors.is_empty());
-    }
-
-    #[test]
-    fn tests_unicode_char() {
-        let gql_1 = r#"
-        { name: "\u{006D}y store\"" }
-        "#;
-        let lexer_1 = Lexer::new(gql_1);
-        assert!(lexer_1.errors.is_empty());
-    }
 }
