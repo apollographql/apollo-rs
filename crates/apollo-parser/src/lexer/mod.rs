@@ -79,7 +79,7 @@ impl Lexer {
         self.tokens.as_slice()
     }
 
-    /// Get a reference to the lexer's tokens.
+    /// Get a reference to the lexer's errors.
     pub fn errors(&self) -> Iter<'_, Error> {
         self.errors.iter()
     }
