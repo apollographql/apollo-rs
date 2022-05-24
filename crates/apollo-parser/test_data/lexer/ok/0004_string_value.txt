@@ -25,4 +25,6 @@ WHITESPACE@469:470 "\n"
 STRING_VALUE@470:528 "\"string with minimal surrogate pair escape \\\\uD800\\\\uDC00\""
 WHITESPACE@528:529 "\n"
 STRING_VALUE@529:587 "\"string with maximal surrogate pair escape \\\\uDBFF\\\\uDFFF\""
-EOF@587:587
+WHITESPACE@587:588 "\n"
+STRING_VALUE@588:624 "\"string with \\\"escaped\\\" characters\""
+EOF@624:624

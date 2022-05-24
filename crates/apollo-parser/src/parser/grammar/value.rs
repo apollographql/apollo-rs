@@ -207,7 +207,7 @@ enum Test @dir__one(int_value: -10) {
     #[allow(clippy::float_cmp)]
     fn it_returns_f64_for_float_values() {
         let schema = r#"
-enum Test @dir__one(float_value: -1.123E4) { 
+enum Test @dir__one(float_value: -1.123E4) {
   INVENTORY
 } "#;
         let parser = Parser::new(schema);
@@ -235,7 +235,7 @@ enum Test @dir__one(float_value: -1.123E4) {
     #[test]
     fn it_returns_bool_for_boolean_values() {
         let schema = r#"
-enum Test @dir__one(bool_value: false) { 
+enum Test @dir__one(bool_value: false) {
   INVENTORY
 } "#;
         let parser = Parser::new(schema);
