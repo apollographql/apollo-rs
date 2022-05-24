@@ -17,8 +17,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.2.6](https://crates.io/crates/apollo-parser/0.2.6) - 2022-05-24
 
-# [0.2.5](https://crates.io/crates/apollo-parser/0.2.5) - 2021-04-01
+## Fixes
+- **lex escaped characters in StringValue tokens - [bnjjj], [pull/228] closes [issue/227], [issue/229]**
+
+  StringValues with correctly escaped quotation marks, e.g. `{ name(id: "\"escaped\"") }`
+  would error and not lex correctly. Additionally, invalid escapes in string
+  values, e.g. `{ name(id: "escaped \a") }` should have an error created in the
+  lexer. Both issues are fixed, and correctly bubble up to the parser.
+
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/228]: https://github.com/apollographql/apollo-rs/pull/228
+  [issue/227]: https://github.com/apollographql/apollo-rs/issues/227
+  [issue/229]: https://github.com/apollographql/apollo-rs/issues/229
+
+# [0.2.5](https://crates.io/crates/apollo-parser/0.2.5) - 2022-04-01
 
 > Important: 1 breaking change below, indicated by **BREAKING**
 
@@ -68,7 +83,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
   [bnjjj]: https://github.com/bnjjj
   [pull/197]: https://github.com/apollographql/apollo-rs/pull/197
-# [0.2.4](https://crates.io/crates/apollo-parser/0.2.4) - 2021-03-07
+# [0.2.4](https://crates.io/crates/apollo-parser/0.2.4) - 2022-03-07
 ## Fixes
 - **correctly parse Arguments Definition - [bnjjj], [pull/187] closes [issue/186]**
 
@@ -108,7 +123,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [bnjjj]: https://github.com/bnjjj
   [pull/189]: https://github.com/apollographql/apollo-rs/pull/189
 
-# [0.2.3](https://crates.io/crates/apollo-parser/0.2.3) - 2021-02-17
+# [0.2.3](https://crates.io/crates/apollo-parser/0.2.3) - 2022-02-17
 ## Features
 - **expose Lexer as a pub struct - [bnjjj], [pull/168]**
 
@@ -148,7 +163,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [lrlna]: https://github.com/lrlna
   [pull/172]: https://github.com/apollographql/apollo-rs/pull/172
 
-# [0.2.2](https://crates.io/crates/apollo-parser/0.2.2) - 2021-02-11
+# [0.2.2](https://crates.io/crates/apollo-parser/0.2.2) - 2022-02-11
 ## Fixes
 - **create an error when description preceeds operation definition and proceed parsing - [MidasLamb], [pull/158]/ [lrlna], [pull/160]**
 
@@ -188,7 +203,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
   [bnjjj]: https://github.com/bnjjj
   [pull/164]: https://github.com/apollographql/apollo-rs/pull/164
-# [0.2.1](https://crates.io/crates/apollo-parser/0.2.1) - 2021-01-26
+# [0.2.1](https://crates.io/crates/apollo-parser/0.2.1) - 2022-01-26
 ## Fixes
 - **fix(apollo-parser): add ignored tokens to TYPE nodes in correct place - [lrlna], [issue/143] [pull/153]**
 
