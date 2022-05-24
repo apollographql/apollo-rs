@@ -135,12 +135,20 @@ impl Cursor<'_> {
             '"' => self.block_string_value(buf, c),
             t => {
                 buf.push(t);
+                let mut was_backslash = t == '\\';
 
                 while !self.is_eof() {
                     let c = self.bump().unwrap();
+
+                    if was_backslash && !is_escaped_char(c) && c != 'u' {
+                        self.add_err(Error::new("unexpected escaped character", c.to_string()));
+                    }
+
                     if c == '"' {
                         buf.push(c);
-                        break;
+                        if !was_backslash {
+                            break;
+                        }
                     } else if is_escaped_char(c)
                         || is_source_char(c) && c != '\\' && c != '"' && !is_line_terminator(c)
                     {
@@ -149,6 +157,12 @@ impl Cursor<'_> {
                     } else {
                         break;
                     }
+                    was_backslash = c == '\\';
+                }
+
+                if let Some(mut err) = self.err() {
+                    err.data = buf;
+                    return Err(err);
                 }
 
                 Ok(Token::new(TokenKind::StringValue, buf))
