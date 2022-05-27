@@ -60,6 +60,10 @@ impl ApolloCompiler {
     pub fn object_types(&self) -> Arc<Vec<values::ObjectTypeDefinition>> {
         self.db.object_types()
     }
+
+    pub fn scalars(&self) -> Arc<Vec<values::ScalarDefinition>> {
+        self.db.scalars()
+    }
 }
 
 #[cfg(test)]
@@ -174,8 +178,34 @@ type Result {
         let errors = ctx.validate();
 
         assert!(errors.is_empty());
+    }
 
-        let schema = ctx.schema();
-        dbg!(schema);
+    #[test]
+    fn it_accesses_scalar_definitions() {
+        let input = r#"
+type Query {
+  website: URL,
+  amount: Int
+}
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+
+        assert!(errors.is_empty());
+
+        let scalars = ctx.scalars();
+
+        let directives: Vec<&str> = scalars
+            .iter()
+            .find(|scalar| scalar.name() == "URL")
+            .unwrap()
+            .directives()
+            .iter()
+            .map(|directive| directive.name())
+            .collect();
+        assert_eq!(directives, ["specifiedBy"]);
     }
 }

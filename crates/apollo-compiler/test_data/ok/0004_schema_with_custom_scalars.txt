@@ -1,0 +1,53 @@
+- DOCUMENT@0..113
+    - OBJECT_TYPE_DEFINITION@0..46
+        - type_KW@0..4 "type"
+        - WHITESPACE@4..5 " "
+        - NAME@5..11
+            - IDENT@5..10 "Query"
+            - WHITESPACE@10..11 " "
+        - FIELDS_DEFINITION@11..46
+            - L_CURLY@11..12 "{"
+            - WHITESPACE@12..15 "\n  "
+            - FIELD_DEFINITION@15..31
+                - NAME@15..22
+                    - IDENT@15..22 "website"
+                - COLON@22..23 ":"
+                - WHITESPACE@23..24 " "
+                - NAMED_TYPE@24..27
+                    - NAME@24..27
+                        - IDENT@24..27 "URL"
+                - COMMA@27..28 ","
+                - WHITESPACE@28..31 "\n  "
+            - FIELD_DEFINITION@31..43
+                - NAME@31..37
+                    - IDENT@31..37 "amount"
+                - COLON@37..38 ":"
+                - WHITESPACE@38..39 " "
+                - NAMED_TYPE@39..42
+                    - NAME@39..42
+                        - IDENT@39..42 "Int"
+                - WHITESPACE@42..43 "\n"
+            - R_CURLY@43..44 "}"
+            - WHITESPACE@44..46 "\n\n"
+    - SCALAR_TYPE_DEFINITION@46..113
+        - scalar_KW@46..52 "scalar"
+        - WHITESPACE@52..53 " "
+        - NAME@53..57
+            - IDENT@53..56 "URL"
+            - WHITESPACE@56..57 " "
+        - DIRECTIVES@57..113
+            - DIRECTIVE@57..113
+                - AT@57..58 "@"
+                - NAME@58..69
+                    - IDENT@58..69 "specifiedBy"
+                - ARGUMENTS@69..113
+                    - L_PAREN@69..70 "("
+                    - ARGUMENT@70..112
+                        - NAME@70..73
+                            - IDENT@70..73 "url"
+                        - COLON@73..74 ":"
+                        - WHITESPACE@74..75 " "
+                        - STRING_VALUE@75..112
+                            - STRING@75..112 "\"https://tools.ietf.org/html/rfc3986\""
+                    - R_PAREN@112..113 ")"
+
