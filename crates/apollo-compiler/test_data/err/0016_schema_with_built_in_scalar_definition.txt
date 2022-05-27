@@ -1,0 +1,1 @@
+[Error(BuiltInScalarDefinition { message: "Built-in scalars must be omitted for brevity", scalar: "Int" })]

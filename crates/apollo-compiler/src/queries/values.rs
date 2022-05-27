@@ -665,12 +665,12 @@ pub struct ObjectTypeDefinition {
 }
 
 impl ObjectTypeDefinition {
-    /// Get the object type definition's id.
+    /// get the object type definition's id.
     pub fn id(&self) -> &Uuid {
         &self.id
     }
 
-    /// Get a reference to the object type definition's name.
+    /// get a reference to the object type definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
     }
@@ -702,4 +702,23 @@ pub struct InputValueDefinition {
     pub(crate) ty: Type,
     pub(crate) default_value: Option<DefaultValue>,
     pub(crate) directives: Arc<Vec<Directive>>,
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct ScalarDefinition {
+    pub(crate) description: Option<String>,
+    pub(crate) name: String,
+    pub(crate) directives: Arc<Vec<Directive>>,
+}
+
+impl ScalarDefinition {
+    /// get a reference to the scalar definition's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+
+    /// Get a reference to scalar definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
 }

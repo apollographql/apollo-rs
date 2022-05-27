@@ -1,0 +1,1 @@
+[Error(ScalarSpecificationURL { message: "Custom scalars must provide a scalar specification URL via the @specifiedBy directive", scalar: "URL" })]

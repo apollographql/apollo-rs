@@ -44,6 +44,8 @@ pub trait SourceDatabase {
 
     fn object_types(&self) -> Arc<Vec<ObjectTypeDefinition>>;
 
+    fn scalars(&self) -> Arc<Vec<ScalarDefinition>>;
+
     fn query_operations(&self) -> Operations;
 
     fn mutation_operations(&self) -> Operations;
@@ -338,6 +340,20 @@ fn object_types(db: &dyn SourceDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
     Arc::new(objects)
 }
 
+fn scalars(db: &dyn SourceDatabase) -> Arc<Vec<ScalarDefinition>> {
+    let scalars = db
+        .definitions()
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::ScalarTypeDefinition(scalar_def) => {
+                Some(scalar_definition(scalar_def.clone()))
+            }
+            _ => None,
+        })
+        .collect();
+    Arc::new(scalars)
+}
+
 fn find_object_type(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<ObjectTypeDefinition>> {
     db.object_types().iter().find_map(|object_type| {
         if &id == object_type.id() {
@@ -444,6 +460,18 @@ fn object_type_definition(obj_def: ast::ObjectTypeDefinition) -> ObjectTypeDefin
         implements_interfaces,
         directives,
         fields_definition,
+    }
+}
+
+fn scalar_definition(scalar_def: ast::ScalarTypeDefinition) -> ScalarDefinition {
+    let description = description(scalar_def.description());
+    let name = name(scalar_def.name());
+    let directives = directives(scalar_def.directives());
+
+    ScalarDefinition {
+        description,
+        name,
+        directives,
     }
 }
 

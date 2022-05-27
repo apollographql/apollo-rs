@@ -34,6 +34,14 @@ pub enum ErrorDiagnostic {
         message: String,
         operation: Option<String>,
     },
+    BuiltInScalarDefinition {
+        message: String,
+        scalar: String,
+    },
+    ScalarSpecificationURL {
+        message: String,
+        scalar: String,
+    },
     UndefinedVariable {
         message: String,
         variable: String,

@@ -1,0 +1,5 @@
+type Query {
+  website: URL
+}
+
+scalar URL
