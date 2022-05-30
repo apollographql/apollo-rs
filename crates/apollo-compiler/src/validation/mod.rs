@@ -1,8 +1,15 @@
 use crate::{ApolloDiagnostic, SourceDatabase};
 
-pub mod operations;
-pub mod scalars;
+// schema
 pub mod schema;
+
+// leaf nodes
+pub mod enums;
+pub mod scalars;
+
+// executable definitions
+pub mod operations;
+
 pub mod unused_implements_interfaces;
 pub mod unused_variables;
 
@@ -23,6 +30,7 @@ impl<'a> Validator<'a> {
         self.errors.extend(self.db.syntax_errors());
         self.errors.extend(schema::check(self.db));
         self.errors.extend(scalars::check(self.db));
+        self.errors.extend(enums::check(self.db));
         self.errors.extend(operations::check(self.db));
         self.errors.extend(unused_variables::check(self.db));
         self.errors.as_mut()

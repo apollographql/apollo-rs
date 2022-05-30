@@ -712,7 +712,7 @@ pub struct ScalarDefinition {
 }
 
 impl ScalarDefinition {
-    /// get a reference to the scalar definition's name.
+    /// Get a reference to the scalar definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
     }
@@ -720,5 +720,43 @@ impl ScalarDefinition {
     /// Get a reference to scalar definition's directives.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct EnumDefinition {
+    pub(crate) description: Option<String>,
+    pub(crate) name: String,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) enum_values_definition: Arc<Vec<EnumValueDefinition>>,
+}
+
+impl EnumDefinition {
+    /// Get a reference to the enum definition's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+
+    /// Get a reference to enum definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
+    /// Get a reference to enum definition's enum values definition vector.
+    pub fn enum_values_definition(&self) -> &[EnumValueDefinition] {
+        self.enum_values_definition.as_ref()
+    }
+}
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct EnumValueDefinition {
+    pub(crate) description: Option<String>,
+    pub(crate) enum_value: String,
+    pub(crate) directives: Arc<Vec<Directive>>,
+}
+
+impl EnumValueDefinition {
+    /// Get a reference to enum value definition's enum value
+    pub fn enum_value(&self) -> &str {
+        self.enum_value.as_ref()
     }
 }

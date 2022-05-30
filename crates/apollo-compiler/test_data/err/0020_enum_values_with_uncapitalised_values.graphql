@@ -1,0 +1,12 @@
+type Query {
+  pet: Pet,
+}
+
+enum Pet {
+    CAt
+    DOG_gO
+    FOX
+    _fox
+    squirrel
+    PARRot1
+}
