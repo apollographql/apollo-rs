@@ -1,0 +1,1 @@
+[Error(UniqueValue { message: "Enum Definition must have unique values", value: "CAT" }), Error(UniqueValue { message: "Enum Definition must have unique values", value: "THRIVE_PET_FOODS" })]

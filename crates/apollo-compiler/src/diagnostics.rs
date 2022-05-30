@@ -30,6 +30,10 @@ pub enum ErrorDiagnostic {
         named_type: String,
         operation_type: String,
     },
+    UniqueValue {
+        message: String,
+        value: String,
+    },
     UnsupportedOperation {
         message: String,
         operation: Option<String>,
@@ -51,6 +55,7 @@ pub enum ErrorDiagnostic {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum WarningDiagnostic {
     UnusedVariable { message: String, variable: String },
+    CapitalizedValue { message: String, value: String },
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]

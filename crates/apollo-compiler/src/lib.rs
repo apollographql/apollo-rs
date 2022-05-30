@@ -64,6 +64,10 @@ impl ApolloCompiler {
     pub fn scalars(&self) -> Arc<Vec<values::ScalarDefinition>> {
         self.db.scalars()
     }
+
+    pub fn enums(&self) -> Arc<Vec<values::EnumDefinition>> {
+        self.db.enums()
+    }
 }
 
 #[cfg(test)]
@@ -207,5 +211,37 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
             .map(|directive| directive.name())
             .collect();
         assert_eq!(directives, ["specifiedBy"]);
+    }
+
+    #[test]
+    fn it_accesses_enum_definitions() {
+        let input = r#"
+type Query {
+  pet: Pet,
+}
+
+enum Pet {
+    CAT
+    DOG
+    FOX
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+
+        assert!(errors.is_empty());
+
+        let enums = ctx.enums();
+
+        let enum_values: Vec<&str> = enums
+            .iter()
+            .find(|enum_def| enum_def.name() == "Pet")
+            .unwrap()
+            .enum_values_definition()
+            .iter()
+            .map(|enum_val| enum_val.enum_value())
+            .collect();
+        assert_eq!(enum_values, ["CAT", "DOG", "FOX"]);
     }
 }

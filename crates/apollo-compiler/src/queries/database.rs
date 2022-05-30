@@ -46,6 +46,8 @@ pub trait SourceDatabase {
 
     fn scalars(&self) -> Arc<Vec<ScalarDefinition>>;
 
+    fn enums(&self) -> Arc<Vec<EnumDefinition>>;
+
     fn query_operations(&self) -> Operations;
 
     fn mutation_operations(&self) -> Operations;
@@ -354,6 +356,20 @@ fn scalars(db: &dyn SourceDatabase) -> Arc<Vec<ScalarDefinition>> {
     Arc::new(scalars)
 }
 
+fn enums(db: &dyn SourceDatabase) -> Arc<Vec<EnumDefinition>> {
+    let enums = db
+        .definitions()
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::EnumTypeDefinition(enum_def) => {
+                Some(enum_definition(enum_def.clone()))
+            }
+            _ => None,
+        })
+        .collect();
+    Arc::new(enums)
+}
+
 fn find_object_type(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<ObjectTypeDefinition>> {
     db.object_types().iter().find_map(|object_type| {
         if &id == object_type.id() {
@@ -471,6 +487,48 @@ fn scalar_definition(scalar_def: ast::ScalarTypeDefinition) -> ScalarDefinition 
     ScalarDefinition {
         description,
         name,
+        directives,
+    }
+}
+
+fn enum_definition(enum_def: ast::EnumTypeDefinition) -> EnumDefinition {
+    let description = description(enum_def.description());
+    let name = name(enum_def.name());
+    let directives = directives(enum_def.directives());
+    let enum_values_definition = enum_values_definition(enum_def.enum_values_definition());
+
+    EnumDefinition {
+        description,
+        name,
+        directives,
+        enum_values_definition,
+    }
+}
+
+fn enum_values_definition(
+    enum_values_def: Option<ast::EnumValuesDefinition>,
+) -> Arc<Vec<EnumValueDefinition>> {
+    match enum_values_def {
+        Some(enum_values) => {
+            let enum_values = enum_values
+                .enum_value_definitions()
+                .into_iter()
+                .map(enum_value_definition)
+                .collect();
+            Arc::new(enum_values)
+        }
+        None => Arc::new(Vec::new()),
+    }
+}
+
+fn enum_value_definition(enum_value_def: ast::EnumValueDefinition) -> EnumValueDefinition {
+    let description = description(enum_value_def.description());
+    let enum_value = enum_value(enum_value_def.enum_value());
+    let directives = directives(enum_value_def.directives());
+
+    EnumValueDefinition {
+        description,
+        enum_value,
         directives,
     }
 }
@@ -860,6 +918,15 @@ fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
 
 fn name(name: Option<ast::Name>) -> String {
     name.expect("Field must have a name").text().to_string()
+}
+
+fn enum_value(enum_value: Option<ast::EnumValue>) -> String {
+    enum_value
+        .expect("Enum value must have a name")
+        .name()
+        .expect("Name must have text")
+        .text()
+        .to_string()
 }
 
 fn description(description: Option<ast::Description>) -> Option<String> {
