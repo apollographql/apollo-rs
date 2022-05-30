@@ -48,6 +48,8 @@ pub trait SourceDatabase {
 
     fn enums(&self) -> Arc<Vec<EnumDefinition>>;
 
+    fn unions(&self) -> Arc<Vec<UnionDefinition>>;
+
     fn query_operations(&self) -> Operations;
 
     fn mutation_operations(&self) -> Operations;
@@ -370,6 +372,20 @@ fn enums(db: &dyn SourceDatabase) -> Arc<Vec<EnumDefinition>> {
     Arc::new(enums)
 }
 
+fn unions(db: &dyn SourceDatabase) -> Arc<Vec<UnionDefinition>> {
+    let unions = db
+        .definitions()
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::UnionTypeDefinition(union_def) => {
+                Some(union_definition(db, union_def.clone()))
+            }
+            _ => None,
+        })
+        .collect();
+    Arc::new(unions)
+}
+
 fn find_object_type(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<ObjectTypeDefinition>> {
     db.object_types().iter().find_map(|object_type| {
         if &id == object_type.id() {
@@ -531,6 +547,49 @@ fn enum_value_definition(enum_value_def: ast::EnumValueDefinition) -> EnumValueD
         enum_value,
         directives,
     }
+}
+
+fn union_definition(
+    db: &dyn SourceDatabase,
+    union_def: ast::UnionTypeDefinition,
+) -> UnionDefinition {
+    let description = description(union_def.description());
+    let name = name(union_def.name());
+    let directives = directives(union_def.directives());
+    let union_members = union_members(db, union_def.union_member_types());
+
+    UnionDefinition {
+        description,
+        name,
+        directives,
+        union_members,
+    }
+}
+
+fn union_members(
+    db: &dyn SourceDatabase,
+    union_members: Option<ast::UnionMemberTypes>,
+) -> Arc<Vec<UnionMember>> {
+    match union_members {
+        Some(members) => {
+            let mems = members
+                .named_types()
+                .into_iter()
+                .map(|u| union_member(db, u))
+                .collect();
+            Arc::new(mems)
+        }
+        None => Arc::new(Vec::new()),
+    }
+}
+
+fn union_member(db: &dyn SourceDatabase, member: ast::NamedType) -> UnionMember {
+    let name = name(member.name());
+    let object_id = db
+        .find_object_type_by_name(name.clone())
+        .map(|object_type| *object_type.id());
+
+    UnionMember { name, object_id }
 }
 
 fn add_object_type_id_to_schema(db: &dyn SourceDatabase) -> Arc<Vec<RootOperationTypeDefinition>> {

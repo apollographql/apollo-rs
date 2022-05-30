@@ -665,14 +665,19 @@ pub struct ObjectTypeDefinition {
 }
 
 impl ObjectTypeDefinition {
-    /// get the object type definition's id.
+    /// Get the object type definition's id.
     pub fn id(&self) -> &Uuid {
         &self.id
     }
 
-    /// get a reference to the object type definition's name.
+    /// Get a reference to the object type definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
+    }
+
+    /// Get a reference to the object type definition's field definitions.
+    pub fn fields_definition(&self) -> &[FieldDefinition] {
+        self.fields_definition.as_ref()
     }
 }
 
@@ -688,6 +693,13 @@ pub struct FieldDefinition {
     pub(crate) arguments: ArgumentsDefinition,
     pub(crate) ty: Type,
     pub(crate) directives: Arc<Vec<Directive>>,
+}
+
+impl FieldDefinition {
+    /// Get a reference to the field definition's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -758,5 +770,47 @@ impl EnumValueDefinition {
     /// Get a reference to enum value definition's enum value
     pub fn enum_value(&self) -> &str {
         self.enum_value.as_ref()
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct UnionDefinition {
+    pub(crate) description: Option<String>,
+    pub(crate) name: String,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) union_members: Arc<Vec<UnionMember>>,
+}
+
+impl UnionDefinition {
+    /// Get a reference to the union definition's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+
+    /// Get a reference to union definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
+    /// Get a reference to union definition's union members.
+    pub fn union_members(&self) -> &[UnionMember] {
+        self.union_members.as_ref()
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct UnionMember {
+    pub(crate) name: String,
+    pub(crate) object_id: Option<Uuid>,
+}
+
+impl UnionMember {
+    /// Get a reference to the union member's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+
+    pub fn object(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+        db.find_object_type(self.object_id?)
     }
 }
