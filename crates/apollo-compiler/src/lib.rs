@@ -68,6 +68,10 @@ impl ApolloCompiler {
     pub fn enums(&self) -> Arc<Vec<values::EnumDefinition>> {
         self.db.enums()
     }
+
+    pub fn unions(&self) -> Arc<Vec<values::UnionDefinition>> {
+        self.db.unions()
+    }
 }
 
 #[cfg(test)]
@@ -243,5 +247,66 @@ enum Pet {
             .map(|enum_val| enum_val.enum_value())
             .collect();
         assert_eq!(enum_values, ["CAT", "DOG", "FOX"]);
+    }
+
+    #[test]
+    fn it_accesses_union_definitions() {
+        let input = r#"
+schema {
+  query: SearchQuery
+}
+
+union SearchResult = Photo | Person
+
+type Person {
+  name: String
+  age: Int
+}
+
+type Photo {
+  height: Int
+  width: Int
+}
+
+type SearchQuery {
+  firstSearchResult: SearchResult
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+
+        assert!(errors.is_empty());
+
+        let unions = ctx.unions();
+
+        let union_members: Vec<&str> = unions
+            .iter()
+            .find(|def| def.name() == "SearchResult")
+            .unwrap()
+            .union_members()
+            .iter()
+            .map(|member| member.name())
+            .collect();
+        assert_eq!(union_members, ["Photo", "Person"]);
+
+        let photo_object = unions
+            .iter()
+            .find(|def| def.name() == "SearchResult")
+            .unwrap()
+            .union_members()
+            .iter()
+            .find(|mem| mem.name() == "Person")
+            .unwrap()
+            .object(&ctx.db);
+
+        if let Some(photo) = photo_object {
+            let fields: Vec<&str> = photo
+                .fields_definition()
+                .iter()
+                .map(|field| field.name())
+                .collect();
+            assert_eq!(fields, ["name", "age"])
+        }
     }
 }

@@ -6,6 +6,7 @@ pub mod schema;
 // leaf nodes
 pub mod enums;
 pub mod scalars;
+pub mod unions;
 
 // executable definitions
 pub mod operations;
@@ -28,11 +29,16 @@ impl<'a> Validator<'a> {
 
     pub fn validate(&mut self) -> &mut [ApolloDiagnostic] {
         self.errors.extend(self.db.syntax_errors());
+
         self.errors.extend(schema::check(self.db));
+
         self.errors.extend(scalars::check(self.db));
         self.errors.extend(enums::check(self.db));
+        self.errors.extend(unions::check(self.db));
+
         self.errors.extend(operations::check(self.db));
         self.errors.extend(unused_variables::check(self.db));
+
         self.errors.as_mut()
     }
 }

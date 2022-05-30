@@ -10,7 +10,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
 
     // An Enum type must define one or more unique enum values.
     //
-    // Return a Unique Operation Definition error in case of a duplicate name.
+    // Return a Unique Value error in case of a duplicate value.
     for enum_def in db.enums().iter() {
         let mut seen = HashSet::new();
         for enum_value in enum_def.enum_values_definition().iter() {
