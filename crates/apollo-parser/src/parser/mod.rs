@@ -77,8 +77,8 @@ pub struct Parser {
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
     /// The list of syntax errors we've accumulated so far.
     errors: Vec<crate::Error>,
-    /// The limits to apply to parsing.
-    limits: ParserLimits,
+    /// The limit to apply to parsing.
+    recursion_limit: LimitTracker,
     /// Accept parsing errors?
     accept_errors: bool,
 }
@@ -106,16 +106,16 @@ impl Parser {
             tokens,
             builder: Rc::new(RefCell::new(SyntaxTreeBuilder::new())),
             errors,
-            limits: Default::default(),
+            recursion_limit: Default::default(),
             accept_errors: true,
         }
     }
 
     /// Create a new resource limited instance of a parser given an input string
-    /// and a set of parsing limits.
-    pub fn with_limits(input: &str, limits: ParserLimits) -> Self {
+    /// and a recursion limit.
+    pub fn with_recursion_limit(input: &str, recursion_limit: usize) -> Self {
         let mut parser = Parser::new(input);
-        parser.limits = limits;
+        parser.recursion_limit = LimitTracker::new(recursion_limit);
         parser
     }
 
@@ -126,7 +126,7 @@ impl Parser {
         let builder = Rc::try_unwrap(self.builder)
             .expect("More than one reference to builder left")
             .into_inner();
-        builder.finish(self.errors, self.limits)
+        builder.finish(self.errors, self.recursion_limit)
     }
 
     /// Check if the current token is `kind`.
@@ -314,12 +314,11 @@ impl Parser {
     }
 }
 
-/// A set of limits to apply to a parser which will be used in a resource
-/// constrained environment.
-///
-/// The simplest way to build and use ParserLimits is via the builder:
+/// A LimitTracker enforces a particular limit within the parser. It keeps
+/// track of utilization so that we can report how close to a limit we
+/// approached over the lifetime of the tracker.
 /// ```rust
-/// use apollo_parser::{Parser, ParserLimits};
+/// use apollo_parser::Parser;
 ///
 /// let query = "
 /// {
@@ -332,12 +331,20 @@ impl Parser {
 ///     }
 /// }
 /// ";
-/// // Create new limits to apply to our parser
-/// let limits = ParserLimits::builder().selection_field(5).build();
-/// // Create a new instance of a parser given a query and limits.
-/// let parser = Parser::with_limits(query, limits);
+/// // Create a new instance of a parser given a query and a
+/// // recursion limit
+/// let parser = Parser::with_recursion_limit(query, 4);
 /// // Parse the query, and return a SyntaxTree.
 /// let ast = parser.parse();
+/// // Retrieve the limits
+/// let usage = ast.recursion_limit();
+/// // Print out some of the usage details to see what happened during
+/// // our parse. `limit` just reports the limit we set, `high` is the
+/// // high-water mark of recursion usage.
+/// println!("{:?}", usage);
+/// println!("{:?}", usage);
+/// println!("{:?}", usage.limit);
+/// println!("{:?}", usage.high);
 /// // Check that are no errors. These are not part of the AST.
 /// assert_eq!(0, ast.errors().len());
 ///
@@ -345,41 +352,6 @@ impl Parser {
 /// let doc = ast.document();
 /// // ... continue
 /// ```
-///
-/// Note: Parser::new(query) is equivalent to Parser::with_limits(query, Default::default())
-#[derive(PartialEq, Eq, Clone, Copy)]
-pub struct ParserLimits {
-    pub selection_field: LimitTracker,
-}
-
-impl Default for ParserLimits {
-    fn default() -> Self {
-        Self {
-            selection_field: LimitTracker::builder().limit(usize::MAX).build(),
-        }
-    }
-}
-
-#[buildstructor::buildstructor]
-impl ParserLimits {
-    #[builder]
-    pub fn new(selection_field: usize) -> Self {
-        Self {
-            selection_field: LimitTracker::builder().limit(selection_field).build(),
-        }
-    }
-}
-
-impl fmt::Debug for ParserLimits {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "limits:")?;
-        writeln!(f, "    selection_field - {:?}", self.selection_field)
-    }
-}
-
-/// A LimitTracker enforces a particular limit within the parser. It keeps
-/// track of utilization so that we can report how close to a limit we
-/// approached over the lifetime of the tracker.
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct LimitTracker {
     current: usize,
@@ -399,9 +371,7 @@ impl Default for LimitTracker {
     }
 }
 
-#[buildstructor::buildstructor]
 impl LimitTracker {
-    #[builder]
     pub fn new(limit: usize) -> Self {
         Self {
             current: 0,
@@ -428,7 +398,7 @@ impl LimitTracker {
 
 impl fmt::Debug for LimitTracker {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "limit: {}, high: {}", self.limit, self.high)
+        write!(f, "recursion limit: {}, high: {}", self.limit, self.high)
     }
 }
 

@@ -17,7 +17,6 @@ categories = [
 edition = "2021"
 
 [dependencies]
-buildstructor = "0.3.0"
 rowan = "0.13.0-pre.7"
 
 [dev-dependencies]

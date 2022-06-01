@@ -18,5 +18,4 @@
                         - IDENT@36..39 "Int"
                 - WHITESPACE@39..40 "\n"
             - R_CURLY@40..41 "}"
-limits:
-    selection_field - limit: 18446744073709551615, high: 0
+recursion limit: 18446744073709551615, high: 0

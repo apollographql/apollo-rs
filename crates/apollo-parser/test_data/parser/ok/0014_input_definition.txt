@@ -29,5 +29,4 @@
                     - BANG@51..52 "!"
                     - WHITESPACE@52..53 "\n"
             - R_CURLY@53..54 "}"
-limits:
-    selection_field - limit: 18446744073709551615, high: 0
+recursion limit: 18446744073709551615, high: 0

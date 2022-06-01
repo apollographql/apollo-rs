@@ -14,5 +14,4 @@
                     - WHITESPACE@25..26 "\n"
             - R_CURLY@26..27 "}"
 - ERROR@0:14 "expected definition" uasdf21230jkdw
-limits:
-    selection_field - limit: 18446744073709551615, high: 2
+recursion limit: 18446744073709551615, high: 2

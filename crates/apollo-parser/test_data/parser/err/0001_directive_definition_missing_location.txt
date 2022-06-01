@@ -8,5 +8,4 @@
             - WHITESPACE@18..19 " "
         - on_KW@19..21 "on"
 - ERROR@21:21 "expected valid Directive Location" EOF
-limits:
-    selection_field - limit: 18446744073709551615, high: 0
+recursion limit: 18446744073709551615, high: 0

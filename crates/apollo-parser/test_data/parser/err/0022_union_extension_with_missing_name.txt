@@ -17,5 +17,4 @@
                 - NAME@23..29
                     - IDENT@23..29 "Person"
 - ERROR@13:14 "expected a Name" =
-limits:
-    selection_field - limit: 18446744073709551615, high: 0
+recursion limit: 18446744073709551615, high: 0

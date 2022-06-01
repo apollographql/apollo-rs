@@ -54,7 +54,7 @@ pub(crate) fn selection(p: &mut Parser) {
                 break;
             }
             TokenKind::Name => {
-                p.limits.selection_field.reset();
+                p.recursion_limit.reset();
                 limit_exceeded = field::field(p);
                 has_selection = true;
             }
@@ -70,7 +70,7 @@ pub(crate) fn selection(p: &mut Parser) {
 
 #[cfg(test)]
 mod test {
-    use crate::{ast, parser::ParserLimits, Parser, TokenText};
+    use crate::{ast, Parser, TokenText};
 
     #[test]
     fn fragment_spread_in_selection() {
@@ -292,37 +292,35 @@ query SomeQuery(
     }
 
     #[test]
-    fn it_errors_when_field_selection_resource_limits_exceeded() {
+    fn it_errors_when_field_selection_recursion_limit_exceeded() {
         let schema = r#"
         query {Q1:product(id:1){url},Q2:product(id:2){url},Q3:product(id:3){url}}
         "#;
-        let limits = ParserLimits::builder().selection_field(2).build();
-        let parser = Parser::with_limits(schema, limits);
+        let parser = Parser::with_recursion_limit(schema, 2);
 
         let ast = parser.parse();
 
-        assert_eq!(ast.limits().selection_field.high, 2);
+        assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 1);
         assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }
 
     #[test]
-    fn it_passes_when_field_selection_resource_limits_are_not_exceeded() {
+    fn it_passes_when_field_selection_recursion_limit_is_not_exceeded() {
         let schema = r#"
         query {Q1:product(id:1){url},Q2:product(id:2){url},Q3:product(id:3){url}}
         "#;
-        let limits = ParserLimits::builder().selection_field(3).build();
-        let parser = Parser::with_limits(schema, limits);
+        let parser = Parser::with_recursion_limit(schema, 3);
 
         let ast = parser.parse();
 
-        assert_eq!(ast.limits().selection_field.high, 2);
+        assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 0);
         assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }
 
     #[test]
-    fn it_passes_when_field_selection_resource_limits_are_at_default() {
+    fn it_passes_when_field_selection_recursion_limit_is_at_default() {
         let schema = r#"
             query {Q1:product(id:1){url},Q2:product(id:2){url},Q3:product(id:3){url}}
             "#;
@@ -330,21 +328,7 @@ query SomeQuery(
 
         let ast = parser.parse();
 
-        assert_eq!(ast.limits().selection_field.high, 2);
-        assert_eq!(ast.errors().len(), 0);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
-    }
-
-    // XXX RESUME HERE SINCE THIS TEST ISNT COMPLETE YET
-    #[test]
-    fn it_yields_the_correct_parse_limits() {
-        let schema = r#"
-            query {Q1:product(id:1){url},Q2:product(id:2){url},Q3:product(id:3){url}}
-            "#;
-        let parser = Parser::new(schema);
-
-        let ast = parser.parse();
-
+        assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 0);
         assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }

@@ -25,5 +25,4 @@
                     - WHITESPACE@34..35 "\n"
             - R_CURLY@35..36 "}"
 - ERROR@9:11 "Fragment Name cannot be 'on'" on
-limits:
-    selection_field - limit: 18446744073709551615, high: 1
+recursion limit: 18446744073709551615, high: 1

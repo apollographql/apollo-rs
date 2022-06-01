@@ -51,5 +51,4 @@
                         - IDENT@137..140 "Url"
                 - WHITESPACE@140..141 "\n"
             - R_CURLY@141..142 "}"
-limits:
-    selection_field - limit: 18446744073709551615, high: 0
+recursion limit: 18446744073709551615, high: 0

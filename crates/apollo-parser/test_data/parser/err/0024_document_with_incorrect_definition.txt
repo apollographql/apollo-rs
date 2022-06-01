@@ -1,4 +1,3 @@
 - DOCUMENT@0..0
 - ERROR@0:21 "expected definition" awsas8d2934213hkj0987
-limits:
-    selection_field - limit: 18446744073709551615, high: 0
+recursion limit: 18446744073709551615, high: 0
