@@ -5,7 +5,7 @@ mod token_text;
 
 pub(crate) mod grammar;
 
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, fmt, rc::Rc};
 
 use crate::{lexer::Lexer, Error, Token, TokenKind};
 
@@ -77,6 +77,10 @@ pub struct Parser {
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
     /// The list of syntax errors we've accumulated so far.
     errors: Vec<crate::Error>,
+    /// The limits to apply to parsing.
+    limits: ParserLimits,
+    /// Accept parsing errors?
+    accept_errors: bool,
 }
 
 impl Parser {
@@ -102,7 +106,17 @@ impl Parser {
             tokens,
             builder: Rc::new(RefCell::new(SyntaxTreeBuilder::new())),
             errors,
+            limits: Default::default(),
+            accept_errors: true,
         }
+    }
+
+    /// Create a new resource limited instance of a parser given an input string
+    /// and a set of parsing limits.
+    pub fn with_limits(input: &str, limits: ParserLimits) -> Self {
+        let mut parser = Parser::new(input);
+        parser.limits = limits;
+        parser
     }
 
     /// Parse the current tokens.
@@ -112,7 +126,7 @@ impl Parser {
         let builder = Rc::try_unwrap(self.builder)
             .expect("More than one reference to builder left")
             .into_inner();
-        builder.finish(self.errors)
+        builder.finish(self.errors, self.limits)
     }
 
     /// Check if the current token is `kind`.
@@ -164,6 +178,18 @@ impl Parser {
         self.builder.borrow_mut().token(kind, token.data());
     }
 
+    /// Create a parser limit error and push it into the error vector.
+    ///
+    /// Note: After a limit error is pushed, any further errors pushed
+    /// are silently discarded.
+    pub(crate) fn limit_err<S: Into<String>>(&mut self, message: S) {
+        let current = self.current().clone();
+        // this needs to be the computed location
+        let err = Error::with_loc(message, current.data().to_string(), current.index());
+        self.push_err(err);
+        self.accept_errors = false;
+    }
+
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err(&mut self, message: &str) {
         let current = self.current().clone();
@@ -205,7 +231,16 @@ impl Parser {
 
     /// Push an error to parser's error Vec.
     pub(crate) fn push_err(&mut self, err: crate::error::Error) {
-        self.errors.push(err);
+        // If the parser has reached a limit, self.accept_errors will
+        // be set to false so that we do not push any more errors.
+        //
+        // This is because the limit activation will result
+        // in an early termination which will cause the parser to
+        // report "errors" which aren't really errors and thus
+        // must be ignored.
+        if self.accept_errors {
+            self.errors.push(err);
+        }
     }
 
     /// Consume a token from the lexer.
@@ -276,6 +311,124 @@ impl Parser {
             .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
             .nth(n - 1)
             .map(|token| token.data().to_string())
+    }
+}
+
+/// A set of limits to apply to a parser which will be used in a resource
+/// constrained environment.
+///
+/// The simplest way to build and use ParserLimits is via the builder:
+/// ```rust
+/// use apollo_parser::{Parser, ParserLimits};
+///
+/// let query = "
+/// {
+///     animal
+///     ...snackSelection
+///     ... on Pet {
+///       playmates {
+///         count
+///       }
+///     }
+/// }
+/// ";
+/// // Create new limits to apply to our parser
+/// let limits = ParserLimits::builder().selection_field(5).build();
+/// // Create a new instance of a parser given a query and limits.
+/// let parser = Parser::with_limits(query, limits);
+/// // Parse the query, and return a SyntaxTree.
+/// let ast = parser.parse();
+/// // Check that are no errors. These are not part of the AST.
+/// assert_eq!(0, ast.errors().len());
+///
+/// // Get the document root node
+/// let doc = ast.document();
+/// // ... continue
+/// ```
+///
+/// Note: Parser::new(query) is equivalent to Parser::with_limits(query, Default::default())
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub struct ParserLimits {
+    pub selection_field: LimitTracker,
+}
+
+impl Default for ParserLimits {
+    fn default() -> Self {
+        Self {
+            selection_field: LimitTracker::builder().limit(usize::MAX).build(),
+        }
+    }
+}
+
+#[buildstructor::buildstructor]
+impl ParserLimits {
+    #[builder]
+    pub fn new(selection_field: usize) -> Self {
+        Self {
+            selection_field: LimitTracker::builder().limit(selection_field).build(),
+        }
+    }
+}
+
+impl fmt::Debug for ParserLimits {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "limits:")?;
+        writeln!(f, "    selection_field - {:?}", self.selection_field)
+    }
+}
+
+/// A LimitTracker enforces a particular limit within the parser. It keeps
+/// track of utilization so that we can report how close to a limit we
+/// approached over the lifetime of the tracker.
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub struct LimitTracker {
+    current: usize,
+    /// High Water mark for this limit
+    pub high: usize,
+    /// Limit.
+    pub limit: usize,
+}
+
+impl Default for LimitTracker {
+    fn default() -> Self {
+        Self {
+            current: 0,
+            high: 0,
+            limit: usize::MAX,
+        }
+    }
+}
+
+#[buildstructor::buildstructor]
+impl LimitTracker {
+    #[builder]
+    pub fn new(limit: usize) -> Self {
+        Self {
+            current: 0,
+            high: 0,
+            limit,
+        }
+    }
+
+    fn limited(&self) -> bool {
+        self.current >= self.limit
+    }
+
+    fn consume(&mut self) {
+        self.current += 1;
+        if self.current > self.high {
+            self.high = self.current;
+        }
+    }
+
+    fn reset(&mut self) {
+        self.current = 0;
+    }
+}
+
+impl fmt::Debug for LimitTracker {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "limit: {}, high: {}", self.limit, self.high)
     }
 }
 

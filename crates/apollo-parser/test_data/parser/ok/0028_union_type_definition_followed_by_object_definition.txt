@@ -37,3 +37,5 @@
                         - IDENT@60..63 "Int"
                 - WHITESPACE@63..64 "\n"
             - R_CURLY@64..65 "}"
+limits:
+    selection_field - limit: 18446744073709551615, high: 0

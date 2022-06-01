@@ -8,3 +8,5 @@
                 - NAME@8..18
                     - IDENT@8..18 "deprecated"
 - ERROR@7:8 "expected a Name" @
+limits:
+    selection_field - limit: 18446744073709551615, high: 0

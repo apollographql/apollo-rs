@@ -2,7 +2,7 @@ use std::{fmt, slice::Iter};
 
 use rowan::GreenNodeBuilder;
 
-use crate::{ast::Document, Error, SyntaxElement, SyntaxKind};
+use crate::{ast::Document, Error, ParserLimits, SyntaxElement, SyntaxKind};
 
 use super::GraphQLLanguage;
 
@@ -42,12 +42,18 @@ use super::GraphQLLanguage;
 pub struct SyntaxTree {
     pub(crate) ast: rowan::SyntaxNode<GraphQLLanguage>,
     pub(crate) errors: Vec<crate::Error>,
+    pub(crate) limits: ParserLimits,
 }
 
 impl SyntaxTree {
     /// Get a reference to the syntax tree's errors.
     pub fn errors(&self) -> Iter<'_, crate::Error> {
         self.errors.iter()
+    }
+
+    /// Get the syntax tree's limits..
+    pub fn limits(&self) -> ParserLimits {
+        self.limits
     }
 
     /// Return the root typed `Document` node.
@@ -90,8 +96,13 @@ impl fmt::Debug for SyntaxTree {
             write!(f, "")
         }
 
+        fn print_limits(f: &mut fmt::Formatter<'_>, limits: ParserLimits) -> fmt::Result {
+            write!(f, "{:?}", limits)
+        }
+
         print(f, 0, self.ast.clone().into())?;
-        print_err(f, self.errors.clone())
+        print_err(f, self.errors.clone())?;
+        print_limits(f, self.limits)
     }
 }
 
@@ -123,11 +134,13 @@ impl SyntaxTreeBuilder {
         self.builder.token(rowan::SyntaxKind(kind as u16), text);
     }
 
-    pub(crate) fn finish(self, errors: Vec<Error>) -> SyntaxTree {
+    pub(crate) fn finish(self, errors: Vec<Error>, limits: ParserLimits) -> SyntaxTree {
         SyntaxTree {
             ast: rowan::SyntaxNode::new_root(self.builder.finish()),
             // TODO: keep the errors in the builder rather than pass it in here?
             errors,
+            // TODO: keep the limits in the builder rather than pass it in here?
+            limits,
         }
     }
 }

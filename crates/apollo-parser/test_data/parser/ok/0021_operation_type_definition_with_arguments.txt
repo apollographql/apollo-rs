@@ -41,3 +41,5 @@
                     - IDENT@65..70 "treat"
                     - WHITESPACE@70..71 "\n"
             - R_CURLY@71..72 "}"
+limits:
+    selection_field - limit: 18446744073709551615, high: 2

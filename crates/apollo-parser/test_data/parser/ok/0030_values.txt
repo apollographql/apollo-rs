@@ -83,3 +83,5 @@
                     - R_PAREN@111..112 ")"
                     - WHITESPACE@112..113 "\n"
             - R_CURLY@113..114 "}"
+limits:
+    selection_field - limit: 18446744073709551615, high: 1

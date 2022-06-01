@@ -12,3 +12,5 @@
                 - AT@19..20 "@"
                 - NAME@20..30
                     - IDENT@20..30 "deprecated"
+limits:
+    selection_field - limit: 18446744073709551615, high: 0

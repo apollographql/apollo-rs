@@ -39,3 +39,5 @@
             - WHITESPACE@77..78 " "
             - DIRECTIVE_LOCATION@78..86
                 - MUTATION_KW@78..86 "MUTATION"
+limits:
+    selection_field - limit: 18446744073709551615, high: 0

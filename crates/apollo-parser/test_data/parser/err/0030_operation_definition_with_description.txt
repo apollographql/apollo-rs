@@ -12,3 +12,5 @@
             - R_CURLY@14..15 "}"
 - ERROR@0:93 "expected an Operation Type or a Selection Set" "after this PR this should not be an issue: https://github.com/graphql/graphql-spec/pull/892"
 - ERROR@107:108 "expected at least one Selection in Selection Set" }
+limits:
+    selection_field - limit: 18446744073709551615, high: 0
