@@ -342,7 +342,6 @@ impl Parser {
 /// // our parse. `limit` just reports the limit we set, `high` is the
 /// // high-water mark of recursion usage.
 /// println!("{:?}", usage);
-/// println!("{:?}", usage);
 /// println!("{:?}", usage.limit);
 /// println!("{:?}", usage.high);
 /// // Check that are no errors. These are not part of the AST.
