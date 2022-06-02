@@ -50,6 +50,8 @@ pub trait SourceDatabase {
 
     fn unions(&self) -> Arc<Vec<UnionDefinition>>;
 
+    fn interfaces(&self) -> Arc<Vec<InterfaceDefinition>>;
+
     fn query_operations(&self) -> Operations;
 
     fn mutation_operations(&self) -> Operations;
@@ -65,6 +67,10 @@ pub trait SourceDatabase {
     fn find_object_type(&self, id: Uuid) -> Option<Arc<ObjectTypeDefinition>>;
 
     fn find_object_type_by_name(&self, name: String) -> Option<Arc<ObjectTypeDefinition>>;
+
+    fn find_interface(&self, id: Uuid) -> Option<Arc<InterfaceDefinition>>;
+
+    fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceDefinition>>;
 
     fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<String>>;
 
@@ -344,6 +350,27 @@ fn object_types(db: &dyn SourceDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
     Arc::new(objects)
 }
 
+fn find_object_type(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<ObjectTypeDefinition>> {
+    db.object_types().iter().find_map(|object_type| {
+        if &id == object_type.id() {
+            return Some(Arc::new(object_type.clone()));
+        }
+        None
+    })
+}
+
+fn find_object_type_by_name(
+    db: &dyn SourceDatabase,
+    name: String,
+) -> Option<Arc<ObjectTypeDefinition>> {
+    db.object_types().iter().find_map(|object_type| {
+        if name == object_type.name() {
+            return Some(Arc::new(object_type.clone()));
+        }
+        None
+    })
+}
+
 fn scalars(db: &dyn SourceDatabase) -> Arc<Vec<ScalarDefinition>> {
     let scalars = db
         .definitions()
@@ -386,22 +413,36 @@ fn unions(db: &dyn SourceDatabase) -> Arc<Vec<UnionDefinition>> {
     Arc::new(unions)
 }
 
-fn find_object_type(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<ObjectTypeDefinition>> {
-    db.object_types().iter().find_map(|object_type| {
-        if &id == object_type.id() {
-            return Some(Arc::new(object_type.clone()));
+fn interfaces(db: &dyn SourceDatabase) -> Arc<Vec<InterfaceDefinition>> {
+    let interfaces = db
+        .definitions()
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::InterfaceTypeDefinition(interface_def) => {
+                Some(interface_definition(interface_def.clone()))
+            }
+            _ => None,
+        })
+        .collect();
+    Arc::new(interfaces)
+}
+
+fn find_interface(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<InterfaceDefinition>> {
+    db.interfaces().iter().find_map(|interface| {
+        if &id == interface.id() {
+            return Some(Arc::new(interface.clone()));
         }
         None
     })
 }
 
-fn find_object_type_by_name(
+fn find_interface_by_name(
     db: &dyn SourceDatabase,
     name: String,
-) -> Option<Arc<ObjectTypeDefinition>> {
-    db.object_types().iter().find_map(|object_type| {
-        if name == object_type.name() {
-            return Some(Arc::new(object_type.clone()));
+) -> Option<Arc<InterfaceDefinition>> {
+    db.interfaces().iter().find_map(|interface| {
+        if name == interface.name() {
+            return Some(Arc::new(interface.clone()));
         }
         None
     })
@@ -592,6 +633,24 @@ fn union_member(db: &dyn SourceDatabase, member: ast::NamedType) -> UnionMember 
     UnionMember { name, object_id }
 }
 
+fn interface_definition(interface_def: ast::InterfaceTypeDefinition) -> InterfaceDefinition {
+    let id = Uuid::new_v4();
+    let description = description(interface_def.description());
+    let name = name(interface_def.name());
+    let implements_interfaces = implements_interfaces(interface_def.implements_interfaces());
+    let directives = directives(interface_def.directives());
+    let fields_definition = fields_definition(interface_def.fields_definition());
+
+    InterfaceDefinition {
+        id,
+        description,
+        name,
+        implements_interfaces,
+        directives,
+        fields_definition,
+    }
+}
+
 fn add_object_type_id_to_schema(db: &dyn SourceDatabase) -> Arc<Vec<RootOperationTypeDefinition>> {
     // Schema Definition does not have to be present in the SDL if ObjectType name is
     // - Query
@@ -625,23 +684,21 @@ fn add_object_type_id_to_schema(db: &dyn SourceDatabase) -> Arc<Vec<RootOperatio
 
 fn implements_interfaces(
     implements_interfaces: Option<ast::ImplementsInterfaces>,
-) -> ImplementsInterfaces {
-    let interfaces: Vec<Type> = implements_interfaces
+) -> Arc<Vec<ImplementsInterface>> {
+    let interfaces: Vec<ImplementsInterface> = implements_interfaces
         .iter()
         .flat_map(|interfaces| {
-            let types: Vec<Type> = interfaces
+            let types: Vec<ImplementsInterface> = interfaces
                 .named_types()
-                .map(|n| Type::Named {
-                    name: n.name().expect("Name must have text").text().to_string(),
+                .map(|n| ImplementsInterface {
+                    interface: n.name().expect("Name must have text").text().to_string(),
                 })
                 .collect();
             types
         })
         .collect();
 
-    ImplementsInterfaces {
-        interfaces: Arc::new(interfaces),
-    }
+    Arc::new(interfaces)
 }
 
 fn fields_definition(

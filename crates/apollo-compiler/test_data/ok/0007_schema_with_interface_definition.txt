@@ -1,0 +1,48 @@
+- DOCUMENT@0..94
+    - OBJECT_TYPE_DEFINITION@0..54
+        - type_KW@0..4 "type"
+        - WHITESPACE@4..5 " "
+        - NAME@5..11
+            - IDENT@5..10 "Query"
+            - WHITESPACE@10..11 " "
+        - IMPLEMENTS_INTERFACES@11..34
+            - implements_KW@11..21 "implements"
+            - WHITESPACE@21..22 " "
+            - NAMED_TYPE@22..34
+                - NAME@22..34
+                    - IDENT@22..33 "NamedEntity"
+                    - WHITESPACE@33..34 " "
+        - FIELDS_DEFINITION@34..54
+            - L_CURLY@34..35 "{"
+            - WHITESPACE@35..38 "\n  "
+            - FIELD_DEFINITION@38..51
+                - NAME@38..42
+                    - IDENT@38..42 "name"
+                - COLON@42..43 ":"
+                - WHITESPACE@43..44 " "
+                - NAMED_TYPE@44..50
+                    - NAME@44..50
+                        - IDENT@44..50 "String"
+                - WHITESPACE@50..51 "\n"
+            - R_CURLY@51..52 "}"
+            - WHITESPACE@52..54 "\n\n"
+    - INTERFACE_TYPE_DEFINITION@54..94
+        - interface_KW@54..63 "interface"
+        - WHITESPACE@63..64 " "
+        - NAME@64..76
+            - IDENT@64..75 "NamedEntity"
+            - WHITESPACE@75..76 " "
+        - FIELDS_DEFINITION@76..94
+            - L_CURLY@76..77 "{"
+            - WHITESPACE@77..80 "\n  "
+            - FIELD_DEFINITION@80..93
+                - NAME@80..84
+                    - IDENT@80..84 "name"
+                - COLON@84..85 ":"
+                - WHITESPACE@85..86 " "
+                - NAMED_TYPE@86..92
+                    - NAME@86..92
+                        - IDENT@86..92 "String"
+                - WHITESPACE@92..93 "\n"
+            - R_CURLY@93..94 "}"
+

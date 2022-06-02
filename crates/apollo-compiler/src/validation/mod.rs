@@ -8,6 +8,9 @@ pub mod enums;
 pub mod scalars;
 pub mod unions;
 
+// composite nodes
+pub mod interfaces;
+
 // executable definitions
 pub mod operations;
 
@@ -35,6 +38,8 @@ impl<'a> Validator<'a> {
         self.errors.extend(scalars::check(self.db));
         self.errors.extend(enums::check(self.db));
         self.errors.extend(unions::check(self.db));
+
+        self.errors.extend(interfaces::check(self.db));
 
         self.errors.extend(operations::check(self.db));
         self.errors.extend(unused_variables::check(self.db));

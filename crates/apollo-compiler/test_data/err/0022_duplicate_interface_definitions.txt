@@ -1,0 +1,1 @@
+[Error(UniqueDefinition { message: "Operation Definitions must have unique names", definition: "NamedEntity" })]
