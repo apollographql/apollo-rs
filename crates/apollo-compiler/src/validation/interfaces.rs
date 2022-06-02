@@ -1,6 +1,8 @@
 use std::collections::HashSet;
 
-use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, SourceDatabase};
+use crate::{
+    diagnostics::ErrorDiagnostic, values::InterfaceDefinition, ApolloDiagnostic, SourceDatabase,
+};
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     let mut errors = Vec::new();
@@ -120,11 +122,43 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         for undefined_interface in transitive_diff {
             errors.push(ApolloDiagnostic::Error(
                 ErrorDiagnostic::TransitiveImplementedInterfaces {
-                    message: "Transitively implemented interfaces must also be defined on an implementing interface.".into(),
+                    message: "Transitively implemented interfaces must also be defined on an implementing interface".into(),
                     interface: interface_def.name().into(),
                     missing_implemented_interface: undefined_interface.into(),
                 },
             ))
+        }
+
+        // When defining an interface that implements another interface, the
+        // implementing interface must define each field that is specified by
+        // the implemented interface.
+        //
+        // Returns a Missing Field error.
+        let fields: HashSet<String> = interface_def
+            .fields_definition()
+            .iter()
+            .map(|field| field.name().into())
+            .collect();
+        for implements_interface in interface_def.implements_interfaces().iter() {
+            if let Some(interface) = implements_interface.interface_definition(db) {
+                let implements_interface_fields: HashSet<String> = interface
+                    .fields_definition()
+                    .iter()
+                    .map(|field| field.name().into())
+                    .collect();
+
+                let field_diff = implements_interface_fields.difference(&fields);
+
+                for missing_field in field_diff {
+                    errors.push(ApolloDiagnostic::Error(ErrorDiagnostic::MissingField {
+                        message: "An interface must be a super-set of all interfaces it implements"
+                            .into(),
+                        field: missing_field.into(),
+                        current_definition: interface_def.name().into(),
+                        super_definition: interface.name().into(),
+                    }))
+                }
+            }
         }
     }
 
@@ -182,16 +216,17 @@ interface Node {
 interface Resource implements Node {
   id: ID!
   url: String
+  width: Int
 }
 
-interface Image implements Resource {
+interface Image implements Resource & Node {
   id: ID!
-  url: String
   thumbnail: String
 }
 "#;
         let ctx = ApolloCompiler::new(input);
         let errors = ctx.validate();
+        dbg!(&errors);
         assert_eq!(errors.len(), 1);
     }
 }

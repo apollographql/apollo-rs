@@ -18,6 +18,12 @@ pub enum ErrorDiagnostic {
         scalar: String,
     },
     MissingIdent(String),
+    MissingField {
+        message: String,
+        field: String,
+        current_definition: String,
+        super_definition: String,
+    },
     QueryRootOperationType(String),
     RecursiveDefinition {
         message: String,
