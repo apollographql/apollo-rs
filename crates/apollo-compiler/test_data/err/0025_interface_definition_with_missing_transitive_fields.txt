@@ -1,1 +1,1 @@
-[Error(MissingField { message: "An interface must be a super-set of all interfaces it implements", field: "url", current_definition: "Image", super_definition: "Resource" }), Error(MissingField { message: "An interface must be a super-set of all interfaces it implements", field: "width", current_definition: "Image", super_definition: "Resource" })]
+[Error(MissingField { message: "An interface must be a super-set of all interfaces it implements", field: "width", current_definition: "Image", super_definition: "Resource" })]

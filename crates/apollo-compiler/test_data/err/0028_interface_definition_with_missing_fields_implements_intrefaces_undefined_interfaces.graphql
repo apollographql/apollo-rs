@@ -9,7 +9,6 @@ interface Node {
 interface Resource implements Node {
   id: ID!
   width: Int
-  height: Int
 }
 
 interface Image implements Resource & Url{
