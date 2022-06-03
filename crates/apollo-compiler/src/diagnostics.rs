@@ -13,13 +13,44 @@ pub enum ApolloDiagnostic {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ErrorDiagnostic {
+    BuiltInScalarDefinition {
+        message: String,
+        scalar: String,
+    },
     MissingIdent(String),
+    MissingField {
+        message: String,
+        field: String,
+        current_definition: String,
+        super_definition: String,
+    },
     QueryRootOperationType(String),
+    RecursiveDefinition {
+        message: String,
+        definition: String,
+    },
     SingleRootField(String),
+    ScalarSpecificationURL {
+        message: String,
+        scalar: String,
+    },
     SyntaxError {
         message: String,
         data: String,
         index: usize,
+    },
+    TransitiveImplementedInterfaces {
+        message: String,
+        interface: String,
+        missing_implemented_interface: String,
+    },
+    UniqueDefinition {
+        message: String,
+        definition: String,
+    },
+    UnsupportedOperation {
+        message: String,
+        operation: Option<String>,
     },
     UniqueOperationDefinition {
         message: String,
@@ -34,17 +65,9 @@ pub enum ErrorDiagnostic {
         message: String,
         value: String,
     },
-    UnsupportedOperation {
+    UndefinedDefinition {
         message: String,
-        operation: Option<String>,
-    },
-    BuiltInScalarDefinition {
-        message: String,
-        scalar: String,
-    },
-    ScalarSpecificationURL {
-        message: String,
-        scalar: String,
+        missing_definition: String,
     },
     UndefinedVariable {
         message: String,

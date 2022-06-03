@@ -1,0 +1,17 @@
+type Query implements Node {
+    ud: ID!
+}
+
+interface Node {
+  id: ID!
+}
+
+interface Resource implements Node {
+  id: ID!
+  width: Int
+}
+
+interface Image implements Resource & Url{
+  id: ID!
+  thumbnail: String
+}

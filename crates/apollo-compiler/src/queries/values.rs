@@ -659,7 +659,7 @@ pub struct ObjectTypeDefinition {
     pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: String,
-    pub(crate) implements_interfaces: ImplementsInterfaces,
+    pub(crate) implements_interfaces: Arc<Vec<ImplementsInterface>>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
 }
@@ -679,11 +679,29 @@ impl ObjectTypeDefinition {
     pub fn fields_definition(&self) -> &[FieldDefinition] {
         self.fields_definition.as_ref()
     }
+
+    /// Get a reference to object type definition's implements interfaces vector.
+    pub fn implements_interfaces(&self) -> &[ImplementsInterface] {
+        self.implements_interfaces.as_ref()
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct ImplementsInterfaces {
-    pub(crate) interfaces: Arc<Vec<Type>>,
+pub struct ImplementsInterface {
+    pub(crate) interface: String,
+}
+
+impl ImplementsInterface {
+    pub fn interface_definition(
+        &self,
+        db: &dyn SourceDatabase,
+    ) -> Option<Arc<InterfaceDefinition>> {
+        db.find_interface_by_name(self.interface.clone())
+    }
+
+    pub fn interface(&self) -> &str {
+        self.interface.as_ref()
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -812,5 +830,37 @@ impl UnionMember {
 
     pub fn object(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         db.find_object_type(self.object_id?)
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct InterfaceDefinition {
+    pub(crate) id: Uuid,
+    pub(crate) description: Option<String>,
+    pub(crate) name: String,
+    pub(crate) implements_interfaces: Arc<Vec<ImplementsInterface>>,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
+}
+
+impl InterfaceDefinition {
+    /// Get the interface definition's id.
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
+    /// Get a reference to the interface definition's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+
+    /// Get a reference to interface definition's implements interfaces vector.
+    pub fn implements_interfaces(&self) -> &[ImplementsInterface] {
+        self.implements_interfaces.as_ref()
+    }
+
+    /// Get a reference to interface definition's fields.
+    pub fn fields_definition(&self) -> &[FieldDefinition] {
+        self.fields_definition.as_ref()
     }
 }
