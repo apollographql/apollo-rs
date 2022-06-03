@@ -1,5 +1,6 @@
 use std::{ops::Deref, sync::Arc};
 
+use apollo_parser::ast;
 use ordered_float::{self, OrderedFloat};
 use uuid::Uuid;
 
@@ -338,6 +339,7 @@ fn get_name(ty: Type) -> String {
 pub struct Directive {
     pub(crate) name: String,
     pub(crate) arguments: Arc<Vec<Argument>>,
+    pub(crate) directive_id: Option<Uuid>,
 }
 
 impl Directive {
@@ -350,7 +352,102 @@ impl Directive {
     pub fn arguments(&self) -> &[Argument] {
         self.arguments.as_ref()
     }
+
+    // Get directive definition of the currently used directive
+    pub fn directive(&self, db: &dyn SourceDatabase) -> Option<Arc<DirectiveDefinition>> {
+        db.find_directive_definition(self.directive_id?)
+    }
 }
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct DirectiveDefinition {
+    pub(crate) id: Uuid,
+    pub(crate) description: Option<String>,
+    pub(crate) name: String,
+    pub(crate) arguments: ArgumentsDefinition,
+    pub(crate) repeatable: bool,
+    pub(crate) directive_locations: Arc<Vec<DirectiveLocation>>,
+}
+
+impl DirectiveDefinition {
+    /// Get a reference to the directive definition's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+
+    /// Get a reference to the directive definition's id.
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum DirectiveLocation {
+    Query,
+    Mutation,
+    Subscription,
+    Field,
+    FragmentDefinition,
+    FragmentSpread,
+    InlineFragment,
+    VariableDefinition,
+    Schema,
+    Scalar,
+    Object,
+    FieldDefinition,
+    ArgumentDefinition,
+    Interface,
+    Union,
+    Enum,
+    EnumValue,
+    InputObject,
+    InputFieldDefinition,
+}
+
+impl From<ast::DirectiveLocation> for DirectiveLocation {
+    fn from(directive_loc: ast::DirectiveLocation) -> Self {
+        if directive_loc.query_token().is_some() {
+            DirectiveLocation::Query
+        } else if directive_loc.mutation_token().is_some() {
+            DirectiveLocation::Mutation
+        } else if directive_loc.subscription_token().is_some() {
+            DirectiveLocation::Subscription
+        } else if directive_loc.field_token().is_some() {
+            DirectiveLocation::Field
+        } else if directive_loc.fragment_definition_token().is_some() {
+            DirectiveLocation::FragmentDefinition
+        } else if directive_loc.fragment_spread_token().is_some() {
+            DirectiveLocation::FragmentSpread
+        } else if directive_loc.inline_fragment_token().is_some() {
+            DirectiveLocation::InlineFragment
+        } else if directive_loc.variable_definition_token().is_some() {
+            DirectiveLocation::VariableDefinition
+        } else if directive_loc.schema_token().is_some() {
+            DirectiveLocation::Schema
+        } else if directive_loc.scalar_token().is_some() {
+            DirectiveLocation::Scalar
+        } else if directive_loc.object_token().is_some() {
+            DirectiveLocation::Object
+        } else if directive_loc.field_definition_token().is_some() {
+            DirectiveLocation::FieldDefinition
+        } else if directive_loc.argument_definition_token().is_some() {
+            DirectiveLocation::ArgumentDefinition
+        } else if directive_loc.interface_token().is_some() {
+            DirectiveLocation::Interface
+        } else if directive_loc.union_token().is_some() {
+            DirectiveLocation::Union
+        } else if directive_loc.enum_token().is_some() {
+            DirectiveLocation::Enum
+        } else if directive_loc.enum_value_token().is_some() {
+            DirectiveLocation::EnumValue
+        } else if directive_loc.input_object_token().is_some() {
+            DirectiveLocation::InputObject
+        } else {
+            DirectiveLocation::InputFieldDefinition
+        }
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Argument {
     pub(crate) name: String,
