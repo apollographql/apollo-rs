@@ -1,0 +1,1 @@
+[Error(TransitiveImplementedInterfaces { message: "Transitively implemented interfaces must also be defined on an implementing interface", interface: "Image", missing_implemented_interface: "Node" })]

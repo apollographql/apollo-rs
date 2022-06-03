@@ -1,8 +1,6 @@
 use std::collections::HashSet;
 
-use crate::{
-    diagnostics::ErrorDiagnostic, values::InterfaceDefinition, ApolloDiagnostic, SourceDatabase,
-};
+use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, SourceDatabase};
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     let mut errors = Vec::new();
@@ -92,7 +90,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
             errors.push(ApolloDiagnostic::Error(
                 ErrorDiagnostic::UndefinedDefinition {
                     message: "Implements Interface must be defined".into(),
-                    definition: undefined_interface.into(),
+                    missing_definition: undefined_interface.into(),
                 },
             ))
         }
@@ -163,70 +161,4 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     }
 
     errors
-}
-
-#[cfg(test)]
-mod test {
-    use crate::ApolloCompiler;
-
-    #[test]
-    fn it_fails_validation_with_cyclic_implements_interfaces() {
-        let input = r#"
-type Query implements NamedEntity {
-  name: String
-}
-
-interface NamedEntity implements NamedEntity {
-  name: String
-}
-"#;
-        let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
-        assert_eq!(errors.len(), 1);
-    }
-
-    #[test]
-    fn it_fails_validation_with_duplicate_fields() {
-        let input = r#"
-type Query implements NamedEntity {
-  name: String
-}
-
-interface NamedEntity {
-  name: String
-  name: String
-}
-"#;
-        let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
-        assert_eq!(errors.len(), 1);
-    }
-
-    #[test]
-    fn it_fails_validation_with_transitive_implemented_interfaces() {
-        let input = r#"
-type Query implements Node {
-    ud: ID!
-}
-
-interface Node {
-  id: ID!
-}
-
-interface Resource implements Node {
-  id: ID!
-  url: String
-  width: Int
-}
-
-interface Image implements Resource & Node {
-  id: ID!
-  thumbnail: String
-}
-"#;
-        let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
-        dbg!(&errors);
-        assert_eq!(errors.len(), 1);
-    }
 }

@@ -1,48 +1,161 @@
-- DOCUMENT@0..94
-    - OBJECT_TYPE_DEFINITION@0..54
+- DOCUMENT@0..254
+    - OBJECT_TYPE_DEFINITION@0..44
         - type_KW@0..4 "type"
         - WHITESPACE@4..5 " "
         - NAME@5..11
             - IDENT@5..10 "Query"
             - WHITESPACE@10..11 " "
-        - IMPLEMENTS_INTERFACES@11..34
+        - IMPLEMENTS_INTERFACES@11..27
             - implements_KW@11..21 "implements"
             - WHITESPACE@21..22 " "
-            - NAMED_TYPE@22..34
-                - NAME@22..34
-                    - IDENT@22..33 "NamedEntity"
-                    - WHITESPACE@33..34 " "
-        - FIELDS_DEFINITION@34..54
-            - L_CURLY@34..35 "{"
-            - WHITESPACE@35..38 "\n  "
-            - FIELD_DEFINITION@38..51
-                - NAME@38..42
-                    - IDENT@38..42 "name"
-                - COLON@42..43 ":"
-                - WHITESPACE@43..44 " "
-                - NAMED_TYPE@44..50
-                    - NAME@44..50
-                        - IDENT@44..50 "String"
-                - WHITESPACE@50..51 "\n"
-            - R_CURLY@51..52 "}"
-            - WHITESPACE@52..54 "\n\n"
-    - INTERFACE_TYPE_DEFINITION@54..94
-        - interface_KW@54..63 "interface"
-        - WHITESPACE@63..64 " "
-        - NAME@64..76
-            - IDENT@64..75 "NamedEntity"
-            - WHITESPACE@75..76 " "
-        - FIELDS_DEFINITION@76..94
-            - L_CURLY@76..77 "{"
-            - WHITESPACE@77..80 "\n  "
-            - FIELD_DEFINITION@80..93
-                - NAME@80..84
-                    - IDENT@80..84 "name"
-                - COLON@84..85 ":"
-                - WHITESPACE@85..86 " "
-                - NAMED_TYPE@86..92
-                    - NAME@86..92
-                        - IDENT@86..92 "String"
-                - WHITESPACE@92..93 "\n"
-            - R_CURLY@93..94 "}"
+            - NAMED_TYPE@22..27
+                - NAME@22..27
+                    - IDENT@22..26 "Node"
+                    - WHITESPACE@26..27 " "
+        - FIELDS_DEFINITION@27..44
+            - L_CURLY@27..28 "{"
+            - WHITESPACE@28..33 "\n    "
+            - FIELD_DEFINITION@33..41
+                - NAME@33..35
+                    - IDENT@33..35 "id"
+                - COLON@35..36 ":"
+                - WHITESPACE@36..37 " "
+                - NON_NULL_TYPE@37..41
+                    - NAMED_TYPE@37..39
+                        - NAME@37..39
+                            - IDENT@37..39 "ID"
+                    - BANG@39..40 "!"
+                    - WHITESPACE@40..41 "\n"
+            - R_CURLY@41..42 "}"
+            - WHITESPACE@42..44 "\n\n"
+    - INTERFACE_TYPE_DEFINITION@44..74
+        - interface_KW@44..53 "interface"
+        - WHITESPACE@53..54 " "
+        - NAME@54..59
+            - IDENT@54..58 "Node"
+            - WHITESPACE@58..59 " "
+        - FIELDS_DEFINITION@59..74
+            - L_CURLY@59..60 "{"
+            - WHITESPACE@60..63 "\n  "
+            - FIELD_DEFINITION@63..71
+                - NAME@63..65
+                    - IDENT@63..65 "id"
+                - COLON@65..66 ":"
+                - WHITESPACE@66..67 " "
+                - NON_NULL_TYPE@67..71
+                    - NAMED_TYPE@67..69
+                        - NAME@67..69
+                            - IDENT@67..69 "ID"
+                    - BANG@69..70 "!"
+                    - WHITESPACE@70..71 "\n"
+            - R_CURLY@71..72 "}"
+            - WHITESPACE@72..74 "\n\n"
+    - INTERFACE_TYPE_DEFINITION@74..151
+        - interface_KW@74..83 "interface"
+        - WHITESPACE@83..84 " "
+        - NAME@84..93
+            - IDENT@84..92 "Resource"
+            - WHITESPACE@92..93 " "
+        - IMPLEMENTS_INTERFACES@93..109
+            - implements_KW@93..103 "implements"
+            - WHITESPACE@103..104 " "
+            - NAMED_TYPE@104..109
+                - NAME@104..109
+                    - IDENT@104..108 "Node"
+                    - WHITESPACE@108..109 " "
+        - FIELDS_DEFINITION@109..151
+            - L_CURLY@109..110 "{"
+            - WHITESPACE@110..113 "\n  "
+            - FIELD_DEFINITION@113..123
+                - NAME@113..115
+                    - IDENT@113..115 "id"
+                - COLON@115..116 ":"
+                - WHITESPACE@116..117 " "
+                - NON_NULL_TYPE@117..123
+                    - NAMED_TYPE@117..119
+                        - NAME@117..119
+                            - IDENT@117..119 "ID"
+                    - BANG@119..120 "!"
+                    - WHITESPACE@120..123 "\n  "
+            - FIELD_DEFINITION@123..136
+                - NAME@123..128
+                    - IDENT@123..128 "width"
+                - COLON@128..129 ":"
+                - WHITESPACE@129..130 " "
+                - NAMED_TYPE@130..133
+                    - NAME@130..133
+                        - IDENT@130..133 "Int"
+                - WHITESPACE@133..136 "\n  "
+            - FIELD_DEFINITION@136..148
+                - NAME@136..142
+                    - IDENT@136..142 "height"
+                - COLON@142..143 ":"
+                - WHITESPACE@143..144 " "
+                - NAMED_TYPE@144..147
+                    - NAME@144..147
+                        - IDENT@144..147 "Int"
+                - WHITESPACE@147..148 "\n"
+            - R_CURLY@148..149 "}"
+            - WHITESPACE@149..151 "\n\n"
+    - INTERFACE_TYPE_DEFINITION@151..254
+        - interface_KW@151..160 "interface"
+        - WHITESPACE@160..161 " "
+        - NAME@161..167
+            - IDENT@161..166 "Image"
+            - WHITESPACE@166..167 " "
+        - IMPLEMENTS_INTERFACES@167..194
+            - implements_KW@167..177 "implements"
+            - WHITESPACE@177..178 " "
+            - NAMED_TYPE@178..187
+                - NAME@178..187
+                    - IDENT@178..186 "Resource"
+                    - WHITESPACE@186..187 " "
+            - AMP@187..188 "&"
+            - WHITESPACE@188..189 " "
+            - NAMED_TYPE@189..194
+                - NAME@189..194
+                    - IDENT@189..193 "Node"
+                    - WHITESPACE@193..194 " "
+        - FIELDS_DEFINITION@194..254
+            - L_CURLY@194..195 "{"
+            - WHITESPACE@195..198 "\n  "
+            - FIELD_DEFINITION@198..208
+                - NAME@198..200
+                    - IDENT@198..200 "id"
+                - COLON@200..201 ":"
+                - WHITESPACE@201..202 " "
+                - NON_NULL_TYPE@202..208
+                    - NAMED_TYPE@202..204
+                        - NAME@202..204
+                            - IDENT@202..204 "ID"
+                    - BANG@204..205 "!"
+                    - WHITESPACE@205..208 "\n  "
+            - FIELD_DEFINITION@208..221
+                - NAME@208..213
+                    - IDENT@208..213 "width"
+                - COLON@213..214 ":"
+                - WHITESPACE@214..215 " "
+                - NAMED_TYPE@215..218
+                    - NAME@215..218
+                        - IDENT@215..218 "Int"
+                - WHITESPACE@218..221 "\n  "
+            - FIELD_DEFINITION@221..235
+                - NAME@221..227
+                    - IDENT@221..227 "height"
+                - COLON@227..228 ":"
+                - WHITESPACE@228..229 " "
+                - NAMED_TYPE@229..232
+                    - NAME@229..232
+                        - IDENT@229..232 "Int"
+                - WHITESPACE@232..235 "\n  "
+            - FIELD_DEFINITION@235..253
+                - NAME@235..244
+                    - IDENT@235..244 "thumbnail"
+                - COLON@244..245 ":"
+                - WHITESPACE@245..246 " "
+                - NAMED_TYPE@246..252
+                    - NAME@246..252
+                        - IDENT@246..252 "String"
+                - WHITESPACE@252..253 "\n"
+            - R_CURLY@253..254 "}"
 

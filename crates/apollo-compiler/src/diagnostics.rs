@@ -67,7 +67,7 @@ pub enum ErrorDiagnostic {
     },
     UndefinedDefinition {
         message: String,
-        definition: String,
+        missing_definition: String,
     },
     UndefinedVariable {
         message: String,

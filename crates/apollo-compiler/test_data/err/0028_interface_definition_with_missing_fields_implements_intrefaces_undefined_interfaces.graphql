@@ -1,5 +1,5 @@
 type Query implements Node {
-    id: ID!
+    ud: ID!
 }
 
 interface Node {
@@ -12,9 +12,7 @@ interface Resource implements Node {
   height: Int
 }
 
-interface Image implements Resource & Node {
+interface Image implements Resource & Url{
   id: ID!
-  width: Int
-  height: Int
   thumbnail: String
 }
