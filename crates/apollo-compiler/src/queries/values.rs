@@ -379,6 +379,10 @@ impl DirectiveDefinition {
     pub fn id(&self) -> &Uuid {
         &self.id
     }
+
+    pub fn arguments(&self) -> &ArgumentsDefinition {
+        &self.arguments
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -822,6 +826,13 @@ pub struct ArgumentsDefinition {
     pub(crate) input_values: Arc<Vec<InputValueDefinition>>,
 }
 
+impl ArgumentsDefinition {
+    /// Get a reference to arguments definition's input values.
+    pub fn input_values(&self) -> &[InputValueDefinition] {
+        self.input_values.as_ref()
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct InputValueDefinition {
     pub(crate) description: Option<String>,
@@ -829,6 +840,13 @@ pub struct InputValueDefinition {
     pub(crate) ty: Type,
     pub(crate) default_value: Option<DefaultValue>,
     pub(crate) directives: Arc<Vec<Directive>>,
+}
+
+impl InputValueDefinition {
+    // Get a reference to input value definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
