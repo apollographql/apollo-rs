@@ -72,6 +72,10 @@ impl ApolloCompiler {
     pub fn unions(&self) -> Arc<Vec<values::UnionDefinition>> {
         self.db.unions()
     }
+
+    pub fn directive_definitions(&self) -> Arc<Vec<values::DirectiveDefinition>> {
+        self.db.directive_definitions()
+    }
 }
 
 #[cfg(test)]

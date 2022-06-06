@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, SourceDatabase};
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
