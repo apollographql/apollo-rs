@@ -4,7 +4,7 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use apollo_parser::ast::AstChildren;
+use apollo_parser::ast::{AstChildren, SyntaxNodePtr};
 use apollo_parser::{ast, Parser, SyntaxTree};
 use uuid::Uuid;
 
@@ -89,6 +89,8 @@ pub trait SourceDatabase {
     fn operation_inline_fragment_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
     fn operation_fragment_spread_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
+
+    fn ast_hir_relation(&self, ast_ptr: SyntaxNodePtr, hir_id: Uuid) -> AstHirRelation;
 }
 
 // this is top level entry to the source db
@@ -1335,4 +1337,12 @@ fn include_directive() -> DirectiveDefinition {
             DirectiveLocation::InlineFragment,
         ]),
     }
+}
+
+fn ast_hir_relation(
+    db: &dyn SourceDatabase,
+    ast_ptr: SyntaxNodePtr,
+    hir_id: Uuid,
+) -> AstHirRelation {
+    AstHirRelation { ast_ptr, hir_id }
 }

@@ -10,10 +10,10 @@ use std::{cell::RefCell, fmt, rc::Rc};
 use crate::{lexer::Lexer, Error, Token, TokenKind};
 
 pub use generated::syntax_kind::SyntaxKind;
-pub use language::{SyntaxElement, SyntaxNodeChildren, SyntaxToken};
+pub use language::{SyntaxElement, SyntaxNode, SyntaxNodeChildren, SyntaxNodePtr, SyntaxToken};
 pub use syntax_tree::SyntaxTree;
 
-pub(crate) use language::{GraphQLLanguage, SyntaxNode};
+pub(crate) use language::GraphQLLanguage;
 pub(crate) use syntax_tree::SyntaxTreeBuilder;
 pub(crate) use token_text::TokenText;
 

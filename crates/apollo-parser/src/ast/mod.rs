@@ -107,7 +107,9 @@ mod node_ext;
 
 use std::marker::PhantomData;
 
-use crate::{SyntaxKind, SyntaxNode, SyntaxNodeChildren, SyntaxToken};
+use crate::{SyntaxKind, SyntaxNodeChildren, SyntaxToken};
+
+pub use crate::{parser::SyntaxNodePtr, SyntaxNode};
 
 pub use generated::nodes::*;
 
