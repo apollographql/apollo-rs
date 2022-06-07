@@ -6,4 +6,4 @@
             - EQ@6..7 "="
 - ERROR@6:7 "expected a Name" =
 - ERROR@7:7 "expected Union Member Types" EOF
-recursion limit: 18446744073709551615, high: 0
+recursion limit: 4096, high: 0

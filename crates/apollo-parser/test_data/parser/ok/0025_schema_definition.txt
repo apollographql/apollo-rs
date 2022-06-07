@@ -33,4 +33,4 @@
                     - IDENT@82..104 "MySubscriptionRootType"
                     - WHITESPACE@104..105 "\n"
         - R_CURLY@105..106 "}"
-recursion limit: 18446744073709551615, high: 0
+recursion limit: 4096, high: 0

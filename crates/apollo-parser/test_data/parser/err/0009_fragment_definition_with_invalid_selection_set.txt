@@ -13,4 +13,4 @@
                 - NAME@25..29
                     - IDENT@25..29 "User"
 - ERROR@29:29 "expected a Selection Set" EOF
-recursion limit: 18446744073709551615, high: 0
+recursion limit: 4096, high: 0

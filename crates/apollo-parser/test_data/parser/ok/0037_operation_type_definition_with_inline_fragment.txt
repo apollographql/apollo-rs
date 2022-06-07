@@ -105,4 +105,4 @@
                     - R_CURLY@190..191 "}"
                     - WHITESPACE@191..192 "\n"
             - R_CURLY@192..193 "}"
-recursion limit: 18446744073709551615, high: 1
+recursion limit: 4096, high: 1

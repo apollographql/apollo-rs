@@ -27,4 +27,4 @@
                     - IDENT@27..31 "name"
                     - WHITESPACE@31..32 "\n"
             - R_CURLY@32..33 "}"
-recursion limit: 18446744073709551615, high: 1
+recursion limit: 4096, high: 1

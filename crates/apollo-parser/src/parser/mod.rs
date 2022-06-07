@@ -365,7 +365,7 @@ impl Default for LimitTracker {
         Self {
             current: 0,
             high: 0,
-            limit: usize::MAX,
+            limit: 4_096, // Derived from router experimentation
         }
     }
 }

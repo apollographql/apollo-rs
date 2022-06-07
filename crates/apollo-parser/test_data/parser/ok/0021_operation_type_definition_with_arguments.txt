@@ -41,4 +41,4 @@
                     - IDENT@65..70 "treat"
                     - WHITESPACE@70..71 "\n"
             - R_CURLY@71..72 "}"
-recursion limit: 18446744073709551615, high: 2
+recursion limit: 4096, high: 2

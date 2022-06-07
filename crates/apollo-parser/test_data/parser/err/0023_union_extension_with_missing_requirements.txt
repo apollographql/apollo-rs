@@ -7,4 +7,4 @@
         - NAME@13..25
             - IDENT@13..25 "SearchResult"
 - ERROR@25:25 "expected Directives or Union Member Types" EOF
-recursion limit: 18446744073709551615, high: 0
+recursion limit: 4096, high: 0
