@@ -4,8 +4,8 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use apollo_parser::ast::{AstChildren, SyntaxNodePtr};
-use apollo_parser::{ast, Parser, SyntaxTree};
+use apollo_parser::ast::{AstChildren, AstNode, SyntaxNodePtr};
+use apollo_parser::{ast, Parser, SyntaxNode, SyntaxTree};
 use uuid::Uuid;
 
 use crate::diagnostics::{ApolloDiagnostic, ErrorDiagnostic};
@@ -89,8 +89,6 @@ pub trait SourceDatabase {
     fn operation_inline_fragment_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
     fn operation_fragment_spread_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
-
-    fn ast_hir_relation(&self, ast_ptr: SyntaxNodePtr, hir_id: Uuid) -> AstHirRelation;
 }
 
 // this is top level entry to the source db
@@ -429,7 +427,7 @@ fn interfaces(db: &dyn SourceDatabase) -> Arc<Vec<InterfaceDefinition>> {
         .iter()
         .filter_map(|definition| match definition {
             ast::Definition::InterfaceTypeDefinition(interface_def) => {
-                Some(interface_definition(interface_def.clone()))
+                Some(interface_definition(db, interface_def.clone()))
             }
             _ => None,
         })
@@ -699,13 +697,17 @@ fn union_member(db: &dyn SourceDatabase, member: ast::NamedType) -> UnionMember 
     UnionMember { name, object_id }
 }
 
-fn interface_definition(interface_def: ast::InterfaceTypeDefinition) -> InterfaceDefinition {
+fn interface_definition(
+    db: &dyn SourceDatabase,
+    interface_def: ast::InterfaceTypeDefinition,
+) -> InterfaceDefinition {
     let id = Uuid::new_v4();
     let description = description(interface_def.description());
     let name = name(interface_def.name());
     let implements_interfaces = implements_interfaces(interface_def.implements_interfaces());
     let directives = directives(interface_def.directives());
     let fields_definition = fields_definition(interface_def.fields_definition());
+    let node_ptr = SyntaxNodePtr::new(interface_def.syntax());
 
     InterfaceDefinition {
         id,
@@ -714,6 +716,7 @@ fn interface_definition(interface_def: ast::InterfaceTypeDefinition) -> Interfac
         implements_interfaces,
         directives,
         fields_definition,
+        ast_ptr: node_ptr,
     }
 }
 

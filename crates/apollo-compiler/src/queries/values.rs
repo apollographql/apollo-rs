@@ -995,6 +995,7 @@ pub struct InterfaceDefinition {
     pub(crate) implements_interfaces: Arc<Vec<ImplementsInterface>>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 impl InterfaceDefinition {
@@ -1016,6 +1017,16 @@ impl InterfaceDefinition {
     /// Get a reference to interface definition's fields.
     pub fn fields_definition(&self) -> &[FieldDefinition] {
         self.fields_definition.as_ref()
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
     }
 }
 

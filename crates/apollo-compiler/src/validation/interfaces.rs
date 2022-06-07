@@ -63,9 +63,9 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         for field in fields {
             let field_name = field.name();
             if seen.contains(&field_name) {
-                errors.push(ApolloDiagnostic::Error(ErrorDiagnostic::UniqueValue {
+                errors.push(ApolloDiagnostic::Error(ErrorDiagnostic::UniqueField {
                     message: "Fields must be unique".into(),
-                    value: field_name.into(),
+                    // field: interface_def.ast_node().children(),
                 }));
             } else {
                 seen.insert(field_name);
@@ -163,4 +163,27 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     }
 
     errors
+}
+
+#[cfg(test)]
+mod test {
+    use crate::ApolloCompiler;
+
+    #[test]
+    fn it_fails_validation_with_duplicate_operation_fields() {
+        let input = r#"
+type Query implements NamedEntity {
+  name: String
+}
+
+interface NamedEntity {
+  name: String
+  name: String
+}
+
+"#;
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+        assert_eq!(errors.len(), 1);
+    }
 }

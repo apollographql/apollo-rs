@@ -1,3 +1,5 @@
+use apollo_parser::ast::FieldDefinition;
+
 // NOTE @lrlna: only syntax errors currently have the source data.
 //
 // TODO: figure out a nice way of going back to the AST and get its source data
@@ -64,6 +66,9 @@ pub enum ErrorDiagnostic {
     UniqueValue {
         message: String,
         value: String,
+    },
+    UniqueField {
+        message: String,
     },
     UndefinedDefinition {
         message: String,
