@@ -3,6 +3,14 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
+/// In order to control recursion, we have to have a way to specify
+/// the "top" of a selection_set tree. This is the function which
+/// mut be used to do this.
+pub(crate) fn top_selection_set(p: &mut Parser) {
+    p.recursion_limit.reset();
+    selection_set(p)
+}
+
 /// See: https://spec.graphql.org/October2021/#SelectionSet
 ///
 /// *SelectionSet*:

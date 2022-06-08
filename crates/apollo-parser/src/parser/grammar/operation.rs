@@ -61,15 +61,13 @@ pub(crate) fn operation_definition(p: &mut Parser) {
             }
 
             if let Some(T!['{']) = p.peek() {
-                p.recursion_limit.reset();
-                selection::selection_set(p)
+                selection::top_selection_set(p)
             }
         }
         Some(T!['{']) => {
             let _g = p.start_node(SyntaxKind::OPERATION_DEFINITION);
 
-            p.recursion_limit.reset();
-            selection::selection_set(p)
+            selection::top_selection_set(p)
         }
         _ => p.err_and_pop("expected an Operation Type or a Selection Set"),
     }
