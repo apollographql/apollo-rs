@@ -18,6 +18,7 @@ pub(crate) fn fragment_definition(p: &mut Parser) {
         directive::directives(p);
     }
 
+    p.recursion_limit.reset();
     match p.peek() {
         Some(T!['{']) => selection::selection_set(p),
         _ => p.err("expected a Selection Set"),
@@ -76,6 +77,7 @@ pub(crate) fn inline_fragment(p: &mut Parser) {
         directive::directives(p);
     }
 
+    p.recursion_limit.reset();
     match p.peek() {
         Some(T!['{']) => selection::selection_set(p),
         _ => p.err("expected Selection Set"),

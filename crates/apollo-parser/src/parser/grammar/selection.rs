@@ -54,7 +54,6 @@ pub(crate) fn selection(p: &mut Parser) {
                 break;
             }
             TokenKind::Name => {
-                p.recursion_limit.reset();
                 limit_exceeded = field::field(p);
                 has_selection = true;
             }
@@ -300,7 +299,7 @@ query SomeQuery(
 
         let ast = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 2);
+        assert_eq!(ast.recursion_limit().high, 3);
         assert_eq!(ast.errors().len(), 1);
         assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }
@@ -310,11 +309,11 @@ query SomeQuery(
         let schema = r#"
         query {Q1:product(id:1){url},Q2:product(id:2){url},Q3:product(id:3){url}}
         "#;
-        let parser = Parser::with_recursion_limit(schema, 3);
+        let parser = Parser::with_recursion_limit(schema, 7);
 
         let ast = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 2);
+        assert_eq!(ast.recursion_limit().high, 6);
         assert_eq!(ast.errors().len(), 0);
         assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }
@@ -328,7 +327,7 @@ query SomeQuery(
 
         let ast = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 2);
+        assert_eq!(ast.recursion_limit().high, 6);
         assert_eq!(ast.errors().len(), 0);
         assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }
