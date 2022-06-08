@@ -50,4 +50,4 @@
                         - STRING_VALUE@75..112
                             - STRING@75..112 "\"https://tools.ietf.org/html/rfc3986\""
                     - R_PAREN@112..113 ")"
-
+recursion limit: 4096, high: 0

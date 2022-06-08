@@ -37,3 +37,4 @@
                     - IDENT@62..66 "name"
                     - WHITESPACE@66..67 "\n"
             - R_CURLY@67..68 "}"
+recursion limit: 4096, high: 2

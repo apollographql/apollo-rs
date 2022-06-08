@@ -10,3 +10,4 @@
             - WHITESPACE@16..17 "\n"
             - R_CURLY@17..18 "}"
 - ERROR@17:18 "expected Enum Value Definition" }
+recursion limit: 4096, high: 0

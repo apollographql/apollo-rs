@@ -25,3 +25,4 @@
                     - WHITESPACE@34..35 "\n"
             - R_CURLY@35..36 "}"
 - ERROR@9:11 "Fragment Name cannot be 'on'" on
+recursion limit: 4096, high: 1

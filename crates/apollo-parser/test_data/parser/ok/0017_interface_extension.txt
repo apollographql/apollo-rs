@@ -26,3 +26,4 @@
                         - IDENT@49..52 "Int"
                 - WHITESPACE@52..53 "\n"
             - R_CURLY@53..54 "}"
+recursion limit: 4096, high: 0

@@ -31,3 +31,4 @@
                         - IDENT@55..73 "standardProfilePic"
                         - WHITESPACE@73..74 "\n"
             - R_CURLY@74..75 "}"
+recursion limit: 4096, high: 2

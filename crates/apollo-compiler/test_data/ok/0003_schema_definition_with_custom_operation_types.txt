@@ -149,4 +149,4 @@
                         - IDENT@320..326 "String"
                 - WHITESPACE@326..327 "\n"
             - R_CURLY@327..328 "}"
-
+recursion limit: 4096, high: 0

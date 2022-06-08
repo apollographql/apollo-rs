@@ -27,3 +27,4 @@
                     - IDENT@42..61 "MyExtendedQueryType"
                     - WHITESPACE@61..62 "\n"
         - R_CURLY@62..63 "}"
+recursion limit: 4096, high: 0

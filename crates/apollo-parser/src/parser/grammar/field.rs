@@ -9,7 +9,16 @@ use crate::{
 ///
 /// *Field*:
 ///     Alias? Name Arguments? Directives? SelectionSet?
-pub(crate) fn field(p: &mut Parser) {
+pub(crate) fn field(p: &mut Parser) -> bool {
+    // We need to enforce recursion limits to prevent
+    // excessive resource consumption or (more seriously)
+    // stack overflows.
+    p.recursion_limit.consume();
+    if p.recursion_limit.limited() {
+        p.limit_err(format!("parser limit({}) reached", p.recursion_limit.limit));
+        return true;
+    }
+
     let guard = p.start_node(SyntaxKind::FIELD);
 
     if let Some(TokenKind::Name) = p.peek() {
@@ -36,7 +45,8 @@ pub(crate) fn field(p: &mut Parser) {
     match p.peek() {
         Some(TokenKind::Name) => {
             guard.finish_node();
-            field(p)
+
+            return field(p);
         }
 
         Some(T!['}']) => {
@@ -44,6 +54,8 @@ pub(crate) fn field(p: &mut Parser) {
         }
         _ => guard.finish_node(),
     }
+
+    false
 }
 
 /// See: https://spec.graphql.org/October2021/#FieldsDefinition

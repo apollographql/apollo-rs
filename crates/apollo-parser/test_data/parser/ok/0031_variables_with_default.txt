@@ -50,3 +50,4 @@
                     - IDENT@66..72 "animal"
                     - WHITESPACE@72..73 "\n"
             - R_CURLY@73..74 "}"
+recursion limit: 4096, high: 1

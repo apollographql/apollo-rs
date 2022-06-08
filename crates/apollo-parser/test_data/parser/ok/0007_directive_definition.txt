@@ -11,3 +11,4 @@
         - DIRECTIVE_LOCATIONS@22..27
             - DIRECTIVE_LOCATION@22..27
                 - FIELD_KW@22..27 "FIELD"
+recursion limit: 4096, high: 0

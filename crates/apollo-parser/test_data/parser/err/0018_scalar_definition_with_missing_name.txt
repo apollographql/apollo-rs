@@ -8,3 +8,4 @@
                 - NAME@8..18
                     - IDENT@8..18 "deprecated"
 - ERROR@7:8 "expected a Name" @
+recursion limit: 4096, high: 0

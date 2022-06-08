@@ -24,8 +24,12 @@ pub(crate) fn selection_set(p: &mut Parser) {
 ///     InlineFragment
 pub(crate) fn selection(p: &mut Parser) {
     let mut has_selection = false;
+    let mut limit_exceeded = false;
 
     while let Some(node) = p.peek() {
+        if limit_exceeded {
+            break;
+        }
         match node {
             T![...] => {
                 let next_token = p.peek_token_n(2);
@@ -50,7 +54,8 @@ pub(crate) fn selection(p: &mut Parser) {
                 break;
             }
             TokenKind::Name => {
-                field::field(p);
+                p.recursion_limit.reset();
+                limit_exceeded = field::field(p);
                 has_selection = true;
             }
             _ => {
@@ -283,6 +288,48 @@ query SomeQuery(
         let ast = parser.parse();
 
         assert_eq!(ast.errors().len(), 1);
+        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+    }
+
+    #[test]
+    fn it_errors_when_field_selection_recursion_limit_exceeded() {
+        let schema = r#"
+        query {Q1:product(id:1){url},Q2:product(id:2){url},Q3:product(id:3){url}}
+        "#;
+        let parser = Parser::with_recursion_limit(schema, 2);
+
+        let ast = parser.parse();
+
+        assert_eq!(ast.recursion_limit().high, 2);
+        assert_eq!(ast.errors().len(), 1);
+        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+    }
+
+    #[test]
+    fn it_passes_when_field_selection_recursion_limit_is_not_exceeded() {
+        let schema = r#"
+        query {Q1:product(id:1){url},Q2:product(id:2){url},Q3:product(id:3){url}}
+        "#;
+        let parser = Parser::with_recursion_limit(schema, 3);
+
+        let ast = parser.parse();
+
+        assert_eq!(ast.recursion_limit().high, 2);
+        assert_eq!(ast.errors().len(), 0);
+        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+    }
+
+    #[test]
+    fn it_passes_when_field_selection_recursion_limit_is_at_default() {
+        let schema = r#"
+            query {Q1:product(id:1){url},Q2:product(id:2){url},Q3:product(id:3){url}}
+            "#;
+        let parser = Parser::new(schema);
+
+        let ast = parser.parse();
+
+        assert_eq!(ast.recursion_limit().high, 2);
+        assert_eq!(ast.errors().len(), 0);
         assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }
 }

@@ -15,4 +15,4 @@ pub(crate) use crate::parser::{
 };
 
 pub use crate::error::Error;
-pub use crate::parser::{Parser, SyntaxTree};
+pub use crate::parser::{LimitTracker, Parser, SyntaxTree};

@@ -7,3 +7,4 @@
         - NAME@12..18
             - IDENT@12..18 "Person"
 - ERROR@18:18 "expected an Implements Interface, Directives or a Fields Definition" EOF
+recursion limit: 4096, high: 0

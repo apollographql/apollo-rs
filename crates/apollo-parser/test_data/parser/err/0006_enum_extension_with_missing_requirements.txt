@@ -7,3 +7,4 @@
         - NAME@12..21
             - IDENT@12..21 "Direction"
 - ERROR@21:21 "expected Directive or Enum Values Definition" EOF
+recursion limit: 4096, high: 0

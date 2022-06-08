@@ -7,3 +7,4 @@
         - NAME@17..29
             - IDENT@17..29 "ValuedEntity"
 - ERROR@29:29 "exptected an Implements Interfaces, Directives, or a Fields Definition" EOF
+recursion limit: 4096, high: 0
