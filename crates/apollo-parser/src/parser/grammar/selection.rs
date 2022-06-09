@@ -3,9 +3,9 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// In order to control recursion, we have to have a way to specify
-/// the "top" of a selection_set tree. This is the function which
-/// mut be used to do this.
+/// In order to control recursion, we need to have a way to
+/// specify the "top" of a selection_set tree. This is the
+/// function which must be used to do this.
 pub(crate) fn top_selection_set(p: &mut Parser) {
     p.recursion_limit.reset();
     selection_set(p)
@@ -16,9 +16,18 @@ pub(crate) fn top_selection_set(p: &mut Parser) {
 /// *SelectionSet*:
 ///     **{** Selection* **}**
 pub(crate) fn selection_set(p: &mut Parser) {
+    p.recursion_limit.consume();
+
     if let Some(T!['{']) = p.peek() {
         let _g = p.start_node(SyntaxKind::SELECTION_SET);
         p.bump(S!['{']);
+        // We need to enforce recursion limits to prevent
+        // excessive resource consumption or (more seriously)
+        // stack overflows.
+        if p.recursion_limit.limited() {
+            p.limit_err(format!("parser limit({}) reached", p.recursion_limit.limit));
+            return;
+        }
         selection(p);
         p.expect(T!['}'], S!['}']);
     }
@@ -32,10 +41,9 @@ pub(crate) fn selection_set(p: &mut Parser) {
 ///     InlineFragment
 pub(crate) fn selection(p: &mut Parser) {
     let mut has_selection = false;
-    let mut limit_exceeded = false;
 
     while let Some(node) = p.peek() {
-        if limit_exceeded {
+        if p.recursion_limit.limited() {
             break;
         }
         match node {
@@ -62,7 +70,7 @@ pub(crate) fn selection(p: &mut Parser) {
                 break;
             }
             TokenKind::Name => {
-                limit_exceeded = field::field(p);
+                field::field(p);
                 has_selection = true;
             }
             _ => {
@@ -299,11 +307,48 @@ query SomeQuery(
     }
 
     #[test]
-    fn it_errors_when_field_selection_recursion_limit_exceeded() {
+    fn it_errors_when_selection_set_recursion_limit_exceeded() {
         let schema = r#"
         query {
           Q1 {
             url
+          }
+        }
+        "#;
+        let parser = Parser::with_recursion_limit(schema, 1);
+
+        let ast = parser.parse();
+
+        assert_eq!(ast.recursion_limit().high, 2);
+        assert_eq!(ast.errors().len(), 1);
+        assert_eq!(ast.document().definitions().into_iter().count(), 2);
+    }
+
+    #[test]
+    fn it_passes_when_selection_set_recursion_limit_is_not_exceeded() {
+        let schema = r#"
+        query {
+          Q1 {
+            url
+          }
+        }
+        "#;
+        let parser = Parser::with_recursion_limit(schema, 7);
+
+        let ast = parser.parse();
+
+        assert_eq!(ast.recursion_limit().high, 4);
+        assert_eq!(ast.errors().len(), 0);
+        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+    }
+
+    #[test]
+    fn it_errors_when_selection_set_recursion_limit_is_exceeded_with_inline_fragment() {
+        let schema = r#"
+        query {
+          ... on Page {
+            price
+            name
           }
         }
         "#;
@@ -317,44 +362,7 @@ query SomeQuery(
     }
 
     #[test]
-    fn it_passes_when_field_selection_recursion_limit_is_not_exceeded() {
-        let schema = r#"
-        query {
-          Q1 {
-            url
-          }
-        }
-        "#;
-        let parser = Parser::with_recursion_limit(schema, 7);
-
-        let ast = parser.parse();
-
-        assert_eq!(ast.recursion_limit().high, 6);
-        assert_eq!(ast.errors().len(), 0);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
-    }
-
-    #[test]
-    fn it_passes_when_field_selection_recursion_limit_is_exceeded_with_inline_fragment() {
-        let schema = r#"
-        query {
-          ... on Page {
-            price
-            name
-          }
-        }
-        "#;
-        let parser = Parser::with_recursion_limit(schema, 2);
-
-        let ast = parser.parse();
-
-        assert_eq!(ast.recursion_limit().high, 2);
-        assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
-    }
-
-    #[test]
-    fn it_passes_when_field_selection_recursion_limit_is_exceeded_fragment_spread() {
+    fn it_errors_when_selection_set_recursion_limit_is_exceeded_fragment_spread() {
         let schema = r#"
         query {
           product {
@@ -366,13 +374,13 @@ query SomeQuery(
 
         let ast = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 2);
+        assert_eq!(ast.recursion_limit().high, 3);
         assert_eq!(ast.errors().len(), 1);
         assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }
 
     #[test]
-    fn it_passes_when_field_selection_recursion_limit_is_exceeded_in_fragment_definition() {
+    fn it_errors_when_selection_set_recursion_limit_is_exceeded_in_fragment_definition() {
         let schema = r#"
         query ExampleQuery {
           topProducts {
@@ -388,17 +396,17 @@ query SomeQuery(
           }
         }
         "#;
-        let parser = Parser::with_recursion_limit(schema, 2);
+        let parser = Parser::with_recursion_limit(schema, 1);
 
         let ast = parser.parse();
 
         assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+        assert_eq!(ast.document().definitions().into_iter().count(), 2);
     }
 
     #[test]
-    fn it_passes_when_field_selection_recursion_limit_is_at_default() {
+    fn it_passes_when_selection_set_recursion_limit_is_at_default() {
         let schema = r#"
         query {
           Q1 {
@@ -410,7 +418,7 @@ query SomeQuery(
 
         let ast = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 6);
+        assert_eq!(ast.recursion_limit().high, 4);
         assert_eq!(ast.errors().len(), 0);
         assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }

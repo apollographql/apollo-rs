@@ -380,7 +380,7 @@ impl LimitTracker {
     }
 
     fn limited(&self) -> bool {
-        self.current >= self.limit
+        self.current > self.limit
     }
 
     fn consume(&mut self) {

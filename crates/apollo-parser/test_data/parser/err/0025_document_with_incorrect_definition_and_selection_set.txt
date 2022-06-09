@@ -14,4 +14,4 @@
                     - WHITESPACE@25..26 "\n"
             - R_CURLY@26..27 "}"
 - ERROR@0:14 "expected definition" uasdf21230jkdw
-recursion limit: 4096, high: 2
+recursion limit: 4096, high: 3

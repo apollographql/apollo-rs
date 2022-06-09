@@ -83,4 +83,4 @@
                     - R_PAREN@111..112 ")"
                     - WHITESPACE@112..113 "\n"
             - R_CURLY@113..114 "}"
-recursion limit: 4096, high: 1
+recursion limit: 4096, high: 2
