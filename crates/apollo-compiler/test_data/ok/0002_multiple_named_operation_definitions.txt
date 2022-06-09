@@ -128,4 +128,4 @@
                 - WHITESPACE@214..215 "\n"
             - R_CURLY@215..216 "}"
             - WHITESPACE@216..217 "\n"
-recursion limit: 4096, high: 3
+recursion limit: 4096, high: 6
