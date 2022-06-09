@@ -1,0 +1,11 @@
+schema @foo {
+    query: Query
+}
+
+type Query {
+    id: ID!
+    field: String
+}
+
+directive @foo on SCHEMA
+directive @foo on SCHEMA

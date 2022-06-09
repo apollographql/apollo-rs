@@ -1,0 +1,1 @@
+[Error(UniqueRootOperationType { message: "Root Operation Types must be unique", named_type: "Query", operation_type: "Subscription" }), Error(UniqueDefinition { message: "Directive Definitions must have unique names", definition: "foo" })]

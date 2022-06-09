@@ -471,33 +471,6 @@ fn directive_definitions(db: &dyn SourceDatabase) -> Arc<Vec<DirectiveDefinition
     Arc::new(directives)
 }
 
-fn built_in_directives(directives: Vec<DirectiveDefinition>) -> Vec<DirectiveDefinition> {
-    if !directives.iter().any(|dir| dir.name == "skip") {
-        let skip = DirectiveDefinition {
-            id: Uuid::new_v4(),
-            description: todo!(),
-            name: todo!(),
-            arguments: todo!(),
-            repeatable: todo!(),
-            directive_locations: todo!(),
-        };
-        directives.push(skip);
-    }
-    if !directives.iter().any(|dir| dir.name == "include") {
-        let include = DirectiveDefinition {
-            id: Uuid::new_v4(),
-            description: todo!(),
-            name: todo!(),
-            arguments: todo!(),
-            repeatable: todo!(),
-            directive_locations: todo!(),
-        };
-        directives.push(include);
-    }
-
-    directives
-}
-
 fn find_directive_definition(
     db: &dyn SourceDatabase,
     id: Uuid,
@@ -1167,4 +1140,157 @@ fn alias(alias: Option<ast::Alias>) -> Option<Arc<Alias>> {
         let alias_data = Alias(name);
         Arc::new(alias_data)
     })
+}
+
+fn built_in_directives(mut directives: Vec<DirectiveDefinition>) -> Vec<DirectiveDefinition> {
+    if !directives.iter().any(|dir| dir.name == "skip") {
+        directives.push(skip_directive());
+    }
+
+    if !directives.iter().any(|dir| dir.name == "specifiedBy") {
+        directives.push(specified_by_directive());
+    }
+
+    if !directives.iter().any(|dir| dir.name == "deprecated") {
+        directives.push(deprecated_directive());
+    }
+
+    if !directives.iter().any(|dir| dir.name == "include") {
+        directives.push(include_directive());
+    }
+
+    directives
+}
+
+fn skip_directive() -> DirectiveDefinition {
+    // "Directs the executor to skip this field or fragment when the `if` argument is true."
+    // directive @skip(
+    //   "Skipped when true."
+    //   if: Boolean!
+    // ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+    DirectiveDefinition {
+        id: Uuid::new_v4(),
+        description: Some(
+            "Directs the executor to skip this field or fragment when the `if` argument is true."
+                .into(),
+        ),
+        name: "skip".into(),
+        arguments: ArgumentsDefinition {
+            input_values: Arc::new(vec![InputValueDefinition {
+                description: Some("Skipped when true.".into()),
+                name: "if".into(),
+                ty: Type::NonNull {
+                    ty: Box::new(Type::Named {
+                        name: "Boolean".into(),
+                    }),
+                },
+                default_value: None,
+                directives: Arc::new(Vec::new()),
+            }]),
+        },
+        repeatable: false,
+        directive_locations: Arc::new(vec![
+            DirectiveLocation::Field,
+            DirectiveLocation::FragmentSpread,
+            DirectiveLocation::InlineFragment,
+        ]),
+    }
+}
+
+fn specified_by_directive() -> DirectiveDefinition {
+    // "Exposes a URL that specifies the behaviour of this scalar."
+    // directive @specifiedBy(
+    //     "The URL that specifies the behaviour of this scalar."
+    //     url: String!
+    // ) on SCALAR
+    DirectiveDefinition {
+        id: Uuid::new_v4(),
+        description: Some("Exposes a URL that specifies the behaviour of this scalar.".into()),
+        name: "specifiedBy".into(),
+        arguments: ArgumentsDefinition {
+            input_values: Arc::new(vec![InputValueDefinition {
+                description: Some("The URL that specifies the behaviour of this scalar.".into()),
+                name: "url".into(),
+                ty: Type::NonNull {
+                    ty: Box::new(Type::Named {
+                        name: "String".into(),
+                    }),
+                },
+                default_value: None,
+                directives: Arc::new(Vec::new()),
+            }]),
+        },
+        repeatable: false,
+        directive_locations: Arc::new(vec![DirectiveLocation::Scalar]),
+    }
+}
+
+fn deprecated_directive() -> DirectiveDefinition {
+    // "Marks an element of a GraphQL schema as no longer supported."
+    // directive @deprecated(
+    //   """
+    //   Explains why this element was deprecated, usually also including a
+    //   suggestion for how to access supported similar data. Formatted using
+    //   the Markdown syntax, as specified by
+    //   [CommonMark](https://commonmark.org/).
+    //   """
+    //   reason: String = "No longer supported"
+    // ) on FIELD_DEFINITION | ENUM_VALUE
+    DirectiveDefinition {
+        id: Uuid::new_v4(),
+        description: Some("Marks an element of a GraphQL schema as no longer supported.".into()),
+        name: "deprecated".into(),
+        arguments: ArgumentsDefinition {
+            input_values: Arc::new(vec![InputValueDefinition {
+                description: Some(
+                    "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).".into(),
+                ),
+                name: "reason".into(),
+                ty: Type::Named {
+                    name: "String".into(),
+                },
+                default_value: Some(DefaultValue::String("No longer supported".into())),
+                directives: Arc::new(Vec::new()),
+            }]),
+        },
+        repeatable: false,
+        directive_locations: Arc::new(vec![
+            DirectiveLocation::FieldDefinition,
+            DirectiveLocation::EnumValue
+        ]),
+    }
+}
+
+fn include_directive() -> DirectiveDefinition {
+    // "Directs the executor to include this field or fragment only when the `if` argument is true."
+    // directive @include(
+    //   "Included when true."
+    //   if: Boolean!
+    // ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+    DirectiveDefinition {
+        id: Uuid::new_v4(),
+        description: Some("Directs the executor to include this field or fragment only when the `if` argument is true.".into()),
+        name: "include".into(),
+        arguments: ArgumentsDefinition {
+            input_values: Arc::new(vec![InputValueDefinition {
+                description: Some(
+                    "Included when true.".into(),
+                ),
+                name: "if".into(),
+                ty: Type::NonNull {
+                    ty: Box::new(Type::Named {
+                        name: "Boolean".into(),
+                    }),
+                },
+                default_value: None,
+                directives: Arc::new(Vec::new()),
+            }]),
+        },
+        repeatable: false,
+        directive_locations: Arc::new(vec![
+            DirectiveLocation::Field,
+            DirectiveLocation::FragmentDefinition,
+            DirectiveLocation::InlineFragment,
+        ]),
+    }
 }

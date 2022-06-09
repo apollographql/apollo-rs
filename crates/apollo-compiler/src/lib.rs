@@ -336,14 +336,19 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
         let directives = ctx.directive_definitions();
         let locations: Vec<String> = directives
             .iter()
-            .flat_map(|dir| {
-                let locations: Vec<String> = dir
-                    .directive_locations()
-                    .iter()
-                    .map(|loc| loc.clone().into())
-                    .collect();
-                locations
+            .filter_map(|dir| {
+                if dir.name() == "delegateField" {
+                    let locations: Vec<String> = dir
+                        .directive_locations()
+                        .iter()
+                        .map(|loc| loc.clone().into())
+                        .collect();
+                    Some(locations)
+                } else {
+                    None
+                }
             })
+            .flatten()
             .collect();
 
         assert_eq!(["OBJECT", "INTERFACE"], locations.as_ref());
