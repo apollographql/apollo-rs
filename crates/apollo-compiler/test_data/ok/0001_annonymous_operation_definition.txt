@@ -61,4 +61,4 @@
                         - IDENT@79..85 "String"
                 - WHITESPACE@85..86 "\n"
             - R_CURLY@86..87 "}"
-recursion limit: 4096, high: 1
+recursion limit: 4096, high: 4
