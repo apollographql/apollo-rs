@@ -465,7 +465,37 @@ fn directive_definitions(db: &dyn SourceDatabase) -> Arc<Vec<DirectiveDefinition
             _ => None,
         })
         .collect();
+
+    let directives = built_in_directives(directives);
+
     Arc::new(directives)
+}
+
+fn built_in_directives(directives: Vec<DirectiveDefinition>) -> Vec<DirectiveDefinition> {
+    if !directives.iter().any(|dir| dir.name == "skip") {
+        let skip = DirectiveDefinition {
+            id: Uuid::new_v4(),
+            description: todo!(),
+            name: todo!(),
+            arguments: todo!(),
+            repeatable: todo!(),
+            directive_locations: todo!(),
+        };
+        directives.push(skip);
+    }
+    if !directives.iter().any(|dir| dir.name == "include") {
+        let include = DirectiveDefinition {
+            id: Uuid::new_v4(),
+            description: todo!(),
+            name: todo!(),
+            arguments: todo!(),
+            repeatable: todo!(),
+            directive_locations: todo!(),
+        };
+        directives.push(include);
+    }
+
+    directives
 }
 
 fn find_directive_definition(
