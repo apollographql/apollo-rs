@@ -348,7 +348,7 @@ fn object_types(db: &dyn SourceDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
         .iter()
         .filter_map(|definition| match definition {
             ast::Definition::ObjectTypeDefinition(obj_def) => {
-                Some(object_type_definition(db, obj_def.clone()))
+                Some(object_type_definition(obj_def.clone()))
             }
             _ => None,
         })
@@ -383,7 +383,7 @@ fn scalars(db: &dyn SourceDatabase) -> Arc<Vec<ScalarDefinition>> {
         .iter()
         .filter_map(|definition| match definition {
             ast::Definition::ScalarTypeDefinition(scalar_def) => {
-                Some(scalar_definition(db, scalar_def.clone()))
+                Some(scalar_definition(scalar_def.clone()))
             }
             _ => None,
         })
@@ -397,7 +397,7 @@ fn enums(db: &dyn SourceDatabase) -> Arc<Vec<EnumDefinition>> {
         .iter()
         .filter_map(|definition| match definition {
             ast::Definition::EnumTypeDefinition(enum_def) => {
-                Some(enum_definition(db, enum_def.clone()))
+                Some(enum_definition(enum_def.clone()))
             }
             _ => None,
         })
@@ -425,7 +425,7 @@ fn interfaces(db: &dyn SourceDatabase) -> Arc<Vec<InterfaceDefinition>> {
         .iter()
         .filter_map(|definition| match definition {
             ast::Definition::InterfaceTypeDefinition(interface_def) => {
-                Some(interface_definition(db, interface_def.clone()))
+                Some(interface_definition(interface_def.clone()))
             }
             _ => None,
         })
@@ -460,7 +460,7 @@ fn directive_definitions(db: &dyn SourceDatabase) -> Arc<Vec<DirectiveDefinition
         .iter()
         .filter_map(|definition| match definition {
             ast::Definition::DirectiveDefinition(directive_def) => {
-                Some(directive_definition(db, directive_def.clone()))
+                Some(directive_definition(directive_def.clone()))
             }
             _ => None,
         })
@@ -501,9 +501,9 @@ fn operation_definition(
     // if there are no names, an error must be raised that all operations must have a name
     let name = op_def.name().map(|name| name.text().to_string());
     let ty = operation_type(op_def.operation_type());
-    let variables = variable_definitions(db, op_def.variable_definitions());
+    let variables = variable_definitions(op_def.variable_definitions());
     let selection_set = selection_set(db, op_def.selection_set());
-    let directives = directives(db, op_def.directives());
+    let directives = directives(op_def.directives());
 
     OperationDefinition {
         id: Uuid::new_v4(),
@@ -535,7 +535,7 @@ fn fragment_definition(
         .text()
         .to_string();
     let selection_set = selection_set(db, fragment_def.selection_set());
-    let directives = directives(db, fragment_def.directives());
+    let directives = directives(fragment_def.directives());
 
     FragmentDefinition {
         id: Uuid::new_v4(),
@@ -551,7 +551,7 @@ fn schema_definition(
     schema_def: ast::SchemaDefinition,
 ) -> SchemaDefinition {
     let description = description(schema_def.description());
-    let directives = directives(db, schema_def.directives());
+    let directives = directives(schema_def.directives());
     let root_operation_type_definition =
         root_operation_type_definition(db, schema_def.root_operation_type_definitions());
 
@@ -562,16 +562,13 @@ fn schema_definition(
     }
 }
 
-fn object_type_definition(
-    db: &dyn SourceDatabase,
-    obj_def: ast::ObjectTypeDefinition,
-) -> ObjectTypeDefinition {
+fn object_type_definition(obj_def: ast::ObjectTypeDefinition) -> ObjectTypeDefinition {
     let id = Uuid::new_v4();
     let description = description(obj_def.description());
     let name = name(obj_def.name());
     let implements_interfaces = implements_interfaces(obj_def.implements_interfaces());
-    let directives = directives(db, obj_def.directives());
-    let fields_definition = fields_definition(db, obj_def.fields_definition());
+    let directives = directives(obj_def.directives());
+    let fields_definition = fields_definition(obj_def.fields_definition());
 
     ObjectTypeDefinition {
         id,
@@ -583,13 +580,10 @@ fn object_type_definition(
     }
 }
 
-fn scalar_definition(
-    db: &dyn SourceDatabase,
-    scalar_def: ast::ScalarTypeDefinition,
-) -> ScalarDefinition {
+fn scalar_definition(scalar_def: ast::ScalarTypeDefinition) -> ScalarDefinition {
     let description = description(scalar_def.description());
     let name = name(scalar_def.name());
-    let directives = directives(db, scalar_def.directives());
+    let directives = directives(scalar_def.directives());
 
     ScalarDefinition {
         description,
@@ -598,11 +592,11 @@ fn scalar_definition(
     }
 }
 
-fn enum_definition(db: &dyn SourceDatabase, enum_def: ast::EnumTypeDefinition) -> EnumDefinition {
+fn enum_definition(enum_def: ast::EnumTypeDefinition) -> EnumDefinition {
     let description = description(enum_def.description());
     let name = name(enum_def.name());
-    let directives = directives(db, enum_def.directives());
-    let enum_values_definition = enum_values_definition(db, enum_def.enum_values_definition());
+    let directives = directives(enum_def.directives());
+    let enum_values_definition = enum_values_definition(enum_def.enum_values_definition());
 
     EnumDefinition {
         description,
@@ -613,7 +607,6 @@ fn enum_definition(db: &dyn SourceDatabase, enum_def: ast::EnumTypeDefinition) -
 }
 
 fn enum_values_definition(
-    db: &dyn SourceDatabase,
     enum_values_def: Option<ast::EnumValuesDefinition>,
 ) -> Arc<Vec<EnumValueDefinition>> {
     match enum_values_def {
@@ -621,7 +614,7 @@ fn enum_values_definition(
             let enum_values = enum_values
                 .enum_value_definitions()
                 .into_iter()
-                .map(|enum_val_def| enum_value_definition(db, enum_val_def))
+                .map(enum_value_definition)
                 .collect();
             Arc::new(enum_values)
         }
@@ -629,13 +622,10 @@ fn enum_values_definition(
     }
 }
 
-fn enum_value_definition(
-    db: &dyn SourceDatabase,
-    enum_value_def: ast::EnumValueDefinition,
-) -> EnumValueDefinition {
+fn enum_value_definition(enum_value_def: ast::EnumValueDefinition) -> EnumValueDefinition {
     let description = description(enum_value_def.description());
     let enum_value = enum_value(enum_value_def.enum_value());
-    let directives = directives(db, enum_value_def.directives());
+    let directives = directives(enum_value_def.directives());
 
     EnumValueDefinition {
         description,
@@ -650,7 +640,7 @@ fn union_definition(
 ) -> UnionDefinition {
     let description = description(union_def.description());
     let name = name(union_def.name());
-    let directives = directives(db, union_def.directives());
+    let directives = directives(union_def.directives());
     let union_members = union_members(db, union_def.union_member_types());
 
     UnionDefinition {
@@ -687,16 +677,13 @@ fn union_member(db: &dyn SourceDatabase, member: ast::NamedType) -> UnionMember 
     UnionMember { name, object_id }
 }
 
-fn interface_definition(
-    db: &dyn SourceDatabase,
-    interface_def: ast::InterfaceTypeDefinition,
-) -> InterfaceDefinition {
+fn interface_definition(interface_def: ast::InterfaceTypeDefinition) -> InterfaceDefinition {
     let id = Uuid::new_v4();
     let description = description(interface_def.description());
     let name = name(interface_def.name());
     let implements_interfaces = implements_interfaces(interface_def.implements_interfaces());
-    let directives = directives(db, interface_def.directives());
-    let fields_definition = fields_definition(db, interface_def.fields_definition());
+    let directives = directives(interface_def.directives());
+    let fields_definition = fields_definition(interface_def.fields_definition());
 
     InterfaceDefinition {
         id,
@@ -708,13 +695,10 @@ fn interface_definition(
     }
 }
 
-fn directive_definition(
-    db: &dyn SourceDatabase,
-    directive_def: ast::DirectiveDefinition,
-) -> DirectiveDefinition {
+fn directive_definition(directive_def: ast::DirectiveDefinition) -> DirectiveDefinition {
     let name = name(directive_def.name());
     let description = description(directive_def.description());
-    let arguments = arguments_definition(db, directive_def.arguments_definition());
+    let arguments = arguments_definition(directive_def.arguments_definition());
     let repeatable = directive_def.repeatable_token().is_some();
     let directive_locations = directive_locations(directive_def.directive_locations());
 
@@ -779,7 +763,6 @@ fn implements_interfaces(
 }
 
 fn fields_definition(
-    db: &dyn SourceDatabase,
     fields_definition: Option<ast::FieldsDefinition>,
 ) -> Arc<Vec<FieldDefinition>> {
     match fields_definition {
@@ -789,9 +772,9 @@ fn fields_definition(
                 .map(|field| {
                     let description = description(field.description());
                     let name = name(field.name());
-                    let arguments = arguments_definition(db, field.arguments_definition());
+                    let arguments = arguments_definition(field.arguments_definition());
                     let ty = ty(field.ty().expect("Field must have a type"));
-                    let directives = directives(db, field.directives());
+                    let directives = directives(field.directives());
 
                     FieldDefinition {
                         description,
@@ -809,12 +792,11 @@ fn fields_definition(
 }
 
 fn arguments_definition(
-    db: &dyn SourceDatabase,
     arguments_definition: Option<ast::ArgumentsDefinition>,
 ) -> ArgumentsDefinition {
     match arguments_definition {
         Some(arguments) => {
-            let input_values = input_value_definitions(db, arguments.input_value_definitions());
+            let input_values = input_value_definitions(arguments.input_value_definitions());
             ArgumentsDefinition { input_values }
         }
         None => ArgumentsDefinition {
@@ -824,7 +806,6 @@ fn arguments_definition(
 }
 
 fn input_value_definitions(
-    db: &dyn SourceDatabase,
     input_values: AstChildren<ast::InputValueDefinition>,
 ) -> Arc<Vec<InputValueDefinition>> {
     let input_values: Vec<InputValueDefinition> = input_values
@@ -833,7 +814,7 @@ fn input_value_definitions(
             let name = name(input.name());
             let ty = ty(input.ty().expect("Input Definition must have a type"));
             let default_value = default_value(input.default_value());
-            let directives = directives(db, input.directives());
+            let directives = directives(input.directives());
 
             InputValueDefinition {
                 description,
@@ -896,7 +877,6 @@ fn operation_type(op_type: Option<ast::OperationType>) -> OperationType {
 }
 
 fn variable_definitions(
-    db: &dyn SourceDatabase,
     variable_definitions: Option<ast::VariableDefinitions>,
 ) -> Arc<Vec<VariableDefinition>> {
     match variable_definitions {
@@ -904,7 +884,7 @@ fn variable_definitions(
             let variable_definitions = vars
                 .variable_definitions()
                 .into_iter()
-                .map(|var_def| variable_definition(db, var_def))
+                .map(variable_definition)
                 .collect();
             Arc::new(variable_definitions)
         }
@@ -912,16 +892,13 @@ fn variable_definitions(
     }
 }
 
-fn variable_definition(
-    db: &dyn SourceDatabase,
-    var: ast::VariableDefinition,
-) -> VariableDefinition {
+fn variable_definition(var: ast::VariableDefinition) -> VariableDefinition {
     let name = name(
         var.variable()
             .expect("Variable Definition must have a variable")
             .name(),
     );
-    let directives = directives(db, var.directives());
+    let directives = directives(var.directives());
     let default_value = default_value(var.default_value());
     let ty = ty(var.ty().expect("Variable Definition must have a type"));
 
@@ -982,35 +959,21 @@ fn directive_locations(
     }
 }
 
-fn directives(db: &dyn SourceDatabase, directives: Option<ast::Directives>) -> Arc<Vec<Directive>> {
+fn directives(directives: Option<ast::Directives>) -> Arc<Vec<Directive>> {
     match directives {
         Some(directives) => {
-            let directives = directives
-                .directives()
-                .into_iter()
-                .map(|dir| directive(db, dir))
-                .collect();
+            let directives = directives.directives().into_iter().map(directive).collect();
             Arc::new(directives)
         }
         None => Arc::new(Vec::new()),
     }
 }
 
-fn directive(db: &dyn SourceDatabase, directive: ast::Directive) -> Directive {
+fn directive(directive: ast::Directive) -> Directive {
     let name = name(directive.name());
     let arguments = arguments(directive.arguments());
-    // NOTE @lrlna: this should just be Uuid.  If we can't find the framgment we
-    // are looking for when populating this field, we should throw a semantic
-    // error.
-    let directive_id = db
-        .find_directive_definition_by_name(name.clone())
-        .map(|directive_def| *directive_def.id());
 
-    Directive {
-        name,
-        arguments,
-        directive_id,
-    }
+    Directive { name, arguments }
 }
 
 fn arguments(arguments: Option<ast::Arguments>) -> Arc<Vec<Argument>> {
@@ -1097,7 +1060,7 @@ fn inline_fragment(db: &dyn SourceDatabase, fragment: ast::InlineFragment) -> Ar
             .text()
             .to_string()
     });
-    let directives = directives(db, fragment.directives());
+    let directives = directives(fragment.directives());
     let selection_set: Arc<Vec<Selection>> = selection_set(db, fragment.selection_set());
 
     let fragment_data = InlineFragment {
@@ -1115,7 +1078,7 @@ fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Ar
             .expect("Fragment Spread must have a name")
             .name(),
     );
-    let directives = directives(db, fragment.directives());
+    let directives = directives(fragment.directives());
     // NOTE @lrlna: this should just be Uuid.  If we can't find the framgment we
     // are looking for when populating this field, we should throw a semantic
     // error.
@@ -1134,7 +1097,7 @@ fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
     let name = name(field.name());
     let alias = alias(field.alias());
     let selection_set = selection_set(db, field.selection_set());
-    let directives = directives(db, field.directives());
+    let directives = directives(field.directives());
     let arguments = arguments(field.arguments());
 
     let field_data = Field {

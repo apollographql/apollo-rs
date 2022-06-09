@@ -339,7 +339,6 @@ fn get_name(ty: Type) -> String {
 pub struct Directive {
     pub(crate) name: String,
     pub(crate) arguments: Arc<Vec<Argument>>,
-    pub(crate) directive_id: Option<Uuid>,
 }
 
 impl Directive {
@@ -355,7 +354,7 @@ impl Directive {
 
     // Get directive definition of the currently used directive
     pub fn directive(&self, db: &dyn SourceDatabase) -> Option<Arc<DirectiveDefinition>> {
-        db.find_directive_definition(self.directive_id?)
+        db.find_directive_definition_by_name(self.name().to_string())
     }
 }
 
@@ -380,8 +379,14 @@ impl DirectiveDefinition {
         &self.id
     }
 
+    // Get a reference to argument definition's locations.
     pub fn arguments(&self) -> &ArgumentsDefinition {
         &self.arguments
+    }
+
+    // Get a reference to directive definition's locations.
+    pub fn directive_locations(&self) -> &[DirectiveLocation] {
+        self.directive_locations.as_ref()
     }
 }
 
@@ -448,6 +453,32 @@ impl From<ast::DirectiveLocation> for DirectiveLocation {
             DirectiveLocation::InputObject
         } else {
             DirectiveLocation::InputFieldDefinition
+        }
+    }
+}
+
+impl From<DirectiveLocation> for String {
+    fn from(dir_loc: DirectiveLocation) -> Self {
+        match dir_loc {
+            DirectiveLocation::Query => "QUERY".to_string(),
+            DirectiveLocation::Mutation => "MUTATION".to_string(),
+            DirectiveLocation::Subscription => "SUBSCRIPTION".to_string(),
+            DirectiveLocation::Field => "FIELD".to_string(),
+            DirectiveLocation::FragmentDefinition => "FRAGMENT_DEFINITION".to_string(),
+            DirectiveLocation::FragmentSpread => "FRAGMENT_SPREAD".to_string(),
+            DirectiveLocation::InlineFragment => "INLINE_FRAGMENT".to_string(),
+            DirectiveLocation::VariableDefinition => "VARIABLE_DEFINITION".to_string(),
+            DirectiveLocation::Schema => "SCHEMA".to_string(),
+            DirectiveLocation::Scalar => "SCALAR".to_string(),
+            DirectiveLocation::Object => "OBJECT".to_string(),
+            DirectiveLocation::FieldDefinition => "FIELD_DEFINITION".to_string(),
+            DirectiveLocation::ArgumentDefinition => "ARGUMENT_DEFINITION".to_string(),
+            DirectiveLocation::Interface => "INTERFACE".to_string(),
+            DirectiveLocation::Union => "UNION".to_string(),
+            DirectiveLocation::Enum => "ENUM".to_string(),
+            DirectiveLocation::EnumValue => "ENUM_VALUE".to_string(),
+            DirectiveLocation::InputObject => "INPUT_OBJECT".to_string(),
+            DirectiveLocation::InputFieldDefinition => "INPUT_FIELD_DEFINITION".to_string(),
         }
     }
 }

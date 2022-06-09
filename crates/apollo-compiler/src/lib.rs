@@ -313,4 +313,39 @@ type SearchQuery {
             assert_eq!(fields, ["name", "age"])
         }
     }
+
+    #[test]
+    fn it_accesses_directive_definitions() {
+        let input = r#"
+type Query {
+    literature: Book
+}
+
+directive @delegateField(name: String!) repeatable on OBJECT | INTERFACE
+
+type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
+  id: ID!
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+
+        assert!(errors.is_empty());
+
+        let directives = ctx.directive_definitions();
+        let locations: Vec<String> = directives
+            .iter()
+            .flat_map(|dir| {
+                let locations: Vec<String> = dir
+                    .directive_locations()
+                    .iter()
+                    .map(|loc| loc.clone().into())
+                    .collect();
+                locations
+            })
+            .collect();
+
+        assert_eq!(["OBJECT", "INTERFACE"], locations.as_ref());
+    }
 }
