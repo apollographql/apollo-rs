@@ -1,0 +1,1 @@
+[Error(RecursiveDefinition { message: "Directive definition cannot reference itself", definition: "invalidExample" })]

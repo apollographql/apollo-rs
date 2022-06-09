@@ -52,6 +52,8 @@ pub trait SourceDatabase {
 
     fn interfaces(&self) -> Arc<Vec<InterfaceDefinition>>;
 
+    fn directive_definitions(&self) -> Arc<Vec<DirectiveDefinition>>;
+
     fn query_operations(&self) -> Operations;
 
     fn mutation_operations(&self) -> Operations;
@@ -71,6 +73,10 @@ pub trait SourceDatabase {
     fn find_interface(&self, id: Uuid) -> Option<Arc<InterfaceDefinition>>;
 
     fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceDefinition>>;
+
+    fn find_directive_definition(&self, id: Uuid) -> Option<Arc<DirectiveDefinition>>;
+
+    fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
 
     fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<String>>;
 
@@ -448,6 +454,47 @@ fn find_interface_by_name(
     })
 }
 
+fn directive_definitions(db: &dyn SourceDatabase) -> Arc<Vec<DirectiveDefinition>> {
+    let directives = db
+        .definitions()
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::DirectiveDefinition(directive_def) => {
+                Some(directive_definition(directive_def.clone()))
+            }
+            _ => None,
+        })
+        .collect();
+
+    let directives = built_in_directives(directives);
+
+    Arc::new(directives)
+}
+
+fn find_directive_definition(
+    db: &dyn SourceDatabase,
+    id: Uuid,
+) -> Option<Arc<DirectiveDefinition>> {
+    db.directive_definitions().iter().find_map(|directive_def| {
+        if &id == directive_def.id() {
+            return Some(Arc::new(directive_def.clone()));
+        }
+        None
+    })
+}
+
+fn find_directive_definition_by_name(
+    db: &dyn SourceDatabase,
+    name: String,
+) -> Option<Arc<DirectiveDefinition>> {
+    db.directive_definitions().iter().find_map(|directive_def| {
+        if name == directive_def.name() {
+            return Some(Arc::new(directive_def.clone()));
+        }
+        None
+    })
+}
+
 fn operation_definition(
     db: &dyn SourceDatabase,
     op_def: ast::OperationDefinition,
@@ -648,6 +695,23 @@ fn interface_definition(interface_def: ast::InterfaceTypeDefinition) -> Interfac
         implements_interfaces,
         directives,
         fields_definition,
+    }
+}
+
+fn directive_definition(directive_def: ast::DirectiveDefinition) -> DirectiveDefinition {
+    let name = name(directive_def.name());
+    let description = description(directive_def.description());
+    let arguments = arguments_definition(directive_def.arguments_definition());
+    let repeatable = directive_def.repeatable_token().is_some();
+    let directive_locations = directive_locations(directive_def.directive_locations());
+
+    DirectiveDefinition {
+        id: Uuid::new_v4(),
+        description,
+        name,
+        arguments,
+        repeatable,
+        directive_locations,
     }
 }
 
@@ -882,6 +946,22 @@ fn named_type(n: Option<ast::Name>) -> Type {
     Type::Named { name: name(n) }
 }
 
+fn directive_locations(
+    directive_locations: Option<ast::DirectiveLocations>,
+) -> Arc<Vec<DirectiveLocation>> {
+    match directive_locations {
+        Some(directive_loc) => {
+            let locations: Vec<DirectiveLocation> = directive_loc
+                .directive_locations()
+                .into_iter()
+                .map(|loc| loc.into())
+                .collect();
+            Arc::new(locations)
+        }
+        None => Arc::new(Vec::new()),
+    }
+}
+
 fn directives(directives: Option<ast::Directives>) -> Arc<Vec<Directive>> {
     match directives {
         Some(directives) => {
@@ -895,6 +975,7 @@ fn directives(directives: Option<ast::Directives>) -> Arc<Vec<Directive>> {
 fn directive(directive: ast::Directive) -> Directive {
     let name = name(directive.name());
     let arguments = arguments(directive.arguments());
+
     Directive { name, arguments }
 }
 
@@ -1059,4 +1140,157 @@ fn alias(alias: Option<ast::Alias>) -> Option<Arc<Alias>> {
         let alias_data = Alias(name);
         Arc::new(alias_data)
     })
+}
+
+fn built_in_directives(mut directives: Vec<DirectiveDefinition>) -> Vec<DirectiveDefinition> {
+    if !directives.iter().any(|dir| dir.name == "skip") {
+        directives.push(skip_directive());
+    }
+
+    if !directives.iter().any(|dir| dir.name == "specifiedBy") {
+        directives.push(specified_by_directive());
+    }
+
+    if !directives.iter().any(|dir| dir.name == "deprecated") {
+        directives.push(deprecated_directive());
+    }
+
+    if !directives.iter().any(|dir| dir.name == "include") {
+        directives.push(include_directive());
+    }
+
+    directives
+}
+
+fn skip_directive() -> DirectiveDefinition {
+    // "Directs the executor to skip this field or fragment when the `if` argument is true."
+    // directive @skip(
+    //   "Skipped when true."
+    //   if: Boolean!
+    // ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+    DirectiveDefinition {
+        id: Uuid::new_v4(),
+        description: Some(
+            "Directs the executor to skip this field or fragment when the `if` argument is true."
+                .into(),
+        ),
+        name: "skip".into(),
+        arguments: ArgumentsDefinition {
+            input_values: Arc::new(vec![InputValueDefinition {
+                description: Some("Skipped when true.".into()),
+                name: "if".into(),
+                ty: Type::NonNull {
+                    ty: Box::new(Type::Named {
+                        name: "Boolean".into(),
+                    }),
+                },
+                default_value: None,
+                directives: Arc::new(Vec::new()),
+            }]),
+        },
+        repeatable: false,
+        directive_locations: Arc::new(vec![
+            DirectiveLocation::Field,
+            DirectiveLocation::FragmentSpread,
+            DirectiveLocation::InlineFragment,
+        ]),
+    }
+}
+
+fn specified_by_directive() -> DirectiveDefinition {
+    // "Exposes a URL that specifies the behaviour of this scalar."
+    // directive @specifiedBy(
+    //     "The URL that specifies the behaviour of this scalar."
+    //     url: String!
+    // ) on SCALAR
+    DirectiveDefinition {
+        id: Uuid::new_v4(),
+        description: Some("Exposes a URL that specifies the behaviour of this scalar.".into()),
+        name: "specifiedBy".into(),
+        arguments: ArgumentsDefinition {
+            input_values: Arc::new(vec![InputValueDefinition {
+                description: Some("The URL that specifies the behaviour of this scalar.".into()),
+                name: "url".into(),
+                ty: Type::NonNull {
+                    ty: Box::new(Type::Named {
+                        name: "String".into(),
+                    }),
+                },
+                default_value: None,
+                directives: Arc::new(Vec::new()),
+            }]),
+        },
+        repeatable: false,
+        directive_locations: Arc::new(vec![DirectiveLocation::Scalar]),
+    }
+}
+
+fn deprecated_directive() -> DirectiveDefinition {
+    // "Marks an element of a GraphQL schema as no longer supported."
+    // directive @deprecated(
+    //   """
+    //   Explains why this element was deprecated, usually also including a
+    //   suggestion for how to access supported similar data. Formatted using
+    //   the Markdown syntax, as specified by
+    //   [CommonMark](https://commonmark.org/).
+    //   """
+    //   reason: String = "No longer supported"
+    // ) on FIELD_DEFINITION | ENUM_VALUE
+    DirectiveDefinition {
+        id: Uuid::new_v4(),
+        description: Some("Marks an element of a GraphQL schema as no longer supported.".into()),
+        name: "deprecated".into(),
+        arguments: ArgumentsDefinition {
+            input_values: Arc::new(vec![InputValueDefinition {
+                description: Some(
+                    "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).".into(),
+                ),
+                name: "reason".into(),
+                ty: Type::Named {
+                    name: "String".into(),
+                },
+                default_value: Some(DefaultValue::String("No longer supported".into())),
+                directives: Arc::new(Vec::new()),
+            }]),
+        },
+        repeatable: false,
+        directive_locations: Arc::new(vec![
+            DirectiveLocation::FieldDefinition,
+            DirectiveLocation::EnumValue
+        ]),
+    }
+}
+
+fn include_directive() -> DirectiveDefinition {
+    // "Directs the executor to include this field or fragment only when the `if` argument is true."
+    // directive @include(
+    //   "Included when true."
+    //   if: Boolean!
+    // ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+    DirectiveDefinition {
+        id: Uuid::new_v4(),
+        description: Some("Directs the executor to include this field or fragment only when the `if` argument is true.".into()),
+        name: "include".into(),
+        arguments: ArgumentsDefinition {
+            input_values: Arc::new(vec![InputValueDefinition {
+                description: Some(
+                    "Included when true.".into(),
+                ),
+                name: "if".into(),
+                ty: Type::NonNull {
+                    ty: Box::new(Type::Named {
+                        name: "Boolean".into(),
+                    }),
+                },
+                default_value: None,
+                directives: Arc::new(Vec::new()),
+            }]),
+        },
+        repeatable: false,
+        directive_locations: Arc::new(vec![
+            DirectiveLocation::Field,
+            DirectiveLocation::FragmentDefinition,
+            DirectiveLocation::InlineFragment,
+        ]),
+    }
 }

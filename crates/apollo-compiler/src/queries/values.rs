@@ -1,5 +1,6 @@
 use std::{ops::Deref, sync::Arc};
 
+use apollo_parser::ast;
 use ordered_float::{self, OrderedFloat};
 use uuid::Uuid;
 
@@ -350,7 +351,138 @@ impl Directive {
     pub fn arguments(&self) -> &[Argument] {
         self.arguments.as_ref()
     }
+
+    // Get directive definition of the currently used directive
+    pub fn directive(&self, db: &dyn SourceDatabase) -> Option<Arc<DirectiveDefinition>> {
+        db.find_directive_definition_by_name(self.name().to_string())
+    }
 }
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct DirectiveDefinition {
+    pub(crate) id: Uuid,
+    pub(crate) description: Option<String>,
+    pub(crate) name: String,
+    pub(crate) arguments: ArgumentsDefinition,
+    pub(crate) repeatable: bool,
+    pub(crate) directive_locations: Arc<Vec<DirectiveLocation>>,
+}
+
+impl DirectiveDefinition {
+    /// Get a reference to the directive definition's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+
+    /// Get a reference to the directive definition's id.
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
+    // Get a reference to argument definition's locations.
+    pub fn arguments(&self) -> &ArgumentsDefinition {
+        &self.arguments
+    }
+
+    // Get a reference to directive definition's locations.
+    pub fn directive_locations(&self) -> &[DirectiveLocation] {
+        self.directive_locations.as_ref()
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum DirectiveLocation {
+    Query,
+    Mutation,
+    Subscription,
+    Field,
+    FragmentDefinition,
+    FragmentSpread,
+    InlineFragment,
+    VariableDefinition,
+    Schema,
+    Scalar,
+    Object,
+    FieldDefinition,
+    ArgumentDefinition,
+    Interface,
+    Union,
+    Enum,
+    EnumValue,
+    InputObject,
+    InputFieldDefinition,
+}
+
+impl From<ast::DirectiveLocation> for DirectiveLocation {
+    fn from(directive_loc: ast::DirectiveLocation) -> Self {
+        if directive_loc.query_token().is_some() {
+            DirectiveLocation::Query
+        } else if directive_loc.mutation_token().is_some() {
+            DirectiveLocation::Mutation
+        } else if directive_loc.subscription_token().is_some() {
+            DirectiveLocation::Subscription
+        } else if directive_loc.field_token().is_some() {
+            DirectiveLocation::Field
+        } else if directive_loc.fragment_definition_token().is_some() {
+            DirectiveLocation::FragmentDefinition
+        } else if directive_loc.fragment_spread_token().is_some() {
+            DirectiveLocation::FragmentSpread
+        } else if directive_loc.inline_fragment_token().is_some() {
+            DirectiveLocation::InlineFragment
+        } else if directive_loc.variable_definition_token().is_some() {
+            DirectiveLocation::VariableDefinition
+        } else if directive_loc.schema_token().is_some() {
+            DirectiveLocation::Schema
+        } else if directive_loc.scalar_token().is_some() {
+            DirectiveLocation::Scalar
+        } else if directive_loc.object_token().is_some() {
+            DirectiveLocation::Object
+        } else if directive_loc.field_definition_token().is_some() {
+            DirectiveLocation::FieldDefinition
+        } else if directive_loc.argument_definition_token().is_some() {
+            DirectiveLocation::ArgumentDefinition
+        } else if directive_loc.interface_token().is_some() {
+            DirectiveLocation::Interface
+        } else if directive_loc.union_token().is_some() {
+            DirectiveLocation::Union
+        } else if directive_loc.enum_token().is_some() {
+            DirectiveLocation::Enum
+        } else if directive_loc.enum_value_token().is_some() {
+            DirectiveLocation::EnumValue
+        } else if directive_loc.input_object_token().is_some() {
+            DirectiveLocation::InputObject
+        } else {
+            DirectiveLocation::InputFieldDefinition
+        }
+    }
+}
+
+impl From<DirectiveLocation> for String {
+    fn from(dir_loc: DirectiveLocation) -> Self {
+        match dir_loc {
+            DirectiveLocation::Query => "QUERY".to_string(),
+            DirectiveLocation::Mutation => "MUTATION".to_string(),
+            DirectiveLocation::Subscription => "SUBSCRIPTION".to_string(),
+            DirectiveLocation::Field => "FIELD".to_string(),
+            DirectiveLocation::FragmentDefinition => "FRAGMENT_DEFINITION".to_string(),
+            DirectiveLocation::FragmentSpread => "FRAGMENT_SPREAD".to_string(),
+            DirectiveLocation::InlineFragment => "INLINE_FRAGMENT".to_string(),
+            DirectiveLocation::VariableDefinition => "VARIABLE_DEFINITION".to_string(),
+            DirectiveLocation::Schema => "SCHEMA".to_string(),
+            DirectiveLocation::Scalar => "SCALAR".to_string(),
+            DirectiveLocation::Object => "OBJECT".to_string(),
+            DirectiveLocation::FieldDefinition => "FIELD_DEFINITION".to_string(),
+            DirectiveLocation::ArgumentDefinition => "ARGUMENT_DEFINITION".to_string(),
+            DirectiveLocation::Interface => "INTERFACE".to_string(),
+            DirectiveLocation::Union => "UNION".to_string(),
+            DirectiveLocation::Enum => "ENUM".to_string(),
+            DirectiveLocation::EnumValue => "ENUM_VALUE".to_string(),
+            DirectiveLocation::InputObject => "INPUT_OBJECT".to_string(),
+            DirectiveLocation::InputFieldDefinition => "INPUT_FIELD_DEFINITION".to_string(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Argument {
     pub(crate) name: String,
@@ -725,6 +857,13 @@ pub struct ArgumentsDefinition {
     pub(crate) input_values: Arc<Vec<InputValueDefinition>>,
 }
 
+impl ArgumentsDefinition {
+    /// Get a reference to arguments definition's input values.
+    pub fn input_values(&self) -> &[InputValueDefinition] {
+        self.input_values.as_ref()
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct InputValueDefinition {
     pub(crate) description: Option<String>,
@@ -732,6 +871,13 @@ pub struct InputValueDefinition {
     pub(crate) ty: Type,
     pub(crate) default_value: Option<DefaultValue>,
     pub(crate) directives: Arc<Vec<Directive>>,
+}
+
+impl InputValueDefinition {
+    // Get a reference to input value definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
