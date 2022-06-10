@@ -17,13 +17,29 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.2.8](https://crates.io/crates/apollo-parser/0.2.8) - 2022-06-10
+
+## Fix
+- **Use recursion limit both for selection set and field parsing - [garypen] and [lrlna], [pull/244]**
+
+  This properly unifies the limits around recursion for both:
+    - selection sets
+    - fields
+
+  The tests are expanded and properly exercise the various possible outcomes
+  with recursion limits.Fixes a bug with
+
+  [garypen]: https://github.com/garypen
+  [lrlna]: https://github.com/lrlna
+  [pull/244]: https://github.com/apollographql/apollo-rs/pull/244
+
 # [0.2.7](https://crates.io/crates/apollo-parser/0.2.7) - 2022-06-08
 
 ## Features
 - **Resource bound parsing execution - [garypen], [pull/239] closes [issue/225]**
 
   Introduce recursion limit enforced during SelectionSet parsing.
-  
+
   There is now a default limit (4_096) applied to parsers during SelectionSet
   parsing to help prevent stack overflows. This limit can be set manually when
   creating a parser by using the new fn, `Parser::with_recursion_limit()`.
@@ -34,7 +50,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [garypen]: https://github.com/garypen
   [pull/239]: https://github.com/apollographql/apollo-rs/pull/239
   [issue/225]: https://github.com/apollographql/apollo-rs/issues/225
-
 
 # [0.2.6](https://crates.io/crates/apollo-parser/0.2.6) - 2022-05-24
 
