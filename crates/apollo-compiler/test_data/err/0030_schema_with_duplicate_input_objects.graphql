@@ -1,0 +1,14 @@
+type Query {
+  point1: Point2D
+  point2: Point2D
+}
+
+input Point2D {
+  x: Float
+  y: Float
+}
+
+input Point2D {
+  x: Float
+  y: Float
+}

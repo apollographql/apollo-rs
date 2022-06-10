@@ -54,6 +54,8 @@ pub trait SourceDatabase {
 
     fn directive_definitions(&self) -> Arc<Vec<DirectiveDefinition>>;
 
+    fn input_objects(&self) -> Arc<Vec<InputObjectDefinition>>;
+
     fn query_operations(&self) -> Operations;
 
     fn mutation_operations(&self) -> Operations;
@@ -495,6 +497,21 @@ fn find_directive_definition_by_name(
     })
 }
 
+fn input_objects(db: &dyn SourceDatabase) -> Arc<Vec<InputObjectDefinition>> {
+    let directives = db
+        .definitions()
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::InputObjectTypeDefinition(input_obj) => {
+                Some(input_object_definition(input_obj.clone()))
+            }
+            _ => None,
+        })
+        .collect();
+
+    Arc::new(directives)
+}
+
 fn operation_definition(
     db: &dyn SourceDatabase,
     op_def: ast::OperationDefinition,
@@ -715,6 +732,22 @@ fn directive_definition(directive_def: ast::DirectiveDefinition) -> DirectiveDef
     }
 }
 
+fn input_object_definition(input_obj: ast::InputObjectTypeDefinition) -> InputObjectDefinition {
+    let id = Uuid::new_v4();
+    let description = description(input_obj.description());
+    let name = name(input_obj.name());
+    let directives = directives(input_obj.directives());
+    let input_fields_definition = input_fields_definition(input_obj.input_fields_definition());
+
+    InputObjectDefinition {
+        id,
+        description,
+        name,
+        directives,
+        input_fields_definition,
+    }
+}
+
 fn add_object_type_id_to_schema(db: &dyn SourceDatabase) -> Arc<Vec<RootOperationTypeDefinition>> {
     // Schema Definition does not have to be present in the SDL if ObjectType name is
     // - Query
@@ -805,6 +838,15 @@ fn arguments_definition(
         None => ArgumentsDefinition {
             input_values: Arc::new(Vec::new()),
         },
+    }
+}
+
+fn input_fields_definition(
+    input_fields: Option<ast::InputFieldsDefinition>,
+) -> Arc<Vec<InputValueDefinition>> {
+    match input_fields {
+        Some(fields) => input_value_definitions(fields.input_value_definitions()),
+        None => Arc::new(Vec::new()),
     }
 }
 
