@@ -1010,3 +1010,29 @@ impl InterfaceDefinition {
         self.fields_definition.as_ref()
     }
 }
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct InputObjectDefinition {
+    pub(crate) id: Uuid,
+    pub(crate) description: Option<String>,
+    pub(crate) name: String,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) input_fields_definition: Arc<Vec<InputValueDefinition>>,
+}
+
+impl InputObjectDefinition {
+    /// Get the input object definition's id.
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
+    /// Get a reference to the input object definition's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+
+    /// Get a reference to input object definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+}
