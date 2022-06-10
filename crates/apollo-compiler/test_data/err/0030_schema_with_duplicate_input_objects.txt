@@ -1,0 +1,1 @@
+[Error(UniqueDefinition { message: "Input Object Definitions must have unique names", definition: "Point2D" })]

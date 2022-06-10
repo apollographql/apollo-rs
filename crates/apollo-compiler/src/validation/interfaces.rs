@@ -53,6 +53,8 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     }
 
     // Fields in an Interface definition must be unique
+    //
+    // Returns Unique Value error.
     for interface_def in db.interfaces().iter() {
         let mut seen = HashSet::new();
 

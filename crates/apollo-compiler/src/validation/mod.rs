@@ -10,6 +10,7 @@ pub mod unions;
 
 // composite nodes
 pub mod directives;
+pub mod input_object;
 pub mod interfaces;
 
 // executable definitions
@@ -42,6 +43,7 @@ impl<'a> Validator<'a> {
 
         self.errors.extend(interfaces::check(self.db));
         self.errors.extend(directives::check(self.db));
+        self.errors.extend(input_object::check(self.db));
 
         self.errors.extend(operations::check(self.db));
         self.errors.extend(unused_variables::check(self.db));
