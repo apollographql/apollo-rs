@@ -44,6 +44,7 @@ pub struct FragmentDefinition {
     pub(crate) type_condition: String,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) selection_set: Arc<Vec<Selection>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 // NOTE @lrlna: all the getter methods here return the exact types that are
@@ -88,6 +89,17 @@ impl FragmentDefinition {
             .iter()
             .flat_map(|sel| sel.variables(db))
             .collect()
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
     }
 }
 
@@ -1024,6 +1036,7 @@ impl InterfaceDefinition {
         &self.ast_ptr
     }
 
+    // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
@@ -1057,25 +1070,5 @@ impl InputObjectDefinition {
 
     pub fn input_fields_definition(&self) -> &[InputValueDefinition] {
         self.input_fields_definition.as_ref()
-    }
-}
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct AstHirRelation {
-    pub(crate) ast_ptr: SyntaxNodePtr,
-    pub(crate) hir_id: Uuid,
-}
-
-impl AstHirRelation {
-    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
-        &self.ast_ptr
-    }
-
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
-        let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
-    }
-
-    pub fn hir_id(&self) -> Uuid {
-        self.hir_id
     }
 }

@@ -556,6 +556,7 @@ fn fragment_definition(
         .to_string();
     let selection_set = selection_set(db, fragment_def.selection_set());
     let directives = directives(fragment_def.directives());
+    let node_ptr = SyntaxNodePtr::new(fragment_def.syntax());
 
     FragmentDefinition {
         id: Uuid::new_v4(),
@@ -1340,12 +1341,4 @@ fn include_directive() -> DirectiveDefinition {
             DirectiveLocation::InlineFragment,
         ]),
     }
-}
-
-fn ast_hir_relation(
-    db: &dyn SourceDatabase,
-    ast_ptr: SyntaxNodePtr,
-    hir_id: Uuid,
-) -> AstHirRelation {
-    AstHirRelation { ast_ptr, hir_id }
 }
