@@ -45,11 +45,11 @@ impl ApolloCompiler {
         self.db.definitions()
     }
 
-    pub fn operations(&self) -> values::Operations {
+    pub fn operations(&self) -> Arc<Vec<values::OperationDefinition>> {
         self.db.operations()
     }
 
-    pub fn fragments(&self) -> values::Fragments {
+    pub fn fragments(&self) -> Arc<Vec<values::FragmentDefinition>> {
         self.db.fragments()
     }
 
@@ -157,7 +157,11 @@ type Query {
         assert!(errors.is_empty());
 
         let operations = ctx.operations();
-        let fields = operations.find("ExampleQuery").unwrap().fields(&ctx.db);
+        let fields = operations
+            .iter()
+            .find(|op| op.name() == Some("ExampleQuery"))
+            .unwrap()
+            .fields(&ctx.db);
         let field_names: Vec<&str> = fields.iter().map(|f| f.name()).collect();
         assert_eq!(
             field_names,

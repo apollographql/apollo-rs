@@ -10,34 +10,6 @@ use uuid::Uuid;
 use crate::SourceDatabase;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Fragments {
-    inner: Arc<Vec<FragmentDefinition>>,
-}
-
-impl Fragments {
-    pub fn new(inner: Arc<Vec<FragmentDefinition>>) -> Self {
-        Self { inner }
-    }
-
-    pub fn find(&self, name: &str) -> Option<FragmentDefinition> {
-        self.inner.iter().find_map(|op| {
-            if op.name() == name {
-                Some(op.clone())
-            } else {
-                None
-            }
-        })
-    }
-}
-impl Deref for Fragments {
-    type Target = Arc<Vec<FragmentDefinition>>;
-
-    fn deref(&self) -> &Arc<Vec<FragmentDefinition>> {
-        &self.inner
-    }
-}
-
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct FragmentDefinition {
     pub(crate) id: Uuid,
     pub(crate) name: String,
@@ -100,39 +72,6 @@ impl FragmentDefinition {
     pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
-    }
-}
-
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Operations {
-    inner: Arc<Vec<OperationDefinition>>,
-}
-
-impl Operations {
-    pub fn new(inner: Arc<Vec<OperationDefinition>>) -> Self {
-        Self { inner }
-    }
-
-    // NOTE: this should only be a wrapper around a find_operation method on the
-    // SourceDatabase so this function is also memoized.  How do we get access
-    // to SourceDatabase from this struct impl gracefully here?
-    pub fn find(&self, name: &str) -> Option<OperationDefinition> {
-        self.inner.iter().find_map(|op| {
-            if let Some(n) = op.name() {
-                if n == name {
-                    return Some(op.clone());
-                }
-            }
-            None
-        })
-    }
-}
-
-impl Deref for Operations {
-    type Target = Arc<Vec<OperationDefinition>>;
-
-    fn deref(&self) -> &Arc<Vec<OperationDefinition>> {
-        &self.inner
     }
 }
 
@@ -719,6 +658,7 @@ pub struct SchemaDefinition {
     pub(crate) description: Option<String>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) root_operation_type_definition: Arc<Vec<RootOperationTypeDefinition>>,
+    pub(crate) ast_ptr: Option<SyntaxNodePtr>,
 }
 
 impl SchemaDefinition {
@@ -733,6 +673,18 @@ impl SchemaDefinition {
             .unwrap()
             .push(op)
     }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> Option<&SyntaxNodePtr> {
+        self.ast_ptr.as_ref()
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+        self.ast_ptr()
+            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
+    }
+
     // NOTE(@lrlna): potentially have the following fns on the database itself
     // so they are memoised as well
 
@@ -775,6 +727,7 @@ pub struct RootOperationTypeDefinition {
     pub(crate) object_type_id: Option<Uuid>,
     pub(crate) operation_type: OperationType,
     pub(crate) named_type: Type,
+    pub(crate) ast_ptr: Option<SyntaxNodePtr>,
 }
 
 impl RootOperationTypeDefinition {
@@ -787,6 +740,17 @@ impl RootOperationTypeDefinition {
     pub fn operation_type(&self) -> OperationType {
         self.operation_type
     }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> Option<&SyntaxNodePtr> {
+        self.ast_ptr.as_ref()
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+        self.ast_ptr()
+            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
+    }
 }
 
 impl Default for RootOperationTypeDefinition {
@@ -797,6 +761,7 @@ impl Default for RootOperationTypeDefinition {
             named_type: Type::Named {
                 name: "Query".to_string(),
             },
+            ast_ptr: None,
         }
     }
 }
@@ -809,6 +774,7 @@ pub struct ObjectTypeDefinition {
     pub(crate) implements_interfaces: Arc<Vec<ImplementsInterface>>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 impl ObjectTypeDefinition {
@@ -831,11 +797,23 @@ impl ObjectTypeDefinition {
     pub fn implements_interfaces(&self) -> &[ImplementsInterface] {
         self.implements_interfaces.as_ref()
     }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ImplementsInterface {
     pub(crate) interface: String,
+    pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 impl ImplementsInterface {
@@ -849,6 +827,17 @@ impl ImplementsInterface {
     pub fn interface(&self) -> &str {
         self.interface.as_ref()
     }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -858,6 +847,7 @@ pub struct FieldDefinition {
     pub(crate) arguments: ArgumentsDefinition,
     pub(crate) ty: Type,
     pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 impl FieldDefinition {
@@ -865,17 +855,40 @@ impl FieldDefinition {
     pub fn name(&self) -> &str {
         self.name.as_ref()
     }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ArgumentsDefinition {
     pub(crate) input_values: Arc<Vec<InputValueDefinition>>,
+    pub(crate) ast_ptr: Option<SyntaxNodePtr>,
 }
 
 impl ArgumentsDefinition {
     /// Get a reference to arguments definition's input values.
     pub fn input_values(&self) -> &[InputValueDefinition] {
         self.input_values.as_ref()
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> Option<&SyntaxNodePtr> {
+        self.ast_ptr.as_ref()
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+        self.ast_ptr()
+            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
     }
 }
 
@@ -886,6 +899,7 @@ pub struct InputValueDefinition {
     pub(crate) ty: Type,
     pub(crate) default_value: Option<DefaultValue>,
     pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) ast_ptr: Option<SyntaxNodePtr>,
 }
 
 impl InputValueDefinition {
@@ -898,6 +912,17 @@ impl InputValueDefinition {
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
     }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> Option<&SyntaxNodePtr> {
+        self.ast_ptr.as_ref()
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+        self.ast_ptr()
+            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -905,6 +930,7 @@ pub struct ScalarDefinition {
     pub(crate) description: Option<String>,
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 impl ScalarDefinition {
@@ -917,6 +943,17 @@ impl ScalarDefinition {
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
     }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -925,6 +962,7 @@ pub struct EnumDefinition {
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) enum_values_definition: Arc<Vec<EnumValueDefinition>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 impl EnumDefinition {
@@ -942,18 +980,41 @@ impl EnumDefinition {
     pub fn enum_values_definition(&self) -> &[EnumValueDefinition] {
         self.enum_values_definition.as_ref()
     }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
+    }
 }
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct EnumValueDefinition {
     pub(crate) description: Option<String>,
     pub(crate) enum_value: String,
     pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 impl EnumValueDefinition {
     /// Get a reference to enum value definition's enum value
     pub fn enum_value(&self) -> &str {
         self.enum_value.as_ref()
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
     }
 }
 
@@ -963,6 +1024,7 @@ pub struct UnionDefinition {
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) union_members: Arc<Vec<UnionMember>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 impl UnionDefinition {
@@ -980,12 +1042,24 @@ impl UnionDefinition {
     pub fn union_members(&self) -> &[UnionMember] {
         self.union_members.as_ref()
     }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct UnionMember {
     pub(crate) name: String,
     pub(crate) object_id: Option<Uuid>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 impl UnionMember {
@@ -996,6 +1070,17 @@ impl UnionMember {
 
     pub fn object(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         db.find_object_type(self.object_id?)
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
     }
 }
 
@@ -1050,6 +1135,7 @@ pub struct InputObjectDefinition {
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) input_fields_definition: Arc<Vec<InputValueDefinition>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 impl InputObjectDefinition {
@@ -1070,5 +1156,16 @@ impl InputObjectDefinition {
 
     pub fn input_fields_definition(&self) -> &[InputValueDefinition] {
         self.input_fields_definition.as_ref()
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
     }
 }
