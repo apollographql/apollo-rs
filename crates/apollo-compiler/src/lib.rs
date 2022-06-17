@@ -37,9 +37,9 @@ impl ApolloCompiler {
         validator.validate().into()
     }
 
-    pub fn syntax_errors(&self) -> Vec<ApolloDiagnostic> {
-        self.db.syntax_errors()
-    }
+    // pub fn syntax_errors(&self) -> Vec<ApolloDiagnostic> {
+    //     self.db.syntax_errors()
+    // }
 
     pub fn definitions(&self) -> Arc<Vec<ast::Definition>> {
         self.db.definitions()
@@ -121,7 +121,10 @@ type Query {
         let fragment_names: Vec<_> = fragments.iter().map(|fragment| fragment.name()).collect();
         assert_eq!(["vipCustomer"], fragment_names.as_slice());
 
-        let operation_variables: Vec<String> = match operations.find("ExampleQuery") {
+        let operation_variables: Vec<String> = match operations
+            .iter()
+            .find(|op| op.name() == Some("ExampleQuery"))
+        {
             Some(op) => op.variables().iter().map(|var| var.name.clone()).collect(),
             None => Vec::new(),
         };
