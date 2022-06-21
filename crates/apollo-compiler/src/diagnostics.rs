@@ -4,18 +4,76 @@ use thiserror::Error;
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
     MissingIdent(MissingIdent),
+    UniqueDefinition(UniqueDefinition),
+    SingleRootField(SingleRootField),
+    UnsupportedOperation(UnsupportedOperation),
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("expected identifier")]
+#[diagnostic(code("apollo-compiler validation error."))]
 pub struct MissingIdent {
-    // This will underline/mark the specific code inside the larger
-    // snippet context.
-    #[label = "expected identifier"]
-    pub err_span: SourceSpan,
+    #[source_code]
+    pub src: String,
+
+    #[label = "provide a name for this definition"]
+    pub definition: SourceSpan,
 
     #[help]
-    pub hint: Option<String>,
+    pub help: Option<String>,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("the name `{}` is defined multiple times in the document", self.ty)]
+#[diagnostic(code("apollo-compiler validation error."))]
+pub struct UniqueDefinition {
+    // current definition
+    pub ty: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("previous definition of `{}` here", self.ty)]
+    pub original_definition: SourceSpan,
+
+    #[label("`{}` is redefined here", self.ty)]
+    pub redefined_definition: SourceSpan,
+
+    #[help]
+    pub help: Option<String>,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("Subscriptions operations can only have one root field")]
+#[diagnostic(code("apollo-compiler validation error."))]
+pub struct SingleRootField {
+    #[source_code]
+    pub src: String,
+
+    pub fields: usize,
+
+    #[label("subscription with {} root fields", self.fields)]
+    pub subscription: SourceSpan,
+
+    #[help]
+    pub help: Option<String>,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("{} root operation type is not defined", self.ty)]
+#[diagnostic(code("apollo-compiler validation error."))]
+pub struct UnsupportedOperation {
+    // current operation type: subscription, mutation, query
+    pub ty: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("{} operation is not defined in the schema and is therefore not supported", self.ty)]
+    pub operation: SourceSpan,
+
+    #[label("consider defining a {} root operation type here", self.ty)]
+    pub schema: Option<SourceSpan>,
 
     #[help]
     pub help: Option<String>,
@@ -40,7 +98,6 @@ pub struct MissingIdent {
 //         message: String,
 //         scalar: String,
 //     },
-//     MissingIdent(String),
 //     MissingField {
 //         message: String,
 //         field: String,
@@ -52,7 +109,6 @@ pub struct MissingIdent {
 //         message: String,
 //         definition: String,
 //     },
-//     SingleRootField(String),
 //     ScalarSpecificationURL {
 //         message: String,
 //         scalar: String,
@@ -66,18 +122,6 @@ pub struct MissingIdent {
 //         message: String,
 //         interface: String,
 //         missing_implemented_interface: String,
-//     },
-//     UniqueDefinition {
-//         message: String,
-//         definition: String,
-//     },
-//     UnsupportedOperation {
-//         message: String,
-//         operation: Option<String>,
-//     },
-//     UniqueOperationDefinition {
-//         message: String,
-//         operation: String,
 //     },
 //     UniqueRootOperationType {
 //         message: String,

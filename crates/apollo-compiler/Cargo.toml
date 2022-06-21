@@ -8,11 +8,11 @@ documentation = "https://docs.rs/apollo-conmpiler"
 description = "Semantic analyzer for apollo-parser's AST."
 keywords = ["graphql", "parser", "graphql-tooling", "apollographql"]
 categories = [
-    "compilers",
-    "development-tools",
-    "parser-implementations",
-    "parsing",
-    "web-programming",
+  "compilers",
+  "development-tools",
+  "parser-implementations",
+  "parsing",
+  "web-programming",
 ]
 edition = "2021"
 
@@ -21,7 +21,7 @@ apollo-parser = { path = "../apollo-parser" }
 salsa = "0.16.1"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 ordered-float = { version = "2.10.0", features = ["std"] }
-miette = "4.7.1"
+miette = { version = "4.7.1", features = ["fancy"] }
 thiserror = "1.0.31"
 
 [dev-dependencies]
