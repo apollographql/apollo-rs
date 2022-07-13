@@ -21,7 +21,7 @@
                 ),
             },
             help: Some(
-                "NamedEntity must only be defined once in this document.",
+                "`NamedEntity` must only be defined once in this document.",
             ),
         },
     ),

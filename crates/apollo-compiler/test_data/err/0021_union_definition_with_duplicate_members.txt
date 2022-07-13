@@ -21,7 +21,7 @@
                 ),
             },
             help: Some(
-                "Photo must only be defined once in this document.",
+                "`Photo` must only be defined once in this document.",
             ),
         },
     ),

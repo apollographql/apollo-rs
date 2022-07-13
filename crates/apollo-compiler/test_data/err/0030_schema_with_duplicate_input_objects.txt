@@ -21,7 +21,7 @@
                 ),
             },
             help: Some(
-                "Point2D must only be defined once in this document.",
+                "`Point2D` must only be defined once in this document.",
             ),
         },
     ),

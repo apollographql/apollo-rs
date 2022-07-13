@@ -21,7 +21,7 @@
                 ),
             },
             help: Some(
-                "foo must only be defined once in this document.",
+                "`foo` must only be defined once in this document.",
             ),
         },
     ),

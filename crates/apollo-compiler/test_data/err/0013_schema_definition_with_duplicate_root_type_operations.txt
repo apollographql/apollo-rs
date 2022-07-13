@@ -21,7 +21,7 @@
                 ),
             },
             help: Some(
-                "customPetQuery must only be defined once in this document.",
+                "`customPetQuery` must only be defined once in this document.",
             ),
         },
     ),

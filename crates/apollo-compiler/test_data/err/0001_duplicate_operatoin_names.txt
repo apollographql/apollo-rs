@@ -21,7 +21,7 @@
                 ),
             },
             help: Some(
-                "getName must only be defined once in this document.",
+                "`getName` must only be defined once in this document.",
             ),
         },
     ),
