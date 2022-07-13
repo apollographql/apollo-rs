@@ -28,31 +28,31 @@ fn compiler_tests() {
         let ctx = ApolloCompiler::new(text);
         let errors = ctx.validate();
         let ast = ctx.parse();
-        assert_errors_are_absent(&errors, path);
+        assert_diagnostics_are_absent(&errors, path);
         format!("{:?}", ast)
     });
 
-    dir_tests(&test_data_dir(), &["err"], "txt", |text, path| {
+    dir_tests(&test_data_dir(), &["diagnostics"], "txt", |text, path| {
         let ctx = ApolloCompiler::new(text);
         let diagnostics = ctx.validate();
-        assert_errors_are_present(&diagnostics, path);
+        assert_diagnostics_are_present(&diagnostics, path);
         format!("{:#?}", diagnostics)
     });
 }
 
-fn assert_errors_are_present(errors: &[ApolloDiagnostic], path: &Path) {
+fn assert_diagnostics_are_present(errors: &[ApolloDiagnostic], path: &Path) {
     assert!(
         !errors.is_empty(),
-        "There should be errors in the file {:?}",
+        "There should be diagnostics in the file {:?}",
         path.display()
     );
 }
 
-fn assert_errors_are_absent(errors: &[ApolloDiagnostic], path: &Path) {
+fn assert_diagnostics_are_absent(errors: &[ApolloDiagnostic], path: &Path) {
     if !errors.is_empty() {
         let formatted: Vec<String> = errors.iter().map(|e| format!("{:?}", e)).collect();
         println!("{:?}", formatted.join("\n"));
-        panic!("There should be no errors in the file {:?}", path.display(),);
+        panic!("There should be no diagnostics in the file {:?}", path.display(),);
     }
 }
 

@@ -242,19 +242,19 @@ pub struct BuiltInScalarDefinition {
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("Custom scalars must provide a scalar specification URL via the @specifiedBy directive")]
-#[diagnostic(code("apollo-compiler validation error"))]
+#[error("Custom scalars should provide a scalar specification URL via the @specifiedBy directive")]
+#[diagnostic(code("apollo-compiler validation advice"), severity(advice))]
 pub struct ScalarSpecificationURL {
     #[source_code]
     pub src: String,
 
-    #[label("add a @specifiedBy directive to this scalar definition")]
+    #[label("consider adding a @specifiedBy directive to this scalar definition")]
     pub scalar: SourceSpan,
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("values in an Enum Definition should be capitalized")]
-#[diagnostic(code("apollo-compiler validation error"), severity(warning))]
+#[diagnostic(code("apollo-compiler validation warning"), severity(warning))]
 pub struct CapitalizedValue {
     pub ty: String,
 
@@ -266,7 +266,7 @@ pub struct CapitalizedValue {
 }
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("unused variable: `{}`", self.ty)]
-#[diagnostic(code("apollo-compiler validation error"), severity(warning))]
+#[diagnostic(code("apollo-compiler validation warning"), severity(warning))]
 pub struct UnusedVariable {
     pub ty: String,
 
