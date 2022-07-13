@@ -1,1 +1,16 @@
-[Warning(UnusedVariable { message: "unused variable", variable: "unusedVariable" })]
+[
+    UnusedVariable(
+        UnusedVariable {
+            ty: "unusedVariable",
+            src: "query ExampleQuery($unusedVariable: Int) {\n  topProducts {\n    name\n  }\n  ... multipleSubscriptions\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    19,
+                ),
+                length: SourceOffset(
+                    20,
+                ),
+            },
+        },
+    ),
+]

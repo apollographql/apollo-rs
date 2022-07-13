@@ -355,4 +355,27 @@ interface Image implements Resource & Node {
             println!("{}", error)
         }
     }
+
+    #[test]
+    fn it_fails_validation_with_syntax_errors() {
+        let input = r#"
+query getName {}
+
+fragment fragmentOne {
+    name
+    birthday
+}
+
+type Query {
+  topProducts(first: Int): Product,
+}
+"#;
+        let ctx = ApolloCompiler::new(input);
+        let errors = ctx.validate();
+        // assert_eq!(errors.len(), 1);
+
+        for error in errors {
+            println!("{}", error)
+        }
+    }
 }

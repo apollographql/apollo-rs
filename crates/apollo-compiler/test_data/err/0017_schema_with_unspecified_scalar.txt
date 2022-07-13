@@ -1,1 +1,15 @@
-[Error(ScalarSpecificationURL { message: "Custom scalars must provide a scalar specification URL via the @specifiedBy directive", scalar: "URL" })]
+[
+    ScalarSpecificationURL(
+        ScalarSpecificationURL {
+            src: "type Query {\n  website: URL\n}\n\nscalar URL",
+            scalar: SourceSpan {
+                offset: SourceOffset(
+                    31,
+                ),
+                length: SourceOffset(
+                    10,
+                ),
+            },
+        },
+    ),
+]

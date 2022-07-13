@@ -1,1 +1,19 @@
-[Error(SingleRootField("Subscription operations can only have one root field {}"))]
+[
+    SingleRootField(
+        SingleRootField {
+            src: "subscription sub {\n    ... on Subscription {\n        newMessage {\n          body\n          sender\n        }\n        disallowedSecondRootField\n    }\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\ntype Query {\n  message: String\n}",
+            fields: 2,
+            subscription: SourceSpan {
+                offset: SourceOffset(
+                    0,
+                ),
+                length: SourceOffset(
+                    151,
+                ),
+            },
+            help: Some(
+                "There are 2 root fields: newMessage, disallowedSecondRootField. This is not allowed.",
+            ),
+        },
+    ),
+]

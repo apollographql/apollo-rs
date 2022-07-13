@@ -1,1 +1,72 @@
-[Warning(CapitalizedValue { message: "Enum values are recommended to be capitalized", value: "CAt" }), Warning(CapitalizedValue { message: "Enum values are recommended to be capitalized", value: "DOG_gO" }), Warning(CapitalizedValue { message: "Enum values are recommended to be capitalized", value: "_fox" }), Warning(CapitalizedValue { message: "Enum values are recommended to be capitalized", value: "squirrel" }), Warning(CapitalizedValue { message: "Enum values are recommended to be capitalized", value: "PARRot1" })]
+[
+    CapitalizedValue(
+        CapitalizedValue {
+            ty: "CAt",
+            src: "type Query {\n  pet: Pet,\n}\n\nenum Pet {\n    CAt\n    DOG_gO\n    FOX\n    _fox\n    squirrel\n    PARRot1\n}",
+            value: SourceSpan {
+                offset: SourceOffset(
+                    43,
+                ),
+                length: SourceOffset(
+                    8,
+                ),
+            },
+        },
+    ),
+    CapitalizedValue(
+        CapitalizedValue {
+            ty: "DOG_gO",
+            src: "type Query {\n  pet: Pet,\n}\n\nenum Pet {\n    CAt\n    DOG_gO\n    FOX\n    _fox\n    squirrel\n    PARRot1\n}",
+            value: SourceSpan {
+                offset: SourceOffset(
+                    51,
+                ),
+                length: SourceOffset(
+                    11,
+                ),
+            },
+        },
+    ),
+    CapitalizedValue(
+        CapitalizedValue {
+            ty: "_fox",
+            src: "type Query {\n  pet: Pet,\n}\n\nenum Pet {\n    CAt\n    DOG_gO\n    FOX\n    _fox\n    squirrel\n    PARRot1\n}",
+            value: SourceSpan {
+                offset: SourceOffset(
+                    70,
+                ),
+                length: SourceOffset(
+                    9,
+                ),
+            },
+        },
+    ),
+    CapitalizedValue(
+        CapitalizedValue {
+            ty: "squirrel",
+            src: "type Query {\n  pet: Pet,\n}\n\nenum Pet {\n    CAt\n    DOG_gO\n    FOX\n    _fox\n    squirrel\n    PARRot1\n}",
+            value: SourceSpan {
+                offset: SourceOffset(
+                    79,
+                ),
+                length: SourceOffset(
+                    13,
+                ),
+            },
+        },
+    ),
+    CapitalizedValue(
+        CapitalizedValue {
+            ty: "PARRot1",
+            src: "type Query {\n  pet: Pet,\n}\n\nenum Pet {\n    CAt\n    DOG_gO\n    FOX\n    _fox\n    squirrel\n    PARRot1\n}",
+            value: SourceSpan {
+                offset: SourceOffset(
+                    92,
+                ),
+                length: SourceOffset(
+                    8,
+                ),
+            },
+        },
+    ),
+]

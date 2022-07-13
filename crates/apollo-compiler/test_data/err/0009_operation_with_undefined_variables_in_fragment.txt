@@ -1,1 +1,30 @@
-[Error(UndefinedVariable { message: "Variable undefined", variable: "value" }), Warning(UnusedVariable { message: "unused variable", variable: "variable" })]
+[
+    UndefinedDefinition(
+        UndefinedDefinition {
+            ty: "value",
+            src: "query ExampleQuery($variable: Int) {\n  topProducts {\n    name\n  }\n  ... multipleSubscriptions\n}\n\nfragment multipleSubscriptions on Subscription {\n  newMessage {\n    body\n    sender(attribute: $value)\n  }\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    192,
+                ),
+                length: SourceOffset(
+                    6,
+                ),
+            },
+        },
+    ),
+    UnusedVariable(
+        UnusedVariable {
+            ty: "variable",
+            src: "query ExampleQuery($variable: Int) {\n  topProducts {\n    name\n  }\n  ... multipleSubscriptions\n}\n\nfragment multipleSubscriptions on Subscription {\n  newMessage {\n    body\n    sender(attribute: $value)\n  }\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    19,
+                ),
+                length: SourceOffset(
+                    14,
+                ),
+            },
+        },
+    ),
+]

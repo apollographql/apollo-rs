@@ -1,1 +1,28 @@
-[Error(UniqueDefinition { message: "Operation Definitions must have unique names", definition: "NamedEntity" })]
+[
+    UniqueDefinition(
+        UniqueDefinition {
+            name: "NamedEntity",
+            ty: "interface",
+            src: "type Query implements NamedEntity {\n  name: String\n}\n\ninterface NamedEntity {\n  name: String\n}\n\ninterface NamedEntity {\n  firstName: String\n}",
+            original_definition: SourceSpan {
+                offset: SourceOffset(
+                    54,
+                ),
+                length: SourceOffset(
+                    42,
+                ),
+            },
+            redefined_definition: SourceSpan {
+                offset: SourceOffset(
+                    96,
+                ),
+                length: SourceOffset(
+                    45,
+                ),
+            },
+            help: Some(
+                "NamedEntity must only be defined once in this document.",
+            ),
+        },
+    ),
+]

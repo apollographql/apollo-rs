@@ -1,1 +1,28 @@
-[Error(UniqueOperationDefinition { message: "Operation Definitions must have unique names", operation: "getName" })]
+[
+    UniqueDefinition(
+        UniqueDefinition {
+            name: "getName",
+            ty: "operation",
+            src: "query getName {\n  cat {\n    name\n  }\n}\n\nquery getName {\n  cat {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  cat: String\n}",
+            original_definition: SourceSpan {
+                offset: SourceOffset(
+                    0,
+                ),
+                length: SourceOffset(
+                    40,
+                ),
+            },
+            redefined_definition: SourceSpan {
+                offset: SourceOffset(
+                    40,
+                ),
+                length: SourceOffset(
+                    60,
+                ),
+            },
+            help: Some(
+                "getName must only be defined once in this document.",
+            ),
+        },
+    ),
+]

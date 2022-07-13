@@ -1,1 +1,20 @@
-[Error(UnsupportedOperation { message: "Mutation operation not supported by the schema", operation: Some("adoptAPetMutation") })]
+[
+    UnsupportedOperation(
+        UnsupportedOperation {
+            ty: "Mutation",
+            src: "mutation adoptAPetMutation {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  name: String,\n  age: Int\n}",
+            operation: SourceSpan {
+                offset: SourceOffset(
+                    0,
+                ),
+                length: SourceOffset(
+                    76,
+                ),
+            },
+            schema: None,
+            help: Some(
+                "consider defining a `mutation` root operation type in your schema",
+            ),
+        },
+    ),
+]

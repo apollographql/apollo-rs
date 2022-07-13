@@ -1,1 +1,17 @@
-[Error(RecursiveDefinition { message: "Interface cannot implement itself", definition: "NamedEntity" })]
+[
+    RecursiveDefinition(
+        RecursiveDefinition {
+            src: "type Query implements NamedEntity {\n  name: String\n}\n\ninterface NamedEntity implements NamedEntity {\n  name: String\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    87,
+                ),
+                length: SourceOffset(
+                    12,
+                ),
+            },
+            definition_label: "recursive implements interfaces",
+            message: "NamedEntity interface cannot implement itself",
+        },
+    ),
+]

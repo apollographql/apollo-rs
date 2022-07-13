@@ -1,1 +1,27 @@
-[Error(UnsupportedOperation { message: "Subscription operation not supported by the schema", operation: Some("messageSubscription") })]
+[
+    UnsupportedOperation(
+        UnsupportedOperation {
+            ty: "Subscription",
+            src: "subscription messageSubscription {\n  newMessage {\n    body\n    sender\n  }\n}\n\nschema {\n  query: customPetQuery,\n}\n\ntype customPetQuery {\n  name: String,\n  age: Int\n}",
+            operation: SourceSpan {
+                offset: SourceOffset(
+                    0,
+                ),
+                length: SourceOffset(
+                    77,
+                ),
+            },
+            schema: Some(
+                SourceSpan {
+                    offset: SourceOffset(
+                        77,
+                    ),
+                    length: SourceOffset(
+                        37,
+                    ),
+                },
+            ),
+            help: None,
+        },
+    ),
+]

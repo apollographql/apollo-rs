@@ -1,1 +1,16 @@
-[Error(TransitiveImplementedInterfaces { message: "Transitively implemented interfaces must also be defined on an implementing interface", interface: "Image", missing_implemented_interface: "Node" })]
+[
+    TransitiveImplementedInterfaces(
+        TransitiveImplementedInterfaces {
+            missing_interface: "Node",
+            src: "type Query implements Node {\n    ud: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  url: String\n  width: Int\n}\n\ninterface Image implements Resource {\n  id: ID!\n  url: String\n  width: Int\n  thumbnail: String\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    178,
+                ),
+                length: SourceOffset(
+                    9,
+                ),
+            },
+        },
+    ),
+]

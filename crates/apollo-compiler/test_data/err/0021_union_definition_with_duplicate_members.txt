@@ -1,1 +1,28 @@
-[Error(UniqueValue { message: "Union member types must be unique", value: "Photo" })]
+[
+    UniqueDefinition(
+        UniqueDefinition {
+            name: "Photo",
+            ty: "union member",
+            src: "schema {\n  query: SearchQuery\n}\n\nunion SearchResult = Photo | Photo\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype SearchQuery {\n  firstSearchResult: SearchResult\n}",
+            original_definition: SourceSpan {
+                offset: SourceOffset(
+                    54,
+                ),
+                length: SourceOffset(
+                    6,
+                ),
+            },
+            redefined_definition: SourceSpan {
+                offset: SourceOffset(
+                    62,
+                ),
+                length: SourceOffset(
+                    7,
+                ),
+            },
+            help: Some(
+                "Photo must only be defined once in this document.",
+            ),
+        },
+    ),
+]
