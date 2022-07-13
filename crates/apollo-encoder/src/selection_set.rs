@@ -1,5 +1,6 @@
+use std::fmt::{self, Write as _};
+
 use crate::{Field, FragmentSpread, InlineFragment};
-use std::fmt;
 
 /// The SelectionSet type represents a selection_set type in a fragment spread,
 /// an operation or a field
@@ -61,16 +62,16 @@ impl SelectionSet {
         indent_level += 1;
         let indent = "  ".repeat(indent_level);
         for sel in &self.selections {
-            text.push_str(&format!(
-                "{}{}\n",
+            let _ = writeln!(text,
+                "{}{}",
                 indent,
                 sel.format_with_indent(indent_level)
-            ));
+            );
         }
         if indent_level <= 1 {
             text.push_str("}\n");
         } else {
-            text.push_str(&format!("{}}}", "  ".repeat(indent_level - 1)));
+            let _ = write!(text, "{}}}", "  ".repeat(indent_level - 1));
         }
 
         text
