@@ -48,7 +48,8 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 let current_offset: usize = op.ast_node(db).text_range().start().into();
                 let current_node_len: usize = op.ast_node(db).text_range().len().into();
                 errors.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                    ty: name.into(),
+                    ty: "operation".into(),
+                    name: name.into(),
                     src: db.input_string(()).to_string(),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
@@ -209,8 +210,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
 
 #[cfg(test)]
 mod test {
-    use crate::{diagnostics, ApolloCompiler};
-    use miette::Report;
+    use crate::ApolloCompiler;
 
     #[test]
     fn it_fails_validation_with_missing_ident() {
@@ -254,17 +254,9 @@ type Subscription {
         let ctx = ApolloCompiler::new(input);
         let errors = ctx.validate();
 
-        let display_errors: Vec<Report> = errors
-            .iter()
-            .map(|err| match err {
-                diagnostics::ApolloDiagnostic::MissingIdent(i) => Report::new(i.clone()),
-                diagnostics::ApolloDiagnostic::UniqueDefinition(i) => Report::new(i.clone()),
-                diagnostics::ApolloDiagnostic::SingleRootField(i) => Report::new(i.clone()),
-                diagnostics::ApolloDiagnostic::UnsupportedOperation(i) => Report::new(i.clone()),
-            })
-            .collect();
-
-        println!("{:?}", display_errors);
+        for err in errors {
+            println!("{}", err)
+        }
     }
 
     #[test]

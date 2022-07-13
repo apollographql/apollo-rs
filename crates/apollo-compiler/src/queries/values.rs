@@ -539,8 +539,6 @@ impl Argument {
     }
 }
 
-pub type Variable = String;
-
 pub type DefaultValue = Value;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -563,6 +561,30 @@ impl Value {
     #[must_use]
     pub fn is_variable(&self) -> bool {
         matches!(self, Self::Variable(..))
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct Variable {
+    pub(crate) name: String,
+    pub(crate) ast_ptr: SyntaxNodePtr,
+}
+
+impl Variable {
+    /// Get a reference to the argument's name.
+    pub fn name(&self) -> &str {
+        self.name.as_ref()
+    }
+
+    /// Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    /// Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(db.document().deref().syntax())
     }
 }
 
@@ -651,7 +673,7 @@ impl Field {
             .arguments
             .iter()
             .filter_map(|arg| match arg.value() {
-                Value::Variable(var) => Some(String::from(var)),
+                Value::Variable(var) => Some(var.clone()),
                 _ => None,
             })
             .collect();

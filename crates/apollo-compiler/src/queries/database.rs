@@ -8,7 +8,7 @@ use apollo_parser::ast::{AstChildren, AstNode, SyntaxNodePtr};
 use apollo_parser::{ast, Parser, SyntaxTree};
 use uuid::Uuid;
 
-use crate::diagnostics::ApolloDiagnostic;
+use crate::diagnostics::{ApolloDiagnostic, SyntaxError};
 // use crate::diagnostics::{ApolloDiagnostic, ErrorDiagnostic};
 use crate::values::*;
 
@@ -33,7 +33,7 @@ pub trait SourceDatabase {
 
     fn document(&self) -> Arc<ast::Document>;
 
-    // fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
+    fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
 
     fn definitions(&self) -> Arc<Vec<ast::Definition>>;
 
@@ -81,9 +81,9 @@ pub trait SourceDatabase {
 
     fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
 
-    fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<String>>;
+    fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
 
-    fn selection_variables(&self, id: Uuid) -> Arc<HashSet<String>>;
+    fn selection_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
 
     fn operation_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
@@ -105,19 +105,19 @@ fn document(db: &dyn SourceDatabase) -> Arc<ast::Document> {
     Arc::new(db.parse().as_ref().clone().document())
 }
 
-// fn syntax_errors(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
-//     db.parse()
-//         .errors()
-//         .into_iter()
-//         .map(|err| {
-//             ApolloDiagnostic::Error(ErrorDiagnostic::SyntaxError {
-//                 message: err.message().to_string(),
-//                 data: err.data().to_string(),
-//                 index: err.index(),
-//             })
-//         })
-//         .collect()
-// }
+fn syntax_errors(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+    db.parse()
+        .errors()
+        .into_iter()
+        .map(|err| {
+            ApolloDiagnostic::SyntaxError(SyntaxError {
+                src: db.input_string(()).to_string(),
+                span: (err.index(), err.data().len()).into(), // (offset, length of error token)
+                message: err.message().into(),
+            })
+        })
+        .collect()
+}
 
 fn definitions(db: &dyn SourceDatabase) -> Arc<Vec<ast::Definition>> {
     Arc::new(db.document().definitions().into_iter().collect())
@@ -178,8 +178,15 @@ fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefi
 
 // NOTE: potentially want to return a hashset of variables and their types?
 fn operation_definition_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<Variable>> {
-    let vars: HashSet<String> = match db.find_operation(id) {
-        Some(op) => op.variables().iter().map(|v| v.name().to_owned()).collect(),
+    let vars: HashSet<Variable> = match db.find_operation(id) {
+        Some(op) => op
+            .variables()
+            .iter()
+            .map(|v| Variable {
+                name: v.name().to_owned(),
+                ast_ptr: v.ast_ptr().clone(),
+            })
+            .collect(),
         None => HashSet::new(),
     };
     Arc::new(vars)
@@ -254,9 +261,7 @@ fn operation_fragment_spread_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Ve
 }
 
 // NOTE: potentially want to return a hashmap of variables and their types?
-fn selection_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<String>> {
-    // TODO: once FragmentSpread and InlineFragment are added, get their fields
-    // and combine all variable usage.
+fn selection_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<Variable>> {
     let vars = db
         .operation_fields(id)
         .iter()
@@ -272,7 +277,7 @@ fn selection_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<String>
     Arc::new(vars)
 }
 
-fn get_field_variable_value(val: Value) -> Vec<String> {
+fn get_field_variable_value(val: Value) -> Vec<Variable> {
     match val {
         Value::Variable(var) => vec![var],
         Value::List(list) => list
@@ -1107,8 +1112,11 @@ fn argument(argument: ast::Argument) -> Argument {
 
 fn value(val: ast::Value) -> Value {
     match val {
-        ast::Value::Variable(var) => Value::Variable(name(var.name())),
-        ast::Value::StringValue(string_val) => Value::Variable(string_val.into()),
+        ast::Value::Variable(var) => Value::Variable(Variable {
+            name: name(var.name()),
+            ast_ptr: SyntaxNodePtr::new(var.syntax()),
+        }),
+        ast::Value::StringValue(string_val) => Value::String(string_val.into()),
         ast::Value::FloatValue(float) => Value::Float(Float::new(float.into())),
         ast::Value::IntValue(int) => Value::Int(int.into()),
         ast::Value::BooleanValue(bool) => Value::Boolean(bool.into()),

@@ -1,7 +1,8 @@
 use std::collections::HashSet;
 
 use crate::{
-    diagnostics::{ApolloDiagnostic, ErrorDiagnostic, WarningDiagnostic},
+    diagnostics::{ApolloDiagnostic, UndefinedDefinition, UnusedVariable},
+    validation::ValidationSet,
     SourceDatabase,
 };
 
@@ -12,29 +13,51 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     db.operations()
         .iter()
         .flat_map(|op| {
-            let defined_vars: HashSet<String> =
-                op.variables().iter().map(|var| var.name.clone()).collect();
-            let used_vars: HashSet<String> = op
+            let defined_vars: HashSet<ValidationSet> = op
+                .variables()
+                .iter()
+                .map(|var| ValidationSet {
+                    name: var.name().into(),
+                    node: var.ast_node(db),
+                })
+                .collect();
+            let used_vars: HashSet<ValidationSet> = op
                 .selection_set
                 .clone()
                 .iter()
-                .flat_map(|sel| sel.variables(db))
+                .flat_map(|sel| {
+                    let vars: HashSet<ValidationSet> = sel
+                        .variables(db)
+                        .iter()
+                        .map(|var| ValidationSet {
+                            name: var.name().into(),
+                            node: var.ast_node(db),
+                        })
+                        .collect();
+                    vars
+                })
                 .collect();
             let undefined_vars = used_vars.difference(&defined_vars);
             let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
                 .map(|undefined_var| {
-                    ApolloDiagnostic::Error(ErrorDiagnostic::UndefinedVariable {
-                        message: "Variable undefined".into(),
-                        variable: undefined_var.into(),
+                    let offset = undefined_var.node.text_range().start().into();
+                    let len: usize = undefined_var.node.text_range().len().into();
+                    ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
+                        ty: undefined_var.name.clone(),
+                        src: db.input_string(()).to_string(),
+                        definition: (offset, len).into(),
                     })
                 })
                 .collect();
 
             let unused_vars = defined_vars.difference(&used_vars);
             let warnings = unused_vars.map(|unused_var| {
-                ApolloDiagnostic::Warning(WarningDiagnostic::UnusedVariable {
-                    message: "unused variable".into(),
-                    variable: unused_var.into(),
+                let offset = unused_var.node.text_range().start().into();
+                let len: usize = unused_var.node.text_range().len().into();
+                ApolloDiagnostic::UnusedVariable(UnusedVariable {
+                    ty: unused_var.name.clone(),
+                    src: db.input_string(()).to_string(),
+                    definition: (offset, len).into(),
                 })
             });
 
@@ -66,7 +89,7 @@ query ExampleQuery {
 }
 
 type Query {
-  topProducts: Products 
+  topProducts: Products
 }
 "#;
 
@@ -74,6 +97,38 @@ type Query {
         let diagnostics = ctx.validate();
 
         assert_eq!(diagnostics.len(), 2);
+
+        for error in diagnostics {
+            println!("{}", error)
+        }
+    }
+
+    #[test]
+    fn it_raises_unused_variable_in_query_error() {
+        let input = r#"
+query ExampleQuery($unusedVariable: Int) {
+  topProducts {
+    name
+  }
+  ... multipleSubscriptions
+}
+
+type Query {
+  topProducts(first: Int): Product,
+}
+
+type Product {
+  name: String
+  price(setPrice: Int): Int
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+
+        for error in diagnostics {
+            println!("{}", error)
+        }
     }
 
     #[test]
@@ -98,7 +153,7 @@ fragment fragmentOne on User {
 }
 
 type Query {
-  topProducts: Products 
+  topProducts: Products
 }
 "#;
 
@@ -106,5 +161,9 @@ type Query {
         let diagnostics = ctx.validate();
 
         assert_eq!(diagnostics.len(), 2);
+
+        for error in diagnostics {
+            println!("{}", error)
+        }
     }
 }

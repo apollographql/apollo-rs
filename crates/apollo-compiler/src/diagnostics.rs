@@ -1,17 +1,58 @@
-use miette::{Diagnostic, SourceSpan};
+use std::fmt;
+
+use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
     MissingIdent(MissingIdent),
+    MissingField(MissingField),
     UniqueDefinition(UniqueDefinition),
     SingleRootField(SingleRootField),
     UnsupportedOperation(UnsupportedOperation),
+    SyntaxError(SyntaxError),
+    UniqueField(UniqueField),
+    UndefinedDefinition(UndefinedDefinition),
+    RecursiveDefinition(RecursiveDefinition),
+    TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
+    QueryRootOperationType(QueryRootOperationType),
+    BuiltInScalarDefinition(BuiltInScalarDefinition),
+    ScalarSpecificationURL(ScalarSpecificationURL),
+    CapitalizedValue(CapitalizedValue),
+    UnusedVariable(UnusedVariable),
+}
+
+impl fmt::Display for ApolloDiagnostic {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let report = match self {
+            ApolloDiagnostic::MissingIdent(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UniqueDefinition(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::SingleRootField(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UnsupportedOperation(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UniqueField(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::RecursiveDefinition(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UndefinedDefinition(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::TransitiveImplementedInterfaces(diagnostic) => {
+                Report::new(diagnostic.clone())
+            }
+            ApolloDiagnostic::QueryRootOperationType(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::BuiltInScalarDefinition(diagnostic) => {
+                Report::new(diagnostic.clone())
+            }
+            ApolloDiagnostic::ScalarSpecificationURL(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::CapitalizedValue(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::MissingField(diagnostic) => Report::new(diagnostic.clone()),
+        };
+
+        writeln!(f, "{:?}", report)
+    }
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("expected identifier")]
-#[diagnostic(code("apollo-compiler validation error."))]
+#[diagnostic(code("apollo-compiler validation error"))]
 pub struct MissingIdent {
     #[source_code]
     pub src: String,
@@ -24,19 +65,42 @@ pub struct MissingIdent {
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("the name `{}` is defined multiple times in the document", self.ty)]
-#[diagnostic(code("apollo-compiler validation error."))]
-pub struct UniqueDefinition {
-    // current definition
+#[error("missing `{}` field", self.ty)]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct MissingField {
+    // current field that should be defined
     pub ty: String,
 
     #[source_code]
     pub src: String,
 
-    #[label("previous definition of `{}` here", self.ty)]
+    #[label("`{}` was originally defined here", self.ty)]
+    pub super_definition: SourceSpan,
+
+    #[label("add `{}` field to this interface", self.ty)]
+    pub current_definition: SourceSpan,
+
+    #[help]
+    pub help: Option<String>,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("the {} `{}` is defined multiple times in the document", self.ty, self.name)]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct UniqueDefinition {
+    // current definition
+    pub name: String,
+
+    // current definition type
+    pub ty: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("previous definition of `{}` here", self.name)]
     pub original_definition: SourceSpan,
 
-    #[label("`{}` is redefined here", self.ty)]
+    #[label("`{}` is redefined here", self.name)]
     pub redefined_definition: SourceSpan,
 
     #[help]
@@ -45,7 +109,7 @@ pub struct UniqueDefinition {
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("Subscriptions operations can only have one root field")]
-#[diagnostic(code("apollo-compiler validation error."))]
+#[diagnostic(code("apollo-compiler validation error"))]
 pub struct SingleRootField {
     #[source_code]
     pub src: String,
@@ -61,7 +125,7 @@ pub struct SingleRootField {
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("{} root operation type is not defined", self.ty)]
-#[diagnostic(code("apollo-compiler validation error."))]
+#[diagnostic(code("apollo-compiler validation error"))]
 pub struct UnsupportedOperation {
     // current operation type: subscription, mutation, query
     pub ty: String,
@@ -79,80 +143,136 @@ pub struct UnsupportedOperation {
     pub help: Option<String>,
 }
 
-// // NOTE @lrlna: only syntax errors currently have the source data.
-// //
-// // TODO: figure out a nice way of going back to the AST and get its source data
-// // given a current Value, which will make sure the rest of the diagnostics have
-// // source data.
-// #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-// pub enum ApolloDiagnostic {
-//     Error(ErrorDiagnostic),
-//     Warning(WarningDiagnostic),
-//     Hint(HintDiagnostic),
-//     Suggestion(SuggestionDiagnostic),
-// }
-//
-// #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-// pub enum ErrorDiagnostic {
-//     BuiltInScalarDefinition {
-//         message: String,
-//         scalar: String,
-//     },
-//     MissingField {
-//         message: String,
-//         field: String,
-//         current_definition: String,
-//         super_definition: String,
-//     },
-//     QueryRootOperationType(String),
-//     RecursiveDefinition {
-//         message: String,
-//         definition: String,
-//     },
-//     ScalarSpecificationURL {
-//         message: String,
-//         scalar: String,
-//     },
-//     SyntaxError {
-//         message: String,
-//         data: String,
-//         index: usize,
-//     },
-//     TransitiveImplementedInterfaces {
-//         message: String,
-//         interface: String,
-//         missing_implemented_interface: String,
-//     },
-//     UniqueRootOperationType {
-//         message: String,
-//         named_type: String,
-//         operation_type: String,
-//     },
-//     UniqueValue {
-//         message: String,
-//         value: String,
-//     },
-//     UniqueField {
-//         message: String,
-//     },
-//     UndefinedDefinition {
-//         message: String,
-//         missing_definition: String,
-//     },
-//     UndefinedVariable {
-//         message: String,
-//         variable: String,
-//     },
-// }
-//
-// #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-// pub enum WarningDiagnostic {
-//     UnusedVariable { message: String, variable: String },
-//     CapitalizedValue { message: String, value: String },
-// }
-//
-// #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-// pub enum HintDiagnostic {}
-//
-// #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-// pub enum SuggestionDiagnostic {}
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("root operation type is not defined")]
+#[diagnostic(code("apollo-compiler syntax error"))]
+pub struct SyntaxError {
+    pub message: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("{}", self.message)]
+    pub span: SourceSpan,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("Fields must be unique in a definition")]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct UniqueField {
+    // current operation type: subscription, mutation, query
+    pub field: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("previous definition of `{}` field here", self.field)]
+    pub original_field: SourceSpan,
+
+    #[label("`{}` is redefined here", self.field)]
+    pub redefined_field: SourceSpan,
+
+    #[help]
+    pub help: Option<String>,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("{}", self.message)]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct RecursiveDefinition {
+    #[source_code]
+    pub src: String,
+
+    #[label("{}", self.definition_label)]
+    pub definition: SourceSpan,
+
+    pub definition_label: String,
+
+    pub message: String,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("cannot find type `{}` in this document", self.ty)]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct UndefinedDefinition {
+    // current type not in scope
+    pub ty: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("not found in this scope")]
+    pub definition: SourceSpan,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("Transitively implemented interfaces must also be defined on an implementing interface")]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct TransitiveImplementedInterfaces {
+    // interface that should be defined
+    pub missing_interface: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("{} must also be implemented here", self.missing_interface)]
+    pub definition: SourceSpan,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("Missing query root operation type in schema definition")]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct QueryRootOperationType {
+    #[source_code]
+    pub src: String,
+
+    #[label("`query` root operation type must be defined here")]
+    pub schema: SourceSpan,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("Built-in scalars must be omitted for brevity")]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct BuiltInScalarDefinition {
+    #[source_code]
+    pub src: String,
+
+    #[label("remove this scalar definition")]
+    pub scalar: SourceSpan,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("Custom scalars must provide a scalar specification URL via the @specifiedBy directive")]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct ScalarSpecificationURL {
+    #[source_code]
+    pub src: String,
+
+    #[label("add a @specifiedBy directive to this scalar definition")]
+    pub scalar: SourceSpan,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("values in an Enum Definition should be capitalized")]
+#[diagnostic(code("apollo-compiler validation error"), severity(warning))]
+pub struct CapitalizedValue {
+    pub ty: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("consider capitalizing {}", self.ty)]
+    pub value: SourceSpan,
+}
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("unused variable: `{}`", self.ty)]
+#[diagnostic(code("apollo-compiler validation error"), severity(warning))]
+pub struct UnusedVariable {
+    pub ty: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("unused variable")]
+    pub definition: SourceSpan,
+}
