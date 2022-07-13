@@ -4,11 +4,12 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use apollo_parser::ast::AstChildren;
+use apollo_parser::ast::{AstChildren, AstNode, SyntaxNodePtr};
 use apollo_parser::{ast, Parser, SyntaxTree};
 use uuid::Uuid;
 
-use crate::diagnostics::{ApolloDiagnostic, ErrorDiagnostic};
+use crate::diagnostics::{ApolloDiagnostic, SyntaxError};
+// use crate::diagnostics::{ApolloDiagnostic, ErrorDiagnostic};
 use crate::values::*;
 
 #[salsa::database(ASTDatabase)]
@@ -36,9 +37,9 @@ pub trait SourceDatabase {
 
     fn definitions(&self) -> Arc<Vec<ast::Definition>>;
 
-    fn operations(&self) -> Operations;
+    fn operations(&self) -> Arc<Vec<OperationDefinition>>;
 
-    fn fragments(&self) -> Fragments;
+    fn fragments(&self) -> Arc<Vec<FragmentDefinition>>;
 
     fn schema(&self) -> Arc<SchemaDefinition>;
 
@@ -56,11 +57,11 @@ pub trait SourceDatabase {
 
     fn input_objects(&self) -> Arc<Vec<InputObjectDefinition>>;
 
-    fn query_operations(&self) -> Operations;
+    fn query_operations(&self) -> Arc<Vec<OperationDefinition>>;
 
-    fn mutation_operations(&self) -> Operations;
+    fn mutation_operations(&self) -> Arc<Vec<OperationDefinition>>;
 
-    fn subscription_operations(&self) -> Operations;
+    fn subscription_operations(&self) -> Arc<Vec<OperationDefinition>>;
 
     fn find_operation(&self, id: Uuid) -> Option<Arc<OperationDefinition>>;
 
@@ -80,9 +81,9 @@ pub trait SourceDatabase {
 
     fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
 
-    fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<String>>;
+    fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
 
-    fn selection_variables(&self, id: Uuid) -> Arc<HashSet<String>>;
+    fn selection_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
 
     fn operation_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
@@ -109,10 +110,10 @@ fn syntax_errors(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         .errors()
         .into_iter()
         .map(|err| {
-            ApolloDiagnostic::Error(ErrorDiagnostic::SyntaxError {
-                message: err.message().to_string(),
-                data: err.data().to_string(),
-                index: err.index(),
+            ApolloDiagnostic::SyntaxError(SyntaxError {
+                src: db.input_string(()).to_string(),
+                span: (err.index(), err.data().len()).into(), // (offset, length of error token)
+                message: err.message().into(),
             })
         })
         .collect()
@@ -125,7 +126,7 @@ fn definitions(db: &dyn SourceDatabase) -> Arc<Vec<ast::Definition>> {
 // NOTE: we might want to the values::OperationDefinition creation even further.
 // At the moment all fields in this struct are created here, instead individual
 // queries for selection_set, variables, directives etc can be created.
-fn operations(db: &dyn SourceDatabase) -> Operations {
+fn operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .definitions()
         .iter()
@@ -136,34 +137,34 @@ fn operations(db: &dyn SourceDatabase) -> Operations {
             _ => None,
         })
         .collect();
-    Operations::new(Arc::new(operations))
+    Arc::new(operations)
 }
 
-fn query_operations(db: &dyn SourceDatabase) -> Operations {
+fn query_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .operations()
         .iter()
         .filter_map(|op| op.ty.is_query().then(|| op.clone()))
         .collect();
-    Operations::new(Arc::new(operations))
+    Arc::new(operations)
 }
 
-fn subscription_operations(db: &dyn SourceDatabase) -> Operations {
+fn subscription_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .operations()
         .iter()
         .filter_map(|op| op.ty.is_subscription().then(|| op.clone()))
         .collect();
-    Operations::new(Arc::new(operations))
+    Arc::new(operations)
 }
 
-fn mutation_operations(db: &dyn SourceDatabase) -> Operations {
+fn mutation_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .operations()
         .iter()
         .filter_map(|op| op.ty.is_mutation().then(|| op.clone()))
         .collect();
-    Operations::new(Arc::new(operations))
+    Arc::new(operations)
 }
 
 fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefinition>> {
@@ -177,8 +178,15 @@ fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefi
 
 // NOTE: potentially want to return a hashset of variables and their types?
 fn operation_definition_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<Variable>> {
-    let vars: HashSet<String> = match db.find_operation(id) {
-        Some(op) => op.variables().iter().map(|v| v.name()).collect(),
+    let vars: HashSet<Variable> = match db.find_operation(id) {
+        Some(op) => op
+            .variables()
+            .iter()
+            .map(|v| Variable {
+                name: v.name().to_owned(),
+                ast_ptr: v.ast_ptr().clone(),
+            })
+            .collect(),
         None => HashSet::new(),
     };
     Arc::new(vars)
@@ -253,9 +261,7 @@ fn operation_fragment_spread_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Ve
 }
 
 // NOTE: potentially want to return a hashmap of variables and their types?
-fn selection_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<String>> {
-    // TODO: once FragmentSpread and InlineFragment are added, get their fields
-    // and combine all variable usage.
+fn selection_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<Variable>> {
     let vars = db
         .operation_fields(id)
         .iter()
@@ -271,7 +277,7 @@ fn selection_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<String>
     Arc::new(vars)
 }
 
-fn get_field_variable_value(val: Value) -> Vec<String> {
+fn get_field_variable_value(val: Value) -> Vec<Variable> {
     match val {
         Value::Variable(var) => vec![var],
         Value::List(list) => list
@@ -286,7 +292,7 @@ fn get_field_variable_value(val: Value) -> Vec<String> {
     }
 }
 
-fn fragments(db: &dyn SourceDatabase) -> Fragments {
+fn fragments(db: &dyn SourceDatabase) -> Arc<Vec<FragmentDefinition>> {
     let fragments: Vec<FragmentDefinition> = db
         .definitions()
         .iter()
@@ -297,7 +303,7 @@ fn fragments(db: &dyn SourceDatabase) -> Fragments {
             _ => None,
         })
         .collect();
-    Fragments::new(Arc::new(fragments))
+    Arc::new(fragments)
 }
 
 fn find_fragment(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<FragmentDefinition>> {
@@ -524,6 +530,7 @@ fn operation_definition(
     let variables = variable_definitions(op_def.variable_definitions());
     let selection_set = selection_set(db, op_def.selection_set());
     let directives = directives(op_def.directives());
+    let ast_ptr = SyntaxNodePtr::new(op_def.syntax());
 
     OperationDefinition {
         id: Uuid::new_v4(),
@@ -532,6 +539,7 @@ fn operation_definition(
         variables,
         selection_set,
         directives,
+        ast_ptr,
     }
 }
 
@@ -556,6 +564,7 @@ fn fragment_definition(
         .to_string();
     let selection_set = selection_set(db, fragment_def.selection_set());
     let directives = directives(fragment_def.directives());
+    let ast_ptr = SyntaxNodePtr::new(fragment_def.syntax());
 
     FragmentDefinition {
         id: Uuid::new_v4(),
@@ -563,6 +572,7 @@ fn fragment_definition(
         type_condition,
         selection_set,
         directives,
+        ast_ptr,
     }
 }
 
@@ -574,11 +584,13 @@ fn schema_definition(
     let directives = directives(schema_def.directives());
     let root_operation_type_definition =
         root_operation_type_definition(db, schema_def.root_operation_type_definitions());
+    let ast_ptr = SyntaxNodePtr::new(schema_def.syntax());
 
     SchemaDefinition {
         description,
         directives,
         root_operation_type_definition,
+        ast_ptr: Some(ast_ptr),
     }
 }
 
@@ -589,6 +601,7 @@ fn object_type_definition(obj_def: ast::ObjectTypeDefinition) -> ObjectTypeDefin
     let implements_interfaces = implements_interfaces(obj_def.implements_interfaces());
     let directives = directives(obj_def.directives());
     let fields_definition = fields_definition(obj_def.fields_definition());
+    let ast_ptr = SyntaxNodePtr::new(obj_def.syntax());
 
     ObjectTypeDefinition {
         id,
@@ -597,6 +610,7 @@ fn object_type_definition(obj_def: ast::ObjectTypeDefinition) -> ObjectTypeDefin
         implements_interfaces,
         directives,
         fields_definition,
+        ast_ptr,
     }
 }
 
@@ -604,11 +618,13 @@ fn scalar_definition(scalar_def: ast::ScalarTypeDefinition) -> ScalarDefinition 
     let description = description(scalar_def.description());
     let name = name(scalar_def.name());
     let directives = directives(scalar_def.directives());
+    let ast_ptr = SyntaxNodePtr::new(scalar_def.syntax());
 
     ScalarDefinition {
         description,
         name,
         directives,
+        ast_ptr,
     }
 }
 
@@ -617,12 +633,14 @@ fn enum_definition(enum_def: ast::EnumTypeDefinition) -> EnumDefinition {
     let name = name(enum_def.name());
     let directives = directives(enum_def.directives());
     let enum_values_definition = enum_values_definition(enum_def.enum_values_definition());
+    let ast_ptr = SyntaxNodePtr::new(enum_def.syntax());
 
     EnumDefinition {
         description,
         name,
         directives,
         enum_values_definition,
+        ast_ptr,
     }
 }
 
@@ -646,11 +664,13 @@ fn enum_value_definition(enum_value_def: ast::EnumValueDefinition) -> EnumValueD
     let description = description(enum_value_def.description());
     let enum_value = enum_value(enum_value_def.enum_value());
     let directives = directives(enum_value_def.directives());
+    let ast_ptr = SyntaxNodePtr::new(enum_value_def.syntax());
 
     EnumValueDefinition {
         description,
         enum_value,
         directives,
+        ast_ptr,
     }
 }
 
@@ -662,12 +682,14 @@ fn union_definition(
     let name = name(union_def.name());
     let directives = directives(union_def.directives());
     let union_members = union_members(db, union_def.union_member_types());
+    let ast_ptr = SyntaxNodePtr::new(union_def.syntax());
 
     UnionDefinition {
         description,
         name,
         directives,
         union_members,
+        ast_ptr,
     }
 }
 
@@ -693,8 +715,13 @@ fn union_member(db: &dyn SourceDatabase, member: ast::NamedType) -> UnionMember 
     let object_id = db
         .find_object_type_by_name(name.clone())
         .map(|object_type| *object_type.id());
+    let ast_ptr = SyntaxNodePtr::new(member.syntax());
 
-    UnionMember { name, object_id }
+    UnionMember {
+        name,
+        object_id,
+        ast_ptr,
+    }
 }
 
 fn interface_definition(interface_def: ast::InterfaceTypeDefinition) -> InterfaceDefinition {
@@ -704,6 +731,7 @@ fn interface_definition(interface_def: ast::InterfaceTypeDefinition) -> Interfac
     let implements_interfaces = implements_interfaces(interface_def.implements_interfaces());
     let directives = directives(interface_def.directives());
     let fields_definition = fields_definition(interface_def.fields_definition());
+    let ast_ptr = SyntaxNodePtr::new(interface_def.syntax());
 
     InterfaceDefinition {
         id,
@@ -712,6 +740,7 @@ fn interface_definition(interface_def: ast::InterfaceTypeDefinition) -> Interfac
         implements_interfaces,
         directives,
         fields_definition,
+        ast_ptr,
     }
 }
 
@@ -721,6 +750,7 @@ fn directive_definition(directive_def: ast::DirectiveDefinition) -> DirectiveDef
     let arguments = arguments_definition(directive_def.arguments_definition());
     let repeatable = directive_def.repeatable_token().is_some();
     let directive_locations = directive_locations(directive_def.directive_locations());
+    let ast_ptr = SyntaxNodePtr::new(directive_def.syntax());
 
     DirectiveDefinition {
         id: Uuid::new_v4(),
@@ -729,6 +759,7 @@ fn directive_definition(directive_def: ast::DirectiveDefinition) -> DirectiveDef
         arguments,
         repeatable,
         directive_locations,
+        ast_ptr: Some(ast_ptr),
     }
 }
 
@@ -738,6 +769,7 @@ fn input_object_definition(input_obj: ast::InputObjectTypeDefinition) -> InputOb
     let name = name(input_obj.name());
     let directives = directives(input_obj.directives());
     let input_fields_definition = input_fields_definition(input_obj.input_fields_definition());
+    let ast_ptr = SyntaxNodePtr::new(input_obj.syntax());
 
     InputObjectDefinition {
         id,
@@ -745,6 +777,7 @@ fn input_object_definition(input_obj: ast::InputObjectTypeDefinition) -> InputOb
         name,
         directives,
         input_fields_definition,
+        ast_ptr,
     }
 }
 
@@ -768,7 +801,9 @@ fn add_object_type_id_to_schema(db: &dyn SourceDatabase) -> Arc<Vec<RootOperatio
                     operation_type,
                     named_type: Type::Named {
                         name: obj_name.to_string(),
+                        ast_ptr: None,
                     },
+                    ast_ptr: None,
                 })
             } else {
                 None
@@ -789,6 +824,7 @@ fn implements_interfaces(
                 .named_types()
                 .map(|n| ImplementsInterface {
                     interface: n.name().expect("Name must have text").text().to_string(),
+                    ast_ptr: SyntaxNodePtr::new(n.syntax()),
                 })
                 .collect();
             types
@@ -805,25 +841,29 @@ fn fields_definition(
         Some(fields_def) => {
             let fields: Vec<FieldDefinition> = fields_def
                 .field_definitions()
-                .map(|field| {
-                    let description = description(field.description());
-                    let name = name(field.name());
-                    let arguments = arguments_definition(field.arguments_definition());
-                    let ty = ty(field.ty().expect("Field must have a type"));
-                    let directives = directives(field.directives());
-
-                    FieldDefinition {
-                        description,
-                        name,
-                        arguments,
-                        ty,
-                        directives,
-                    }
-                })
+                .map(field_definition)
                 .collect();
             Arc::new(fields)
         }
         None => Arc::new(Vec::new()),
+    }
+}
+
+fn field_definition(field: ast::FieldDefinition) -> FieldDefinition {
+    let description = description(field.description());
+    let name = name(field.name());
+    let arguments = arguments_definition(field.arguments_definition());
+    let ty = ty(field.ty().expect("Field must have a type"));
+    let directives = directives(field.directives());
+    let ast_ptr = SyntaxNodePtr::new(field.syntax());
+
+    FieldDefinition {
+        description,
+        name,
+        arguments,
+        ty,
+        directives,
+        ast_ptr,
     }
 }
 
@@ -833,10 +873,16 @@ fn arguments_definition(
     match arguments_definition {
         Some(arguments) => {
             let input_values = input_value_definitions(arguments.input_value_definitions());
-            ArgumentsDefinition { input_values }
+            let ast_ptr = SyntaxNodePtr::new(arguments.syntax());
+
+            ArgumentsDefinition {
+                input_values,
+                ast_ptr: Some(ast_ptr),
+            }
         }
         None => ArgumentsDefinition {
             input_values: Arc::new(Vec::new()),
+            ast_ptr: None,
         },
     }
 }
@@ -860,6 +906,7 @@ fn input_value_definitions(
             let ty = ty(input.ty().expect("Input Definition must have a type"));
             let default_value = default_value(input.default_value());
             let directives = directives(input.directives());
+            let ast_ptr = SyntaxNodePtr::new(input.syntax());
 
             InputValueDefinition {
                 description,
@@ -867,6 +914,7 @@ fn input_value_definitions(
                 ty,
                 default_value,
                 directives,
+                ast_ptr: Some(ast_ptr),
             }
         })
         .collect();
@@ -893,10 +941,13 @@ fn root_operation_type_definition(
             let object_type_id = db
                 .find_object_type_by_name(named_type.name())
                 .map(|object_type| *object_type.id());
+            let ast_ptr = SyntaxNodePtr::new(ty.syntax());
+
             RootOperationTypeDefinition {
                 object_type_id,
                 operation_type,
                 named_type,
+                ast_ptr: Some(ast_ptr),
             }
         })
         .collect();
@@ -946,12 +997,14 @@ fn variable_definition(var: ast::VariableDefinition) -> VariableDefinition {
     let directives = directives(var.directives());
     let default_value = default_value(var.default_value());
     let ty = ty(var.ty().expect("Variable Definition must have a type"));
+    let ast_ptr = SyntaxNodePtr::new(var.syntax());
 
     VariableDefinition {
         name,
         directives,
         ty,
         default_value,
+        ast_ptr,
     }
 }
 
@@ -960,19 +1013,23 @@ fn ty(ty_: ast::Type) -> Type {
         ast::Type::NamedType(name) => named_type(name.name()),
         ast::Type::ListType(list) => Type::List {
             ty: Box::new(ty(list.ty().expect("List Type must have a type"))),
+            ast_ptr: Some(SyntaxNodePtr::new(list.syntax())),
         },
         ast::Type::NonNullType(non_null) => {
             if let Some(n) = non_null.named_type() {
                 let named_type = named_type(n.name());
                 Type::NonNull {
                     ty: Box::new(named_type),
+                    ast_ptr: Some(SyntaxNodePtr::new(n.syntax())),
                 }
             } else if let Some(list) = non_null.list_type() {
                 let list_type = Type::List {
                     ty: Box::new(ty(list.ty().expect("List Type must have a type"))),
+                    ast_ptr: Some(SyntaxNodePtr::new(list.syntax())),
                 };
                 Type::NonNull {
                     ty: Box::new(list_type),
+                    ast_ptr: Some(SyntaxNodePtr::new(list.syntax())),
                 }
             } else {
                 // TODO: parser should have caught an error if there wasn't
@@ -985,7 +1042,12 @@ fn ty(ty_: ast::Type) -> Type {
 }
 
 fn named_type(n: Option<ast::Name>) -> Type {
-    Type::Named { name: name(n) }
+    let name = n.expect("Named Type must have a name");
+
+    Type::Named {
+        name: name.text().to_string(),
+        ast_ptr: Some(SyntaxNodePtr::new(name.syntax())),
+    }
 }
 
 fn directive_locations(
@@ -1017,8 +1079,13 @@ fn directives(directives: Option<ast::Directives>) -> Arc<Vec<Directive>> {
 fn directive(directive: ast::Directive) -> Directive {
     let name = name(directive.name());
     let arguments = arguments(directive.arguments());
+    let ast_ptr = SyntaxNodePtr::new(directive.syntax());
 
-    Directive { name, arguments }
+    Directive {
+        name,
+        arguments,
+        ast_ptr,
+    }
 }
 
 fn arguments(arguments: Option<ast::Arguments>) -> Arc<Vec<Argument>> {
@@ -1034,13 +1101,22 @@ fn arguments(arguments: Option<ast::Arguments>) -> Arc<Vec<Argument>> {
 fn argument(argument: ast::Argument) -> Argument {
     let name = name(argument.name());
     let value = value(argument.value().expect("Argument must have a value"));
-    Argument { name, value }
+    let ast_ptr = SyntaxNodePtr::new(argument.syntax());
+
+    Argument {
+        name,
+        value,
+        ast_ptr,
+    }
 }
 
 fn value(val: ast::Value) -> Value {
     match val {
-        ast::Value::Variable(var) => Value::Variable(name(var.name())),
-        ast::Value::StringValue(string_val) => Value::Variable(string_val.into()),
+        ast::Value::Variable(var) => Value::Variable(Variable {
+            name: name(var.name()),
+            ast_ptr: SyntaxNodePtr::new(var.syntax()),
+        }),
+        ast::Value::StringValue(string_val) => Value::String(string_val.into()),
         ast::Value::FloatValue(float) => Value::Float(Float::new(float.into())),
         ast::Value::IntValue(int) => Value::Int(int.into()),
         ast::Value::BooleanValue(bool) => Value::Boolean(bool.into()),
@@ -1107,11 +1183,13 @@ fn inline_fragment(db: &dyn SourceDatabase, fragment: ast::InlineFragment) -> Ar
     });
     let directives = directives(fragment.directives());
     let selection_set: Arc<Vec<Selection>> = selection_set(db, fragment.selection_set());
+    let ast_ptr = SyntaxNodePtr::new(fragment.syntax());
 
     let fragment_data = InlineFragment {
         type_condition,
         directives,
         selection_set,
+        ast_ptr,
     };
     Arc::new(fragment_data)
 }
@@ -1130,10 +1208,13 @@ fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Ar
     let fragment_id = db
         .find_fragment_by_name(name.clone())
         .map(|fragment| *fragment.id());
+    let ast_ptr = SyntaxNodePtr::new(fragment.syntax());
+
     let fragment_data = FragmentSpread {
         name,
         directives,
         fragment_id,
+        ast_ptr,
     };
     Arc::new(fragment_data)
 }
@@ -1144,6 +1225,7 @@ fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
     let selection_set = selection_set(db, field.selection_set());
     let directives = directives(field.directives());
     let arguments = arguments(field.arguments());
+    let ast_ptr = SyntaxNodePtr::new(field.syntax());
 
     let field_data = Field {
         name,
@@ -1151,6 +1233,7 @@ fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
         selection_set,
         directives,
         arguments,
+        ast_ptr,
     };
     Arc::new(field_data)
 }
@@ -1224,11 +1307,15 @@ fn skip_directive() -> DirectiveDefinition {
                 ty: Type::NonNull {
                     ty: Box::new(Type::Named {
                         name: "Boolean".into(),
+                        ast_ptr: None,
                     }),
+                    ast_ptr: None,
                 },
                 default_value: None,
                 directives: Arc::new(Vec::new()),
+                ast_ptr: None,
             }]),
+            ast_ptr: None,
         },
         repeatable: false,
         directive_locations: Arc::new(vec![
@@ -1236,6 +1323,7 @@ fn skip_directive() -> DirectiveDefinition {
             DirectiveLocation::FragmentSpread,
             DirectiveLocation::InlineFragment,
         ]),
+        ast_ptr: None,
     }
 }
 
@@ -1256,14 +1344,19 @@ fn specified_by_directive() -> DirectiveDefinition {
                 ty: Type::NonNull {
                     ty: Box::new(Type::Named {
                         name: "String".into(),
+                        ast_ptr: None,
                     }),
+                    ast_ptr: None,
                 },
                 default_value: None,
                 directives: Arc::new(Vec::new()),
+                ast_ptr: None,
             }]),
+            ast_ptr: None,
         },
         repeatable: false,
         directive_locations: Arc::new(vec![DirectiveLocation::Scalar]),
+        ast_ptr: None,
     }
 }
 
@@ -1290,16 +1383,20 @@ fn deprecated_directive() -> DirectiveDefinition {
                 name: "reason".into(),
                 ty: Type::Named {
                     name: "String".into(),
+                    ast_ptr: None,
                 },
                 default_value: Some(DefaultValue::String("No longer supported".into())),
                 directives: Arc::new(Vec::new()),
+                ast_ptr: None
             }]),
+            ast_ptr: None
         },
         repeatable: false,
         directive_locations: Arc::new(vec![
             DirectiveLocation::FieldDefinition,
             DirectiveLocation::EnumValue
         ]),
+        ast_ptr: None
     }
 }
 
@@ -1322,11 +1419,15 @@ fn include_directive() -> DirectiveDefinition {
                 ty: Type::NonNull {
                     ty: Box::new(Type::Named {
                         name: "Boolean".into(),
+                        ast_ptr: None,
                     }),
+                    ast_ptr: None,
                 },
                 default_value: None,
                 directives: Arc::new(Vec::new()),
+                ast_ptr: None
             }]),
+            ast_ptr: None
         },
         repeatable: false,
         directive_locations: Arc::new(vec![
@@ -1334,5 +1435,6 @@ fn include_directive() -> DirectiveDefinition {
             DirectiveLocation::FragmentDefinition,
             DirectiveLocation::InlineFragment,
         ]),
+        ast_ptr: None
     }
 }

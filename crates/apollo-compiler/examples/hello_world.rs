@@ -16,16 +16,19 @@ fn compile_query() -> Option<values::FragmentDefinition> {
     let fragments: Vec<_> = frags.iter().map(|frag| frag.name()).collect();
     assert_eq!(["vipCustomer"], fragments.as_slice());
 
-    let operation_variables: Vec<String> = ctx
-        .operations()
-        .find("ExampleQuery")?
+    let operation_variables: Vec<&str> = operations
+        .iter()
+        .find(|op| op.name() == Some("ExampleQuery"))?
         .variables()
         .iter()
         .map(|var| var.name())
         .collect();
 
-    assert_eq!(["definedVariable"], operation_variables.as_slice());
-    ctx.fragments().find("vipCustomer")
+    assert_eq!(operation_variables, ["definedVariable"]);
+    ctx.fragments()
+        .iter()
+        .find(|op| op.name() == "vipCustomer")
+        .cloned()
 }
 
 fn main() -> Result<(), ()> {

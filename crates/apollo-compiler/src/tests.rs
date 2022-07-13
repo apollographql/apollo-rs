@@ -34,9 +34,9 @@ fn compiler_tests() {
 
     dir_tests(&test_data_dir(), &["err"], "txt", |text, path| {
         let ctx = ApolloCompiler::new(text);
-        let errors = ctx.validate();
-        assert_errors_are_present(&errors, path);
-        format!("{:?}", errors)
+        let diagnostics = ctx.validate();
+        assert_errors_are_present(&diagnostics, path);
+        format!("{:#?}", diagnostics)
     });
 }
 

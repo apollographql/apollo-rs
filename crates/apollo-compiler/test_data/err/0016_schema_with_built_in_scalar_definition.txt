@@ -1,1 +1,15 @@
-[Error(BuiltInScalarDefinition { message: "Built-in scalars must be omitted for brevity", scalar: "Int" })]
+[
+    BuiltInScalarDefinition(
+        BuiltInScalarDefinition {
+            src: "type Query {\n  amount: Int\n}\n\nscalar Int",
+            scalar: SourceSpan {
+                offset: SourceOffset(
+                    30,
+                ),
+                length: SourceOffset(
+                    10,
+                ),
+            },
+        },
+    ),
+]

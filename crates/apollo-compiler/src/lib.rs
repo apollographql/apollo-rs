@@ -45,11 +45,11 @@ impl ApolloCompiler {
         self.db.definitions()
     }
 
-    pub fn operations(&self) -> values::Operations {
+    pub fn operations(&self) -> Arc<Vec<values::OperationDefinition>> {
         self.db.operations()
     }
 
-    pub fn fragments(&self) -> values::Fragments {
+    pub fn fragments(&self) -> Arc<Vec<values::FragmentDefinition>> {
         self.db.fragments()
     }
 
@@ -109,9 +109,13 @@ type Query {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let operations = ctx.operations();
         let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
@@ -121,7 +125,10 @@ type Query {
         let fragment_names: Vec<_> = fragments.iter().map(|fragment| fragment.name()).collect();
         assert_eq!(["vipCustomer"], fragment_names.as_slice());
 
-        let operation_variables: Vec<String> = match operations.find("ExampleQuery") {
+        let operation_variables: Vec<String> = match operations
+            .iter()
+            .find(|op| op.name() == Some("ExampleQuery"))
+        {
             Some(op) => op.variables().iter().map(|var| var.name.clone()).collect(),
             None => Vec::new(),
         };
@@ -152,12 +159,20 @@ type Query {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let operations = ctx.operations();
-        let fields = operations.find("ExampleQuery").unwrap().fields(&ctx.db);
+        let fields = operations
+            .iter()
+            .find(|op| op.name() == Some("ExampleQuery"))
+            .unwrap()
+            .fields(&ctx.db);
         let field_names: Vec<&str> = fields.iter().map(|f| f.name()).collect();
         assert_eq!(
             field_names,
@@ -191,9 +206,13 @@ type Result {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
     }
 
     #[test]
@@ -208,9 +227,13 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let scalars = ctx.scalars();
 
@@ -240,12 +263,15 @@ enum Pet {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let enums = ctx.enums();
-
         let enum_values: Vec<&str> = enums
             .iter()
             .find(|enum_def| enum_def.name() == "Pet")
@@ -282,12 +308,15 @@ type SearchQuery {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let unions = ctx.unions();
-
         let union_members: Vec<&str> = unions
             .iter()
             .find(|def| def.name() == "SearchResult")
@@ -333,9 +362,13 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let directives = ctx.directive_definitions();
         let locations: Vec<String> = directives
@@ -373,9 +406,13 @@ input Point2D {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let input_objects = ctx.input_objects();
         let fields: Vec<&str> = input_objects

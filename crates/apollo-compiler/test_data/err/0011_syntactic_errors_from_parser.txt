@@ -1,1 +1,30 @@
-[Error(SyntaxError { message: "expected at least one Selection in Selection Set", data: "}", index: 15 }), Error(SyntaxError { message: "expected Type Condition", data: "{", index: 39 })]
+[
+    SyntaxError(
+        SyntaxError {
+            message: "expected at least one Selection in Selection Set",
+            src: "query getName {}\n\nfragment fragmentOne {\n    name\n    birthday\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n}",
+            span: SourceSpan {
+                offset: SourceOffset(
+                    15,
+                ),
+                length: SourceOffset(
+                    1,
+                ),
+            },
+        },
+    ),
+    SyntaxError(
+        SyntaxError {
+            message: "expected Type Condition",
+            src: "query getName {}\n\nfragment fragmentOne {\n    name\n    birthday\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n}",
+            span: SourceSpan {
+                offset: SourceOffset(
+                    39,
+                ),
+                length: SourceOffset(
+                    1,
+                ),
+            },
+        },
+    ),
+]

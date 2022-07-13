@@ -3,4 +3,4 @@ type Query {
   amount: Int
 }
 
-scalar URL @specifiedBy()
+scalar URL

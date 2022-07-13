@@ -1,1 +1,16 @@
-[Error(UndefinedDefinition { message: "Implements Interface must be defined", missing_definition: "Url" })]
+[
+    UndefinedDefinition(
+        UndefinedDefinition {
+            ty: "Url",
+            src: "type Query implements Node {\n    ud: ID!\n}\n\ninterface Resource {\n  id: ID!\n  width: Int\n}\n\ninterface Image implements Resource & Url {\n  id: ID!\n  url: String\n  width: Int\n  thumbnail: String\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    129,
+                ),
+                length: SourceOffset(
+                    4,
+                ),
+            },
+        },
+    ),
+]

@@ -1,1 +1,15 @@
-[Error(QueryRootOperationType("Missing query root operation type in schema definition"))]
+[
+    QueryRootOperationType(
+        QueryRootOperationType {
+            src: "schema {\n  subscription: customSubscription\n}\n\ntype customSubscription {\n  changeInPetHousehold: Result\n}\n\ntype Result {\n  id: String\n}",
+            schema: SourceSpan {
+                offset: SourceOffset(
+                    0,
+                ),
+                length: SourceOffset(
+                    47,
+                ),
+            },
+        },
+    ),
+]

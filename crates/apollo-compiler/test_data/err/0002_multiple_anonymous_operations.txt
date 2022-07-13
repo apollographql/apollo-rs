@@ -1,1 +1,34 @@
-[Error(MissingIdent("Missing operation name")), Error(MissingIdent("Missing operation name"))]
+[
+    MissingIdent(
+        MissingIdent {
+            src: "query {\n  cat {\n    name\n  }\n}\n\nmutation {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  cat: String\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    0,
+                ),
+                length: SourceOffset(
+                    32,
+                ),
+            },
+            help: Some(
+                "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
+            ),
+        },
+    ),
+    MissingIdent(
+        MissingIdent {
+            src: "query {\n  cat {\n    name\n  }\n}\n\nmutation {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  cat: String\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    32,
+                ),
+                length: SourceOffset(
+                    58,
+                ),
+            },
+            help: Some(
+                "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
+            ),
+        },
+    ),
+]

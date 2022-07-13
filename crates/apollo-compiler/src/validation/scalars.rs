@@ -1,18 +1,23 @@
-use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, SourceDatabase};
+use crate::{
+    diagnostics::{BuiltInScalarDefinition, ScalarSpecificationURL},
+    ApolloDiagnostic, SourceDatabase,
+};
 
 const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
-    let mut errors = Vec::new();
+    let mut diagnostics = Vec::new();
 
     // All built-in scalars must be omitted for brevity.
     for scalar in db.scalars().iter() {
         let name = scalar.name();
+        let offset: usize = scalar.ast_node(db).text_range().start().into();
+        let len: usize = scalar.ast_node(db).text_range().len().into();
         if BUILT_IN_SCALARS.contains(&name) {
-            errors.push(ApolloDiagnostic::Error(
-                ErrorDiagnostic::BuiltInScalarDefinition {
-                    message: "Built-in scalars must be omitted for brevity".into(),
-                    scalar: name.into(),
+            diagnostics.push(ApolloDiagnostic::BuiltInScalarDefinition(
+                BuiltInScalarDefinition {
+                    scalar: (offset, len).into(),
+                    src: db.input_string(()).to_string(),
                 },
             ));
         } else {
@@ -23,15 +28,15 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 .iter()
                 .any(|directive| directive.name() == "specifiedBy")
             {
-                errors.push(ApolloDiagnostic::Error(
-                ErrorDiagnostic::ScalarSpecificationURL {
-                    message: "Custom scalars must provide a scalar specification URL via the @specifiedBy directive".into(),
-                    scalar: name.into(),
-                },
-            ));
+                diagnostics.push(ApolloDiagnostic::ScalarSpecificationURL(
+                    ScalarSpecificationURL {
+                        scalar: (offset, len).into(),
+                        src: db.input_string(()).to_string(),
+                    },
+                ));
             }
         }
     }
 
-    errors
+    diagnostics
 }

@@ -1,1 +1,27 @@
-[Error(UniqueValue { message: "Fields must be unique", value: "name" })]
+[
+    UniqueField(
+        UniqueField {
+            field: "name",
+            src: "type Query implements NamedEntity {\n  name: String\n}\n\ninterface NamedEntity {\n  name: String\n  name: String\n}",
+            original_field: SourceSpan {
+                offset: SourceOffset(
+                    80,
+                ),
+                length: SourceOffset(
+                    15,
+                ),
+            },
+            redefined_field: SourceSpan {
+                offset: SourceOffset(
+                    95,
+                ),
+                length: SourceOffset(
+                    13,
+                ),
+            },
+            help: Some(
+                "name field must only be defined once in this interface definition.",
+            ),
+        },
+    ),
+]

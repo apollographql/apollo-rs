@@ -1,1 +1,28 @@
-[Error(UniqueDefinition { message: "Input Object Definitions must have unique names", definition: "Point2D" })]
+[
+    UniqueDefinition(
+        UniqueDefinition {
+            name: "Point2D",
+            ty: "input object",
+            src: "type Query {\n  point1: Point2D\n  point2: Point2D\n}\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\ninput Point2D {\n  x: Float\n  y: Float\n}",
+            original_definition: SourceSpan {
+                offset: SourceOffset(
+                    52,
+                ),
+                length: SourceOffset(
+                    41,
+                ),
+            },
+            redefined_definition: SourceSpan {
+                offset: SourceOffset(
+                    93,
+                ),
+                length: SourceOffset(
+                    39,
+                ),
+            },
+            help: Some(
+                "`Point2D` must only be defined once in this document.",
+            ),
+        },
+    ),
+]

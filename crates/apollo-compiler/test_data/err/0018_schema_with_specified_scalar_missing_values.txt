@@ -1,1 +1,15 @@
-[Error(SyntaxError { message: "expected an Argument", data: ")", index: 70 })]
+[
+    ScalarSpecificationURL(
+        ScalarSpecificationURL {
+            src: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL",
+            scalar: SourceSpan {
+                offset: SourceOffset(
+                    46,
+                ),
+                length: SourceOffset(
+                    10,
+                ),
+            },
+        },
+    ),
+]

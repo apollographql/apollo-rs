@@ -1,1 +1,54 @@
-[Error(UniqueValue { message: "Enum Definition must have unique values", value: "CAT" }), Error(UniqueValue { message: "Enum Definition must have unique values", value: "THRIVE_PET_FOODS" })]
+[
+    UniqueDefinition(
+        UniqueDefinition {
+            name: "CAT",
+            ty: "enum",
+            src: "type Query {\n  pet: Pet,\n  snacks: Snack,\n}\n\nenum Pet {\n    CAT\n    DOG\n    FOX\n    CAT\n}\n\nenum Snack {\n    THRIVE_PET_FOODS\n    LILYS_KITCHEN\n    ACANA\n    THRIVE_PET_FOODS\n}",
+            original_definition: SourceSpan {
+                offset: SourceOffset(
+                    60,
+                ),
+                length: SourceOffset(
+                    8,
+                ),
+            },
+            redefined_definition: SourceSpan {
+                offset: SourceOffset(
+                    84,
+                ),
+                length: SourceOffset(
+                    4,
+                ),
+            },
+            help: Some(
+                "CAT must only be defined once in this enum.",
+            ),
+        },
+    ),
+    UniqueDefinition(
+        UniqueDefinition {
+            name: "THRIVE_PET_FOODS",
+            ty: "enum",
+            src: "type Query {\n  pet: Pet,\n  snacks: Snack,\n}\n\nenum Pet {\n    CAT\n    DOG\n    FOX\n    CAT\n}\n\nenum Snack {\n    THRIVE_PET_FOODS\n    LILYS_KITCHEN\n    ACANA\n    THRIVE_PET_FOODS\n}",
+            original_definition: SourceSpan {
+                offset: SourceOffset(
+                    108,
+                ),
+                length: SourceOffset(
+                    21,
+                ),
+            },
+            redefined_definition: SourceSpan {
+                offset: SourceOffset(
+                    157,
+                ),
+                length: SourceOffset(
+                    17,
+                ),
+            },
+            help: Some(
+                "THRIVE_PET_FOODS must only be defined once in this enum.",
+            ),
+        },
+    ),
+]
