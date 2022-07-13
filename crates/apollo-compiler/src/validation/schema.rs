@@ -7,14 +7,14 @@ use crate::{
 };
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
-    let mut errors = Vec::new();
+    let mut diagnostics = Vec::new();
 
     // A GraphQL schema must have a Query root operation.
     if db.schema().query(db).is_none() {
         if let Some(node) = db.schema().ast_node(db) {
             let offset: usize = node.text_range().start().into();
             let len: usize = node.text_range().len().into();
-            errors.push(ApolloDiagnostic::QueryRootOperationType(
+            diagnostics.push(ApolloDiagnostic::QueryRootOperationType(
                 QueryRootOperationType {
                     src: db.input_string(()).to_string(),
                     schema: (offset, len).into(),
@@ -38,7 +38,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                     op_type.ast_node(db).unwrap().text_range().start().into();
                 let current_node_len: usize =
                     op_type.ast_node(db).unwrap().text_range().len().into();
-                errors.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
+                diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     name: name.clone(),
                     ty: "root operation type definition".into(),
                     src: db.input_string(()).to_string(),
@@ -54,5 +54,5 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         }
     }
 
-    errors
+    diagnostics
 }

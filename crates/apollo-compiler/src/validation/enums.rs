@@ -7,7 +7,7 @@ use crate::{
 };
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
-    let mut errors = Vec::new();
+    let mut diagnostics = Vec::new();
 
     // An Enum type must define one or more unique enum values.
     //
@@ -22,7 +22,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
 
                 let current_offset: usize = enum_value.ast_node(db).text_range().start().into();
                 let current_node_len: usize = enum_value.ast_node(db).text_range().len().into();
-                errors.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
+                diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     ty: "enum".into(),
                     name: value.into(),
                     src: db.input_string(()).to_string(),
@@ -46,7 +46,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
             let len: usize = enum_value.ast_node(db).text_range().len().into();
 
             if value.to_uppercase() != value {
-                errors.push(ApolloDiagnostic::CapitalizedValue(CapitalizedValue {
+                diagnostics.push(ApolloDiagnostic::CapitalizedValue(CapitalizedValue {
                     ty: value.into(),
                     src: db.input_string(()).to_string(),
                     value: (offset, len).into(),
@@ -55,5 +55,5 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         }
     }
 
-    errors
+    diagnostics
 }

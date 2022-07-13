@@ -11,7 +11,7 @@ use crate::{
 };
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
-    let mut errors = Vec::new();
+    let mut diagnostics = Vec::new();
 
     // Interface definitions must have unique names.
     //
@@ -25,7 +25,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
 
             let current_offset: usize = interface.ast_node(db).text_range().start().into();
             let current_node_len: usize = interface.ast_node(db).text_range().len().into();
-            errors.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
+            diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                 ty: "interface".into(),
                 name: name.into(),
                 src: db.input_string(()).to_string(),
@@ -67,7 +67,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                         .start()
                         .into();
                     let len: usize = implements_interface.ast_node(db).text_range().len().into();
-                    errors.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
+                    diagnostics.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
                         message: format!("{} interface cannot implement itself", i_name),
                         definition: (offset, len).into(),
                         src: db.input_string(()).to_string(),
@@ -95,7 +95,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 let current_offset: usize = field.ast_node(db).text_range().start().into();
                 let current_node_len: usize = field.ast_node(db).text_range().len().into();
 
-                errors.push(ApolloDiagnostic::UniqueField(UniqueField {
+                diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                     field: field_name.into(),
                     src: db.input_string(()).to_string(),
                     original_field: (prev_offset, prev_node_len).into(),
@@ -134,7 +134,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         for undefined in diff {
             let offset = undefined.node.text_range().start().into();
             let len: usize = undefined.node.text_range().len().into();
-            errors.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
+            diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                 ty: undefined.name.clone(),
                 src: db.input_string(()).to_string(),
                 definition: (offset, len).into(),
@@ -169,7 +169,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         for undefined in transitive_diff {
             let offset = undefined.node.text_range().start().into();
             let len: usize = undefined.node.text_range().len().into();
-            errors.push(ApolloDiagnostic::TransitiveImplementedInterfaces(
+            diagnostics.push(ApolloDiagnostic::TransitiveImplementedInterfaces(
                 TransitiveImplementedInterfaces {
                     missing_interface: undefined.name.clone(),
                     src: db.input_string(()).to_string(),
@@ -212,7 +212,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                     let super_offset = interface.ast_node(db).text_range().start().into();
                     let super_len: usize = interface.ast_node(db).text_range().len().into();
 
-                    errors.push(ApolloDiagnostic::MissingField(MissingField {
+                    diagnostics.push(ApolloDiagnostic::MissingField(MissingField {
                         ty: missing_field.name.clone(),
                         src: db.input_string(()).to_string(),
                         current_definition: (current_offset, current_len).into(),
@@ -227,7 +227,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         }
     }
 
-    errors
+    diagnostics
 }
 
 #[cfg(test)]
@@ -250,11 +250,11 @@ interface NamedEntity {
 
 "#;
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
-        assert_eq!(errors.len(), 1);
+        let diagnostics = ctx.validate();
+        assert_eq!(diagnostics.len(), 1);
 
-        for error in errors {
-            println!("{}", error)
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic)
         }
     }
 
@@ -278,11 +278,11 @@ interface NamedEntity {
 }
 "#;
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
-        assert_eq!(errors.len(), 1);
+        let diagnostics = ctx.validate();
+        assert_eq!(diagnostics.len(), 1);
 
-        for error in errors {
-            println!("{}", error)
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic)
         }
     }
 
@@ -300,11 +300,11 @@ interface NamedEntity implements NamedEntity {
 }
 "#;
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
-        assert_eq!(errors.len(), 1);
+        let diagnostics = ctx.validate();
+        assert_eq!(diagnostics.len(), 1);
 
-        for error in errors {
-            println!("{}", error)
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic)
         }
     }
 
@@ -318,11 +318,11 @@ interface NamedEntity implements NewEntity {
 }
 "#;
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
-        assert_eq!(errors.len(), 1);
+        let diagnostic = ctx.validate();
+        assert_eq!(diagnostic.len(), 1);
 
-        for error in errors {
-            println!("{}", error)
+        for diagnostic in diagnostic {
+            println!("{}", diagnostic)
         }
     }
 
@@ -348,11 +348,11 @@ interface Image implements Resource & Node {
 }
 "#;
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
-        // assert_eq!(errors.len(), 1);
+        let diagnostics = ctx.validate();
+        assert_eq!(diagnostics.len(), 1);
 
-        for error in errors {
-            println!("{}", error)
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic)
         }
     }
 }

@@ -8,7 +8,7 @@ use crate::{
 // use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, SourceDatabase};
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
-    let mut errors = Vec::new();
+    let mut diagnostics = Vec::new();
     // It is possible to have an unnamed (anonymous) operation definition only
     // if there is **one** operation definition.
     //
@@ -32,7 +32,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 None
             })
             .collect();
-        errors.extend(missing_ident);
+        diagnostics.extend(missing_ident);
     }
 
     // Operation definitions must have unique names.
@@ -47,7 +47,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
 
                 let current_offset: usize = op.ast_node(db).text_range().start().into();
                 let current_node_len: usize = op.ast_node(db).text_range().len().into();
-                errors.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
+                diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     ty: "operation".into(),
                     name: name.into(),
                     src: db.input_string(()).to_string(),
@@ -92,7 +92,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 }
             })
             .collect();
-        errors.extend(single_root_field);
+        diagnostics.extend(single_root_field);
     }
 
     // All query, subscription and mutation operations must be against legally
@@ -131,7 +131,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 }
             })
             .collect();
-        errors.extend(unsupported_ops)
+        diagnostics.extend(unsupported_ops)
     }
     //
     //   * query operation - query root operation
@@ -166,7 +166,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 }
             })
             .collect();
-        errors.extend(unsupported_ops)
+        diagnostics.extend(unsupported_ops)
     }
 
     //   * mutation operation - mutation root operation
@@ -202,10 +202,10 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 }
             })
             .collect();
-        errors.extend(unsupported_ops)
+        diagnostics.extend(unsupported_ops)
     }
 
-    errors
+    diagnostics
 }
 
 #[cfg(test)]
@@ -252,10 +252,10 @@ type Subscription {
 }
 "#;
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        for err in errors {
-            println!("{}", err)
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic)
         }
     }
 
@@ -281,8 +281,8 @@ type Query {
 }
 "#;
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
-        assert_eq!(errors.len(), 1);
+        let diagnostics = ctx.validate();
+        assert_eq!(diagnostics.len(), 1);
     }
 
     #[test]
@@ -307,7 +307,7 @@ type Query {
 }
 "#;
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
-        assert!(errors.is_empty());
+        let diagnostics = ctx.validate();
+        assert!(diagnostics.is_empty());
     }
 }

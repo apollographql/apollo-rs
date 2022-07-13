@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::{diagnostics::UniqueDefinition, values::UnionMember, ApolloDiagnostic, SourceDatabase};
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
-    let mut errors = Vec::new();
+    let mut diagnostics = Vec::new();
 
     // A Union type must include one or more unique member types.
     //
@@ -18,7 +18,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
 
                 let current_offset: usize = union_member.ast_node(db).text_range().start().into();
                 let current_node_len: usize = union_member.ast_node(db).text_range().len().into();
-                errors.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
+                diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     name: name.into(),
                     ty: "union member".into(),
                     src: db.input_string(()).to_string(),
@@ -34,5 +34,5 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         }
     }
 
-    errors
+    diagnostics
 }

@@ -37,9 +37,9 @@ impl ApolloCompiler {
         validator.validate().into()
     }
 
-    // pub fn syntax_errors(&self) -> Vec<ApolloDiagnostic> {
-    //     self.db.syntax_errors()
-    // }
+    pub fn syntax_errors(&self) -> Vec<ApolloDiagnostic> {
+        self.db.syntax_errors()
+    }
 
     pub fn definitions(&self) -> Arc<Vec<ast::Definition>> {
         self.db.definitions()
@@ -109,9 +109,13 @@ type Query {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let operations = ctx.operations();
         let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
@@ -155,9 +159,13 @@ type Query {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let operations = ctx.operations();
         let fields = operations
@@ -198,9 +206,13 @@ type Result {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
     }
 
     #[test]
@@ -215,9 +227,13 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let scalars = ctx.scalars();
 
@@ -247,12 +263,15 @@ enum Pet {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let enums = ctx.enums();
-
         let enum_values: Vec<&str> = enums
             .iter()
             .find(|enum_def| enum_def.name() == "Pet")
@@ -289,12 +308,15 @@ type SearchQuery {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let unions = ctx.unions();
-
         let union_members: Vec<&str> = unions
             .iter()
             .find(|def| def.name() == "SearchResult")
@@ -340,9 +362,13 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let directives = ctx.directive_definitions();
         let locations: Vec<String> = directives
@@ -380,9 +406,13 @@ input Point2D {
 "#;
 
         let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
+        let diagnostics = ctx.validate();
 
-        assert!(errors.is_empty());
+        assert!(diagnostics.is_empty());
+
+        for diagnostic in diagnostics {
+            println!("{}", diagnostic);
+        }
 
         let input_objects = ctx.input_objects();
         let fields: Vec<&str> = input_objects

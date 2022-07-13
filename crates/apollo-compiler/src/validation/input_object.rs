@@ -7,7 +7,7 @@ use crate::{
 };
 
 pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
-    let mut errors = Vec::new();
+    let mut diagnostics = Vec::new();
 
     // Input Object Definitions must have unique names.
     //
@@ -21,7 +21,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
 
             let current_offset: usize = input_object.ast_node(db).text_range().start().into();
             let current_node_len: usize = input_object.ast_node(db).text_range().len().into();
-            errors.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
+            diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                 ty: "input object".into(),
                 name: name.into(),
                 src: db.input_string(()).to_string(),
@@ -58,7 +58,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                     let current_node_len: usize =
                         field.ast_node(db).unwrap().text_range().len().into();
 
-                    errors.push(ApolloDiagnostic::UniqueField(UniqueField {
+                    diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                         field: field_name.into(),
                         src: db.input_string(()).to_string(),
                         original_field: (prev_offset, prev_node_len).into(),
@@ -74,5 +74,5 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         }
     }
 
-    errors
+    diagnostics
 }
