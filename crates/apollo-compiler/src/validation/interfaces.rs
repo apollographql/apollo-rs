@@ -32,7 +32,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!(
-                    "{name} must only be defined once in this document."
+                    "`{name}` must only be defined once in this document."
                 )),
             }));
         } else {
@@ -345,29 +345,6 @@ interface Resource implements Node {
 interface Image implements Resource & Node {
   id: ID!
   thumbnail: String
-}
-"#;
-        let ctx = ApolloCompiler::new(input);
-        let errors = ctx.validate();
-        // assert_eq!(errors.len(), 1);
-
-        for error in errors {
-            println!("{}", error)
-        }
-    }
-
-    #[test]
-    fn it_fails_validation_with_syntax_errors() {
-        let input = r#"
-query getName {}
-
-fragment fragmentOne {
-    name
-    birthday
-}
-
-type Query {
-  topProducts(first: Int): Product,
 }
 "#;
         let ctx = ApolloCompiler::new(input);
