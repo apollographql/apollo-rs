@@ -1,4 +1,4 @@
-use std::fmt;
+use std::fmt::{self, Write as _};
 
 use crate::{
     Argument, ArgumentsDefinition, Directive, InputValueDefinition, SelectionSet, StringValue,
@@ -173,19 +173,21 @@ impl Field {
             for (i, arg) in self.args.iter().enumerate() {
                 match i {
                     0 => {
-                        text.push_str(&format!("({arg}"));
+                        let _ = write!(text, "({arg}");
                     }
-                    _ => text.push_str(&format!(", {arg}")),
+                    _ => {
+                        let _ = write!(text, ", {arg}");
+                    }
                 }
             }
             text.push(')');
         }
 
         for directive in &self.directives {
-            text.push_str(&format!(" {directive}"));
+            let _ = write!(text, " {directive}");
         }
         if let Some(sel_set) = &self.selection_set {
-            text.push_str(&format!(" {}", sel_set.format_with_indent(indent_level)));
+            let _ = write!(text, " {}", sel_set.format_with_indent(indent_level));
         }
 
         text

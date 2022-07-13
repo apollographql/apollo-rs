@@ -1,4 +1,4 @@
-use std::fmt;
+use std::fmt::{self, Write as _};
 
 use crate::{Directive, SelectionSet};
 
@@ -187,16 +187,16 @@ impl InlineFragment {
         let mut text = String::from("...");
 
         if let Some(type_condition) = &self.type_condition {
-            text.push_str(&format!(" {}", type_condition));
+            let _ = write!(text," {}", type_condition);
         }
         for directive in &self.directives {
-            text.push_str(&format!(" {}", directive));
+            let _ = write!(text, " {}", directive);
         }
 
-        text.push_str(&format!(
+        let _ = write!(text,
             " {}",
             self.selection_set.format_with_indent(indent_level),
-        ));
+        );
 
         text
     }

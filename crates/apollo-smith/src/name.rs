@@ -1,3 +1,5 @@
+use std::fmt::Write as _;
+
 use arbitrary::Result;
 
 use crate::DocumentBuilder;
@@ -68,10 +70,10 @@ impl<'a> DocumentBuilder<'a> {
     pub fn type_name(&mut self) -> Result<Name> {
         let mut new_name = self.limited_string(30)?;
         if self.list_existing_type_names().any(|n| n.name == new_name) {
-            new_name.push_str(&format!(
+            let _ = write!(new_name,
                 "{}",
                 self.object_type_defs.len() + self.enum_type_defs.len() + self.directive_defs.len()
-            ));
+            );
         }
         Ok(Name::new(new_name))
     }
@@ -79,7 +81,7 @@ impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `Name` with an index included in the name (to avoid name conflict)
     pub fn name_with_index(&mut self, index: usize) -> Result<Name> {
         let mut name = self.limited_string(30)?;
-        name.push_str(&format!("{}", index));
+        let _ = write!(name, "{}", index);
 
         Ok(Name::new(name))
     }
