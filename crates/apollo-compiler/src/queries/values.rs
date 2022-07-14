@@ -9,6 +9,117 @@ use uuid::Uuid;
 
 use crate::SourceDatabase;
 
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum Definition {
+    OperationDefinition(OperationDefinition),
+    FragmentDefinition(FragmentDefinition),
+    DirectiveDefinition(DirectiveDefinition),
+    ScalarTypeDefinition(ScalarTypeDefinition),
+    ObjectTypeDefinition(ObjectTypeDefinition),
+    InterfaceTypeDefinition(InterfaceTypeDefinition),
+    UnionTypeDefinition(UnionTypeDefinition),
+    EnumTypeDefinition(EnumTypeDefinition),
+    InputObjectTypeDefinition(InputObjectTypeDefinition),
+    SchemaDefinition(SchemaDefinition),
+}
+
+impl Definition {
+    pub fn name(&self) -> Option<&str> {
+        match self {
+            Definition::OperationDefinition(def) => def.name(),
+            Definition::FragmentDefinition(def) => Some(def.name()),
+            Definition::DirectiveDefinition(def) => Some(def.name()),
+            Definition::ScalarTypeDefinition(def) => Some(def.name()),
+            Definition::ObjectTypeDefinition(def) => Some(def.name()),
+            Definition::InterfaceTypeDefinition(def) => Some(def.name()),
+            Definition::UnionTypeDefinition(def) => Some(def.name()),
+            Definition::EnumTypeDefinition(def) => Some(def.name()),
+            Definition::InputObjectTypeDefinition(def) => Some(def.name()),
+            Definition::SchemaDefinition(_) => None,
+        }
+    }
+
+    /// Returns `true` if the definition is [`OperationDefinition`].
+    ///
+    /// [`OperationDefinition`]: Definition::OperationDefinition
+    #[must_use]
+    pub fn is_operation_definition(&self) -> bool {
+        matches!(self, Self::OperationDefinition(..))
+    }
+
+    /// Returns `true` if the definition is [`FragmentDefinition`].
+    ///
+    /// [`FragmentDefinition`]: Definition::FragmentDefinition
+    #[must_use]
+    pub fn is_fragment_definition(&self) -> bool {
+        matches!(self, Self::FragmentDefinition(..))
+    }
+
+    /// Returns `true` if the definition is [`DirectiveDefinition`].
+    ///
+    /// [`DirectiveDefinition`]: Definition::DirectiveDefinition
+    #[must_use]
+    pub fn is_directive_definition(&self) -> bool {
+        matches!(self, Self::DirectiveDefinition(..))
+    }
+
+    /// Returns `true` if the definition is [`ScalarTypeDefinition`].
+    ///
+    /// [`ScalarTypeDefinition`]: Definition::ScalarTypeDefinition
+    #[must_use]
+    pub fn is_scalar_type_definition(&self) -> bool {
+        matches!(self, Self::ScalarTypeDefinition(..))
+    }
+
+    /// Returns `true` if the definition is [`ObjectTypeDefinition`].
+    ///
+    /// [`ObjectTypeDefinition`]: Definition::ObjectTypeDefinition
+    #[must_use]
+    pub fn is_object_type_definition(&self) -> bool {
+        matches!(self, Self::ObjectTypeDefinition { .. })
+    }
+
+    /// Returns `true` if the definition is [`InterfaceTypeDefinition`].
+    ///
+    /// [`InterfaceTypeDefinition`]: Definition::InterfaceTypeDefinition
+    #[must_use]
+    pub fn is_interface_type_definition(&self) -> bool {
+        matches!(self, Self::InterfaceTypeDefinition(..))
+    }
+
+    /// Returns `true` if the definition is [`UnionTypeDefinition`].
+    ///
+    /// [`UnionTypeDefinition`]: Definition::UnionTypeDefinition
+    #[must_use]
+    pub fn is_union_type_definition(&self) -> bool {
+        matches!(self, Self::UnionTypeDefinition(..))
+    }
+
+    /// Returns `true` if the definition is [`EnumTypeDefinition`].
+    ///
+    /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
+    #[must_use]
+    pub fn is_enum_type_definition(&self) -> bool {
+        matches!(self, Self::EnumTypeDefinition(..))
+    }
+
+    /// Returns `true` if the definition is [`InputObjectTypeDefinition`].
+    ///
+    /// [`InputObjectTypeDefinition`]: Definition::InputObjectTypeDefinition
+    #[must_use]
+    pub fn is_input_object_type_definition(&self) -> bool {
+        matches!(self, Self::InputObjectTypeDefinition(..))
+    }
+
+    /// Returns `true` if the definition is [`SchemaDefinition`].
+    ///
+    /// [`SchemaDefinition`]: Definition::SchemaDefinition
+    #[must_use]
+    pub fn is_schema_definition(&self) -> bool {
+        matches!(self, Self::SchemaDefinition(..))
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct FragmentDefinition {
     pub(crate) id: Uuid,
@@ -304,6 +415,10 @@ impl Type {
             Type::List { ty: _, ast_ptr } => ast_ptr.as_ref(),
             Type::Named { name: _, ast_ptr } => ast_ptr.as_ref(),
         }
+    }
+
+    pub fn ty(&self, db: &dyn SourceDatabase) -> Option<Arc<Definition>> {
+        db.find_definition_by_name(self.name())
     }
 
     /// Get current HIR node's AST node.
@@ -963,7 +1078,7 @@ impl ImplementsInterface {
     pub fn interface_definition(
         &self,
         db: &dyn SourceDatabase,
-    ) -> Option<Arc<InterfaceDefinition>> {
+    ) -> Option<Arc<InterfaceTypeDefinition>> {
         db.find_interface_by_name(self.interface.clone())
     }
 
@@ -1008,6 +1123,16 @@ impl FieldDefinition {
     pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
+    }
+
+    // Get a reference to field definition's type.
+    pub fn ty(&self) -> &Type {
+        &self.ty
+    }
+
+    // Get a reference to field definition's arguments
+    pub fn arguments(&self) -> &ArgumentsDefinition {
+        &self.arguments
     }
 }
 
@@ -1066,17 +1191,22 @@ impl InputValueDefinition {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(db.document().deref().syntax()))
     }
+
+    // Get a reference to input value definition's type.
+    pub fn ty(&self) -> &Type {
+        &self.ty
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct ScalarDefinition {
+pub struct ScalarTypeDefinition {
     pub(crate) description: Option<String>,
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
-impl ScalarDefinition {
+impl ScalarTypeDefinition {
     /// Get a reference to the scalar definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
@@ -1100,7 +1230,7 @@ impl ScalarDefinition {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct EnumDefinition {
+pub struct EnumTypeDefinition {
     pub(crate) description: Option<String>,
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -1108,7 +1238,7 @@ pub struct EnumDefinition {
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
-impl EnumDefinition {
+impl EnumTypeDefinition {
     /// Get a reference to the enum definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
@@ -1162,7 +1292,7 @@ impl EnumValueDefinition {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct UnionDefinition {
+pub struct UnionTypeDefinition {
     pub(crate) description: Option<String>,
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -1170,7 +1300,7 @@ pub struct UnionDefinition {
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
-impl UnionDefinition {
+impl UnionTypeDefinition {
     /// Get a reference to the union definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
@@ -1228,7 +1358,7 @@ impl UnionMember {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct InterfaceDefinition {
+pub struct InterfaceTypeDefinition {
     pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: String,
@@ -1238,7 +1368,7 @@ pub struct InterfaceDefinition {
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
-impl InterfaceDefinition {
+impl InterfaceTypeDefinition {
     /// Get the interface definition's id.
     pub fn id(&self) -> &Uuid {
         &self.id
@@ -1272,7 +1402,7 @@ impl InterfaceDefinition {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct InputObjectDefinition {
+pub struct InputObjectTypeDefinition {
     pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: String,
@@ -1281,7 +1411,7 @@ pub struct InputObjectDefinition {
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
-impl InputObjectDefinition {
+impl InputObjectTypeDefinition {
     /// Get the input object definition's id.
     pub fn id(&self) -> &Uuid {
         &self.id

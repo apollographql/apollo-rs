@@ -61,15 +61,15 @@ impl ApolloCompiler {
         self.db.object_types()
     }
 
-    pub fn scalars(&self) -> Arc<Vec<values::ScalarDefinition>> {
+    pub fn scalars(&self) -> Arc<Vec<values::ScalarTypeDefinition>> {
         self.db.scalars()
     }
 
-    pub fn enums(&self) -> Arc<Vec<values::EnumDefinition>> {
+    pub fn enums(&self) -> Arc<Vec<values::EnumTypeDefinition>> {
         self.db.enums()
     }
 
-    pub fn unions(&self) -> Arc<Vec<values::UnionDefinition>> {
+    pub fn unions(&self) -> Arc<Vec<values::UnionTypeDefinition>> {
         self.db.unions()
     }
 
@@ -77,14 +77,14 @@ impl ApolloCompiler {
         self.db.directive_definitions()
     }
 
-    pub fn input_objects(&self) -> Arc<Vec<values::InputObjectDefinition>> {
+    pub fn input_objects(&self) -> Arc<Vec<values::InputObjectTypeDefinition>> {
         self.db.input_objects()
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::ApolloCompiler;
+    use crate::{values::Definition, ApolloCompiler, SourceDatabase};
 
     #[test]
     fn it_accesses_operation_definition_parts() {
@@ -110,12 +110,10 @@ type Query {
 
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
-
-        assert!(diagnostics.is_empty());
-
-        for diagnostic in diagnostics {
+        for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
+        assert!(diagnostics.is_empty());
 
         let operations = ctx.operations();
         let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
@@ -160,12 +158,10 @@ type Query {
 
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
-
-        assert!(diagnostics.is_empty());
-
-        for diagnostic in diagnostics {
+        for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
+        assert!(diagnostics.is_empty());
 
         let operations = ctx.operations();
         let fields = operations
@@ -207,12 +203,10 @@ type Result {
 
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
-
-        assert!(diagnostics.is_empty());
-
-        for diagnostic in diagnostics {
+        for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
+        assert!(diagnostics.is_empty());
     }
 
     #[test]
@@ -228,12 +222,10 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
-
-        assert!(diagnostics.is_empty());
-
-        for diagnostic in diagnostics {
+        for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
+        assert!(diagnostics.is_empty());
 
         let scalars = ctx.scalars();
 
@@ -264,12 +256,10 @@ enum Pet {
 
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
-
-        assert!(diagnostics.is_empty());
-
-        for diagnostic in diagnostics {
+        for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
+        assert!(diagnostics.is_empty());
 
         let enums = ctx.enums();
         let enum_values: Vec<&str> = enums
@@ -309,12 +299,10 @@ type SearchQuery {
 
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
-
-        assert!(diagnostics.is_empty());
-
-        for diagnostic in diagnostics {
+        for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
+        assert!(diagnostics.is_empty());
 
         let unions = ctx.unions();
         let union_members: Vec<&str> = unions
@@ -363,12 +351,10 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
 
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
-
-        assert!(diagnostics.is_empty());
-
-        for diagnostic in diagnostics {
+        for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
+        assert!(diagnostics.is_empty());
 
         let directives = ctx.directive_definitions();
         let locations: Vec<String> = directives
@@ -407,12 +393,10 @@ input Point2D {
 
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
-
-        assert!(diagnostics.is_empty());
-
-        for diagnostic in diagnostics {
+        for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
+        assert!(diagnostics.is_empty());
 
         let input_objects = ctx.input_objects();
         let fields: Vec<&str> = input_objects
@@ -433,6 +417,137 @@ input Point2D {
             .collect();
 
         assert_eq!(fields, ["x", "y"]);
+    }
+
+    #[test]
+    fn it_accesses_object_field_types_directive_name() {
+        let input = r#"
+type Person {
+  name: String
+  picture(size: Number): Url
+}
+
+enum Number {
+    INT
+    FLOAT
+}
+
+scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
+        assert!(diagnostics.is_empty());
+
+        let person_obj = ctx.db.find_object_type_by_name("Person".to_string());
+
+        if let Some(person) = person_obj {
+            let field_ty_directive: Vec<String> = person
+                .fields_definition()
+                .iter()
+                .filter_map(|f| {
+                    // get access to the actual definition the field is using
+                    if let Some(field_ty) = f.ty().ty(&ctx.db) {
+                        match field_ty.as_ref() {
+                            // get that definition's directives, for example
+                            Definition::ScalarTypeDefinition(scalar) => {
+                                let dir_names: Vec<String> = scalar
+                                    .directives()
+                                    .iter()
+                                    .map(|dir| dir.name().to_owned())
+                                    .collect();
+                                return Some(dir_names);
+                            }
+                            _ => return None,
+                        }
+                    }
+                    None
+                })
+                .flatten()
+                .collect();
+            assert_eq!(field_ty_directive, ["specifiedBy"]);
+
+            let field_arg_ty_vals: Vec<String> = person
+                .fields_definition()
+                .iter()
+                .flat_map(|f| {
+                    let enum_vals: Vec<String> = f
+                        .arguments()
+                        .input_values()
+                        .iter()
+                        .filter_map(|val| {
+                            if let Some(input_ty) = val.ty().ty(&ctx.db) {
+                                match input_ty.as_ref() {
+                                    // get that definition's directives, for example
+                                    Definition::EnumTypeDefinition(enum_) => {
+                                        let dir_names: Vec<String> = enum_
+                                            .enum_values_definition()
+                                            .iter()
+                                            .map(|enum_val| enum_val.enum_value().to_owned())
+                                            .collect();
+                                        return Some(dir_names);
+                                    }
+                                    _ => return None,
+                                }
+                            }
+                            None
+                        })
+                        .flatten()
+                        .collect();
+                    enum_vals
+                })
+                .collect();
+            assert_eq!(field_arg_ty_vals, ["INT", "FLOAT"])
+        }
+    }
+
+    #[test]
+    fn it_accesses_input_object_field_types_directive_name() {
+        let input = r#"
+input Person {
+  name: String
+  picture: Url
+}
+
+scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
+        assert!(diagnostics.is_empty());
+
+        let person_obj = ctx.db.find_input_object_by_name("Person".to_string());
+
+        if let Some(person) = person_obj {
+            let field_ty_directive: Vec<String> = person
+                .input_fields_definition()
+                .iter()
+                .filter_map(|f| {
+                    if let Some(field_ty) = f.ty().ty(&ctx.db) {
+                        match field_ty.as_ref() {
+                            Definition::ScalarTypeDefinition(scalar) => {
+                                let dir_names: Vec<String> = scalar
+                                    .directives()
+                                    .iter()
+                                    .map(|dir| dir.name().to_owned())
+                                    .collect();
+                                return Some(dir_names);
+                            }
+                            _ => return None,
+                        }
+                    }
+                    None
+                })
+                .flatten()
+                .collect();
+            assert_eq!(field_ty_directive, ["specifiedBy"]);
+        }
     }
 
     #[test]
@@ -515,16 +630,17 @@ type User
 
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
-
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
         // the scalar warning diagnostic
         assert_eq!(diagnostics.len(), 1);
 
-        for diagnostic in diagnostics {
-            println!("{}", diagnostic);
-        }
-
         let object_types = ctx.object_types();
         let object_names: Vec<_> = object_types.iter().map(|op| op.name()).collect();
-        assert_eq!(["Mutation", "Product", "Query", "Review", "User"], object_names.as_slice());
+        assert_eq!(
+            ["Mutation", "Product", "Query", "Review", "User"],
+            object_names.as_slice()
+        );
     }
 }
