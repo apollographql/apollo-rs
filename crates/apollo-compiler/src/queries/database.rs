@@ -37,6 +37,10 @@ pub trait SourceDatabase {
 
     fn definitions(&self) -> Arc<Vec<ast::Definition>>;
 
+    fn db_definitions(&self) -> Arc<Vec<Definition>>;
+
+    fn find_definition_by_name(&self, name: String) -> Option<Arc<Definition>>;
+
     fn operations(&self) -> Arc<Vec<OperationDefinition>>;
 
     fn fragments(&self) -> Arc<Vec<FragmentDefinition>>;
@@ -45,17 +49,17 @@ pub trait SourceDatabase {
 
     fn object_types(&self) -> Arc<Vec<ObjectTypeDefinition>>;
 
-    fn scalars(&self) -> Arc<Vec<ScalarDefinition>>;
+    fn scalars(&self) -> Arc<Vec<ScalarTypeDefinition>>;
 
-    fn enums(&self) -> Arc<Vec<EnumDefinition>>;
+    fn enums(&self) -> Arc<Vec<EnumTypeDefinition>>;
 
-    fn unions(&self) -> Arc<Vec<UnionDefinition>>;
+    fn unions(&self) -> Arc<Vec<UnionTypeDefinition>>;
 
-    fn interfaces(&self) -> Arc<Vec<InterfaceDefinition>>;
+    fn interfaces(&self) -> Arc<Vec<InterfaceTypeDefinition>>;
 
     fn directive_definitions(&self) -> Arc<Vec<DirectiveDefinition>>;
 
-    fn input_objects(&self) -> Arc<Vec<InputObjectDefinition>>;
+    fn input_objects(&self) -> Arc<Vec<InputObjectTypeDefinition>>;
 
     fn query_operations(&self) -> Arc<Vec<OperationDefinition>>;
 
@@ -73,13 +77,17 @@ pub trait SourceDatabase {
 
     fn find_object_type_by_name(&self, name: String) -> Option<Arc<ObjectTypeDefinition>>;
 
-    fn find_interface(&self, id: Uuid) -> Option<Arc<InterfaceDefinition>>;
+    fn find_interface(&self, id: Uuid) -> Option<Arc<InterfaceTypeDefinition>>;
 
-    fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceDefinition>>;
+    fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceTypeDefinition>>;
 
     fn find_directive_definition(&self, id: Uuid) -> Option<Arc<DirectiveDefinition>>;
 
     fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
+
+    fn find_input_object(&self, id: Uuid) -> Option<Arc<InputObjectTypeDefinition>>;
+
+    fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
 
     fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
 
@@ -121,6 +129,81 @@ fn syntax_errors(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
 
 fn definitions(db: &dyn SourceDatabase) -> Arc<Vec<ast::Definition>> {
     Arc::new(db.document().definitions().into_iter().collect())
+}
+
+fn db_definitions(db: &dyn SourceDatabase) -> Arc<Vec<Definition>> {
+    let mut definitions = Vec::new();
+
+    let operations: Vec<Definition> = db
+        .operations()
+        .iter()
+        .map(|def| Definition::OperationDefinition(def.clone()))
+        .collect();
+    let fragments: Vec<Definition> = db
+        .fragments()
+        .iter()
+        .map(|def| Definition::FragmentDefinition(def.clone()))
+        .collect();
+    let directives: Vec<Definition> = db
+        .directive_definitions()
+        .iter()
+        .map(|def| Definition::DirectiveDefinition(def.clone()))
+        .collect();
+    let scalars: Vec<Definition> = db
+        .scalars()
+        .iter()
+        .map(|def| Definition::ScalarTypeDefinition(def.clone()))
+        .collect();
+    let objects: Vec<Definition> = db
+        .object_types()
+        .iter()
+        .map(|def| Definition::ObjectTypeDefinition(def.clone()))
+        .collect();
+    let interfaces: Vec<Definition> = db
+        .interfaces()
+        .iter()
+        .map(|def| Definition::InterfaceTypeDefinition(def.clone()))
+        .collect();
+    let unions: Vec<Definition> = db
+        .unions()
+        .iter()
+        .map(|def| Definition::UnionTypeDefinition(def.clone()))
+        .collect();
+    let enums: Vec<Definition> = db
+        .enums()
+        .iter()
+        .map(|def| Definition::EnumTypeDefinition(def.clone()))
+        .collect();
+    let input_objects: Vec<Definition> = db
+        .input_objects()
+        .iter()
+        .map(|def| Definition::InputObjectTypeDefinition(def.clone()))
+        .collect();
+    let schema = Definition::SchemaDefinition(db.schema().as_ref().clone());
+
+    definitions.extend(operations);
+    definitions.extend(fragments);
+    definitions.extend(directives);
+    definitions.extend(scalars);
+    definitions.extend(objects);
+    definitions.extend(interfaces);
+    definitions.extend(unions);
+    definitions.extend(enums);
+    definitions.extend(input_objects);
+    definitions.push(schema);
+
+    Arc::new(definitions)
+}
+
+fn find_definition_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<Definition>> {
+    db.db_definitions().iter().find_map(|def| {
+        if let Some(n) = def.name() {
+            if name == n {
+                return Some(Arc::new(def.clone()));
+            }
+        }
+        None
+    })
 }
 
 // NOTE: we might want to the values::OperationDefinition creation even further.
@@ -385,7 +468,7 @@ fn find_object_type_by_name(
     })
 }
 
-fn scalars(db: &dyn SourceDatabase) -> Arc<Vec<ScalarDefinition>> {
+fn scalars(db: &dyn SourceDatabase) -> Arc<Vec<ScalarTypeDefinition>> {
     let scalars = db
         .definitions()
         .iter()
@@ -399,7 +482,7 @@ fn scalars(db: &dyn SourceDatabase) -> Arc<Vec<ScalarDefinition>> {
     Arc::new(scalars)
 }
 
-fn enums(db: &dyn SourceDatabase) -> Arc<Vec<EnumDefinition>> {
+fn enums(db: &dyn SourceDatabase) -> Arc<Vec<EnumTypeDefinition>> {
     let enums = db
         .definitions()
         .iter()
@@ -413,7 +496,7 @@ fn enums(db: &dyn SourceDatabase) -> Arc<Vec<EnumDefinition>> {
     Arc::new(enums)
 }
 
-fn unions(db: &dyn SourceDatabase) -> Arc<Vec<UnionDefinition>> {
+fn unions(db: &dyn SourceDatabase) -> Arc<Vec<UnionTypeDefinition>> {
     let unions = db
         .definitions()
         .iter()
@@ -427,7 +510,7 @@ fn unions(db: &dyn SourceDatabase) -> Arc<Vec<UnionDefinition>> {
     Arc::new(unions)
 }
 
-fn interfaces(db: &dyn SourceDatabase) -> Arc<Vec<InterfaceDefinition>> {
+fn interfaces(db: &dyn SourceDatabase) -> Arc<Vec<InterfaceTypeDefinition>> {
     let interfaces = db
         .definitions()
         .iter()
@@ -441,7 +524,7 @@ fn interfaces(db: &dyn SourceDatabase) -> Arc<Vec<InterfaceDefinition>> {
     Arc::new(interfaces)
 }
 
-fn find_interface(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<InterfaceDefinition>> {
+fn find_interface(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<InterfaceTypeDefinition>> {
     db.interfaces().iter().find_map(|interface| {
         if &id == interface.id() {
             return Some(Arc::new(interface.clone()));
@@ -453,7 +536,7 @@ fn find_interface(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<InterfaceDefi
 fn find_interface_by_name(
     db: &dyn SourceDatabase,
     name: String,
-) -> Option<Arc<InterfaceDefinition>> {
+) -> Option<Arc<InterfaceTypeDefinition>> {
     db.interfaces().iter().find_map(|interface| {
         if name == interface.name() {
             return Some(Arc::new(interface.clone()));
@@ -503,7 +586,7 @@ fn find_directive_definition_by_name(
     })
 }
 
-fn input_objects(db: &dyn SourceDatabase) -> Arc<Vec<InputObjectDefinition>> {
+fn input_objects(db: &dyn SourceDatabase) -> Arc<Vec<InputObjectTypeDefinition>> {
     let directives = db
         .definitions()
         .iter()
@@ -516,6 +599,27 @@ fn input_objects(db: &dyn SourceDatabase) -> Arc<Vec<InputObjectDefinition>> {
         .collect();
 
     Arc::new(directives)
+}
+
+fn find_input_object(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<InputObjectTypeDefinition>> {
+    db.input_objects().iter().find_map(|input_obj| {
+        if &id == input_obj.id() {
+            return Some(Arc::new(input_obj.clone()));
+        }
+        None
+    })
+}
+
+fn find_input_object_by_name(
+    db: &dyn SourceDatabase,
+    name: String,
+) -> Option<Arc<InputObjectTypeDefinition>> {
+    db.input_objects().iter().find_map(|input_obj| {
+        if name == input_obj.name() {
+            return Some(Arc::new(input_obj.clone()));
+        }
+        None
+    })
 }
 
 fn operation_definition(
@@ -614,13 +718,13 @@ fn object_type_definition(obj_def: ast::ObjectTypeDefinition) -> ObjectTypeDefin
     }
 }
 
-fn scalar_definition(scalar_def: ast::ScalarTypeDefinition) -> ScalarDefinition {
+fn scalar_definition(scalar_def: ast::ScalarTypeDefinition) -> ScalarTypeDefinition {
     let description = description(scalar_def.description());
     let name = name(scalar_def.name());
     let directives = directives(scalar_def.directives());
     let ast_ptr = SyntaxNodePtr::new(scalar_def.syntax());
 
-    ScalarDefinition {
+    ScalarTypeDefinition {
         description,
         name,
         directives,
@@ -628,14 +732,14 @@ fn scalar_definition(scalar_def: ast::ScalarTypeDefinition) -> ScalarDefinition 
     }
 }
 
-fn enum_definition(enum_def: ast::EnumTypeDefinition) -> EnumDefinition {
+fn enum_definition(enum_def: ast::EnumTypeDefinition) -> EnumTypeDefinition {
     let description = description(enum_def.description());
     let name = name(enum_def.name());
     let directives = directives(enum_def.directives());
     let enum_values_definition = enum_values_definition(enum_def.enum_values_definition());
     let ast_ptr = SyntaxNodePtr::new(enum_def.syntax());
 
-    EnumDefinition {
+    EnumTypeDefinition {
         description,
         name,
         directives,
@@ -677,14 +781,14 @@ fn enum_value_definition(enum_value_def: ast::EnumValueDefinition) -> EnumValueD
 fn union_definition(
     db: &dyn SourceDatabase,
     union_def: ast::UnionTypeDefinition,
-) -> UnionDefinition {
+) -> UnionTypeDefinition {
     let description = description(union_def.description());
     let name = name(union_def.name());
     let directives = directives(union_def.directives());
     let union_members = union_members(db, union_def.union_member_types());
     let ast_ptr = SyntaxNodePtr::new(union_def.syntax());
 
-    UnionDefinition {
+    UnionTypeDefinition {
         description,
         name,
         directives,
@@ -724,7 +828,7 @@ fn union_member(db: &dyn SourceDatabase, member: ast::NamedType) -> UnionMember 
     }
 }
 
-fn interface_definition(interface_def: ast::InterfaceTypeDefinition) -> InterfaceDefinition {
+fn interface_definition(interface_def: ast::InterfaceTypeDefinition) -> InterfaceTypeDefinition {
     let id = Uuid::new_v4();
     let description = description(interface_def.description());
     let name = name(interface_def.name());
@@ -733,7 +837,7 @@ fn interface_definition(interface_def: ast::InterfaceTypeDefinition) -> Interfac
     let fields_definition = fields_definition(interface_def.fields_definition());
     let ast_ptr = SyntaxNodePtr::new(interface_def.syntax());
 
-    InterfaceDefinition {
+    InterfaceTypeDefinition {
         id,
         description,
         name,
@@ -763,7 +867,7 @@ fn directive_definition(directive_def: ast::DirectiveDefinition) -> DirectiveDef
     }
 }
 
-fn input_object_definition(input_obj: ast::InputObjectTypeDefinition) -> InputObjectDefinition {
+fn input_object_definition(input_obj: ast::InputObjectTypeDefinition) -> InputObjectTypeDefinition {
     let id = Uuid::new_v4();
     let description = description(input_obj.description());
     let name = name(input_obj.name());
@@ -771,7 +875,7 @@ fn input_object_definition(input_obj: ast::InputObjectTypeDefinition) -> InputOb
     let input_fields_definition = input_fields_definition(input_obj.input_fields_definition());
     let ast_ptr = SyntaxNodePtr::new(input_obj.syntax());
 
-    InputObjectDefinition {
+    InputObjectTypeDefinition {
         id,
         description,
         name,

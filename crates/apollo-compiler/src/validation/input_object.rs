@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     diagnostics::{UniqueDefinition, UniqueField},
-    values::{InputObjectDefinition, InputValueDefinition},
+    values::{InputObjectTypeDefinition, InputValueDefinition},
     ApolloDiagnostic, SourceDatabase,
 };
 
@@ -12,7 +12,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     // Input Object Definitions must have unique names.
     //
     // Return a Unique Definition error in case of a duplicate name.
-    let mut seen: HashMap<&str, &InputObjectDefinition> = HashMap::new();
+    let mut seen: HashMap<&str, &InputObjectTypeDefinition> = HashMap::new();
     for input_object in db.input_objects().iter() {
         let name = input_object.name();
         if let Some(prev_def) = seen.get(name) {

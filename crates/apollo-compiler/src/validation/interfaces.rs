@@ -6,7 +6,7 @@ use crate::{
         UniqueDefinition, UniqueField,
     },
     validation::ValidationSet,
-    values::{FieldDefinition, InterfaceDefinition},
+    values::{FieldDefinition, InterfaceTypeDefinition},
     ApolloDiagnostic, SourceDatabase,
 };
 
@@ -16,7 +16,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     // Interface definitions must have unique names.
     //
     // Return a Unique Definition error in case of a duplicate name.
-    let mut seen: HashMap<&str, &InterfaceDefinition> = HashMap::new();
+    let mut seen: HashMap<&str, &InterfaceTypeDefinition> = HashMap::new();
     for interface in db.interfaces().iter() {
         let name = interface.name();
         if let Some(prev_def) = seen.get(&name) {
