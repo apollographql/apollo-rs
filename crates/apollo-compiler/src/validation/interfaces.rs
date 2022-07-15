@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use crate::{
     diagnostics::{
         MissingField, RecursiveDefinition, TransitiveImplementedInterfaces, UndefinedDefinition,
-        UniqueDefinition, UniqueField,
+        UniqueDefinition, UniqueField, OutputType,
     },
     validation::ValidationSet,
     values::{FieldDefinition, InterfaceTypeDefinition},
@@ -78,34 +78,62 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         }
     }
 
-    // Fields in an Interface definition must be unique
-    //
-    // Returns Unique Value error.
+    // Interface Type field validations.
     for interface_def in db.interfaces().iter() {
         let mut seen: HashMap<&str, &FieldDefinition> = HashMap::new();
 
         let fields = interface_def.fields_definition();
 
         for field in fields {
+            // Fields in an Interface definition must be unique
+            //
+            // Returns Unique Value error.
             let field_name = field.name();
+            let offset: usize = field.ast_node(db).text_range().start().into();
+            let len: usize = field.ast_node(db).text_range().len().into();
+
             if let Some(prev_field) = seen.get(&field_name) {
                 let prev_offset: usize = prev_field.ast_node(db).text_range().start().into();
                 let prev_node_len: usize = prev_field.ast_node(db).text_range().len().into();
-
-                let current_offset: usize = field.ast_node(db).text_range().start().into();
-                let current_node_len: usize = field.ast_node(db).text_range().len().into();
 
                 diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                     field: field_name.into(),
                     src: db.input_string(()).to_string(),
                     original_field: (prev_offset, prev_node_len).into(),
-                    redefined_field: (current_offset, current_node_len).into(),
+                    redefined_field: (offset, len).into(),
                     help: Some(format!(
                         "`{field_name}` field must only be defined once in this interface definition."
                     )),
                 }));
             } else {
                 seen.insert(field_name, field);
+            }
+
+            // Field types in interface types must be of output type
+            if let Some(field_ty) = field.ty().ty(db) {
+                if !field.ty().is_output_type(db) {
+                    diagnostics.push(ApolloDiagnostic::OutputType(OutputType {
+                        name: field.name().into(),
+                        ty: field_ty.ty(),
+                        src: db.input_string(()).to_string(),
+                        definition: (offset, len).into(),
+                    }))
+                }
+            } else if let Some(node) = field.ty().ast_node(db) {
+                let field_ty_offset: usize = node.text_range().start().into();
+                let field_ty_len: usize = node.text_range().len().into();
+                diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
+                    ty: field.ty().name(),
+                    src: db.input_string(()).to_string(),
+                    definition: (field_ty_offset, field_ty_len).into(),
+                }))
+            } else {
+                diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
+                    ty: field.ty().name(),
+                    src: db.input_string(()).to_string(),
+                    definition: (offset, len).into(),
+                }))
+
             }
         }
     }
@@ -251,6 +279,7 @@ interface NamedEntity {
   name: String
 }
 
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
@@ -281,6 +310,8 @@ interface NamedEntity {
   image: URL
   results: [Int]
 }
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
@@ -305,6 +336,8 @@ interface NamedEntity implements NamedEntity {
   image: URL
   results: [Int]
 }
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
@@ -322,6 +355,8 @@ interface NamedEntity implements NewEntity {
   image: URL
   results: [Int]
 }
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
@@ -358,5 +393,61 @@ interface Image implements Resource & Node {
             println!("{}", diagnostic)
         }
         assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn it_generates_diagnostics_for_non_output_field_types() {
+        let input = r#"
+query mainPage {
+  name
+}
+
+type Query {
+  name: mainInterface
+}
+
+interface mainInterface {
+  width: Int
+  img: Url
+  relationship: Person
+  entity: NamedEntity
+  depth: Number
+  result: SearchResult
+  permissions: Auth
+  coordinates: Point2D
+  main: mainPage
+}
+
+type Person {
+  name: String
+  age: Int
+}
+
+interface NamedEntity {
+  name: String
+}
+
+enum Number {
+  INT
+  FLOAT
+}
+
+union SearchResult = Photo | Person
+
+directive @Auth(username: String!) repeatable on OBJECT | INTERFACE
+
+input Point2D {
+  x: Float
+  y: Float
+}
+
+scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic)
+        }
+        assert_eq!(diagnostics.len(), 3);
     }
 }

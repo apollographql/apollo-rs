@@ -91,16 +91,22 @@ query ExampleQuery {
 type Query {
   topProducts: Products
 }
+
+type Products {
+  weight: Float
+  size: Int
+  name: String
+}
 "#;
 
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
 
-        assert_eq!(diagnostics.len(), 2);
-
-        for error in diagnostics {
+        for error in &diagnostics {
             println!("{}", error)
         }
+
+        assert_eq!(diagnostics.len(), 2);
     }
 
     #[test]
@@ -153,17 +159,22 @@ fragment fragmentOne on User {
 }
 
 type Query {
-  topProducts: Products
+  topProducts: Product
+}
+
+type Product {
+  name: String
+  price(setPrice: Int): Int
 }
 "#;
 
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
 
-        assert_eq!(diagnostics.len(), 2);
-
-        for error in diagnostics {
+        for error in &diagnostics {
             println!("{}", error)
         }
+
+        assert_eq!(diagnostics.len(), 2);
     }
 }

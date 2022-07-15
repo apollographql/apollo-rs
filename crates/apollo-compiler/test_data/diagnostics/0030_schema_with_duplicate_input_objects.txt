@@ -3,10 +3,10 @@
         UniqueDefinition {
             name: "Point2D",
             ty: "input object",
-            src: "type Query {\n  point1: Point2D\n  point2: Point2D\n}\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\ninput Point2D {\n  x: Float\n  y: Float\n}",
+            src: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\ninput Point2D {\n  x: Float\n  y: Float\n}",
             original_definition: SourceSpan {
                 offset: SourceOffset(
-                    52,
+                    115,
                 ),
                 length: SourceOffset(
                     41,
@@ -14,7 +14,7 @@
             },
             redefined_definition: SourceSpan {
                 offset: SourceOffset(
-                    93,
+                    156,
                 ),
                 length: SourceOffset(
                     39,

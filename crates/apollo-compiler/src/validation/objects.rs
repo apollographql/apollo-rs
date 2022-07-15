@@ -50,18 +50,18 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
             //
             // Returns Unique Value error.
             let field_name = field.name();
+            let offset: usize = field.ast_node(db).text_range().start().into();
+            let len: usize = field.ast_node(db).text_range().len().into();
+
             if let Some(prev_field) = seen.get(&field_name) {
                 let prev_offset: usize = prev_field.ast_node(db).text_range().start().into();
                 let prev_node_len: usize = prev_field.ast_node(db).text_range().len().into();
-
-                let current_offset: usize = field.ast_node(db).text_range().start().into();
-                let current_node_len: usize = field.ast_node(db).text_range().len().into();
 
                 diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                     field: field_name.into(),
                     src: db.input_string(()).to_string(),
                     original_field: (prev_offset, prev_node_len).into(),
-                    redefined_field: (current_offset, current_node_len).into(),
+                    redefined_field: (offset, len).into(),
                     help: Some(format!(
                         "`{field_name}` field must only be defined once in this object type definition."
                     )),
@@ -70,18 +70,31 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 seen.insert(field_name, field);
             }
 
-            let field_ty = field.ty().ty(db);
-            dbg!(&field_ty);
             // Field types in Object Types must be of output type
-            if !field.ty().is_output_type(db) {
-                let offset: usize = field.ast_node(db).text_range().start().into();
-                let len: usize = field.ast_node(db).text_range().len().into();
-                diagnostics.push(ApolloDiagnostic::OutputType(OutputType {
-                    name: field.name().into(),
-                    ty: field.ty().ty(db).unwrap().name().unwrap().into(),
+            if let Some(field_ty) = field.ty().ty(db) {
+                if !field.ty().is_output_type(db) {
+                    diagnostics.push(ApolloDiagnostic::OutputType(OutputType {
+                        name: field.name().into(),
+                        ty: field_ty.ty(),
+                        src: db.input_string(()).to_string(),
+                        definition: (offset, len).into(),
+                    }))
+                }
+            } else if let Some(node) = field.ty().ast_node(db) {
+                let field_ty_offset: usize = node.text_range().start().into();
+                let field_ty_len: usize = node.text_range().len().into();
+                diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
+                    ty: field.ty().name(),
+                    src: db.input_string(()).to_string(),
+                    definition: (field_ty_offset, field_ty_len).into(),
+                }))
+            } else {
+                diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
+                    ty: field.ty().name(),
                     src: db.input_string(()).to_string(),
                     definition: (offset, len).into(),
                 }))
+
             }
         }
     }
@@ -213,18 +226,12 @@ mod test {
     #[test]
     fn it_generates_diagnostics_for_non_output_field_types() {
         let input = r#"
-
 query mainPage {
   width
   result
   entity
 }
 
-# scalar
-# object
-# interface
-# enum
-# union
 type Query {
   width: Int
   img: Url
@@ -267,6 +274,6 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
-        assert_eq!(diagnostics.len(), 6);
+        assert_eq!(diagnostics.len(), 3);
     }
 }

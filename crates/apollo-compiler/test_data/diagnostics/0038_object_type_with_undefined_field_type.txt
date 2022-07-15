@@ -1,0 +1,30 @@
+[
+    UndefinedDefinition(
+        UndefinedDefinition {
+            ty: "Url",
+            src: "type Query {\n  width: Int\n  img: Url\n  relationship: Person\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    33,
+                ),
+                length: SourceOffset(
+                    3,
+                ),
+            },
+        },
+    ),
+    UndefinedDefinition(
+        UndefinedDefinition {
+            ty: "Person",
+            src: "type Query {\n  width: Int\n  img: Url\n  relationship: Person\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    53,
+                ),
+                length: SourceOffset(
+                    6,
+                ),
+            },
+        },
+    ),
+]

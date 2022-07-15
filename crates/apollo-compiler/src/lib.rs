@@ -104,7 +104,12 @@ fragment vipCustomer on User {
 }
 
 type Query {
-    topProducts: Products
+    topProducts: Product
+}
+
+type Product {
+  name: String
+  price(setPrice: Int): Int
 }
 "#;
 
@@ -381,9 +386,11 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
     fn it_accesses_input_object_definitions() {
         let input = r#"
 type Query {
-  point1: Point2D
-  point2: Point2D
+  website: URL,
+  amount: Int
 }
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
 input Point2D {
   x: Float

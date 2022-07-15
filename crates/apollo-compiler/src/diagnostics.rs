@@ -285,7 +285,7 @@ pub struct UnusedVariable {
 /// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
 #[diagnostic(
     code("apollo-compiler validation error"),
-    help("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` to return one of these output types.", self.ty)
+    help("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", self.name)
 )]
 pub struct OutputType {
     // field name

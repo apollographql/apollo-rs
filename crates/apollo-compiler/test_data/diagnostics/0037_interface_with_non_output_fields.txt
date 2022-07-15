@@ -1,0 +1,47 @@
+[
+    OutputType(
+        OutputType {
+            name: "permissions",
+            ty: "DirectiveDefinition",
+            src: "query mainPage {\n  name\n}\n\ntype Query {\n  name: mainInterface\n}\n\ninterface mainInterface {\n  width: Int\n  img: Url\n  relationship: Person\n  entity: NamedEntity\n  depth: Number\n  result: SearchResult\n  permissions: Auth\n  coordinates: Point2D\n  main: mainPage\n}\n\ntype Person {\n  name: String\n  age: Int\n}\n\ninterface NamedEntity {\n  name: String\n}\n\nenum Number {\n  INT\n  FLOAT\n}\n\nunion SearchResult = Photo | Person\n\ndirective @Auth(username: String!) repeatable on OBJECT | INTERFACE\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\nscalar Url @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    201,
+                ),
+                length: SourceOffset(
+                    20,
+                ),
+            },
+        },
+    ),
+    OutputType(
+        OutputType {
+            name: "coordinates",
+            ty: "InputObjectTypeDefinition",
+            src: "query mainPage {\n  name\n}\n\ntype Query {\n  name: mainInterface\n}\n\ninterface mainInterface {\n  width: Int\n  img: Url\n  relationship: Person\n  entity: NamedEntity\n  depth: Number\n  result: SearchResult\n  permissions: Auth\n  coordinates: Point2D\n  main: mainPage\n}\n\ntype Person {\n  name: String\n  age: Int\n}\n\ninterface NamedEntity {\n  name: String\n}\n\nenum Number {\n  INT\n  FLOAT\n}\n\nunion SearchResult = Photo | Person\n\ndirective @Auth(username: String!) repeatable on OBJECT | INTERFACE\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\nscalar Url @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    221,
+                ),
+                length: SourceOffset(
+                    23,
+                ),
+            },
+        },
+    ),
+    OutputType(
+        OutputType {
+            name: "main",
+            ty: "OperationDefinition",
+            src: "query mainPage {\n  name\n}\n\ntype Query {\n  name: mainInterface\n}\n\ninterface mainInterface {\n  width: Int\n  img: Url\n  relationship: Person\n  entity: NamedEntity\n  depth: Number\n  result: SearchResult\n  permissions: Auth\n  coordinates: Point2D\n  main: mainPage\n}\n\ntype Person {\n  name: String\n  age: Int\n}\n\ninterface NamedEntity {\n  name: String\n}\n\nenum Number {\n  INT\n  FLOAT\n}\n\nunion SearchResult = Photo | Person\n\ndirective @Auth(username: String!) repeatable on OBJECT | INTERFACE\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\nscalar Url @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    244,
+                ),
+                length: SourceOffset(
+                    15,
+                ),
+            },
+        },
+    ),
+]

@@ -5,9 +5,9 @@ query ExampleQuery {
 }
 
 type Query {
-  topProducts(first: Int): TopProduct,
+  topProducts(first: Int): Product,
 }
 
-type TopProduct {
+type Product {
   name: String
 }

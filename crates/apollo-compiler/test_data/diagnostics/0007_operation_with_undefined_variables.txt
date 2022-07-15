@@ -2,7 +2,7 @@
     UndefinedDefinition(
         UndefinedDefinition {
             ty: "undefinedVariable",
-            src: "query ExampleQuery {\n  topProducts(first: $undefinedVariable) {\n    name\n  }\n}\n\ntype Query {\n  topProducts(first: Int): TopProduct,\n}\n\ntype TopProduct {\n  name: String\n}",
+            src: "query ExampleQuery {\n  topProducts(first: $undefinedVariable) {\n    name\n  }\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n}\n\ntype Product {\n  name: String\n}",
             definition: SourceSpan {
                 offset: SourceOffset(
                     42,
