@@ -39,6 +39,43 @@ impl Definition {
         }
     }
 
+    /// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
+    /// [`ObjectTypeDefinition`], [`InterfaceTypeDefinition`],
+    /// [`UnionTypeDefinition`], [`EnumTypeDefinition`].
+    ///
+    /// [`ScalarTypeDefinition`]: Definition::ScalarTypeDefinition
+    /// [`ObjectTypeDefinition`]: Definition::ObjectTypeDefinition
+    /// [`InterfaceTypeDefinition`]: Definition::InterfaceTypeDefinition
+    /// [`UnionTypeDefinition`]: Definition::UnionTypeDefinition
+    /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
+    #[must_use]
+    pub fn is_output_definition(&self) -> bool {
+        matches!(
+            self,
+            Self::ScalarTypeDefinition(..)
+                | Self::ObjectTypeDefinition(..)
+                | Self::InterfaceTypeDefinition(..)
+                | Self::UnionTypeDefinition(..)
+                | Self::EnumTypeDefinition(..)
+        )
+    }
+
+    /// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
+    /// [`EnumTypeDefinition`], [`InputObjectTypeDefinition`].
+    ///
+    /// [`ScalarTypeDefinition`]: Definition::ScalarTypeDefinition
+    /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
+    /// [`InputObjectTypeDefinition`]: Definition::ObjectTypeDefinition
+    #[must_use]
+    pub fn is_input_definition(&self) -> bool {
+        matches!(
+            self,
+            Self::ScalarTypeDefinition(..)
+                | Self::EnumTypeDefinition(..)
+                | Self::InputObjectTypeDefinition(..)
+        )
+    }
+
     /// Returns `true` if the definition is [`OperationDefinition`].
     ///
     /// [`OperationDefinition`]: Definition::OperationDefinition
@@ -406,6 +443,39 @@ impl Type {
     #[must_use]
     pub fn is_list(&self) -> bool {
         matches!(self, Self::List { .. })
+    }
+
+    /// Returns `true` if Type is either a [`ScalarTypeDefinition`],
+    /// [`ObjectTypeDefinition`], [`InterfaceTypeDefinition`],
+    /// [`UnionTypeDefinition`], [`EnumTypeDefinition`].
+    ///
+    /// [`ScalarTypeDefinition`]: Definition::ScalarTypeDefinition
+    /// [`ObjectTypeDefinition`]: Definition::ObjectTypeDefinition
+    /// [`InterfaceTypeDefinition`]: Definition::InterfaceTypeDefinition
+    /// [`UnionTypeDefinition`]: Definition::UnionTypeDefinition
+    /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
+    #[must_use]
+    pub fn is_output_type(&self, db: &dyn SourceDatabase) -> bool {
+        if let Some(ty) = self.ty(db) {
+            ty.as_ref().is_output_definition()
+        } else {
+            false
+        }
+    }
+
+    /// Returns `true` if the Type is either a [`ScalarTypeDefinition`],
+    /// [`EnumTypeDefinition`], [`InputObjectTypeDefinition`].
+    ///
+    /// [`ScalarTypeDefinition`]: Definition::ScalarTypeDefinition
+    /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
+    /// [`InputObjectTypeDefinition`]: Definition::ObjectTypeDefinition
+    #[must_use]
+    pub fn is_input_type(&self, db: &dyn SourceDatabase) -> bool {
+        if let Some(ty) = self.ty(db) {
+            ty.as_ref().is_input_definition()
+        } else {
+            false
+        }
     }
 
     /// Get a reference to SyntaxNodePtr of the current HIR node.

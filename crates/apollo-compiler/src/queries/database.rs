@@ -1371,6 +1371,10 @@ fn alias(alias: Option<ast::Alias>) -> Option<Arc<Alias>> {
     })
 }
 
+fn built_in_scalars(mut scalars: Vec<ScalarTypeDefinition>) -> Vec<ScalarTypeDefinition> {
+    scalars.push()
+}
+
 fn built_in_directives(mut directives: Vec<DirectiveDefinition>) -> Vec<DirectiveDefinition> {
     if !directives.iter().any(|dir| dir.name == "skip") {
         directives.push(skip_directive());

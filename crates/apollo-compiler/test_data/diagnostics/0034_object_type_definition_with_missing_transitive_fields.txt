@@ -1,0 +1,52 @@
+[
+    MissingField(
+        MissingField {
+            ty: "id",
+            src: "type Query implements Node & Resource {\n  name: String\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource {\n  width: Int\n}",
+            super_definition: SourceSpan {
+                offset: SourceOffset(
+                    58,
+                ),
+                length: SourceOffset(
+                    30,
+                ),
+            },
+            current_definition: SourceSpan {
+                offset: SourceOffset(
+                    0,
+                ),
+                length: SourceOffset(
+                    58,
+                ),
+            },
+            help: Some(
+                "An interface must be a super-set of all interfaces it implement",
+            ),
+        },
+    ),
+    MissingField(
+        MissingField {
+            ty: "width",
+            src: "type Query implements Node & Resource {\n  name: String\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource {\n  width: Int\n}",
+            super_definition: SourceSpan {
+                offset: SourceOffset(
+                    88,
+                ),
+                length: SourceOffset(
+                    35,
+                ),
+            },
+            current_definition: SourceSpan {
+                offset: SourceOffset(
+                    0,
+                ),
+                length: SourceOffset(
+                    58,
+                ),
+            },
+            help: Some(
+                "An interface must be a super-set of all interfaces it implement",
+            ),
+        },
+    ),
+]

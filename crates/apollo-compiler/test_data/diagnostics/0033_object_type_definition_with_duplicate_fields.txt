@@ -2,10 +2,10 @@
     UniqueField(
         UniqueField {
             field: "name",
-            src: "type Query implements NamedEntity {\n  name: String\n}\n\ninterface NamedEntity {\n  name: String\n  name: String\n}",
+            src: "type Query {\n  name: String\n  name: String\n}\n",
             original_field: SourceSpan {
                 offset: SourceOffset(
-                    80,
+                    15,
                 ),
                 length: SourceOffset(
                     15,
@@ -13,14 +13,14 @@
             },
             redefined_field: SourceSpan {
                 offset: SourceOffset(
-                    95,
+                    30,
                 ),
                 length: SourceOffset(
                     13,
                 ),
             },
             help: Some(
-                "`name` field must only be defined once in this interface definition.",
+                "`name` field must only be defined once in this object type definition.",
             ),
         },
     ),

@@ -1,27 +1,27 @@
 [
     UniqueDefinition(
         UniqueDefinition {
-            name: "NamedEntity",
-            ty: "interface",
-            src: "type Query implements NamedEntity {\n  name: String\n}\n\ninterface NamedEntity {\n  name: String\n}\n\ninterface NamedEntity {\n  name: String\n}\n",
+            name: "Query",
+            ty: "object type",
+            src: "type Query {\n  name: String\n}\n\ntype Query {\n  name: String\n}",
             original_definition: SourceSpan {
                 offset: SourceOffset(
-                    54,
+                    0,
                 ),
                 length: SourceOffset(
-                    42,
+                    31,
                 ),
             },
             redefined_definition: SourceSpan {
                 offset: SourceOffset(
-                    96,
+                    31,
                 ),
                 length: SourceOffset(
-                    41,
+                    29,
                 ),
             },
             help: Some(
-                "`NamedEntity` must only be defined once in this document.",
+                "`Query` must only be defined once in this document.",
             ),
         },
     ),
