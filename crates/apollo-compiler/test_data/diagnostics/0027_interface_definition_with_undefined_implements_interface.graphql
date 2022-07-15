@@ -1,5 +1,6 @@
-type Query implements Node {
-    ud: ID!
+type Query implements Resource {
+  id: ID!
+  width: Int
 }
 
 interface Resource {

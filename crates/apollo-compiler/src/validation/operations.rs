@@ -250,13 +250,15 @@ type Query {
 type Subscription {
   newMessage: Result
 }
+
+union Pet = Cat | Dog
 "#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
-
-        for diagnostic in diagnostics {
+        for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
+        assert_eq!(diagnostics.len(), 4)
     }
 
     #[test]
@@ -279,10 +281,15 @@ query getName {
 type Query {
   cat: Pet
 }
+
+union Pet = Cat | Dog
 "#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
-        assert_eq!(diagnostics.len(), 1);
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic)
+        }
+        assert_eq!(diagnostics.len(), 1)
     }
 
     #[test]
@@ -305,6 +312,8 @@ query getOwnerName {
 type Query {
   cat: Pet
 }
+
+union Pet = Cat | Dog
 "#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();

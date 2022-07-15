@@ -1,5 +1,9 @@
-type Query implements Node {
+type Query implements Image {
+  name: String
   id: ID!
+  url: String
+  width: Int
+  thumbnail: String
 }
 
 interface Node {

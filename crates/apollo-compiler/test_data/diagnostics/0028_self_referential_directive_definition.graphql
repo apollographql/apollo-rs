@@ -1,6 +1,6 @@
 type Query {
-    id: ID!
-    field(arg: Int @invalidExample): String
+  id: ID!
+  field(arg: Int @invalidExample): String
 }
 
 directive @invalidExample(arg: String @invalidExample) on ARGUMENT_DEFINITION

@@ -39,6 +39,58 @@ impl Definition {
         }
     }
 
+    pub fn ty(&self) -> String {
+        match self {
+            Definition::OperationDefinition(_) => "OperationDefinition".to_string(),
+            Definition::FragmentDefinition(_) => "FragmentDefinition".to_string(),
+            Definition::DirectiveDefinition(_) => "DirectiveDefinition".to_string(),
+            Definition::ScalarTypeDefinition(_) => "ScalarTypeDefinition".to_string(),
+            Definition::ObjectTypeDefinition(_) => "ObjectTypeDefinition".to_string(),
+            Definition::InterfaceTypeDefinition(_) => "InterfaceTypeDefinition".to_string(),
+            Definition::UnionTypeDefinition(_) => "UnionTypeDefinition".to_string(),
+            Definition::EnumTypeDefinition(_) => "EnumTypeDefinition".to_string(),
+            Definition::InputObjectTypeDefinition(_) => "InputObjectTypeDefinition".to_string(),
+            Definition::SchemaDefinition(_) => "SchemaDefinition".to_string(),
+        }
+    }
+
+    /// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
+    /// [`ObjectTypeDefinition`], [`InterfaceTypeDefinition`],
+    /// [`UnionTypeDefinition`], [`EnumTypeDefinition`].
+    ///
+    /// [`ScalarTypeDefinition`]: Definition::ScalarTypeDefinition
+    /// [`ObjectTypeDefinition`]: Definition::ObjectTypeDefinition
+    /// [`InterfaceTypeDefinition`]: Definition::InterfaceTypeDefinition
+    /// [`UnionTypeDefinition`]: Definition::UnionTypeDefinition
+    /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
+    #[must_use]
+    pub fn is_output_definition(&self) -> bool {
+        matches!(
+            self,
+            Self::ScalarTypeDefinition(..)
+                | Self::ObjectTypeDefinition(..)
+                | Self::InterfaceTypeDefinition(..)
+                | Self::UnionTypeDefinition(..)
+                | Self::EnumTypeDefinition(..)
+        )
+    }
+
+    /// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
+    /// [`EnumTypeDefinition`], [`InputObjectTypeDefinition`].
+    ///
+    /// [`ScalarTypeDefinition`]: Definition::ScalarTypeDefinition
+    /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
+    /// [`InputObjectTypeDefinition`]: Definition::ObjectTypeDefinition
+    #[must_use]
+    pub fn is_input_definition(&self) -> bool {
+        matches!(
+            self,
+            Self::ScalarTypeDefinition(..)
+                | Self::EnumTypeDefinition(..)
+                | Self::InputObjectTypeDefinition(..)
+        )
+    }
+
     /// Returns `true` if the definition is [`OperationDefinition`].
     ///
     /// [`OperationDefinition`]: Definition::OperationDefinition
@@ -119,7 +171,6 @@ impl Definition {
         matches!(self, Self::SchemaDefinition(..))
     }
 }
-
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct FragmentDefinition {
     pub(crate) id: Uuid,
@@ -406,6 +457,39 @@ impl Type {
     #[must_use]
     pub fn is_list(&self) -> bool {
         matches!(self, Self::List { .. })
+    }
+
+    /// Returns `true` if Type is either a [`ScalarTypeDefinition`],
+    /// [`ObjectTypeDefinition`], [`InterfaceTypeDefinition`],
+    /// [`UnionTypeDefinition`], [`EnumTypeDefinition`].
+    ///
+    /// [`ScalarTypeDefinition`]: Definition::ScalarTypeDefinition
+    /// [`ObjectTypeDefinition`]: Definition::ObjectTypeDefinition
+    /// [`InterfaceTypeDefinition`]: Definition::InterfaceTypeDefinition
+    /// [`UnionTypeDefinition`]: Definition::UnionTypeDefinition
+    /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
+    #[must_use]
+    pub fn is_output_type(&self, db: &dyn SourceDatabase) -> bool {
+        if let Some(ty) = self.ty(db) {
+            ty.as_ref().is_output_definition()
+        } else {
+            false
+        }
+    }
+
+    /// Returns `true` if the Type is either a [`ScalarTypeDefinition`],
+    /// [`EnumTypeDefinition`], [`InputObjectTypeDefinition`].
+    ///
+    /// [`ScalarTypeDefinition`]: Definition::ScalarTypeDefinition
+    /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
+    /// [`InputObjectTypeDefinition`]: Definition::ObjectTypeDefinition
+    #[must_use]
+    pub fn is_input_type(&self, db: &dyn SourceDatabase) -> bool {
+        if let Some(ty) = self.ty(db) {
+            ty.as_ref().is_input_definition()
+        } else {
+            false
+        }
     }
 
     /// Get a reference to SyntaxNodePtr of the current HIR node.
@@ -1208,7 +1292,8 @@ pub struct ScalarTypeDefinition {
     pub(crate) description: Option<String>,
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
-    pub(crate) ast_ptr: SyntaxNodePtr,
+    pub(crate) ast_ptr: Option<SyntaxNodePtr>,
+    pub(crate) built_in: bool,
 }
 
 impl ScalarTypeDefinition {
@@ -1223,14 +1308,19 @@ impl ScalarTypeDefinition {
     }
 
     // Get a reference to SyntaxNodePtr of the current HIR node.
-    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
-        &self.ast_ptr
+    pub fn ast_ptr(&self) -> Option<&SyntaxNodePtr> {
+        self.ast_ptr.as_ref()
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
-        let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+        self.ast_ptr()
+            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
+    }
+
+    // Returns true if the current scalar is a GraphQL built in.
+    pub(crate) fn is_built_in(&self) -> bool {
+        self.built_in
     }
 }
 

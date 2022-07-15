@@ -2,10 +2,10 @@
     UniqueField(
         UniqueField {
             field: "x",
-            src: "type Query {\n  point1: Point2D\n  point2: Point2D\n}\n\ninput Point2D {\n  x: Float\n  x: Float\n}",
+            src: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")\n\ninput Point2D {\n  x: Float\n  x: Float\n}",
             original_field: SourceSpan {
                 offset: SourceOffset(
-                    70,
+                    133,
                 ),
                 length: SourceOffset(
                     11,
@@ -13,7 +13,7 @@
             },
             redefined_field: SourceSpan {
                 offset: SourceOffset(
-                    81,
+                    144,
                 ),
                 length: SourceOffset(
                     9,

@@ -1,5 +1,5 @@
 type Query implements Node {
-    ud: ID!
+  id: ID!
 }
 
 interface Node {

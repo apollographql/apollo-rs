@@ -19,3 +19,8 @@ type Query {
 type Mutation {
   addPet (name: String!, petType: PetType): Result!
 }
+
+type Result {
+  pageNumber: Int
+  response: String
+}

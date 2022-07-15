@@ -1,7 +1,7 @@
 [
     MissingIdent(
         MissingIdent {
-            src: "query {\n  cat {\n    name\n  }\n}\n\nmutation getName {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  cat: String\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}",
+            src: "query {\n  cat {\n    name\n  }\n}\n\nmutation getName {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  cat: String\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  pageNumber: Int\n  response: String\n}",
             definition: SourceSpan {
                 offset: SourceOffset(
                     0,

@@ -20,6 +20,7 @@ pub enum ApolloDiagnostic {
     ScalarSpecificationURL(ScalarSpecificationURL),
     CapitalizedValue(CapitalizedValue),
     UnusedVariable(UnusedVariable),
+    OutputType(OutputType),
 }
 
 impl fmt::Display for ApolloDiagnostic {
@@ -44,6 +45,7 @@ impl fmt::Display for ApolloDiagnostic {
             ApolloDiagnostic::CapitalizedValue(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::MissingField(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
         };
 
         writeln!(f, "{:?}", report)
@@ -264,6 +266,7 @@ pub struct CapitalizedValue {
     #[label("consider capitalizing {}", self.ty)]
     pub value: SourceSpan,
 }
+
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("unused variable: `{}`", self.ty)]
 #[diagnostic(code("apollo-compiler validation warning"), severity(warning))]
@@ -274,5 +277,25 @@ pub struct UnusedVariable {
     pub src: String,
 
     #[label("unused variable")]
+    pub definition: SourceSpan,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("`{}` field must return an output type", self.name)]
+/// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
+#[diagnostic(
+    code("apollo-compiler validation error"),
+    help("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", self.name)
+)]
+pub struct OutputType {
+    // field name
+    pub name: String,
+    // field type
+    pub ty: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("this is of `{}` type", self.ty)]
     pub definition: SourceSpan,
 }
