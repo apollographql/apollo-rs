@@ -1119,6 +1119,11 @@ impl FieldDefinition {
         &self.ast_ptr
     }
 
+    /// Get a reference to the field's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
