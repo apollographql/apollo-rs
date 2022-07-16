@@ -1,8 +1,9 @@
-use miette::{Diagnostic, SourceSpan};
+use std::fmt;
+
+use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
 
-#[derive(Diagnostic, Clone, Error, Debug, Hash, PartialEq, Eq)]
-#[error("oops")]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
     MissingIdent(MissingIdent),
     MissingField(MissingField),
@@ -22,34 +23,38 @@ pub enum ApolloDiagnostic {
     OutputType(OutputType),
 }
 
-// impl fmt::Display for ApolloDiagnostic {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         let report = match self {
-//             ApolloDiagnostic::MissingIdent(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::UniqueDefinition(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::SingleRootField(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::UnsupportedOperation(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::UniqueField(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::RecursiveDefinition(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::UndefinedDefinition(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::TransitiveImplementedInterfaces(diagnostic) => {
-//                 Report::new(diagnostic.clone())
-//             }
-//             ApolloDiagnostic::QueryRootOperationType(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::BuiltInScalarDefinition(diagnostic) => {
-//                 Report::new(diagnostic.clone())
-//             }
-//             ApolloDiagnostic::ScalarSpecificationURL(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::CapitalizedValue(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::MissingField(diagnostic) => Report::new(diagnostic.clone()),
-//             ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
-//         };
+impl ApolloDiagnostic {
+    pub fn report(&self) -> Report {
+        match self {
+            ApolloDiagnostic::MissingIdent(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UniqueDefinition(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::SingleRootField(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UnsupportedOperation(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UniqueField(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::RecursiveDefinition(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UndefinedDefinition(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::TransitiveImplementedInterfaces(diagnostic) => {
+                Report::new(diagnostic.clone())
+            }
+            ApolloDiagnostic::QueryRootOperationType(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::BuiltInScalarDefinition(diagnostic) => {
+                Report::new(diagnostic.clone())
+            }
+            ApolloDiagnostic::ScalarSpecificationURL(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::CapitalizedValue(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::MissingField(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
+        }
+    }
+}
 
-//         writeln!(f, "{:?}", report)
-//     }
-// }
+impl fmt::Display for ApolloDiagnostic {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "{:?}", self.report())
+    }
+}
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("expected identifier")]
