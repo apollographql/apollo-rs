@@ -72,6 +72,14 @@ impl Definition {
         }
     }
 
+    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
+        match self {
+            Definition::ObjectTypeDefinition(def) => def.field(name),
+            Definition::InterfaceTypeDefinition(def) => def.field(name),
+            _ => None,
+        }
+    }
+
     /// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
     /// [`ObjectTypeDefinition`], [`InterfaceTypeDefinition`],
     /// [`UnionTypeDefinition`], [`EnumTypeDefinition`].
@@ -832,6 +840,19 @@ impl SelectionSet {
 
         fields
     }
+
+    pub fn field(&self, name: &str) -> Option<&Field> {
+        self.selection().iter().find_map(|sel| {
+            if let Selection::Field(field) = sel {
+                if field.name() == name {
+                    return Some(field.as_ref());
+                }
+                None
+            } else {
+                None
+            }
+        })
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -880,6 +901,7 @@ pub struct Field {
     pub(crate) alias: Option<Arc<Alias>>,
     pub(crate) name: String,
     pub(crate) arguments: Arc<Vec<Argument>>,
+    pub(crate) ty: Option<Type>,
     pub(crate) reference_ty_id: Option<Uuid>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) selection_set: SelectionSet,
@@ -900,21 +922,9 @@ impl Field {
         self.name.as_ref()
     }
 
-    // Get field's type.
-    pub fn ty(&self, db: &dyn SourceDatabase) -> Option<Type> {
-        if let Some(object_id) = self.reference_ty_id {
-            let obj = db.find_object_type(object_id)?;
-            let field_ty = obj
-                .fields_definition()
-                .iter()
-                .find(|field| field.name() == self.name)?
-                .ty()
-                .clone();
-
-            Some(field_ty)
-        } else {
-            None
-        }
+    // Get a reference to field's type.
+    pub fn ty(&self) -> Option<&Type> {
+        self.ty.as_ref()
     }
 
     // Get field's original field definition.
@@ -1222,6 +1232,11 @@ impl ObjectTypeDefinition {
     /// Get a reference to the object type definition's field definitions.
     pub fn fields_definition(&self) -> &[FieldDefinition] {
         self.fields_definition.as_ref()
+    }
+
+    /// Find a field in object type definition.
+    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
+        self.fields_definition().iter().find(|f| f.name() == name)
     }
 
     /// Get a reference to object type definition's implements interfaces vector.
@@ -1589,6 +1604,11 @@ impl InterfaceTypeDefinition {
     /// Get a reference to interface definition's fields.
     pub fn fields_definition(&self) -> &[FieldDefinition] {
         self.fields_definition.as_ref()
+    }
+
+    /// Find a field in interface face definition.
+    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
+        self.fields_definition().iter().find(|f| f.name() == name)
     }
 
     // Get a reference to SyntaxNodePtr of the current HIR node.

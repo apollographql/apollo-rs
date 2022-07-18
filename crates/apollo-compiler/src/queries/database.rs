@@ -91,6 +91,8 @@ pub trait SourceDatabase {
 
     fn find_definition_by_name(&self, name: String) -> Option<Arc<Definition>>;
 
+    fn find_type_system_definition(&self, id: Uuid) -> Option<Arc<Definition>>;
+
     fn find_type_system_definition_by_name(&self, name: String) -> Option<Arc<Definition>>;
 
     fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
@@ -256,6 +258,17 @@ fn find_definition_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<
         if let Some(n) = def.name() {
             if name == n {
                 return Some(Arc::new(def.clone()));
+            }
+        }
+        None
+    })
+}
+
+fn find_type_system_definition(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<Definition>> {
+    db.type_system_definitions().iter().find_map(|op| {
+        if let Some(op_id) = op.id() {
+            if op_id == &id {
+                return Some(Arc::new(op.clone()));
             }
         }
         None
@@ -1408,12 +1421,8 @@ fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Ar
 fn field(db: &dyn SourceDatabase, field: ast::Field, ty_id: Option<Uuid>) -> Arc<Field> {
     let name = name(field.name());
     let alias = alias(field.alias());
-    let new_ty_id = if field.selection_set().is_some() {
-        db.find_type_system_definition_by_name(name.clone())
-            .and_then(|def| def.id().cloned())
-    } else {
-        None
-    };
+    let ty = field_ty(db, &name, ty_id);
+    let new_ty_id = field_ty_id(&field, db, ty.as_ref());
     let selection_set = selection_set(db, field.selection_set(), new_ty_id);
     let directives = directives(field.directives());
     let arguments = arguments(field.arguments());
@@ -1423,12 +1432,45 @@ fn field(db: &dyn SourceDatabase, field: ast::Field, ty_id: Option<Uuid>) -> Arc
         name,
         alias,
         selection_set,
+        ty,
         reference_ty_id: ty_id,
         directives,
         arguments,
         ast_ptr,
     };
     Arc::new(field_data)
+}
+
+fn field_ty(db: &dyn SourceDatabase, field_name: &str, ty_id: Option<Uuid>) -> Option<Type> {
+    if let Some(id) = ty_id {
+        Some(
+            db.find_type_system_definition(id)?
+                .field(field_name)?
+                .ty()
+                .clone(),
+        )
+    } else {
+        None
+    }
+}
+
+fn field_ty_id(
+    field: &ast::Field,
+    db: &dyn SourceDatabase,
+    field_ty: Option<&Type>,
+) -> Option<Uuid> {
+    match field_ty {
+        Some(ty) => {
+            if field.selection_set().is_some() {
+                return db
+                    .find_type_system_definition_by_name(ty.name())
+                    .and_then(|def| def.id().cloned());
+            } else {
+                None
+            }
+        }
+        None => None,
+    }
 }
 
 fn name(name: Option<ast::Name>) -> String {
