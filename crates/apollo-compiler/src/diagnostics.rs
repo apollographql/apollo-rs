@@ -23,6 +23,38 @@ pub enum ApolloDiagnostic {
     OutputType(OutputType),
 }
 
+impl ApolloDiagnostic {
+    pub fn is_error(&self) -> bool {
+        matches!(
+            self,
+            ApolloDiagnostic::MissingIdent(_)
+                | ApolloDiagnostic::MissingField(_)
+                | ApolloDiagnostic::UniqueDefinition(_)
+                | ApolloDiagnostic::SingleRootField(_)
+                | ApolloDiagnostic::UnsupportedOperation(_)
+                | ApolloDiagnostic::SyntaxError(_)
+                | ApolloDiagnostic::UniqueField(_)
+                | ApolloDiagnostic::UndefinedDefinition(_)
+                | ApolloDiagnostic::RecursiveDefinition(_)
+                | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
+                | ApolloDiagnostic::QueryRootOperationType(_)
+                | ApolloDiagnostic::BuiltInScalarDefinition(_)
+                | ApolloDiagnostic::OutputType(_)
+        )
+    }
+
+    pub fn is_warning(&self) -> bool {
+        matches!(
+            self,
+            ApolloDiagnostic::CapitalizedValue(_) | ApolloDiagnostic::UnusedVariable(_)
+        )
+    }
+
+    pub fn is_advice(&self) -> bool {
+        matches!(self, ApolloDiagnostic::ScalarSpecificationURL(_))
+    }
+}
+
 impl fmt::Display for ApolloDiagnostic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let report = match self {
