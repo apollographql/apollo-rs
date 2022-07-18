@@ -1462,9 +1462,8 @@ fn field_ty_id(
     match field_ty {
         Some(ty) => {
             if field.selection_set().is_some() {
-                return db
-                    .find_type_system_definition_by_name(ty.name())
-                    .and_then(|def| def.id().cloned());
+                db.find_type_system_definition_by_name(ty.name())
+                    .and_then(|def| def.id().cloned())
             } else {
                 None
             }
