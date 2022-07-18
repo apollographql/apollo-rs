@@ -24,6 +24,7 @@ pub enum Definition {
 }
 
 impl Definition {
+    // Get a reference to definition's name.
     pub fn name(&self) -> Option<&str> {
         match self {
             Definition::OperationDefinition(def) => def.name(),
@@ -39,6 +40,8 @@ impl Definition {
         }
     }
 
+    // Get the current definition type, e..g OperationDefinition,
+    // EnumTypeDefinition, ObjectTypeDefinition etc.
     pub fn ty(&self) -> String {
         match self {
             Definition::OperationDefinition(_) => "OperationDefinition".to_string(),
@@ -51,6 +54,21 @@ impl Definition {
             Definition::EnumTypeDefinition(_) => "EnumTypeDefinition".to_string(),
             Definition::InputObjectTypeDefinition(_) => "InputObjectTypeDefinition".to_string(),
             Definition::SchemaDefinition(_) => "SchemaDefinition".to_string(),
+        }
+    }
+
+    pub fn id(&self) -> Option<&Uuid> {
+        match self {
+            Definition::OperationDefinition(def) => Some(def.id()),
+            Definition::FragmentDefinition(def) => Some(def.id()),
+            Definition::DirectiveDefinition(def) => Some(def.id()),
+            Definition::ScalarTypeDefinition(def) => Some(def.id()),
+            Definition::ObjectTypeDefinition(def) => Some(def.id()),
+            Definition::InterfaceTypeDefinition(def) => Some(def.id()),
+            Definition::UnionTypeDefinition(def) => Some(def.id()),
+            Definition::EnumTypeDefinition(def) => Some(def.id()),
+            Definition::InputObjectTypeDefinition(def) => Some(def.id()),
+            Definition::SchemaDefinition(_) => None,
         }
     }
 
@@ -177,7 +195,7 @@ pub struct FragmentDefinition {
     pub(crate) name: String,
     pub(crate) type_condition: String,
     pub(crate) directives: Arc<Vec<Directive>>,
-    pub(crate) selection_set: Arc<Vec<Selection>>,
+    pub(crate) selection_set: SelectionSet,
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
@@ -209,8 +227,8 @@ impl FragmentDefinition {
 
     /// Get a reference to fragment definition's selection set.
     /// TODO: is this good??
-    pub fn selection_set(&self) -> &[Selection] {
-        self.selection_set.as_ref()
+    pub fn selection_set(&self) -> &SelectionSet {
+        &self.selection_set
     }
 
     // NOTE @lrlna: we will need to think and implement scope for fragment
@@ -220,6 +238,7 @@ impl FragmentDefinition {
     /// Get variables used in a fragment definition.
     pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
         self.selection_set
+            .selection()
             .iter()
             .flat_map(|sel| sel.variables(db))
             .collect()
@@ -243,8 +262,9 @@ pub struct OperationDefinition {
     pub(crate) ty: OperationType,
     pub(crate) name: Option<String>,
     pub(crate) variables: Arc<Vec<VariableDefinition>>,
+    pub(crate) object_id: Option<Uuid>,
     pub(crate) directives: Arc<Vec<Directive>>,
-    pub(crate) selection_set: Arc<Vec<Selection>>,
+    pub(crate) selection_set: SelectionSet,
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
@@ -274,8 +294,8 @@ impl OperationDefinition {
     }
 
     /// Get a reference to the operation definition's selection set.
-    pub fn selection_set(&self) -> &[Selection] {
-        self.selection_set.as_ref()
+    pub fn selection_set(&self) -> &SelectionSet {
+        &self.selection_set
     }
 
     /// Get fields in the operation definition.
@@ -788,6 +808,33 @@ impl Variable {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct SelectionSet {
+    pub(crate) selection: Arc<Vec<Selection>>,
+}
+
+impl SelectionSet {
+    /// Get a reference to the selection set's selection.
+    pub fn selection(&self) -> &[Selection] {
+        self.selection.as_ref()
+    }
+
+    /// Get a refernce to the selection set's fields (not inline fragments, or
+    /// fragment spreads).
+    pub fn fields(&self) -> Vec<Field> {
+        let fields: Vec<Field> = self
+            .selection()
+            .iter()
+            .filter_map(|sel| match sel {
+                Selection::Field(field) => return Some(field.as_ref().clone()),
+                _ => None,
+            })
+            .collect();
+
+        fields
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Selection {
     Field(Arc<Field>),
     FragmentSpread(Arc<FragmentSpread>),
@@ -833,8 +880,9 @@ pub struct Field {
     pub(crate) alias: Option<Arc<Alias>>,
     pub(crate) name: String,
     pub(crate) arguments: Arc<Vec<Argument>>,
+    pub(crate) reference_ty_id: Option<Uuid>,
     pub(crate) directives: Arc<Vec<Directive>>,
-    pub(crate) selection_set: Arc<Vec<Selection>>,
+    pub(crate) selection_set: SelectionSet,
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
@@ -851,6 +899,37 @@ impl Field {
     pub fn name(&self) -> &str {
         self.name.as_ref()
     }
+
+    // Get field's type.
+    pub fn ty(&self, db: &dyn SourceDatabase) -> Option<Type> {
+        if let Some(object_id) = self.reference_ty_id {
+            let obj = db.find_object_type(object_id)?;
+            let field_ty = obj
+                .fields_definition()
+                .iter()
+                .find(|field| field.name() == self.name)?
+                .ty()
+                .clone();
+
+            Some(field_ty)
+        } else {
+            None
+        }
+    }
+
+    // Get field's original field definition.
+    pub fn field_definition(&self, db: &dyn SourceDatabase) -> Option<FieldDefinition> {
+        if let Some(object_id) = self.reference_ty_id {
+            db.find_object_type(object_id)?
+                .fields_definition()
+                .iter()
+                .find(|field| field.name() == self.name)
+                .cloned()
+        } else {
+            None
+        }
+    }
+
     /// Get a reference to the field's arguments.
     pub fn arguments(&self) -> &[Argument] {
         self.arguments.as_ref()
@@ -862,8 +941,8 @@ impl Field {
     }
 
     /// Get a reference to the field's selection set.
-    pub fn selection_set(&self) -> &[Selection] {
-        self.selection_set.as_ref()
+    pub fn selection_set(&self) -> &SelectionSet {
+        &self.selection_set
     }
 
     /// Get variables used in the field.
@@ -876,7 +955,11 @@ impl Field {
                 _ => None,
             })
             .collect();
-        let iter = self.selection_set.iter().flat_map(|sel| sel.variables(db));
+        let iter = self
+            .selection_set
+            .selection()
+            .iter()
+            .flat_map(|sel| sel.variables(db));
         vars.extend(iter);
         vars
     }
@@ -891,13 +974,17 @@ impl Field {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
+
+    // pub fn field_definition(&self, db: &dyn SourceDatabase) -> Option<Arc<FieldDefinition>> {
+    //     db.get
+    // }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct InlineFragment {
     pub(crate) type_condition: Option<String>,
     pub(crate) directives: Arc<Vec<Directive>>,
-    pub(crate) selection_set: Arc<Vec<Selection>>,
+    pub(crate) selection_set: SelectionSet,
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
@@ -913,13 +1000,14 @@ impl InlineFragment {
     }
 
     /// Get a reference inline fragment's selection set.
-    pub fn selection_set(&self) -> &[Selection] {
-        self.selection_set.as_ref()
+    pub fn selection_set(&self) -> &SelectionSet {
+        &self.selection_set
     }
 
     pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
         let vars = self
             .selection_set
+            .selection()
             .iter()
             .flat_map(|sel| sel.variables(db))
             .collect();
@@ -958,6 +1046,7 @@ impl FragmentSpread {
         let vars = match self.fragment(db) {
             Some(fragment) => fragment
                 .selection_set
+                .selection()
                 .iter()
                 .flat_map(|sel| sel.variables(db))
                 .collect(),
@@ -1289,6 +1378,7 @@ impl InputValueDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ScalarTypeDefinition {
+    pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -1297,6 +1387,11 @@ pub struct ScalarTypeDefinition {
 }
 
 impl ScalarTypeDefinition {
+    /// Get the scalar type definition's id.
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
     /// Get a reference to the scalar definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
@@ -1326,6 +1421,7 @@ impl ScalarTypeDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct EnumTypeDefinition {
+    pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -1334,6 +1430,11 @@ pub struct EnumTypeDefinition {
 }
 
 impl EnumTypeDefinition {
+    /// Get the scalar type definition's id.
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
     /// Get a reference to the enum definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
@@ -1388,6 +1489,7 @@ impl EnumValueDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct UnionTypeDefinition {
+    pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -1396,6 +1498,11 @@ pub struct UnionTypeDefinition {
 }
 
 impl UnionTypeDefinition {
+    /// Get the union type definition's id.
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
     /// Get a reference to the union definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()

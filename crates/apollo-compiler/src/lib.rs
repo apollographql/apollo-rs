@@ -84,7 +84,10 @@ impl ApolloCompiler {
 
 #[cfg(test)]
 mod test {
-    use crate::{values::Definition, ApolloCompiler, SourceDatabase};
+    use crate::{
+        values::{Definition, Type},
+        ApolloCompiler, SourceDatabase,
+    };
 
     #[test]
     fn it_accesses_operation_definition_parts() {
@@ -179,6 +182,66 @@ type Query {
             field_names,
             ["name", "price", "dimensions", "size", "weight"]
         );
+    }
+
+    #[test]
+    fn it_accesses_field_definitions_from_operation_definition() {
+        let input = r#"
+query getProduct {
+  topProducts {
+    name
+    inStock
+  }
+  name
+}
+
+type Query {
+  topProducts: Product
+  name: String
+  size: Int
+}
+
+type Product {
+  inStock: Boolean
+  name: String
+  price: Int
+  shippingEstimate: Int
+  upc: String!
+  weight: Int
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
+        assert!(diagnostics.is_empty());
+
+        let operations = ctx.operations();
+        let get_product_op = operations
+            .iter()
+            .find(|op| op.name() == Some("getProduct"))
+            .unwrap();
+        let op_fields = get_product_op.fields(&ctx.db);
+        let name_field_def: Vec<String> = op_fields
+            .iter()
+            .filter_map(|field| Some(field.ty(&ctx.db)?.name()))
+            .collect();
+        assert_eq!(name_field_def, ["Product", "String"]);
+
+        let top_products = op_fields
+            .iter()
+            .find(|f| f.name() == "topProducts")
+            .unwrap()
+            .selection_set()
+            .fields();
+
+        let top_product_fields: Vec<String> = top_products
+            .iter()
+            .filter_map(|f| Some(f.ty(&ctx.db)?.name()))
+            .collect();
+        dbg!(&top_product_fields);
     }
 
     #[test]
