@@ -182,6 +182,87 @@ type Query {
     }
 
     #[test]
+    fn it_accesses_field_definitions_from_operation_definition() {
+        let input = r#"
+query getProduct {
+  size
+  topProducts {
+    name
+    inStock
+  }
+}
+
+type Query {
+  topProducts: Product
+  name: String
+  size: Int
+}
+
+type Product {
+  inStock: Boolean @join__field(graph: INVENTORY)
+  name: String @join__field(graph: PRODUCTS)
+  price: Int
+  shippingEstimate: Int
+  upc: String!
+  weight: Int
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
+        assert!(diagnostics.is_empty());
+
+        // Get the types of the two top level fields - topProducts and size
+        let operations = ctx.operations();
+        let get_product_op = operations
+            .iter()
+            .find(|op| op.name() == Some("getProduct"))
+            .unwrap();
+        let op_fields = get_product_op.fields(&ctx.db);
+        let name_field_def: Vec<String> = op_fields
+            .iter()
+            .filter_map(|field| Some(field.ty()?.name()))
+            .collect();
+        assert_eq!(name_field_def, ["Int", "Product"]);
+
+        // get the types of the two topProducts selection set fields - name and inStock
+        let top_products = op_fields
+            .iter()
+            .find(|f| f.name() == "topProducts")
+            .unwrap()
+            .selection_set()
+            .fields();
+
+        let top_product_fields: Vec<String> = top_products
+            .iter()
+            .filter_map(|f| Some(f.ty()?.name()))
+            .collect();
+        assert_eq!(top_product_fields, ["String", "Boolean"]);
+
+        // you can also search for a field in a selection_set and then get its
+        // field definition. This looks for topProducts' inStock field's
+        // directives.
+        let in_stock_field = op_fields
+            .iter()
+            .find(|f| f.name() == "topProducts")
+            .unwrap()
+            .selection_set()
+            .field("inStock")
+            .unwrap()
+            .field_definition(&ctx.db)
+            .unwrap();
+        let in_stock_directive: Vec<&str> = in_stock_field
+            .directives()
+            .iter()
+            .map(|dir| dir.name())
+            .collect();
+        assert_eq!(in_stock_directive, ["join__field"]);
+    }
+
+    #[test]
     fn it_accesses_schema_operation_types() {
         let input = r#"
 schema {

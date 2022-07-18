@@ -24,6 +24,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
             let used_vars: HashSet<ValidationSet> = op
                 .selection_set
                 .clone()
+                .selection()
                 .iter()
                 .flat_map(|sel| {
                     let vars: HashSet<ValidationSet> = sel
