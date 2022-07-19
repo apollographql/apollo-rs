@@ -1,0 +1,32 @@
+[
+    UndefinedField(
+        UndefinedField {
+            field: "size",
+            src: "query getProduct {\n  size\n  weight\n}\n\ntype Query {\n  name: String\n  topProducts: Product\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    21,
+                ),
+                length: SourceOffset(
+                    7,
+                ),
+            },
+            help: "`size` is not defined on `Query` type",
+        },
+    ),
+    UndefinedField(
+        UndefinedField {
+            field: "weight",
+            src: "query getProduct {\n  size\n  weight\n}\n\ntype Query {\n  name: String\n  topProducts: Product\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    28,
+                ),
+                length: SourceOffset(
+                    7,
+                ),
+            },
+            help: "`weight` is not defined on `Query` type",
+        },
+    ),
+]

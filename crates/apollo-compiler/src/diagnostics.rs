@@ -13,6 +13,7 @@ pub enum ApolloDiagnostic {
     SyntaxError(SyntaxError),
     UniqueField(UniqueField),
     UndefinedDefinition(UndefinedDefinition),
+    UndefinedField(UndefinedField),
     RecursiveDefinition(RecursiveDefinition),
     TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
     QueryRootOperationType(QueryRootOperationType),
@@ -38,6 +39,7 @@ impl ApolloDiagnostic {
                 | ApolloDiagnostic::RecursiveDefinition(_)
                 | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
                 | ApolloDiagnostic::QueryRootOperationType(_)
+                | ApolloDiagnostic::UndefinedField(_)
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::OutputType(_)
         )
@@ -78,6 +80,7 @@ impl fmt::Display for ApolloDiagnostic {
             ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::MissingField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
         };
 
         writeln!(f, "{:?}", report)
@@ -331,3 +334,22 @@ pub struct OutputType {
     #[label("this is of `{}` type", self.ty)]
     pub definition: SourceSpan,
 }
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("Cannot query `{}` field", self.field)]
+/// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct UndefinedField {
+    // field name
+    pub field: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("`{}` field is not in scope", self.field)]
+    pub definition: SourceSpan,
+
+    #[help]
+    pub help: String,
+}
+

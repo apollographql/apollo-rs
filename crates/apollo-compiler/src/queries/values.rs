@@ -316,7 +316,8 @@ impl OperationDefinition {
         &self.selection_set
     }
 
-    /// Get fields in the operation definition.
+    /// Get fields in the operation definition (excluding inline fragments and
+    /// fragment spreads).
     pub fn fields(&self, db: &dyn SourceDatabase) -> Arc<Vec<Field>> {
         db.operation_fields(self.id)
     }
