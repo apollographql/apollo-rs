@@ -53,11 +53,9 @@ impl ApolloDiagnostic {
     pub fn is_advice(&self) -> bool {
         matches!(self, ApolloDiagnostic::ScalarSpecificationURL(_))
     }
-}
 
-impl fmt::Display for ApolloDiagnostic {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let report = match self {
+    pub fn report(&self) -> Report {
+        match self {
             ApolloDiagnostic::MissingIdent(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueDefinition(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::SingleRootField(diagnostic) => Report::new(diagnostic.clone()),
@@ -78,9 +76,13 @@ impl fmt::Display for ApolloDiagnostic {
             ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::MissingField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
-        };
+        }
+    }
+}
 
-        writeln!(f, "{:?}", report)
+impl fmt::Display for ApolloDiagnostic {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "{:?}", self.report())
     }
 }
 
