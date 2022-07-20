@@ -310,7 +310,7 @@ fn query_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| op.ty.is_query().then(|| op.clone()))
+        .filter_map(|op| op.operation_ty.is_query().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
@@ -319,7 +319,7 @@ fn subscription_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefiniti
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| op.ty.is_subscription().then(|| op.clone()))
+        .filter_map(|op| op.operation_ty.is_subscription().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
@@ -328,7 +328,7 @@ fn mutation_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>>
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| op.ty.is_mutation().then(|| op.clone()))
+        .filter_map(|op| op.operation_ty.is_mutation().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
@@ -712,7 +712,7 @@ fn operation_definition(
 
     OperationDefinition {
         id: Uuid::new_v4(),
-        ty,
+        operation_ty: ty,
         name,
         variables,
         selection_set,
@@ -741,6 +741,10 @@ fn fragment_definition(
         .expect("Name must have text")
         .text()
         .to_string();
+    let reference_ty_id = db
+        .find_type_system_definition_by_name(name.clone())
+        .and_then(|def| def.id())
+        .cloned();
     // TODO @lrlna: how do we find which current object id this selection is referring to?
     let selection_set = selection_set(db, fragment_def.selection_set(), None);
     let directives = directives(fragment_def.directives());
@@ -750,6 +754,7 @@ fn fragment_definition(
         id: Uuid::new_v4(),
         name,
         type_condition,
+        reference_ty_id,
         selection_set,
         directives,
         ast_ptr,
