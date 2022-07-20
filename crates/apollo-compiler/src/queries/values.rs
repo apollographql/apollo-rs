@@ -277,6 +277,7 @@ pub struct OperationDefinition {
 }
 
 impl OperationDefinition {
+    /// Get a reference to operation definition's id.
     pub fn id(&self) -> &Uuid {
         &self.id
     }
@@ -284,6 +285,15 @@ impl OperationDefinition {
     /// Get a reference to the operation definition's ty.
     pub fn ty(&self) -> &OperationType {
         &self.ty
+    }
+
+    /// Get operation's definition object type.
+    pub fn object_type(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+        if let Some(id) = self.object_id {
+            db.find_object_type(id)
+        } else {
+            None
+        }
     }
 
     /// Get a mutable reference to the operation definition's name.
@@ -334,6 +344,11 @@ impl OperationDefinition {
     pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
+    }
+
+    /// Get a reference to operation definition's object type id.
+    pub fn object_id(&self) -> Option<&Uuid> {
+        self.object_id.as_ref()
     }
 }
 
