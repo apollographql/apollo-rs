@@ -1,0 +1,17 @@
+[
+    UndefinedField(
+        UndefinedField {
+            field: "undefinedMutationField",
+            src: "mutation adoptAPetMutation {\n  undefinedMutationField\n}\n\ntype Query {\n  name: String,\n  age: Int\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n\nunion PetType = Cat | Dog\n",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    31,
+                ),
+                length: SourceOffset(
+                    23,
+                ),
+            },
+            help: "`undefinedMutationField` is not defined on `Mutation` type",
+        },
+    ),
+]

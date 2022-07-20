@@ -80,7 +80,7 @@ query ExampleQuery {
     name
   }
 
-  ... VipCustomer on User {
+  ... on User {
     id
     name
     profilePic(size: $dimensions)
