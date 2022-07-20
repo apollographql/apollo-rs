@@ -743,10 +743,10 @@ fn fragment_definition(
         .to_string();
     let reference_ty_id = db
         .find_type_system_definition_by_name(name.clone())
-        .and_then(|def| def.id())
-        .cloned();
+        .map(|def| def.id().cloned())
+        .flatten();
     // TODO @lrlna: how do we find which current object id this selection is referring to?
-    let selection_set = selection_set(db, fragment_def.selection_set(), None);
+    let selection_set = selection_set(db, fragment_def.selection_set(), reference_ty_id);
     let directives = directives(fragment_def.directives());
     let ast_ptr = SyntaxNodePtr::new(fragment_def.syntax());
 
