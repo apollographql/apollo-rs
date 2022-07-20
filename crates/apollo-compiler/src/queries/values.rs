@@ -373,9 +373,9 @@ impl OperationType {
 impl std::fmt::Display for OperationType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            OperationType::Query => write!(f, "Subscription"),
+            OperationType::Query => write!(f, "Query"),
             OperationType::Mutation => write!(f, "Mutation"),
-            OperationType::Subscription => write!(f, "Query"),
+            OperationType::Subscription => write!(f, "Subscription"),
         }
     }
 }
