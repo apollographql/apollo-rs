@@ -1229,6 +1229,11 @@ impl ObjectTypeDefinition {
         self.name.as_ref()
     }
 
+    /// Get a reference to the object type definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
     /// Get a reference to the object type definition's field definitions.
     pub fn fields_definition(&self) -> &[FieldDefinition] {
         self.fields_definition.as_ref()

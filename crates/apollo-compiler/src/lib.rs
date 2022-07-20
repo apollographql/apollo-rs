@@ -508,6 +508,28 @@ input Point2D {
     }
 
     #[test]
+    fn it_accesses_object_directive_name() {
+        let input = r#"
+
+type Book @directiveA(name: "pageCount") @directiveB(name: "author") {
+  id: ID!
+}
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
+        assert!(diagnostics.is_empty());
+
+        let book_obj = ctx.db.find_object_type_by_name("Book".to_string()).unwrap();
+
+        let directive_names : Vec<&str> = book_obj.directives().iter().map(|d|d.name()).collect();
+        assert_eq!(directive_names, ["directiveA", "directiveB"]);
+    }
+
+    #[test]
     fn it_accesses_object_field_types_directive_name() {
         let input = r#"
 type Person {
