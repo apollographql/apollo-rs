@@ -116,7 +116,6 @@ fn parse(db: &dyn SourceDatabase) -> Arc<SyntaxTree> {
 // NOTE: a very expensive clone - should more tightly couple the parser and the
 // source database for a cleaner solution
 fn document(db: &dyn SourceDatabase) -> Arc<ast::Document> {
-    dbg!(db.parse());
     Arc::new(db.parse().as_ref().clone().document())
 }
 

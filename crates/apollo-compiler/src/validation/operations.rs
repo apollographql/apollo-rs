@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use crate::{
-    diagnostics::{MissingIdent, SingleRootField, UniqueDefinition, UnsupportedOperation, UndefinedField},
+    diagnostics::{
+        MissingIdent, SingleRootField, UndefinedField, UniqueDefinition, UnsupportedOperation,
+    },
     values::{OperationDefinition, Selection},
     ApolloDiagnostic, SourceDatabase,
 };
@@ -208,7 +210,9 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
     // Fields must exist on the type being queried.
     for op in db.operations().iter() {
         for selection in op.selection_set().selection() {
-            let obj_name = op.object_id().and_then(|id| db.find_object_type(*id).map(|obj| obj.name().to_owned()));
+            let obj_name = op
+                .object_id()
+                .and_then(|id| db.find_object_type(*id).map(|obj| obj.name().to_owned()));
             if let Selection::Field(field) = selection {
                 if field.ty().is_none() {
                     let offset: usize = field.ast_node(db).text_range().start().into();
@@ -217,7 +221,11 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                     let help = if let Some(obj_type) = obj_name {
                         format!("`{}` is not defined on `{}` type", field_name, obj_type)
                     } else {
-                        format!("`{}` is not defined on the current {} root operation type.", field_name, op.ty())
+                        format!(
+                            "`{}` is not defined on the current {} root operation type.",
+                            field_name,
+                            op.ty()
+                        )
                     };
                     diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
                         field: field_name,
@@ -283,7 +291,7 @@ union Pet = Cat | Dog
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
-        assert_eq!(diagnostics.len(), 4)
+        assert_eq!(diagnostics.len(), 5)
     }
 
     #[test]
