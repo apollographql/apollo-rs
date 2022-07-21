@@ -89,7 +89,7 @@ mod test {
     #[test]
     fn it_accesses_operation_definition_parts() {
         let input = r#"
-query ExampleQuery($definedVariable: Int, $definedVariable2: Boolean) {
+query ExampleQuery($definedVariable: Int, $definedVariable2: Int) {
   topProducts(first: $definedVariable) {
     type
   }
@@ -99,7 +99,7 @@ query ExampleQuery($definedVariable: Int, $definedVariable2: Boolean) {
 fragment vipCustomer on User {
   id
   name
-  profilePic(size: 50)
+  profilePic(size: $definedVariable2)
 }
 
 type Query {
