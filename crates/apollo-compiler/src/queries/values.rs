@@ -866,6 +866,19 @@ impl SelectionSet {
         fields
     }
 
+    pub fn fragment_spreads(&self) -> Vec<FragmentSpread> {
+        let fragment_spread: Vec<FragmentSpread> = self
+            .selection()
+            .iter()
+            .filter_map(|sel| match sel {
+                Selection::FragmentSpread(fragment_spread) => return Some(fragment_spread.as_ref().clone()),
+                _ => None,
+            })
+            .collect();
+
+        fragment_spread
+    }
+
     pub fn field(&self, name: &str) -> Option<&Field> {
         self.selection().iter().find_map(|sel| {
             if let Selection::Field(field) = sel {

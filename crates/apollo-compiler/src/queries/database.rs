@@ -69,6 +69,8 @@ pub trait SourceDatabase {
 
     fn find_operation(&self, id: Uuid) -> Option<Arc<OperationDefinition>>;
 
+    fn find_operation_by_name(&self, name: String) -> Option<Arc<OperationDefinition>>;
+
     fn find_fragment(&self, id: Uuid) -> Option<Arc<FragmentDefinition>>;
 
     fn find_fragment_by_name(&self, name: String) -> Option<Arc<FragmentDefinition>>;
@@ -113,7 +115,7 @@ fn parse(db: &dyn SourceDatabase) -> Arc<SyntaxTree> {
     Arc::new(parser.parse())
 }
 
-// NOTE: a very expensive clone - should more tightly couple the parser and the
+// TODO @lrlna: a very expensive clone - should more tightly couple the parser and the
 // source database for a cleaner solution
 fn document(db: &dyn SourceDatabase) -> Arc<ast::Document> {
     Arc::new(db.parse().as_ref().clone().document())
@@ -337,6 +339,17 @@ fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefi
     db.operations().iter().find_map(|op| {
         if &id == op.id() {
             return Some(Arc::new(op.clone()));
+        }
+        None
+    })
+}
+
+fn find_operation_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<OperationDefinition>> {
+    db.operations().iter().find_map(|op| {
+        if let Some(n) = op.name() {
+            if n == name {
+                return Some(Arc::new(op.clone()));
+            }
         }
         None
     })
@@ -742,9 +755,8 @@ fn fragment_definition(
         .text()
         .to_string();
     let reference_ty_id = db
-        .find_type_system_definition_by_name(name.clone())
-        .map(|def| def.id().cloned())
-        .flatten();
+        .find_type_system_definition_by_name(type_condition.clone())
+        .and_then(|def| def.id().cloned());
     // TODO @lrlna: how do we find which current object id this selection is referring to?
     let selection_set = selection_set(db, fragment_def.selection_set(), reference_ty_id);
     let directives = directives(fragment_def.directives());

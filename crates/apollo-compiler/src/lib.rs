@@ -91,7 +91,7 @@ mod test {
         let input = r#"
 query ExampleQuery($definedVariable: Int, $definedVariable2: Boolean) {
   topProducts(first: $definedVariable) {
-    name
+    type
   }
   ... vipCustomer
 }
@@ -100,17 +100,25 @@ fragment vipCustomer on User {
   id
   name
   profilePic(size: 50)
-  status(activity: $definedVariable2)
 }
 
 type Query {
-    topProducts: Product
+  topProducts: Product
+  customer: User
 }
 
 type Product {
-  name: String
+  type: String
   price(setPrice: Int): Int
 }
+
+type User {
+  id: ID
+  name: String
+  profilePic(size: Int): URL
+}
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
         let ctx = ApolloCompiler::new(input);
@@ -260,6 +268,64 @@ type Product {
             .map(|dir| dir.name())
             .collect();
         assert_eq!(in_stock_directive, ["join__field"]);
+    }
+
+    #[test]
+    fn it_accesses_fragment_definition_field_types() {
+        let input = r#"
+query getProduct {
+  topProducts {
+    type
+  }
+  ... vipCustomer
+}
+
+fragment vipCustomer on User {
+  id
+  name
+  profilePic(size: 50)
+}
+
+type Query {
+  topProducts: Product
+  customer: User
+}
+
+type Product {
+  type: String
+  price(setPrice: Int): Int
+}
+
+type User {
+  id: ID
+  name: String
+  profilePic(size: Int): URL
+}
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
+        assert!(diagnostics.is_empty());
+
+        let op = ctx.db.find_operation_by_name(String::from("getProduct"));
+        let fragment_in_op: Vec<crate::values::FragmentDefinition> = op.unwrap().selection_set().selection().iter().filter_map(|sel| match sel {
+            crate::values::Selection::FragmentSpread(frag) => {
+                Some(frag.fragment(&ctx.db)?.as_ref().clone())
+            }
+            _ => None
+        }).collect();
+        let fragment_fields: Vec<crate::values::Field> = fragment_in_op.iter().flat_map(|frag| frag.selection_set().fields()).collect();
+        let field_ty: Vec<String> = fragment_fields
+            .iter()
+            .filter_map(|f| Some(f.ty()?.name()))
+            .collect();
+        assert_eq!(field_ty, ["ID", "String", "URL"])
+
     }
 
     #[test]
