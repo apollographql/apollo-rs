@@ -155,7 +155,7 @@ query ExampleQuery {
   ... fragmentOne
 }
 
-fragment fragmentOne on User {
+fragment fragmentOne on Query {
     profilePic(size: $dimensions)
 }
 

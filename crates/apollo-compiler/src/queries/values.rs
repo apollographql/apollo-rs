@@ -202,6 +202,7 @@ pub struct FragmentDefinition {
     pub(crate) id: Uuid,
     pub(crate) name: String,
     pub(crate) type_condition: String,
+    pub(crate) reference_ty_id: Option<Uuid>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) selection_set: SelectionSet,
     pub(crate) ast_ptr: SyntaxNodePtr,
@@ -252,6 +253,14 @@ impl FragmentDefinition {
             .collect()
     }
 
+    pub fn ty(&self, db: &dyn SourceDatabase) -> Option<Arc<Definition>> {
+        if let Some(id) = self.reference_ty_id {
+            db.find_type_system_definition(id)
+        } else {
+            None
+        }
+    }
+
     // Get a reference to SyntaxNodePtr of the current HIR node.
     pub fn ast_ptr(&self) -> &SyntaxNodePtr {
         &self.ast_ptr
@@ -267,7 +276,7 @@ impl FragmentDefinition {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OperationDefinition {
     pub(crate) id: Uuid,
-    pub(crate) ty: OperationType,
+    pub(crate) operation_ty: OperationType,
     pub(crate) name: Option<String>,
     pub(crate) variables: Arc<Vec<VariableDefinition>>,
     pub(crate) object_id: Option<Uuid>,
@@ -283,8 +292,8 @@ impl OperationDefinition {
     }
 
     /// Get a reference to the operation definition's ty.
-    pub fn ty(&self) -> &OperationType {
-        &self.ty
+    pub fn operation_ty(&self) -> &OperationType {
+        &self.operation_ty
     }
 
     /// Get operation's definition object type.
@@ -855,6 +864,19 @@ impl SelectionSet {
             .collect();
 
         fields
+    }
+
+    pub fn fragment_spreads(&self) -> Vec<FragmentSpread> {
+        let fragment_spread: Vec<FragmentSpread> = self
+            .selection()
+            .iter()
+            .filter_map(|sel| match sel {
+                Selection::FragmentSpread(fragment_spread) => return Some(fragment_spread.as_ref().clone()),
+                _ => None,
+            })
+            .collect();
+
+        fragment_spread
     }
 
     pub fn field(&self, name: &str) -> Option<&Field> {

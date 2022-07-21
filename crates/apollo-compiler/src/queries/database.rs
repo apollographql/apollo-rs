@@ -69,6 +69,8 @@ pub trait SourceDatabase {
 
     fn find_operation(&self, id: Uuid) -> Option<Arc<OperationDefinition>>;
 
+    fn find_operation_by_name(&self, name: String) -> Option<Arc<OperationDefinition>>;
+
     fn find_fragment(&self, id: Uuid) -> Option<Arc<FragmentDefinition>>;
 
     fn find_fragment_by_name(&self, name: String) -> Option<Arc<FragmentDefinition>>;
@@ -113,7 +115,7 @@ fn parse(db: &dyn SourceDatabase) -> Arc<SyntaxTree> {
     Arc::new(parser.parse())
 }
 
-// NOTE: a very expensive clone - should more tightly couple the parser and the
+// TODO @lrlna: a very expensive clone - should more tightly couple the parser and the
 // source database for a cleaner solution
 fn document(db: &dyn SourceDatabase) -> Arc<ast::Document> {
     Arc::new(db.parse().as_ref().clone().document())
@@ -310,7 +312,7 @@ fn query_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| op.ty.is_query().then(|| op.clone()))
+        .filter_map(|op| op.operation_ty.is_query().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
@@ -319,7 +321,7 @@ fn subscription_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefiniti
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| op.ty.is_subscription().then(|| op.clone()))
+        .filter_map(|op| op.operation_ty.is_subscription().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
@@ -328,7 +330,7 @@ fn mutation_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>>
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| op.ty.is_mutation().then(|| op.clone()))
+        .filter_map(|op| op.operation_ty.is_mutation().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
@@ -337,6 +339,17 @@ fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefi
     db.operations().iter().find_map(|op| {
         if &id == op.id() {
             return Some(Arc::new(op.clone()));
+        }
+        None
+    })
+}
+
+fn find_operation_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<OperationDefinition>> {
+    db.operations().iter().find_map(|op| {
+        if let Some(n) = op.name() {
+            if n == name {
+                return Some(Arc::new(op.clone()));
+            }
         }
         None
     })
@@ -712,7 +725,7 @@ fn operation_definition(
 
     OperationDefinition {
         id: Uuid::new_v4(),
-        ty,
+        operation_ty: ty,
         name,
         variables,
         selection_set,
@@ -741,8 +754,11 @@ fn fragment_definition(
         .expect("Name must have text")
         .text()
         .to_string();
+    let reference_ty_id = db
+        .find_type_system_definition_by_name(type_condition.clone())
+        .and_then(|def| def.id().cloned());
     // TODO @lrlna: how do we find which current object id this selection is referring to?
-    let selection_set = selection_set(db, fragment_def.selection_set(), None);
+    let selection_set = selection_set(db, fragment_def.selection_set(), reference_ty_id);
     let directives = directives(fragment_def.directives());
     let ast_ptr = SyntaxNodePtr::new(fragment_def.syntax());
 
@@ -750,6 +766,7 @@ fn fragment_definition(
         id: Uuid::new_v4(),
         name,
         type_condition,
+        reference_ty_id,
         selection_set,
         directives,
         ast_ptr,
