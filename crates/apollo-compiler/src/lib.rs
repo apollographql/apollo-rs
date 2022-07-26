@@ -166,6 +166,8 @@ impl ApolloCompiler {
 
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
+
     use crate::{values::Definition, ApolloCompiler, SourceDatabase};
 
     #[test]
@@ -268,6 +270,131 @@ type Query {
         assert_eq!(
             field_names,
             ["name", "price", "dimensions", "size", "weight"]
+        );
+    }
+
+    #[test]
+    fn it_accesses_inline_fragment_field_types() {
+        let input = r#"
+query ExampleQuery {
+  interface {
+    a
+    ... on Concrete {
+      b
+    }
+  }
+
+  union {
+    ... on Concrete {
+      a
+      b
+    }
+  }
+}
+
+type Query {
+  interface: Interface
+  union: Union
+}
+
+interface Interface {
+  a: String
+}
+
+type Concrete implements Interface {
+  a: String
+  b: Int
+}
+
+union Union = Concrete
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        assert!(diagnostics.is_empty());
+
+        let operations = ctx.operations();
+        let fields = operations
+            .iter()
+            .find(|op| op.name() == Some("ExampleQuery"))
+            .unwrap()
+            .fields(&ctx.db);
+
+        let interface_field = fields
+            .iter()
+            .find(|f| f.name() == "interface")
+            .expect("interface field exists");
+
+        let interface_fields = interface_field.selection_set().fields();
+        let interface_selection_fields_types: HashMap<_, _> = interface_fields
+            .iter()
+            .map(|f| (f.name(), f.ty().map(|f| f.name())))
+            .collect();
+        assert_eq!(
+            interface_selection_fields_types,
+            HashMap::from([("a", Some("String".to_string()))])
+        );
+
+        let inline_fragments: Vec<_> = interface_field
+            .selection_set()
+            .selection()
+            .iter()
+            .filter_map(|f| match f {
+                crate::values::Selection::InlineFragment(f) => Some(f),
+                _ => None,
+            })
+            .collect();
+
+        assert_eq!(inline_fragments.len(), 1);
+        let inline_fragment = inline_fragments.first().expect("qed");
+        assert_eq!(
+            inline_fragment.type_condition(),
+            Some(&"Concrete".to_string())
+        );
+
+        let inline_fragment_fields = inline_fragment.selection_set().fields();
+        let inline_fragment_fields_types: HashMap<_, _> = inline_fragment_fields
+            .iter()
+            .map(|f| (f.name(), f.ty().map(|ty| ty.name())))
+            .collect();
+        assert_eq!(
+            inline_fragment_fields_types,
+            HashMap::from([("b", Some("Int".to_string()))])
+        );
+
+        let union_field = fields
+            .iter()
+            .find(|f| f.name() == "union")
+            .expect("union field exists");
+
+        let union_inline_fragments: Vec<_> = union_field
+            .selection_set()
+            .selection()
+            .iter()
+            .filter_map(|f| match f {
+                crate::values::Selection::InlineFragment(f) => Some(f),
+                _ => None,
+            })
+            .collect();
+
+        assert_eq!(union_inline_fragments.len(), 1);
+        let union_inline_fragment = union_inline_fragments.first().expect("qed");
+        assert_eq!(
+            union_inline_fragment.type_condition(),
+            Some(&"Concrete".to_string())
+        );
+
+        let union_inline_fragment_fields = union_inline_fragment.selection_set().fields();
+        let union_inline_fragment_field_types: HashMap<_, _> = union_inline_fragment_fields
+            .iter()
+            .map(|f| (f.name(), f.ty().map(|ty| ty.name())))
+            .collect();
+        assert_eq!(
+            union_inline_fragment_field_types,
+            HashMap::from([
+                ("a", Some("String".to_string())),
+                ("b", Some("Int".to_string()))
+            ])
         );
     }
 
