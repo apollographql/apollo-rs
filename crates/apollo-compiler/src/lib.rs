@@ -591,7 +591,7 @@ type Book @directiveA(name: "pageCount") @directiveB(name: "author") {
 
         let book_obj = ctx.db.find_object_type_by_name("Book".to_string()).unwrap();
 
-        let directive_names : Vec<&str> = book_obj.directives().iter().map(|d|d.name()).collect();
+        let directive_names: Vec<&str> = book_obj.directives().iter().map(|d| d.name()).collect();
         assert_eq!(directive_names, ["directiveA", "directiveB"]);
     }
 

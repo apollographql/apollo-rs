@@ -1,4 +1,32 @@
 [
+    UndefinedDefinition(
+        UndefinedDefinition {
+            ty: "Cat",
+            src: "mutation adoptAPetMutation {\n  undefinedMutationField\n}\n\ntype Query {\n  name: String,\n  age: Int\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n\nunion PetType = Cat | Dog\n",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    217,
+                ),
+                length: SourceOffset(
+                    4,
+                ),
+            },
+        },
+    ),
+    UndefinedDefinition(
+        UndefinedDefinition {
+            ty: "Dog",
+            src: "mutation adoptAPetMutation {\n  undefinedMutationField\n}\n\ntype Query {\n  name: String,\n  age: Int\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n\nunion PetType = Cat | Dog\n",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    223,
+                ),
+                length: SourceOffset(
+                    4,
+                ),
+            },
+        },
+    ),
     UndefinedField(
         UndefinedField {
             field: "undefinedMutationField",

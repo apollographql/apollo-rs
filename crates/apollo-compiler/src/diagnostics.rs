@@ -22,6 +22,7 @@ pub enum ApolloDiagnostic {
     CapitalizedValue(CapitalizedValue),
     UnusedVariable(UnusedVariable),
     OutputType(OutputType),
+    ObjectType(ObjectType),
 }
 
 impl ApolloDiagnostic {
@@ -42,6 +43,7 @@ impl ApolloDiagnostic {
                 | ApolloDiagnostic::UndefinedField(_)
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::OutputType(_)
+                | ApolloDiagnostic::ObjectType(_)
         )
     }
 
@@ -80,6 +82,7 @@ impl fmt::Display for ApolloDiagnostic {
             ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::MissingField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
         };
 
@@ -317,7 +320,6 @@ pub struct UnusedVariable {
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("`{}` field must return an output type", self.name)]
-/// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
 #[diagnostic(
     code("apollo-compiler validation error"),
     help("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", self.name)
@@ -326,6 +328,25 @@ pub struct OutputType {
     // field name
     pub name: String,
     // field type
+    pub ty: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("this is of `{}` type", self.ty)]
+    pub definition: SourceSpan,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("`{}` field must return an output type", self.name)]
+#[diagnostic(
+    code("apollo-compiler validation error"),
+    help("Union members must be of base Object Type. `{}` is of `{}` type", self.name, self.ty)
+)]
+pub struct ObjectType {
+    // union member
+    pub name: String,
+    // actual type
     pub ty: String,
 
     #[source_code]
@@ -352,4 +373,3 @@ pub struct UndefinedField {
     #[help]
     pub help: String,
 }
-
