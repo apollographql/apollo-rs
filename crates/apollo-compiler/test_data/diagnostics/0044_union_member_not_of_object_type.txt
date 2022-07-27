@@ -1,0 +1,17 @@
+[
+    ObjectType(
+        ObjectType {
+            name: "Pet",
+            ty: "InterfaceTypeDefinition",
+            src: "interface Pet {\n  name: String\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ntype Dog implements Pet {\n  name: String\n  nickname: String\n  barkVolume: Int\n}\n\nunion CatOrDog = Cat | Pet\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\ntype Query {\n  human: Human\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    219,
+                ),
+                length: SourceOffset(
+                    5,
+                ),
+            },
+        },
+    ),
+]

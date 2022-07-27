@@ -284,7 +284,23 @@ type Subscription {
   newMessage: Result
 }
 
-union Pet = Cat | Dog
+interface Pet {
+  name: String
+}
+
+type Dog implements Pet {
+  name: String
+  nickname: String
+  barkVolume: Int
+}
+
+type Cat implements Pet {
+  name: String
+  nickname: String
+  meowVolume: Int
+}
+
+union CatOrDog = Cat | Dog
 "#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
@@ -315,7 +331,23 @@ type Query {
   cat: Pet
 }
 
-union Pet = Cat | Dog
+union CatOrDog = Cat | Dog
+
+interface Pet {
+  name: String
+}
+
+type Dog implements Pet {
+  name: String
+  nickname: String
+  barkVolume: Int
+}
+
+type Cat implements Pet {
+  name: String
+  nickname: String
+  meowVolume: Int
+}
 "#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
@@ -346,7 +378,23 @@ type Query {
   cat: Pet
 }
 
-union Pet = Cat | Dog
+union CatOrDog = Cat | Dog
+
+interface Pet {
+  name: String
+}
+
+type Dog implements Pet {
+  name: String
+  nickname: String
+  barkVolume: Int
+}
+
+type Cat implements Pet {
+  name: String
+  nickname: String
+  meowVolume: Int
+}
 "#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
@@ -367,7 +415,23 @@ type Query {
   cat: Pet
 }
 
-union Pet = Cat | Dog
+union CatOrDog = Cat | Dog
+
+interface Pet {
+  name: String
+}
+
+type Dog implements Pet {
+  name: String
+  nickname: String
+  barkVolume: Int
+}
+
+type Cat implements Pet {
+  name: String
+  nickname: String
+  meowVolume: Int
+}
 "#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
