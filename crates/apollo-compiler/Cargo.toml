@@ -4,8 +4,8 @@ version = "0.1.0"
 authors = ["Irina Shestak <shestak.irina@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
-documentation = "https://docs.rs/apollo-conmpiler"
-description = "Semantic analyzer for apollo-parser's AST."
+documentation = "https://docs.rs/apollo-compiler"
+description = "A compiler for the GraphQL language."
 keywords = ["graphql", "parser", "graphql-tooling", "apollographql"]
 categories = [
   "compilers",
@@ -26,3 +26,4 @@ thiserror = "1.0.31"
 
 [dev-dependencies]
 expect-test = "1.1"
+anyhow = "1.0"

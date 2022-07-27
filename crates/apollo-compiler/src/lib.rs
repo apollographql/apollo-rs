@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 mod diagnostics;
 mod queries;
 #[cfg(test)]
@@ -19,7 +21,53 @@ pub struct ApolloCompiler {
     pub db: Database,
 }
 
+/// Apollo compiler creates a context around your GraphQL. It creates refernces
+/// between various GraphQL types in scope.
+///
+/// ## Example
+///
+/// ```rust
+/// use apollo_compiler::ApolloCompiler;
+///
+/// let input = r#"
+///   interface Pet {
+///     name: String
+///   }
+///
+///   type Dog implements Pet {
+///     name: String
+///     nickname: String
+///     barkVolume: Int
+///   }
+///
+///   type Cat implements Pet {
+///     name: String
+///     nickname: String
+///     meowVolume: Int
+///   }
+///
+///   union CatOrDog = Cat | Dog
+///
+///   type Human {
+///     name: String
+///     pets: [Pet]
+///   }
+///
+///   type Query {
+///     human: Human
+///   }
+/// "#;
+///
+/// let ctx = ApolloCompiler::new(input);
+/// let diagnostics = ctx.validate();
+/// for diagnostic in &diagnostics {
+///     // this will pretty-print diagnostics using the miette crate.
+///     println!("{}", diagnostic);
+/// }
+/// assert!(diagnostics.is_empty());
+/// ```
 impl ApolloCompiler {
+    /// Create a new instance of Apollo Compiler.
     pub fn new(input: &str) -> Self {
         let mut db = Database::default();
         let input = input.to_string();
@@ -27,56 +75,90 @@ impl ApolloCompiler {
         Self { db }
     }
 
+    /// Get access to the `apollo-parser's` AST.
     pub fn parse(&self) -> Arc<SyntaxTree> {
         self.db.parse()
     }
 
-    // should probably return an iter here
+    /// Validate your GraphQL input. Returns Diagnostics that you can pretty-print.
+    ///
+    /// ## Example
+    /// ```rust
+    /// use apollo_compiler::ApolloCompiler;
+    /// let input = r#"
+    /// type Query {
+    ///   website: URL,
+    ///   amount: Int
+    /// }
+    /// "#;
+    ///
+    /// let ctx = ApolloCompiler::new(input);
+    /// let diagnostics = ctx.validate();
+    /// for diagnostic in &diagnostics {
+    ///     println!("{}", diagnostic);
+    /// }
+    /// assert_eq!(diagnostics.len(), 1);
+    /// ```
     pub fn validate(&self) -> Vec<ApolloDiagnostic> {
         let mut validator = Validator::new(&self.db);
         validator.validate().into()
     }
 
+    /// Get access to syntax errors returned by `apollo-parser`.
     pub fn syntax_errors(&self) -> Vec<ApolloDiagnostic> {
         self.db.syntax_errors()
     }
 
+    /// Get access to all definitions in a document.
     pub fn definitions(&self) -> Arc<Vec<ast::Definition>> {
         self.db.definitions()
     }
 
+    /// Get access to all operations in a document.
     pub fn operations(&self) -> Arc<Vec<values::OperationDefinition>> {
         self.db.operations()
     }
 
+    /// Get access to all fragments in a document.
     pub fn fragments(&self) -> Arc<Vec<values::FragmentDefinition>> {
         self.db.fragments()
     }
 
+    /// Get access to the schema definition in a document.
     pub fn schema(&self) -> Arc<values::SchemaDefinition> {
         self.db.schema()
     }
 
+    /// Get access to all object type definitions in a document.
     pub fn object_types(&self) -> Arc<Vec<values::ObjectTypeDefinition>> {
         self.db.object_types()
     }
 
+    /// Get access to all scalar type definitions in a document.
+    /// The compiler adds built-in scalars(Int, String, Float, Boolean, ID) in
+    /// addition to custom scalars found in input.
     pub fn scalars(&self) -> Arc<Vec<values::ScalarTypeDefinition>> {
         self.db.scalars()
     }
 
+    /// Get access to all enum type definitions in a document.
     pub fn enums(&self) -> Arc<Vec<values::EnumTypeDefinition>> {
         self.db.enums()
     }
 
+    /// Get access to all union type definitions in a document.
     pub fn unions(&self) -> Arc<Vec<values::UnionTypeDefinition>> {
         self.db.unions()
     }
 
+    /// Get access to all directive type definitions in a document.
+    /// The compiler will add all built-in directives (specifiedBy, skip,
+    /// deprecated, include) in addition to all custom directives in input.
     pub fn directive_definitions(&self) -> Arc<Vec<values::DirectiveDefinition>> {
         self.db.directive_definitions()
     }
 
+    /// Get access to all input object type definitions in a document.
     pub fn input_objects(&self) -> Arc<Vec<values::InputObjectTypeDefinition>> {
         self.db.input_objects()
     }
@@ -313,19 +395,27 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         assert!(diagnostics.is_empty());
 
         let op = ctx.db.find_operation_by_name(String::from("getProduct"));
-        let fragment_in_op: Vec<crate::values::FragmentDefinition> = op.unwrap().selection_set().selection().iter().filter_map(|sel| match sel {
-            crate::values::Selection::FragmentSpread(frag) => {
-                Some(frag.fragment(&ctx.db)?.as_ref().clone())
-            }
-            _ => None
-        }).collect();
-        let fragment_fields: Vec<crate::values::Field> = fragment_in_op.iter().flat_map(|frag| frag.selection_set().fields()).collect();
+        let fragment_in_op: Vec<crate::values::FragmentDefinition> = op
+            .unwrap()
+            .selection_set()
+            .selection()
+            .iter()
+            .filter_map(|sel| match sel {
+                crate::values::Selection::FragmentSpread(frag) => {
+                    Some(frag.fragment(&ctx.db)?.as_ref().clone())
+                }
+                _ => None,
+            })
+            .collect();
+        let fragment_fields: Vec<crate::values::Field> = fragment_in_op
+            .iter()
+            .flat_map(|frag| frag.selection_set().fields())
+            .collect();
         let field_ty: Vec<String> = fragment_fields
             .iter()
             .filter_map(|f| Some(f.ty()?.name()))
             .collect();
         assert_eq!(field_ty, ["ID", "String", "URL"])
-
     }
 
     #[test]
