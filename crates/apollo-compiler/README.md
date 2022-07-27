@@ -218,5 +218,74 @@ fn main() -> Result<()> {
     Ok(())
 }
 ```
+
+#### Printing diagnostics for a faulty GraphQL document
+```rust
+use apollo_compiler::ApolloCompiler;
+
+let input = r#"
+query {
+  cat {
+    name
+  }
+}
+
+query getPet {
+  cat {
+    owner {
+      name
+    }
+  }
+}
+
+query getPet {
+  cat {
+    treat
+  }
+}
+
+subscription sub {
+  newMessage {
+    body
+    sender
+  }
+  disallowedSecondRootField
+}
+
+type Query {
+  cat: Pet
+}
+
+type Subscription {
+  newMessage: Result
+}
+
+interface Pet {
+  name: String
+}
+
+type Dog implements Pet {
+  name: String
+  nickname: String
+  barkVolume: Int
+}
+
+type Cat implements Pet {
+  name: String
+  nickname: String
+  meowVolume: Int
+}
+
+union CatOrDog = Cat | Dog
+"#;
+
+let ctx = ApolloCompiler::new(input);
+let diagnostics = ctx.validate();
+for diagnostic in &diagnostics {
+    println!("{}", diagnostic)
+}
+assert_eq!(diagnostics.len(), 5)
+```
+
 [cargo-edit]: https://github.com/killercup/cargo-edit
 [`salsa`]: https://docs.rs/salsa/latest/salsa/
