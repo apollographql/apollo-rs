@@ -2,7 +2,7 @@
   <h1><code>apollo-compiler</code></h1>
 
   <p>
-    <strong>A query-based compiler for the GraphQL language.</strong>
+    <strong>A query-based compiler for the GraphQL query language.</strong>
   </p>
   <p>
     <a href="https://crates.io/crates/apollo-compiler">
@@ -286,6 +286,14 @@ for diagnostic in &diagnostics {
 }
 assert_eq!(diagnostics.len(), 5)
 ```
+
+## License
+Licensed under either of
+
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or https://opensource.org/licenses/MIT)
+
+at your option.
 
 [cargo-edit]: https://github.com/killercup/cargo-edit
 [`salsa`]: https://docs.rs/salsa/latest/salsa/

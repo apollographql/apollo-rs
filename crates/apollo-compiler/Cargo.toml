@@ -5,7 +5,7 @@ authors = ["Irina Shestak <shestak.irina@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
 documentation = "https://docs.rs/apollo-compiler"
-description = "A compiler for the GraphQL language."
+description = "A compiler for the GraphQL query language."
 keywords = ["graphql", "parser", "graphql-tooling", "apollographql"]
 categories = [
   "compilers",
