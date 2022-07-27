@@ -17,7 +17,7 @@ categories = [
 edition = "2021"
 
 [dependencies]
-apollo-parser = { path = "../apollo-parser" }
+apollo-parser = { path = "../apollo-parser", version = "0.2.8" }
 salsa = "0.16.1"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 ordered-float = { version = "2.10.0", features = ["std"] }
