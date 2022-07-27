@@ -2,8 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use crate::{
     diagnostics::{
-        MissingField, RecursiveDefinition, TransitiveImplementedInterfaces, UndefinedDefinition,
-        UniqueDefinition, UniqueField, OutputType,
+        MissingField, OutputType, RecursiveDefinition, TransitiveImplementedInterfaces,
+        UndefinedDefinition, UniqueDefinition, UniqueField,
     },
     validation::ValidationSet,
     values::{FieldDefinition, InterfaceTypeDefinition},
@@ -133,7 +133,6 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                     src: db.input_string(()).to_string(),
                     definition: (offset, len).into(),
                 }))
-
             }
         }
     }
@@ -421,6 +420,11 @@ interface mainInterface {
 type Person {
   name: String
   age: Int
+}
+
+type Photo {
+  size: Int
+  type: String
 }
 
 interface NamedEntity {

@@ -94,7 +94,6 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                     src: db.input_string(()).to_string(),
                     definition: (offset, len).into(),
                 }))
-
             }
         }
     }
@@ -247,6 +246,11 @@ type Query {
 type Person {
   name: String
   age: Int
+}
+
+type Photo {
+  size: Int
+  type: String
 }
 
 interface NamedEntity {
