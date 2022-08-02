@@ -15,7 +15,7 @@ use crate::{
 ///     EnumValue
 ///     ListValue
 ///     ObjectValue
-pub(crate) fn value(p: &mut Parser) {
+pub(crate) fn value(p: &mut Parser, pop_on_error: bool) {
     match p.peek() {
         Some(T![$]) => variable::variable(p),
         Some(TokenKind::Int) => {
@@ -50,7 +50,22 @@ pub(crate) fn value(p: &mut Parser) {
         }
         Some(T!['[']) => list_value(p),
         Some(T!['{']) => object_value(p),
-        _ => p.err("expected a valid Value"),
+        Some(token) => {
+            let error_message = format!("expected a valid Value got {token:?}");
+            if pop_on_error {
+                p.err_and_pop(&error_message);
+            } else {
+                p.err(&error_message);
+            }
+        }
+        _ => {
+            let error_message = "expected a valid Value";
+            if pop_on_error {
+                p.err_and_pop(error_message);
+            } else {
+                p.err(error_message);
+            }
+        }
     }
 }
 /// See: https://spec.graphql.org/October2021/#EnumValue
@@ -81,8 +96,11 @@ pub(crate) fn list_value(p: &mut Parser) {
         if node == T![']'] {
             p.bump(S![']']);
             break;
+        } else if node == TokenKind::Eof {
+            p.err("unexpected EOF");
+            break;
         } else {
-            value(p);
+            value(p, true);
         }
     }
 }
@@ -123,7 +141,7 @@ pub(crate) fn object_field(p: &mut Parser) {
 
         if let Some(T![:]) = p.peek() {
             p.bump(S![:]);
-            value(p);
+            value(p, true);
             if p.peek().is_some() {
                 guard.finish_node();
                 object_field(p)
@@ -139,7 +157,7 @@ pub(crate) fn object_field(p: &mut Parser) {
 pub(crate) fn default_value(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::DEFAULT_VALUE);
     p.bump(S![=]);
-    value(p);
+    value(p, false);
 }
 
 #[cfg(test)]
@@ -353,5 +371,25 @@ query GraphQuery($graph_id: ID!, $variant: String) {
         let ast = parser.parse();
 
         assert!(ast.errors().next().is_some());
+    }
+
+    #[test]
+    fn it_returns_error_for_unfinished_string_value_in_list() {
+        let schema = r#"extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.0",
+        import: ["@key", "@external])
+        
+type Vehicle @key(fields: "id") {
+  id: ID!,
+  type: String,
+  modelCode: String,
+  brandName: String,
+  launchDate: String
+}
+"#;
+
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+        assert!(!ast.errors.is_empty());
     }
 }

@@ -1,0 +1,116 @@
+- DOCUMENT@0..215
+    - SCHEMA_EXTENSION@0..215
+        - extend_KW@0..6 "extend"
+        - WHITESPACE@6..7 " "
+        - schema_KW@7..13 "schema"
+        - WHITESPACE@13..16 "\n  "
+        - DIRECTIVES@16..215
+            - DIRECTIVE@16..215
+                - AT@16..17 "@"
+                - NAME@17..21
+                    - IDENT@17..21 "link"
+                - ARGUMENTS@21..215
+                    - L_PAREN@21..22 "("
+                    - ARGUMENT@22..79
+                        - NAME@22..25
+                            - IDENT@22..25 "url"
+                        - COLON@25..26 ":"
+                        - WHITESPACE@26..27 " "
+                        - STRING_VALUE@27..79
+                            - STRING@27..69 "\"https://specs.apollo.dev/federation/v2.0\""
+                            - COMMA@69..70 ","
+                            - WHITESPACE@70..79 "\n        "
+                    - ARGUMENT@79..215
+                        - NAME@79..85
+                            - IDENT@79..85 "import"
+                        - COLON@85..86 ":"
+                        - WHITESPACE@86..87 " "
+                        - LIST_VALUE@87..215
+                            - L_BRACK@87..88 "["
+                            - STRING_VALUE@88..99
+                                - STRING@88..94 "\"@key\""
+                                - COMMA@94..95 ","
+                                - WHITESPACE@95..96 " "
+                                - WHITESPACE@96..99 "\n\n\n"
+                            - ENUM_VALUE@99..104
+                                - NAME@99..104
+                                    - IDENT@99..103 "type"
+                                    - WHITESPACE@103..104 " "
+                            - ENUM_VALUE@104..112
+                                - NAME@104..112
+                                    - IDENT@104..111 "Vehicle"
+                                    - WHITESPACE@111..112 " "
+                            - ENUM_VALUE@112..115
+                                - NAME@112..115
+                                    - IDENT@112..115 "key"
+                            - ENUM_VALUE@115..121
+                                - NAME@115..121
+                                    - IDENT@115..121 "fields"
+                            - WHITESPACE@121..122 " "
+                            - STRING_VALUE@122..126
+                                - STRING@122..126 "\"id\""
+                            - WHITESPACE@126..127 " "
+                            - OBJECT_VALUE@127..137
+                                - L_CURLY@127..128 "{"
+                                - WHITESPACE@128..131 "\n  "
+                                - OBJECT_FIELD@131..137
+                                    - NAME@131..133
+                                        - IDENT@131..133 "id"
+                                    - COLON@133..134 ":"
+                                    - WHITESPACE@134..135 " "
+                                    - ENUM_VALUE@135..137
+                                        - NAME@135..137
+                                            - IDENT@135..137 "ID"
+                            - COMMA@137..138 ","
+                            - WHITESPACE@138..141 "\n  "
+                            - ENUM_VALUE@141..145
+                                - NAME@141..145
+                                    - IDENT@141..145 "type"
+                            - WHITESPACE@145..146 " "
+                            - ENUM_VALUE@146..156
+                                - NAME@146..156
+                                    - IDENT@146..152 "String"
+                                    - COMMA@152..153 ","
+                                    - WHITESPACE@153..156 "\n  "
+                            - ENUM_VALUE@156..165
+                                - NAME@156..165
+                                    - IDENT@156..165 "modelCode"
+                            - WHITESPACE@165..166 " "
+                            - ENUM_VALUE@166..176
+                                - NAME@166..176
+                                    - IDENT@166..172 "String"
+                                    - COMMA@172..173 ","
+                                    - WHITESPACE@173..176 "\n  "
+                            - ENUM_VALUE@176..185
+                                - NAME@176..185
+                                    - IDENT@176..185 "brandName"
+                            - WHITESPACE@185..186 " "
+                            - ENUM_VALUE@186..196
+                                - NAME@186..196
+                                    - IDENT@186..192 "String"
+                                    - COMMA@192..193 ","
+                                    - WHITESPACE@193..196 "\n  "
+                            - ENUM_VALUE@196..206
+                                - NAME@196..206
+                                    - IDENT@196..206 "launchDate"
+                            - WHITESPACE@206..207 " "
+                            - ENUM_VALUE@207..214
+                                - NAME@207..214
+                                    - IDENT@207..213 "String"
+                                    - WHITESPACE@213..214 "\n"
+                            - WHITESPACE@214..215 "\n"
+- ERROR@96:108 "expected a closing \" for the string value" "@external])
+- ERROR@124:125 "expected a valid Value got At" @
+- ERROR@128:129 "expected a valid Value got LParen" (
+- ERROR@135:136 "expected a valid Value got Colon" :
+- ERROR@141:142 "expected a valid Value got RParen" )
+- ERROR@153:154 "expected }" !
+- ERROR@153:154 "expected a valid Value got Bang" !
+- ERROR@162:163 "expected a valid Value got Colon" :
+- ERROR@183:184 "expected a valid Value got Colon" :
+- ERROR@204:205 "expected a valid Value got Colon" :
+- ERROR@226:227 "expected a valid Value got Colon" :
+- ERROR@235:236 "expected a valid Value got RCurly" }
+- ERROR@237:237 "unexpected EOF" EOF
+- ERROR@237:237 "expected R_PAREN, got EOF" EOF
+recursion limit: 4096, high: 0
