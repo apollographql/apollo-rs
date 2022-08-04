@@ -1,0 +1,16 @@
+subscription sub {
+  undefinedSubscriptionField
+}
+
+type Subscription {
+  newMessage: Result
+}
+
+type Result {
+  body: String,
+  sender: String
+}
+
+type Query {
+  message: String
+}

@@ -13,6 +13,7 @@ pub enum ApolloDiagnostic {
     SyntaxError(SyntaxError),
     UniqueField(UniqueField),
     UndefinedDefinition(UndefinedDefinition),
+    UndefinedField(UndefinedField),
     RecursiveDefinition(RecursiveDefinition),
     TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
     QueryRootOperationType(QueryRootOperationType),
@@ -21,6 +22,41 @@ pub enum ApolloDiagnostic {
     CapitalizedValue(CapitalizedValue),
     UnusedVariable(UnusedVariable),
     OutputType(OutputType),
+    ObjectType(ObjectType),
+}
+
+impl ApolloDiagnostic {
+    pub fn is_error(&self) -> bool {
+        matches!(
+            self,
+            ApolloDiagnostic::MissingIdent(_)
+                | ApolloDiagnostic::MissingField(_)
+                | ApolloDiagnostic::UniqueDefinition(_)
+                | ApolloDiagnostic::SingleRootField(_)
+                | ApolloDiagnostic::UnsupportedOperation(_)
+                | ApolloDiagnostic::SyntaxError(_)
+                | ApolloDiagnostic::UniqueField(_)
+                | ApolloDiagnostic::UndefinedDefinition(_)
+                | ApolloDiagnostic::RecursiveDefinition(_)
+                | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
+                | ApolloDiagnostic::QueryRootOperationType(_)
+                | ApolloDiagnostic::UndefinedField(_)
+                | ApolloDiagnostic::BuiltInScalarDefinition(_)
+                | ApolloDiagnostic::OutputType(_)
+                | ApolloDiagnostic::ObjectType(_)
+        )
+    }
+
+    pub fn is_warning(&self) -> bool {
+        matches!(
+            self,
+            ApolloDiagnostic::CapitalizedValue(_) | ApolloDiagnostic::UnusedVariable(_)
+        )
+    }
+
+    pub fn is_advice(&self) -> bool {
+        matches!(self, ApolloDiagnostic::ScalarSpecificationURL(_))
+    }
 }
 
 impl ApolloDiagnostic {
@@ -46,6 +82,8 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::MissingField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
         }
     }
 }
@@ -286,7 +324,6 @@ pub struct UnusedVariable {
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("`{}` field must return an output type", self.name)]
-/// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
 #[diagnostic(
     code("apollo-compiler validation error"),
     help("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", self.name)
@@ -302,4 +339,41 @@ pub struct OutputType {
 
     #[label("this is of `{}` type", self.ty)]
     pub definition: SourceSpan,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("`{}` field must return an output type", self.name)]
+#[diagnostic(
+    code("apollo-compiler validation error"),
+    help("Union members must be of base Object Type. `{}` is of `{}` type", self.name, self.ty)
+)]
+pub struct ObjectType {
+    // union member
+    pub name: String,
+    // actual type
+    pub ty: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("this is of `{}` type", self.ty)]
+    pub definition: SourceSpan,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("Cannot query `{}` field", self.field)]
+/// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct UndefinedField {
+    // field name
+    pub field: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("`{}` field is not in scope", self.field)]
+    pub definition: SourceSpan,
+
+    #[help]
+    pub help: String,
 }

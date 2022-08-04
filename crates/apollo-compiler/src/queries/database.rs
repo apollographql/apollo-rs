@@ -39,7 +39,7 @@ pub trait SourceDatabase {
 
     fn db_definitions(&self) -> Arc<Vec<Definition>>;
 
-    fn find_definition_by_name(&self, name: String) -> Option<Arc<Definition>>;
+    fn type_system_definitions(&self) -> Arc<Vec<Definition>>;
 
     fn operations(&self) -> Arc<Vec<OperationDefinition>>;
 
@@ -69,6 +69,8 @@ pub trait SourceDatabase {
 
     fn find_operation(&self, id: Uuid) -> Option<Arc<OperationDefinition>>;
 
+    fn find_operation_by_name(&self, name: String) -> Option<Arc<OperationDefinition>>;
+
     fn find_fragment(&self, id: Uuid) -> Option<Arc<FragmentDefinition>>;
 
     fn find_fragment_by_name(&self, name: String) -> Option<Arc<FragmentDefinition>>;
@@ -89,6 +91,12 @@ pub trait SourceDatabase {
 
     fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
 
+    fn find_definition_by_name(&self, name: String) -> Option<Arc<Definition>>;
+
+    fn find_type_system_definition(&self, id: Uuid) -> Option<Arc<Definition>>;
+
+    fn find_type_system_definition_by_name(&self, name: String) -> Option<Arc<Definition>>;
+
     fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
 
     fn selection_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
@@ -107,7 +115,7 @@ fn parse(db: &dyn SourceDatabase) -> Arc<SyntaxTree> {
     Arc::new(parser.parse())
 }
 
-// NOTE: a very expensive clone - should more tightly couple the parser and the
+// TODO @lrlna: a very expensive clone - should more tightly couple the parser and the
 // source database for a cleaner solution
 fn document(db: &dyn SourceDatabase) -> Arc<ast::Document> {
     Arc::new(db.parse().as_ref().clone().document())
@@ -195,8 +203,85 @@ fn db_definitions(db: &dyn SourceDatabase) -> Arc<Vec<Definition>> {
     Arc::new(definitions)
 }
 
+fn type_system_definitions(db: &dyn SourceDatabase) -> Arc<Vec<Definition>> {
+    let mut definitions = Vec::new();
+
+    let directives: Vec<Definition> = db
+        .directive_definitions()
+        .iter()
+        .map(|def| Definition::DirectiveDefinition(def.clone()))
+        .collect();
+    let scalars: Vec<Definition> = db
+        .scalars()
+        .iter()
+        .map(|def| Definition::ScalarTypeDefinition(def.clone()))
+        .collect();
+    let objects: Vec<Definition> = db
+        .object_types()
+        .iter()
+        .map(|def| Definition::ObjectTypeDefinition(def.clone()))
+        .collect();
+    let interfaces: Vec<Definition> = db
+        .interfaces()
+        .iter()
+        .map(|def| Definition::InterfaceTypeDefinition(def.clone()))
+        .collect();
+    let unions: Vec<Definition> = db
+        .unions()
+        .iter()
+        .map(|def| Definition::UnionTypeDefinition(def.clone()))
+        .collect();
+    let enums: Vec<Definition> = db
+        .enums()
+        .iter()
+        .map(|def| Definition::EnumTypeDefinition(def.clone()))
+        .collect();
+    let input_objects: Vec<Definition> = db
+        .input_objects()
+        .iter()
+        .map(|def| Definition::InputObjectTypeDefinition(def.clone()))
+        .collect();
+    let schema = Definition::SchemaDefinition(db.schema().as_ref().clone());
+
+    definitions.extend(directives);
+    definitions.extend(scalars);
+    definitions.extend(objects);
+    definitions.extend(interfaces);
+    definitions.extend(unions);
+    definitions.extend(enums);
+    definitions.extend(input_objects);
+    definitions.push(schema);
+
+    Arc::new(definitions)
+}
+
 fn find_definition_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<Definition>> {
     db.db_definitions().iter().find_map(|def| {
+        if let Some(n) = def.name() {
+            if name == n {
+                return Some(Arc::new(def.clone()));
+            }
+        }
+        None
+    })
+}
+
+fn find_type_system_definition(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<Definition>> {
+    db.type_system_definitions().iter().find_map(|op| {
+        if let Some(op_id) = op.id() {
+            if op_id == &id {
+                return Some(Arc::new(op.clone()));
+            }
+        }
+        None
+    })
+}
+
+fn find_type_system_definition_by_name(
+    db: &dyn SourceDatabase,
+    name: String,
+) -> Option<Arc<Definition>> {
+    db.type_system_definitions().iter().find_map(|def| {
         if let Some(n) = def.name() {
             if name == n {
                 return Some(Arc::new(def.clone()));
@@ -227,7 +312,7 @@ fn query_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| op.ty.is_query().then(|| op.clone()))
+        .filter_map(|op| op.operation_ty.is_query().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
@@ -236,7 +321,7 @@ fn subscription_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefiniti
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| op.ty.is_subscription().then(|| op.clone()))
+        .filter_map(|op| op.operation_ty.is_subscription().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
@@ -245,7 +330,7 @@ fn mutation_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>>
     let operations = db
         .operations()
         .iter()
-        .filter_map(|op| op.ty.is_mutation().then(|| op.clone()))
+        .filter_map(|op| op.operation_ty.is_mutation().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
@@ -254,6 +339,17 @@ fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefi
     db.operations().iter().find_map(|op| {
         if &id == op.id() {
             return Some(Arc::new(op.clone()));
+        }
+        None
+    })
+}
+
+fn find_operation_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<OperationDefinition>> {
+    db.operations().iter().find_map(|op| {
+        if let Some(n) = op.name() {
+            if n == name {
+                return Some(Arc::new(op.clone()));
+            }
         }
         None
     })
@@ -279,6 +375,7 @@ fn operation_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Vec<Field>> {
     let fields = match db.find_operation(id) {
         Some(op) => op
             .selection_set()
+            .selection()
             .iter()
             .filter_map(|sel| match sel {
                 Selection::Field(field) => Some(field.as_ref().clone()),
@@ -294,17 +391,11 @@ fn operation_inline_fragment_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Ve
     let fields: Vec<Field> = match db.find_operation(id) {
         Some(op) => op
             .selection_set()
+            .selection()
             .iter()
             .filter_map(|sel| match sel {
                 Selection::InlineFragment(fragment) => {
-                    let fields: Vec<Field> = fragment
-                        .selection_set()
-                        .iter()
-                        .filter_map(|sel| match sel {
-                            Selection::Field(field) => Some(field.as_ref().clone()),
-                            _ => None,
-                        })
-                        .collect();
+                    let fields: Vec<Field> = fragment.selection_set().fields();
                     Some(fields)
                 }
                 _ => None,
@@ -320,18 +411,11 @@ fn operation_fragment_spread_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Ve
     let fields: Vec<Field> = match db.find_operation(id) {
         Some(op) => op
             .selection_set()
+            .selection()
             .iter()
             .filter_map(|sel| match sel {
                 Selection::FragmentSpread(fragment_spread) => {
-                    let fields: Vec<Field> = fragment_spread
-                        .fragment(db)?
-                        .selection_set()
-                        .iter()
-                        .filter_map(|sel| match sel {
-                            Selection::Field(field) => Some(field.as_ref().clone()),
-                            _ => None,
-                        })
-                        .collect();
+                    let fields: Vec<Field> = fragment_spread.fragment(db)?.selection_set().fields();
                     Some(fields)
                 }
                 _ => None,
@@ -633,18 +717,20 @@ fn operation_definition(
     // if there are no names, an error must be raised that all operations must have a name
     let name = op_def.name().map(|name| name.text().to_string());
     let ty = operation_type(op_def.operation_type());
+    let object_id = object_type_uuid(db, ty);
     let variables = variable_definitions(op_def.variable_definitions());
-    let selection_set = selection_set(db, op_def.selection_set());
+    let selection_set = selection_set(db, op_def.selection_set(), object_id);
     let directives = directives(op_def.directives());
     let ast_ptr = SyntaxNodePtr::new(op_def.syntax());
 
     OperationDefinition {
         id: Uuid::new_v4(),
-        ty,
+        operation_ty: ty,
         name,
         variables,
         selection_set,
         directives,
+        object_id,
         ast_ptr,
     }
 }
@@ -668,7 +754,11 @@ fn fragment_definition(
         .expect("Name must have text")
         .text()
         .to_string();
-    let selection_set = selection_set(db, fragment_def.selection_set());
+    let reference_ty_id = db
+        .find_type_system_definition_by_name(type_condition.clone())
+        .and_then(|def| def.id().cloned());
+    // TODO @lrlna: how do we find which current object id this selection is referring to?
+    let selection_set = selection_set(db, fragment_def.selection_set(), reference_ty_id);
     let directives = directives(fragment_def.directives());
     let ast_ptr = SyntaxNodePtr::new(fragment_def.syntax());
 
@@ -676,6 +766,7 @@ fn fragment_definition(
         id: Uuid::new_v4(),
         name,
         type_condition,
+        reference_ty_id,
         selection_set,
         directives,
         ast_ptr,
@@ -721,21 +812,24 @@ fn object_type_definition(obj_def: ast::ObjectTypeDefinition) -> ObjectTypeDefin
 }
 
 fn scalar_definition(scalar_def: ast::ScalarTypeDefinition) -> ScalarTypeDefinition {
+    let id = Uuid::new_v4();
     let description = description(scalar_def.description());
     let name = name(scalar_def.name());
     let directives = directives(scalar_def.directives());
     let ast_ptr = SyntaxNodePtr::new(scalar_def.syntax());
 
     ScalarTypeDefinition {
+        id,
         description,
         name,
         directives,
         ast_ptr: Some(ast_ptr),
-        built_in: false
+        built_in: false,
     }
 }
 
 fn enum_definition(enum_def: ast::EnumTypeDefinition) -> EnumTypeDefinition {
+    let id = Uuid::new_v4();
     let description = description(enum_def.description());
     let name = name(enum_def.name());
     let directives = directives(enum_def.directives());
@@ -743,6 +837,7 @@ fn enum_definition(enum_def: ast::EnumTypeDefinition) -> EnumTypeDefinition {
     let ast_ptr = SyntaxNodePtr::new(enum_def.syntax());
 
     EnumTypeDefinition {
+        id,
         description,
         name,
         directives,
@@ -785,6 +880,7 @@ fn union_definition(
     db: &dyn SourceDatabase,
     union_def: ast::UnionTypeDefinition,
 ) -> UnionTypeDefinition {
+    let id = Uuid::new_v4();
     let description = description(union_def.description());
     let name = name(union_def.name());
     let directives = directives(union_def.directives());
@@ -792,6 +888,7 @@ fn union_definition(
     let ast_ptr = SyntaxNodePtr::new(union_def.syntax());
 
     UnionTypeDefinition {
+        id,
         description,
         name,
         directives,
@@ -1250,22 +1347,30 @@ fn value(val: ast::Value) -> Value {
 fn selection_set(
     db: &dyn SourceDatabase,
     selections: Option<ast::SelectionSet>,
-) -> Arc<Vec<Selection>> {
+    object_id: Option<Uuid>,
+) -> SelectionSet {
     let selection_set = match selections {
         Some(sel) => sel
             .selections()
             .into_iter()
-            .map(|sel| selection(db, sel))
+            .map(|sel| selection(db, sel, object_id))
             .collect(),
         None => Vec::new(),
     };
-    Arc::new(selection_set)
+
+    SelectionSet {
+        selection: Arc::new(selection_set),
+    }
 }
 
-fn selection(db: &dyn SourceDatabase, selection: ast::Selection) -> Selection {
+fn selection(
+    db: &dyn SourceDatabase,
+    selection: ast::Selection,
+    object_id: Option<Uuid>,
+) -> Selection {
     match selection {
         ast::Selection::Field(sel_field) => {
-            let field = field(db, sel_field);
+            let field = field(db, sel_field, object_id);
             Selection::Field(field)
         }
         ast::Selection::FragmentSpread(fragment) => {
@@ -1273,13 +1378,17 @@ fn selection(db: &dyn SourceDatabase, selection: ast::Selection) -> Selection {
             Selection::FragmentSpread(fragment_spread)
         }
         ast::Selection::InlineFragment(fragment) => {
-            let inline_fragment = inline_fragment(db, fragment);
+            let inline_fragment = inline_fragment(db, fragment, object_id);
             Selection::InlineFragment(inline_fragment)
         }
     }
 }
 
-fn inline_fragment(db: &dyn SourceDatabase, fragment: ast::InlineFragment) -> Arc<InlineFragment> {
+fn inline_fragment(
+    db: &dyn SourceDatabase,
+    fragment: ast::InlineFragment,
+    object_id: Option<Uuid>,
+) -> Arc<InlineFragment> {
     let type_condition = fragment.type_condition().map(|tc| {
         tc.named_type()
             .expect("Type Condition must have a name")
@@ -1289,7 +1398,7 @@ fn inline_fragment(db: &dyn SourceDatabase, fragment: ast::InlineFragment) -> Ar
             .to_string()
     });
     let directives = directives(fragment.directives());
-    let selection_set: Arc<Vec<Selection>> = selection_set(db, fragment.selection_set());
+    let selection_set: SelectionSet = selection_set(db, fragment.selection_set(), object_id);
     let ast_ptr = SyntaxNodePtr::new(fragment.syntax());
 
     let fragment_data = InlineFragment {
@@ -1326,10 +1435,12 @@ fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Ar
     Arc::new(fragment_data)
 }
 
-fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
+fn field(db: &dyn SourceDatabase, field: ast::Field, ty_id: Option<Uuid>) -> Arc<Field> {
     let name = name(field.name());
     let alias = alias(field.alias());
-    let selection_set = selection_set(db, field.selection_set());
+    let ty = field_ty(db, &name, ty_id);
+    let new_ty_id = field_ty_id(&field, db, ty.as_ref());
+    let selection_set = selection_set(db, field.selection_set(), new_ty_id);
     let directives = directives(field.directives());
     let arguments = arguments(field.arguments());
     let ast_ptr = SyntaxNodePtr::new(field.syntax());
@@ -1338,11 +1449,44 @@ fn field(db: &dyn SourceDatabase, field: ast::Field) -> Arc<Field> {
         name,
         alias,
         selection_set,
+        ty,
+        reference_ty_id: ty_id,
         directives,
         arguments,
         ast_ptr,
     };
     Arc::new(field_data)
+}
+
+fn field_ty(db: &dyn SourceDatabase, field_name: &str, ty_id: Option<Uuid>) -> Option<Type> {
+    if let Some(id) = ty_id {
+        Some(
+            db.find_type_system_definition(id)?
+                .field(field_name)?
+                .ty()
+                .clone(),
+        )
+    } else {
+        None
+    }
+}
+
+fn field_ty_id(
+    field: &ast::Field,
+    db: &dyn SourceDatabase,
+    field_ty: Option<&Type>,
+) -> Option<Uuid> {
+    match field_ty {
+        Some(ty) => {
+            if field.selection_set().is_some() {
+                db.find_type_system_definition_by_name(ty.name())
+                    .and_then(|def| def.id().cloned())
+            } else {
+                None
+            }
+        }
+        None => None,
+    }
 }
 
 fn name(name: Option<ast::Name>) -> String {
@@ -1374,6 +1518,14 @@ fn alias(alias: Option<ast::Alias>) -> Option<Arc<Alias>> {
     })
 }
 
+fn object_type_uuid(db: &dyn SourceDatabase, ty: OperationType) -> Option<Uuid> {
+    match ty {
+        OperationType::Query => db.schema().query(db).map(|query| *query.id()),
+        OperationType::Mutation => db.schema().mutation(db).map(|mutation| *mutation.id()),
+        OperationType::Subscription => db.schema().subscription(db).map(|sub| *sub.id()),
+    }
+}
+
 //  Int, Float, String, Boolean, and ID
 fn built_in_scalars(mut scalars: Vec<ScalarTypeDefinition>) -> Vec<ScalarTypeDefinition> {
     scalars.push(int_scalar());
@@ -1387,6 +1539,7 @@ fn built_in_scalars(mut scalars: Vec<ScalarTypeDefinition>) -> Vec<ScalarTypeDef
 
 fn int_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
+        id: Uuid::new_v4(),
         description: Some("The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.".into()),
         name: "Int".into(),
         directives: Arc::new(Vec::new()),
@@ -1397,6 +1550,7 @@ fn int_scalar() -> ScalarTypeDefinition {
 
 fn float_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
+        id: Uuid::new_v4(),
         description: Some("The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).".into()),
         name: "Float".into(),
         directives: Arc::new(Vec::new()),
@@ -1407,6 +1561,7 @@ fn float_scalar() -> ScalarTypeDefinition {
 
 fn string_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
+        id: Uuid::new_v4(),
         description: Some("The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.".into()),
         name: "String".into(),
         directives: Arc::new(Vec::new()),
@@ -1417,16 +1572,18 @@ fn string_scalar() -> ScalarTypeDefinition {
 
 fn boolean_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
+        id: Uuid::new_v4(),
         description: Some("The `Boolean` scalar type represents `true` or `false`.".into()),
         name: "Boolean".into(),
         directives: Arc::new(Vec::new()),
         ast_ptr: None,
-        built_in: true
+        built_in: true,
     }
 }
 
 fn id_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
+        id: Uuid::new_v4(),
         description: Some("The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `\"4\"`) or integer (such as `4`) input value will be accepted as an ID.".into()),
         name: "ID".into(),
         directives: Arc::new(Vec::new()),

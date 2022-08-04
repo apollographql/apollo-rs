@@ -11,5 +11,11 @@ schema {
 
 type customPetQuery {
   name: String,
+  newMessage: Message
   age: Int
+}
+
+type Message {
+  body: String
+  sender: String
 }

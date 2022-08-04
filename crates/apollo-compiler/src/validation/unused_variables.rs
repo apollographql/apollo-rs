@@ -24,6 +24,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
             let used_vars: HashSet<ValidationSet> = op
                 .selection_set
                 .clone()
+                .selection()
                 .iter()
                 .flat_map(|sel| {
                     let vars: HashSet<ValidationSet> = sel
@@ -79,7 +80,7 @@ query ExampleQuery {
     name
   }
 
-  ... VipCustomer on User {
+  ... on User {
     id
     name
     profilePic(size: $dimensions)
@@ -154,7 +155,7 @@ query ExampleQuery {
   ... fragmentOne
 }
 
-fragment fragmentOne on User {
+fragment fragmentOne on Query {
     profilePic(size: $dimensions)
 }
 

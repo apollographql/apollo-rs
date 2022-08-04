@@ -1,0 +1,14 @@
+query getProduct {
+  size
+  weight
+}
+
+type Query {
+  name: String
+  topProducts: Product
+}
+
+type Product {
+  inStock: Boolean @join__field(graph: INVENTORY)
+  name: String @join__field(graph: PRODUCTS)
+}
