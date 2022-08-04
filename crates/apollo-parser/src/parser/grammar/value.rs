@@ -97,7 +97,6 @@ pub(crate) fn list_value(p: &mut Parser) {
             p.bump(S![']']);
             break;
         } else if node == TokenKind::Eof {
-            p.err("unexpected EOF");
             break;
         } else {
             value(p, true);

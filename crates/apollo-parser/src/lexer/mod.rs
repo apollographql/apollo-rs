@@ -161,6 +161,10 @@ impl Cursor<'_> {
                 }
 
                 if !buf.ends_with('"') {
+                    // If it's an unclosed string then take all remaining tokens into this string value
+                    while !self.is_eof() {
+                        buf.push(self.bump().unwrap());
+                    }
                     self.add_err(Error::new(
                         "expected a closing \" for the string value",
                         buf.clone(),
