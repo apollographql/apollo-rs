@@ -14,7 +14,7 @@ pub use queries::{
     values,
 };
 
-use diagnostics::ApolloDiagnostic;
+pub use diagnostics::ApolloDiagnostic;
 use validation::Validator;
 
 pub struct ApolloCompiler {

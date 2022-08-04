@@ -59,9 +59,9 @@ impl ApolloDiagnostic {
     }
 }
 
-impl fmt::Display for ApolloDiagnostic {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let report = match self {
+impl ApolloDiagnostic {
+    pub fn report(&self) -> Report {
+        match self {
             ApolloDiagnostic::MissingIdent(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueDefinition(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::SingleRootField(diagnostic) => Report::new(diagnostic.clone()),
@@ -84,9 +84,13 @@ impl fmt::Display for ApolloDiagnostic {
             ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
-        };
+        }
+    }
+}
 
-        writeln!(f, "{:?}", report)
+impl fmt::Display for ApolloDiagnostic {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "{:?}", self.report())
     }
 }
 
