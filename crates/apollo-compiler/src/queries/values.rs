@@ -1417,6 +1417,11 @@ impl InputValueDefinition {
         self.directives.as_ref()
     }
 
+    // Returns true if the input value definition defines a default value.
+    pub fn has_default_value(&self) -> bool {
+        self.default_value.is_some()
+    }
+
     // Get a reference to SyntaxNodePtr of the current HIR node.
     pub fn ast_ptr(&self) -> Option<&SyntaxNodePtr> {
         self.ast_ptr.as_ref()
