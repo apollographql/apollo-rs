@@ -160,6 +160,17 @@ impl Cursor<'_> {
                     was_backslash = c == '\\';
                 }
 
+                if !buf.ends_with('"') {
+                    // If it's an unclosed string then take all remaining tokens into this string value
+                    while !self.is_eof() {
+                        buf.push(self.bump().unwrap());
+                    }
+                    self.add_err(Error::new(
+                        "expected a closing \" for the string value",
+                        buf.clone(),
+                    ));
+                }
+
                 if let Some(mut err) = self.err() {
                     err.data = buf;
                     return Err(err);

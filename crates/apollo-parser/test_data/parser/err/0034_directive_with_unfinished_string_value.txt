@@ -1,0 +1,46 @@
+- DOCUMENT@0..97
+    - SCHEMA_EXTENSION@0..97
+        - extend_KW@0..6 "extend"
+        - WHITESPACE@6..7 " "
+        - schema_KW@7..13 "schema"
+        - WHITESPACE@13..16 "\n  "
+        - DIRECTIVES@16..97
+            - DIRECTIVE@16..97
+                - AT@16..17 "@"
+                - NAME@17..21
+                    - IDENT@17..21 "link"
+                - ARGUMENTS@21..97
+                    - L_PAREN@21..22 "("
+                    - ARGUMENT@22..79
+                        - NAME@22..25
+                            - IDENT@22..25 "url"
+                        - COLON@25..26 ":"
+                        - WHITESPACE@26..27 " "
+                        - STRING_VALUE@27..79
+                            - STRING@27..69 "\"https://specs.apollo.dev/federation/v2.0\""
+                            - COMMA@69..70 ","
+                            - WHITESPACE@70..79 "\n        "
+                    - ARGUMENT@79..97
+                        - NAME@79..85
+                            - IDENT@79..85 "import"
+                        - COLON@85..86 ":"
+                        - WHITESPACE@86..87 " "
+                        - LIST_VALUE@87..97
+                            - L_BRACK@87..88 "["
+                            - STRING_VALUE@88..97
+                                - STRING@88..94 "\"@key\""
+                                - COMMA@94..95 ","
+                                - WHITESPACE@95..96 " "
+                                - WHITESPACE@96..97 "\n"
+- ERROR@96:236 "expected a closing \" for the string value" "@external])
+
+type Vehicle @key(fields: "id") {
+  id: ID!,
+  type: String,
+  modelCode: String,
+  brandName: String,
+  launchDate: String
+}
+
+- ERROR@237:237 "expected R_PAREN, got EOF" EOF
+recursion limit: 4096, high: 0

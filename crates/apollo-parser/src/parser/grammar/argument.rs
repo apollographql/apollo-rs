@@ -13,7 +13,7 @@ pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
         name::name(p);
         if let Some(T![:]) = p.peek() {
             p.bump(S![:]);
-            value::value(p);
+            value::value(p, false);
             is_argument = true;
             if p.peek().is_some() {
                 guard.finish_node();
