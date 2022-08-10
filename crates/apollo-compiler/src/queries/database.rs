@@ -79,6 +79,8 @@ pub trait SourceDatabase {
 
     fn find_object_type_by_name(&self, name: String) -> Option<Arc<ObjectTypeDefinition>>;
 
+    fn find_union_by_name(&self, name: String) -> Option<Arc<UnionTypeDefinition>>;
+
     fn find_interface(&self, id: Uuid) -> Option<Arc<InterfaceTypeDefinition>>;
 
     fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceTypeDefinition>>;
@@ -344,7 +346,10 @@ fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefi
     })
 }
 
-fn find_operation_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<OperationDefinition>> {
+fn find_operation_by_name(
+    db: &dyn SourceDatabase,
+    name: String,
+) -> Option<Arc<OperationDefinition>> {
     db.operations().iter().find_map(|op| {
         if let Some(n) = op.name() {
             if n == name {
@@ -594,6 +599,15 @@ fn unions(db: &dyn SourceDatabase) -> Arc<Vec<UnionTypeDefinition>> {
         })
         .collect();
     Arc::new(unions)
+}
+
+fn find_union_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<UnionTypeDefinition>> {
+    db.unions().iter().find_map(|union| {
+        if name == union.name() {
+            return Some(Arc::new(union.clone()));
+        }
+        None
+    })
 }
 
 fn interfaces(db: &dyn SourceDatabase) -> Arc<Vec<InterfaceTypeDefinition>> {
