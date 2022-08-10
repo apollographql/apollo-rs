@@ -871,7 +871,9 @@ impl SelectionSet {
             .selection()
             .iter()
             .filter_map(|sel| match sel {
-                Selection::FragmentSpread(fragment_spread) => return Some(fragment_spread.as_ref().clone()),
+                Selection::FragmentSpread(fragment_spread) => {
+                    return Some(fragment_spread.as_ref().clone())
+                }
                 _ => None,
             })
             .collect();
@@ -1407,30 +1409,35 @@ pub struct InputValueDefinition {
 }
 
 impl InputValueDefinition {
-    // Get a reference to input value definition's name.
+    /// Get a reference to input value definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
     }
 
-    // Get a reference to input value definition's directives.
+    /// Get a reference to input value definition's directives.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
     }
 
-    // Get a reference to SyntaxNodePtr of the current HIR node.
+    /// Get a reference to SyntaxNodePtr of the current HIR node.
     pub fn ast_ptr(&self) -> Option<&SyntaxNodePtr> {
         self.ast_ptr.as_ref()
     }
 
-    // Get current HIR node's AST node.
+    /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(db.document().deref().syntax()))
     }
 
-    // Get a reference to input value definition's type.
+    /// Get a reference to input value definition's type.
     pub fn ty(&self) -> &Type {
         &self.ty
+    }
+
+    /// Get a refernce to inpul value definition's default_value.
+    pub fn default_value(&self) -> Option<&Value> {
+        self.default_value.as_ref()
     }
 }
 
