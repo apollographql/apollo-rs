@@ -50,14 +50,6 @@ pub(crate) fn value(p: &mut Parser, pop_on_error: bool) {
         }
         Some(T!['[']) => list_value(p),
         Some(T!['{']) => object_value(p),
-        Some(token) => {
-            let error_message = format!("expected a valid Value got {token:?}");
-            if pop_on_error {
-                p.err_and_pop(&error_message);
-            } else {
-                p.err(&error_message);
-            }
-        }
         _ => {
             let error_message = "expected a valid Value";
             if pop_on_error {
@@ -324,7 +316,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
         let parser = Parser::new(input);
         let ast = parser.parse();
 
-        assert!(ast.errors().next().is_none());
+        assert!(ast.errors.is_empty());
     }
 
     #[test]
@@ -339,7 +331,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
         let parser = Parser::new(input);
         let ast = parser.parse();
 
-        assert!(ast.errors().next().is_none());
+        assert!(ast.errors.is_empty());
     }
 
     #[test]
@@ -354,7 +346,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
         let parser = Parser::new(input);
         let ast = parser.parse();
 
-        assert!(ast.errors().next().is_none());
+        assert!(ast.errors.is_empty());
     }
 
     #[test]
@@ -369,7 +361,7 @@ query GraphQuery($graph_id: ID!, $variant: String) {
         let parser = Parser::new(input);
         let ast = parser.parse();
 
-        assert!(ast.errors().next().is_some());
+        assert!(!ast.errors.is_empty());
     }
 
     #[test]

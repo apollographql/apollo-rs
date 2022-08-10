@@ -17,5 +17,5 @@
                     - WHITESPACE@14..15 "\n"
             - R_CURLY@15..16 "}"
 - ERROR@13:25 "unexpected escaped character" "\string ID"
-- ERROR@25:26 "expected a valid Value got RParen" )
+- ERROR@25:26 "expected a valid Value" )
 recursion limit: 4096, high: 2

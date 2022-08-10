@@ -32,7 +32,7 @@
                                 - COMMA@94..95 ","
                                 - WHITESPACE@95..96 " "
                                 - WHITESPACE@96..97 "\n"
-- ERROR@96:236 "expected a closing \" for the string value" "@external])
+- ERROR@96:236 "unterminated string value" "@external])
 
 type Vehicle @key(fields: "id") {
   id: ID!,

@@ -165,10 +165,7 @@ impl Cursor<'_> {
                     while !self.is_eof() {
                         buf.push(self.bump().unwrap());
                     }
-                    self.add_err(Error::new(
-                        "expected a closing \" for the string value",
-                        buf.clone(),
-                    ));
+                    self.add_err(Error::new("unterminated string value", buf.clone()));
                 }
 
                 if let Some(mut err) = self.err() {
