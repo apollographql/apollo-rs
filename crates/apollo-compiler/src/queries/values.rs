@@ -433,7 +433,7 @@ impl<'a> From<&'a str> for OperationType {
 pub struct VariableDefinition {
     pub(crate) name: String,
     pub(crate) ty: Type,
-    pub(crate) default_value: Option<Value>,
+    pub(crate) default_value: Option<DefaultValue>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
@@ -450,7 +450,7 @@ impl VariableDefinition {
     }
 
     /// Get a reference to the variable definition's default value.
-    pub fn default_value(&self) -> Option<&Value> {
+    pub fn default_value(&self) -> Option<&DefaultValue> {
         self.default_value.as_ref()
     }
 
@@ -1436,7 +1436,7 @@ impl InputValueDefinition {
     }
 
     /// Get a refernce to inpul value definition's default_value.
-    pub fn default_value(&self) -> Option<&Value> {
+    pub fn default_value(&self) -> Option<&DefaultValue> {
         self.default_value.as_ref()
     }
 }
