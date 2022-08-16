@@ -771,7 +771,6 @@ fn fragment_definition(
     let reference_ty_id = db
         .find_type_system_definition_by_name(type_condition.clone())
         .and_then(|def| def.id().cloned());
-    // TODO @lrlna: how do we find which current object id this selection is referring to?
     let selection_set = selection_set(db, fragment_def.selection_set(), reference_ty_id);
     let directives = directives(fragment_def.directives());
     let ast_ptr = SyntaxNodePtr::new(fragment_def.syntax());
@@ -1411,8 +1410,14 @@ fn inline_fragment(
             .text()
             .to_string()
     });
+    let reference_ty_id = if let Some(type_condition) = type_condition.clone() {
+        db.find_type_system_definition_by_name(type_condition)
+            .and_then(|def| def.id().cloned())
+    } else {
+        object_id
+    };
     let directives = directives(fragment.directives());
-    let selection_set: SelectionSet = selection_set(db, fragment.selection_set(), object_id);
+    let selection_set: SelectionSet = selection_set(db, fragment.selection_set(), reference_ty_id);
     let ast_ptr = SyntaxNodePtr::new(fragment.syntax());
 
     let fragment_data = InlineFragment {
