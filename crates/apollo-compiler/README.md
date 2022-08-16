@@ -27,7 +27,7 @@ Add this to your `Cargo.toml` to start using `apollo-compiler`:
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-compiler= "0.2.8"
+apollo-compiler= "0.2.0"
 ```
 
 Or using [cargo-edit]:
