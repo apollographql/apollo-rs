@@ -61,6 +61,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 - **pub use ApolloDiagnostic - [EverlastingBugstopper], [pull/268]**
+
   Exports ApolloDiagnostic to allow users to use it in other contexts.
 
   [EverlastingBugstopper]: https://github.com/EverlastingBugstopper
