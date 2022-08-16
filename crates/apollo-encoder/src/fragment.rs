@@ -187,13 +187,14 @@ impl InlineFragment {
         let mut text = String::from("...");
 
         if let Some(type_condition) = &self.type_condition {
-            let _ = write!(text," {}", type_condition);
+            let _ = write!(text, " {}", type_condition);
         }
         for directive in &self.directives {
             let _ = write!(text, " {}", directive);
         }
 
-        let _ = write!(text,
+        let _ = write!(
+            text,
             " {}",
             self.selection_set.format_with_indent(indent_level),
         );
@@ -217,7 +218,7 @@ impl fmt::Display for InlineFragment {
 ///     on NamedType
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#TypeCondition).
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TypeCondition {
     name: String,
 }

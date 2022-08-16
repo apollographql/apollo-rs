@@ -12,7 +12,7 @@
 /// TokenKinds can be accessed by a convenience macro, `T!`. For example to
 /// access the Bang TokenKind, you may match with `TokenKind::Bang`, or use the
 /// macro `T![!]`.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u16)]
 pub enum TokenKind {
     Whitespace, // \r | \n |   | \t

@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 /// Convenience enum to create a Description. Can be a `Top` level, a `Field`
 /// level or an `Input` level. The variants are distinguished by the way they
 /// get displayed, e.g. number of leading spaces.
