@@ -1,0 +1,145 @@
+- DOCUMENT@0..206
+    - OPERATION_DEFINITION@0..53
+        - OPERATION_TYPE@0..6
+            - query_KW@0..5 "query"
+            - WHITESPACE@5..6 " "
+        - NAME@6..25
+            - IDENT@6..24 "IntrospectionQuery"
+            - WHITESPACE@24..25 " "
+        - SELECTION_SET@25..53
+            - L_CURLY@25..26 "{"
+            - WHITESPACE@26..29 "\n  "
+            - FIELD@29..50
+                - NAME@29..33
+                    - IDENT@29..32 "foo"
+                    - WHITESPACE@32..33 " "
+                - SELECTION_SET@33..50
+                    - L_CURLY@33..34 "{"
+                    - WHITESPACE@34..39 "\n    "
+                    - FRAGMENT_SPREAD@39..48
+                        - SPREAD@39..42 "..."
+                        - FRAGMENT_NAME@42..48
+                            - NAME@42..48
+                                - IDENT@42..45 "Bar"
+                                - WHITESPACE@45..48 "\n  "
+                    - R_CURLY@48..49 "}"
+                    - WHITESPACE@49..50 "\n"
+            - R_CURLY@50..51 "}"
+            - WHITESPACE@51..53 "\n\n"
+    - FRAGMENT_DEFINITION@53..102
+        - fragment_KW@53..61 "fragment"
+        - WHITESPACE@61..62 " "
+        - FRAGMENT_NAME@62..66
+            - NAME@62..66
+                - IDENT@62..65 "Bar"
+                - WHITESPACE@65..66 " "
+        - TYPE_CONDITION@66..73
+            - on_KW@66..68 "on"
+            - WHITESPACE@68..69 " "
+            - NAMED_TYPE@69..73
+                - NAME@69..73
+                    - IDENT@69..72 "Foo"
+                    - WHITESPACE@72..73 " "
+        - SELECTION_SET@73..102
+            - L_CURLY@73..74 "{"
+            - WHITESPACE@74..77 "\n  "
+            - FIELD@77..99
+                - NAME@77..81
+                    - IDENT@77..80 "baz"
+                    - WHITESPACE@80..81 " "
+                - SELECTION_SET@81..99
+                    - L_CURLY@81..82 "{"
+                    - WHITESPACE@82..87 "\n    "
+                    - FRAGMENT_SPREAD@87..97
+                        - SPREAD@87..90 "..."
+                        - FRAGMENT_NAME@90..97
+                            - NAME@90..97
+                                - IDENT@90..94 "Quux"
+                                - WHITESPACE@94..97 "\n  "
+                    - R_CURLY@97..98 "}"
+                    - WHITESPACE@98..99 "\n"
+            - R_CURLY@99..100 "}"
+            - WHITESPACE@100..102 "\n\n"
+    - FRAGMENT_DEFINITION@102..133
+        - fragment_KW@102..110 "fragment"
+        - WHITESPACE@110..111 " "
+        - FRAGMENT_NAME@111..116
+            - NAME@111..116
+                - IDENT@111..115 "Quux"
+                - WHITESPACE@115..116 " "
+        - TYPE_CONDITION@116..123
+            - on_KW@116..118 "on"
+            - WHITESPACE@118..119 " "
+            - NAMED_TYPE@119..123
+                - NAME@119..123
+                    - IDENT@119..122 "Baz"
+                    - WHITESPACE@122..123 " "
+        - SELECTION_SET@123..133
+            - L_CURLY@123..124 "{"
+            - WHITESPACE@124..127 "\n  "
+            - FIELD@127..130
+                - NAME@127..130
+                    - IDENT@127..129 "id"
+                    - WHITESPACE@129..130 "\n"
+            - R_CURLY@130..131 "}"
+            - WHITESPACE@131..133 "\n\n"
+    - OBJECT_TYPE_DEFINITION@133..160
+        - type_KW@133..137 "type"
+        - WHITESPACE@137..138 " "
+        - NAME@138..144
+            - IDENT@138..143 "Query"
+            - WHITESPACE@143..144 " "
+        - FIELDS_DEFINITION@144..160
+            - L_CURLY@144..145 "{"
+            - WHITESPACE@145..148 "\n  "
+            - FIELD_DEFINITION@148..157
+                - NAME@148..151
+                    - IDENT@148..151 "foo"
+                - COLON@151..152 ":"
+                - WHITESPACE@152..153 " "
+                - NAMED_TYPE@153..156
+                    - NAME@153..156
+                        - IDENT@153..156 "Foo"
+                - WHITESPACE@156..157 "\n"
+            - R_CURLY@157..158 "}"
+            - WHITESPACE@158..160 "\n\n"
+    - OBJECT_TYPE_DEFINITION@160..185
+        - type_KW@160..164 "type"
+        - WHITESPACE@164..165 " "
+        - NAME@165..169
+            - IDENT@165..168 "Foo"
+            - WHITESPACE@168..169 " "
+        - FIELDS_DEFINITION@169..185
+            - L_CURLY@169..170 "{"
+            - WHITESPACE@170..173 "\n  "
+            - FIELD_DEFINITION@173..182
+                - NAME@173..176
+                    - IDENT@173..176 "baz"
+                - COLON@176..177 ":"
+                - WHITESPACE@177..178 " "
+                - NAMED_TYPE@178..181
+                    - NAME@178..181
+                        - IDENT@178..181 "Baz"
+                - WHITESPACE@181..182 "\n"
+            - R_CURLY@182..183 "}"
+            - WHITESPACE@183..185 "\n\n"
+    - OBJECT_TYPE_DEFINITION@185..206
+        - type_KW@185..189 "type"
+        - WHITESPACE@189..190 " "
+        - NAME@190..194
+            - IDENT@190..193 "Baz"
+            - WHITESPACE@193..194 " "
+        - FIELDS_DEFINITION@194..206
+            - L_CURLY@194..195 "{"
+            - WHITESPACE@195..198 "\n  "
+            - FIELD_DEFINITION@198..205
+                - NAME@198..200
+                    - IDENT@198..200 "id"
+                - COLON@200..201 ":"
+                - WHITESPACE@201..202 " "
+                - NAMED_TYPE@202..204
+                    - NAME@202..204
+                        - IDENT@202..204 "ID"
+                - WHITESPACE@204..205 "\n"
+            - R_CURLY@205..206 "}"
+recursion limit: 4096, high: 3

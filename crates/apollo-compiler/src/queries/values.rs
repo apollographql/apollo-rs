@@ -1096,16 +1096,12 @@ impl InlineFragment {
 pub struct FragmentSpread {
     pub(crate) name: String,
     pub(crate) directives: Arc<Vec<Directive>>,
-    // NOTE @lrlna: this should just be Uuid.  If we can't find the framgment we
-    // are looking for when populating this field, we should throw a semantic
-    // error.
-    pub(crate) fragment_id: Option<Uuid>,
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
 impl FragmentSpread {
     pub fn fragment(&self, db: &dyn SourceDatabase) -> Option<Arc<FragmentDefinition>> {
-        db.find_fragment(self.fragment_id?)
+        db.find_fragment_by_name(self.name.clone())
     }
 
     pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
