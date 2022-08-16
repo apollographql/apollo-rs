@@ -1387,7 +1387,7 @@ fn selection(
             Selection::Field(field)
         }
         ast::Selection::FragmentSpread(fragment) => {
-            let fragment_spread = fragment_spread(db, fragment);
+            let fragment_spread = fragment_spread(fragment);
             Selection::FragmentSpread(fragment_spread)
         }
         ast::Selection::InlineFragment(fragment) => {
@@ -1429,7 +1429,7 @@ fn inline_fragment(
     Arc::new(fragment_data)
 }
 
-fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Arc<FragmentSpread> {
+fn fragment_spread(fragment: ast::FragmentSpread) -> Arc<FragmentSpread> {
     let name = name(
         fragment
             .fragment_name()
@@ -1437,18 +1437,11 @@ fn fragment_spread(db: &dyn SourceDatabase, fragment: ast::FragmentSpread) -> Ar
             .name(),
     );
     let directives = directives(fragment.directives());
-    // NOTE @lrlna: this should just be Uuid.  If we can't find the framgment we
-    // are looking for when populating this field, we should throw a semantic
-    // error.
-    let fragment_id = db
-        .find_fragment_by_name(name.clone())
-        .map(|fragment| *fragment.id());
     let ast_ptr = SyntaxNodePtr::new(fragment.syntax());
 
     let fragment_data = FragmentSpread {
         name,
         directives,
-        fragment_id,
         ast_ptr,
     };
     Arc::new(fragment_data)
