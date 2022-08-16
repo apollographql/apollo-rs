@@ -17,6 +17,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.2.10](https://crates.io/crates/apollo-parser/0.2.10) - 2022-08-16
+## Fixes
+- **unterminated string value in list and object values - [bnjjj], [pull/267] & [pull/274] closes [issue/266]**
+
+  Create and pop errors with unterminated string values in list and object
+  values. Stops infinite loop when searching for a Value in the parser.
+
+  [bnjjj]: https://github.com/bnjjj
+  [pull/267]: https://github.com/apollographql/apollo-rs/pull/267
+  [issue/266]: https://github.com/apollographql/apollo-rs/issues/266
+
 
 # [0.2.9](https://crates.io/crates/apollo-parser/0.2.9) - 2022-07-27
 ## Features
@@ -29,7 +40,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [0.2.8](https://crates.io/crates/apollo-parser/0.2.8) - 2022-06-10
 
-## Fix
+## Fixes
 - **Use recursion limit both for selection set and field parsing - [garypen] and [lrlna], [pull/244]**
 
   This properly unifies the limits around recursion for both:
