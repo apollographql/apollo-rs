@@ -866,6 +866,7 @@ impl SelectionSet {
         fields
     }
 
+    /// Get a reference to selection set's fragment spread.
     pub fn fragment_spreads(&self) -> Vec<FragmentSpread> {
         let fragment_spread: Vec<FragmentSpread> = self
             .selection()
@@ -881,6 +882,21 @@ impl SelectionSet {
         fragment_spread
     }
 
+    /// Get a reference to selection set's inline fragments.
+    pub fn inline_fragments(&self) -> Vec<InlineFragment> {
+        let inline_fragments: Vec<InlineFragment> = self
+            .selection()
+            .iter()
+            .filter_map(|sel| match sel {
+                Selection::InlineFragment(inline) => return Some(inline.as_ref().clone()),
+                _ => None,
+            })
+            .collect();
+
+        inline_fragments
+    }
+
+    /// Find a field a selection set.
     pub fn field(&self, name: &str) -> Option<&Field> {
         self.selection().iter().find_map(|sel| {
             if let Selection::Field(field) = sel {
@@ -1040,8 +1056,8 @@ pub struct InlineFragment {
 
 impl InlineFragment {
     /// Get a reference to inline fragment's type condition.
-    pub fn type_condition(&self) -> Option<&String> {
-        self.type_condition.as_ref()
+    pub fn type_condition(&self) -> Option<&str> {
+        self.type_condition.as_deref()
     }
 
     /// Get a reference to inline fragment's directives.

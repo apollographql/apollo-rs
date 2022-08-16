@@ -80,7 +80,7 @@ impl From<apollo_parser::ast::OperationDefinition> for OperationDef {
 ///     query | mutation | subscription
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#OperationType).
-#[derive(Debug, Arbitrary, Clone, Copy, PartialEq)]
+#[derive(Debug, Arbitrary, Clone, Copy, PartialEq, Eq)]
 pub enum OperationType {
     Query,
     Mutation,
