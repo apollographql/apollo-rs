@@ -20,7 +20,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [0.2.9](https://crates.io/crates/apollo-parser/0.2.9) - 2022-07-27
 ## Features
-- **Provide APIs for SyntaxNode and SyntaxNodePtr - [lrlna], [pull/251]
+- **Provide APIs for SyntaxNode and SyntaxNodePtr - [lrlna], [pull/251]**
 
   Export a wrapper around SyntaxNodePtr provided by `rowan`. This allows access to pointers of the AST created by `apollo-parser`.
 
