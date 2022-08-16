@@ -304,6 +304,7 @@ interface Interface {
 type Concrete implements Interface {
   a: String
   b: Int
+  c: Boolean
 }
 
 union Union = Concrete
@@ -320,10 +321,7 @@ union Union = Concrete
             .unwrap()
             .fields(&ctx.db);
 
-        let interface_field = fields
-            .iter()
-            .find(|f| f.name() == "interface")
-            .expect("interface field exists");
+        let interface_field = fields.iter().find(|f| f.name() == "interface").unwrap();
 
         let interface_fields = interface_field.selection_set().fields();
         let interface_selection_fields_types: HashMap<_, _> = interface_fields
@@ -335,22 +333,11 @@ union Union = Concrete
             HashMap::from([("a", Some("String".to_string()))])
         );
 
-        let inline_fragments: Vec<_> = interface_field
-            .selection_set()
-            .selection()
-            .iter()
-            .filter_map(|f| match f {
-                crate::values::Selection::InlineFragment(f) => Some(f),
-                _ => None,
-            })
-            .collect();
+        let inline_fragments: Vec<_> = interface_field.selection_set().inline_fragments();
 
         assert_eq!(inline_fragments.len(), 1);
-        let inline_fragment = inline_fragments.first().expect("qed");
-        assert_eq!(
-            inline_fragment.type_condition(),
-            Some(&"Concrete".to_string())
-        );
+        let inline_fragment = inline_fragments.first().unwrap();
+        assert_eq!(inline_fragment.type_condition(), Some("Concrete"));
 
         let inline_fragment_fields = inline_fragment.selection_set().fields();
         let inline_fragment_fields_types: HashMap<_, _> = inline_fragment_fields
@@ -362,27 +349,13 @@ union Union = Concrete
             HashMap::from([("b", Some("Int".to_string()))])
         );
 
-        let union_field = fields
-            .iter()
-            .find(|f| f.name() == "union")
-            .expect("union field exists");
+        let union_field = fields.iter().find(|f| f.name() == "union").unwrap();
 
-        let union_inline_fragments: Vec<_> = union_field
-            .selection_set()
-            .selection()
-            .iter()
-            .filter_map(|f| match f {
-                crate::values::Selection::InlineFragment(f) => Some(f),
-                _ => None,
-            })
-            .collect();
+        let union_inline_fragments: Vec<_> = union_field.selection_set().inline_fragments();
 
         assert_eq!(union_inline_fragments.len(), 1);
-        let union_inline_fragment = union_inline_fragments.first().expect("qed");
-        assert_eq!(
-            union_inline_fragment.type_condition(),
-            Some(&"Concrete".to_string())
-        );
+        let union_inline_fragment = union_inline_fragments.first().unwrap();
+        assert_eq!(union_inline_fragment.type_condition(), Some("Concrete"));
 
         let union_inline_fragment_fields = union_inline_fragment.selection_set().fields();
         let union_inline_fragment_field_types: HashMap<_, _> = union_inline_fragment_fields
@@ -393,7 +366,7 @@ union Union = Concrete
             union_inline_fragment_field_types,
             HashMap::from([
                 ("a", Some("String".to_string())),
-                ("b", Some("Int".to_string()))
+                ("b", Some("Int".to_string())),
             ])
         );
     }
