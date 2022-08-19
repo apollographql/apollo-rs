@@ -17,6 +17,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.3.2](https://crates.io/crates/apollo-encoder/0.3.1) - 2022-08-19
+
+## Fixes
+- **trim double quotes in multilingual description encodings - [lrlna]**
+
+  Mutilingual descriptions failed to be encoded when containing block string
+  characters. The encoder now works with block string multilingual descriptions
+  such as:
+
+  ```graphql
+  """
+  котя любить дрімати в "кутку" з рослинами
+  """
+  ```
+
+  [lrlna]: https://github.com/lrlna
+
 # [0.3.1](https://crates.io/crates/apollo-encoder/0.3.1) - 2022-04-29
 
 ## Fixes
