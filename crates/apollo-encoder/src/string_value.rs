@@ -70,7 +70,7 @@ fn trim_double_quotes(description: &str) -> String {
         return description.to_string();
     }
 
-    if !description.starts_with("\"") || !description.ends_with("\"") {
+    if !description.starts_with('\"') || !description.ends_with('\"') {
         return description.to_string();
     }
 
