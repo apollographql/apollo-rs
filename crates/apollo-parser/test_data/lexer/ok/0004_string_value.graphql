@@ -13,3 +13,4 @@
 "string with minimal surrogate pair escape \\uD800\\uDC00"
 "string with maximal surrogate pair escape \\uDBFF\\uDFFF"
 "string with \"escaped\" characters"
+"string with multiple languages котя, 猫, ねこ, قطة"

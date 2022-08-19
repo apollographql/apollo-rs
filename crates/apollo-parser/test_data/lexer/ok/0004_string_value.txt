@@ -27,4 +27,6 @@ WHITESPACE@528:529 "\n"
 STRING_VALUE@529:587 "\"string with maximal surrogate pair escape \\\\uDBFF\\\\uDFFF\""
 WHITESPACE@587:588 "\n"
 STRING_VALUE@588:624 "\"string with \\\"escaped\\\" characters\""
-EOF@624:624
+WHITESPACE@624:625 "\n"
+STRING_VALUE@625:687 "\"string with multiple languages котя, 猫, ねこ, قطة\""
+EOF@687:687

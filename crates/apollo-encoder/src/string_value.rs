@@ -69,9 +69,11 @@ fn trim_double_quotes(description: &str) -> String {
     if desc_len < 2 {
         return description.to_string();
     }
-    if &description[..1] != "\"" || &description[desc_len - 1..] != "\"" {
+
+    if !description.starts_with("\"") || !description.ends_with("\"") {
         return description.to_string();
     }
+
     description
         .chars()
         .enumerate()
@@ -117,6 +119,21 @@ mod test {
             desc.to_string(),
             r#""""
 Favourite "cat" nap spots include: plant corner, pile of clothes.
+"""
+"#
+        );
+    }
+
+    #[test]
+    fn it_encodes_description_with_other_languages() {
+        let desc = StringValue::Top {
+            source: "котя(猫, ねこ, قطة) любить дрімати в \"кутку\" з рослинами".to_string(),
+        };
+
+        assert_eq!(
+            desc.to_string(),
+            r#""""
+котя(猫, ねこ, قطة) любить дрімати в "кутку" з рослинами
 """
 "#
         );
