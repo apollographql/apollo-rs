@@ -45,7 +45,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                     let len: usize = undefined_var.node.text_range().len().into();
                     ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                         ty: undefined_var.name.clone(),
-                        src: db.input_string(()).to_string(),
+                        src: db.input().to_string(),
                         definition: (offset, len).into(),
                     })
                 })
@@ -57,7 +57,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                 let len: usize = unused_var.node.text_range().len().into();
                 ApolloDiagnostic::UnusedVariable(UnusedVariable {
                     ty: unused_var.name.clone(),
-                    src: db.input_string(()).to_string(),
+                    src: db.input().to_string(),
                     definition: (offset, len).into(),
                 })
             });

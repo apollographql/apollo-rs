@@ -11,7 +11,7 @@ use std::sync::Arc;
 use apollo_parser::{ast, SyntaxTree};
 pub use queries::{
     database::{Database, Document},
-    values,
+    values, DocumentParser, Inputs,
 };
 
 pub use diagnostics::ApolloDiagnostic;
@@ -71,13 +71,13 @@ impl ApolloCompiler {
     pub fn new(input: &str) -> Self {
         let mut db = Database::default();
         let input = input.to_string();
-        db.set_input_string((), Arc::new(input));
+        db.set_input(String::from("schema.rs"), input);
         Self { db }
     }
 
     /// Get access to the `apollo-parser's` AST.
-    pub fn parse(&self) -> Arc<SyntaxTree> {
-        self.db.parse()
+    pub fn ast(&self) -> Arc<SyntaxTree> {
+        self.db.ast()
     }
 
     /// Validate your GraphQL input. Returns Diagnostics that you can pretty-print.

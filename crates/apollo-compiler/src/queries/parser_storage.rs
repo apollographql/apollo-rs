@@ -1,4 +1,4 @@
-use apollo_parser::{ast, Parser as ApolloParser, SyntaxTree};
+use apollo_parser::{Parser as ApolloParser, SyntaxTree};
 use std::sync::Arc;
 
 use crate::queries::inputs_storage::Inputs;

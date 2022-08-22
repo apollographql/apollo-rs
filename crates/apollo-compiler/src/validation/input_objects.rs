@@ -24,7 +24,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
             diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                 ty: "input object".into(),
                 name: name.into(),
-                src: db.input_string(()).to_string(),
+                src: db.input().to_string(),
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!(
@@ -60,7 +60,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
 
                     diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                         field: field_name.into(),
-                        src: db.input_string(()).to_string(),
+                        src: db.input().to_string(),
                         original_field: (prev_offset, prev_node_len).into(),
                         redefined_field: (current_offset, current_node_len).into(),
                         help: Some(format!(

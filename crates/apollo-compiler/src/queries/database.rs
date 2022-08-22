@@ -4,8 +4,10 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use apollo_parser::ast::{AstChildren, AstNode, SyntaxNodePtr};
-use apollo_parser::{ast, Parser, SyntaxTree};
+use apollo_parser::{
+    ast,
+    ast::{AstChildren, AstNode, SyntaxNodePtr},
+};
 use uuid::Uuid;
 
 use crate::diagnostics::{ApolloDiagnostic, SyntaxError};
@@ -30,9 +32,9 @@ impl salsa::Database for Database {}
 // useful for readability of this code.
 #[salsa::query_group(DocumentStorage)]
 pub trait Document: Inputs + DocumentParser {
-    fn document(&self) -> Arc<ast::Document>;
+    fn document(&self, name: String) -> Arc<ast::Document>;
 
-    fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
+    fn syntax_errors(&self, name: String) -> Vec<ApolloDiagnostic>;
 
     fn definitions(&self) -> Arc<Vec<ast::Definition>>;
 
@@ -109,17 +111,17 @@ pub trait Document: Inputs + DocumentParser {
     fn operation_fragment_spread_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 }
 
-fn document(db: &dyn Document) -> Arc<ast::Document> {
-    Arc::new(db.ast().as_ref().clone().document())
+fn document(db: &dyn Document, name: String) -> Arc<ast::Document> {
+    Arc::new(db.ast(name).as_ref().clone().document())
 }
 
-fn syntax_errors(db: &dyn Document) -> Vec<ApolloDiagnostic> {
-    db.parse()
+fn syntax_errors(db: &dyn Document, name: String) -> Vec<ApolloDiagnostic> {
+    db.ast(name)
         .errors()
         .into_iter()
         .map(|err| {
             ApolloDiagnostic::SyntaxError(SyntaxError {
-                src: db.input_string(()).to_string(),
+                src: db.input(name).to_string(),
                 span: (err.index(), err.data().len()).into(), // (offset, length of error token)
                 message: err.message().into(),
             })
@@ -128,7 +130,12 @@ fn syntax_errors(db: &dyn Document) -> Vec<ApolloDiagnostic> {
 }
 
 fn definitions(db: &dyn Document) -> Arc<Vec<ast::Definition>> {
-    Arc::new(db.document().definitions().into_iter().collect())
+    Arc::new(
+        db.document(String::from("schema"))
+            .definitions()
+            .into_iter()
+            .collect(),
+    )
 }
 
 fn db_definitions(db: &dyn Document) -> Arc<Vec<Definition>> {
