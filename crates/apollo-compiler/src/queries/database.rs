@@ -21,7 +21,7 @@ use crate::values::*;
 #[salsa::database(InputsStorage, ParserStorage)]
 #[derive(Default)]
 pub struct Database {
-    storage: salsa::Storage<Database>,
+    pub storage: salsa::Storage<Database>,
 }
 
 impl salsa::Database for Database {}

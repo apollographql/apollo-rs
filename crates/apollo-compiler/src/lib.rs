@@ -11,7 +11,7 @@ use std::sync::Arc;
 use apollo_parser::{ast, SyntaxTree};
 pub use queries::{
     database::{Database, Document},
-    values, DocumentParser, Inputs,
+    values, DocumentParser, Inputs, Manifest,
 };
 
 pub use diagnostics::ApolloDiagnostic;
@@ -19,6 +19,7 @@ use validation::Validator;
 
 pub struct ApolloCompiler {
     pub db: Database,
+    pub sources: Manifest,
 }
 
 /// Apollo compiler creates a context around your GraphQL. It creates refernces
@@ -73,6 +74,10 @@ impl ApolloCompiler {
         let input = input.to_string();
         db.set_input(String::from("schema.rs"), input);
         Self { db }
+    }
+
+    pub fn snapshot(&self) -> salsa::Storage<Database> {
+        self.db.storage.snapshot()
     }
 
     /// Get access to the `apollo-parser's` AST.
@@ -169,6 +174,29 @@ mod test {
     use std::collections::HashMap;
 
     use crate::{values::Definition, ApolloCompiler, Document};
+
+    #[test]
+    fn is_db_send() {
+        let input = r#"
+type Query {
+  website: URL,
+  amount: Int
+}
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
+        assert!(diagnostics.is_empty());
+
+        // is_send(ctx.snapshot());
+
+        // fn is_send<T: Send>(db: T) {};
+    }
 
     #[test]
     fn it_accesses_operation_definition_parts() {
