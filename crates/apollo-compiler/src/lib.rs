@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use apollo_parser::{ast, SyntaxTree};
 pub use queries::{
-    database::{Database, SourceDatabase},
+    database::{Database, Document},
     values,
 };
 
@@ -168,7 +168,7 @@ impl ApolloCompiler {
 mod test {
     use std::collections::HashMap;
 
-    use crate::{values::Definition, ApolloCompiler, SourceDatabase};
+    use crate::{values::Definition, ApolloCompiler, Document};
 
     #[test]
     fn it_accesses_operation_definition_parts() {

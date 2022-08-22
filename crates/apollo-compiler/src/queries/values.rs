@@ -7,7 +7,7 @@ use apollo_parser::{
 use ordered_float::{self, OrderedFloat};
 use uuid::Uuid;
 
-use crate::SourceDatabase;
+use crate::Document;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Definition {
@@ -245,7 +245,7 @@ impl FragmentDefinition {
     // which operation definition the fragment is used in.
 
     /// Get variables used in a fragment definition.
-    pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn Document) -> Vec<Variable> {
         self.selection_set
             .selection()
             .iter()
@@ -253,7 +253,7 @@ impl FragmentDefinition {
             .collect()
     }
 
-    pub fn ty(&self, db: &dyn SourceDatabase) -> Option<Arc<Definition>> {
+    pub fn ty(&self, db: &dyn Document) -> Option<Arc<Definition>> {
         if let Some(id) = self.reference_ty_id {
             db.find_type_system_definition(id)
         } else {
@@ -267,7 +267,7 @@ impl FragmentDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -297,7 +297,7 @@ impl OperationDefinition {
     }
 
     /// Get operation's definition object type.
-    pub fn object_type(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn object_type(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
         if let Some(id) = self.object_id {
             db.find_object_type(id)
         } else {
@@ -327,7 +327,7 @@ impl OperationDefinition {
 
     /// Get fields in the operation definition (excluding inline fragments and
     /// fragment spreads).
-    pub fn fields(&self, db: &dyn SourceDatabase) -> Arc<Vec<Field>> {
+    pub fn fields(&self, db: &dyn Document) -> Arc<Vec<Field>> {
         db.operation_fields(self.id)
     }
 
@@ -337,11 +337,11 @@ impl OperationDefinition {
     //
     // We will need to figure out how to store operation definition id on its
     // fragment spreads and inline fragments to do this
-    pub fn fields_in_inline_fragments(&self, db: &dyn SourceDatabase) -> Arc<Vec<Field>> {
+    pub fn fields_in_inline_fragments(&self, db: &dyn Document) -> Arc<Vec<Field>> {
         db.operation_inline_fragment_fields(self.id)
     }
 
-    pub fn fields_in_fragment_spread(&self, db: &dyn SourceDatabase) -> Arc<Vec<Field>> {
+    pub fn fields_in_fragment_spread(&self, db: &dyn Document) -> Arc<Vec<Field>> {
         db.operation_fragment_spread_fields(self.id)
     }
 
@@ -351,7 +351,7 @@ impl OperationDefinition {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -465,7 +465,7 @@ impl VariableDefinition {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -522,7 +522,7 @@ impl Type {
     /// [`UnionTypeDefinition`]: Definition::UnionTypeDefinition
     /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
     #[must_use]
-    pub fn is_output_type(&self, db: &dyn SourceDatabase) -> bool {
+    pub fn is_output_type(&self, db: &dyn Document) -> bool {
         if let Some(ty) = self.ty(db) {
             ty.as_ref().is_output_definition()
         } else {
@@ -537,7 +537,7 @@ impl Type {
     /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
     /// [`InputObjectTypeDefinition`]: Definition::ObjectTypeDefinition
     #[must_use]
-    pub fn is_input_type(&self, db: &dyn SourceDatabase) -> bool {
+    pub fn is_input_type(&self, db: &dyn Document) -> bool {
         if let Some(ty) = self.ty(db) {
             ty.as_ref().is_input_definition()
         } else {
@@ -554,12 +554,12 @@ impl Type {
         }
     }
 
-    pub fn ty(&self, db: &dyn SourceDatabase) -> Option<Arc<Definition>> {
+    pub fn ty(&self, db: &dyn Document) -> Option<Arc<Definition>> {
         db.find_definition_by_name(self.name())
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(db.document().deref().syntax()))
     }
@@ -608,7 +608,7 @@ impl Directive {
     }
 
     // Get directive definition of the currently used directive
-    pub fn directive(&self, db: &dyn SourceDatabase) -> Option<Arc<DirectiveDefinition>> {
+    pub fn directive(&self, db: &dyn Document) -> Option<Arc<DirectiveDefinition>> {
         db.find_directive_definition_by_name(self.name().to_string())
     }
 
@@ -618,7 +618,7 @@ impl Directive {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -662,7 +662,7 @@ impl DirectiveDefinition {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(db.document().deref().syntax()))
     }
@@ -785,7 +785,7 @@ impl Argument {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -834,7 +834,7 @@ impl Variable {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -919,7 +919,7 @@ pub enum Selection {
 }
 impl Selection {
     /// Get variables used in the selection set.
-    pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn Document) -> Vec<Variable> {
         match self {
             Selection::Field(field) => field.variables(db),
             Selection::FragmentSpread(fragment_spread) => fragment_spread.variables(db),
@@ -984,7 +984,7 @@ impl Field {
     }
 
     // Get field's original field definition.
-    pub fn field_definition(&self, db: &dyn SourceDatabase) -> Option<FieldDefinition> {
+    pub fn field_definition(&self, db: &dyn Document) -> Option<FieldDefinition> {
         if let Some(object_id) = self.reference_ty_id {
             db.find_object_type(object_id)?
                 .fields_definition()
@@ -1012,7 +1012,7 @@ impl Field {
     }
 
     /// Get variables used in the field.
-    pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn Document) -> Vec<Variable> {
         let mut vars: Vec<_> = self
             .arguments
             .iter()
@@ -1036,12 +1036,12 @@ impl Field {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
 
-    // pub fn field_definition(&self, db: &dyn SourceDatabase) -> Option<Arc<FieldDefinition>> {
+    // pub fn field_definition(&self, db: &dyn Document) -> Option<Arc<FieldDefinition>> {
     //     db.get
     // }
 }
@@ -1070,7 +1070,7 @@ impl InlineFragment {
         &self.selection_set
     }
 
-    pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn Document) -> Vec<Variable> {
         let vars = self
             .selection_set
             .selection()
@@ -1086,7 +1086,7 @@ impl InlineFragment {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -1100,11 +1100,11 @@ pub struct FragmentSpread {
 }
 
 impl FragmentSpread {
-    pub fn fragment(&self, db: &dyn SourceDatabase) -> Option<Arc<FragmentDefinition>> {
+    pub fn fragment(&self, db: &dyn Document) -> Option<Arc<FragmentDefinition>> {
         db.find_fragment_by_name(self.name.clone())
     }
 
-    pub fn variables(&self, db: &dyn SourceDatabase) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn Document) -> Vec<Variable> {
         let vars = match self.fragment(db) {
             Some(fragment) => fragment
                 .selection_set
@@ -1123,7 +1123,7 @@ impl FragmentSpread {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -1172,7 +1172,7 @@ impl SchemaDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(db.document().deref().syntax()))
     }
@@ -1181,7 +1181,7 @@ impl SchemaDefinition {
     // so they are memoised as well
 
     /// Get Schema's query object type definition.
-    pub fn query(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn query(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_query() {
                 db.find_object_type(op.object_type_id?)
@@ -1192,7 +1192,7 @@ impl SchemaDefinition {
     }
 
     /// Get Schema's mutation object type definition.
-    pub fn mutation(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn mutation(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_mutation() {
                 db.find_object_type(op.object_type_id?)
@@ -1203,7 +1203,7 @@ impl SchemaDefinition {
     }
 
     /// Get Schema's subscription object type definition.
-    pub fn subscription(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn subscription(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_subscription() {
                 db.find_object_type(op.object_type_id?)
@@ -1239,7 +1239,7 @@ impl RootOperationTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(db.document().deref().syntax()))
     }
@@ -1307,7 +1307,7 @@ impl ObjectTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -1320,10 +1320,7 @@ pub struct ImplementsInterface {
 }
 
 impl ImplementsInterface {
-    pub fn interface_definition(
-        &self,
-        db: &dyn SourceDatabase,
-    ) -> Option<Arc<InterfaceTypeDefinition>> {
+    pub fn interface_definition(&self, db: &dyn Document) -> Option<Arc<InterfaceTypeDefinition>> {
         db.find_interface_by_name(self.interface.clone())
     }
 
@@ -1337,7 +1334,7 @@ impl ImplementsInterface {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -1370,7 +1367,7 @@ impl FieldDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -1404,7 +1401,7 @@ impl ArgumentsDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(db.document().deref().syntax()))
     }
@@ -1437,7 +1434,7 @@ impl InputValueDefinition {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(db.document().deref().syntax()))
     }
@@ -1485,7 +1482,7 @@ impl ScalarTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(db.document().deref().syntax()))
     }
@@ -1533,7 +1530,7 @@ impl EnumTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -1558,7 +1555,7 @@ impl EnumValueDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -1601,7 +1598,7 @@ impl UnionTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -1620,7 +1617,7 @@ impl UnionMember {
         self.name.as_ref()
     }
 
-    pub fn object(&self, db: &dyn SourceDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn object(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
         db.find_object_type(self.object_id?)
     }
 
@@ -1630,7 +1627,7 @@ impl UnionMember {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -1679,7 +1676,7 @@ impl InterfaceTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }
@@ -1721,7 +1718,7 @@ impl InputObjectTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn SourceDatabase) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
     }

@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::{
     diagnostics::{RecursiveDefinition, UniqueDefinition},
     values::DirectiveDefinition,
-    ApolloDiagnostic, SourceDatabase,
+    ApolloDiagnostic, Document,
 };
 
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     let mut errors = Vec::new();
 
     // Directive definitions must have unique names.

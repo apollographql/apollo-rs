@@ -5,11 +5,11 @@ use crate::{
         MissingIdent, SingleRootField, UndefinedField, UniqueDefinition, UnsupportedOperation,
     },
     values::{OperationDefinition, Selection},
-    ApolloDiagnostic, SourceDatabase,
+    ApolloDiagnostic, Document,
 };
-// use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, SourceDatabase};
+// use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, Document};
 
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     // It is possible to have an unnamed (anonymous) operation definition only
     // if there is **one** operation definition.

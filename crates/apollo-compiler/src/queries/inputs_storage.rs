@@ -1,5 +1,5 @@
 #[salsa::query_group(InputsStorage)]
 pub trait Inputs {
     #[salsa::input]
-    fn document(&self, name: String) -> String;
+    fn input(&self, name: String) -> String;
 }

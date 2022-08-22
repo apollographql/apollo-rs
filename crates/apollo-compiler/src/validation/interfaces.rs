@@ -7,10 +7,10 @@ use crate::{
     },
     validation::ValidationSet,
     values::{FieldDefinition, InterfaceTypeDefinition},
-    ApolloDiagnostic, SourceDatabase,
+    ApolloDiagnostic, Document,
 };
 
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // Interface definitions must have unique names.

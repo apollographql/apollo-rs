@@ -1,6 +1,6 @@
 use apollo_parser::SyntaxNode;
 
-use crate::{ApolloDiagnostic, SourceDatabase};
+use crate::{ApolloDiagnostic, Document};
 
 // schema
 pub mod schema;
@@ -22,12 +22,12 @@ pub mod operations;
 pub mod unused_variables;
 
 pub struct Validator<'a> {
-    db: &'a dyn SourceDatabase,
+    db: &'a dyn Document,
     diagnostics: Vec<ApolloDiagnostic>,
 }
 
 impl<'a> Validator<'a> {
-    pub fn new(db: &'a dyn SourceDatabase) -> Self {
+    pub fn new(db: &'a dyn Document) -> Self {
         Self {
             db,
             diagnostics: Vec::new(),

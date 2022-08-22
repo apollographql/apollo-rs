@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::{
     diagnostics::{ObjectType, UndefinedDefinition, UniqueDefinition},
     values::UnionMember,
-    ApolloDiagnostic, SourceDatabase,
+    ApolloDiagnostic, Document,
 };
 
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for union_def in db.unions().iter() {

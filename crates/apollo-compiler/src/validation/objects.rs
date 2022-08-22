@@ -7,10 +7,10 @@ use crate::{
     },
     validation::ValidationSet,
     values::{FieldDefinition, ObjectTypeDefinition},
-    ApolloDiagnostic, SourceDatabase,
+    ApolloDiagnostic, Document,
 };
 
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // Object Type definitions must have unique names.

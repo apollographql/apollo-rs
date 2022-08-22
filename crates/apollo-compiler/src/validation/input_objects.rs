@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::{
     diagnostics::{UniqueDefinition, UniqueField},
     values::{InputObjectTypeDefinition, InputValueDefinition},
-    ApolloDiagnostic, SourceDatabase,
+    ApolloDiagnostic, Document,
 };
 
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // Input Object Definitions must have unique names.

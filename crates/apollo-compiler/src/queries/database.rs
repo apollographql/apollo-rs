@@ -9,10 +9,14 @@ use apollo_parser::{ast, Parser, SyntaxTree};
 use uuid::Uuid;
 
 use crate::diagnostics::{ApolloDiagnostic, SyntaxError};
-// use crate::diagnostics::{ApolloDiagnostic, ErrorDiagnostic};
+use crate::queries::{
+    inputs_storage::{Inputs, InputsStorage},
+    parser_storage::ParserStorage,
+    DocumentParser,
+};
 use crate::values::*;
 
-#[salsa::database(ASTDatabase)]
+#[salsa::database(InputsStorage, ParserStorage)]
 #[derive(Default)]
 pub struct Database {
     storage: salsa::Storage<Database>,
@@ -24,13 +28,8 @@ impl salsa::Database for Database {}
 // In the long run we will create child databases based on definitions: i.e.
 // OperationDefinition DB, ObjectTypeDefinition etc. This is mostly going to be
 // useful for readability of this code.
-#[salsa::query_group(ASTDatabase)]
-pub trait SourceDatabase {
-    #[salsa::input]
-    fn input_string(&self, key: ()) -> Arc<String>;
-
-    fn parse(&self) -> Arc<SyntaxTree>;
-
+#[salsa::query_group(DocumentStorage)]
+pub trait Document: Inputs + DocumentParser {
     fn document(&self) -> Arc<ast::Document>;
 
     fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
@@ -110,20 +109,11 @@ pub trait SourceDatabase {
     fn operation_fragment_spread_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 }
 
-// this is top level entry to the source db
-fn parse(db: &dyn SourceDatabase) -> Arc<SyntaxTree> {
-    let input = db.input_string(());
-    let parser = Parser::new(&input);
-    Arc::new(parser.parse())
+fn document(db: &dyn Document) -> Arc<ast::Document> {
+    Arc::new(db.ast().as_ref().clone().document())
 }
 
-// TODO @lrlna: a very expensive clone - should more tightly couple the parser and the
-// source database for a cleaner solution
-fn document(db: &dyn SourceDatabase) -> Arc<ast::Document> {
-    Arc::new(db.parse().as_ref().clone().document())
-}
-
-fn syntax_errors(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+fn syntax_errors(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     db.parse()
         .errors()
         .into_iter()
@@ -137,11 +127,11 @@ fn syntax_errors(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
         .collect()
 }
 
-fn definitions(db: &dyn SourceDatabase) -> Arc<Vec<ast::Definition>> {
+fn definitions(db: &dyn Document) -> Arc<Vec<ast::Definition>> {
     Arc::new(db.document().definitions().into_iter().collect())
 }
 
-fn db_definitions(db: &dyn SourceDatabase) -> Arc<Vec<Definition>> {
+fn db_definitions(db: &dyn Document) -> Arc<Vec<Definition>> {
     let mut definitions = Vec::new();
 
     let operations: Vec<Definition> = db
@@ -205,7 +195,7 @@ fn db_definitions(db: &dyn SourceDatabase) -> Arc<Vec<Definition>> {
     Arc::new(definitions)
 }
 
-fn type_system_definitions(db: &dyn SourceDatabase) -> Arc<Vec<Definition>> {
+fn type_system_definitions(db: &dyn Document) -> Arc<Vec<Definition>> {
     let mut definitions = Vec::new();
 
     let directives: Vec<Definition> = db
@@ -257,7 +247,7 @@ fn type_system_definitions(db: &dyn SourceDatabase) -> Arc<Vec<Definition>> {
     Arc::new(definitions)
 }
 
-fn find_definition_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<Definition>> {
+fn find_definition_by_name(db: &dyn Document, name: String) -> Option<Arc<Definition>> {
     db.db_definitions().iter().find_map(|def| {
         if let Some(n) = def.name() {
             if name == n {
@@ -268,7 +258,7 @@ fn find_definition_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<
     })
 }
 
-fn find_type_system_definition(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<Definition>> {
+fn find_type_system_definition(db: &dyn Document, id: Uuid) -> Option<Arc<Definition>> {
     db.type_system_definitions().iter().find_map(|op| {
         if let Some(op_id) = op.id() {
             if op_id == &id {
@@ -279,10 +269,7 @@ fn find_type_system_definition(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<
     })
 }
 
-fn find_type_system_definition_by_name(
-    db: &dyn SourceDatabase,
-    name: String,
-) -> Option<Arc<Definition>> {
+fn find_type_system_definition_by_name(db: &dyn Document, name: String) -> Option<Arc<Definition>> {
     db.type_system_definitions().iter().find_map(|def| {
         if let Some(n) = def.name() {
             if name == n {
@@ -296,7 +283,7 @@ fn find_type_system_definition_by_name(
 // NOTE: we might want to the values::OperationDefinition creation even further.
 // At the moment all fields in this struct are created here, instead individual
 // queries for selection_set, variables, directives etc can be created.
-fn operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
+fn operations(db: &dyn Document) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .definitions()
         .iter()
@@ -310,7 +297,7 @@ fn operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
     Arc::new(operations)
 }
 
-fn query_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
+fn query_operations(db: &dyn Document) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .operations()
         .iter()
@@ -319,7 +306,7 @@ fn query_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
     Arc::new(operations)
 }
 
-fn subscription_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
+fn subscription_operations(db: &dyn Document) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .operations()
         .iter()
@@ -328,7 +315,7 @@ fn subscription_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefiniti
     Arc::new(operations)
 }
 
-fn mutation_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>> {
+fn mutation_operations(db: &dyn Document) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .operations()
         .iter()
@@ -337,7 +324,7 @@ fn mutation_operations(db: &dyn SourceDatabase) -> Arc<Vec<OperationDefinition>>
     Arc::new(operations)
 }
 
-fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefinition>> {
+fn find_operation(db: &dyn Document, id: Uuid) -> Option<Arc<OperationDefinition>> {
     db.operations().iter().find_map(|op| {
         if &id == op.id() {
             return Some(Arc::new(op.clone()));
@@ -346,10 +333,7 @@ fn find_operation(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<OperationDefi
     })
 }
 
-fn find_operation_by_name(
-    db: &dyn SourceDatabase,
-    name: String,
-) -> Option<Arc<OperationDefinition>> {
+fn find_operation_by_name(db: &dyn Document, name: String) -> Option<Arc<OperationDefinition>> {
     db.operations().iter().find_map(|op| {
         if let Some(n) = op.name() {
             if n == name {
@@ -361,7 +345,7 @@ fn find_operation_by_name(
 }
 
 // NOTE: potentially want to return a hashset of variables and their types?
-fn operation_definition_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<Variable>> {
+fn operation_definition_variables(db: &dyn Document, id: Uuid) -> Arc<HashSet<Variable>> {
     let vars: HashSet<Variable> = match db.find_operation(id) {
         Some(op) => op
             .variables()
@@ -376,7 +360,7 @@ fn operation_definition_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<Hash
     Arc::new(vars)
 }
 
-fn operation_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Vec<Field>> {
+fn operation_fields(db: &dyn Document, id: Uuid) -> Arc<Vec<Field>> {
     let fields = match db.find_operation(id) {
         Some(op) => op
             .selection_set()
@@ -392,7 +376,7 @@ fn operation_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Vec<Field>> {
     Arc::new(fields)
 }
 
-fn operation_inline_fragment_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Vec<Field>> {
+fn operation_inline_fragment_fields(db: &dyn Document, id: Uuid) -> Arc<Vec<Field>> {
     let fields: Vec<Field> = match db.find_operation(id) {
         Some(op) => op
             .selection_set()
@@ -412,7 +396,7 @@ fn operation_inline_fragment_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Ve
     Arc::new(fields)
 }
 
-fn operation_fragment_spread_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Vec<Field>> {
+fn operation_fragment_spread_fields(db: &dyn Document, id: Uuid) -> Arc<Vec<Field>> {
     let fields: Vec<Field> = match db.find_operation(id) {
         Some(op) => op
             .selection_set()
@@ -433,7 +417,7 @@ fn operation_fragment_spread_fields(db: &dyn SourceDatabase, id: Uuid) -> Arc<Ve
 }
 
 // NOTE: potentially want to return a hashmap of variables and their types?
-fn selection_variables(db: &dyn SourceDatabase, id: Uuid) -> Arc<HashSet<Variable>> {
+fn selection_variables(db: &dyn Document, id: Uuid) -> Arc<HashSet<Variable>> {
     let vars = db
         .operation_fields(id)
         .iter()
@@ -464,7 +448,7 @@ fn get_field_variable_value(val: Value) -> Vec<Variable> {
     }
 }
 
-fn fragments(db: &dyn SourceDatabase) -> Arc<Vec<FragmentDefinition>> {
+fn fragments(db: &dyn Document) -> Arc<Vec<FragmentDefinition>> {
     let fragments: Vec<FragmentDefinition> = db
         .definitions()
         .iter()
@@ -478,7 +462,7 @@ fn fragments(db: &dyn SourceDatabase) -> Arc<Vec<FragmentDefinition>> {
     Arc::new(fragments)
 }
 
-fn find_fragment(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<FragmentDefinition>> {
+fn find_fragment(db: &dyn Document, id: Uuid) -> Option<Arc<FragmentDefinition>> {
     db.fragments().iter().find_map(|fragment| {
         if &id == fragment.id() {
             return Some(Arc::new(fragment.clone()));
@@ -487,7 +471,7 @@ fn find_fragment(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<FragmentDefini
     })
 }
 
-fn find_fragment_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<FragmentDefinition>> {
+fn find_fragment_by_name(db: &dyn Document, name: String) -> Option<Arc<FragmentDefinition>> {
     db.fragments().iter().find_map(|fragment| {
         if name == fragment.name() {
             return Some(Arc::new(fragment.clone()));
@@ -496,7 +480,7 @@ fn find_fragment_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<Fr
     })
 }
 
-fn schema(db: &dyn SourceDatabase) -> Arc<SchemaDefinition> {
+fn schema(db: &dyn Document) -> Arc<SchemaDefinition> {
     let schema = db
         .definitions()
         .iter()
@@ -522,7 +506,7 @@ fn schema(db: &dyn SourceDatabase) -> Arc<SchemaDefinition> {
     Arc::new(schema_def)
 }
 
-fn object_types(db: &dyn SourceDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
+fn object_types(db: &dyn Document) -> Arc<Vec<ObjectTypeDefinition>> {
     let objects = db
         .definitions()
         .iter()
@@ -536,7 +520,7 @@ fn object_types(db: &dyn SourceDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
     Arc::new(objects)
 }
 
-fn find_object_type(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<ObjectTypeDefinition>> {
+fn find_object_type(db: &dyn Document, id: Uuid) -> Option<Arc<ObjectTypeDefinition>> {
     db.object_types().iter().find_map(|object_type| {
         if &id == object_type.id() {
             return Some(Arc::new(object_type.clone()));
@@ -545,10 +529,7 @@ fn find_object_type(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<ObjectTypeD
     })
 }
 
-fn find_object_type_by_name(
-    db: &dyn SourceDatabase,
-    name: String,
-) -> Option<Arc<ObjectTypeDefinition>> {
+fn find_object_type_by_name(db: &dyn Document, name: String) -> Option<Arc<ObjectTypeDefinition>> {
     db.object_types().iter().find_map(|object_type| {
         if name == object_type.name() {
             return Some(Arc::new(object_type.clone()));
@@ -557,7 +538,7 @@ fn find_object_type_by_name(
     })
 }
 
-fn scalars(db: &dyn SourceDatabase) -> Arc<Vec<ScalarTypeDefinition>> {
+fn scalars(db: &dyn Document) -> Arc<Vec<ScalarTypeDefinition>> {
     let scalars = db
         .definitions()
         .iter()
@@ -573,7 +554,7 @@ fn scalars(db: &dyn SourceDatabase) -> Arc<Vec<ScalarTypeDefinition>> {
     Arc::new(scalars)
 }
 
-fn enums(db: &dyn SourceDatabase) -> Arc<Vec<EnumTypeDefinition>> {
+fn enums(db: &dyn Document) -> Arc<Vec<EnumTypeDefinition>> {
     let enums = db
         .definitions()
         .iter()
@@ -587,7 +568,7 @@ fn enums(db: &dyn SourceDatabase) -> Arc<Vec<EnumTypeDefinition>> {
     Arc::new(enums)
 }
 
-fn unions(db: &dyn SourceDatabase) -> Arc<Vec<UnionTypeDefinition>> {
+fn unions(db: &dyn Document) -> Arc<Vec<UnionTypeDefinition>> {
     let unions = db
         .definitions()
         .iter()
@@ -601,7 +582,7 @@ fn unions(db: &dyn SourceDatabase) -> Arc<Vec<UnionTypeDefinition>> {
     Arc::new(unions)
 }
 
-fn find_union_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<UnionTypeDefinition>> {
+fn find_union_by_name(db: &dyn Document, name: String) -> Option<Arc<UnionTypeDefinition>> {
     db.unions().iter().find_map(|union| {
         if name == union.name() {
             return Some(Arc::new(union.clone()));
@@ -610,7 +591,7 @@ fn find_union_by_name(db: &dyn SourceDatabase, name: String) -> Option<Arc<Union
     })
 }
 
-fn interfaces(db: &dyn SourceDatabase) -> Arc<Vec<InterfaceTypeDefinition>> {
+fn interfaces(db: &dyn Document) -> Arc<Vec<InterfaceTypeDefinition>> {
     let interfaces = db
         .definitions()
         .iter()
@@ -624,7 +605,7 @@ fn interfaces(db: &dyn SourceDatabase) -> Arc<Vec<InterfaceTypeDefinition>> {
     Arc::new(interfaces)
 }
 
-fn find_interface(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<InterfaceTypeDefinition>> {
+fn find_interface(db: &dyn Document, id: Uuid) -> Option<Arc<InterfaceTypeDefinition>> {
     db.interfaces().iter().find_map(|interface| {
         if &id == interface.id() {
             return Some(Arc::new(interface.clone()));
@@ -633,10 +614,7 @@ fn find_interface(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<InterfaceType
     })
 }
 
-fn find_interface_by_name(
-    db: &dyn SourceDatabase,
-    name: String,
-) -> Option<Arc<InterfaceTypeDefinition>> {
+fn find_interface_by_name(db: &dyn Document, name: String) -> Option<Arc<InterfaceTypeDefinition>> {
     db.interfaces().iter().find_map(|interface| {
         if name == interface.name() {
             return Some(Arc::new(interface.clone()));
@@ -645,7 +623,7 @@ fn find_interface_by_name(
     })
 }
 
-fn directive_definitions(db: &dyn SourceDatabase) -> Arc<Vec<DirectiveDefinition>> {
+fn directive_definitions(db: &dyn Document) -> Arc<Vec<DirectiveDefinition>> {
     let directives = db
         .definitions()
         .iter()
@@ -662,10 +640,7 @@ fn directive_definitions(db: &dyn SourceDatabase) -> Arc<Vec<DirectiveDefinition
     Arc::new(directives)
 }
 
-fn find_directive_definition(
-    db: &dyn SourceDatabase,
-    id: Uuid,
-) -> Option<Arc<DirectiveDefinition>> {
+fn find_directive_definition(db: &dyn Document, id: Uuid) -> Option<Arc<DirectiveDefinition>> {
     db.directive_definitions().iter().find_map(|directive_def| {
         if &id == directive_def.id() {
             return Some(Arc::new(directive_def.clone()));
@@ -675,7 +650,7 @@ fn find_directive_definition(
 }
 
 fn find_directive_definition_by_name(
-    db: &dyn SourceDatabase,
+    db: &dyn Document,
     name: String,
 ) -> Option<Arc<DirectiveDefinition>> {
     db.directive_definitions().iter().find_map(|directive_def| {
@@ -686,7 +661,7 @@ fn find_directive_definition_by_name(
     })
 }
 
-fn input_objects(db: &dyn SourceDatabase) -> Arc<Vec<InputObjectTypeDefinition>> {
+fn input_objects(db: &dyn Document) -> Arc<Vec<InputObjectTypeDefinition>> {
     let directives = db
         .definitions()
         .iter()
@@ -701,7 +676,7 @@ fn input_objects(db: &dyn SourceDatabase) -> Arc<Vec<InputObjectTypeDefinition>>
     Arc::new(directives)
 }
 
-fn find_input_object(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<InputObjectTypeDefinition>> {
+fn find_input_object(db: &dyn Document, id: Uuid) -> Option<Arc<InputObjectTypeDefinition>> {
     db.input_objects().iter().find_map(|input_obj| {
         if &id == input_obj.id() {
             return Some(Arc::new(input_obj.clone()));
@@ -711,7 +686,7 @@ fn find_input_object(db: &dyn SourceDatabase, id: Uuid) -> Option<Arc<InputObjec
 }
 
 fn find_input_object_by_name(
-    db: &dyn SourceDatabase,
+    db: &dyn Document,
     name: String,
 ) -> Option<Arc<InputObjectTypeDefinition>> {
     db.input_objects().iter().find_map(|input_obj| {
@@ -723,7 +698,7 @@ fn find_input_object_by_name(
 }
 
 fn operation_definition(
-    db: &dyn SourceDatabase,
+    db: &dyn Document,
     op_def: ast::OperationDefinition,
 ) -> OperationDefinition {
     // check if there are already operations
@@ -750,7 +725,7 @@ fn operation_definition(
 }
 
 fn fragment_definition(
-    db: &dyn SourceDatabase,
+    db: &dyn Document,
     fragment_def: ast::FragmentDefinition,
 ) -> FragmentDefinition {
     let name = name(
@@ -786,10 +761,7 @@ fn fragment_definition(
     }
 }
 
-fn schema_definition(
-    db: &dyn SourceDatabase,
-    schema_def: ast::SchemaDefinition,
-) -> SchemaDefinition {
+fn schema_definition(db: &dyn Document, schema_def: ast::SchemaDefinition) -> SchemaDefinition {
     let description = description(schema_def.description());
     let directives = directives(schema_def.directives());
     let root_operation_type_definition =
@@ -889,10 +861,7 @@ fn enum_value_definition(enum_value_def: ast::EnumValueDefinition) -> EnumValueD
     }
 }
 
-fn union_definition(
-    db: &dyn SourceDatabase,
-    union_def: ast::UnionTypeDefinition,
-) -> UnionTypeDefinition {
+fn union_definition(db: &dyn Document, union_def: ast::UnionTypeDefinition) -> UnionTypeDefinition {
     let id = Uuid::new_v4();
     let description = description(union_def.description());
     let name = name(union_def.name());
@@ -911,7 +880,7 @@ fn union_definition(
 }
 
 fn union_members(
-    db: &dyn SourceDatabase,
+    db: &dyn Document,
     union_members: Option<ast::UnionMemberTypes>,
 ) -> Arc<Vec<UnionMember>> {
     match union_members {
@@ -927,7 +896,7 @@ fn union_members(
     }
 }
 
-fn union_member(db: &dyn SourceDatabase, member: ast::NamedType) -> UnionMember {
+fn union_member(db: &dyn Document, member: ast::NamedType) -> UnionMember {
     let name = name(member.name());
     let object_id = db
         .find_object_type_by_name(name.clone())
@@ -998,7 +967,7 @@ fn input_object_definition(input_obj: ast::InputObjectTypeDefinition) -> InputOb
     }
 }
 
-fn add_object_type_id_to_schema(db: &dyn SourceDatabase) -> Arc<Vec<RootOperationTypeDefinition>> {
+fn add_object_type_id_to_schema(db: &dyn Document) -> Arc<Vec<RootOperationTypeDefinition>> {
     // Schema Definition does not have to be present in the SDL if ObjectType name is
     // - Query
     // - Subscription
@@ -1143,7 +1112,7 @@ fn default_value(default_value: Option<ast::DefaultValue>) -> Option<DefaultValu
 }
 
 fn root_operation_type_definition(
-    db: &dyn SourceDatabase,
+    db: &dyn Document,
     root_type_def: AstChildren<ast::RootOperationTypeDefinition>,
 ) -> Arc<Vec<RootOperationTypeDefinition>> {
     let type_defs: Vec<RootOperationTypeDefinition> = root_type_def
@@ -1358,7 +1327,7 @@ fn value(val: ast::Value) -> Value {
 }
 
 fn selection_set(
-    db: &dyn SourceDatabase,
+    db: &dyn Document,
     selections: Option<ast::SelectionSet>,
     object_id: Option<Uuid>,
 ) -> SelectionSet {
@@ -1376,11 +1345,7 @@ fn selection_set(
     }
 }
 
-fn selection(
-    db: &dyn SourceDatabase,
-    selection: ast::Selection,
-    object_id: Option<Uuid>,
-) -> Selection {
+fn selection(db: &dyn Document, selection: ast::Selection, object_id: Option<Uuid>) -> Selection {
     match selection {
         ast::Selection::Field(sel_field) => {
             let field = field(db, sel_field, object_id);
@@ -1398,7 +1363,7 @@ fn selection(
 }
 
 fn inline_fragment(
-    db: &dyn SourceDatabase,
+    db: &dyn Document,
     fragment: ast::InlineFragment,
     object_id: Option<Uuid>,
 ) -> Arc<InlineFragment> {
@@ -1447,7 +1412,7 @@ fn fragment_spread(fragment: ast::FragmentSpread) -> Arc<FragmentSpread> {
     Arc::new(fragment_data)
 }
 
-fn field(db: &dyn SourceDatabase, field: ast::Field, ty_id: Option<Uuid>) -> Arc<Field> {
+fn field(db: &dyn Document, field: ast::Field, ty_id: Option<Uuid>) -> Arc<Field> {
     let name = name(field.name());
     let alias = alias(field.alias());
     let ty = field_ty(db, &name, ty_id);
@@ -1470,7 +1435,7 @@ fn field(db: &dyn SourceDatabase, field: ast::Field, ty_id: Option<Uuid>) -> Arc
     Arc::new(field_data)
 }
 
-fn field_ty(db: &dyn SourceDatabase, field_name: &str, ty_id: Option<Uuid>) -> Option<Type> {
+fn field_ty(db: &dyn Document, field_name: &str, ty_id: Option<Uuid>) -> Option<Type> {
     if let Some(id) = ty_id {
         Some(
             db.find_type_system_definition(id)?
@@ -1483,11 +1448,7 @@ fn field_ty(db: &dyn SourceDatabase, field_name: &str, ty_id: Option<Uuid>) -> O
     }
 }
 
-fn field_ty_id(
-    field: &ast::Field,
-    db: &dyn SourceDatabase,
-    field_ty: Option<&Type>,
-) -> Option<Uuid> {
+fn field_ty_id(field: &ast::Field, db: &dyn Document, field_ty: Option<&Type>) -> Option<Uuid> {
     match field_ty {
         Some(ty) => {
             if field.selection_set().is_some() {
@@ -1530,7 +1491,7 @@ fn alias(alias: Option<ast::Alias>) -> Option<Arc<Alias>> {
     })
 }
 
-fn object_type_uuid(db: &dyn SourceDatabase, ty: OperationType) -> Option<Uuid> {
+fn object_type_uuid(db: &dyn Document, ty: OperationType) -> Option<Uuid> {
     match ty {
         OperationType::Query => db.schema().query(db).map(|query| *query.id()),
         OperationType::Mutation => db.schema().mutation(db).map(|mutation| *mutation.id()),
