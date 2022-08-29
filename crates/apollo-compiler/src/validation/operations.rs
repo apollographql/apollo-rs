@@ -26,7 +26,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                     let offset = op.ast_node(db).text_range().start().into();
                     let len: usize = op.ast_node(db).text_range().len().into();
                     return Some(ApolloDiagnostic::MissingIdent(MissingIdent {
-                        src: db.input().to_string(),
+                        src: db.input(),
                         definition: (offset, len).into(),
                         help: Some(format!("GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are {op_len} operations in this document."))
                     }));
@@ -52,7 +52,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     ty: "operation".into(),
                     name: name.into(),
-                    src: db.input().to_string(),
+                    src: db.input(),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
                     help: Some(format!(
@@ -81,7 +81,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                     let len: usize = op.ast_node(db).text_range().len().into();
                     Some(ApolloDiagnostic::SingleRootField(SingleRootField {
                         fields: fields.len(),
-                        src: db.input().to_string(),
+                        src: db.input(),
                         subscription: (offset, len).into(),
                         help: Some(format!(
                             "There are {} root fields: {}. This is not allowed.",
@@ -115,7 +115,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Subscription".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input().to_string(),
+                        src: db.input(),
                         schema: Some((schema_offset, schema_len).into()),
                         help: None,
                     })
@@ -123,7 +123,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Subscription".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input().to_string(),
+                        src: db.input(),
                         schema: None,
                         help: Some(
                             "consider defining a `subscription` root operation type in your schema"
@@ -151,7 +151,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Query".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input().to_string(),
+                        src: db.input(),
                         schema: Some((schema_offset, schema_len).into()),
                         help: None,
                     })
@@ -159,7 +159,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Query".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input().to_string(),
+                        src: db.input(),
                         schema: None,
                         help: Some(
                             "consider defining a `query` root operation type in your schema".into(),
@@ -186,7 +186,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Mutation".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input().to_string(),
+                        src: db.input(),
                         schema: Some((schema_offset, schema_len).into()),
                         help: None,
                     })
@@ -194,7 +194,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Mutation".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input().to_string(),
+                        src: db.input(),
                         schema: None,
                         help: Some(
                             "consider defining a `mutation` root operation type in your schema"
@@ -210,11 +210,9 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     // Fields must exist on the type being queried.
     for op in db.operations().iter() {
         for selection in op.selection_set().selection() {
-            let obj_name = op
-                .object_id()
-                .and_then(|id| db.find_object_type(*id).map(|obj| obj.name().to_owned()));
+            let obj_name = op.object_type(db).map(|obj| obj.name().to_owned());
             if let Selection::Field(field) = selection {
-                if field.ty().is_none() {
+                if field.ty(db).is_none() {
                     let offset: usize = field.ast_node(db).text_range().start().into();
                     let len: usize = field.ast_node(db).text_range().len().into();
                     let field_name = field.name().into();
@@ -229,7 +227,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                     };
                     diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
                         field: field_name,
-                        src: db.input().to_string(),
+                        src: db.input(),
                         definition: (offset, len).into(),
                         help,
                     }))

@@ -10,16 +10,15 @@ use std::sync::Arc;
 
 use apollo_parser::{ast, SyntaxTree};
 pub use queries::{
-    database::{Database, Document},
-    values, DocumentParser, Inputs, Manifest,
+    database::{Document, DocumentDatabase},
+    values, Definitions, DocumentParser, Inputs,
 };
 
 pub use diagnostics::ApolloDiagnostic;
 use validation::Validator;
 
 pub struct ApolloCompiler {
-    pub db: Database,
-    pub sources: Manifest,
+    pub db: DocumentDatabase,
 }
 
 /// Apollo compiler creates a context around your GraphQL. It creates refernces
@@ -70,18 +69,19 @@ pub struct ApolloCompiler {
 impl ApolloCompiler {
     /// Create a new instance of Apollo Compiler.
     pub fn new(input: &str) -> Self {
-        let mut db = Database::default();
+        let mut db = DocumentDatabase::default();
         let input = input.to_string();
-        db.set_input(String::from("schema.rs"), input);
+        db.set_input(input);
         Self { db }
     }
 
-    pub fn snapshot(&self) -> salsa::Storage<Database> {
+    /// Get a snapshot of
+    pub fn snapshot(&self) -> salsa::Storage<DocumentDatabase> {
         self.db.storage.snapshot()
     }
 
     /// Get access to the `apollo-parser's` AST.
-    pub fn ast(&self) -> Arc<SyntaxTree> {
+    pub fn ast(&self) -> SyntaxTree {
         self.db.ast()
     }
 
@@ -354,7 +354,7 @@ union Union = Concrete
         let interface_fields = interface_field.selection_set().fields();
         let interface_selection_fields_types: HashMap<_, _> = interface_fields
             .iter()
-            .map(|f| (f.name(), f.ty().map(|f| f.name())))
+            .map(|f| (f.name(), f.ty(&ctx.db).map(|f| f.name())))
             .collect();
         assert_eq!(
             interface_selection_fields_types,
@@ -370,7 +370,7 @@ union Union = Concrete
         let inline_fragment_fields = inline_fragment.selection_set().fields();
         let inline_fragment_fields_types: HashMap<_, _> = inline_fragment_fields
             .iter()
-            .map(|f| (f.name(), f.ty().map(|ty| ty.name())))
+            .map(|f| (f.name(), f.ty(&ctx.db).map(|ty| ty.name())))
             .collect();
         assert_eq!(
             inline_fragment_fields_types,
@@ -388,7 +388,7 @@ union Union = Concrete
         let union_inline_fragment_fields = union_inline_fragment.selection_set().fields();
         let union_inline_fragment_field_types: HashMap<_, _> = union_inline_fragment_fields
             .iter()
-            .map(|f| (f.name(), f.ty().map(|ty| ty.name())))
+            .map(|f| (f.name(), f.ty(&ctx.db).map(|ty| ty.name())))
             .collect();
         assert_eq!(
             union_inline_fragment_field_types,
@@ -442,7 +442,7 @@ type Product {
         let op_fields = get_product_op.fields(&ctx.db);
         let name_field_def: Vec<String> = op_fields
             .iter()
-            .filter_map(|field| Some(field.ty()?.name()))
+            .filter_map(|field| Some(field.ty(&ctx.db)?.name()))
             .collect();
         assert_eq!(name_field_def, ["Int", "Product"]);
 
@@ -456,7 +456,7 @@ type Product {
 
         let top_product_fields: Vec<String> = top_products
             .iter()
-            .filter_map(|f| Some(f.ty()?.name()))
+            .filter_map(|f| Some(f.ty(&ctx.db)?.name()))
             .collect();
         assert_eq!(top_product_fields, ["String", "Boolean"]);
 
@@ -541,7 +541,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
             .collect();
         let field_ty: Vec<String> = fragment_fields
             .iter()
-            .filter_map(|f| Some(f.ty()?.name()))
+            .filter_map(|f| Some(f.ty(&ctx.db)?.name()))
             .collect();
         assert_eq!(field_ty, ["ID", "String", "URL"])
     }

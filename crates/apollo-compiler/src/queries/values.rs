@@ -202,7 +202,6 @@ pub struct FragmentDefinition {
     pub(crate) id: Uuid,
     pub(crate) name: String,
     pub(crate) type_condition: String,
-    pub(crate) reference_ty_id: Option<Uuid>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) selection_set: SelectionSet,
     pub(crate) ast_ptr: SyntaxNodePtr,
@@ -254,11 +253,7 @@ impl FragmentDefinition {
     }
 
     pub fn ty(&self, db: &dyn Document) -> Option<Arc<Definition>> {
-        if let Some(id) = self.reference_ty_id {
-            db.find_type_system_definition(id)
-        } else {
-            None
-        }
+        db.find_type_system_definition_by_name(self.name.clone())
     }
 
     // Get a reference to SyntaxNodePtr of the current HIR node.
@@ -279,7 +274,6 @@ pub struct OperationDefinition {
     pub(crate) operation_ty: OperationType,
     pub(crate) name: Option<String>,
     pub(crate) variables: Arc<Vec<VariableDefinition>>,
-    pub(crate) object_id: Option<Uuid>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) selection_set: SelectionSet,
     pub(crate) ast_ptr: SyntaxNodePtr,
@@ -298,10 +292,10 @@ impl OperationDefinition {
 
     /// Get operation's definition object type.
     pub fn object_type(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
-        if let Some(id) = self.object_id {
-            db.find_object_type(id)
-        } else {
-            None
+        match self.operation_ty {
+            OperationType::Query => db.schema().query(db),
+            OperationType::Mutation => db.schema().mutation(db),
+            OperationType::Subscription => db.schema().subscription(db),
         }
     }
 
@@ -354,11 +348,6 @@ impl OperationDefinition {
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(db.document().deref().syntax())
-    }
-
-    /// Get a reference to operation definition's object type id.
-    pub fn object_id(&self) -> Option<&Uuid> {
-        self.object_id.as_ref()
     }
 }
 
@@ -957,8 +946,7 @@ pub struct Field {
     pub(crate) alias: Option<Arc<Alias>>,
     pub(crate) name: String,
     pub(crate) arguments: Arc<Vec<Argument>>,
-    pub(crate) ty: Option<Type>,
-    pub(crate) reference_ty_id: Option<Uuid>,
+    pub(crate) parent_obj: Option<String>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) selection_set: SelectionSet,
     pub(crate) ast_ptr: SyntaxNodePtr,
@@ -979,21 +967,24 @@ impl Field {
     }
 
     // Get a reference to field's type.
-    pub fn ty(&self) -> Option<&Type> {
-        self.ty.as_ref()
+    pub fn ty(&self, db: &dyn Document) -> Option<Type> {
+        dbg!(&self.parent_obj);
+
+        let def = db
+            .find_type_system_definition_by_name(self.parent_obj.as_ref()?.to_string())?
+            .field(self.name())?
+            .ty()
+            .to_owned();
+        Some(def)
     }
 
     // Get field's original field definition.
     pub fn field_definition(&self, db: &dyn Document) -> Option<FieldDefinition> {
-        if let Some(object_id) = self.reference_ty_id {
-            db.find_object_type(object_id)?
-                .fields_definition()
-                .iter()
-                .find(|field| field.name() == self.name)
-                .cloned()
-        } else {
-            None
-        }
+        db.find_object_type_by_name(self.parent_obj.as_ref()?.to_string())?
+            .fields_definition()
+            .iter()
+            .find(|field| field.name() == self.name)
+            .cloned()
     }
 
     /// Get a reference to the field's arguments.
@@ -1184,7 +1175,7 @@ impl SchemaDefinition {
     pub fn query(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_query() {
-                db.find_object_type(op.object_type_id?)
+                db.find_object_type(op.object_type_id(db)?)
             } else {
                 None
             }
@@ -1195,7 +1186,7 @@ impl SchemaDefinition {
     pub fn mutation(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_mutation() {
-                db.find_object_type(op.object_type_id?)
+                db.find_object_type(op.object_type_id(db)?)
             } else {
                 None
             }
@@ -1206,7 +1197,7 @@ impl SchemaDefinition {
     pub fn subscription(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_subscription() {
-                db.find_object_type(op.object_type_id?)
+                db.find_object_type(op.object_type_id(db)?)
             } else {
                 None
             }
@@ -1216,7 +1207,6 @@ impl SchemaDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct RootOperationTypeDefinition {
-    pub(crate) object_type_id: Option<Uuid>,
     pub(crate) operation_type: OperationType,
     pub(crate) named_type: Type,
     pub(crate) ast_ptr: Option<SyntaxNodePtr>,
@@ -1231,6 +1221,11 @@ impl RootOperationTypeDefinition {
     /// Get the root operation type definition's operation type.
     pub fn operation_type(&self) -> OperationType {
         self.operation_type
+    }
+
+    pub fn object_type_id(&self, db: &dyn Document) -> Option<Uuid> {
+        db.find_object_type_by_name(self.named_type().name())
+            .map(|object_type| *object_type.id())
     }
 
     // Get a reference to SyntaxNodePtr of the current HIR node.
@@ -1248,7 +1243,6 @@ impl RootOperationTypeDefinition {
 impl Default for RootOperationTypeDefinition {
     fn default() -> Self {
         Self {
-            object_type_id: None,
             operation_type: OperationType::Query,
             named_type: Type::Named {
                 name: "Query".to_string(),
@@ -1607,7 +1601,6 @@ impl UnionTypeDefinition {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct UnionMember {
     pub(crate) name: String,
-    pub(crate) object_id: Option<Uuid>,
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
@@ -1618,7 +1611,7 @@ impl UnionMember {
     }
 
     pub fn object(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
-        db.find_object_type(self.object_id?)
+        db.find_object_type_by_name(self.name.clone())
     }
 
     // Get a reference to SyntaxNodePtr of the current HIR node.

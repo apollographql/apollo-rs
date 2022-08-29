@@ -27,7 +27,7 @@ fn compiler_tests() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
         let ctx = ApolloCompiler::new(text);
         let errors = ctx.validate();
-        let ast = ctx.parse();
+        let ast = ctx.ast();
         assert_diagnostics_are_absent(&errors, path);
         format!("{:?}", ast)
     });
@@ -52,7 +52,10 @@ fn assert_diagnostics_are_absent(errors: &[ApolloDiagnostic], path: &Path) {
     if !errors.is_empty() {
         let formatted: Vec<String> = errors.iter().map(|e| format!("{:?}", e)).collect();
         println!("{:?}", formatted.join("\n"));
-        panic!("There should be no diagnostics in the file {:?}", path.display(),);
+        panic!(
+            "There should be no diagnostics in the file {:?}",
+            path.display(),
+        );
     }
 }
 

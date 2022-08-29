@@ -28,7 +28,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
             diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                 ty: "object type".into(),
                 name: name.into(),
-                src: db.input().to_string(),
+                src: db.input(),
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!(
@@ -59,7 +59,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
 
                 diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                     field: field_name.into(),
-                    src: db.input().to_string(),
+                    src: db.input(),
                     original_field: (prev_offset, prev_node_len).into(),
                     redefined_field: (offset, len).into(),
                     help: Some(format!(
@@ -76,7 +76,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                     diagnostics.push(ApolloDiagnostic::OutputType(OutputType {
                         name: field.name().into(),
                         ty: field_ty.ty(),
-                        src: db.input().to_string(),
+                        src: db.input(),
                         definition: (offset, len).into(),
                     }))
                 }
@@ -85,13 +85,13 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                 let field_ty_len: usize = node.text_range().len().into();
                 diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                     ty: field.ty().name(),
-                    src: db.input().to_string(),
+                    src: db.input(),
                     definition: (field_ty_offset, field_ty_len).into(),
                 }))
             } else {
                 diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                     ty: field.ty().name(),
-                    src: db.input().to_string(),
+                    src: db.input(),
                     definition: (offset, len).into(),
                 }))
             }
@@ -125,7 +125,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
             let len: usize = undefined.node.text_range().len().into();
             diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                 ty: undefined.name.clone(),
-                src: db.input().to_string(),
+                src: db.input(),
                 definition: (offset, len).into(),
             }))
         }
@@ -161,7 +161,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
             diagnostics.push(ApolloDiagnostic::TransitiveImplementedInterfaces(
                 TransitiveImplementedInterfaces {
                     missing_interface: undefined.name.clone(),
-                    src: db.input().to_string(),
+                    src: db.input(),
                     definition: (offset, len).into(),
                 },
             ))
@@ -202,7 +202,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
 
                     diagnostics.push(ApolloDiagnostic::MissingField(MissingField {
                         ty: missing_field.name.clone(),
-                        src: db.input().to_string(),
+                        src: db.input(),
                         current_definition: (current_offset, current_len).into(),
                         super_definition: (super_offset, super_len).into(),
                         help: Some(

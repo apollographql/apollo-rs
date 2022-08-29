@@ -1,8 +1,10 @@
 pub mod database;
 pub mod values;
 
-mod inputs_storage;
-mod parser_storage;
+mod definitions_db;
+mod inputs_db;
+mod parser_db;
 
-pub use inputs_storage::{Inputs, Manifest};
-pub use parser_storage::DocumentParser;
+pub use definitions_db::Definitions;
+pub use inputs_db::Inputs;
+pub use parser_db::DocumentParser;
