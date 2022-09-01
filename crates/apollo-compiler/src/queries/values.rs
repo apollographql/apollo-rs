@@ -641,6 +641,11 @@ impl DirectiveDefinition {
         self.name.as_ref()
     }
 
+    /// Get a reference to the directive definition's description.
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
+
     /// Get a reference to the directive definition's id.
     pub fn id(&self) -> &Uuid {
         &self.id
@@ -1281,6 +1286,11 @@ impl ObjectTypeDefinition {
         self.name.as_ref()
     }
 
+    /// Get a reference to the object type definition's description.
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
+
     /// Get a reference to the object type definition's directives.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
@@ -1359,6 +1369,11 @@ impl FieldDefinition {
         self.name.as_ref()
     }
 
+    /// Get a reference to the field definition's description.
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
+
     // Get a reference to SyntaxNodePtr of the current HIR node.
     pub fn ast_ptr(&self) -> &SyntaxNodePtr {
         &self.ast_ptr
@@ -1426,6 +1441,11 @@ impl InputValueDefinition {
         self.name.as_ref()
     }
 
+    /// Get a reference to input value definition's description.
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
+
     /// Get a reference to input value definition's directives.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
@@ -1474,6 +1494,11 @@ impl ScalarTypeDefinition {
         self.name.as_ref()
     }
 
+    /// Get a reference to the scalar definition's description.
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
+
     /// Get a reference to scalar definition's directives.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
@@ -1515,6 +1540,11 @@ impl EnumTypeDefinition {
     /// Get a reference to the enum definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
+    }
+
+    /// Get a reference to the enum definition's description.
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
     }
 
     /// Get a reference to enum definition's directives.
@@ -1583,6 +1613,11 @@ impl UnionTypeDefinition {
     /// Get a reference to the union definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
+    }
+
+    /// Get a reference to the union definition's description.
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
     }
 
     /// Get a reference to union definition's directives.
@@ -1658,6 +1693,11 @@ impl InterfaceTypeDefinition {
         self.name.as_ref()
     }
 
+    /// Get a reference to the interface definition's description.
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
+
     /// Get a reference to interface definition's implements interfaces vector.
     pub fn implements_interfaces(&self) -> &[ImplementsInterface] {
         self.implements_interfaces.as_ref()
@@ -1704,6 +1744,11 @@ impl InputObjectTypeDefinition {
     /// Get a reference to the input object definition's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
+    }
+
+    /// Get a reference to the input object definition's description.
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
     }
 
     /// Get a reference to input object definition's directives.
