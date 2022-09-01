@@ -1,12 +1,10 @@
 // All .expect() calls are used for parts of the GraphQL grammar that are
 // non-optional and will have an error produced in the parser if they are missing.
 
-use std::collections::HashSet;
-use std::sync::Arc;
+use std::{collections::HashSet, sync::Arc};
 
 use uuid::Uuid;
 
-use crate::diagnostics::{ApolloDiagnostic, SyntaxError};
 use crate::queries::{
     definitions_db::{Definitions, DefinitionsStorage},
     inputs_db::{Inputs, InputsStorage},
@@ -33,14 +31,6 @@ impl salsa::Database for DocumentDatabase {}
 
 #[salsa::query_group(DocumentStorage)]
 pub trait Document: Inputs + DocumentParser + Definitions {
-    fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
-
-    fn query_operations(&self) -> Arc<Vec<OperationDefinition>>;
-
-    fn mutation_operations(&self) -> Arc<Vec<OperationDefinition>>;
-
-    fn subscription_operations(&self) -> Arc<Vec<OperationDefinition>>;
-
     fn find_operation(&self, id: Uuid) -> Option<Arc<OperationDefinition>>;
 
     fn find_operation_by_name(&self, name: String) -> Option<Arc<OperationDefinition>>;
@@ -73,29 +63,21 @@ pub trait Document: Inputs + DocumentParser + Definitions {
 
     fn find_type_system_definition_by_name(&self, name: String) -> Option<Arc<Definition>>;
 
-    fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
+    fn query_operations(&self) -> Arc<Vec<OperationDefinition>>;
 
-    fn selection_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
+    fn mutation_operations(&self) -> Arc<Vec<OperationDefinition>>;
+
+    fn subscription_operations(&self) -> Arc<Vec<OperationDefinition>>;
 
     fn operation_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
     fn operation_inline_fragment_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
     fn operation_fragment_spread_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
-}
 
-fn syntax_errors(db: &dyn Document) -> Vec<ApolloDiagnostic> {
-    db.ast()
-        .errors()
-        .into_iter()
-        .map(|err| {
-            ApolloDiagnostic::SyntaxError(SyntaxError {
-                src: db.input(),
-                span: (err.index(), err.data().len()).into(), // (offset, length of error token)
-                message: err.message().into(),
-            })
-        })
-        .collect()
+    fn selection_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
+
+    fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
 }
 
 fn find_definition_by_name(db: &dyn Document, name: String) -> Option<Arc<Definition>> {
@@ -339,6 +321,7 @@ fn operation_fragment_spread_fields(db: &dyn Document, id: Uuid) -> Arc<Vec<Fiel
     Arc::new(fields)
 }
 
+// Should be part of operation's db
 // NOTE: potentially want to return a hashmap of variables and their types?
 fn selection_variables(db: &dyn Document, id: Uuid) -> Arc<HashSet<Variable>> {
     let vars = db
@@ -371,6 +354,7 @@ fn get_field_variable_value(val: Value) -> Vec<Variable> {
     }
 }
 
+// should be part of operation's db
 // NOTE: potentially want to return a hashset of variables and their types?
 fn operation_definition_variables(db: &dyn Document, id: Uuid) -> Arc<HashSet<Variable>> {
     let vars: HashSet<Variable> = match db.find_operation(id) {

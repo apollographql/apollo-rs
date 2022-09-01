@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use apollo_parser::{ast, Parser as ApolloParser, SyntaxTree};
 
-use crate::queries::inputs_db::Inputs;
+use crate::{diagnostics::SyntaxError, queries::inputs_db::Inputs, ApolloDiagnostic};
 
 #[salsa::query_group(ParserStorage)]
 pub trait DocumentParser: Inputs {
@@ -10,10 +10,8 @@ pub trait DocumentParser: Inputs {
 
     // root node
     fn document(&self) -> Arc<ast::Document>;
-}
 
-fn document(db: &dyn DocumentParser) -> Arc<ast::Document> {
-    Arc::new(db.ast().document())
+    fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
 }
 
 fn ast(db: &dyn DocumentParser) -> SyntaxTree {
@@ -21,4 +19,22 @@ fn ast(db: &dyn DocumentParser) -> SyntaxTree {
 
     let parser = ApolloParser::new(&input);
     parser.parse()
+}
+
+fn document(db: &dyn DocumentParser) -> Arc<ast::Document> {
+    Arc::new(db.ast().document())
+}
+
+fn syntax_errors(db: &dyn DocumentParser) -> Vec<ApolloDiagnostic> {
+    db.ast()
+        .errors()
+        .into_iter()
+        .map(|err| {
+            ApolloDiagnostic::SyntaxError(SyntaxError {
+                src: db.input(),
+                span: (err.index(), err.data().len()).into(), // (offset, length of error token)
+                message: err.message().into(),
+            })
+        })
+        .collect()
 }
