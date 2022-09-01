@@ -72,10 +72,12 @@ impl ApolloCompiler {
         Self { db }
     }
 
-    /// Get a snapshot of
-    pub fn snapshot(&self) -> salsa::Storage<RootDatabase> {
-        self.db.storage.snapshot()
-    }
+    // NOTE @lrlna: uncomment when we are fully thread-safe.
+
+    /// Get a snapshot of the current database.
+    // pub fn snapshot(&self) -> salsa::Storage<RootDatabase> {
+    //     self.db.storage.snapshot()
+    // }
 
     /// Get access to the `apollo-parser's` AST.
     pub fn ast(&self) -> SyntaxTree {

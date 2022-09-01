@@ -14,6 +14,8 @@ pub struct RootDatabase {
 
 impl salsa::Database for RootDatabase {}
 
+// NOTE @lrlna: uncomment when we are fully thread-safe.
+
 // impl salsa::ParallelDatabase for RootDatabase {
 //     fn snapshot(&self) -> salsa::Snapshot<DocumentDatabase> {
 //         salsa::Snapshot::new(DocumentDatabase {
