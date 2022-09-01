@@ -3,13 +3,13 @@ use std::collections::HashSet;
 use crate::{
     diagnostics::{ApolloDiagnostic, UndefinedDefinition, UnusedVariable},
     validation::ValidationSet,
-    SourceDatabase,
+    Document,
 };
 
 // check in scope
 // check in use
 // compare the two
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     db.operations()
         .iter()
         .flat_map(|op| {
@@ -45,7 +45,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                     let len: usize = undefined_var.node.text_range().len().into();
                     ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                         ty: undefined_var.name.clone(),
-                        src: db.input_string(()).to_string(),
+                        src: db.input(),
                         definition: (offset, len).into(),
                     })
                 })
@@ -57,7 +57,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 let len: usize = unused_var.node.text_range().len().into();
                 ApolloDiagnostic::UnusedVariable(UnusedVariable {
                     ty: unused_var.name.clone(),
-                    src: db.input_string(()).to_string(),
+                    src: db.input(),
                     definition: (offset, len).into(),
                 })
             });

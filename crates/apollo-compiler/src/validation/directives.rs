@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::{
     diagnostics::{RecursiveDefinition, UniqueDefinition},
     values::DirectiveDefinition,
-    ApolloDiagnostic, SourceDatabase,
+    ApolloDiagnostic, Document,
 };
 
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     let mut errors = Vec::new();
 
     // Directive definitions must have unique names.
@@ -27,7 +27,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 errors.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     ty: "directive".into(),
                     name: name.into(),
-                    src: db.input_string(()).to_string(),
+                    src: db.input(),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
                     help: Some(format!(
@@ -55,7 +55,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                     errors.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
                         message: format!("{} directive definition cannot reference itself", name),
                         definition: (offset, len).into(),
-                        src: db.input_string(()).to_string(),
+                        src: db.input(),
                         definition_label: "recursive directive definition".into(),
                     }));
                 }

@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::{
     diagnostics::{QueryRootOperationType, UniqueDefinition},
     values::RootOperationTypeDefinition,
-    ApolloDiagnostic, SourceDatabase,
+    ApolloDiagnostic, Document,
 };
 
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // A GraphQL schema must have a Query root operation.
@@ -16,7 +16,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
             let len: usize = node.text_range().len().into();
             diagnostics.push(ApolloDiagnostic::QueryRootOperationType(
                 QueryRootOperationType {
-                    src: db.input_string(()).to_string(),
+                    src: db.input(),
                     schema: (offset, len).into(),
                 },
             ));
@@ -41,7 +41,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     name: name.clone(),
                     ty: "root operation type definition".into(),
-                    src: db.input_string(()).to_string(),
+                    src: db.input(),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
                     help: Some(format!(

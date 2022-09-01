@@ -86,7 +86,7 @@ assert!(diagnostics.is_empty());
 #### Accessing fragment definition field types
 
 ```rust
-use apollo_compiler::{ApolloCompiler, values, SourceDatabase};
+use apollo_compiler::{ApolloCompiler, values, Document};
 use miette::Result;
 
 fn main() -> Result<()> {
@@ -142,7 +142,7 @@ fn main() -> Result<()> {
     let fragment_fields: Vec<crate::values::Field> = fragment_in_op.iter().flat_map(|frag| frag.selection_set().fields()).collect();
     let field_ty: Vec<String> = fragment_fields
         .iter()
-        .filter_map(|f| Some(f.ty()?.name()))
+        .filter_map(|f| Some(f.ty(&ctx.db)?.name()))
         .collect();
     assert_eq!(field_ty, ["ID", "String", "URL"]);
     Ok(())

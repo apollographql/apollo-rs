@@ -1,11 +1,11 @@
 use crate::{
     diagnostics::{BuiltInScalarDefinition, ScalarSpecificationURL},
-    ApolloDiagnostic, SourceDatabase,
+    ApolloDiagnostic, Document,
 };
 
 const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for scalar in db.scalars().iter() {
@@ -19,7 +19,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 diagnostics.push(ApolloDiagnostic::BuiltInScalarDefinition(
                     BuiltInScalarDefinition {
                         scalar: (offset, len).into(),
-                        src: db.input_string(()).to_string(),
+                        src: db.input(),
                     },
                 ));
             } else if !scalar.is_built_in() {
@@ -33,7 +33,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                     diagnostics.push(ApolloDiagnostic::ScalarSpecificationURL(
                         ScalarSpecificationURL {
                             scalar: (offset, len).into(),
-                            src: db.input_string(()).to_string(),
+                            src: db.input(),
                         },
                     ))
                 }

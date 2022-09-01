@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::{
     diagnostics::{CapitalizedValue, UniqueDefinition},
     values::EnumValueDefinition,
-    ApolloDiagnostic, SourceDatabase,
+    ApolloDiagnostic, Document,
 };
 
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // An Enum type must define one or more unique enum values.
@@ -25,7 +25,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     ty: "enum".into(),
                     name: value.into(),
-                    src: db.input_string(()).to_string(),
+                    src: db.input(),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
                     help: Some(format!("{value} must only be defined once in this enum.")),
@@ -48,7 +48,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
             if value.to_uppercase() != value {
                 diagnostics.push(ApolloDiagnostic::CapitalizedValue(CapitalizedValue {
                     ty: value.into(),
-                    src: db.input_string(()).to_string(),
+                    src: db.input(),
                     value: (offset, len).into(),
                 }));
             }

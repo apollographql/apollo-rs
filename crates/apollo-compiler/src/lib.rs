@@ -9,16 +9,13 @@ mod validation;
 use std::sync::Arc;
 
 use apollo_parser::{ast, SyntaxTree};
-pub use queries::{
-    database::{Database, SourceDatabase},
-    values,
-};
+pub use queries::{values, Definitions, Document, DocumentParser, Inputs, RootDatabase};
 
 pub use diagnostics::ApolloDiagnostic;
 use validation::Validator;
 
 pub struct ApolloCompiler {
-    pub db: Database,
+    pub db: RootDatabase,
 }
 
 /// Apollo compiler creates a context around your GraphQL. It creates refernces
@@ -69,15 +66,22 @@ pub struct ApolloCompiler {
 impl ApolloCompiler {
     /// Create a new instance of Apollo Compiler.
     pub fn new(input: &str) -> Self {
-        let mut db = Database::default();
+        let mut db = RootDatabase::default();
         let input = input.to_string();
-        db.set_input_string((), Arc::new(input));
+        db.set_input(input);
         Self { db }
     }
 
+    // NOTE @lrlna: uncomment when we are fully thread-safe.
+
+    /// Get a snapshot of the current database.
+    // pub fn snapshot(&self) -> salsa::Storage<RootDatabase> {
+    //     self.db.storage.snapshot()
+    // }
+
     /// Get access to the `apollo-parser's` AST.
-    pub fn parse(&self) -> Arc<SyntaxTree> {
-        self.db.parse()
+    pub fn ast(&self) -> SyntaxTree {
+        self.db.ast()
     }
 
     /// Validate your GraphQL input. Returns Diagnostics that you can pretty-print.
@@ -168,7 +172,30 @@ impl ApolloCompiler {
 mod test {
     use std::collections::HashMap;
 
-    use crate::{values::Definition, ApolloCompiler, SourceDatabase};
+    use crate::{values::Definition, ApolloCompiler, Document};
+
+    #[test]
+    fn is_db_send() {
+        let input = r#"
+type Query {
+  website: URL,
+  amount: Int
+}
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
+        assert!(diagnostics.is_empty());
+
+        // is_send(ctx.snapshot());
+
+        // fn is_send<T: Send>(db: T) {};
+    }
 
     #[test]
     fn it_accesses_operation_definition_parts() {
@@ -326,7 +353,7 @@ union Union = Concrete
         let interface_fields = interface_field.selection_set().fields();
         let interface_selection_fields_types: HashMap<_, _> = interface_fields
             .iter()
-            .map(|f| (f.name(), f.ty().map(|f| f.name())))
+            .map(|f| (f.name(), f.ty(&ctx.db).map(|f| f.name())))
             .collect();
         assert_eq!(
             interface_selection_fields_types,
@@ -342,7 +369,7 @@ union Union = Concrete
         let inline_fragment_fields = inline_fragment.selection_set().fields();
         let inline_fragment_fields_types: HashMap<_, _> = inline_fragment_fields
             .iter()
-            .map(|f| (f.name(), f.ty().map(|ty| ty.name())))
+            .map(|f| (f.name(), f.ty(&ctx.db).map(|ty| ty.name())))
             .collect();
         assert_eq!(
             inline_fragment_fields_types,
@@ -360,7 +387,7 @@ union Union = Concrete
         let union_inline_fragment_fields = union_inline_fragment.selection_set().fields();
         let union_inline_fragment_field_types: HashMap<_, _> = union_inline_fragment_fields
             .iter()
-            .map(|f| (f.name(), f.ty().map(|ty| ty.name())))
+            .map(|f| (f.name(), f.ty(&ctx.db).map(|ty| ty.name())))
             .collect();
         assert_eq!(
             union_inline_fragment_field_types,
@@ -414,7 +441,7 @@ type Product {
         let op_fields = get_product_op.fields(&ctx.db);
         let name_field_def: Vec<String> = op_fields
             .iter()
-            .filter_map(|field| Some(field.ty()?.name()))
+            .filter_map(|field| Some(field.ty(&ctx.db)?.name()))
             .collect();
         assert_eq!(name_field_def, ["Int", "Product"]);
 
@@ -428,7 +455,7 @@ type Product {
 
         let top_product_fields: Vec<String> = top_products
             .iter()
-            .filter_map(|f| Some(f.ty()?.name()))
+            .filter_map(|f| Some(f.ty(&ctx.db)?.name()))
             .collect();
         assert_eq!(top_product_fields, ["String", "Boolean"]);
 
@@ -513,7 +540,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
             .collect();
         let field_ty: Vec<String> = fragment_fields
             .iter()
-            .filter_map(|f| Some(f.ty()?.name()))
+            .filter_map(|f| Some(f.ty(&ctx.db)?.name()))
             .collect();
         assert_eq!(field_ty, ["ID", "String", "URL"])
     }

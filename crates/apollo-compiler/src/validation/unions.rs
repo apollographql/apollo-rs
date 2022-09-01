@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::{
     diagnostics::{ObjectType, UndefinedDefinition, UniqueDefinition},
     values::UnionMember,
-    ApolloDiagnostic, SourceDatabase,
+    ApolloDiagnostic, Document,
 };
 
-pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for union_def in db.unions().iter() {
@@ -25,7 +25,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     name: name.into(),
                     ty: "union member".into(),
-                    src: db.input_string(()).to_string(),
+                    src: db.input(),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (offset, len).into(),
                     help: Some(format!(
@@ -41,7 +41,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
             if union_member_type.is_none() {
                 diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                     ty: name.into(),
-                    src: db.input_string(()).to_string(),
+                    src: db.input(),
                     definition: (offset, len).into(),
                 }))
             } else if let Some(ty) = union_member_type {
@@ -50,7 +50,7 @@ pub fn check(db: &dyn SourceDatabase) -> Vec<ApolloDiagnostic> {
                     diagnostics.push(ApolloDiagnostic::ObjectType(ObjectType {
                         name: name.into(),
                         ty: ty.ty(),
-                        src: db.input_string(()).to_string(),
+                        src: db.input(),
                         definition: (offset, len).into(),
                     }))
                 }
