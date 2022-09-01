@@ -9,16 +9,13 @@ mod validation;
 use std::sync::Arc;
 
 use apollo_parser::{ast, SyntaxTree};
-pub use queries::{
-    database::{Document, DocumentDatabase},
-    values, Definitions, DocumentParser, Inputs,
-};
+pub use queries::{values, Definitions, Document, DocumentParser, Inputs, RootDatabase};
 
 pub use diagnostics::ApolloDiagnostic;
 use validation::Validator;
 
 pub struct ApolloCompiler {
-    pub db: DocumentDatabase,
+    pub db: RootDatabase,
 }
 
 /// Apollo compiler creates a context around your GraphQL. It creates refernces
@@ -69,14 +66,14 @@ pub struct ApolloCompiler {
 impl ApolloCompiler {
     /// Create a new instance of Apollo Compiler.
     pub fn new(input: &str) -> Self {
-        let mut db = DocumentDatabase::default();
+        let mut db = RootDatabase::default();
         let input = input.to_string();
         db.set_input(input);
         Self { db }
     }
 
     /// Get a snapshot of
-    pub fn snapshot(&self) -> salsa::Storage<DocumentDatabase> {
+    pub fn snapshot(&self) -> salsa::Storage<RootDatabase> {
         self.db.storage.snapshot()
     }
 
