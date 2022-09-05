@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use apollo_parser::{ast, Parser as ApolloParser, SyntaxTree};
 
-use crate::{diagnostics::SyntaxError, queries::inputs_db::Inputs, ApolloDiagnostic};
+use crate::{diagnostics::SyntaxError, query_groups::inputs_db::Inputs, ApolloDiagnostic};
 
 #[salsa::query_group(ParserStorage)]
 pub trait DocumentParser: Inputs {

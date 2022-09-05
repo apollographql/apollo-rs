@@ -1,7 +1,7 @@
 // All .expect() calls are used for parts of the GraphQL grammar that are
 // non-optional and will have an error produced in the parser if they are missing.
 
-use crate::queries::{
+use crate::query_groups::{
     def_db::DefinitionsStorage, document_db::DocumentStorage, inputs_db::InputsStorage,
     parser_db::ParserStorage,
 };

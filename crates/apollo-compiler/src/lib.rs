@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 
 mod diagnostics;
-mod queries;
+mod query_groups;
 #[cfg(test)]
 mod tests;
 mod validation;
@@ -9,7 +9,7 @@ mod validation;
 use std::sync::Arc;
 
 use apollo_parser::{ast, SyntaxTree};
-pub use queries::{values, Definitions, Document, DocumentParser, Inputs, RootDatabase};
+pub use query_groups::{values, Definitions, Document, DocumentParser, Inputs, RootDatabase};
 
 pub use diagnostics::ApolloDiagnostic;
 use validation::Validator;
