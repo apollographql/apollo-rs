@@ -83,6 +83,11 @@ impl Lexer {
     pub fn errors(&self) -> Iter<'_, Error> {
         self.errors.iter()
     }
+
+    /// Take ownership of lexer parts.
+    pub fn into_parts(self) -> (Vec<Token>, Vec<Error>) {
+        (self.tokens, self.errors)
+    }
 }
 
 impl Cursor<'_> {
