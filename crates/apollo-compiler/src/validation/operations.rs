@@ -4,7 +4,7 @@ use crate::{
     diagnostics::{
         MissingIdent, SingleRootField, UndefinedField, UniqueDefinition, UnsupportedOperation,
     },
-    values::{OperationDefinition, Selection},
+    hir::{OperationDefinition, Selection},
     ApolloDiagnostic, Document,
 };
 // use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, Document};

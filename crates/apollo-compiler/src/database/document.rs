@@ -2,7 +2,7 @@ use std::{collections::HashSet, sync::Arc};
 
 use uuid::Uuid;
 
-use crate::{values::*, Definitions, DocumentParser, Inputs};
+use crate::{hir::*, Definitions, DocumentParser, Inputs};
 
 #[salsa::query_group(DocumentStorage)]
 pub trait Document: Inputs + DocumentParser + Definitions {

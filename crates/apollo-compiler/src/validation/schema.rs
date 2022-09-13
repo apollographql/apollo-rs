@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     diagnostics::{QueryRootOperationType, UniqueDefinition},
-    values::RootOperationTypeDefinition,
+    hir::RootOperationTypeDefinition,
     ApolloDiagnostic, Document,
 };
 

@@ -1,8 +1,8 @@
 use std::{fs, path::Path};
 
-use apollo_compiler::{values, ApolloCompiler};
+use apollo_compiler::{hir, ApolloCompiler};
 
-fn compile_query() -> Option<values::FragmentDefinition> {
+fn compile_query() -> Option<hir::FragmentDefinition> {
     let file = Path::new("crates/apollo-compiler/examples/query_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
 

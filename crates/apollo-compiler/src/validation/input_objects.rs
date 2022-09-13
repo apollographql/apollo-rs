@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     diagnostics::{UniqueDefinition, UniqueField},
-    values::{InputObjectTypeDefinition, InputValueDefinition},
+    hir::{InputObjectTypeDefinition, InputValueDefinition},
     ApolloDiagnostic, Document,
 };
 

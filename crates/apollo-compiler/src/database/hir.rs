@@ -1,7 +1,7 @@
-use std::{ops::Deref, sync::Arc};
+use std::sync::Arc;
 
 use apollo_parser::{
-    ast::{self, AstNode, SyntaxNodePtr},
+    ast::{self, SyntaxNodePtr},
     SyntaxNode,
 };
 use ordered_float::{self, OrderedFloat};
@@ -264,7 +264,7 @@ impl FragmentDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -347,7 +347,7 @@ impl OperationDefinition {
     /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -456,7 +456,7 @@ impl VariableDefinition {
     /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -550,7 +550,7 @@ impl Type {
     /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
-            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
+            .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
 
     pub fn name(&self) -> String {
@@ -609,7 +609,7 @@ impl Directive {
     /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -658,7 +658,7 @@ impl DirectiveDefinition {
     /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
-            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
+            .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
 }
 
@@ -781,7 +781,7 @@ impl Argument {
     /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -830,7 +830,7 @@ impl Variable {
     /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -1034,7 +1034,7 @@ impl Field {
     /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 
     // pub fn field_definition(&self, db: &dyn Document) -> Option<Arc<FieldDefinition>> {
@@ -1084,7 +1084,7 @@ impl InlineFragment {
     /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -1121,7 +1121,7 @@ impl FragmentSpread {
     /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -1170,7 +1170,7 @@ impl SchemaDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
-            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
+            .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
 
     // NOTE(@lrlna): potentially have the following fns on the database itself
@@ -1241,7 +1241,7 @@ impl RootOperationTypeDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
-            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
+            .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
 }
 
@@ -1313,7 +1313,7 @@ impl ObjectTypeDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -1340,7 +1340,7 @@ impl ImplementsInterface {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -1378,7 +1378,7 @@ impl FieldDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 
     // Get a reference to field definition's type.
@@ -1412,7 +1412,7 @@ impl ArgumentsDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
-            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
+            .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
 }
 
@@ -1450,7 +1450,7 @@ impl InputValueDefinition {
     /// Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
-            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
+            .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
 
     /// Get a reference to input value definition's type.
@@ -1503,7 +1503,7 @@ impl ScalarTypeDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
         self.ast_ptr()
-            .map(|ptr| ptr.to_node(db.document().deref().syntax()))
+            .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
 
     // Returns true if the current scalar is a GraphQL built in.
@@ -1556,7 +1556,7 @@ impl EnumTypeDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1581,7 +1581,7 @@ impl EnumValueDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -1629,7 +1629,7 @@ impl UnionTypeDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -1657,7 +1657,7 @@ impl UnionMember {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -1711,7 +1711,7 @@ impl InterfaceTypeDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
 
@@ -1758,6 +1758,6 @@ impl InputObjectTypeDefinition {
     // Get current HIR node's AST node.
     pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(db.document().deref().syntax())
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }

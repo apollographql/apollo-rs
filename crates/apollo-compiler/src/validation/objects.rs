@@ -5,8 +5,8 @@ use crate::{
         MissingField, OutputType, TransitiveImplementedInterfaces, UndefinedDefinition,
         UniqueDefinition, UniqueField,
     },
+    hir::{FieldDefinition, ObjectTypeDefinition},
     validation::ValidationSet,
-    values::{FieldDefinition, ObjectTypeDefinition},
     ApolloDiagnostic, Document,
 };
 

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     diagnostics::{ObjectType, UndefinedDefinition, UniqueDefinition},
-    values::UnionMember,
+    hir::UnionMember,
     ApolloDiagnostic, Document,
 };
 

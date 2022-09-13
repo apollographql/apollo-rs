@@ -1,15 +1,15 @@
 #![doc = include_str!("../README.md")]
 
+mod database;
 mod diagnostics;
-mod query_groups;
 #[cfg(test)]
 mod tests;
 mod validation;
 
 use std::sync::Arc;
 
-use apollo_parser::{ast, SyntaxTree};
-pub use query_groups::{values, Definitions, Document, DocumentParser, Inputs, RootDatabase};
+use apollo_parser::SyntaxTree;
+pub use database::{hir, Definitions, Document, DocumentParser, Inputs, RootDatabase};
 
 pub use diagnostics::ApolloDiagnostic;
 use validation::Validator;
@@ -75,9 +75,9 @@ impl ApolloCompiler {
     // NOTE @lrlna: uncomment when we are fully thread-safe.
 
     /// Get a snapshot of the current database.
-    // pub fn snapshot(&self) -> salsa::Storage<RootDatabase> {
-    //     self.db.storage.snapshot()
-    // }
+    pub fn snapshot(&self) -> salsa::Storage<RootDatabase> {
+        self.db.storage.snapshot()
+    }
 
     /// Get access to the `apollo-parser's` AST.
     pub fn ast(&self) -> SyntaxTree {
@@ -114,56 +114,56 @@ impl ApolloCompiler {
     }
 
     /// Get access to all definitions in a document.
-    pub fn definitions(&self) -> Arc<Vec<ast::Definition>> {
-        self.db.definitions()
+    pub fn definitions(&self) -> Arc<Vec<hir::Definition>> {
+        self.db.db_definitions()
     }
 
     /// Get access to all operations in a document.
-    pub fn operations(&self) -> Arc<Vec<values::OperationDefinition>> {
+    pub fn operations(&self) -> Arc<Vec<hir::OperationDefinition>> {
         self.db.operations()
     }
 
     /// Get access to all fragments in a document.
-    pub fn fragments(&self) -> Arc<Vec<values::FragmentDefinition>> {
+    pub fn fragments(&self) -> Arc<Vec<hir::FragmentDefinition>> {
         self.db.fragments()
     }
 
     /// Get access to the schema definition in a document.
-    pub fn schema(&self) -> Arc<values::SchemaDefinition> {
+    pub fn schema(&self) -> Arc<hir::SchemaDefinition> {
         self.db.schema()
     }
 
     /// Get access to all object type definitions in a document.
-    pub fn object_types(&self) -> Arc<Vec<values::ObjectTypeDefinition>> {
+    pub fn object_types(&self) -> Arc<Vec<hir::ObjectTypeDefinition>> {
         self.db.object_types()
     }
 
     /// Get access to all scalar type definitions in a document.
     /// The compiler adds built-in scalars(Int, String, Float, Boolean, ID) in
     /// addition to custom scalars found in input.
-    pub fn scalars(&self) -> Arc<Vec<values::ScalarTypeDefinition>> {
+    pub fn scalars(&self) -> Arc<Vec<hir::ScalarTypeDefinition>> {
         self.db.scalars()
     }
 
     /// Get access to all enum type definitions in a document.
-    pub fn enums(&self) -> Arc<Vec<values::EnumTypeDefinition>> {
+    pub fn enums(&self) -> Arc<Vec<hir::EnumTypeDefinition>> {
         self.db.enums()
     }
 
     /// Get access to all union type definitions in a document.
-    pub fn unions(&self) -> Arc<Vec<values::UnionTypeDefinition>> {
+    pub fn unions(&self) -> Arc<Vec<hir::UnionTypeDefinition>> {
         self.db.unions()
     }
 
     /// Get access to all directive type definitions in a document.
     /// The compiler will add all built-in directives (specifiedBy, skip,
     /// deprecated, include) in addition to all custom directives in input.
-    pub fn directive_definitions(&self) -> Arc<Vec<values::DirectiveDefinition>> {
+    pub fn directive_definitions(&self) -> Arc<Vec<hir::DirectiveDefinition>> {
         self.db.directive_definitions()
     }
 
     /// Get access to all input object type definitions in a document.
-    pub fn input_objects(&self) -> Arc<Vec<values::InputObjectTypeDefinition>> {
+    pub fn input_objects(&self) -> Arc<Vec<hir::InputObjectTypeDefinition>> {
         self.db.input_objects()
     }
 }
@@ -172,10 +172,10 @@ impl ApolloCompiler {
 mod test {
     use std::collections::HashMap;
 
-    use crate::{values::Definition, ApolloCompiler, Document};
+    use crate::{hir::Definition, ApolloCompiler, Document};
 
     #[test]
-    fn is_db_send() {
+    fn it_can_query_snapshot_db() {
         let input = r#"
 type Query {
   website: URL,
@@ -192,9 +192,9 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         }
         assert!(diagnostics.is_empty());
 
-        // is_send(ctx.snapshot());
+        is_send(ctx.snapshot());
 
-        // fn is_send<T: Send>(db: T) {};
+        fn is_send<T: Send>(_db: T) {}
     }
 
     #[test]
@@ -522,19 +522,19 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         assert!(diagnostics.is_empty());
 
         let op = ctx.db.find_operation_by_name(String::from("getProduct"));
-        let fragment_in_op: Vec<crate::values::FragmentDefinition> = op
+        let fragment_in_op: Vec<crate::hir::FragmentDefinition> = op
             .unwrap()
             .selection_set()
             .selection()
             .iter()
             .filter_map(|sel| match sel {
-                crate::values::Selection::FragmentSpread(frag) => {
+                crate::hir::Selection::FragmentSpread(frag) => {
                     Some(frag.fragment(&ctx.db)?.as_ref().clone())
                 }
                 _ => None,
             })
             .collect();
-        let fragment_fields: Vec<crate::values::Field> = fragment_in_op
+        let fragment_fields: Vec<crate::hir::Field> = fragment_in_op
             .iter()
             .flat_map(|frag| frag.selection_set().fields())
             .collect();

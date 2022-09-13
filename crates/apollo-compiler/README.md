@@ -86,7 +86,7 @@ assert!(diagnostics.is_empty());
 #### Accessing fragment definition field types
 
 ```rust
-use apollo_compiler::{ApolloCompiler, values, Document};
+use apollo_compiler::{ApolloCompiler, hir, Document};
 use miette::Result;
 
 fn main() -> Result<()> {
@@ -132,14 +132,14 @@ fn main() -> Result<()> {
     assert!(diagnostics.is_empty());
 
     let op = ctx.db.find_operation_by_name(String::from("getProduct")).expect("getProduct query does not exist");
-    let fragment_in_op: Vec<crate::values::FragmentDefinition> = op.selection_set().selection().iter().filter_map(|sel| match sel {
-        crate::values::Selection::FragmentSpread(frag) => {
+    let fragment_in_op: Vec<hir::FragmentDefinition> = op.selection_set().selection().iter().filter_map(|sel| match sel {
+        hir::Selection::FragmentSpread(frag) => {
             Some(frag.fragment(&ctx.db)?.as_ref().clone())
         }
         _ => None
     }).collect();
 
-    let fragment_fields: Vec<crate::values::Field> = fragment_in_op.iter().flat_map(|frag| frag.selection_set().fields()).collect();
+    let fragment_fields: Vec<hir::Field> = fragment_in_op.iter().flat_map(|frag| frag.selection_set().fields()).collect();
     let field_ty: Vec<String> = fragment_fields
         .iter()
         .filter_map(|f| Some(f.ty(&ctx.db)?.name()))
@@ -151,7 +151,7 @@ fn main() -> Result<()> {
 
 #### Get a directive defined on a field used in a query operation definition.
 ```rust
-use apollo_compiler::{ApolloCompiler, values};
+use apollo_compiler::{ApolloCompiler, hir};
 use anyhow::{anyhow, Result};
 
 fn main() -> Result<()> {

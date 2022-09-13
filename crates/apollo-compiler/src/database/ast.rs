@@ -1,15 +1,14 @@
-use std::sync::Arc;
+use apollo_parser::{Parser as ApolloParser, SyntaxTree};
+use rowan::GreenNode;
 
-use apollo_parser::{ast, Parser as ApolloParser, SyntaxTree};
-
-use crate::{diagnostics::SyntaxError, query_groups::inputs_db::Inputs, ApolloDiagnostic};
+use crate::{database::inputs::Inputs, diagnostics::SyntaxError, ApolloDiagnostic};
 
 #[salsa::query_group(ParserStorage)]
 pub trait DocumentParser: Inputs {
     fn ast(&self) -> SyntaxTree;
 
     // root node
-    fn document(&self) -> Arc<ast::Document>;
+    fn document(&self) -> GreenNode;
 
     fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
 }
@@ -21,8 +20,8 @@ fn ast(db: &dyn DocumentParser) -> SyntaxTree {
     parser.parse()
 }
 
-fn document(db: &dyn DocumentParser) -> Arc<ast::Document> {
-    Arc::new(db.ast().document())
+fn document(db: &dyn DocumentParser) -> GreenNode {
+    db.ast().green()
 }
 
 fn syntax_errors(db: &dyn DocumentParser) -> Vec<ApolloDiagnostic> {
