@@ -106,44 +106,6 @@ mod test {
     use crate::{hir::Definition, ApolloCompiler, Definitions, Document};
 
     #[test]
-    fn it_can_query_snapshot_db() {
-        let input = r#"
-type Query {
-  website: URL,
-  amount: Int
-}
-
-scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
-"#;
-
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
-        for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
-        }
-
-        assert!(diagnostics.is_empty());
-
-        let (sender, receiver) = crossbeam_channel::bounded(1);
-        let thread1 = std::thread::spawn(move || {
-            sender
-                .send(ctx.db.find_object_type_by_name("Query".into()))
-                .expect("Unable to send on channel");
-        });
-        let thread2 = std::thread::spawn(move || {
-            let op = receiver
-                .recv()
-                .expect("Unable to receive from channel")
-                .unwrap();
-            let fields: Vec<&str> = op.fields_definition().iter().map(|f| f.name()).collect();
-            assert_eq!(fields, ["website", "amount"]);
-        });
-
-        thread1.join().expect("sending panicked");
-        thread2.join().expect("receiving panicked");
-    }
-
-    #[test]
     fn it_accesses_operation_definition_parts() {
         let input = r#"
 query ExampleQuery($definedVariable: Int, $definedVariable2: Int) {
@@ -981,5 +943,43 @@ type User
             ["Mutation", "Product", "Query", "Review", "User"],
             object_names.as_slice()
         );
+    }
+
+    #[test]
+    fn it_can_access_root_db_in_thread() {
+        let input = r#"
+type Query {
+  website: URL,
+  amount: Int
+}
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
+
+        assert!(diagnostics.is_empty());
+
+        let (sender, receiver) = std::sync::mpsc::channel();
+        let thread1 = std::thread::spawn(move || {
+            sender
+                .send(ctx.db.find_object_type_by_name("Query".into()))
+                .expect("Unable to send on channel");
+        });
+        let thread2 = std::thread::spawn(move || {
+            let op = receiver
+                .recv()
+                .expect("Unable to receive from channel")
+                .unwrap();
+            let fields: Vec<&str> = op.fields_definition().iter().map(|f| f.name()).collect();
+            assert_eq!(fields, ["website", "amount"]);
+        });
+
+        thread1.join().expect("sending panicked");
+        thread2.join().expect("receiving panicked");
     }
 }
