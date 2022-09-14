@@ -151,7 +151,7 @@ fn main() -> Result<()> {
 
 #### Get a directive defined on a field used in a query operation definition.
 ```rust
-use apollo_compiler::{ApolloCompiler, hir};
+use apollo_compiler::{ApolloCompiler, hir, Definitions};
 use anyhow::{anyhow, Result};
 
 fn main() -> Result<()> {
@@ -194,7 +194,7 @@ fn main() -> Result<()> {
     }
     assert!(diagnostics.is_empty());
 
-    let operations = ctx.operations();
+    let operations = ctx.db.operations();
     let get_product_op = operations
         .iter()
         .find(|op| op.name() == Some("getProduct")).expect("getProduct query does not exist");

@@ -2,10 +2,10 @@
 // non-optional and will have an error produced in the parser if they are missing.
 
 use crate::database::{
-    ast::ParserStorage, def::DefinitionsStorage, document::DocumentStorage, inputs::InputsStorage,
+    ast::AstStorage, def::DefinitionsStorage, document::DocumentStorage, inputs::InputsStorage,
 };
 
-#[salsa::database(DocumentStorage, InputsStorage, ParserStorage, DefinitionsStorage)]
+#[salsa::database(DocumentStorage, InputsStorage, AstStorage, DefinitionsStorage)]
 #[derive(Default)]
 pub struct RootDatabase {
     pub storage: salsa::Storage<RootDatabase>,

@@ -3,7 +3,7 @@ use rowan::GreenNode;
 
 use crate::{database::inputs::Inputs, diagnostics::SyntaxError, ApolloDiagnostic};
 
-#[salsa::query_group(ParserStorage)]
+#[salsa::query_group(AstStorage)]
 pub trait DocumentParser: Inputs {
     fn ast(&self) -> SyntaxTree;
 
