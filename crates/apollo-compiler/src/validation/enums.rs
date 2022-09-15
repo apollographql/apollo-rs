@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     diagnostics::{CapitalizedValue, UniqueDefinition},
-    values::EnumValueDefinition,
+    hir::EnumValueDefinition,
     ApolloDiagnostic, Document,
 };
 

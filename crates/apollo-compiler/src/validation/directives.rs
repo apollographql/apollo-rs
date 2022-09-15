@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     diagnostics::{RecursiveDefinition, UniqueDefinition},
-    values::DirectiveDefinition,
+    hir::DirectiveDefinition,
     ApolloDiagnostic, Document,
 };
 

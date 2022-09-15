@@ -1,18 +1,15 @@
 #![doc = include_str!("../README.md")]
 
+mod database;
 mod diagnostics;
-mod queries;
 #[cfg(test)]
 mod tests;
 mod validation;
 
-use std::sync::Arc;
-
-use apollo_parser::{ast, SyntaxTree};
-pub use queries::{values, Definitions, Document, DocumentParser, Inputs, RootDatabase};
-
-pub use diagnostics::ApolloDiagnostic;
 use validation::Validator;
+
+pub use database::{hir, Definitions, Document, DocumentParser, Inputs, RootDatabase};
+pub use diagnostics::ApolloDiagnostic;
 
 pub struct ApolloCompiler {
     pub db: RootDatabase,
@@ -72,16 +69,9 @@ impl ApolloCompiler {
         Self { db }
     }
 
-    // NOTE @lrlna: uncomment when we are fully thread-safe.
-
     /// Get a snapshot of the current database.
-    // pub fn snapshot(&self) -> salsa::Storage<RootDatabase> {
-    //     self.db.storage.snapshot()
-    // }
-
-    /// Get access to the `apollo-parser's` AST.
-    pub fn ast(&self) -> SyntaxTree {
-        self.db.ast()
+    pub fn snapshot(&self) -> salsa::Storage<RootDatabase> {
+        self.db.storage.snapshot()
     }
 
     /// Validate your GraphQL input. Returns Diagnostics that you can pretty-print.
@@ -107,95 +97,13 @@ impl ApolloCompiler {
         let mut validator = Validator::new(&self.db);
         validator.validate().into()
     }
-
-    /// Get access to syntax errors returned by `apollo-parser`.
-    pub fn syntax_errors(&self) -> Vec<ApolloDiagnostic> {
-        self.db.syntax_errors()
-    }
-
-    /// Get access to all definitions in a document.
-    pub fn definitions(&self) -> Arc<Vec<ast::Definition>> {
-        self.db.definitions()
-    }
-
-    /// Get access to all operations in a document.
-    pub fn operations(&self) -> Arc<Vec<values::OperationDefinition>> {
-        self.db.operations()
-    }
-
-    /// Get access to all fragments in a document.
-    pub fn fragments(&self) -> Arc<Vec<values::FragmentDefinition>> {
-        self.db.fragments()
-    }
-
-    /// Get access to the schema definition in a document.
-    pub fn schema(&self) -> Arc<values::SchemaDefinition> {
-        self.db.schema()
-    }
-
-    /// Get access to all object type definitions in a document.
-    pub fn object_types(&self) -> Arc<Vec<values::ObjectTypeDefinition>> {
-        self.db.object_types()
-    }
-
-    /// Get access to all scalar type definitions in a document.
-    /// The compiler adds built-in scalars(Int, String, Float, Boolean, ID) in
-    /// addition to custom scalars found in input.
-    pub fn scalars(&self) -> Arc<Vec<values::ScalarTypeDefinition>> {
-        self.db.scalars()
-    }
-
-    /// Get access to all enum type definitions in a document.
-    pub fn enums(&self) -> Arc<Vec<values::EnumTypeDefinition>> {
-        self.db.enums()
-    }
-
-    /// Get access to all union type definitions in a document.
-    pub fn unions(&self) -> Arc<Vec<values::UnionTypeDefinition>> {
-        self.db.unions()
-    }
-
-    /// Get access to all directive type definitions in a document.
-    /// The compiler will add all built-in directives (specifiedBy, skip,
-    /// deprecated, include) in addition to all custom directives in input.
-    pub fn directive_definitions(&self) -> Arc<Vec<values::DirectiveDefinition>> {
-        self.db.directive_definitions()
-    }
-
-    /// Get access to all input object type definitions in a document.
-    pub fn input_objects(&self) -> Arc<Vec<values::InputObjectTypeDefinition>> {
-        self.db.input_objects()
-    }
 }
 
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
 
-    use crate::{values::Definition, ApolloCompiler, Document};
-
-    #[test]
-    fn is_db_send() {
-        let input = r#"
-type Query {
-  website: URL,
-  amount: Int
-}
-
-scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
-"#;
-
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
-        for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
-        }
-        assert!(diagnostics.is_empty());
-
-        // is_send(ctx.snapshot());
-
-        // fn is_send<T: Send>(db: T) {};
-    }
+    use crate::{hir::Definition, ApolloCompiler, Definitions, Document};
 
     #[test]
     fn it_accesses_operation_definition_parts() {
@@ -239,11 +147,11 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         }
         assert!(diagnostics.is_empty());
 
-        let operations = ctx.operations();
+        let operations = ctx.db.operations();
         let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
         assert_eq!(["ExampleQuery"], operation_names.as_slice());
 
-        let fragments = ctx.fragments();
+        let fragments = ctx.db.fragments();
         let fragment_names: Vec<_> = fragments.iter().map(|fragment| fragment.name()).collect();
         assert_eq!(["vipCustomer"], fragment_names.as_slice());
 
@@ -287,7 +195,7 @@ type Query {
         }
         assert!(diagnostics.is_empty());
 
-        let operations = ctx.operations();
+        let operations = ctx.db.operations();
         let fields = operations
             .iter()
             .find(|op| op.name() == Some("ExampleQuery"))
@@ -341,7 +249,7 @@ union Union = Concrete
         let diagnostics = ctx.validate();
         assert!(diagnostics.is_empty());
 
-        let operations = ctx.operations();
+        let operations = ctx.db.operations();
         let fields = operations
             .iter()
             .find(|op| op.name() == Some("ExampleQuery"))
@@ -433,7 +341,7 @@ type Product {
         assert!(diagnostics.is_empty());
 
         // Get the types of the two top level fields - topProducts and size
-        let operations = ctx.operations();
+        let operations = ctx.db.operations();
         let get_product_op = operations
             .iter()
             .find(|op| op.name() == Some("getProduct"))
@@ -522,19 +430,19 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         assert!(diagnostics.is_empty());
 
         let op = ctx.db.find_operation_by_name(String::from("getProduct"));
-        let fragment_in_op: Vec<crate::values::FragmentDefinition> = op
+        let fragment_in_op: Vec<crate::hir::FragmentDefinition> = op
             .unwrap()
             .selection_set()
             .selection()
             .iter()
             .filter_map(|sel| match sel {
-                crate::values::Selection::FragmentSpread(frag) => {
+                crate::hir::Selection::FragmentSpread(frag) => {
                     Some(frag.fragment(&ctx.db)?.as_ref().clone())
                 }
                 _ => None,
             })
             .collect();
-        let fragment_fields: Vec<crate::values::Field> = fragment_in_op
+        let fragment_fields: Vec<crate::hir::Field> = fragment_in_op
             .iter()
             .flat_map(|frag| frag.selection_set().fields())
             .collect();
@@ -596,7 +504,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         }
         assert!(diagnostics.is_empty());
 
-        let scalars = ctx.scalars();
+        let scalars = ctx.db.scalars();
 
         let directives: Vec<&str> = scalars
             .iter()
@@ -630,7 +538,7 @@ enum Pet {
         }
         assert!(diagnostics.is_empty());
 
-        let enums = ctx.enums();
+        let enums = ctx.db.enums();
         let enum_values: Vec<&str> = enums
             .iter()
             .find(|enum_def| enum_def.name() == "Pet")
@@ -673,7 +581,7 @@ type SearchQuery {
         }
         assert!(diagnostics.is_empty());
 
-        let unions = ctx.unions();
+        let unions = ctx.db.unions();
         let union_members: Vec<&str> = unions
             .iter()
             .find(|def| def.name() == "SearchResult")
@@ -725,7 +633,7 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
         }
         assert!(diagnostics.is_empty());
 
-        let directives = ctx.directive_definitions();
+        let directives = ctx.db.directive_definitions();
         let locations: Vec<String> = directives
             .iter()
             .filter_map(|dir| {
@@ -769,7 +677,7 @@ input Point2D {
         }
         assert!(diagnostics.is_empty());
 
-        let input_objects = ctx.input_objects();
+        let input_objects = ctx.db.input_objects();
         let fields: Vec<&str> = input_objects
             .iter()
             .filter_map(|input| {
@@ -1029,11 +937,49 @@ type User
         // the scalar warning diagnostic
         assert_eq!(diagnostics.len(), 1);
 
-        let object_types = ctx.object_types();
+        let object_types = ctx.db.object_types();
         let object_names: Vec<_> = object_types.iter().map(|op| op.name()).collect();
         assert_eq!(
             ["Mutation", "Product", "Query", "Review", "User"],
             object_names.as_slice()
         );
+    }
+
+    #[test]
+    fn it_can_access_root_db_in_thread() {
+        let input = r#"
+type Query {
+  website: URL,
+  amount: Int
+}
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic);
+        }
+
+        assert!(diagnostics.is_empty());
+
+        let (sender, receiver) = std::sync::mpsc::channel();
+        let thread1 = std::thread::spawn(move || {
+            sender
+                .send(ctx.db.find_object_type_by_name("Query".into()))
+                .expect("Unable to send on channel");
+        });
+        let thread2 = std::thread::spawn(move || {
+            let op = receiver
+                .recv()
+                .expect("Unable to receive from channel")
+                .unwrap();
+            let fields: Vec<&str> = op.fields_definition().iter().map(|f| f.name()).collect();
+            assert_eq!(fields, ["website", "amount"]);
+        });
+
+        thread1.join().expect("sending panicked");
+        thread2.join().expect("receiving panicked");
     }
 }

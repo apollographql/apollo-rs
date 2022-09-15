@@ -3,11 +3,11 @@ use std::sync::Arc;
 use apollo_parser::ast::{self, AstChildren, AstNode, SyntaxNodePtr};
 use uuid::Uuid;
 
-use crate::{values::*, DocumentParser, Inputs};
+use crate::{hir::*, DocumentParser, Inputs};
 
 #[salsa::query_group(DefinitionsStorage)]
 pub trait Definitions: Inputs + DocumentParser {
-    fn definitions(&self) -> Arc<Vec<ast::Definition>>;
+    // fn definitions(&self) -> Arc<Vec<ast::Definition>>;
 
     fn db_definitions(&self) -> Arc<Vec<Definition>>;
 
@@ -32,10 +32,6 @@ pub trait Definitions: Inputs + DocumentParser {
     fn directive_definitions(&self) -> Arc<Vec<DirectiveDefinition>>;
 
     fn input_objects(&self) -> Arc<Vec<InputObjectTypeDefinition>>;
-}
-
-fn definitions(db: &dyn Definitions) -> Arc<Vec<ast::Definition>> {
-    Arc::new(db.document().definitions().into_iter().collect())
 }
 
 fn db_definitions(db: &dyn Definitions) -> Arc<Vec<Definition>> {
@@ -156,12 +152,12 @@ fn type_system_definitions(db: &dyn Definitions) -> Arc<Vec<Definition>> {
 
 fn operations(db: &dyn Definitions) -> Arc<Vec<OperationDefinition>> {
     let operations = db
+        .ast()
+        .document()
         .definitions()
-        .iter()
+        .into_iter()
         .filter_map(|definition| match definition {
-            ast::Definition::OperationDefinition(op_def) => {
-                Some(operation_definition(db, op_def.clone()))
-            }
+            ast::Definition::OperationDefinition(op_def) => Some(operation_definition(db, op_def)),
             _ => None,
         })
         .collect();
@@ -170,11 +166,13 @@ fn operations(db: &dyn Definitions) -> Arc<Vec<OperationDefinition>> {
 
 fn fragments(db: &dyn Definitions) -> Arc<Vec<FragmentDefinition>> {
     let fragments = db
+        .ast()
+        .document()
         .definitions()
-        .iter()
+        .into_iter()
         .filter_map(|definition| match definition {
             ast::Definition::FragmentDefinition(fragment_def) => {
-                Some(fragment_definition(db, fragment_def.clone()))
+                Some(fragment_definition(db, fragment_def))
             }
             _ => None,
         })
@@ -184,10 +182,12 @@ fn fragments(db: &dyn Definitions) -> Arc<Vec<FragmentDefinition>> {
 
 fn schema(db: &dyn Definitions) -> Arc<SchemaDefinition> {
     let schema = db
+        .ast()
+        .document()
         .definitions()
-        .iter()
+        .into_iter()
         .find_map(|definition| match definition {
-            ast::Definition::SchemaDefinition(schema) => Some(schema.clone()),
+            ast::Definition::SchemaDefinition(schema) => Some(schema),
             _ => None,
         });
     let mut schema_def = schema.map_or(SchemaDefinition::default(), schema_definition);
@@ -210,12 +210,12 @@ fn schema(db: &dyn Definitions) -> Arc<SchemaDefinition> {
 
 fn object_types(db: &dyn Definitions) -> Arc<Vec<ObjectTypeDefinition>> {
     let objects = db
+        .ast()
+        .document()
         .definitions()
-        .iter()
+        .into_iter()
         .filter_map(|definition| match definition {
-            ast::Definition::ObjectTypeDefinition(obj_def) => {
-                Some(object_type_definition(obj_def.clone()))
-            }
+            ast::Definition::ObjectTypeDefinition(obj_def) => Some(object_type_definition(obj_def)),
             _ => None,
         })
         .collect();
@@ -224,11 +224,13 @@ fn object_types(db: &dyn Definitions) -> Arc<Vec<ObjectTypeDefinition>> {
 
 fn scalars(db: &dyn Definitions) -> Arc<Vec<ScalarTypeDefinition>> {
     let scalars = db
+        .ast()
+        .document()
         .definitions()
-        .iter()
+        .into_iter()
         .filter_map(|definition| match definition {
             ast::Definition::ScalarTypeDefinition(scalar_def) => {
-                Some(scalar_definition(scalar_def.clone()))
+                Some(scalar_definition(scalar_def))
             }
             _ => None,
         })
@@ -240,12 +242,12 @@ fn scalars(db: &dyn Definitions) -> Arc<Vec<ScalarTypeDefinition>> {
 
 fn enums(db: &dyn Definitions) -> Arc<Vec<EnumTypeDefinition>> {
     let enums = db
+        .ast()
+        .document()
         .definitions()
-        .iter()
+        .into_iter()
         .filter_map(|definition| match definition {
-            ast::Definition::EnumTypeDefinition(enum_def) => {
-                Some(enum_definition(enum_def.clone()))
-            }
+            ast::Definition::EnumTypeDefinition(enum_def) => Some(enum_definition(enum_def)),
             _ => None,
         })
         .collect();
@@ -254,12 +256,12 @@ fn enums(db: &dyn Definitions) -> Arc<Vec<EnumTypeDefinition>> {
 
 fn unions(db: &dyn Definitions) -> Arc<Vec<UnionTypeDefinition>> {
     let unions = db
+        .ast()
+        .document()
         .definitions()
-        .iter()
+        .into_iter()
         .filter_map(|definition| match definition {
-            ast::Definition::UnionTypeDefinition(union_def) => {
-                Some(union_definition(union_def.clone()))
-            }
+            ast::Definition::UnionTypeDefinition(union_def) => Some(union_definition(union_def)),
             _ => None,
         })
         .collect();
@@ -268,11 +270,13 @@ fn unions(db: &dyn Definitions) -> Arc<Vec<UnionTypeDefinition>> {
 
 fn interfaces(db: &dyn Definitions) -> Arc<Vec<InterfaceTypeDefinition>> {
     let interfaces = db
+        .ast()
+        .document()
         .definitions()
-        .iter()
+        .into_iter()
         .filter_map(|definition| match definition {
             ast::Definition::InterfaceTypeDefinition(interface_def) => {
-                Some(interface_definition(interface_def.clone()))
+                Some(interface_definition(interface_def))
             }
             _ => None,
         })
@@ -282,11 +286,13 @@ fn interfaces(db: &dyn Definitions) -> Arc<Vec<InterfaceTypeDefinition>> {
 
 fn directive_definitions(db: &dyn Definitions) -> Arc<Vec<DirectiveDefinition>> {
     let directives = db
+        .ast()
+        .document()
         .definitions()
-        .iter()
+        .into_iter()
         .filter_map(|definition| match definition {
             ast::Definition::DirectiveDefinition(directive_def) => {
-                Some(directive_definition(directive_def.clone()))
+                Some(directive_definition(directive_def))
             }
             _ => None,
         })
@@ -299,11 +305,13 @@ fn directive_definitions(db: &dyn Definitions) -> Arc<Vec<DirectiveDefinition>> 
 
 fn input_objects(db: &dyn Definitions) -> Arc<Vec<InputObjectTypeDefinition>> {
     let directives = db
+        .ast()
+        .document()
         .definitions()
-        .iter()
+        .into_iter()
         .filter_map(|definition| match definition {
             ast::Definition::InputObjectTypeDefinition(input_obj) => {
-                Some(input_object_definition(input_obj.clone()))
+                Some(input_object_definition(input_obj))
             }
             _ => None,
         })

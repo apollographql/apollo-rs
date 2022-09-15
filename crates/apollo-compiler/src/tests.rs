@@ -12,7 +12,7 @@ use std::{
 
 use expect_test::expect_file;
 
-use crate::{ApolloCompiler, ApolloDiagnostic};
+use crate::{ApolloCompiler, ApolloDiagnostic, DocumentParser};
 
 // To run these tests and update files:
 // ```bash
@@ -27,7 +27,7 @@ fn compiler_tests() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
         let ctx = ApolloCompiler::new(text);
         let errors = ctx.validate();
-        let ast = ctx.ast();
+        let ast = ctx.db.ast();
         assert_diagnostics_are_absent(&errors, path);
         format!("{:?}", ast)
     });
