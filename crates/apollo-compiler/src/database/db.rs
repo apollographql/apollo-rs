@@ -1,11 +1,20 @@
 // All .expect() calls are used for parts of the GraphQL grammar that are
 // non-optional and will have an error produced in the parser if they are missing.
 
-use crate::database::{
-    ast::AstStorage, def::DefinitionsStorage, document::DocumentStorage, inputs::InputsStorage,
+use crate::{
+    database::{
+        ast::AstStorage, def::DefinitionsStorage, document::DocumentStorage, inputs::InputsStorage,
+    },
+    validation::ValidationStorage,
 };
 
-#[salsa::database(DocumentStorage, InputsStorage, AstStorage, DefinitionsStorage)]
+#[salsa::database(
+    DocumentStorage,
+    InputsStorage,
+    AstStorage,
+    DefinitionsStorage,
+    ValidationStorage
+)]
 #[derive(Default)]
 pub struct RootDatabase {
     pub storage: salsa::Storage<RootDatabase>,

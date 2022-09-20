@@ -6,7 +6,7 @@ mod diagnostics;
 mod tests;
 mod validation;
 
-use validation::Validator;
+use validation::Validation;
 
 pub use database::{hir, Definitions, Document, DocumentParser, Inputs, RootDatabase};
 pub use diagnostics::ApolloDiagnostic;
@@ -94,8 +94,7 @@ impl ApolloCompiler {
     /// assert_eq!(diagnostics.len(), 1);
     /// ```
     pub fn validate(&self) -> Vec<ApolloDiagnostic> {
-        let mut validator = Validator::new(&self.db);
-        validator.validate().into()
+        *self.db.validate()
     }
 }
 
