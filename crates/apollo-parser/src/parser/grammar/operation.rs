@@ -105,19 +105,4 @@ mod test {
         assert_eq!(ast.errors().len(), 2);
         assert_eq!(ast.document().definitions().into_iter().count(), 1);
     }
-
-    #[test]
-    fn it_returns_errors_for_malformed_introspection_query() {
-        let input = "query __typename }";
-        let parser = Parser::new(input);
-        let ast = parser.parse();
-
-        assert_eq!(ast.errors().len(), 1);
-
-        let input = "query __typename";
-        let parser = Parser::new(input);
-        let ast = parser.parse();
-
-        assert_eq!(ast.errors().len(), 1);
-    }
 }
