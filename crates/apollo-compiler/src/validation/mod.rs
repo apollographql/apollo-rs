@@ -1,59 +1,118 @@
-use apollo_parser::SyntaxNode;
-
-use crate::{ApolloDiagnostic, Document};
-
 // schema
-pub mod schema;
+mod schema;
 
 // leaf nodes
-pub mod enums;
-pub mod scalars;
-pub mod unions;
+mod enum_;
+mod scalar;
+mod union_;
 
 // composite nodes
-pub mod directives;
-pub mod input_objects;
-pub mod interfaces;
-pub mod objects;
+mod directive;
+mod input_object;
+mod interface;
+mod object;
 
 // executable definitions
-pub mod operations;
+mod operation;
 
-pub mod unused_variables;
+mod unused_variable;
 
-pub struct Validator<'a> {
-    db: &'a dyn Document,
-    diagnostics: Vec<ApolloDiagnostic>,
+use apollo_parser::SyntaxNode;
+
+use crate::{
+    database::db::Upcast, ApolloDiagnostic, AstDatabase, DocumentDatabase, HirDatabase,
+    InputDatabase,
+};
+
+#[salsa::query_group(ValidationStorage)]
+pub trait ValidationDatabase:
+    Upcast<dyn DocumentDatabase> + InputDatabase + AstDatabase + HirDatabase
+{
+    fn validate(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_schema(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_scalar(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_enum(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_union(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_interface(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_directive(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_input_object(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_object(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_operation(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_unused_variable(&self) -> Vec<ApolloDiagnostic>;
 }
 
-impl<'a> Validator<'a> {
-    pub fn new(db: &'a dyn Document) -> Self {
-        Self {
-            db,
-            diagnostics: Vec::new(),
-        }
-    }
+pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+    diagnostics.extend(db.syntax_errors());
 
-    pub fn validate(&mut self) -> &mut [ApolloDiagnostic] {
-        self.diagnostics.extend(self.db.syntax_errors());
+    diagnostics.extend(db.validate_schema());
 
-        self.diagnostics.extend(schema::check(self.db));
+    diagnostics.extend(db.validate_scalar());
+    diagnostics.extend(db.validate_enum());
+    diagnostics.extend(db.validate_union());
 
-        self.diagnostics.extend(scalars::check(self.db));
-        self.diagnostics.extend(enums::check(self.db));
-        self.diagnostics.extend(unions::check(self.db));
+    diagnostics.extend(db.validate_interface());
+    diagnostics.extend(db.validate_directive());
+    diagnostics.extend(db.validate_input_object());
+    diagnostics.extend(db.validate_object());
+    diagnostics.extend(db.validate_operation());
 
-        self.diagnostics.extend(interfaces::check(self.db));
-        self.diagnostics.extend(directives::check(self.db));
-        self.diagnostics.extend(input_objects::check(self.db));
-        self.diagnostics.extend(objects::check(self.db));
+    diagnostics.extend(db.validate_unused_variable());
 
-        self.diagnostics.extend(operations::check(self.db));
-        self.diagnostics.extend(unused_variables::check(self.db));
-
-        self.diagnostics.as_mut()
-    }
+    diagnostics
 }
+
+pub fn validate_schema(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    schema::check(db)
+}
+
+pub fn validate_scalar(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    scalar::check(db)
+}
+
+pub fn validate_enum(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    enum_::check(db)
+}
+
+pub fn validate_union(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    union_::check(db)
+}
+
+pub fn validate_interface(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    interface::check(db)
+}
+
+pub fn validate_directive(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    directive::check(db)
+}
+
+pub fn validate_input_object(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    input_object::check(db)
+}
+
+pub fn validate_object(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    object::check(db)
+}
+
+pub fn validate_operation(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    operation::check(db)
+}
+
+pub fn validate_unused_variable(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    unused_variable::check(db)
+}
+
+// #[salsa::query_group(ValidationStorage)]
+// pub trait Validation: Document + Inputs + DocumentParser + Definitions {
+//     fn validate(&self) -> Arc<Vec<ApolloDiagnostic>>;
+// }
+//
+// pub fn validate(db: &dyn Validation) -> Arc<Vec<ApolloDiagnostic>> {
+//     let mut diagnostics = Vec::new();
+//     diagnostics.extend(schema::check(db));
+//
+//     Arc::new(diagnostics)
+// }
 
 #[derive(Debug, Eq)]
 struct ValidationSet {

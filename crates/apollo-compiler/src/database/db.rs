@@ -1,11 +1,24 @@
 // All .expect() calls are used for parts of the GraphQL grammar that are
 // non-optional and will have an error produced in the parser if they are missing.
 
-use crate::database::{
-    ast::AstStorage, def::DefinitionsStorage, document::DocumentStorage, inputs::InputsStorage,
+use crate::{
+    database::{
+        ast::AstStorage, def::HirStorage, document::DocumentStorage, inputs::InputStorage,
+        DocumentDatabase,
+    },
+    validation::ValidationStorage,
 };
 
-#[salsa::database(DocumentStorage, InputsStorage, AstStorage, DefinitionsStorage)]
+pub trait Upcast<T: ?Sized> {
+    fn upcast(&self) -> &T;
+}
+#[salsa::database(
+    DocumentStorage,
+    InputStorage,
+    AstStorage,
+    HirStorage,
+    ValidationStorage
+)]
 #[derive(Default)]
 pub struct RootDatabase {
     pub storage: salsa::Storage<RootDatabase>,
@@ -20,5 +33,11 @@ impl salsa::ParallelDatabase for RootDatabase {
         salsa::Snapshot::new(RootDatabase {
             storage: self.storage.snapshot(),
         })
+    }
+}
+
+impl Upcast<dyn DocumentDatabase> for RootDatabase {
+    fn upcast(&self) -> &(dyn DocumentDatabase + 'static) {
+        self
     }
 }

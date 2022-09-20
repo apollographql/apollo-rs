@@ -5,11 +5,11 @@ use crate::{
         MissingIdent, SingleRootField, UndefinedField, UniqueDefinition, UnsupportedOperation,
     },
     hir::{OperationDefinition, Selection},
-    ApolloDiagnostic, Document,
+    ApolloDiagnostic, ValidationDatabase,
 };
 // use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, Document};
 
-pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     // It is possible to have an unnamed (anonymous) operation definition only
     // if there is **one** operation definition.
@@ -23,8 +23,8 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
             .iter()
             .filter_map(|op| {
                 if op.name().is_none() {
-                    let offset = op.ast_node(db).text_range().start().into();
-                    let len: usize = op.ast_node(db).text_range().len().into();
+                    let offset = op.ast_node(db.upcast()).text_range().start().into();
+                    let len: usize = op.ast_node(db.upcast()).text_range().len().into();
                     return Some(ApolloDiagnostic::MissingIdent(MissingIdent {
                         src: db.input(),
                         definition: (offset, len).into(),
@@ -44,11 +44,11 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     for op in db.operations().iter() {
         if let Some(name) = op.name() {
             if let Some(prev_def) = seen.get(&name) {
-                let prev_offset: usize = prev_def.ast_node(db).text_range().start().into();
-                let prev_node_len: usize = prev_def.ast_node(db).text_range().len().into();
+                let prev_offset: usize = prev_def.ast_node(db.upcast()).text_range().start().into();
+                let prev_node_len: usize = prev_def.ast_node(db.upcast()).text_range().len().into();
 
-                let current_offset: usize = op.ast_node(db).text_range().start().into();
-                let current_node_len: usize = op.ast_node(db).text_range().len().into();
+                let current_offset: usize = op.ast_node(db.upcast()).text_range().start().into();
+                let current_node_len: usize = op.ast_node(db.upcast()).text_range().len().into();
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     ty: "operation".into(),
                     name: name.into(),
@@ -67,18 +67,19 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
 
     // A Subscription operation definition can only have **one** root level
     // field.
-    if db.subscription_operations().len() >= 1 {
+    if db.upcast().subscription_operations().len() >= 1 {
         let single_root_field: Vec<ApolloDiagnostic> = db
+            .upcast()
             .subscription_operations()
             .iter()
             .filter_map(|op| {
-                let mut fields = op.fields(db).as_ref().clone();
-                fields.extend(op.fields_in_inline_fragments(db).as_ref().clone());
-                fields.extend(op.fields_in_fragment_spread(db).as_ref().clone());
+                let mut fields = op.fields(db.upcast()).as_ref().clone();
+                fields.extend(op.fields_in_inline_fragments(db.upcast()).as_ref().clone());
+                fields.extend(op.fields_in_fragment_spread(db.upcast()).as_ref().clone());
                 if fields.len() > 1 {
                     let field_names: Vec<&str> = fields.iter().map(|f| f.name()).collect();
-                    let offset = op.ast_node(db).text_range().start().into();
-                    let len: usize = op.ast_node(db).text_range().len().into();
+                    let offset = op.ast_node(db.upcast()).text_range().start().into();
+                    let len: usize = op.ast_node(db.upcast()).text_range().len().into();
                     Some(ApolloDiagnostic::SingleRootField(SingleRootField {
                         fields: fields.len(),
                         src: db.input(),
@@ -101,15 +102,18 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     // defined schema root operation types.
     //
     //   * subscription operation - subscription root operation
-    if db.subscription_operations().len() >= 1 && db.schema().subscription(db).is_none() {
+    if db.upcast().subscription_operations().len() >= 1
+        && db.schema().subscription(db.upcast()).is_none()
+    {
         let unsupported_ops: Vec<ApolloDiagnostic> = db
+            .upcast()
             .subscription_operations()
             .iter()
             .map(|op| {
-                let op_offset: usize = op.ast_node(db).text_range().start().into();
-                let op_len: usize = op.ast_node(db).text_range().len().into();
+                let op_offset: usize = op.ast_node(db.upcast()).text_range().start().into();
+                let op_len: usize = op.ast_node(db.upcast()).text_range().len().into();
 
-                if let Some(schema_node) = db.schema().ast_node(db) {
+                if let Some(schema_node) = db.schema().ast_node(db.upcast()) {
                     let schema_offset: usize = schema_node.text_range().start().into();
                     let schema_len: usize = schema_node.text_range().len().into();
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
@@ -137,15 +141,16 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     }
     //
     //   * query operation - query root operation
-    if db.query_operations().len() >= 1 && db.schema().query(db).is_none() {
+    if db.upcast().query_operations().len() >= 1 && db.schema().query(db.upcast()).is_none() {
         let unsupported_ops: Vec<ApolloDiagnostic> = db
+            .upcast()
             .query_operations()
             .iter()
             .map(|op| {
-                let op_offset: usize = op.ast_node(db).text_range().start().into();
-                let op_len: usize = op.ast_node(db).text_range().len().into();
+                let op_offset: usize = op.ast_node(db.upcast()).text_range().start().into();
+                let op_len: usize = op.ast_node(db.upcast()).text_range().len().into();
 
-                if let Some(schema_node) = db.schema().ast_node(db) {
+                if let Some(schema_node) = db.schema().ast_node(db.upcast()) {
                     let schema_offset: usize = schema_node.text_range().start().into();
                     let schema_len: usize = schema_node.text_range().len().into();
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
@@ -172,15 +177,16 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     }
 
     //   * mutation operation - mutation root operation
-    if db.mutation_operations().len() >= 1 && db.schema().mutation(db).is_none() {
+    if db.upcast().mutation_operations().len() >= 1 && db.schema().mutation(db.upcast()).is_none() {
         let unsupported_ops: Vec<ApolloDiagnostic> = db
+            .upcast()
             .mutation_operations()
             .iter()
             .map(|op| {
-                let op_offset: usize = op.ast_node(db).text_range().start().into();
-                let op_len: usize = op.ast_node(db).text_range().len().into();
+                let op_offset: usize = op.ast_node(db.upcast()).text_range().start().into();
+                let op_len: usize = op.ast_node(db.upcast()).text_range().len().into();
 
-                if let Some(schema_node) = db.schema().ast_node(db) {
+                if let Some(schema_node) = db.schema().ast_node(db.upcast()) {
                     let schema_offset: usize = schema_node.text_range().start().into();
                     let schema_len: usize = schema_node.text_range().len().into();
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
@@ -210,11 +216,11 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     // Fields must exist on the type being queried.
     for op in db.operations().iter() {
         for selection in op.selection_set().selection() {
-            let obj_name = op.object_type(db).map(|obj| obj.name().to_owned());
+            let obj_name = op.object_type(db.upcast()).map(|obj| obj.name().to_owned());
             if let Selection::Field(field) = selection {
-                if field.ty(db).is_none() {
-                    let offset: usize = field.ast_node(db).text_range().start().into();
-                    let len: usize = field.ast_node(db).text_range().len().into();
+                if field.ty(db.upcast()).is_none() {
+                    let offset: usize = field.ast_node(db.upcast()).text_range().start().into();
+                    let len: usize = field.ast_node(db.upcast()).text_range().len().into();
                     let field_name = field.name().into();
                     let help = if let Some(obj_type) = obj_name {
                         format!("`{}` is not defined on `{}` type", field_name, obj_type)

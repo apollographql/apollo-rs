@@ -7,7 +7,7 @@ use apollo_parser::{
 use ordered_float::{self, OrderedFloat};
 use uuid::Uuid;
 
-use crate::Document;
+use crate::DocumentDatabase;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Definition {
@@ -244,7 +244,7 @@ impl FragmentDefinition {
     // which operation definition the fragment is used in.
 
     /// Get variables used in a fragment definition.
-    pub fn variables(&self, db: &dyn Document) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn DocumentDatabase) -> Vec<Variable> {
         self.selection_set
             .selection()
             .iter()
@@ -252,7 +252,7 @@ impl FragmentDefinition {
             .collect()
     }
 
-    pub fn ty(&self, db: &dyn Document) -> Option<Arc<Definition>> {
+    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<Arc<Definition>> {
         db.find_type_system_definition_by_name(self.name.clone())
     }
 
@@ -262,7 +262,7 @@ impl FragmentDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -291,7 +291,7 @@ impl OperationDefinition {
     }
 
     /// Get operation's definition object type.
-    pub fn object_type(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn object_type(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         match self.operation_ty {
             OperationType::Query => db.schema().query(db),
             OperationType::Mutation => db.schema().mutation(db),
@@ -321,7 +321,7 @@ impl OperationDefinition {
 
     /// Get fields in the operation definition (excluding inline fragments and
     /// fragment spreads).
-    pub fn fields(&self, db: &dyn Document) -> Arc<Vec<Field>> {
+    pub fn fields(&self, db: &dyn DocumentDatabase) -> Arc<Vec<Field>> {
         db.operation_fields(self.id)
     }
 
@@ -331,11 +331,11 @@ impl OperationDefinition {
     //
     // We will need to figure out how to store operation definition id on its
     // fragment spreads and inline fragments to do this
-    pub fn fields_in_inline_fragments(&self, db: &dyn Document) -> Arc<Vec<Field>> {
+    pub fn fields_in_inline_fragments(&self, db: &dyn DocumentDatabase) -> Arc<Vec<Field>> {
         db.operation_inline_fragment_fields(self.id)
     }
 
-    pub fn fields_in_fragment_spread(&self, db: &dyn Document) -> Arc<Vec<Field>> {
+    pub fn fields_in_fragment_spread(&self, db: &dyn DocumentDatabase) -> Arc<Vec<Field>> {
         db.operation_fragment_spread_fields(self.id)
     }
 
@@ -345,7 +345,7 @@ impl OperationDefinition {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -454,7 +454,7 @@ impl VariableDefinition {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -511,7 +511,7 @@ impl Type {
     /// [`UnionTypeDefinition`]: Definition::UnionTypeDefinition
     /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
     #[must_use]
-    pub fn is_output_type(&self, db: &dyn Document) -> bool {
+    pub fn is_output_type(&self, db: &dyn DocumentDatabase) -> bool {
         if let Some(ty) = self.ty(db) {
             ty.as_ref().is_output_definition()
         } else {
@@ -526,7 +526,7 @@ impl Type {
     /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
     /// [`InputObjectTypeDefinition`]: Definition::ObjectTypeDefinition
     #[must_use]
-    pub fn is_input_type(&self, db: &dyn Document) -> bool {
+    pub fn is_input_type(&self, db: &dyn DocumentDatabase) -> bool {
         if let Some(ty) = self.ty(db) {
             ty.as_ref().is_input_definition()
         } else {
@@ -543,12 +543,12 @@ impl Type {
         }
     }
 
-    pub fn ty(&self, db: &dyn Document) -> Option<Arc<Definition>> {
+    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<Arc<Definition>> {
         db.find_definition_by_name(self.name())
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
@@ -597,7 +597,7 @@ impl Directive {
     }
 
     // Get directive definition of the currently used directive
-    pub fn directive(&self, db: &dyn Document) -> Option<Arc<DirectiveDefinition>> {
+    pub fn directive(&self, db: &dyn DocumentDatabase) -> Option<Arc<DirectiveDefinition>> {
         db.find_directive_definition_by_name(self.name().to_string())
     }
 
@@ -607,7 +607,7 @@ impl Directive {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -656,7 +656,7 @@ impl DirectiveDefinition {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
@@ -779,7 +779,7 @@ impl Argument {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -828,7 +828,7 @@ impl Variable {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -913,7 +913,7 @@ pub enum Selection {
 }
 impl Selection {
     /// Get variables used in the selection set.
-    pub fn variables(&self, db: &dyn Document) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn DocumentDatabase) -> Vec<Variable> {
         match self {
             Selection::Field(field) => field.variables(db),
             Selection::FragmentSpread(fragment_spread) => fragment_spread.variables(db),
@@ -972,7 +972,7 @@ impl Field {
     }
 
     // Get a reference to field's type.
-    pub fn ty(&self, db: &dyn Document) -> Option<Type> {
+    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<Type> {
         dbg!(&self.parent_obj);
 
         let def = db
@@ -984,7 +984,7 @@ impl Field {
     }
 
     // Get field's original field definition.
-    pub fn field_definition(&self, db: &dyn Document) -> Option<FieldDefinition> {
+    pub fn field_definition(&self, db: &dyn DocumentDatabase) -> Option<FieldDefinition> {
         db.find_object_type_by_name(self.parent_obj.as_ref()?.to_string())?
             .fields_definition()
             .iter()
@@ -1008,7 +1008,7 @@ impl Field {
     }
 
     /// Get variables used in the field.
-    pub fn variables(&self, db: &dyn Document) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn DocumentDatabase) -> Vec<Variable> {
         let mut vars: Vec<_> = self
             .arguments
             .iter()
@@ -1032,7 +1032,7 @@ impl Field {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -1066,7 +1066,7 @@ impl InlineFragment {
         &self.selection_set
     }
 
-    pub fn variables(&self, db: &dyn Document) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn DocumentDatabase) -> Vec<Variable> {
         let vars = self
             .selection_set
             .selection()
@@ -1082,7 +1082,7 @@ impl InlineFragment {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -1096,11 +1096,11 @@ pub struct FragmentSpread {
 }
 
 impl FragmentSpread {
-    pub fn fragment(&self, db: &dyn Document) -> Option<Arc<FragmentDefinition>> {
+    pub fn fragment(&self, db: &dyn DocumentDatabase) -> Option<Arc<FragmentDefinition>> {
         db.find_fragment_by_name(self.name.clone())
     }
 
-    pub fn variables(&self, db: &dyn Document) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn DocumentDatabase) -> Vec<Variable> {
         let vars = match self.fragment(db) {
             Some(fragment) => fragment
                 .selection_set
@@ -1119,7 +1119,7 @@ impl FragmentSpread {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -1168,7 +1168,7 @@ impl SchemaDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
@@ -1177,7 +1177,7 @@ impl SchemaDefinition {
     // so they are memoised as well
 
     /// Get Schema's query object type definition.
-    pub fn query(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn query(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_query() {
                 db.find_object_type(op.object_type_id(db)?)
@@ -1188,7 +1188,7 @@ impl SchemaDefinition {
     }
 
     /// Get Schema's mutation object type definition.
-    pub fn mutation(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn mutation(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_mutation() {
                 db.find_object_type(op.object_type_id(db)?)
@@ -1199,7 +1199,7 @@ impl SchemaDefinition {
     }
 
     /// Get Schema's subscription object type definition.
-    pub fn subscription(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn subscription(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_subscription() {
                 db.find_object_type(op.object_type_id(db)?)
@@ -1228,7 +1228,7 @@ impl RootOperationTypeDefinition {
         self.operation_type
     }
 
-    pub fn object_type_id(&self, db: &dyn Document) -> Option<Uuid> {
+    pub fn object_type_id(&self, db: &dyn DocumentDatabase) -> Option<Uuid> {
         db.find_object_type_by_name(self.named_type().name())
             .map(|object_type| *object_type.id())
     }
@@ -1239,7 +1239,7 @@ impl RootOperationTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
@@ -1311,7 +1311,7 @@ impl ObjectTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -1324,7 +1324,10 @@ pub struct ImplementsInterface {
 }
 
 impl ImplementsInterface {
-    pub fn interface_definition(&self, db: &dyn Document) -> Option<Arc<InterfaceTypeDefinition>> {
+    pub fn interface_definition(
+        &self,
+        db: &dyn DocumentDatabase,
+    ) -> Option<Arc<InterfaceTypeDefinition>> {
         db.find_interface_by_name(self.interface.clone())
     }
 
@@ -1338,7 +1341,7 @@ impl ImplementsInterface {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -1376,7 +1379,7 @@ impl FieldDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -1410,7 +1413,7 @@ impl ArgumentsDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
@@ -1448,7 +1451,7 @@ impl InputValueDefinition {
     }
 
     /// Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
@@ -1501,7 +1504,7 @@ impl ScalarTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> Option<SyntaxNode> {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> Option<SyntaxNode> {
         self.ast_ptr()
             .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
@@ -1554,7 +1557,7 @@ impl EnumTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -1579,7 +1582,7 @@ impl EnumValueDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -1627,7 +1630,7 @@ impl UnionTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -1645,7 +1648,7 @@ impl UnionMember {
         self.name.as_ref()
     }
 
-    pub fn object(&self, db: &dyn Document) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn object(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         db.find_object_type_by_name(self.name.clone())
     }
 
@@ -1655,7 +1658,7 @@ impl UnionMember {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -1709,7 +1712,7 @@ impl InterfaceTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
@@ -1756,7 +1759,7 @@ impl InputObjectTypeDefinition {
     }
 
     // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn Document) -> SyntaxNode {
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }

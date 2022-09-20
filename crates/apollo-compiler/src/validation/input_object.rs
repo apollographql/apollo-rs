@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::{
     diagnostics::{UniqueDefinition, UniqueField},
     hir::{InputObjectTypeDefinition, InputValueDefinition},
-    ApolloDiagnostic, Document,
+    ApolloDiagnostic, ValidationDatabase,
 };
 
-pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // Input Object Definitions must have unique names.
@@ -16,11 +16,16 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     for input_object in db.input_objects().iter() {
         let name = input_object.name();
         if let Some(prev_def) = seen.get(name) {
-            let prev_offset: usize = prev_def.ast_node(db).text_range().start().into();
-            let prev_node_len: usize = prev_def.ast_node(db).text_range().len().into();
+            let prev_offset: usize = prev_def.ast_node(db.upcast()).text_range().start().into();
+            let prev_node_len: usize = prev_def.ast_node(db.upcast()).text_range().len().into();
 
-            let current_offset: usize = input_object.ast_node(db).text_range().start().into();
-            let current_node_len: usize = input_object.ast_node(db).text_range().len().into();
+            let current_offset: usize = input_object
+                .ast_node(db.upcast())
+                .text_range()
+                .start()
+                .into();
+            let current_node_len: usize =
+                input_object.ast_node(db.upcast()).text_range().len().into();
             diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                 ty: "input object".into(),
                 name: name.into(),
@@ -47,16 +52,34 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
         for field in input_fields {
             let field_name = field.name();
             if let Some(prev_field) = seen.get(&field_name) {
-                if prev_field.ast_node(db).is_some() && field.ast_node(db).is_some() {
-                    let prev_offset: usize =
-                        prev_field.ast_node(db).unwrap().text_range().start().into();
-                    let prev_node_len: usize =
-                        prev_field.ast_node(db).unwrap().text_range().len().into();
+                if prev_field.ast_node(db.upcast()).is_some()
+                    && field.ast_node(db.upcast()).is_some()
+                {
+                    let prev_offset: usize = prev_field
+                        .ast_node(db.upcast())
+                        .unwrap()
+                        .text_range()
+                        .start()
+                        .into();
+                    let prev_node_len: usize = prev_field
+                        .ast_node(db.upcast())
+                        .unwrap()
+                        .text_range()
+                        .len()
+                        .into();
 
-                    let current_offset: usize =
-                        field.ast_node(db).unwrap().text_range().start().into();
-                    let current_node_len: usize =
-                        field.ast_node(db).unwrap().text_range().len().into();
+                    let current_offset: usize = field
+                        .ast_node(db.upcast())
+                        .unwrap()
+                        .text_range()
+                        .start()
+                        .into();
+                    let current_node_len: usize = field
+                        .ast_node(db.upcast())
+                        .unwrap()
+                        .text_range()
+                        .len()
+                        .into();
 
                     diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                         field: field_name.into(),

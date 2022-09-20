@@ -3,13 +3,13 @@ use std::collections::HashSet;
 use crate::{
     diagnostics::{ApolloDiagnostic, UndefinedDefinition, UnusedVariable},
     validation::ValidationSet,
-    Document,
+    ValidationDatabase,
 };
 
 // check in scope
 // check in use
 // compare the two
-pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     db.operations()
         .iter()
         .flat_map(|op| {
@@ -18,7 +18,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                 .iter()
                 .map(|var| ValidationSet {
                     name: var.name().into(),
-                    node: var.ast_node(db),
+                    node: var.ast_node(db.upcast()),
                 })
                 .collect();
             let used_vars: HashSet<ValidationSet> = op
@@ -28,11 +28,11 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                 .iter()
                 .flat_map(|sel| {
                     let vars: HashSet<ValidationSet> = sel
-                        .variables(db)
+                        .variables(db.upcast())
                         .iter()
                         .map(|var| ValidationSet {
                             name: var.name().into(),
-                            node: var.ast_node(db),
+                            node: var.ast_node(db.upcast()),
                         })
                         .collect();
                     vars

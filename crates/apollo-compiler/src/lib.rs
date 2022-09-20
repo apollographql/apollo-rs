@@ -6,9 +6,9 @@ mod diagnostics;
 mod tests;
 mod validation;
 
-use validation::Validator;
+use validation::ValidationDatabase;
 
-pub use database::{hir, Definitions, Document, DocumentParser, Inputs, RootDatabase};
+pub use database::{hir, AstDatabase, DocumentDatabase, HirDatabase, InputDatabase, RootDatabase};
 pub use diagnostics::ApolloDiagnostic;
 
 pub struct ApolloCompiler {
@@ -94,8 +94,7 @@ impl ApolloCompiler {
     /// assert_eq!(diagnostics.len(), 1);
     /// ```
     pub fn validate(&self) -> Vec<ApolloDiagnostic> {
-        let mut validator = Validator::new(&self.db);
-        validator.validate().into()
+        self.db.validate()
     }
 }
 
@@ -103,7 +102,7 @@ impl ApolloCompiler {
 mod test {
     use std::collections::HashMap;
 
-    use crate::{hir::Definition, ApolloCompiler, Definitions, Document};
+    use crate::{hir::Definition, ApolloCompiler, DocumentDatabase, HirDatabase};
 
     #[test]
     fn it_accesses_operation_definition_parts() {

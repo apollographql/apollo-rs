@@ -7,10 +7,10 @@ use crate::{
     },
     hir::{FieldDefinition, InterfaceTypeDefinition},
     validation::ValidationSet,
-    ApolloDiagnostic, Document,
+    ApolloDiagnostic, ValidationDatabase,
 };
 
-pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // Interface definitions must have unique names.
@@ -20,11 +20,11 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     for interface in db.interfaces().iter() {
         let name = interface.name();
         if let Some(prev_def) = seen.get(&name) {
-            let prev_offset: usize = prev_def.ast_node(db).text_range().start().into();
-            let prev_node_len: usize = prev_def.ast_node(db).text_range().len().into();
+            let prev_offset: usize = prev_def.ast_node(db.upcast()).text_range().start().into();
+            let prev_node_len: usize = prev_def.ast_node(db.upcast()).text_range().len().into();
 
-            let current_offset: usize = interface.ast_node(db).text_range().start().into();
-            let current_node_len: usize = interface.ast_node(db).text_range().len().into();
+            let current_offset: usize = interface.ast_node(db.upcast()).text_range().start().into();
+            let current_node_len: usize = interface.ast_node(db.upcast()).text_range().len().into();
             diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                 ty: "interface".into(),
                 name: name.into(),
@@ -58,15 +58,19 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
     for interface_def in db.interfaces().iter() {
         let name = interface_def.name();
         for implements_interface in interface_def.implements_interfaces() {
-            if let Some(interface) = implements_interface.interface_definition(db) {
+            if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
                 let i_name = (*interface.name()).to_string();
                 if name == i_name {
                     let offset = implements_interface
-                        .ast_node(db)
+                        .ast_node(db.upcast())
                         .text_range()
                         .start()
                         .into();
-                    let len: usize = implements_interface.ast_node(db).text_range().len().into();
+                    let len: usize = implements_interface
+                        .ast_node(db.upcast())
+                        .text_range()
+                        .len()
+                        .into();
                     diagnostics.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
                         message: format!("{} interface cannot implement itself", i_name),
                         definition: (offset, len).into(),
@@ -89,12 +93,14 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
             //
             // Returns Unique Value error.
             let field_name = field.name();
-            let offset: usize = field.ast_node(db).text_range().start().into();
-            let len: usize = field.ast_node(db).text_range().len().into();
+            let offset: usize = field.ast_node(db.upcast()).text_range().start().into();
+            let len: usize = field.ast_node(db.upcast()).text_range().len().into();
 
             if let Some(prev_field) = seen.get(&field_name) {
-                let prev_offset: usize = prev_field.ast_node(db).text_range().start().into();
-                let prev_node_len: usize = prev_field.ast_node(db).text_range().len().into();
+                let prev_offset: usize =
+                    prev_field.ast_node(db.upcast()).text_range().start().into();
+                let prev_node_len: usize =
+                    prev_field.ast_node(db.upcast()).text_range().len().into();
 
                 diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                     field: field_name.into(),
@@ -110,8 +116,8 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
             }
 
             // Field types in interface types must be of output type
-            if let Some(field_ty) = field.ty().ty(db) {
-                if !field.ty().is_output_type(db) {
+            if let Some(field_ty) = field.ty().ty(db.upcast()) {
+                if !field.ty().is_output_type(db.upcast()) {
                     diagnostics.push(ApolloDiagnostic::OutputType(OutputType {
                         name: field.name().into(),
                         ty: field_ty.ty(),
@@ -119,7 +125,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
                         definition: (offset, len).into(),
                     }))
                 }
-            } else if let Some(node) = field.ty().ast_node(db) {
+            } else if let Some(node) = field.ty().ast_node(db.upcast()) {
                 let field_ty_offset: usize = node.text_range().start().into();
                 let field_ty_len: usize = node.text_range().len().into();
                 diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
@@ -142,7 +148,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
         .iter()
         .map(|interface| ValidationSet {
             name: interface.name().to_owned(),
-            node: interface.ast_node(db),
+            node: interface.ast_node(db.upcast()),
         })
         .collect();
     for interface_def in interfaces.iter() {
@@ -154,7 +160,7 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
             .iter()
             .map(|interface| ValidationSet {
                 name: interface.interface().to_owned(),
-                node: interface.ast_node(db),
+                node: interface.ast_node(db.upcast()),
             })
             .collect();
         let diff = implements_interfaces.difference(&defined_interfaces);
@@ -176,13 +182,13 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
             .implements_interfaces()
             .iter()
             .filter_map(|implements_interface| {
-                if let Some(interface) = implements_interface.interface_definition(db) {
+                if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
                     let child_interfaces: HashSet<ValidationSet> = interface
                         .implements_interfaces()
                         .iter()
                         .map(|interface| ValidationSet {
                             name: interface.interface().to_owned(),
-                            node: implements_interface.ast_node(db),
+                            node: implements_interface.ast_node(db.upcast()),
                         })
                         .collect();
                     Some(child_interfaces)
@@ -215,29 +221,37 @@ pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
             .iter()
             .map(|field| ValidationSet {
                 name: field.name().into(),
-                node: field.ast_node(db),
+                node: field.ast_node(db.upcast()),
             })
             .collect();
         for implements_interface in interface_def.implements_interfaces().iter() {
-            if let Some(interface) = implements_interface.interface_definition(db) {
+            if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
                 let implements_interface_fields: HashSet<ValidationSet> = interface
                     .fields_definition()
                     .iter()
                     .map(|field| ValidationSet {
                         name: field.name().into(),
-                        node: field.ast_node(db),
+                        node: field.ast_node(db.upcast()),
                     })
                     .collect();
 
                 let field_diff = implements_interface_fields.difference(&fields);
 
                 for missing_field in field_diff {
-                    let current_offset: usize =
-                        interface_def.ast_node(db).text_range().start().into();
-                    let current_len = interface_def.ast_node(db).text_range().len().into();
+                    let current_offset: usize = interface_def
+                        .ast_node(db.upcast())
+                        .text_range()
+                        .start()
+                        .into();
+                    let current_len = interface_def
+                        .ast_node(db.upcast())
+                        .text_range()
+                        .len()
+                        .into();
 
-                    let super_offset = interface.ast_node(db).text_range().start().into();
-                    let super_len: usize = interface.ast_node(db).text_range().len().into();
+                    let super_offset = interface.ast_node(db.upcast()).text_range().start().into();
+                    let super_len: usize =
+                        interface.ast_node(db.upcast()).text_range().len().into();
 
                     diagnostics.push(ApolloDiagnostic::MissingField(MissingField {
                         ty: missing_field.name.clone(),

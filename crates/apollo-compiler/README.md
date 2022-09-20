@@ -86,7 +86,7 @@ assert!(diagnostics.is_empty());
 #### Accessing fragment definition field types
 
 ```rust
-use apollo_compiler::{ApolloCompiler, hir, Document};
+use apollo_compiler::{ApolloCompiler, hir, DocumentDatabase};
 use miette::Result;
 
 fn main() -> Result<()> {
@@ -151,7 +151,7 @@ fn main() -> Result<()> {
 
 #### Get a directive defined on a field used in a query operation definition.
 ```rust
-use apollo_compiler::{ApolloCompiler, hir, Definitions};
+use apollo_compiler::{ApolloCompiler, hir, HirDatabase};
 use anyhow::{anyhow, Result};
 
 fn main() -> Result<()> {

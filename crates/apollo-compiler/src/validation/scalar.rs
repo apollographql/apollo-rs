@@ -1,16 +1,16 @@
 use crate::{
     diagnostics::{BuiltInScalarDefinition, ScalarSpecificationURL},
-    ApolloDiagnostic, Document,
+    ApolloDiagnostic, ValidationDatabase,
 };
 
 const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 
-pub fn check(db: &dyn Document) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for scalar in db.scalars().iter() {
         let name = scalar.name();
-        if let Some(node) = scalar.ast_node(db) {
+        if let Some(node) = scalar.ast_node(db.upcast()) {
             let offset: usize = node.text_range().start().into();
             let len: usize = node.text_range().len().into();
 
