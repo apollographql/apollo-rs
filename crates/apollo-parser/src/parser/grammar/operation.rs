@@ -60,8 +60,9 @@ pub(crate) fn operation_definition(p: &mut Parser) {
                 directive::directives(p);
             }
 
-            if let Some(T!['{']) = p.peek() {
-                selection::top_selection_set(p)
+            match p.peek() {
+                Some(T!['{']) => selection::top_selection_set(p),
+                _ => p.err_and_pop("expected a Selection Set"),
             }
         }
         Some(T!['{']) => {
