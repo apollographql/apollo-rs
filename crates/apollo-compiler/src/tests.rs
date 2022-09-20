@@ -12,7 +12,7 @@ use std::{
 
 use expect_test::expect_file;
 
-use crate::{ApolloCompiler, ApolloDiagnostic, DocumentParser};
+use crate::{ApolloCompiler, ApolloDiagnostic, AstDatabase};
 
 // To run these tests and update files:
 // ```bash

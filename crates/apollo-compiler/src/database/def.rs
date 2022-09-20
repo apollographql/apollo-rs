@@ -3,10 +3,10 @@ use std::sync::Arc;
 use apollo_parser::ast::{self, AstChildren, AstNode, SyntaxNodePtr};
 use uuid::Uuid;
 
-use crate::{hir::*, DocumentParser, Inputs};
+use crate::{hir::*, AstDatabase, InputDatabase};
 
-#[salsa::query_group(DefinitionsStorage)]
-pub trait Definitions: Inputs + DocumentParser {
+#[salsa::query_group(HirStorage)]
+pub trait HirDatabase: InputDatabase + AstDatabase {
     // fn definitions(&self) -> Arc<Vec<ast::Definition>>;
 
     fn db_definitions(&self) -> Arc<Vec<Definition>>;
@@ -34,7 +34,7 @@ pub trait Definitions: Inputs + DocumentParser {
     fn input_objects(&self) -> Arc<Vec<InputObjectTypeDefinition>>;
 }
 
-fn db_definitions(db: &dyn Definitions) -> Arc<Vec<Definition>> {
+fn db_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
     let mut definitions = Vec::new();
 
     let operations: Vec<Definition> = db
@@ -98,7 +98,7 @@ fn db_definitions(db: &dyn Definitions) -> Arc<Vec<Definition>> {
     Arc::new(definitions)
 }
 
-fn type_system_definitions(db: &dyn Definitions) -> Arc<Vec<Definition>> {
+fn type_system_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
     let mut definitions = Vec::new();
 
     let directives: Vec<Definition> = db
@@ -150,7 +150,7 @@ fn type_system_definitions(db: &dyn Definitions) -> Arc<Vec<Definition>> {
     Arc::new(definitions)
 }
 
-fn operations(db: &dyn Definitions) -> Arc<Vec<OperationDefinition>> {
+fn operations(db: &dyn HirDatabase) -> Arc<Vec<OperationDefinition>> {
     let operations = db
         .ast()
         .document()
@@ -164,7 +164,7 @@ fn operations(db: &dyn Definitions) -> Arc<Vec<OperationDefinition>> {
     Arc::new(operations)
 }
 
-fn fragments(db: &dyn Definitions) -> Arc<Vec<FragmentDefinition>> {
+fn fragments(db: &dyn HirDatabase) -> Arc<Vec<FragmentDefinition>> {
     let fragments = db
         .ast()
         .document()
@@ -180,7 +180,7 @@ fn fragments(db: &dyn Definitions) -> Arc<Vec<FragmentDefinition>> {
     Arc::new(fragments)
 }
 
-fn schema(db: &dyn Definitions) -> Arc<SchemaDefinition> {
+fn schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
     let schema = db
         .ast()
         .document()
@@ -208,7 +208,7 @@ fn schema(db: &dyn Definitions) -> Arc<SchemaDefinition> {
     Arc::new(schema_def)
 }
 
-fn object_types(db: &dyn Definitions) -> Arc<Vec<ObjectTypeDefinition>> {
+fn object_types(db: &dyn HirDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
     let objects = db
         .ast()
         .document()
@@ -222,7 +222,7 @@ fn object_types(db: &dyn Definitions) -> Arc<Vec<ObjectTypeDefinition>> {
     Arc::new(objects)
 }
 
-fn scalars(db: &dyn Definitions) -> Arc<Vec<ScalarTypeDefinition>> {
+fn scalars(db: &dyn HirDatabase) -> Arc<Vec<ScalarTypeDefinition>> {
     let scalars = db
         .ast()
         .document()
@@ -240,7 +240,7 @@ fn scalars(db: &dyn Definitions) -> Arc<Vec<ScalarTypeDefinition>> {
     Arc::new(scalars)
 }
 
-fn enums(db: &dyn Definitions) -> Arc<Vec<EnumTypeDefinition>> {
+fn enums(db: &dyn HirDatabase) -> Arc<Vec<EnumTypeDefinition>> {
     let enums = db
         .ast()
         .document()
@@ -254,7 +254,7 @@ fn enums(db: &dyn Definitions) -> Arc<Vec<EnumTypeDefinition>> {
     Arc::new(enums)
 }
 
-fn unions(db: &dyn Definitions) -> Arc<Vec<UnionTypeDefinition>> {
+fn unions(db: &dyn HirDatabase) -> Arc<Vec<UnionTypeDefinition>> {
     let unions = db
         .ast()
         .document()
@@ -268,7 +268,7 @@ fn unions(db: &dyn Definitions) -> Arc<Vec<UnionTypeDefinition>> {
     Arc::new(unions)
 }
 
-fn interfaces(db: &dyn Definitions) -> Arc<Vec<InterfaceTypeDefinition>> {
+fn interfaces(db: &dyn HirDatabase) -> Arc<Vec<InterfaceTypeDefinition>> {
     let interfaces = db
         .ast()
         .document()
@@ -284,7 +284,7 @@ fn interfaces(db: &dyn Definitions) -> Arc<Vec<InterfaceTypeDefinition>> {
     Arc::new(interfaces)
 }
 
-fn directive_definitions(db: &dyn Definitions) -> Arc<Vec<DirectiveDefinition>> {
+fn directive_definitions(db: &dyn HirDatabase) -> Arc<Vec<DirectiveDefinition>> {
     let directives = db
         .ast()
         .document()
@@ -303,7 +303,7 @@ fn directive_definitions(db: &dyn Definitions) -> Arc<Vec<DirectiveDefinition>> 
     Arc::new(directives)
 }
 
-fn input_objects(db: &dyn Definitions) -> Arc<Vec<InputObjectTypeDefinition>> {
+fn input_objects(db: &dyn HirDatabase) -> Arc<Vec<InputObjectTypeDefinition>> {
     let directives = db
         .ast()
         .document()
@@ -321,7 +321,7 @@ fn input_objects(db: &dyn Definitions) -> Arc<Vec<InputObjectTypeDefinition>> {
 }
 
 fn operation_definition(
-    db: &dyn Definitions,
+    db: &dyn HirDatabase,
     op_def: ast::OperationDefinition,
 ) -> OperationDefinition {
     // check if there are already operations
@@ -357,7 +357,7 @@ fn operation_definition(
 }
 
 fn fragment_definition(
-    db: &dyn Definitions,
+    db: &dyn HirDatabase,
     fragment_def: ast::FragmentDefinition,
 ) -> FragmentDefinition {
     let name = name(
@@ -589,7 +589,7 @@ fn input_object_definition(input_obj: ast::InputObjectTypeDefinition) -> InputOb
     }
 }
 
-fn add_object_type_id_to_schema(db: &dyn Definitions) -> Arc<Vec<RootOperationTypeDefinition>> {
+fn add_object_type_id_to_schema(db: &dyn HirDatabase) -> Arc<Vec<RootOperationTypeDefinition>> {
     // Schema Definition does not have to be present in the SDL if ObjectType name is
     // - Query
     // - Subscription
@@ -945,7 +945,7 @@ fn value(val: ast::Value) -> Value {
 }
 
 fn selection_set(
-    db: &dyn Definitions,
+    db: &dyn HirDatabase,
     selections: Option<ast::SelectionSet>,
     parent_obj_ty: Option<String>,
 ) -> SelectionSet {
@@ -964,7 +964,7 @@ fn selection_set(
 }
 
 fn selection(
-    db: &dyn Definitions,
+    db: &dyn HirDatabase,
     selection: ast::Selection,
     parent_obj_ty: Option<String>,
 ) -> Selection {
@@ -985,7 +985,7 @@ fn selection(
 }
 
 fn inline_fragment(
-    db: &dyn Definitions,
+    db: &dyn HirDatabase,
     fragment: ast::InlineFragment,
     parent_obj: Option<String>,
 ) -> Arc<InlineFragment> {
@@ -1033,7 +1033,7 @@ fn fragment_spread(fragment: ast::FragmentSpread) -> Arc<FragmentSpread> {
     Arc::new(fragment_data)
 }
 
-fn field(db: &dyn Definitions, field: ast::Field, parent_obj: Option<String>) -> Arc<Field> {
+fn field(db: &dyn HirDatabase, field: ast::Field, parent_obj: Option<String>) -> Arc<Field> {
     let name = name(field.name());
     let alias = alias(field.alias());
     let new_parent_obj = parent_ty(db, &name, parent_obj.clone());
@@ -1054,7 +1054,7 @@ fn field(db: &dyn Definitions, field: ast::Field, parent_obj: Option<String>) ->
     Arc::new(field_data)
 }
 
-fn parent_ty(db: &dyn Definitions, field_name: &str, parent_obj: Option<String>) -> Option<String> {
+fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<String>) -> Option<String> {
     if let Some(name) = parent_obj {
         db.type_system_definitions().iter().find_map(|def| {
             if let Some(n) = def.name() {

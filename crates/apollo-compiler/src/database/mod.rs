@@ -6,8 +6,8 @@ mod def;
 mod document;
 mod inputs;
 
-pub use ast::DocumentParser;
+pub use ast::AstDatabase;
 pub use db::RootDatabase;
-pub use def::Definitions;
-pub use document::Document;
-pub use inputs::Inputs;
+pub use def::HirDatabase;
+pub use document::DocumentDatabase;
+pub use inputs::InputDatabase;

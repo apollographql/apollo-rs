@@ -3,16 +3,20 @@
 
 use crate::{
     database::{
-        ast::AstStorage, def::DefinitionsStorage, document::DocumentStorage, inputs::InputsStorage,
+        ast::AstStorage, def::HirStorage, document::DocumentStorage, inputs::InputStorage,
+        DocumentDatabase,
     },
     validation::ValidationStorage,
 };
 
+pub trait Upcast<T: ?Sized> {
+    fn upcast(&self) -> &T;
+}
 #[salsa::database(
     DocumentStorage,
-    InputsStorage,
+    InputStorage,
     AstStorage,
-    DefinitionsStorage,
+    HirStorage,
     ValidationStorage
 )]
 #[derive(Default)]
@@ -29,5 +33,11 @@ impl salsa::ParallelDatabase for RootDatabase {
         salsa::Snapshot::new(RootDatabase {
             storage: self.storage.snapshot(),
         })
+    }
+}
+
+impl Upcast<dyn DocumentDatabase> for RootDatabase {
+    fn upcast(&self) -> &(dyn DocumentDatabase + 'static) {
+        self
     }
 }

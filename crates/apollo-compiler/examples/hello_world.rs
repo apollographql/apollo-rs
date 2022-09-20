@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 
-use apollo_compiler::{hir, ApolloCompiler, Definitions};
+use apollo_compiler::{hir, ApolloCompiler, HirDatabase};
 
 fn compile_query() -> Option<hir::FragmentDefinition> {
     let file = Path::new("crates/apollo-compiler/examples/query_with_errors.graphql");

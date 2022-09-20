@@ -1,5 +1,5 @@
-#[salsa::query_group(InputsStorage)]
-pub trait Inputs {
+#[salsa::query_group(InputStorage)]
+pub trait InputDatabase {
     #[salsa::input]
     fn input(&self) -> String;
 }

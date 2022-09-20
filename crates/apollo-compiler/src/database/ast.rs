@@ -1,10 +1,10 @@
 use apollo_parser::{Parser as ApolloParser, SyntaxTree};
 use rowan::GreenNode;
 
-use crate::{database::inputs::Inputs, diagnostics::SyntaxError, ApolloDiagnostic};
+use crate::{database::inputs::InputDatabase, diagnostics::SyntaxError, ApolloDiagnostic};
 
 #[salsa::query_group(AstStorage)]
-pub trait DocumentParser: Inputs {
+pub trait AstDatabase: InputDatabase {
     fn ast(&self) -> SyntaxTree;
 
     // root node
@@ -13,18 +13,18 @@ pub trait DocumentParser: Inputs {
     fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
 }
 
-fn ast(db: &dyn DocumentParser) -> SyntaxTree {
+fn ast(db: &dyn AstDatabase) -> SyntaxTree {
     let input = db.input();
 
     let parser = ApolloParser::new(&input);
     parser.parse()
 }
 
-fn document(db: &dyn DocumentParser) -> GreenNode {
+fn document(db: &dyn AstDatabase) -> GreenNode {
     db.ast().green()
 }
 
-fn syntax_errors(db: &dyn DocumentParser) -> Vec<ApolloDiagnostic> {
+fn syntax_errors(db: &dyn AstDatabase) -> Vec<ApolloDiagnostic> {
     db.ast()
         .errors()
         .into_iter()
