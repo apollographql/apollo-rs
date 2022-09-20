@@ -17,6 +17,28 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.2.11](https://crates.io/crates/apollo-parser/0.2.11) - 2022-09-20
+## Features
+- **introduce a getter to parser's green nodes - [lrlna], [pull/295]**
+
+  creates a getter to parser's underlying green nodes that make up the
+  resulting, more ergonomic AST. This is handy for our compiler's use case when
+  creating a thread-safe access to the AST.
+
+  [lrlna]: https://github.com/lrlna
+  [pull/295]: https://github.com/apollographql/apollo-rs/pull/295
+
+## Fixes
+- **selection set is required for named operation definitions- [lrlna], [pull/301] closes [issue/300]**
+
+  The parser was not creating errors for missing selection sets for named
+  operation definitions such as `query namedQuery {`. This is now correctly
+  flagged as erroneous graphql.
+
+  [lrlna]: https://github.com/lrlna
+  [pull/301]: https://github.com/apollographql/apollo-rs/pull/301
+  [issue/300]: https://github.com/apollographql/apollo-rs/issues/300
+
 # [0.2.10](https://crates.io/crates/apollo-parser/0.2.10) - 2022-08-16
 ## Fixes
 - **unterminated string value in list and object values - [bnjjj], [pull/267] & [pull/274] closes [issue/266]**
