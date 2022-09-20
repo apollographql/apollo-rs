@@ -7,10 +7,10 @@ use crate::{
     },
     hir::{FieldDefinition, ObjectTypeDefinition},
     validation::ValidationSet,
-    ApolloDiagnostic, Validation,
+    ApolloDiagnostic, ValidationDatabase,
 };
 
-pub fn check(db: &dyn Validation) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // Object Type definitions must have unique names.

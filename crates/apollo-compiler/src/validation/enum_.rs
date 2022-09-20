@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::{
     diagnostics::{CapitalizedValue, UniqueDefinition},
     hir::EnumValueDefinition,
-    ApolloDiagnostic, Validation,
+    ApolloDiagnostic, ValidationDatabase,
 };
 
-pub fn check(db: &dyn Validation) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // An Enum type must define one or more unique enum values.

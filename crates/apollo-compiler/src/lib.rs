@@ -6,7 +6,7 @@ mod diagnostics;
 mod tests;
 mod validation;
 
-use validation::Validation;
+use validation::ValidationDatabase;
 
 pub use database::{hir, AstDatabase, DocumentDatabase, HirDatabase, InputDatabase, RootDatabase};
 pub use diagnostics::ApolloDiagnostic;

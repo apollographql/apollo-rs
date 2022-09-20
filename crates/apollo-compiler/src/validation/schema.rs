@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::{
     diagnostics::{QueryRootOperationType, UniqueDefinition},
     hir::RootOperationTypeDefinition,
-    ApolloDiagnostic, Validation,
+    ApolloDiagnostic, ValidationDatabase,
 };
 
-pub fn check(db: &dyn Validation) -> Vec<ApolloDiagnostic> {
+pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // A GraphQL schema must have a Query root operation.
