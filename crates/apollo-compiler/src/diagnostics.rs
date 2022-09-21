@@ -311,7 +311,7 @@ pub struct CapitalizedValue {
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("unused variable: `{}`", self.ty)]
-#[diagnostic(code("apollo-compiler validation warning"), severity(warning))]
+#[diagnostic(code("apollo-compiler validation error"))]
 pub struct UnusedVariable {
     pub ty: String,
 
