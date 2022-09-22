@@ -1113,6 +1113,11 @@ impl FragmentSpread {
         vars
     }
 
+    /// Get a reference to fragment spread directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
     /// Get a reference to SyntaxNodePtr of the current HIR node.
     pub fn ast_ptr(&self) -> &SyntaxNodePtr {
         &self.ast_ptr
