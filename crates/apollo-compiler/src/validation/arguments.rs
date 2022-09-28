@@ -49,7 +49,8 @@ mod test {
     fn it_fails_validation_with_duplicate_argument_names() {
         let input = r#"
 type Query {
-  method(arg: Boolean, arg: Boolean): Int
+  single(arg: Boolean): Int
+  duplicate(arg: Boolean, arg: Boolean): Int
 }
 "#;
         let ctx = ApolloCompiler::new(input);
