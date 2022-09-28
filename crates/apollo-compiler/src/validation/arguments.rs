@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::{
-    diagnostics::UniqueDefinition,
+    diagnostics::UniqueArgument,
     hir::InputValueDefinition,
     ApolloDiagnostic, ValidationDatabase,
 };
@@ -16,8 +16,7 @@ fn check_input_value_definition_uniqueness(db: &dyn ValidationDatabase, input_va
             let current_offset: usize = input_value.ast_node(db.upcast()).unwrap().text_range().start().into();
             let current_node_len: usize = input_value.ast_node(db.upcast()).unwrap().text_range().len().into();
 
-            diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                ty: "argument".into(),
+            diagnostics.push(ApolloDiagnostic::UniqueArgument(UniqueArgument {
                 name: name.into(),
                 src: db.input(),
                 original_definition: (prev_offset, prev_node_len).into(),
