@@ -15,6 +15,7 @@ mod object;
 // executable definitions
 mod operation;
 
+mod arguments;
 mod unused_variable;
 
 use apollo_parser::SyntaxNode;
@@ -38,6 +39,7 @@ pub trait ValidationDatabase:
     fn validate_input_object(&self) -> Vec<ApolloDiagnostic>;
     fn validate_object(&self) -> Vec<ApolloDiagnostic>;
     fn validate_operation(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_arguments(&self) -> Vec<ApolloDiagnostic>;
     fn validate_unused_variable(&self) -> Vec<ApolloDiagnostic>;
 }
 
@@ -57,6 +59,7 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     diagnostics.extend(db.validate_object());
     diagnostics.extend(db.validate_operation());
 
+    diagnostics.extend(db.validate_arguments());
     diagnostics.extend(db.validate_unused_variable());
 
     diagnostics
@@ -96,6 +99,10 @@ pub fn validate_object(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 
 pub fn validate_operation(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     operation::check(db)
+}
+
+pub fn validate_arguments(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    arguments::check(db)
 }
 
 pub fn validate_unused_variable(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
