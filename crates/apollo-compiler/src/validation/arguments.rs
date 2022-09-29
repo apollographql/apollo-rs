@@ -33,18 +33,26 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     let object_types = db.object_types();
+    let interfaces = db.interfaces();
     let directive_definitions = db.directive_definitions();
 
+    // Collect all argument definitions
     let object_input_values = object_types.iter()
         .flat_map(|object_type| object_type.fields_definition())
         .map(|field| field.arguments().input_values());
-
+    let interface_input_values = interfaces.iter()
+        .flat_map(|interface| interface.fields_definition())
+        .map(|field| field.arguments().input_values());
     let directive_input_values = directive_definitions.iter()
         // Builtin directives do not have a backing AST Node. We don't need to check those.
         .filter(|directive_definition| directive_definition.ast_node(db.upcast()).is_some())
         .map(|directive_definition| directive_definition.arguments().input_values());
 
-    for input_values in object_input_values.chain(directive_input_values) {
+    let all_input_values = object_input_values
+        .chain(interface_input_values)
+        .chain(directive_input_values);
+
+    for input_values in all_input_values {
         check_input_value_definition_uniqueness(db, input_values, &mut diagnostics);
     }
 
@@ -58,7 +66,11 @@ mod test {
     #[test]
     fn it_fails_validation_with_duplicate_field_argument_names() {
         let input = r#"
-type Query {
+interface Duplicate {
+  duplicate(arg: Boolean, arg: Boolean): Int
+}
+
+type Query implements Duplicate {
   single(arg: Boolean): Int
   duplicate(arg: Boolean, arg: Boolean): Int
 }
@@ -68,7 +80,7 @@ type Query {
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
-        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics.len(), 2);
     }
 
     #[test]
