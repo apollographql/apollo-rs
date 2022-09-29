@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::{
     diagnostics::UniqueArgument,
-    hir::InputValueDefinition,
+    hir::{Argument, InputValueDefinition},
     ApolloDiagnostic, ValidationDatabase,
 };
 
@@ -35,6 +35,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let object_types = db.object_types();
     let interfaces = db.interfaces();
     let directive_definitions = db.directive_definitions();
+    let operations = db.operations();
 
     // Collect all argument definitions
     let object_input_values = object_types.iter()
@@ -54,6 +55,33 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 
     for input_values in all_input_values {
         check_input_value_definition_uniqueness(db, input_values, &mut diagnostics);
+    }
+
+    for operation in operations.iter() {
+        for field in operation.fields(db.upcast()).iter() {
+            let mut seen: HashMap<&str, &Argument> = HashMap::new();
+
+            for argument in field.arguments() {
+                let name = argument.name();
+                if let Some(prev_arg) = seen.get(name) {
+                    let prev_offset: usize = prev_arg.ast_node(db.upcast()).text_range().start().into();
+                    let prev_node_len: usize = prev_arg.ast_node(db.upcast()).text_range().len().into();
+
+                    let current_offset: usize = argument.ast_node(db.upcast()).text_range().start().into();
+                    let current_node_len: usize = argument.ast_node(db.upcast()).text_range().len().into();
+
+                    diagnostics.push(ApolloDiagnostic::UniqueArgument(UniqueArgument {
+                        name: name.into(),
+                        src: db.input(),
+                        original_definition: (prev_offset, prev_node_len).into(),
+                        redefined_definition: (current_offset, current_node_len).into(),
+                        help: Some(format!("`{name}` argument must only be provided once.")),
+                    }));
+                } else {
+                    seen.insert(name, argument);
+                }
+            }
+        }
     }
 
     diagnostics
@@ -86,6 +114,24 @@ type Query implements Duplicate {
     #[test]
     fn it_fails_validation_with_duplicate_directive_argument_names() {
         let input = r#"directive @example(arg: Boolean, arg: Boolean) on FIELD"#;
+        let ctx = ApolloCompiler::new(input);
+        let diagnostics = ctx.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic)
+        }
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn it_fails_validation_with_duplicate_field_arguments() {
+        let input = r#"
+type Query {
+  single(arg: Boolean): Int
+}
+query GetDuplicate {
+  single(arg: true, arg: false)
+}
+"#;
         let ctx = ApolloCompiler::new(input);
         let diagnostics = ctx.validate();
         for diagnostic in &diagnostics {
