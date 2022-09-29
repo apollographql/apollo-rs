@@ -59,8 +59,11 @@ impl Lexer {
                     Err(mut err) => {
                         err.index = index;
                         index += err.data.len();
+                        let char_idx = err.data.as_str().len();
+                        let (_, slice) = input.split_at(char_idx);
 
-                        input = &input[err.data.len()..];
+                        input = slice;
+                        dbg!(&input);
                         errors.push(err);
                     }
                 }
@@ -153,7 +156,6 @@ impl Cursor<'_> {
                         || is_source_char(c) && c != '\\' && c != '"' && !is_line_terminator(c)
                     {
                         buf.push(c);
-                    // TODO @lrlna: this should error if c == \ or has a line terminator
                     } else {
                         break;
                     }
@@ -426,12 +428,7 @@ mod test {
 
     #[test]
     fn tests() {
-        let gql_1 = r#"
-        """
-        **Example**: "Saturn5"
-        """
-        name: String @join__field(graph: PRODUCTS)
-        "#;
+        let gql_1 = "\"\n\n\\u{c}\nPSK\\u{1}0י";
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
         dbg!(lexer_1.errors);
