@@ -80,6 +80,21 @@ impl Definition {
         }
     }
 
+    pub fn directives(&self) -> &[Directive] {
+        match self {
+            Definition::OperationDefinition(def) => def.directives(),
+            Definition::FragmentDefinition(def) => def.directives(),
+            Definition::DirectiveDefinition(_) => &[],
+            Definition::ScalarTypeDefinition(def) => def.directives(),
+            Definition::ObjectTypeDefinition(def) => def.directives(),
+            Definition::InterfaceTypeDefinition(def) => def.directives(),
+            Definition::UnionTypeDefinition(def) => def.directives(),
+            Definition::EnumTypeDefinition(def) => def.directives(),
+            Definition::InputObjectTypeDefinition(def) => def.directives(),
+            Definition::SchemaDefinition(def) => def.directives(),
+        }
+    }
+
     /// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
     /// [`ObjectTypeDefinition`], [`InterfaceTypeDefinition`],
     /// [`UnionTypeDefinition`], [`EnumTypeDefinition`].
@@ -1155,6 +1170,11 @@ pub struct SchemaDefinition {
 }
 
 impl SchemaDefinition {
+    /// Get a reference to the schema definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
     /// Get a reference to the schema definition's root operation type definition.
     pub fn root_operation_type_definition(&self) -> &[RootOperationTypeDefinition] {
         self.root_operation_type_definition.as_ref()
@@ -1699,6 +1719,11 @@ impl InterfaceTypeDefinition {
     /// Get a reference to interface definition's implements interfaces vector.
     pub fn implements_interfaces(&self) -> &[ImplementsInterface] {
         self.implements_interfaces.as_ref()
+    }
+
+    /// Get a reference to the interface definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
     }
 
     /// Get a reference to interface definition's fields.
