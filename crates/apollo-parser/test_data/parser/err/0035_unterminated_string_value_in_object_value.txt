@@ -1,32 +1,32 @@
-- DOCUMENT@0..68
-    - OPERATION_DEFINITION@0..68
+- DOCUMENT@0..70
+    - OPERATION_DEFINITION@0..70
         - OPERATION_TYPE@0..9
             - mutation_KW@0..8 "mutation"
             - WHITESPACE@8..9 " "
-        - SELECTION_SET@9..68
+        - SELECTION_SET@9..70
             - L_CURLY@9..10 "{"
             - WHITESPACE@10..13 "\n  "
-            - FIELD@13..68
+            - FIELD@13..70
                 - NAME@13..24
                     - IDENT@13..24 "createStore"
-                - ARGUMENTS@24..68
+                - ARGUMENTS@24..70
                     - L_PAREN@24..25 "("
-                    - ARGUMENT@25..68
+                    - ARGUMENT@25..70
                         - NAME@25..30
                             - IDENT@25..30 "draft"
                         - COLON@30..31 ":"
                         - WHITESPACE@31..32 " "
-                        - OBJECT_VALUE@32..68
+                        - OBJECT_VALUE@32..70
                             - L_CURLY@32..33 "{"
                             - WHITESPACE@33..38 "\n    "
-                            - OBJECT_FIELD@38..68
+                            - OBJECT_FIELD@38..70
                                 - NAME@38..42
                                     - IDENT@38..42 "name"
                                 - COLON@42..43 ":"
                                 - WHITESPACE@43..44 " "
-                                - LIST_VALUE@44..68
+                                - LIST_VALUE@44..70
                                     - L_BRACK@44..45 "["
-                                    - OBJECT_VALUE@45..68
+                                    - OBJECT_VALUE@45..70
                                         - L_CURLY@45..46 "{"
                                         - WHITESPACE@46..47 " "
                                         - OBJECT_FIELD@47..61
@@ -38,16 +38,20 @@
                                                 - STRING@55..59 "\"en\""
                                                 - COMMA@59..60 ","
                                                 - WHITESPACE@60..61 " "
-                                        - OBJECT_FIELD@61..68
+                                        - OBJECT_FIELD@61..70
                                             - NAME@61..66
                                                 - IDENT@61..66 "value"
                                             - COLON@66..67 ":"
                                             - WHITESPACE@67..68 " "
-- ERROR@68:115 "unterminated string value" "my store }]  }) {
-    name(locale: "en")
+                                            - ENUM_VALUE@68..70
+                                                - NAME@68..70
+                                                    - IDENT@68..70 "en"
+- ERROR@108:116 "unterminated string value" ")
   }
 }
-- ERROR@115:116 "expected a valid Value" }
+- ERROR@68:106 "unexpected line terminator" "my store }]
+  }) {
+    name(locale: "
 - ERROR@116:116 "expected }" EOF
 - ERROR@116:116 "expected }" EOF
 - ERROR@116:116 "expected R_PAREN, got EOF" EOF
