@@ -92,7 +92,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let definition_directives = definitions.iter()
         .flat_map(|definition| definition.directives());
 
-    for directive in directive_calls {
+    for directive in definition_directives {
         check_arguments(db, directive.arguments(), &mut diagnostics);
     }
 
