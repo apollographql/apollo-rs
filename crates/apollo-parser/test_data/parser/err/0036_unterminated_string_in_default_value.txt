@@ -1,11 +1,11 @@
-- DOCUMENT@0..54
-    - OBJECT_TYPE_DEFINITION@0..54
+- DOCUMENT@0..53
+    - OBJECT_TYPE_DEFINITION@0..53
         - type_KW@0..4 "type"
         - WHITESPACE@4..5 " "
         - NAME@5..12
             - IDENT@5..11 "Person"
             - WHITESPACE@11..12 " "
-        - FIELDS_DEFINITION@12..54
+        - FIELDS_DEFINITION@12..53
             - L_CURLY@12..13 "{"
             - WHITESPACE@13..16 "\n  "
             - FIELD_DEFINITION@16..31
@@ -34,9 +34,10 @@
                         - DEFAULT_VALUE@51..53
                             - EQ@51..52 "="
                             - WHITESPACE@52..53 " "
-            - R_CURLY@53..54 "}"
-- ERROR@53:111 "unterminated string value" "https://spec.graphql.org/October2021/#DefaultValue): Url}
-- ERROR@111:112 "expected a valid Value" }
-- ERROR@111:112 "expected R_PAREN, got }" }
-- ERROR@111:112 "expected a type" }
+- ERROR@53:112 "unterminated string value" "https://spec.graphql.org/October2021/#DefaultValue): Url
+}
+- ERROR@112:112 "expected a valid Value" EOF
+- ERROR@112:112 "expected R_PAREN, got EOF" EOF
+- ERROR@112:112 "expected a type" EOF
+- ERROR@112:112 "expected R_CURLY, got EOF" EOF
 recursion limit: 4096, high: 0

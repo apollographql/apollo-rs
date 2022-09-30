@@ -1,15 +1,15 @@
-- DOCUMENT@0..97
-    - SCHEMA_EXTENSION@0..97
+- DOCUMENT@0..98
+    - SCHEMA_EXTENSION@0..98
         - extend_KW@0..6 "extend"
         - WHITESPACE@6..7 " "
         - schema_KW@7..13 "schema"
         - WHITESPACE@13..16 "\n  "
-        - DIRECTIVES@16..97
-            - DIRECTIVE@16..97
+        - DIRECTIVES@16..98
+            - DIRECTIVE@16..98
                 - AT@16..17 "@"
                 - NAME@17..21
                     - IDENT@17..21 "link"
-                - ARGUMENTS@21..97
+                - ARGUMENTS@21..98
                     - L_PAREN@21..22 "("
                     - ARGUMENT@22..79
                         - NAME@22..25
@@ -20,21 +20,21 @@
                             - STRING@27..69 "\"https://specs.apollo.dev/federation/v2.0\""
                             - COMMA@69..70 ","
                             - WHITESPACE@70..79 "\n        "
-                    - ARGUMENT@79..97
+                    - ARGUMENT@79..98
                         - NAME@79..85
                             - IDENT@79..85 "import"
                         - COLON@85..86 ":"
                         - WHITESPACE@86..87 " "
-                        - LIST_VALUE@87..97
+                        - LIST_VALUE@87..98
                             - L_BRACK@87..88 "["
-                            - STRING_VALUE@88..97
+                            - STRING_VALUE@88..96
                                 - STRING@88..94 "\"@key\""
                                 - COMMA@94..95 ","
                                 - WHITESPACE@95..96 " "
-                                - WHITESPACE@96..97 "\n"
-- ERROR@96:236 "unterminated string value" "@external])
-
-type Vehicle @key(fields: "id") {
+                            - ENUM_VALUE@96..98
+                                - NAME@96..98
+                                    - IDENT@96..98 "id"
+- ERROR@140:237 "unterminated string value" ") {
   id: ID!,
   type: String,
   modelCode: String,
@@ -42,5 +42,9 @@ type Vehicle @key(fields: "id") {
   launchDate: String
 }
 
+- ERROR@96:138 "unexpected line terminator" "@external])
+
+
+type Vehicle @key(fields: "
 - ERROR@237:237 "expected R_PAREN, got EOF" EOF
 recursion limit: 4096, high: 0

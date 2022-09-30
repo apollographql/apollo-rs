@@ -18,10 +18,12 @@ L_BRACKET@87:88 "["
 STRING_VALUE@88:94 "\"@key\""
 COMMA@94:95 ","
 WHITESPACE@95:96 " "
-R_CURLY@234:235 "}"
+NAME@137:139 "id"
 EOF@235:235
-ERROR@96:234 "unterminated string value" "@external])
-type Vehicle @key(fields: "id") {
+ERROR@96:137 "unexpected line terminator" "@external])
+
+type Vehicle @key(fields: "
+ERROR@139:235 "unterminated string value" ") {
   id: ID!,
   type: String,
   modelCode: String,

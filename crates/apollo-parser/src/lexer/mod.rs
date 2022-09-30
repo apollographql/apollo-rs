@@ -59,11 +59,8 @@ impl Lexer {
                     Err(mut err) => {
                         err.index = index;
                         index += err.data.len();
-                        let char_idx = err.data.as_str().len();
-                        let (_, slice) = input.split_at(char_idx);
 
-                        input = slice;
-                        dbg!(&input);
+                        input = &input[err.data.len()..];
                         errors.push(err);
                     }
                 }
@@ -147,17 +144,13 @@ impl Cursor<'_> {
                         self.add_err(Error::new("unexpected escaped character", c.to_string()));
                     }
 
+                    buf.push(c);
                     if c == '"' {
-                        buf.push(c);
                         if !was_backslash {
                             break;
                         }
-                    } else if is_escaped_char(c)
-                        || is_source_char(c) && c != '\\' && c != '"' && !is_line_terminator(c)
-                    {
-                        buf.push(c);
-                    } else {
-                        break;
+                    } else if is_line_terminator(c) {
+                        self.add_err(Error::new("unexpected line terminator", c.to_string()));
                     }
                     was_backslash = c == '\\';
                 }
@@ -428,7 +421,7 @@ mod test {
 
     #[test]
     fn tests() {
-        let gql_1 = "\"\n\n\\u{c}\nPSK\\u{1}0י";
+        let gql_1 = "\"\nhello";
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
         dbg!(lexer_1.errors);
