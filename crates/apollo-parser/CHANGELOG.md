@@ -17,6 +17,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.2.12](https://crates.io/crates/apollo-parser/0.2.12) - 2022-09-30
+## Fixes
+- **unterminated string values with line terminators and unicode- [lrlna], [pull/320] fixes [issue/318]**
+
+
+  We were missing adding a line terminator character to the errors created by the lexer in case of a unterminated string. This showed up incidentally while dealing with unicode and the fact that it's of a different byte length than most other characters.
+
+  [lrlna]: https://github.com/lrlna
+  [pull/320]: https://github.com/apollographql/apollo-rs/pull/320
+  [issue/318]: https://github.com/apollographql/apollo-rs/issues/318
+
 # [0.2.11](https://crates.io/crates/apollo-parser/0.2.11) - 2022-09-20
 ## Features
 - **introduce a getter to parser's green nodes - [lrlna], [pull/295]**
