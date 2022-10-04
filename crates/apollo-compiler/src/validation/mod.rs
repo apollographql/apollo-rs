@@ -18,10 +18,14 @@ mod operation;
 mod arguments;
 mod unused_variable;
 
+use std::collections::HashMap;
+use std::sync::Arc;
 use apollo_parser::SyntaxNode;
 
 use crate::{
     database::db::Upcast, ApolloDiagnostic, AstDatabase, DocumentDatabase, HirDatabase,
+    diagnostics::UniqueArgument,
+    hir,
     InputDatabase,
 };
 
@@ -41,6 +45,69 @@ pub trait ValidationDatabase:
     fn validate_operation(&self) -> Vec<ApolloDiagnostic>;
     fn validate_arguments(&self) -> Vec<ApolloDiagnostic>;
     fn validate_unused_variable(&self) -> Vec<ApolloDiagnostic>;
+
+    fn check_schema(&self, schema: Arc<hir::SchemaDefinition>) -> Vec<ApolloDiagnostic>;
+    fn check_db_definitions(&self, definitions: Arc<Vec<hir::Definition>>) -> Vec<ApolloDiagnostic>;
+    fn check_directive(&self, schema: hir::Directive) -> Vec<ApolloDiagnostic>;
+    fn check_arguments(&self, schema: Vec<hir::Argument>) -> Vec<ApolloDiagnostic>;
+}
+
+pub fn check_schema(db: &dyn ValidationDatabase, schema: Arc<hir::SchemaDefinition>) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    for directive in schema.directives() {
+        diagnostics.extend(db.check_directive(directive.clone()));
+    }
+
+    diagnostics
+}
+
+pub fn check_db_definitions(db: &dyn ValidationDatabase, definitions: Arc<Vec<hir::Definition>>) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    for definition in definitions.iter() {
+        for directive in definition.directives() {
+            diagnostics.extend(db.check_directive(directive.clone()));
+        }
+    }
+
+    diagnostics
+}
+
+pub fn check_directive(db: &dyn ValidationDatabase, directive: hir::Directive) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    diagnostics.extend(db.check_arguments(directive.arguments().to_vec()));
+
+    diagnostics
+}
+
+pub fn check_arguments(db: &dyn ValidationDatabase, arguments: Vec<hir::Argument>) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+    let mut seen: HashMap<&str, &hir::Argument> = HashMap::new();
+
+    for argument in &arguments {
+        let name = argument.name();
+        if let Some(prev_arg) = seen.get(name) {
+            let prev_offset: usize = prev_arg.ast_node(db.upcast()).text_range().start().into();
+            let prev_node_len: usize = prev_arg.ast_node(db.upcast()).text_range().len().into();
+
+            let current_offset: usize = argument.ast_node(db.upcast()).text_range().start().into();
+            let current_node_len: usize = argument.ast_node(db.upcast()).text_range().len().into();
+
+            diagnostics.push(ApolloDiagnostic::UniqueArgument(UniqueArgument {
+                name: name.into(),
+                src: db.input(),
+                original_definition: (prev_offset, prev_node_len).into(),
+                redefined_definition: (current_offset, current_node_len).into(),
+                help: Some(format!("`{name}` argument must only be provided once.")),
+            }));
+        } else {
+            seen.insert(name, &argument);
+        }
+    }
+
+    diagnostics
 }
 
 pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
@@ -61,6 +128,9 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 
     diagnostics.extend(db.validate_arguments());
     diagnostics.extend(db.validate_unused_variable());
+
+    diagnostics.extend(db.check_schema(db.schema()));
+    diagnostics.extend(db.check_db_definitions(db.db_definitions()));
 
     diagnostics
 }

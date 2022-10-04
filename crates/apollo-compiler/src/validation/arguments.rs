@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::{
     diagnostics::UniqueArgument,
-    hir::{Argument, InputValueDefinition},
+    hir::InputValueDefinition,
     ApolloDiagnostic, ValidationDatabase,
 };
 
@@ -29,39 +29,12 @@ fn check_input_value_definition_uniqueness(db: &dyn ValidationDatabase, input_va
     }
 }
 
-fn check_arguments(db: &dyn ValidationDatabase, arguments: &[Argument], diagnostics: &mut Vec<ApolloDiagnostic>) {
-    let mut seen: HashMap<&str, &Argument> = HashMap::new();
-
-    for argument in arguments {
-        let name = argument.name();
-        if let Some(prev_arg) = seen.get(name) {
-            let prev_offset: usize = prev_arg.ast_node(db.upcast()).text_range().start().into();
-            let prev_node_len: usize = prev_arg.ast_node(db.upcast()).text_range().len().into();
-
-            let current_offset: usize = argument.ast_node(db.upcast()).text_range().start().into();
-            let current_node_len: usize = argument.ast_node(db.upcast()).text_range().len().into();
-
-            diagnostics.push(ApolloDiagnostic::UniqueArgument(UniqueArgument {
-                name: name.into(),
-                src: db.input(),
-                original_definition: (prev_offset, prev_node_len).into(),
-                redefined_definition: (current_offset, current_node_len).into(),
-                help: Some(format!("`{name}` argument must only be provided once.")),
-            }));
-        } else {
-            seen.insert(name, argument);
-        }
-    }
-}
-
 pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    let definitions = db.db_definitions();
     let object_types = db.object_types();
     let interfaces = db.interfaces();
     let directive_definitions = db.directive_definitions();
-    let operations = db.operations();
 
     // Collect all argument definitions
     let object_input_values = object_types.iter()
@@ -81,19 +54,6 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 
     for input_values in all_input_values {
         check_input_value_definition_uniqueness(db, input_values, &mut diagnostics);
-    }
-
-    for operation in operations.iter() {
-        for field in operation.fields(db.upcast()).iter() {
-            check_arguments(db, field.arguments(), &mut diagnostics);
-        }
-    }
-
-    let definition_directives = definitions.iter()
-        .flat_map(|definition| definition.directives());
-
-    for directive in definition_directives {
-        check_arguments(db, directive.arguments(), &mut diagnostics);
     }
 
     diagnostics
