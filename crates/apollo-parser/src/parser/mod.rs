@@ -86,18 +86,7 @@ pub struct Parser {
 impl Parser {
     /// Create a new instance of a parser given an input string.
     pub fn new(input: &str) -> Self {
-        let lexer = Lexer::new(input);
-
-        let mut tokens = Vec::new();
-        let mut errors = Vec::new();
-
-        for s in lexer.tokens().iter().cloned() {
-            tokens.push(s);
-        }
-
-        for e in lexer.errors().cloned() {
-            errors.push(e);
-        }
+        let (mut tokens, mut errors) = Lexer::new(input).into_parts();
 
         tokens.reverse();
         errors.reverse();
