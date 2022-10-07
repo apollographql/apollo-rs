@@ -202,8 +202,9 @@ impl Parser {
     /// otherwise.
     pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
         let current = self.current();
-        // TODO this allocation is only required if we have an error, but has to be done eagerly
-        // here as the &str reference gets invalidated by `self.at()`. Can we avoid that?
+        // TODO(@goto-bus-stop) this allocation is only required if we have an
+        // error, but has to be done eagerly here as the &str reference gets
+        // invalidated by `self.at()`. Can we avoid that?
         let data = current.data().to_string();
         let index = current.index();
 
