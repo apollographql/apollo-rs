@@ -171,7 +171,7 @@ pub fn check_input_values(db: &dyn ValidationDatabase, input_values: Arc<Vec<hir
                 help: Some(format!("`{name}` argument must only be defined once.")),
             }));
         } else {
-            seen.insert(name, &input_value);
+            seen.insert(name, input_value);
         }
     }
 
@@ -263,7 +263,7 @@ pub fn check_arguments(db: &dyn ValidationDatabase, arguments: Vec<hir::Argument
                 help: Some(format!("`{name}` argument must only be provided once.")),
             }));
         } else {
-            seen.insert(name, &argument);
+            seen.insert(name, argument);
         }
     }
 
