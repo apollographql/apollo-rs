@@ -98,12 +98,9 @@ pub fn check_enum_type_definition(_db: &dyn ValidationDatabase, _enum_type: hir:
     vec![]
 }
 
-pub fn check_input_object_type_definition(db: &dyn ValidationDatabase, input_object_type: hir::InputObjectTypeDefinition) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    diagnostics.extend(db.check_input_values(Arc::new(input_object_type.input_fields_definition().to_vec())));
-
-    diagnostics
+pub fn check_input_object_type_definition(_db: &dyn ValidationDatabase, _input_object_type: hir::InputObjectTypeDefinition) -> Vec<ApolloDiagnostic> {
+    // Not checking the `input_values` here as those are checked as fields elsewhere.
+    vec![]
 }
 
 pub fn check_schema_definition(db: &dyn ValidationDatabase, schema_def: hir::SchemaDefinition) -> Vec<ApolloDiagnostic> {
