@@ -289,7 +289,6 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     diagnostics.extend(db.validate_object());
     diagnostics.extend(db.validate_operation());
 
-    diagnostics.extend(db.validate_arguments());
     diagnostics.extend(db.validate_unused_variable());
 
     diagnostics.extend(db.check_db_definitions(db.db_definitions()));
