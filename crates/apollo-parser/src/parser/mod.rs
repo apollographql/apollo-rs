@@ -172,7 +172,7 @@ impl Parser {
     /// Note: After a limit error is pushed, any further errors pushed
     /// are silently discarded.
     pub(crate) fn limit_err<S: Into<String>>(&mut self, message: S) {
-        let current = self.current().clone();
+        let current = self.current();
         // this needs to be the computed location
         let err = Error::with_loc(message, current.data().to_string(), current.index());
         self.push_err(err);
@@ -181,7 +181,7 @@ impl Parser {
 
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err(&mut self, message: &str) {
-        let current = self.current().clone();
+        let current = self.current();
         // this needs to be the computed location
         let err = Error::with_loc(message, current.data().to_string(), current.index());
         self.push_err(err);
@@ -201,8 +201,11 @@ impl Parser {
     /// Consume the next token if it is `kind` or emit an error
     /// otherwise.
     pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
-        let current = self.current().clone();
+        let current = self.current();
+        // TODO this allocation is only required if we have an error, but has to be done eagerly
+        // here as the &str reference gets invalidated by `self.at()`. Can we avoid that?
         let data = current.data().to_string();
+        let index = current.index();
 
         if self.at(token) {
             self.bump(kind);
@@ -212,7 +215,7 @@ impl Parser {
         let err = Error::with_loc(
             format!("expected {:?}, got {}", kind, data),
             data,
-            current.index(),
+            index,
         );
 
         self.push_err(err);
