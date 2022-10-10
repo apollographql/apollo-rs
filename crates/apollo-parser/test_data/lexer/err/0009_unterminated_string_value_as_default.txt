@@ -18,6 +18,6 @@ NAME@44:50 "String"
 WHITESPACE@50:51 " "
 EQ@51:52 "="
 WHITESPACE@52:53 " "
-R_CURLY@111:112 "}"
 EOF@112:112
-ERROR@53:111 "unterminated string value" "https://spec.graphql.org/October2021/#DefaultValue): Url}
+ERROR@53:112 "unterminated string value" "https://spec.graphql.org/October2021/#DefaultValue): Url
+}

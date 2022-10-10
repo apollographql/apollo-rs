@@ -83,6 +83,11 @@ impl Lexer {
     pub fn errors(&self) -> Iter<'_, Error> {
         self.errors.iter()
     }
+
+    /// Consume the lexer and return the tokens and errors.
+    pub fn into_parts(self) -> (Vec<Token>, Vec<Error>) {
+        (self.tokens, self.errors)
+    }
 }
 
 impl Cursor<'_> {
@@ -144,18 +149,13 @@ impl Cursor<'_> {
                         self.add_err(Error::new("unexpected escaped character", c.to_string()));
                     }
 
+                    buf.push(c);
                     if c == '"' {
-                        buf.push(c);
                         if !was_backslash {
                             break;
                         }
-                    } else if is_escaped_char(c)
-                        || is_source_char(c) && c != '\\' && c != '"' && !is_line_terminator(c)
-                    {
-                        buf.push(c);
-                    // TODO @lrlna: this should error if c == \ or has a line terminator
-                    } else {
-                        break;
+                    } else if is_line_terminator(c) {
+                        self.add_err(Error::new("unexpected line terminator", c.to_string()));
                     }
                     was_backslash = c == '\\';
                 }
@@ -426,12 +426,7 @@ mod test {
 
     #[test]
     fn tests() {
-        let gql_1 = r#"
-        """
-        **Example**: "Saturn5"
-        """
-        name: String @join__field(graph: PRODUCTS)
-        "#;
+        let gql_1 = "\"\nhello";
         let lexer_1 = Lexer::new(gql_1);
         dbg!(lexer_1.tokens);
         dbg!(lexer_1.errors);

@@ -11,7 +11,7 @@ L_PAREN@35:36 "("
 NAME@36:42 "locale"
 COLON@42:43 ":"
 WHITESPACE@43:44 " "
-R_CURLY@53:54 "}"
 EOF@54:54
-ERROR@44:53 "unterminated string value" "en)  }
+ERROR@44:54 "unterminated string value" "en)
+  }
 }
