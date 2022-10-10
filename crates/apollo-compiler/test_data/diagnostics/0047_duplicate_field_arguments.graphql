@@ -1,0 +1,6 @@
+type Query {
+  single(arg: Boolean): Int
+}
+query GetDuplicate {
+  single(arg: true, arg: false)
+}

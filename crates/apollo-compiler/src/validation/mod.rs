@@ -15,7 +15,6 @@ mod object;
 // executable definitions
 mod operation;
 
-mod arguments; // just tests
 mod unused_variable;
 
 use std::collections::HashMap;
