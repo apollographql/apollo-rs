@@ -1,0 +1,4 @@
+type X @deprecated(reason: "as a test", reason: "just for fun") {}
+type Query {
+  something: X @skip(if: false, if: true)
+}

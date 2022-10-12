@@ -1,0 +1,27 @@
+[
+    UniqueArgument(
+        UniqueArgument {
+            name: "arg",
+            src: "type Query {\n  single(arg: Boolean): Int\n}\nquery GetDuplicate {\n  single(arg: true, arg: false)\n}\n",
+            original_definition: SourceSpan {
+                offset: SourceOffset(
+                    73,
+                ),
+                length: SourceOffset(
+                    11,
+                ),
+            },
+            redefined_definition: SourceSpan {
+                offset: SourceOffset(
+                    84,
+                ),
+                length: SourceOffset(
+                    10,
+                ),
+            },
+            help: Some(
+                "`arg` argument must only be provided once.",
+            ),
+        },
+    ),
+]

@@ -1,0 +1,27 @@
+[
+    UniqueArgument(
+        UniqueArgument {
+            name: "arg",
+            src: "directive @example(arg: Boolean, arg: Boolean) on FIELD\n",
+            original_definition: SourceSpan {
+                offset: SourceOffset(
+                    19,
+                ),
+                length: SourceOffset(
+                    14,
+                ),
+            },
+            redefined_definition: SourceSpan {
+                offset: SourceOffset(
+                    33,
+                ),
+                length: SourceOffset(
+                    12,
+                ),
+            },
+            help: Some(
+                "`arg` argument must only be defined once.",
+            ),
+        },
+    ),
+]

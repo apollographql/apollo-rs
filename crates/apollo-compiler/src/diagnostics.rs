@@ -14,6 +14,7 @@ pub enum ApolloDiagnostic {
     UniqueField(UniqueField),
     UndefinedDefinition(UndefinedDefinition),
     UndefinedField(UndefinedField),
+    UniqueArgument(UniqueArgument),
     RecursiveDefinition(RecursiveDefinition),
     TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
     QueryRootOperationType(QueryRootOperationType),
@@ -41,6 +42,7 @@ impl ApolloDiagnostic {
                 | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
                 | ApolloDiagnostic::QueryRootOperationType(_)
                 | ApolloDiagnostic::UndefinedField(_)
+                | ApolloDiagnostic::UniqueArgument(_)
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::OutputType(_)
                 | ApolloDiagnostic::ObjectType(_)
@@ -84,6 +86,7 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
         }
     }
 }
@@ -376,4 +379,24 @@ pub struct UndefinedField {
 
     #[help]
     pub help: String,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("the argument `{}` is defined multiple times", self.name)]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct UniqueArgument {
+    // current definition
+    pub name: String,
+
+    #[source_code]
+    pub src: String,
+
+    #[label("previous definition of `{}` here", self.name)]
+    pub original_definition: SourceSpan,
+
+    #[label("`{}` is redefined here", self.name)]
+    pub redefined_definition: SourceSpan,
+
+    #[help]
+    pub help: Option<String>,
 }

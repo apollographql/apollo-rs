@@ -1,0 +1,52 @@
+[
+    UniqueArgument(
+        UniqueArgument {
+            name: "reason",
+            src: "type X @deprecated(reason: \"as a test\", reason: \"just for fun\") {}\ntype Query {\n  something: X @skip(if: false, if: true)\n}\n",
+            original_definition: SourceSpan {
+                offset: SourceOffset(
+                    19,
+                ),
+                length: SourceOffset(
+                    21,
+                ),
+            },
+            redefined_definition: SourceSpan {
+                offset: SourceOffset(
+                    40,
+                ),
+                length: SourceOffset(
+                    22,
+                ),
+            },
+            help: Some(
+                "`reason` argument must only be provided once.",
+            ),
+        },
+    ),
+    UniqueArgument(
+        UniqueArgument {
+            name: "if",
+            src: "type X @deprecated(reason: \"as a test\", reason: \"just for fun\") {}\ntype Query {\n  something: X @skip(if: false, if: true)\n}\n",
+            original_definition: SourceSpan {
+                offset: SourceOffset(
+                    101,
+                ),
+                length: SourceOffset(
+                    11,
+                ),
+            },
+            redefined_definition: SourceSpan {
+                offset: SourceOffset(
+                    112,
+                ),
+                length: SourceOffset(
+                    8,
+                ),
+            },
+            help: Some(
+                "`if` argument must only be provided once.",
+            ),
+        },
+    ),
+]
