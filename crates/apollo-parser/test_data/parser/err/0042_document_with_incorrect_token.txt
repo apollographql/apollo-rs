@@ -1,0 +1,18 @@
+- DOCUMENT@0..26
+    - WHITESPACE@0..1 "\n"
+    - OPERATION_DEFINITION@1..26
+        - SELECTION_SET@1..26
+            - L_CURLY@1..2 "{"
+            - WHITESPACE@2..7 "\n    "
+            - FIELD@7..15
+                - NAME@7..15
+                    - IDENT@7..10 "pet"
+                    - WHITESPACE@10..15 "\n    "
+            - FIELD@15..25
+                - NAME@15..25
+                    - IDENT@15..24 "faveSnack"
+                    - WHITESPACE@24..25 "\n"
+            - R_CURLY@25..26 "}"
+- ERROR@0:1 "expected a String, Name or OperationDefinition" @
+- ERROR@27:28 "expected a String, Name or OperationDefinition" }
+recursion limit: 4096, high: 3
