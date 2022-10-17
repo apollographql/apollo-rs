@@ -28,7 +28,7 @@ pub(crate) fn document(p: &mut Parser) {
                 select_definition(def, p);
             }
             TokenKind::Eof => break,
-            _ => p.err_and_pop("expected a String, Name or OperationDefinition"),
+            _ => p.err_and_pop("expected a StringValue, Name or OperationDefinition"),
         }
     }
 
