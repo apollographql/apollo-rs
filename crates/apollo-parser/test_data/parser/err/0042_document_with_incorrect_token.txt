@@ -38,6 +38,6 @@
                         - IDENT@73..79 "String"
                 - WHITESPACE@79..80 "\n"
             - R_CURLY@80..81 "}"
-- ERROR@0:1 "expected a String, Name or OperationDefinition" @
-- ERROR@49:50 "expected a String, Name or OperationDefinition" }
+- ERROR@0:1 "expected a StringValue, Name or OperationDefinition" @
+- ERROR@49:50 "expected a StringValue, Name or OperationDefinition" }
 recursion limit: 4096, high: 3
