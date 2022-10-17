@@ -27,7 +27,8 @@ pub(crate) fn document(p: &mut Parser) {
                 let def = p.peek_data().unwrap();
                 select_definition(def, p);
             }
-            _ => break,
+            TokenKind::Eof => break,
+            _ => p.err_and_pop("expected a StringValue, Name or OperationDefinition"),
         }
     }
 

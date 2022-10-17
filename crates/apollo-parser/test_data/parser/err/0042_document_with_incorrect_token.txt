@@ -1,0 +1,43 @@
+- DOCUMENT@0..81
+    - WHITESPACE@0..1 "\n"
+    - COMMENT@1..10 "# comment"
+    - WHITESPACE@10..11 "\n"
+    - OPERATION_DEFINITION@11..48
+        - SELECTION_SET@11..48
+            - L_CURLY@11..12 "{"
+            - WHITESPACE@12..17 "\n    "
+            - FIELD@17..25
+                - NAME@17..25
+                    - IDENT@17..20 "pet"
+                    - WHITESPACE@20..25 "\n    "
+            - FIELD@25..35
+                - NAME@25..35
+                    - IDENT@25..34 "faveSnack"
+                    - WHITESPACE@34..35 "\n"
+            - R_CURLY@35..36 "}"
+            - WHITESPACE@36..38 "\n\n"
+            - COMMENT@38..47 "# comment"
+            - WHITESPACE@47..48 "\n"
+    - WHITESPACE@48..50 "\n\n"
+    - OBJECT_TYPE_DEFINITION@50..81
+        - type_KW@50..54 "type"
+        - WHITESPACE@54..55 " "
+        - NAME@55..61
+            - IDENT@55..60 "Query"
+            - WHITESPACE@60..61 " "
+        - FIELDS_DEFINITION@61..81
+            - L_CURLY@61..62 "{"
+            - WHITESPACE@62..67 "\n    "
+            - FIELD_DEFINITION@67..80
+                - NAME@67..71
+                    - IDENT@67..71 "name"
+                - COLON@71..72 ":"
+                - WHITESPACE@72..73 " "
+                - NAMED_TYPE@73..79
+                    - NAME@73..79
+                        - IDENT@73..79 "String"
+                - WHITESPACE@79..80 "\n"
+            - R_CURLY@80..81 "}"
+- ERROR@0:1 "expected a StringValue, Name or OperationDefinition" @
+- ERROR@49:50 "expected a StringValue, Name or OperationDefinition" }
+recursion limit: 4096, high: 3
