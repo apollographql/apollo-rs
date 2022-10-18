@@ -4,6 +4,9 @@ use apollo_parser::ast;
 use thiserror::Error;
 
 /// Errors that can occur when converting an apollo-parser AST to an apollo-encoder one.
+///
+/// TODO(@goto-bus-stop) Would be nice to have some way to show where the error
+/// occurred, as it's quite hard to figure out now.
 #[derive(Debug, Clone, Error)]
 pub enum FromError {
     #[error("parse tree is missing a node")]
@@ -204,12 +207,10 @@ impl TryFrom<ast::Field> for crate::Field {
             encoder_node.alias(Some(alias));
         }
 
-        let arguments = node.arguments()
-            .ok_or(FromError::MissingNode)?
-            .arguments()
-            .map(crate::Argument::try_from);
-        for argument in arguments {
-            encoder_node.argument(argument?);
+        if let Some(arguments) = node.arguments() {
+            for argument in arguments.arguments() {
+                encoder_node.argument(argument.try_into()?);
+            }
         }
 
         if let Some(directives) = node.directives() {
@@ -290,5 +291,153 @@ impl TryFrom<ast::SelectionSet> for crate::SelectionSet {
             .collect::<Result<Vec<_>, FromError>>()?;
 
         Ok(Self::with_selections(selections))
+    }
+}
+
+impl TryFrom<ast::OperationType> for crate::OperationType {
+    type Error = FromError;
+
+    fn try_from(node: ast::OperationType) -> Result<Self, Self::Error> {
+        if node.query_token().is_some() {
+            Ok(Self::Query)
+        } else if node.mutation_token().is_some() {
+            Ok(Self::Mutation)
+        } else if node.subscription_token().is_some() {
+            Ok(Self::Subscription)
+        } else {
+            Err(FromError::MissingNode)
+        }
+    }
+}
+
+impl TryFrom<ast::VariableDefinition> for crate::VariableDefinition {
+    type Error = FromError;
+
+    fn try_from(node: ast::VariableDefinition) -> Result<Self, Self::Error> {
+        let name = node.variable()
+            .ok_or(FromError::MissingNode)?
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .to_string();
+        let ty = node.ty().ok_or(FromError::MissingNode)?.try_into()?;
+
+        let mut encoder_node = Self::new(name, ty);
+
+        if let Some(default_value) = node.default_value() {
+            encoder_node.default_value(default_value.try_into()?);
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        Ok(encoder_node)
+    }
+}
+
+impl TryFrom<ast::OperationDefinition> for crate::OperationDefinition {
+    type Error = FromError;
+
+    fn try_from(node: ast::OperationDefinition) -> Result<Self, Self::Error> {
+        let operation_type = node.operation_type().ok_or(FromError::MissingNode)?.try_into()?;
+        let selection_set = node.selection_set().ok_or(FromError::MissingNode)?.try_into()?;
+
+        let mut encoder_node = Self::new(operation_type, selection_set);
+
+        if let Some(name) = node.name() {
+            encoder_node.name(Some(name.to_string()));
+        }
+
+        if let Some(variable_definitions) = node.variable_definitions() {
+            for variable_definition in variable_definitions.variable_definitions() {
+                encoder_node.variable_definition(variable_definition.try_into()?);
+            }
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        Ok(encoder_node)
+    }
+}
+
+impl TryFrom<ast::Document> for crate::Document {
+    type Error = FromError;
+
+    fn try_from(node: ast::Document) -> Result<Self, Self::Error> {
+        let mut encoder_node = Self::new();
+
+        for definition in node.definitions() {
+            match definition {
+                ast::Definition::OperationDefinition(def) => encoder_node.operation(def.try_into()?),
+                ast::Definition::FragmentDefinition(_) => todo!(),
+                ast::Definition::DirectiveDefinition(_) => todo!(),
+                ast::Definition::SchemaDefinition(_) => todo!(),
+                ast::Definition::ScalarTypeDefinition(_) => todo!(),
+                ast::Definition::ObjectTypeDefinition(_) => todo!(),
+                ast::Definition::InterfaceTypeDefinition(_) => todo!(),
+                ast::Definition::UnionTypeDefinition(_) => todo!(),
+                ast::Definition::EnumTypeDefinition(_) => todo!(),
+                ast::Definition::InputObjectTypeDefinition(_) => todo!(),
+                ast::Definition::SchemaExtension(_) => todo!(),
+                ast::Definition::ScalarTypeExtension(_) => todo!(),
+                ast::Definition::ObjectTypeExtension(_) => todo!(),
+                ast::Definition::InterfaceTypeExtension(_) => todo!(),
+                ast::Definition::UnionTypeExtension(_) => todo!(),
+                ast::Definition::EnumTypeExtension(_) => todo!(),
+                ast::Definition::InputObjectTypeExtension(_) => todo!(),
+            }
+        }
+
+        Ok(encoder_node)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use apollo_parser::Parser;
+    use crate::Document;
+
+    #[test]
+    fn query() {
+        let parser = Parser::new(r#"
+query HeroForEpisode($ep: Episode!) {
+  hero(episode: $ep) {
+    name
+    ... on Droid {
+      primaryFunction
+    }
+    ... on Human {
+      height
+    }
+  }
+}
+"#);
+        let ast = parser.parse();
+        let doc = ast.document();
+
+        let encoder = Document::try_from(doc).unwrap();
+        // TODO(@goto-bus-stop) We have some weird whitespace
+        assert_eq!(encoder.to_string(), r#"
+query HeroForEpisode($ep: Episode!) {
+  hero(episode: $ep) {
+    name
+    
+    ... on Droid  {
+      primaryFunction
+    
+    }
+    ... on Human  {
+      height
+    
+    }
+  }
+}
+"#.trim_start());
     }
 }
