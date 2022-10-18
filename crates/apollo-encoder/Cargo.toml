@@ -19,6 +19,15 @@ categories = [
 ]
 edition = "2021"
 
+[dependencies]
+apollo-parser = { version = "0.2.12", optional = true }
+thiserror = "1.0.37"
+
+[features]
+# TODO(@goto-bus-stop) remove before merging, just easier this way while writing : )
+default = ["from-parser"]
+from-parser = ["apollo-parser"]
+
 [dev-dependencies]
 pretty_assertions = "0.7.1"
 indoc = "1.0.3"
