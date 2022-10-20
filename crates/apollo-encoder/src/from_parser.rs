@@ -23,7 +23,7 @@ impl TryFrom<ast::Value> for crate::Value {
     fn try_from(node: ast::Value) -> Result<Self, Self::Error> {
         let encoder_node = match node {
             ast::Value::Variable(variable) => Self::Variable(variable.name().ok_or(FromError::MissingNode)?.to_string()),
-            ast::Value::StringValue(string) => Self::String(string.to_string()),
+            ast::Value::StringValue(string) => Self::String(string.into()),
             ast::Value::FloatValue(float) => Self::Float(float.float_token().ok_or(FromError::MissingNode)?.text().parse()?),
             ast::Value::IntValue(int) => Self::Int(int.int_token().ok_or(FromError::MissingNode)?.text().parse()?),
             ast::Value::BooleanValue(boolean) => Self::Boolean(boolean.true_token().is_some()),
@@ -137,13 +137,22 @@ impl TryFrom<ast::InputValueDefinition> for crate::InputValueDefinition {
         let name = node.name().ok_or(FromError::MissingNode)?.to_string();
         let ty = node.ty().ok_or(FromError::MissingNode)?;
         let mut encoder_node = Self::new(name, ty.try_into()?);
+
         if let Some(description) = node.description() {
-            encoder_node.description(description.string_value().ok_or(FromError::MissingNode)?.to_string());
+            encoder_node.description(description.string_value().ok_or(FromError::MissingNode)?.into());
         }
+
         if let Some(default_value) = node.default_value() {
             // TODO represent this as a Value enum in encoder?
             encoder_node.default_value(default_value.value().ok_or(FromError::MissingNode)?.to_string());
         }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
         Ok(encoder_node)
     }
 }
@@ -396,8 +405,44 @@ impl TryFrom<ast::FragmentDefinition> for crate::FragmentDefinition {
 impl TryFrom<ast::DirectiveDefinition> for crate::DirectiveDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::DirectiveDefinition) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::DirectiveDefinition) -> Result<Self, Self::Error> {
+        let name = node.name()
+            .ok_or(FromError::MissingNode)?
+            .to_string();
+
+        let mut encoder_node = Self::new(name);
+
+        let description = node.description()
+            .and_then(|description| description.string_value())
+            .map(|string| string.into());
+        if let Some(description) = description {
+            encoder_node.description(description);
+        }
+
+        if let Some (arguments_definition) = node.arguments_definition() {
+            for input_value in arguments_definition.input_value_definitions() {
+                encoder_node.arg(input_value.try_into()?);
+            }
+        }
+
+        if let Some(directive_locations) = node.directive_locations() {
+            let locations = directive_locations.directive_locations()
+                .map(|location| {
+                    location.text().map(|token| token.to_string())
+                });
+            for location in locations {
+                // TODO(@goto-bus-stop) This actually indicates that a directive location had an
+                // unknown value, not that it was missing
+                let location = location.ok_or(FromError::MissingNode)?;
+                encoder_node.location(location);
+            }
+        }
+
+        if node.repeatable_token().is_some() {
+            encoder_node.repeatable();
+        }
+
+        Ok(encoder_node)
     }
 }
 
@@ -610,6 +655,23 @@ fragment FragmentDefinition  on VeryRealType  {
   text
 
 }
+"#.trim_start());
+    }
+
+    #[test]
+    fn directive_definition() {
+        let parser = Parser::new(r#"
+directive @withDeprecatedArgs(
+  deprecatedArg: String @deprecated(reason: "Use `newArg`")
+  newArg: String
+) on FIELD
+"#);
+        let ast = parser.parse();
+        let doc = ast.document();
+
+        let encoder = Document::try_from(doc).unwrap();
+        assert_eq!(encoder.to_string(), r#"
+directive @withDeprecatedArgs(deprecatedArg: String @deprecated(reason: "Use `newArg`"), newArg: String) on FIELD
 "#.trim_start());
     }
 }
