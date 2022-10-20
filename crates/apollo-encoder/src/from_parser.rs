@@ -366,6 +366,134 @@ impl TryFrom<ast::OperationDefinition> for crate::OperationDefinition {
     }
 }
 
+impl TryFrom<ast::FragmentDefinition> for crate::FragmentDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::FragmentDefinition) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::DirectiveDefinition> for crate::DirectiveDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::DirectiveDefinition) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::SchemaDefinition> for crate::SchemaDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::SchemaDefinition) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::ScalarTypeDefinition> for crate::ScalarDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::ScalarTypeDefinition) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::ObjectTypeDefinition> for crate::ObjectDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::ObjectTypeDefinition) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::InterfaceTypeDefinition> for crate::InterfaceDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::InterfaceTypeDefinition) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::UnionTypeDefinition> for crate::UnionDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::UnionTypeDefinition) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::EnumTypeDefinition> for crate::EnumDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::EnumTypeDefinition) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::InputObjectTypeDefinition> for crate::InputObjectDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::InputObjectTypeDefinition) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::SchemaExtension> for crate::SchemaDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::SchemaExtension) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::ScalarTypeExtension> for crate::ScalarDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::ScalarTypeExtension) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::ObjectTypeExtension> for crate::ObjectDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::ObjectTypeExtension) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::InterfaceTypeExtension> for crate::InterfaceDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::InterfaceTypeExtension) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::UnionTypeExtension> for crate::UnionDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::UnionTypeExtension) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::EnumTypeExtension> for crate::EnumDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::EnumTypeExtension) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+impl TryFrom<ast::InputObjectTypeExtension> for crate::InputObjectDefinition {
+    type Error = FromError;
+
+    fn try_from(_node: ast::InputObjectTypeExtension) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
 impl TryFrom<ast::Document> for crate::Document {
     type Error = FromError;
 
@@ -375,22 +503,22 @@ impl TryFrom<ast::Document> for crate::Document {
         for definition in node.definitions() {
             match definition {
                 ast::Definition::OperationDefinition(def) => encoder_node.operation(def.try_into()?),
-                ast::Definition::FragmentDefinition(_) => todo!(),
-                ast::Definition::DirectiveDefinition(_) => todo!(),
-                ast::Definition::SchemaDefinition(_) => todo!(),
-                ast::Definition::ScalarTypeDefinition(_) => todo!(),
-                ast::Definition::ObjectTypeDefinition(_) => todo!(),
-                ast::Definition::InterfaceTypeDefinition(_) => todo!(),
-                ast::Definition::UnionTypeDefinition(_) => todo!(),
-                ast::Definition::EnumTypeDefinition(_) => todo!(),
-                ast::Definition::InputObjectTypeDefinition(_) => todo!(),
-                ast::Definition::SchemaExtension(_) => todo!(),
-                ast::Definition::ScalarTypeExtension(_) => todo!(),
-                ast::Definition::ObjectTypeExtension(_) => todo!(),
-                ast::Definition::InterfaceTypeExtension(_) => todo!(),
-                ast::Definition::UnionTypeExtension(_) => todo!(),
-                ast::Definition::EnumTypeExtension(_) => todo!(),
-                ast::Definition::InputObjectTypeExtension(_) => todo!(),
+                ast::Definition::FragmentDefinition(def) => encoder_node.fragment(def.try_into()?),
+                ast::Definition::DirectiveDefinition(def) => encoder_node.directive(def.try_into()?),
+                ast::Definition::SchemaDefinition(def) => encoder_node.schema(def.try_into()?),
+                ast::Definition::ScalarTypeDefinition(def) => encoder_node.scalar(def.try_into()?),
+                ast::Definition::ObjectTypeDefinition(def) => encoder_node.object(def.try_into()?),
+                ast::Definition::InterfaceTypeDefinition(def) => encoder_node.interface(def.try_into()?),
+                ast::Definition::UnionTypeDefinition(def) => encoder_node.union(def.try_into()?),
+                ast::Definition::EnumTypeDefinition(def) => encoder_node.enum_(def.try_into()?),
+                ast::Definition::InputObjectTypeDefinition(def) => encoder_node.input_object(def.try_into()?),
+                ast::Definition::SchemaExtension(ext) => encoder_node.schema(ext.try_into()?),
+                ast::Definition::ScalarTypeExtension(ext) => encoder_node.scalar(ext.try_into()?),
+                ast::Definition::ObjectTypeExtension(ext) => encoder_node.object(ext.try_into()?),
+                ast::Definition::InterfaceTypeExtension(ext) => encoder_node.interface(ext.try_into()?),
+                ast::Definition::UnionTypeExtension(ext) => encoder_node.union(ext.try_into()?),
+                ast::Definition::EnumTypeExtension(ext) => encoder_node.enum_(ext.try_into()?),
+                ast::Definition::InputObjectTypeExtension(ext) => encoder_node.input_object(ext.try_into()?),
             }
         }
 
