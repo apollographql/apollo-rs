@@ -369,8 +369,27 @@ impl TryFrom<ast::OperationDefinition> for crate::OperationDefinition {
 impl TryFrom<ast::FragmentDefinition> for crate::FragmentDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::FragmentDefinition) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::FragmentDefinition) -> Result<Self, Self::Error> {
+        let name = node.fragment_name()
+            .ok_or(FromError::MissingNode)?
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .to_string();
+        let type_condition = node.type_condition()
+            .ok_or(FromError::MissingNode)?
+            .try_into()?;
+        let selection_set = node.selection_set()
+            .ok_or(FromError::MissingNode)?
+            .try_into()?;
+
+        let mut encoder_node = Self::new(name, type_condition, selection_set);
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        Ok(encoder_node)
     }
 }
 
@@ -532,7 +551,7 @@ mod tests {
     use crate::Document;
 
     #[test]
-    fn query() {
+    fn operation_definition() {
         let parser = Parser::new(r#"
 query HeroForEpisode($ep: Episode!) {
   hero(episode: $ep) {
@@ -565,6 +584,31 @@ query HeroForEpisode($ep: Episode!) {
     
     }
   }
+}
+"#.trim_start());
+    }
+
+    #[test]
+    fn fragment_definition() {
+        let parser = Parser::new(r#"
+fragment FragmentDefinition on VeryRealType {
+  id
+  title
+  text
+}
+"#);
+        let ast = parser.parse();
+        let doc = ast.document();
+
+        let encoder = Document::try_from(doc).unwrap();
+        assert_eq!(encoder.to_string(), r#"
+fragment FragmentDefinition  on VeryRealType  {
+  id
+  
+  title
+  
+  text
+
 }
 "#.trim_start());
     }
