@@ -446,11 +446,50 @@ impl TryFrom<ast::DirectiveDefinition> for crate::DirectiveDefinition {
     }
 }
 
+fn apply_root_operation_type_definitions(encoder_node: &mut crate::SchemaDefinition, type_definitions: impl Iterator<Item = ast::RootOperationTypeDefinition>) -> Result<(), FromError> {
+    for root in type_definitions {
+        let operation_type = root.operation_type().ok_or(FromError::MissingNode)?;
+        let name = root.named_type()
+            .ok_or(FromError::MissingNode)?
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .to_string();
+        if operation_type.query_token().is_some() {
+            encoder_node.query(name);
+        } else if operation_type.mutation_token().is_some() {
+            encoder_node.mutation(name);
+        } else if operation_type.subscription_token().is_some() {
+            encoder_node.subscription(name);
+        } else {
+            return Err(FromError::MissingNode);
+        }
+    }
+
+    Ok(())
+}
+
 impl TryFrom<ast::SchemaDefinition> for crate::SchemaDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::SchemaDefinition) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::SchemaDefinition) -> Result<Self, Self::Error> {
+        let mut encoder_node = Self::new();
+
+        let description = node.description()
+            .and_then(|description| description.string_value())
+            .map(|string| string.into());
+        if let Some(description) = description {
+            encoder_node.description(description);
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        apply_root_operation_type_definitions(&mut encoder_node, node.root_operation_type_definitions())?;
+
+        Ok(encoder_node)
     }
 }
 
@@ -505,8 +544,20 @@ impl TryFrom<ast::InputObjectTypeDefinition> for crate::InputObjectDefinition {
 impl TryFrom<ast::SchemaExtension> for crate::SchemaDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::SchemaExtension) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::SchemaExtension) -> Result<Self, Self::Error> {
+        let mut encoder_node = Self::new();
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        apply_root_operation_type_definitions(&mut encoder_node, node.root_operation_type_definitions())?;
+
+        encoder_node.extend();
+
+        Ok(encoder_node)
     }
 }
 
@@ -672,6 +723,35 @@ directive @withDeprecatedArgs(
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(encoder.to_string(), r#"
 directive @withDeprecatedArgs(deprecatedArg: String @deprecated(reason: "Use `newArg`"), newArg: String) on FIELD
+"#.trim_start());
+    }
+
+    #[test]
+    fn schema_definition() {
+        let parser = Parser::new(r#"
+schema {
+  query: Query
+  subscription: Subscription
+}
+extend schema {
+  mutation: Mutation
+}
+"#);
+        let ast = parser.parse();
+        let doc = ast.document();
+
+        let encoder = Document::try_from(doc).unwrap();
+        assert_eq!(encoder.to_string(), r#"
+schema {
+  query: Query
+  
+  subscription: Subscription
+
+}
+extend schema {
+  mutation: Mutation
+
+}
 "#.trim_start());
     }
 }
