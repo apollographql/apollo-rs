@@ -27,7 +27,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     ty: "enum".into(),
                     name: value.into(),
-                    src: db.input(),
+                    src: db.input_document(),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
                     help: Some(format!("{value} must only be defined once in this enum.")),
@@ -50,7 +50,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if value.to_uppercase() != value {
                 diagnostics.push(ApolloDiagnostic::CapitalizedValue(CapitalizedValue {
                     ty: value.into(),
-                    src: db.input(),
+                    src: db.input_document(),
                     value: (offset, len).into(),
                 }));
             }

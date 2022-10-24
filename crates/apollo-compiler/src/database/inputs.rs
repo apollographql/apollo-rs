@@ -1,10 +1,25 @@
+#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
+pub struct FileId(pub u32);
+
+impl std::hash::Hash for FileId {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.hash(state);
+    }
+}
+
 #[salsa::query_group(InputStorage)]
 pub trait InputDatabase {
     #[salsa::input]
-    fn input(&self) -> String;
+    fn recursion_limit(&self) -> Option<usize>;
+    #[salsa::input]
+    fn input_document(&self) -> String;
+
+    // @lrlna: Arc<String> ?
+    #[salsa::input]
+    fn input_schema(&self, file_id: FileId) -> String;
 
     #[salsa::input]
-    fn recursion_limit(&self) -> Option<usize>;
+    fn input_query(&self, file_id: FileId) -> String;
 }
 
 // #[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]

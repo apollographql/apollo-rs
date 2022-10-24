@@ -26,7 +26,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     let offset = op.ast_node(db.upcast()).text_range().start().into();
                     let len: usize = op.ast_node(db.upcast()).text_range().len().into();
                     return Some(ApolloDiagnostic::MissingIdent(MissingIdent {
-                        src: db.input(),
+                        src: db.input_document(),
                         definition: (offset, len).into(),
                         help: Some(format!("GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are {op_len} operations in this document."))
                     }));
@@ -52,7 +52,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     ty: "operation".into(),
                     name: name.into(),
-                    src: db.input(),
+                    src: db.input_document(),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
                     help: Some(format!(
@@ -82,7 +82,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     let len: usize = op.ast_node(db.upcast()).text_range().len().into();
                     Some(ApolloDiagnostic::SingleRootField(SingleRootField {
                         fields: fields.len(),
-                        src: db.input(),
+                        src: db.input_document(),
                         subscription: (offset, len).into(),
                         help: Some(format!(
                             "There are {} root fields: {}. This is not allowed.",
@@ -119,7 +119,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Subscription".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input(),
+                        src: db.input_document(),
                         schema: Some((schema_offset, schema_len).into()),
                         help: None,
                     })
@@ -127,7 +127,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Subscription".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input(),
+                        src: db.input_document(),
                         schema: None,
                         help: Some(
                             "consider defining a `subscription` root operation type in your schema"
@@ -156,7 +156,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Query".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input(),
+                        src: db.input_document(),
                         schema: Some((schema_offset, schema_len).into()),
                         help: None,
                     })
@@ -164,7 +164,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Query".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input(),
+                        src: db.input_document(),
                         schema: None,
                         help: Some(
                             "consider defining a `query` root operation type in your schema".into(),
@@ -192,7 +192,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Mutation".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input(),
+                        src: db.input_document(),
                         schema: Some((schema_offset, schema_len).into()),
                         help: None,
                     })
@@ -200,7 +200,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Mutation".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input(),
+                        src: db.input_document(),
                         schema: None,
                         help: Some(
                             "consider defining a `mutation` root operation type in your schema"
@@ -233,7 +233,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     };
                     diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
                         field: field_name,
-                        src: db.input(),
+                        src: db.input_document(),
                         definition: (offset, len).into(),
                         help,
                     }))

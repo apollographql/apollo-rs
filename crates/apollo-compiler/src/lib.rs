@@ -6,6 +6,7 @@ pub mod diagnostics;
 mod tests;
 pub mod validation;
 
+use database::FileId;
 use salsa::ParallelDatabase;
 use validation::ValidationDatabase;
 
@@ -76,9 +77,22 @@ impl ApolloCompiler {
     fn with_opt_recursion_limit(input: &str, limit: Option<usize>) -> Self {
         let mut db = RootDatabase::default();
         let input = input.to_string();
-        db.set_input(input);
+        db.set_input_document(input);
         db.set_recursion_limit(limit);
         Self { db }
+    }
+
+    pub fn with_schema(input: &str) -> Self {
+        let mut db = RootDatabase::default();
+        let input = input.to_string();
+        let id = FileId(1);
+        db.set_input_schema(id, input);
+        Self { db }
+    }
+
+    pub fn query(&mut self, input: &str) {
+        let id = FileId(2);
+        self.db.set_input_query(id, input.to_string())
     }
 
     /// Get a snapshot of the current database.
@@ -115,6 +129,30 @@ mod test {
     use std::collections::HashMap;
 
     use crate::{hir::Definition, ApolloCompiler, DocumentDatabase, HirDatabase};
+
+    #[test]
+    fn it_creates_compiler_from_multiple_sources() {
+        let schema = r#"
+type Query {
+  name: String
+  price: Int
+  dimensions: Int
+  size: Int
+  weight: Int
+}"#;
+        let query = r#"
+query ExampleQuery {
+  name
+  price
+  dimensions
+  size
+  weight
+}
+      "#;
+
+        let mut compiler = ApolloCompiler::with_schema(schema);
+        compiler.query(query);
+    }
 
     #[test]
     fn it_accesses_operation_definition_parts() {

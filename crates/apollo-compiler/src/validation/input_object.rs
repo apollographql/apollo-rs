@@ -29,7 +29,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                 ty: "input object".into(),
                 name: name.into(),
-                src: db.input(),
+                src: db.input_document(),
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!(
@@ -83,7 +83,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 
                     diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                         field: field_name.into(),
-                        src: db.input(),
+                        src: db.input_document(),
                         original_field: (prev_offset, prev_node_len).into(),
                         redefined_field: (current_offset, current_node_len).into(),
                         help: Some(format!(

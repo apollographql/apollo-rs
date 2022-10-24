@@ -45,7 +45,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 errors.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     ty: "directive".into(),
                     name: name.into(),
-                    src: db.input(),
+                    src: db.input_document(),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
                     help: Some(format!(
@@ -73,7 +73,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     errors.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
                         message: format!("{} directive definition cannot reference itself", name),
                         definition: (offset, len).into(),
-                        src: db.input(),
+                        src: db.input_document(),
                         definition_label: "recursive directive definition".into(),
                     }));
                 }
