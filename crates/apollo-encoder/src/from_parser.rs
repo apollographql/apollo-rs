@@ -66,12 +66,10 @@ impl TryFrom<ast::Directive> for crate::Directive {
         let name = node.name().ok_or(FromError::MissingNode)?.to_string();
         let mut directive = Self::new(name);
 
-        let arguments = node.arguments()
-            .ok_or(FromError::MissingNode)?
-            .arguments()
-            .map(crate::Argument::try_from);
-        for argument in arguments {
-            directive.arg(argument?);
+        if let Some(arguments) = node.arguments() {
+            for argument in arguments.arguments() {
+                directive.arg(argument.try_into()?);
+            }
         }
 
         Ok(directive)
@@ -496,8 +494,24 @@ impl TryFrom<ast::SchemaDefinition> for crate::SchemaDefinition {
 impl TryFrom<ast::ScalarTypeDefinition> for crate::ScalarDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::ScalarTypeDefinition) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::ScalarTypeDefinition) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.to_string();
+        let mut encoder_node = Self::new(name);
+
+        let description = node.description()
+            .and_then(|description| description.string_value())
+            .map(|string| string.into());
+        if let Some(description) = description {
+            encoder_node.description(description);
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        Ok(encoder_node)
     }
 }
 
@@ -564,8 +578,19 @@ impl TryFrom<ast::SchemaExtension> for crate::SchemaDefinition {
 impl TryFrom<ast::ScalarTypeExtension> for crate::ScalarDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::ScalarTypeExtension) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::ScalarTypeExtension) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.to_string();
+        let mut encoder_node = Self::new(name);
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        encoder_node.extend();
+
+        Ok(encoder_node)
     }
 }
 
@@ -752,6 +777,24 @@ extend schema {
   mutation: Mutation
 
 }
+"#.trim_start());
+    }
+
+    #[test]
+    fn scalar_definition() {
+        let parser = Parser::new(r#"
+scalar Date
+extend scalar Date @directive
+"#);
+        let ast = parser.parse();
+        let doc = ast.document();
+
+        let encoder = Document::try_from(doc).unwrap();
+        assert_eq!(encoder.to_string(), r#"
+scalar Date
+
+extend scalar Date  @directive
+
 "#.trim_start());
     }
 }
