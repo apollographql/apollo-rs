@@ -22,7 +22,7 @@ impl TryFrom<ast::Value> for crate::Value {
 
     fn try_from(node: ast::Value) -> Result<Self, Self::Error> {
         let encoder_node = match node {
-            ast::Value::Variable(variable) => Self::Variable(variable.name().ok_or(FromError::MissingNode)?.to_string()),
+            ast::Value::Variable(variable) => Self::Variable(variable.name().ok_or(FromError::MissingNode)?.text().to_string()),
             ast::Value::StringValue(string) => Self::String(string.into()),
             ast::Value::FloatValue(float) => Self::Float(float.float_token().ok_or(FromError::MissingNode)?.text().parse()?),
             ast::Value::IntValue(int) => Self::Int(int.int_token().ok_or(FromError::MissingNode)?.text().parse()?),
@@ -38,7 +38,7 @@ impl TryFrom<ast::Value> for crate::Value {
             ast::Value::ObjectValue(object) => {
                 let encoder_object = object.object_fields()
                     .map(|field| {
-                        let name = field.name().ok_or(FromError::MissingNode)?.to_string();
+                        let name = field.name().ok_or(FromError::MissingNode)?.text().to_string();
                         let value = field.value().ok_or(FromError::MissingNode)?.try_into()?;
                         Ok((name, value))
                     })
@@ -63,7 +63,7 @@ impl TryFrom<ast::Directive> for crate::Directive {
     type Error = FromError;
 
     fn try_from(node: ast::Directive) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.to_string();
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
         let mut directive = Self::new(name);
 
         if let Some(arguments) = node.arguments() {
@@ -80,7 +80,7 @@ impl TryFrom<ast::Argument> for crate::Argument {
     type Error = FromError;
 
     fn try_from(node: ast::Argument) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.to_string();
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
         let value = node.value().ok_or(FromError::MissingNode)?.try_into()?;
         Ok(crate::Argument::new(name, value))
     }
@@ -90,7 +90,7 @@ impl TryFrom<ast::NamedType> for crate::Type_ {
     type Error = FromError;
     fn try_from(node: ast::NamedType) -> Result<Self, Self::Error> {
         Ok(Self::NamedType {
-            name: node.name().ok_or(FromError::MissingNode)?.to_string(),
+            name: node.name().ok_or(FromError::MissingNode)?.text().to_string(),
         })
     }
 }
@@ -132,7 +132,7 @@ impl TryFrom<ast::InputValueDefinition> for crate::InputValueDefinition {
     type Error = FromError;
 
     fn try_from(node: ast::InputValueDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.to_string();
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
         let ty = node.ty().ok_or(FromError::MissingNode)?;
         let mut encoder_node = Self::new(name, ty.try_into()?);
 
@@ -171,7 +171,7 @@ impl TryFrom<ast::FieldDefinition> for crate::FieldDefinition {
     type Error = FromError;
 
     fn try_from(node: ast::FieldDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.to_string();
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
         let ty = node.ty().ok_or(FromError::MissingNode)?.try_into()?;
         let mut encoder_node = Self::new(name, ty);
 
@@ -196,7 +196,7 @@ impl TryFrom<ast::TypeCondition> for crate::TypeCondition {
 
     fn try_from(node: ast::TypeCondition) -> Result<Self, Self::Error> {
         let named_type = node.named_type().ok_or(FromError::MissingNode)?;
-        let name = named_type.name().ok_or(FromError::MissingNode)?.to_string();
+        let name = named_type.name().ok_or(FromError::MissingNode)?.text().to_string();
         Ok(Self::new(name))
     }
 }
@@ -205,12 +205,12 @@ impl TryFrom<ast::Field> for crate::Field {
     type Error = FromError;
 
     fn try_from(node: ast::Field) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.to_string();
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
 
         let mut encoder_node = Self::new(name);
 
         if let Some(alias) = node.alias() {
-            let alias = alias.name().ok_or(FromError::MissingNode)?.to_string();
+            let alias = alias.name().ok_or(FromError::MissingNode)?.text().to_string();
             encoder_node.alias(Some(alias));
         }
 
@@ -240,6 +240,7 @@ impl TryFrom<ast::FragmentSpread> for crate::FragmentSpread {
         let name = node.fragment_name()
             .and_then(|fragment_name| fragment_name.name())
             .ok_or(FromError::MissingNode)?
+            .text()
             .to_string();
         let mut encoder_node = Self::new(name);
         if let Some(directives) = node.directives() {
@@ -325,6 +326,7 @@ impl TryFrom<ast::VariableDefinition> for crate::VariableDefinition {
             .ok_or(FromError::MissingNode)?
             .name()
             .ok_or(FromError::MissingNode)?
+            .text()
             .to_string();
         let ty = node.ty().ok_or(FromError::MissingNode)?.try_into()?;
 
@@ -354,7 +356,7 @@ impl TryFrom<ast::OperationDefinition> for crate::OperationDefinition {
         let mut encoder_node = Self::new(operation_type, selection_set);
 
         if let Some(name) = node.name() {
-            encoder_node.name(Some(name.to_string()));
+            encoder_node.name(Some(name.text().to_string()));
         }
 
         if let Some(variable_definitions) = node.variable_definitions() {
@@ -381,6 +383,7 @@ impl TryFrom<ast::FragmentDefinition> for crate::FragmentDefinition {
             .ok_or(FromError::MissingNode)?
             .name()
             .ok_or(FromError::MissingNode)?
+            .text()
             .to_string();
         let type_condition = node.type_condition()
             .ok_or(FromError::MissingNode)?
@@ -406,6 +409,7 @@ impl TryFrom<ast::DirectiveDefinition> for crate::DirectiveDefinition {
     fn try_from(node: ast::DirectiveDefinition) -> Result<Self, Self::Error> {
         let name = node.name()
             .ok_or(FromError::MissingNode)?
+            .text()
             .to_string();
 
         let mut encoder_node = Self::new(name);
@@ -451,6 +455,7 @@ fn apply_root_operation_type_definitions(encoder_node: &mut crate::SchemaDefinit
             .ok_or(FromError::MissingNode)?
             .name()
             .ok_or(FromError::MissingNode)?
+            .text()
             .to_string();
         if operation_type.query_token().is_some() {
             encoder_node.query(name);
@@ -495,7 +500,7 @@ impl TryFrom<ast::ScalarTypeDefinition> for crate::ScalarDefinition {
     type Error = FromError;
 
     fn try_from(node: ast::ScalarTypeDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.to_string();
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
         let mut encoder_node = Self::new(name);
 
         let description = node.description()
@@ -579,7 +584,7 @@ impl TryFrom<ast::ScalarTypeExtension> for crate::ScalarDefinition {
     type Error = FromError;
 
     fn try_from(node: ast::ScalarTypeExtension) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.to_string();
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
         let mut encoder_node = Self::new(name);
 
         if let Some(directives) = node.directives() {
@@ -690,19 +695,15 @@ query HeroForEpisode($ep: Episode!) {
         let doc = ast.document();
 
         let encoder = Document::try_from(doc).unwrap();
-        // TODO(@goto-bus-stop) We have some weird whitespace
         assert_eq!(encoder.to_string(), r#"
 query HeroForEpisode($ep: Episode!) {
   hero(episode: $ep) {
     name
-    
-    ... on Droid  {
+    ... on Droid {
       primaryFunction
-    
     }
-    ... on Human  {
+    ... on Human {
       height
-    
     }
   }
 }
@@ -723,13 +724,10 @@ fragment FragmentDefinition on VeryRealType {
 
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(encoder.to_string(), r#"
-fragment FragmentDefinition  on VeryRealType  {
+fragment FragmentDefinition on VeryRealType {
   id
-  
   title
-  
   text
-
 }
 "#.trim_start());
     }
@@ -769,13 +767,10 @@ extend schema {
         assert_eq!(encoder.to_string(), r#"
 schema {
   query: Query
-  
   subscription: Subscription
-
 }
 extend schema {
   mutation: Mutation
-
 }
 "#.trim_start());
     }
@@ -792,9 +787,7 @@ extend scalar Date @directive
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(encoder.to_string(), r#"
 scalar Date
-
-extend scalar Date  @directive
-
+extend scalar Date @directive
 "#.trim_start());
     }
 }
