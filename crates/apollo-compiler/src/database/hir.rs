@@ -1883,16 +1883,16 @@ impl Name {
     }
 }
 
-impl Into<String> for Name {
-    fn into(self) -> String {
-        self.src.to_string()
+impl From<Name> for String {
+    fn from(name: Name) -> String {
+        name.src().to_owned()
     }
 }
 
-impl Into<Name> for String {
-    fn into(self) -> Name {
+impl From<String> for Name {
+    fn from(name: String) -> Name {
         Name {
-            src: self,
+            src: name,
             ast_ptr: None,
         }
     }
