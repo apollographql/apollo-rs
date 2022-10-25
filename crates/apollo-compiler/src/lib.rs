@@ -1,10 +1,10 @@
 #![doc = include_str!("../README.md")]
 
-mod database;
-mod diagnostics;
+pub mod database;
+pub mod diagnostics;
 #[cfg(test)]
 mod tests;
-mod validation;
+pub mod validation;
 
 use validation::ValidationDatabase;
 
