@@ -547,11 +547,10 @@ impl TryFrom<ast::ObjectTypeDefinition> for crate::ObjectDefinition {
             }
         }
 
-        let field_definitions = node.fields_definition()
-            .ok_or(FromError::MissingNode)?
-            .field_definitions();
-        for field_definition in field_definitions {
-            encoder_node.field(field_definition.try_into()?);
+        if let Some(field_definitions) = node.fields_definition() {
+            for field_definition in field_definitions.field_definitions() {
+                encoder_node.field(field_definition.try_into()?);
+            }
         }
 
         Ok(encoder_node)
@@ -561,8 +560,37 @@ impl TryFrom<ast::ObjectTypeDefinition> for crate::ObjectDefinition {
 impl TryFrom<ast::InterfaceTypeDefinition> for crate::InterfaceDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::InterfaceTypeDefinition) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::InterfaceTypeDefinition) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let mut encoder_node = Self::new(name);
+
+        let description = node.description()
+            .and_then(|description| description.string_value())
+            .map(|string| string.into());
+        if let Some(description) = description {
+            encoder_node.description(description);
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(implements_interfaces) = node.implements_interfaces() {
+            for implements in implements_interfaces.named_types() {
+                let name = implements.name().ok_or(FromError::MissingNode)?.text().to_string();
+                encoder_node.interface(name);
+            }
+        }
+
+        if let Some(field_definitions) = node.fields_definition() {
+            for field_definition in field_definitions.field_definitions() {
+                encoder_node.field(field_definition.try_into()?);
+            }
+        }
+
+        Ok(encoder_node)
     }
 }
 
@@ -844,6 +872,33 @@ type User implements X & Y @join__owner(graph: USERS) @join__type(graph: USERS, 
   id: String! @join__field(graph: USERS)
   name: String @join__field(graph: USERS)
   userProduct: UserProduct @join__field(graph: USERS)
+}
+"#.trim_start());
+    }
+
+    #[test]
+    fn interface_definition() {
+        let parser = Parser::new(r#"
+interface X {
+  email: String!
+}
+interface Y {
+  id: ID!
+}
+interface Z implements X & Y @inaccessible {}
+"#);
+        let ast = parser.parse();
+        let doc = ast.document();
+
+        let encoder = Document::try_from(doc).unwrap();
+        assert_eq!(encoder.to_string(), r#"
+interface X {
+  email: String!
+}
+interface Y {
+  id: ID!
+}
+interface Z implements X& Y @inaccessible {
 }
 "#.trim_start());
     }
