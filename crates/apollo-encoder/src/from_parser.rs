@@ -3,6 +3,16 @@ use std::convert::TryFrom;
 use apollo_parser::ast;
 use thiserror::Error;
 
+/*
+impl TryFrom<ast::_Dummy> for crate::_Dummy {
+    type Error = FromError;
+
+    fn try_from(_node: ast::_Dummy) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+*/
+
 /// Errors that can occur when converting an apollo-parser AST to an apollo-encoder one.
 ///
 /// TODO(@goto-bus-stop) Would be nice to have some way to show where the error
@@ -597,16 +607,89 @@ impl TryFrom<ast::InterfaceTypeDefinition> for crate::InterfaceDefinition {
 impl TryFrom<ast::UnionTypeDefinition> for crate::UnionDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::UnionTypeDefinition) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::UnionTypeDefinition) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let mut encoder_node = Self::new(name);
+
+        let description = node.description()
+            .and_then(|description| description.string_value())
+            .map(|string| string.into());
+        if let Some(description) = description {
+            encoder_node.description(description);
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(members) = node.union_member_types() {
+            for member in members.named_types() {
+                encoder_node.member(member.name().ok_or(FromError::MissingNode)?.text().to_string());
+            }
+        }
+
+        Ok(encoder_node)
+    }
+}
+
+impl TryFrom<ast::EnumValueDefinition> for crate::EnumValue {
+    type Error = FromError;
+
+    fn try_from(node: ast::EnumValueDefinition) -> Result<Self, Self::Error> {
+        let name = node.enum_value()
+            .ok_or(FromError::MissingNode)?
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
+        let mut encoder_node = Self::new(name);
+
+        let description = node.description()
+            .and_then(|description| description.string_value())
+            .map(|string| string.into());
+        if let Some(description) = description {
+            encoder_node.description(description);
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        Ok(encoder_node)
     }
 }
 
 impl TryFrom<ast::EnumTypeDefinition> for crate::EnumDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::EnumTypeDefinition) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::EnumTypeDefinition) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let mut encoder_node = Self::new(name);
+
+        let description = node.description()
+            .and_then(|description| description.string_value())
+            .map(|string| string.into());
+        if let Some(description) = description {
+            encoder_node.description(description);
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(values) = node.enum_values_definition() {
+            for value in values.enum_value_definitions() {
+                encoder_node.value(value.try_into()?);
+            }
+        }
+
+        Ok(encoder_node)
     }
 }
 
@@ -899,6 +982,46 @@ interface Y {
   id: ID!
 }
 interface Z implements X& Y @inaccessible {
+}
+"#.trim_start());
+    }
+
+    #[test]
+    fn union_definition() {
+        let parser = Parser::new(r#"
+union UnionType = X | Y | Z
+"#);
+        let ast = parser.parse();
+        let doc = ast.document();
+
+        let encoder = Document::try_from(doc).unwrap();
+        assert_eq!(encoder.to_string(), r#"
+union UnionType = X | Y | Z
+"#.trim_start());
+    }
+
+    #[test]
+    fn enum_definition() {
+        let parser = Parser::new(r#"
+"Documentation for an enum"
+enum EnumType {
+  X
+  "This is Y"
+  Y
+  Z @test()
+}
+"#);
+        let ast = parser.parse();
+        let doc = ast.document();
+
+        let encoder = Document::try_from(doc).unwrap();
+        assert_eq!(encoder.to_string(), r#"
+"Documentation for an enum"
+enum EnumType {
+  X
+  "This is Y"
+  Y
+  Z @test
 }
 "#.trim_start());
     }
