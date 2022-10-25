@@ -327,7 +327,10 @@ fn operation_definition(
     // check if there are already operations
     // if there are operations, they must have names
     // if there are no names, an error must be raised that all operations must have a name
-    let name = op_def.name().map(|name| name.text().to_string());
+    let name = op_def.name().map(|name| Name {
+        src: name.text().to_string(),
+        ast_ptr: Some(SyntaxNodePtr::new(name.syntax())),
+    });
     let ty = operation_type(op_def.operation_type());
     let variables = variable_definitions(op_def.variable_definitions());
     let parent_object_ty = db
@@ -629,9 +632,15 @@ fn implements_interfaces(
         .flat_map(|interfaces| {
             let types: Vec<ImplementsInterface> = interfaces
                 .named_types()
-                .map(|n| ImplementsInterface {
-                    interface: n.name().expect("Name must have text").text().to_string(),
-                    ast_ptr: SyntaxNodePtr::new(n.syntax()),
+                .map(|n| {
+                    let name = n.name().expect("Name must have text");
+                    ImplementsInterface {
+                        interface: Name {
+                            src: name.text().to_string(),
+                            ast_ptr: Some(SyntaxNodePtr::new(name.syntax())),
+                        },
+                        ast_ptr: SyntaxNodePtr::new(n.syntax()),
+                    }
                 })
                 .collect();
             types
@@ -917,7 +926,11 @@ fn argument(argument: ast::Argument) -> Argument {
 fn value(val: ast::Value) -> Value {
     match val {
         ast::Value::Variable(var) => Value::Variable(Variable {
-            name: name(var.name()),
+            name: var
+                .name()
+                .expect("Variable must have text")
+                .text()
+                .to_string(),
             ast_ptr: SyntaxNodePtr::new(var.syntax()),
         }),
         ast::Value::StringValue(string_val) => Value::String(string_val.into()),
@@ -931,7 +944,7 @@ fn value(val: ast::Value) -> Value {
             Value::List(list)
         }
         ast::Value::ObjectValue(object) => {
-            let object_values: Vec<(String, Value)> = object
+            let object_values: Vec<(Name, Value)> = object
                 .object_fields()
                 .map(|o| {
                     let name = name(o.name());
@@ -990,16 +1003,19 @@ fn inline_fragment(
     parent_obj: Option<String>,
 ) -> Arc<InlineFragment> {
     let type_condition = fragment.type_condition().map(|tc| {
-        tc.named_type()
+        let tc = tc
+            .named_type()
             .expect("Type Condition must have a name")
             .name()
-            .expect("Name must have text")
-            .text()
-            .to_string()
+            .expect("Name must have text");
+        Name {
+            src: tc.text().to_string(),
+            ast_ptr: Some(SyntaxNodePtr::new(tc.syntax())),
+        }
     });
     let directives = directives(fragment.directives());
     let new_parent_obj = if let Some(type_condition) = type_condition.clone() {
-        Some(type_condition)
+        Some(type_condition.src().to_string())
     } else {
         parent_obj
     };
@@ -1036,7 +1052,7 @@ fn fragment_spread(fragment: ast::FragmentSpread) -> Arc<FragmentSpread> {
 fn field(db: &dyn HirDatabase, field: ast::Field, parent_obj: Option<String>) -> Arc<Field> {
     let name = name(field.name());
     let alias = alias(field.alias());
-    let new_parent_obj = parent_ty(db, &name, parent_obj.clone());
+    let new_parent_obj = parent_ty(db, name.src(), parent_obj.clone());
     let selection_set = selection_set(db, field.selection_set(), new_parent_obj);
     let directives = directives(field.directives());
     let arguments = arguments(field.arguments());
@@ -1069,17 +1085,24 @@ fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<String>)
     }
 }
 
-fn name(name: Option<ast::Name>) -> String {
-    name.expect("Field must have a name").text().to_string()
+fn name(name: Option<ast::Name>) -> Name {
+    let n = name.expect("Field must have a name");
+    Name {
+        src: n.text().to_string(),
+        ast_ptr: Some(SyntaxNodePtr::new(n.syntax())),
+    }
 }
 
-fn enum_value(enum_value: Option<ast::EnumValue>) -> String {
-    enum_value
+fn enum_value(enum_value: Option<ast::EnumValue>) -> Name {
+    let name = enum_value
         .expect("Enum value must have a name")
         .name()
-        .expect("Name must have text")
-        .text()
-        .to_string()
+        .expect("Name must have text");
+
+    Name {
+        src: name.text().to_string(),
+        ast_ptr: Some(SyntaxNodePtr::new(name.syntax())),
+    }
 }
 
 fn description(description: Option<ast::Description>) -> Option<String> {
@@ -1113,7 +1136,7 @@ fn int_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
         id: Uuid::new_v4(),
         description: Some("The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.".into()),
-        name: "Int".into(),
+        name: "Int".to_string().into(),
         directives: Arc::new(Vec::new()),
         ast_ptr: None,
         built_in: true
@@ -1124,7 +1147,7 @@ fn float_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
         id: Uuid::new_v4(),
         description: Some("The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).".into()),
-        name: "Float".into(),
+        name: "Float".to_string().into(),
         directives: Arc::new(Vec::new()),
         ast_ptr: None,
         built_in: true
@@ -1135,7 +1158,7 @@ fn string_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
         id: Uuid::new_v4(),
         description: Some("The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.".into()),
-        name: "String".into(),
+        name: "String".to_string().into(),
         directives: Arc::new(Vec::new()),
         ast_ptr: None,
         built_in: true
@@ -1146,7 +1169,7 @@ fn boolean_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
         id: Uuid::new_v4(),
         description: Some("The `Boolean` scalar type represents `true` or `false`.".into()),
-        name: "Boolean".into(),
+        name: "Boolean".to_string().into(),
         directives: Arc::new(Vec::new()),
         ast_ptr: None,
         built_in: true,
@@ -1157,7 +1180,7 @@ fn id_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
         id: Uuid::new_v4(),
         description: Some("The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `\"4\"`) or integer (such as `4`) input value will be accepted as an ID.".into()),
-        name: "ID".into(),
+        name: "ID".to_string().into(),
         directives: Arc::new(Vec::new()),
         ast_ptr: None,
         built_in: true
@@ -1165,19 +1188,19 @@ fn id_scalar() -> ScalarTypeDefinition {
 }
 
 fn built_in_directives(mut directives: Vec<DirectiveDefinition>) -> Vec<DirectiveDefinition> {
-    if !directives.iter().any(|dir| dir.name == "skip") {
+    if !directives.iter().any(|dir| dir.name() == "skip") {
         directives.push(skip_directive());
     }
 
-    if !directives.iter().any(|dir| dir.name == "specifiedBy") {
+    if !directives.iter().any(|dir| dir.name() == "specifiedBy") {
         directives.push(specified_by_directive());
     }
 
-    if !directives.iter().any(|dir| dir.name == "deprecated") {
+    if !directives.iter().any(|dir| dir.name() == "deprecated") {
         directives.push(deprecated_directive());
     }
 
-    if !directives.iter().any(|dir| dir.name == "include") {
+    if !directives.iter().any(|dir| dir.name() == "include") {
         directives.push(include_directive());
     }
 
@@ -1196,11 +1219,11 @@ fn skip_directive() -> DirectiveDefinition {
             "Directs the executor to skip this field or fragment when the `if` argument is true."
                 .into(),
         ),
-        name: "skip".into(),
+        name: "skip".to_string().into(),
         arguments: ArgumentsDefinition {
             input_values: Arc::new(vec![InputValueDefinition {
                 description: Some("Skipped when true.".into()),
-                name: "if".into(),
+                name: "if".to_string().into(),
                 ty: Type::NonNull {
                     ty: Box::new(Type::Named {
                         name: "Boolean".into(),
@@ -1233,11 +1256,11 @@ fn specified_by_directive() -> DirectiveDefinition {
     DirectiveDefinition {
         id: Uuid::new_v4(),
         description: Some("Exposes a URL that specifies the behaviour of this scalar.".into()),
-        name: "specifiedBy".into(),
+        name: "specifiedBy".to_string().into(),
         arguments: ArgumentsDefinition {
             input_values: Arc::new(vec![InputValueDefinition {
                 description: Some("The URL that specifies the behaviour of this scalar.".into()),
-                name: "url".into(),
+                name: "url".to_string().into(),
                 ty: Type::NonNull {
                     ty: Box::new(Type::Named {
                         name: "String".into(),
@@ -1271,13 +1294,13 @@ fn deprecated_directive() -> DirectiveDefinition {
     DirectiveDefinition {
         id: Uuid::new_v4(),
         description: Some("Marks an element of a GraphQL schema as no longer supported.".into()),
-        name: "deprecated".into(),
+        name: "deprecated".to_string().into(),
         arguments: ArgumentsDefinition {
             input_values: Arc::new(vec![InputValueDefinition {
                 description: Some(
                     "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).".into(),
                 ),
-                name: "reason".into(),
+                name: "reason".to_string().into(),
                 ty: Type::Named {
                     name: "String".into(),
                     ast_ptr: None,
@@ -1306,13 +1329,13 @@ fn include_directive() -> DirectiveDefinition {
     DirectiveDefinition {
         id: Uuid::new_v4(),
         description: Some("Directs the executor to include this field or fragment only when the `if` argument is true.".into()),
-        name: "include".into(),
+        name: "include".to_string().into(),
         arguments: ArgumentsDefinition {
             input_values: Arc::new(vec![InputValueDefinition {
                 description: Some(
                     "Included when true.".into(),
                 ),
-                name: "if".into(),
+                name: "if".to_string().into(),
                 ty: Type::NonNull {
                     ty: Box::new(Type::Named {
                         name: "Boolean".into(),

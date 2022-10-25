@@ -158,7 +158,11 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
             .iter()
             .find(|op| op.name() == Some("ExampleQuery"))
         {
-            Some(op) => op.variables().iter().map(|var| var.name.clone()).collect(),
+            Some(op) => op
+                .variables()
+                .iter()
+                .map(|var| var.name().to_string())
+                .collect(),
             None => Vec::new(),
         };
         assert_eq!(
