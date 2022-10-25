@@ -28,7 +28,7 @@ impl TryFrom<ast::Value> for crate::Value {
             ast::Value::IntValue(int) => Self::Int(int.int_token().ok_or(FromError::MissingNode)?.text().parse()?),
             ast::Value::BooleanValue(boolean) => Self::Boolean(boolean.true_token().is_some()),
             ast::Value::NullValue(_) => Self::Null,
-            ast::Value::EnumValue(enum_) => Self::Enum(enum_.to_string()),
+            ast::Value::EnumValue(enum_) => Self::Enum(enum_.text().to_string()),
             ast::Value::ListValue(list) => {
                 let encoder_list = list.values()
                     .map(Self::try_from)
@@ -523,8 +523,38 @@ impl TryFrom<ast::ScalarTypeDefinition> for crate::ScalarDefinition {
 impl TryFrom<ast::ObjectTypeDefinition> for crate::ObjectDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::ObjectTypeDefinition) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::ObjectTypeDefinition) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let mut encoder_node = Self::new(name);
+
+        let description = node.description()
+            .and_then(|description| description.string_value())
+            .map(|string| string.into());
+        if let Some(description) = description {
+            encoder_node.description(description);
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(implements_interfaces) = node.implements_interfaces() {
+            for implements in implements_interfaces.named_types() {
+                let name = implements.name().ok_or(FromError::MissingNode)?.text().to_string();
+                encoder_node.interface(name);
+            }
+        }
+
+        let field_definitions = node.fields_definition()
+            .ok_or(FromError::MissingNode)?
+            .field_definitions();
+        for field_definition in field_definitions {
+            encoder_node.field(field_definition.try_into()?);
+        }
+
+        Ok(encoder_node)
     }
 }
 
@@ -788,6 +818,33 @@ extend scalar Date @directive
         assert_eq!(encoder.to_string(), r#"
 scalar Date
 extend scalar Date @directive
+"#.trim_start());
+    }
+
+    #[test]
+    fn object_type_definition() {
+        let parser = Parser::new(r#"
+type User implements X & Y
+  @join__owner(graph: USERS)
+  @join__type(graph: USERS, key: "email")
+{
+  email: String! @join__field(graph: USERS)
+  id: String! @join__field(graph: USERS)
+  name: String @join__field(graph: USERS)
+  userProduct: UserProduct @join__field(graph: USERS)
+}
+"#);
+        let ast = parser.parse();
+        let doc = ast.document();
+
+        let encoder = Document::try_from(doc).unwrap();
+        assert_eq!(encoder.to_string(), r#"
+type User implements X & Y @join__owner(graph: USERS) @join__type(graph: USERS, key: "email") {
+  email: String! @join__field(graph: USERS)
+  id: String! @join__field(graph: USERS)
+  name: String @join__field(graph: USERS)
+  userProduct: UserProduct @join__field(graph: USERS)
+}
 "#.trim_start());
     }
 }
