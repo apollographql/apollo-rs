@@ -24,8 +24,7 @@ apollo-parser = { version = "0.2.12", optional = true }
 thiserror = "1.0.37"
 
 [features]
-default = ["from-parser"]
-from-parser = ["apollo-parser"]
+default = ["apollo-parser"]
 
 [dev-dependencies]
 pretty_assertions = "0.7.1"
