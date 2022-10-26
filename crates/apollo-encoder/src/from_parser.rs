@@ -3,16 +3,6 @@ use std::convert::TryFrom;
 use apollo_parser::ast;
 use thiserror::Error;
 
-/*
-impl TryFrom<ast::_Dummy> for crate::_Dummy {
-    type Error = FromError;
-
-    fn try_from(_node: ast::_Dummy) -> Result<Self, Self::Error> {
-        todo!()
-    }
-}
-*/
-
 /// Errors that can occur when converting an apollo-parser AST to an apollo-encoder one.
 ///
 /// TODO(@goto-bus-stop) Would be nice to have some way to show where the error
@@ -693,11 +683,60 @@ impl TryFrom<ast::EnumTypeDefinition> for crate::EnumDefinition {
     }
 }
 
+impl TryFrom<ast::InputValueDefinition> for crate::InputField {
+    type Error = FromError;
+
+    fn try_from(node: ast::InputValueDefinition) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let ty = node.ty().ok_or(FromError::MissingNode)?;
+        let mut encoder_node = Self::new(name, ty.try_into()?);
+
+        if let Some(description) = node.description() {
+            encoder_node.description(description.string_value().ok_or(FromError::MissingNode)?.into());
+        }
+
+        if let Some(default_value) = node.default_value() {
+            // TODO represent this as a Value enum in encoder?
+            encoder_node.default_value(default_value.value().ok_or(FromError::MissingNode)?.to_string());
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        Ok(encoder_node)
+    }
+}
+
 impl TryFrom<ast::InputObjectTypeDefinition> for crate::InputObjectDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::InputObjectTypeDefinition) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::InputObjectTypeDefinition) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let mut encoder_node = Self::new(name);
+
+        let description = node.description()
+            .and_then(|description| description.string_value())
+            .map(|string| string.into());
+        if let Some(description) = description {
+            encoder_node.description(description);
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(field_definitions) = node.input_fields_definition() {
+            for field_definition in field_definitions.input_value_definitions() {
+                encoder_node.field(field_definition.try_into()?);
+            }
+        }
+
+        Ok(encoder_node)
     }
 }
 
