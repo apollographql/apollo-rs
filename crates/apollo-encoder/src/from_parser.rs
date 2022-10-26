@@ -782,40 +782,139 @@ impl TryFrom<ast::ScalarTypeExtension> for crate::ScalarDefinition {
 impl TryFrom<ast::ObjectTypeExtension> for crate::ObjectDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::ObjectTypeExtension) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::ObjectTypeExtension) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let mut encoder_node = Self::new(name);
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(implements_interfaces) = node.implements_interfaces() {
+            for implements in implements_interfaces.named_types() {
+                let name = implements.name().ok_or(FromError::MissingNode)?.text().to_string();
+                encoder_node.interface(name);
+            }
+        }
+
+        if let Some(field_definitions) = node.fields_definition() {
+            for field_definition in field_definitions.field_definitions() {
+                encoder_node.field(field_definition.try_into()?);
+            }
+        }
+
+        encoder_node.extend();
+
+        Ok(encoder_node)
     }
 }
 
 impl TryFrom<ast::InterfaceTypeExtension> for crate::InterfaceDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::InterfaceTypeExtension) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::InterfaceTypeExtension) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let mut encoder_node = Self::new(name);
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(implements_interfaces) = node.implements_interfaces() {
+            for implements in implements_interfaces.named_types() {
+                let name = implements.name().ok_or(FromError::MissingNode)?.text().to_string();
+                encoder_node.interface(name);
+            }
+        }
+
+        if let Some(field_definitions) = node.fields_definition() {
+            for field_definition in field_definitions.field_definitions() {
+                encoder_node.field(field_definition.try_into()?);
+            }
+        }
+
+        encoder_node.extend();
+
+        Ok(encoder_node)
     }
 }
 
 impl TryFrom<ast::UnionTypeExtension> for crate::UnionDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::UnionTypeExtension) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::UnionTypeExtension) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let mut encoder_node = Self::new(name);
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(members) = node.union_member_types() {
+            for member in members.named_types() {
+                encoder_node.member(member.name().ok_or(FromError::MissingNode)?.text().to_string());
+            }
+        }
+
+        encoder_node.extend();
+
+        Ok(encoder_node)
     }
 }
 
 impl TryFrom<ast::EnumTypeExtension> for crate::EnumDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::EnumTypeExtension) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::EnumTypeExtension) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let mut encoder_node = Self::new(name);
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(values) = node.enum_values_definition() {
+            for value in values.enum_value_definitions() {
+                encoder_node.value(value.try_into()?);
+            }
+        }
+
+        encoder_node.extend();
+
+        Ok(encoder_node)
     }
 }
 
 impl TryFrom<ast::InputObjectTypeExtension> for crate::InputObjectDefinition {
     type Error = FromError;
 
-    fn try_from(_node: ast::InputObjectTypeExtension) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(node: ast::InputObjectTypeExtension) -> Result<Self, Self::Error> {
+        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let mut encoder_node = Self::new(name);
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(field_definitions) = node.input_fields_definition() {
+            for field_definition in field_definitions.input_value_definitions() {
+                encoder_node.field(field_definition.try_into()?);
+            }
+        }
+
+        encoder_node.extend();
+
+        Ok(encoder_node)
     }
 }
 
