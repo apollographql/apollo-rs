@@ -2,10 +2,7 @@
 // non-optional and will have an error produced in the parser if they are missing.
 
 use crate::{
-    database::{
-        ast::AstStorage, def::HirStorage, document::DocumentStorage, inputs::InputStorage,
-        DocumentDatabase,
-    },
+    database::{AstStorage, DocumentDatabase, DocumentStorage, HirStorage, InputStorage},
     validation::ValidationStorage,
 };
 
