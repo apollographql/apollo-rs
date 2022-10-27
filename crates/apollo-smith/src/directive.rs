@@ -54,7 +54,8 @@ impl From<apollo_parser::ast::DirectiveDefinition> for DirectiveDef {
         Self {
             description: directive_def
                 .description()
-                .map(|d| Description::from(d.to_string())),
+                .and_then(|d| d.string_value())
+                .map(|s| Description::from(Into::<String>::into(s))),
             name: directive_def.name().unwrap().into(),
             arguments_definition: directive_def.arguments_definition().map(ArgumentsDef::from),
             repeatable: directive_def.repeatable_token().is_some(),

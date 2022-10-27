@@ -48,7 +48,8 @@ impl From<apollo_parser::ast::ScalarTypeDefinition> for ScalarTypeDef {
         Self {
             description: scalar_def
                 .description()
-                .map(|d| Description::from(d.to_string())),
+                .and_then(|d| d.string_value())
+                .map(|s| Description::from(Into::<String>::into(s))),
             name: scalar_def.name().unwrap().into(),
             directives: scalar_def
                 .directives()

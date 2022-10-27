@@ -26,7 +26,7 @@ impl From<Description> for String {
 #[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::Description> for Description {
     fn from(desc: apollo_parser::ast::Description) -> Self {
-        Description(StringValue::from(desc.to_string()))
+        Description(desc.string_value().map(|s| s.into()).unwrap_or_else(|| StringValue::Line(Default::default())))
     }
 }
 
@@ -49,6 +49,13 @@ pub enum StringValue {
     Block(String),
     /// Represents a one line string value between "
     Line(String),
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::StringValue> for StringValue {
+    fn from(val: apollo_parser::ast::StringValue) -> Self {
+        Self::from(Into::<String>::into(val))
+    }
 }
 
 impl From<StringValue> for String {
