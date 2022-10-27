@@ -90,9 +90,11 @@ impl ApolloCompiler {
         Self { db }
     }
 
-    pub fn query(&mut self, input: &str) {
+    pub fn query(&mut self, input: &str) -> FileId {
         let id = FileId(2);
-        self.db.set_input_query(id, input.to_string())
+        self.db.set_input_query(id, input.to_string());
+
+        id
     }
 
     /// Get a snapshot of the current database.
@@ -151,7 +153,7 @@ query ExampleQuery {
       "#;
 
         let mut compiler = ApolloCompiler::with_schema(schema);
-        compiler.query(query);
+        let id = compiler.query(query);
     }
 
     #[test]
