@@ -291,18 +291,19 @@ impl<'a> Parser<'a> {
 
     /// Peek Token `n` and return it.
     pub(crate) fn peek_token_n(&self, n: usize) -> Option<Token> {
-        self.lexer.clone()
-            .filter_map(|res| match res {
-                LexerResult::Error(_) => None,
-                LexerResult::Token(token) => Some(token),
-            })
+        self.current_token
+            .iter()
+            .cloned()
+            .map(Result::Ok)
+            .chain(self.lexer.clone())
+            .filter_map(Result::ok)
             .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
             .nth(n - 1)
     }
 
     /// Peek Token `n` and return its TokenKind.
     pub(crate) fn peek_n(&self, n: usize) -> Option<TokenKind> {
-        self.peek_n_inner(n).map(|token| token.kind())
+        self.peek_token_n(n).map(|token| token.kind())
     }
 
     /// Peek next Token's `data` property.
@@ -312,18 +313,7 @@ impl<'a> Parser<'a> {
 
     /// Peek `n` Token's `data` property.
     pub(crate) fn peek_data_n(&self, n: usize) -> Option<String> {
-        self.peek_n_inner(n).map(|token| token.data().to_string())
-    }
-
-    fn peek_n_inner(&self, n: usize) -> Option<Token> {
-        self.current_token
-            .iter()
-            .cloned()
-            .map(Result::Ok)
-            .chain(self.lexer.clone())
-            .filter_map(Result::ok)
-            .filter(|token| !matches!(token.kind(), TokenKind::Whitespace | TokenKind::Comment))
-            .nth(n - 1)
+        self.peek_token_n(n).map(|token| token.data().to_string())
     }
 }
 
