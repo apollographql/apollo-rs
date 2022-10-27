@@ -128,6 +128,10 @@ pub trait AstNode {
 
     fn syntax(&self) -> &SyntaxNode;
 
+    fn source_string(&self) -> String {
+        self.syntax().to_string()
+    }
+
     fn clone_for_update(&self) -> Self
     where
         Self: Sized,
