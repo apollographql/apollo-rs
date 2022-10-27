@@ -65,12 +65,12 @@ impl DirectiveDefinition {
         });
     }
 
-    /// Set the Directive's location.
+    /// Add a location where this Directive can be used.
     pub fn location(&mut self, location: String) {
         self.locations.push(location);
     }
 
-    /// Set the Directive's args.
+    /// Add an argument to this Directive.
     pub fn arg(&mut self, arg: InputValueDefinition) {
         self.args.input_value(arg);
     }

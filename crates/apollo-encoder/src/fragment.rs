@@ -43,7 +43,7 @@ pub struct FragmentDefinition {
 }
 
 impl FragmentDefinition {
-    /// Create an instance of FragmentDeg
+    /// Create an instance of FragmentDefinition.
     pub fn new(name: String, type_condition: TypeCondition, selection_set: SelectionSet) -> Self {
         Self {
             name,
