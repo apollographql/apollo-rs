@@ -327,10 +327,7 @@ fn operation_definition(
     // check if there are already operations
     // if there are operations, they must have names
     // if there are no names, an error must be raised that all operations must have a name
-    let name = op_def.name().map(|name| Name {
-        src: name.text().to_string(),
-        ast_ptr: Some(SyntaxNodePtr::new(name.syntax())),
-    });
+    let name = op_def.name().map(name_hir_node);
     let ty = operation_type(op_def.operation_type());
     let variables = variable_definitions(op_def.variable_definitions());
     let parent_object_ty = db
@@ -635,10 +632,7 @@ fn implements_interfaces(
                 .map(|n| {
                     let name = n.name().expect("Name must have text");
                     ImplementsInterface {
-                        interface: Name {
-                            src: name.text().to_string(),
-                            ast_ptr: Some(SyntaxNodePtr::new(name.syntax())),
-                        },
+                        interface: name_hir_node(name),
                         ast_ptr: SyntaxNodePtr::new(n.syntax()),
                     }
                 })
@@ -1008,10 +1002,7 @@ fn inline_fragment(
             .expect("Type Condition must have a name")
             .name()
             .expect("Name must have text");
-        Name {
-            src: tc.text().to_string(),
-            ast_ptr: Some(SyntaxNodePtr::new(tc.syntax())),
-        }
+        name_hir_node(tc)
     });
     let directives = directives(fragment.directives());
     let new_parent_obj = if let Some(type_condition) = type_condition.clone() {
@@ -1086,10 +1077,13 @@ fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<String>)
 }
 
 fn name(name: Option<ast::Name>) -> Name {
-    let n = name.expect("Field must have a name");
+    name_hir_node(name.expect("Field must have a name"))
+}
+
+fn name_hir_node(name: ast::Name) -> Name {
     Name {
-        src: n.text().to_string(),
-        ast_ptr: Some(SyntaxNodePtr::new(n.syntax())),
+        src: name.text().to_string(),
+        ast_ptr: Some(SyntaxNodePtr::new(name.syntax())),
     }
 }
 
@@ -1098,11 +1092,7 @@ fn enum_value(enum_value: Option<ast::EnumValue>) -> Name {
         .expect("Enum value must have a name")
         .name()
         .expect("Name must have text");
-
-    Name {
-        src: name.text().to_string(),
-        ast_ptr: Some(SyntaxNodePtr::new(name.syntax())),
-    }
+    name_hir_node(name)
 }
 
 fn description(description: Option<ast::Description>) -> Option<String> {
