@@ -153,7 +153,8 @@ pub(crate) fn default_value(p: &mut Parser) {
 
 #[cfg(test)]
 mod test {
-    use crate::{ast, Parser};
+    use crate::{ast, ast::AstNode, Parser};
+
     #[test]
     fn it_returns_string_for_string_value_into() {
         let schema = r#"
@@ -173,8 +174,12 @@ enum Test @dir__one(string: "string value", int_value: -10, float_value: -1.123e
                         if let ast::Value::StringValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
-                            let s: String = val.into();
-                            assert_eq!(s, "string value".to_string());
+                            let source = val.source_string();
+                            assert_eq!(source, r#""string value", "#); // SyntaxNodes include trailing
+                                                                       // tokens like commas
+
+                            let contents: String = val.into();
+                            assert_eq!(contents, "string value");
                         }
                     }
                 }

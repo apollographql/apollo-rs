@@ -26,7 +26,7 @@ impl From<Description> for String {
 #[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::Description> for Description {
     fn from(desc: apollo_parser::ast::Description) -> Self {
-        Description(StringValue::from(desc.to_string()))
+        Description(desc.string_value().map(|s| s.into()).unwrap_or_else(|| StringValue::Line(Default::default())))
     }
 }
 
@@ -49,6 +49,13 @@ pub enum StringValue {
     Block(String),
     /// Represents a one line string value between "
     Line(String),
+}
+
+#[cfg(feature = "parser-impl")]
+impl From<apollo_parser::ast::StringValue> for StringValue {
+    fn from(val: apollo_parser::ast::StringValue) -> Self {
+        Self::from(Into::<String>::into(val))
+    }
 }
 
 impl From<StringValue> for String {
@@ -111,4 +118,31 @@ fn limited_string_desc(u: &mut Unstructured<'_>, max_size: usize) -> Result<Stri
     .unwrap();
 
     Ok(gen_str)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::description::Description;
+
+    #[cfg(feature = "parser-impl")]
+    #[test]
+    fn convert_description_from_parser() {
+        use apollo_parser::Parser;
+        use apollo_parser::ast::Definition;
+
+        let schema = r#"
+"Description for the schema"
+schema {}
+        "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+        let document = ast.document();
+        if let Definition::SchemaDefinition(def) = document.definitions().next().unwrap() {
+            let parser_description = def.description().unwrap();
+            let smith_description = Description::from(parser_description);
+            assert_eq!(smith_description, Description::from("Description for the schema".to_string()));
+        } else {
+            unreachable!();
+        }
+    }
 }

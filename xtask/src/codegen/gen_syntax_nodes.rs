@@ -142,22 +142,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
         })
         .unzip();
 
-    let enum_names = grammar.enums.iter().map(|it| &it.name);
     let node_names = grammar.nodes.iter().map(|it| &it.name);
-
-    let display_impls = enum_names
-        .chain(node_names.clone())
-        .map(|it| format_ident!("{}", it))
-        .map(|name| {
-            quote! {
-                impl std::fmt::Display for #name {
-                    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        std::fmt::Display::fmt(self.syntax(), f)
-                    }
-                }
-            }
-        });
-
     let defined_nodes: HashSet<_> = node_names.collect();
 
     for node in kinds
@@ -182,7 +167,6 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
         #(#enum_defs)*
         #(#node_boilerplate_impls)*
         #(#enum_boilerplate_impls)*
-        #(#display_impls)*
     };
 
     let ast = ast.to_string().replace("S ! [", "S![");
