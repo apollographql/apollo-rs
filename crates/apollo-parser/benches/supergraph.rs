@@ -18,11 +18,8 @@ fn parse_schema(schema: &str) {
                 .selection_set()
                 .expect("the node SelectionSet is not optional in the spec; qed");
             for selection in selection_set.selections() {
-                match selection {
-                    ast::Selection::Field(field) => {
-                        let _selection_set = field.selection_set();
-                    }
-                    _ => {}
+                if let ast::Selection::Field(field) = selection {
+                    let _selection_set = field.selection_set();
                 }
             }
         }
