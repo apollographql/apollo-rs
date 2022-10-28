@@ -119,3 +119,30 @@ fn limited_string_desc(u: &mut Unstructured<'_>, max_size: usize) -> Result<Stri
 
     Ok(gen_str)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::description::Description;
+
+    #[cfg(feature = "parser-impl")]
+    #[test]
+    fn convert_description_from_parser() {
+        use apollo_parser::Parser;
+        use apollo_parser::ast::Definition;
+
+        let schema = r#"
+"Description for the schema"
+schema {}
+        "#;
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+        let document = ast.document();
+        if let Definition::SchemaDefinition(def) = document.definitions().next().unwrap() {
+            let parser_description = def.description().unwrap();
+            let smith_description = Description::from(parser_description);
+            assert_eq!(smith_description, Description::from("Description for the schema".to_string()));
+        } else {
+            unreachable!();
+        }
+    }
+}
