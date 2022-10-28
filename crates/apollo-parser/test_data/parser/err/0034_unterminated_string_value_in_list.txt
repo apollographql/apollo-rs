@@ -34,6 +34,10 @@
                             - ENUM_VALUE@96..98
                                 - NAME@96..98
                                     - IDENT@96..98 "id"
+- ERROR@96:138 "unexpected line terminator" "@external])
+
+
+type Vehicle @key(fields: "
 - ERROR@140:237 "unterminated string value" ") {
   id: ID!,
   type: String,
@@ -42,9 +46,5 @@
   launchDate: String
 }
 
-- ERROR@96:138 "unexpected line terminator" "@external])
-
-
-type Vehicle @key(fields: "
 - ERROR@237:237 "expected R_PAREN, got EOF" EOF
 recursion limit: 4096, high: 0

@@ -46,12 +46,12 @@
                                             - ENUM_VALUE@68..70
                                                 - NAME@68..70
                                                     - IDENT@68..70 "en"
-- ERROR@108:116 "unterminated string value" ")
-  }
-}
 - ERROR@68:106 "unexpected line terminator" "my store }]
   }) {
     name(locale: "
+- ERROR@108:116 "unterminated string value" ")
+  }
+}
 - ERROR@116:116 "expected }" EOF
 - ERROR@116:116 "expected }" EOF
 - ERROR@116:116 "expected R_PAREN, got EOF" EOF
