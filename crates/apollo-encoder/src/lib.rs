@@ -25,6 +25,8 @@ mod ty;
 mod union_def;
 mod value;
 mod variable;
+#[cfg(feature = "apollo-parser")]
+mod from_parser;
 
 pub use argument::Argument;
 pub use argument::ArgumentsDefinition;

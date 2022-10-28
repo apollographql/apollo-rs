@@ -59,9 +59,7 @@ impl ApolloDiagnostic {
     pub fn is_advice(&self) -> bool {
         matches!(self, ApolloDiagnostic::ScalarSpecificationURL(_))
     }
-}
 
-impl ApolloDiagnostic {
     pub fn report(&self) -> Report {
         match self {
             ApolloDiagnostic::MissingIdent(diagnostic) => Report::new(diagnostic.clone()),
