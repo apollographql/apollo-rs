@@ -4,9 +4,10 @@ use criterion::*;
 fn parse_schema(schema: &str) {
     let parser = apollo_parser::Parser::new(schema);
     let tree = parser.parse();
+    let errors = tree.errors().collect::<Vec<_>>();
 
-    if !tree.errors().is_empty() {
-        panic!("error parsing query: {:?}", tree.errors());
+    if !errors.is_empty() {
+        panic!("error parsing query: {:?}", errors);
     }
 
     let document = tree.document();
