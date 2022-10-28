@@ -2,13 +2,12 @@ mod cursor;
 mod token;
 mod token_kind;
 
-use std::slice::Iter;
-
 use crate::{lexer::cursor::Cursor, Error};
 
 pub use token::Token;
 pub use token_kind::TokenKind;
-/// Parses tokens into text.
+
+/// Parses GraphQL source text into tokens.
 /// ```rust
 /// use apollo_parser::Lexer;
 ///
@@ -23,81 +22,34 @@ pub use token_kind::TokenKind;
 ///     }
 /// }
 /// ";
-/// let lexer = Lexer::new(query);
-/// assert_eq!(lexer.errors().len(), 0);
-///
-/// let tokens = lexer.tokens();
+/// let (tokens, errors) = Lexer::new(query).lex();
+/// assert_eq!(errors.len(), 0);
 /// ```
-pub struct Lexer {
-    tokens: Vec<Token>,
-    errors: Vec<Error>,
-}
-
-impl Lexer {
-    /// Create a new instance of `Lexer`.
-    pub fn new(mut input: &str) -> Self {
-        let mut tokens = Vec::new();
-        let mut errors = Vec::new();
-
-        let mut index = 0;
-
-        while !input.is_empty() {
-            let old_input = input;
-
-            if old_input.len() == input.len() {
-                let mut c = Cursor::new(input);
-                let r = c.advance();
-
-                match r {
-                    Ok(mut token) => {
-                        token.index = index;
-                        index += token.data.len();
-
-                        input = &input[token.data.len()..];
-                        tokens.push(token);
-                    }
-                    Err(mut err) => {
-                        err.index = index;
-                        index += err.data.len();
-
-                        input = &input[err.data.len()..];
-                        errors.push(err);
-                    }
-                }
-            }
-        }
-
-        let mut eof = Token::new(TokenKind::Eof, String::from("EOF"));
-        eof.index = index;
-        tokens.push(eof);
-
-        Self { tokens, errors }
-    }
-
-    /// Get a reference to the lexer's tokens.
-    pub fn tokens(&self) -> &[Token] {
-        self.tokens.as_slice()
-    }
-
-    /// Get a reference to the lexer's errors.
-    pub fn errors(&self) -> Iter<'_, Error> {
-        self.errors.iter()
-    }
-
-    /// Consume the lexer and return the tokens and errors.
-    pub fn into_parts(self) -> (Vec<Token>, Vec<Error>) {
-        (self.tokens, self.errors)
-    }
-}
-
 #[derive(Clone, Debug)]
-pub struct LexerIterator<'a> {
+pub struct Lexer<'a> {
     input: &'a str,
     index: usize,
     finished: bool,
 }
 
-impl<'a> LexerIterator<'a> {
+impl<'a> Lexer<'a> {
+    /// Create a lexer for a GraphQL source text.
+    ///
+    /// The Lexer is an iterator over tokens and errors:
+    /// ```rust
+    /// use apollo_parser::Lexer;
+    ///
+    /// let query = "# --- GraphQL here ---";
+    ///
+    /// let mut lexer = Lexer::new(query);
+    /// let mut tokens = vec![];
+    /// for token in lexer {
+    ///     match token {
+    ///         Ok(token) => tokens.push(token),
+    ///         Err(error) => panic!("{}", error),
+    ///     }
+    /// }
+    /// ```
     pub fn new(input: &'a str) -> Self {
         Self {
             input,
@@ -105,9 +57,24 @@ impl<'a> LexerIterator<'a> {
             finished: false,
         }
     }
+
+    /// Lex the full source text, consuming the lexer.
+    pub fn lex(self) -> (Vec<Token>, Vec<Error>) {
+        let mut tokens = vec![];
+        let mut errors = vec![];
+
+        for item in self {
+            match item {
+                Ok(token) => tokens.push(token),
+                Err(error) => errors.push(error),
+            }
+        }
+
+        (tokens, errors)
+    }
 }
 
-impl<'a> Iterator for LexerIterator<'a> {
+impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -481,8 +448,8 @@ mod test {
     #[test]
     fn tests() {
         let gql_1 = "\"\nhello";
-        let lexer_1 = Lexer::new(gql_1);
-        dbg!(lexer_1.tokens);
-        dbg!(lexer_1.errors);
+        let (tokens, errors) = Lexer::new(gql_1).lex();
+        dbg!(tokens);
+        dbg!(errors);
     }
 }

@@ -1,4 +1,4 @@
-use apollo_parser::{ast, Lexer, LexerIterator};
+use apollo_parser::{ast, Lexer};
 use criterion::*;
 
 fn parse_schema(schema: &str) {
@@ -39,17 +39,7 @@ fn bench_supergraph_lexer(c: &mut Criterion) {
 
     c.bench_function("supergraph_lexer", move |b| {
         b.iter(|| {
-            let _ = Lexer::new(schema);
-        })
-    });
-}
-
-fn bench_supergraph_lexer_streaming(c: &mut Criterion) {
-    let schema = include_str!("../test_data/parser/ok/0032_supergraph.graphql");
-
-    c.bench_function("supergraph_lexer_streaming", move |b| {
-        b.iter(|| {
-            let lexer = LexerIterator::new(schema);
+            let lexer = Lexer::new(schema);
 
             for token_res in lexer {
                 let _ = token_res;
@@ -61,7 +51,6 @@ fn bench_supergraph_lexer_streaming(c: &mut Criterion) {
 criterion_group!(
     benches,
     bench_supergraph_lexer,
-    bench_supergraph_lexer_streaming,
     bench_supergraph_parser
 );
 criterion_main!(benches);

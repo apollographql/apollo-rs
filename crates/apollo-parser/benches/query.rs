@@ -1,4 +1,4 @@
-use apollo_parser::{ast, Lexer, LexerIterator};
+use apollo_parser::{ast, Lexer};
 use criterion::*;
 
 fn parse_query(query: &str) {
@@ -35,17 +35,7 @@ fn bench_query_lexer(c: &mut Criterion) {
 
     c.bench_function("query_lexer", move |b| {
         b.iter(|| {
-            let _ = Lexer::new(query);
-        })
-    });
-}
-
-fn bench_query_lexer_streaming(c: &mut Criterion) {
-    let query = "query ExampleQuery($topProductsFirst: Int) {\n  me { \n    id\n  }\n  topProducts(first:  $topProductsFirst) {\n    name\n    price\n    inStock\n weight\n test test test test test test test test test test test test }\n}";
-
-    c.bench_function("query_lexer_streaming", move |b| {
-        b.iter(|| {
-            let lexer = LexerIterator::new(query);
+            let lexer = Lexer::new(query);
 
             for token_res in lexer {
                 let _ = token_res;
@@ -57,7 +47,6 @@ fn bench_query_lexer_streaming(c: &mut Criterion) {
 criterion_group!(
     benches,
     bench_query_lexer,
-    bench_query_lexer_streaming,
     bench_query_parser
 );
 criterion_main!(benches);

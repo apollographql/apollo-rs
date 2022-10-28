@@ -8,7 +8,7 @@ pub mod ast;
 mod error;
 mod parser;
 
-pub use crate::lexer::{Lexer, LexerIterator};
+pub use crate::lexer::Lexer;
 pub use crate::lexer::{Token, TokenKind};
 pub(crate) use crate::parser::{
     SyntaxElement, SyntaxKind, SyntaxNodeChildren, SyntaxToken, TokenText,

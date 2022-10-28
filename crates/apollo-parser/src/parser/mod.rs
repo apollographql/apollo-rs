@@ -7,7 +7,7 @@ pub(crate) mod grammar;
 
 use std::{cell::RefCell, fmt, rc::Rc};
 
-use crate::{lexer::LexerIterator, Error, Token, TokenKind};
+use crate::{lexer::Lexer, Error, Token, TokenKind};
 
 pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxNode, SyntaxNodeChildren, SyntaxNodePtr, SyntaxToken};
@@ -71,7 +71,7 @@ pub(crate) use token_text::TokenText;
 /// ```
 #[derive(Debug)]
 pub struct Parser<'a> {
-    lexer: LexerIterator<'a>,
+    lexer: Lexer<'a>,
     /// Store one lookahead token so we don't need to reparse things as much.
     current_token: Option<Token>,
     /// The in-progress tree.
@@ -87,7 +87,7 @@ pub struct Parser<'a> {
 impl<'a> Parser<'a> {
     /// Create a new instance of a parser given an input string.
     pub fn new(input: &'a str) -> Self {
-        let lexer = LexerIterator::new(input);
+        let lexer = Lexer::new(input);
 
         Self {
             lexer,
