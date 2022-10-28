@@ -970,14 +970,6 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         let thread1 = std::thread::spawn(move || snapshot.find_object_type_by_name("Query".into()));
         let thread2 =
             std::thread::spawn(move || snapshot2.find_object_type_by_name("Query".into()));
-        // let thread2 = std::thread::spawn(move || {
-        //     let op = receiver
-        //         .recv()
-        //         .expect("Unable to receive from channel")
-        //         .unwrap();
-        //     let fields: Vec<&str> = op.fields_definition().iter().map(|f| f.name()).collect();
-        //     assert_eq!(fields, ["website", "amount"]);
-        // });
 
         thread1.join().expect("sending panicked");
         thread2.join().expect("receiving panicked");
