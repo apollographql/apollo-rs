@@ -378,7 +378,7 @@ fn subtype_map(db: &dyn DocumentDatabase) -> Arc<HashMap<String, HashSet<String>
     let mut map = HashMap::<String, HashSet<String>>::new();
     let mut add = |key, value| map.entry(key).or_default().insert(value);
     for definition in &*db.type_system_definitions() {
-        match &*definition {
+        match definition {
             Definition::ObjectTypeDefinition(def) => {
                 for implements in def.implements_interfaces() {
                     add(implements.interface().to_owned(), def.name().to_owned());
