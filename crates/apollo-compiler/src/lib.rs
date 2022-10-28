@@ -968,10 +968,9 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         let snapshot2 = ctx.snapshot();
 
         let thread1 = std::thread::spawn(move || snapshot.find_object_type_by_name("Query".into()));
-        let thread2 =
-            std::thread::spawn(move || snapshot2.find_object_type_by_name("Query".into()));
+        let thread2 = std::thread::spawn(move || snapshot2.scalars());
 
-        thread1.join().expect("sending panicked");
-        thread2.join().expect("receiving panicked");
+        thread1.join().expect("object_type_by_name panicked");
+        thread2.join().expect("scalars failed");
     }
 }
