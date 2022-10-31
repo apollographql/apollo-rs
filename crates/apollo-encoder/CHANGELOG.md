@@ -17,7 +17,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [0.3.2](https://crates.io/crates/apollo-encoder/0.3.1) - 2022-08-19
+# [0.3.3](https://crates.io/crates/apollo-encoder/0.3.3) - 2022-10-31
+
+## Features
+- **provide TryFrom<parser types> for encoder types - [goto-bus-stop] [pull/329]**
+  Provides `TryFrom` impls for the apollo-encoder AST types.
+
+  The conversion effectively assumes that the apollo-parser AST is valid and
+  complete. Otherwise you get an Err, but not a very useful one, because the
+  TryFrom impl doesn't know anything about its parent (so we can't show source
+  code where the error originated for example).
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/329]: https://github.com/apollographql/apollo-rs/pull/329
+# [0.3.2](https://crates.io/crates/apollo-encoder/0.3.2) - 2022-08-19
 
 ## Fixes
 - **trim double quotes in multilingual description encodings - [lrlna]**
@@ -42,7 +55,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Directive Definition incorrectly had a `Vec<InputValueDefinition>` for internal
   arguments type instead of `ArgumentsDefinition`. This commit aligns this bit to
   the spec and uses `ArgumentsDefinition` as type.
-  
+
   [lrlna]: https://github.com/lrlna
   [pull/211]: https://github.com/apollographql/apollo-rs/pull/211
 
@@ -82,7 +95,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [pull/208]: https://github.com/apollographql/apollo-rs/pull/208
 
 - **all default value setters are renamed to `default_value` - [lrlna], [pull/208]**
-  
+
   Previously used "default" setters represented "default_value". Renaming the
   setters directly to `default_value` aligns with the spec.
 
@@ -97,7 +110,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 - **ArgumentsDefinition input value setter - [lrlna], [pull/207]**
-  
+
   Individual input value definitions can be set with `input_value` setter:
 
   ```rust
@@ -117,7 +130,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Fixes
 
 - **Use a more readable serialisation for input value definitions - [lrlna], [pull/207]**
-  
+
   If any of the input value definitions in a given field definition comes with a
   description, we will multiline all input value definitions. That is to say,
   instead of serializing arguments definition like this:
@@ -140,7 +153,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     ): Type
   }
   ```
-  
+
   This makes it a lot more readable, especially for users with a large number of
   input value definitions with descriptions.
 
