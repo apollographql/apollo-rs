@@ -1105,7 +1105,11 @@ fn description(description: Option<ast::Description>) -> Option<String> {
 
 fn alias(alias: Option<ast::Alias>) -> Option<Arc<Alias>> {
     alias.map(|alias| {
-        let name = alias.name().expect("Alias must have a name").text().to_string();
+        let name = alias
+            .name()
+            .expect("Alias must have a name")
+            .text()
+            .to_string();
         let alias_data = Alias(name);
         Arc::new(alias_data)
     })

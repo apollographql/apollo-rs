@@ -26,7 +26,11 @@ impl From<Description> for String {
 #[cfg(feature = "parser-impl")]
 impl From<apollo_parser::ast::Description> for Description {
     fn from(desc: apollo_parser::ast::Description) -> Self {
-        Description(desc.string_value().map(|s| s.into()).unwrap_or_else(|| StringValue::Line(Default::default())))
+        Description(
+            desc.string_value()
+                .map(|s| s.into())
+                .unwrap_or_else(|| StringValue::Line(Default::default())),
+        )
     }
 }
 
@@ -122,13 +126,12 @@ fn limited_string_desc(u: &mut Unstructured<'_>, max_size: usize) -> Result<Stri
 
 #[cfg(test)]
 mod tests {
-    use crate::description::Description;
 
     #[cfg(feature = "parser-impl")]
     #[test]
     fn convert_description_from_parser() {
-        use apollo_parser::Parser;
         use apollo_parser::ast::Definition;
+        use apollo_parser::Parser;
 
         let schema = r#"
 "Description for the schema"
@@ -140,7 +143,10 @@ schema {}
         if let Definition::SchemaDefinition(def) = document.definitions().next().unwrap() {
             let parser_description = def.description().unwrap();
             let smith_description = Description::from(parser_description);
-            assert_eq!(smith_description, Description::from("Description for the schema".to_string()));
+            assert_eq!(
+                smith_description,
+                Description::from("Description for the schema".to_string())
+            );
         } else {
             unreachable!();
         }

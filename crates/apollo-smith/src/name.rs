@@ -70,7 +70,8 @@ impl<'a> DocumentBuilder<'a> {
     pub fn type_name(&mut self) -> Result<Name> {
         let mut new_name = self.limited_string(30)?;
         if self.list_existing_type_names().any(|n| n.name == new_name) {
-            let _ = write!(new_name,
+            let _ = write!(
+                new_name,
                 "{}",
                 self.object_type_defs.len() + self.enum_type_defs.len() + self.directive_defs.len()
             );

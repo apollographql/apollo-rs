@@ -62,11 +62,7 @@ impl SelectionSet {
         indent_level += 1;
         let indent = "  ".repeat(indent_level);
         for sel in &self.selections {
-            let _ = writeln!(text,
-                "{}{}",
-                indent,
-                sel.format_with_indent(indent_level)
-            );
+            let _ = writeln!(text, "{}{}", indent, sel.format_with_indent(indent_level));
         }
         if indent_level <= 1 {
             text.push_str("}\n");
