@@ -20,7 +20,7 @@ categories = [
 edition = "2021"
 
 [dependencies]
-apollo-parser = { version = "0.2.12", optional = true }
+apollo-parser = { version = "0.3", optional = true }
 thiserror = "1.0.37"
 
 [features]
