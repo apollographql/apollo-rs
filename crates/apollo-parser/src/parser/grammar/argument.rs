@@ -50,7 +50,7 @@ pub(crate) fn arguments_definition(p: &mut Parser) {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast;
+    use crate::ast::{self, AstNode};
 
     use super::*;
 
@@ -72,7 +72,7 @@ type Query {
         for definition in document.definitions() {
             if let ast::Definition::ObjectTypeDefinition(obj_def) = definition {
                 for field in obj_def.fields_definition().unwrap().field_definitions() {
-                    if field.name().unwrap().to_string() == "bestSellers" {
+                    if field.name().unwrap().text() == "bestSellers" {
                         let argument = field
                             .arguments_definition()
                             .unwrap()
@@ -80,15 +80,15 @@ type Query {
                             .into_iter()
                             .next()
                             .unwrap();
-                        assert_eq!(argument.name().unwrap().to_string(), "category");
-                        assert_eq!(argument.ty().unwrap().to_string(), "ProductCategory");
+                        assert_eq!(argument.name().unwrap().text(), "category");
+                        assert_eq!(argument.ty().unwrap().source_string(), "ProductCategory");
                         assert_eq!(
                             argument
                                 .default_value()
                                 .unwrap()
                                 .value()
                                 .unwrap()
-                                .to_string(),
+                                .source_string(),
                             "ALL"
                         );
                     }

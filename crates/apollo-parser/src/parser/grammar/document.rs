@@ -74,7 +74,40 @@ pub(crate) fn is_definition(def: String) -> bool {
 
 #[cfg(test)]
 mod test {
-    use crate::{ast, Parser};
+    use crate::{ast, ast::AstNode, Parser};
+
+    #[test]
+    fn it_returns_the_original_source_string() {
+        let schema = r#"
+type Query {
+  hero: Character
+}
+
+type Character {
+  name: String
+  friends: [Character]
+  homeWorld: Planet
+  species: Species
+}
+
+type Planet {
+  name: String
+  climate: String
+}
+
+type Species {
+  name: String
+  lifespan: Int
+  origin: Planet
+}
+"#;
+
+        let parser = Parser::new(schema);
+        let ast = parser.parse();
+
+        assert_eq!(ast.errors().len(), 0);
+        assert_eq!(ast.document().source_string(), schema);
+    }
 
     #[test]
     fn it_creates_error_for_invalid_definition_and_has_nodes_for_valid_definition() {

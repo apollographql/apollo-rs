@@ -56,7 +56,8 @@ impl From<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
         Self {
             description: enum_def
                 .description()
-                .map(|d| Description::from(d.to_string())),
+                .and_then(|d| d.string_value())
+                .map(|s| Description::from(Into::<String>::into(s))),
             name: enum_def.name().unwrap().into(),
             directives: enum_def
                 .directives()

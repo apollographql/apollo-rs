@@ -222,7 +222,9 @@ impl SyntaxKind {
                 | COLON
         )
     }
-    pub fn is_literal(self) -> bool { matches!(self, INT | FLOAT | STRING) }
+    pub fn is_literal(self) -> bool {
+        matches!(self, INT | FLOAT | STRING)
+    }
     pub fn from_keyword(ident: &str) -> Option<SyntaxKind> {
         let kw = match ident {
             "query" => query_KW,

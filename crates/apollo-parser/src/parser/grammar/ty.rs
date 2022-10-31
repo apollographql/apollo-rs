@@ -177,7 +177,7 @@ pub(crate) fn named_type(p: &mut Parser) {
 
 #[cfg(test)]
 mod test {
-    use crate::{ast, Parser};
+    use crate::{ast, ast::AstNode, Parser};
 
     #[test]
     fn it_parses_nested_wrapped_types_in_op_def_and_returns_matching_stringified_doc() {
@@ -190,7 +190,7 @@ mutation MyMutation($custId: [Int!]!) {
         assert!(ast.errors.is_empty());
 
         let doc = ast.document();
-        assert_eq!(&mutation, &doc.to_string());
+        assert_eq!(&mutation, &doc.source_string());
 
         for definition in doc.definitions() {
             if let ast::Definition::OperationDefinition(op_type) = definition {
@@ -200,7 +200,7 @@ mutation MyMutation($custId: [Int!]!) {
                     .variable_definitions()
                 {
                     if let ast::Type::NamedType(name) = var.ty().unwrap() {
-                        assert_eq!(name.to_string(), "[Int!]!")
+                        assert_eq!(name.source_string(), "[Int!]!")
                     }
                 }
             }
@@ -223,7 +223,7 @@ mutation MyMutation($a: Int $b: [Int] $c: String! $d: [Int!]!
         let ast = parser.parse();
 
         let doc = ast.document();
-        assert_eq!(&mutation, &doc.to_string());
+        assert_eq!(&mutation, &doc.source_string());
     }
 
     #[test]
@@ -242,6 +242,6 @@ mutation MyMutation($a: Int, $b: [Int], $c: String!, $d: [Int!]!,
         let ast = parser.parse();
 
         let doc = ast.document();
-        assert_eq!(&mutation, &doc.to_string());
+        assert_eq!(&mutation, &doc.source_string());
     }
 }

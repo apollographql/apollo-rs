@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 
-use apollo_parser::ast;
+use apollo_parser::ast::{self, AstNode};
 use thiserror::Error;
 
 /// Errors that can occur when converting an apollo-parser AST to an apollo-encoder one.
@@ -29,29 +29,52 @@ impl TryFrom<ast::Value> for crate::Value {
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::Value) -> Result<Self, Self::Error> {
         let encoder_node = match node {
-            ast::Value::Variable(variable) => Self::Variable(variable.name().ok_or(FromError::MissingNode)?.text().to_string()),
+            ast::Value::Variable(variable) => Self::Variable(
+                variable
+                    .name()
+                    .ok_or(FromError::MissingNode)?
+                    .text()
+                    .to_string(),
+            ),
             ast::Value::StringValue(string) => Self::String(string.into()),
-            ast::Value::FloatValue(float) => Self::Float(float.float_token().ok_or(FromError::MissingNode)?.text().parse()?),
-            ast::Value::IntValue(int) => Self::Int(int.int_token().ok_or(FromError::MissingNode)?.text().parse()?),
+            ast::Value::FloatValue(float) => Self::Float(
+                float
+                    .float_token()
+                    .ok_or(FromError::MissingNode)?
+                    .text()
+                    .parse()?,
+            ),
+            ast::Value::IntValue(int) => Self::Int(
+                int.int_token()
+                    .ok_or(FromError::MissingNode)?
+                    .text()
+                    .parse()?,
+            ),
             ast::Value::BooleanValue(boolean) => Self::Boolean(boolean.true_token().is_some()),
             ast::Value::NullValue(_) => Self::Null,
             ast::Value::EnumValue(enum_) => Self::Enum(enum_.text().to_string()),
             ast::Value::ListValue(list) => {
-                let encoder_list = list.values()
+                let encoder_list = list
+                    .values()
                     .map(Self::try_from)
                     .collect::<Result<Vec<_>, FromError>>()?;
                 Self::List(encoder_list)
-            },
+            }
             ast::Value::ObjectValue(object) => {
-                let encoder_object = object.object_fields()
+                let encoder_object = object
+                    .object_fields()
                     .map(|field| {
-                        let name = field.name().ok_or(FromError::MissingNode)?.text().to_string();
+                        let name = field
+                            .name()
+                            .ok_or(FromError::MissingNode)?
+                            .text()
+                            .to_string();
                         let value = field.value().ok_or(FromError::MissingNode)?.try_into()?;
                         Ok((name, value))
                     })
                     .collect::<Result<Vec<_>, FromError>>()?;
                 Self::Object(encoder_object)
-            },
+            }
         };
 
         Ok(encoder_node)
@@ -82,7 +105,11 @@ impl TryFrom<ast::Directive> for crate::Directive {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::Directive) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut directive = Self::new(name);
 
         if let Some(arguments) = node.arguments() {
@@ -105,7 +132,11 @@ impl TryFrom<ast::Argument> for crate::Argument {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::Argument) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let value = node.value().ok_or(FromError::MissingNode)?.try_into()?;
         Ok(crate::Argument::new(name, value))
     }
@@ -122,7 +153,11 @@ impl TryFrom<ast::NamedType> for crate::Type_ {
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::NamedType) -> Result<Self, Self::Error> {
         Ok(Self::NamedType {
-            name: node.name().ok_or(FromError::MissingNode)?.text().to_string(),
+            name: node
+                .name()
+                .ok_or(FromError::MissingNode)?
+                .text()
+                .to_string(),
         })
     }
 }
@@ -153,8 +188,14 @@ impl TryFrom<ast::NonNullType> for crate::Type_ {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::NonNullType) -> Result<Self, Self::Error> {
-        let named_type = node.named_type().ok_or(FromError::MissingNode).and_then(|ty| ty.try_into());
-        let list_type = node.list_type().ok_or(FromError::MissingNode).and_then(|ty| ty.try_into());
+        let named_type = node
+            .named_type()
+            .ok_or(FromError::MissingNode)
+            .and_then(|ty| ty.try_into());
+        let list_type = node
+            .list_type()
+            .ok_or(FromError::MissingNode)
+            .and_then(|ty| ty.try_into());
 
         Ok(Self::NonNull {
             ty: Box::new(named_type.or(list_type)?),
@@ -190,17 +231,31 @@ impl TryFrom<ast::InputValueDefinition> for crate::InputValueDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::InputValueDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let ty = node.ty().ok_or(FromError::MissingNode)?;
         let mut encoder_node = Self::new(name, ty.try_into()?);
 
         if let Some(description) = node.description() {
-            encoder_node.description(description.string_value().ok_or(FromError::MissingNode)?.into());
+            encoder_node.description(
+                description
+                    .string_value()
+                    .ok_or(FromError::MissingNode)?
+                    .into(),
+            );
         }
 
         if let Some(default_value) = node.default_value() {
             // TODO represent this as a Value enum in encoder?
-            encoder_node.default_value(default_value.value().ok_or(FromError::MissingNode)?.to_string());
+            encoder_node.default_value(
+                default_value
+                    .value()
+                    .ok_or(FromError::MissingNode)?
+                    .source_string(),
+            );
         }
 
         if let Some(directives) = node.directives() {
@@ -223,7 +278,8 @@ impl TryFrom<ast::ArgumentsDefinition> for crate::ArgumentsDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::ArgumentsDefinition) -> Result<Self, Self::Error> {
-        let input_values = node.input_value_definitions()
+        let input_values = node
+            .input_value_definitions()
             .map(|input_value| input_value.try_into())
             .collect::<Result<Vec<_>, FromError>>()?;
 
@@ -241,11 +297,15 @@ impl TryFrom<ast::FieldDefinition> for crate::FieldDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::FieldDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let ty = node.ty().ok_or(FromError::MissingNode)?.try_into()?;
         let mut encoder_node = Self::new(name, ty);
 
-        if let Some (arguments_definition) = node.arguments_definition() {
+        if let Some(arguments_definition) = node.arguments_definition() {
             for input_value in arguments_definition.input_value_definitions() {
                 encoder_node.arg(input_value.try_into()?);
             }
@@ -272,7 +332,11 @@ impl TryFrom<ast::TypeCondition> for crate::TypeCondition {
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::TypeCondition) -> Result<Self, Self::Error> {
         let named_type = node.named_type().ok_or(FromError::MissingNode)?;
-        let name = named_type.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = named_type
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         Ok(Self::new(name))
     }
 }
@@ -287,12 +351,20 @@ impl TryFrom<ast::Field> for crate::Field {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::Field) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
 
         let mut encoder_node = Self::new(name);
 
         if let Some(alias) = node.alias() {
-            let alias = alias.name().ok_or(FromError::MissingNode)?.text().to_string();
+            let alias = alias
+                .name()
+                .ok_or(FromError::MissingNode)?
+                .text()
+                .to_string();
             encoder_node.alias(Some(alias));
         }
 
@@ -308,7 +380,10 @@ impl TryFrom<ast::Field> for crate::Field {
             }
         }
 
-        let selection_set = node.selection_set().map(|selection_set| selection_set.try_into()).transpose()?;
+        let selection_set = node
+            .selection_set()
+            .map(|selection_set| selection_set.try_into())
+            .transpose()?;
         encoder_node.selection_set(selection_set);
 
         Ok(encoder_node)
@@ -325,7 +400,8 @@ impl TryFrom<ast::FragmentSpread> for crate::FragmentSpread {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::FragmentSpread) -> Result<Self, Self::Error> {
-        let name = node.fragment_name()
+        let name = node
+            .fragment_name()
             .and_then(|fragment_name| fragment_name.name())
             .ok_or(FromError::MissingNode)?
             .text()
@@ -350,12 +426,14 @@ impl TryFrom<ast::InlineFragment> for crate::InlineFragment {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::InlineFragment) -> Result<Self, Self::Error> {
-        let selection_set = node.selection_set()
+        let selection_set = node
+            .selection_set()
             .ok_or(FromError::MissingNode)?
             .try_into()?;
         let mut encoder_node = Self::new(selection_set);
 
-        let type_condition = node.type_condition()
+        let type_condition = node
+            .type_condition()
             .map(|condition| condition.try_into())
             .transpose()?;
         encoder_node.type_condition(type_condition);
@@ -400,7 +478,8 @@ impl TryFrom<ast::SelectionSet> for crate::SelectionSet {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::SelectionSet) -> Result<Self, Self::Error> {
-        let selections = node.selections()
+        let selections = node
+            .selections()
             .map(|selection| selection.try_into())
             .collect::<Result<Vec<_>, FromError>>()?;
 
@@ -440,7 +519,8 @@ impl TryFrom<ast::VariableDefinition> for crate::VariableDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::VariableDefinition) -> Result<Self, Self::Error> {
-        let name = node.variable()
+        let name = node
+            .variable()
             .ok_or(FromError::MissingNode)?
             .name()
             .ok_or(FromError::MissingNode)?
@@ -474,8 +554,14 @@ impl TryFrom<ast::OperationDefinition> for crate::OperationDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::OperationDefinition) -> Result<Self, Self::Error> {
-        let operation_type = node.operation_type().ok_or(FromError::MissingNode)?.try_into()?;
-        let selection_set = node.selection_set().ok_or(FromError::MissingNode)?.try_into()?;
+        let operation_type = node
+            .operation_type()
+            .ok_or(FromError::MissingNode)?
+            .try_into()?;
+        let selection_set = node
+            .selection_set()
+            .ok_or(FromError::MissingNode)?
+            .try_into()?;
 
         let mut encoder_node = Self::new(operation_type, selection_set);
 
@@ -509,16 +595,19 @@ impl TryFrom<ast::FragmentDefinition> for crate::FragmentDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::FragmentDefinition) -> Result<Self, Self::Error> {
-        let name = node.fragment_name()
+        let name = node
+            .fragment_name()
             .ok_or(FromError::MissingNode)?
             .name()
             .ok_or(FromError::MissingNode)?
             .text()
             .to_string();
-        let type_condition = node.type_condition()
+        let type_condition = node
+            .type_condition()
             .ok_or(FromError::MissingNode)?
             .try_into()?;
-        let selection_set = node.selection_set()
+        let selection_set = node
+            .selection_set()
             .ok_or(FromError::MissingNode)?
             .try_into()?;
 
@@ -543,31 +632,32 @@ impl TryFrom<ast::DirectiveDefinition> for crate::DirectiveDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::DirectiveDefinition) -> Result<Self, Self::Error> {
-        let name = node.name()
+        let name = node
+            .name()
             .ok_or(FromError::MissingNode)?
             .text()
             .to_string();
 
         let mut encoder_node = Self::new(name);
 
-        let description = node.description()
+        let description = node
+            .description()
             .and_then(|description| description.string_value())
             .map(|string| string.into());
         if let Some(description) = description {
             encoder_node.description(description);
         }
 
-        if let Some (arguments_definition) = node.arguments_definition() {
+        if let Some(arguments_definition) = node.arguments_definition() {
             for input_value in arguments_definition.input_value_definitions() {
                 encoder_node.arg(input_value.try_into()?);
             }
         }
 
         if let Some(directive_locations) = node.directive_locations() {
-            let locations = directive_locations.directive_locations()
-                .map(|location| {
-                    location.text().map(|token| token.to_string())
-                });
+            let locations = directive_locations
+                .directive_locations()
+                .map(|location| location.text().map(|token| token.to_string()));
             for location in locations {
                 // TODO(@goto-bus-stop) This actually indicates that a directive location had an
                 // unknown value, not that it was missing
@@ -584,10 +674,14 @@ impl TryFrom<ast::DirectiveDefinition> for crate::DirectiveDefinition {
     }
 }
 
-fn apply_root_operation_type_definitions(encoder_node: &mut crate::SchemaDefinition, type_definitions: impl Iterator<Item = ast::RootOperationTypeDefinition>) -> Result<(), FromError> {
+fn apply_root_operation_type_definitions(
+    encoder_node: &mut crate::SchemaDefinition,
+    type_definitions: impl Iterator<Item = ast::RootOperationTypeDefinition>,
+) -> Result<(), FromError> {
     for root in type_definitions {
         let operation_type = root.operation_type().ok_or(FromError::MissingNode)?;
-        let name = root.named_type()
+        let name = root
+            .named_type()
             .ok_or(FromError::MissingNode)?
             .name()
             .ok_or(FromError::MissingNode)?
@@ -619,7 +713,8 @@ impl TryFrom<ast::SchemaDefinition> for crate::SchemaDefinition {
     fn try_from(node: ast::SchemaDefinition) -> Result<Self, Self::Error> {
         let mut encoder_node = Self::new();
 
-        let description = node.description()
+        let description = node
+            .description()
             .and_then(|description| description.string_value())
             .map(|string| string.into());
         if let Some(description) = description {
@@ -632,7 +727,10 @@ impl TryFrom<ast::SchemaDefinition> for crate::SchemaDefinition {
             }
         }
 
-        apply_root_operation_type_definitions(&mut encoder_node, node.root_operation_type_definitions())?;
+        apply_root_operation_type_definitions(
+            &mut encoder_node,
+            node.root_operation_type_definitions(),
+        )?;
 
         Ok(encoder_node)
     }
@@ -648,10 +746,15 @@ impl TryFrom<ast::ScalarTypeDefinition> for crate::ScalarDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::ScalarTypeDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
-        let description = node.description()
+        let description = node
+            .description()
             .and_then(|description| description.string_value())
             .map(|string| string.into());
         if let Some(description) = description {
@@ -678,10 +781,15 @@ impl TryFrom<ast::ObjectTypeDefinition> for crate::ObjectDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::ObjectTypeDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
-        let description = node.description()
+        let description = node
+            .description()
             .and_then(|description| description.string_value())
             .map(|string| string.into());
         if let Some(description) = description {
@@ -696,7 +804,11 @@ impl TryFrom<ast::ObjectTypeDefinition> for crate::ObjectDefinition {
 
         if let Some(implements_interfaces) = node.implements_interfaces() {
             for implements in implements_interfaces.named_types() {
-                let name = implements.name().ok_or(FromError::MissingNode)?.text().to_string();
+                let name = implements
+                    .name()
+                    .ok_or(FromError::MissingNode)?
+                    .text()
+                    .to_string();
                 encoder_node.interface(name);
             }
         }
@@ -721,10 +833,15 @@ impl TryFrom<ast::InterfaceTypeDefinition> for crate::InterfaceDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::InterfaceTypeDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
-        let description = node.description()
+        let description = node
+            .description()
             .and_then(|description| description.string_value())
             .map(|string| string.into());
         if let Some(description) = description {
@@ -739,7 +856,11 @@ impl TryFrom<ast::InterfaceTypeDefinition> for crate::InterfaceDefinition {
 
         if let Some(implements_interfaces) = node.implements_interfaces() {
             for implements in implements_interfaces.named_types() {
-                let name = implements.name().ok_or(FromError::MissingNode)?.text().to_string();
+                let name = implements
+                    .name()
+                    .ok_or(FromError::MissingNode)?
+                    .text()
+                    .to_string();
                 encoder_node.interface(name);
             }
         }
@@ -764,10 +885,15 @@ impl TryFrom<ast::UnionTypeDefinition> for crate::UnionDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::UnionTypeDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
-        let description = node.description()
+        let description = node
+            .description()
             .and_then(|description| description.string_value())
             .map(|string| string.into());
         if let Some(description) = description {
@@ -782,7 +908,13 @@ impl TryFrom<ast::UnionTypeDefinition> for crate::UnionDefinition {
 
         if let Some(members) = node.union_member_types() {
             for member in members.named_types() {
-                encoder_node.member(member.name().ok_or(FromError::MissingNode)?.text().to_string());
+                encoder_node.member(
+                    member
+                        .name()
+                        .ok_or(FromError::MissingNode)?
+                        .text()
+                        .to_string(),
+                );
             }
         }
 
@@ -800,7 +932,8 @@ impl TryFrom<ast::EnumValueDefinition> for crate::EnumValue {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::EnumValueDefinition) -> Result<Self, Self::Error> {
-        let name = node.enum_value()
+        let name = node
+            .enum_value()
             .ok_or(FromError::MissingNode)?
             .name()
             .ok_or(FromError::MissingNode)?
@@ -808,7 +941,8 @@ impl TryFrom<ast::EnumValueDefinition> for crate::EnumValue {
             .to_string();
         let mut encoder_node = Self::new(name);
 
-        let description = node.description()
+        let description = node
+            .description()
             .and_then(|description| description.string_value())
             .map(|string| string.into());
         if let Some(description) = description {
@@ -835,10 +969,15 @@ impl TryFrom<ast::EnumTypeDefinition> for crate::EnumDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::EnumTypeDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
-        let description = node.description()
+        let description = node
+            .description()
             .and_then(|description| description.string_value())
             .map(|string| string.into());
         if let Some(description) = description {
@@ -871,17 +1010,31 @@ impl TryFrom<ast::InputValueDefinition> for crate::InputField {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::InputValueDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let ty = node.ty().ok_or(FromError::MissingNode)?;
         let mut encoder_node = Self::new(name, ty.try_into()?);
 
         if let Some(description) = node.description() {
-            encoder_node.description(description.string_value().ok_or(FromError::MissingNode)?.into());
+            encoder_node.description(
+                description
+                    .string_value()
+                    .ok_or(FromError::MissingNode)?
+                    .into(),
+            );
         }
 
         if let Some(default_value) = node.default_value() {
             // TODO represent this as a Value enum in encoder?
-            encoder_node.default_value(default_value.value().ok_or(FromError::MissingNode)?.to_string());
+            encoder_node.default_value(
+                default_value
+                    .value()
+                    .ok_or(FromError::MissingNode)?
+                    .source_string(),
+            );
         }
 
         if let Some(directives) = node.directives() {
@@ -904,10 +1057,15 @@ impl TryFrom<ast::InputObjectTypeDefinition> for crate::InputObjectDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::InputObjectTypeDefinition) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
-        let description = node.description()
+        let description = node
+            .description()
             .and_then(|description| description.string_value())
             .map(|string| string.into());
         if let Some(description) = description {
@@ -948,7 +1106,10 @@ impl TryFrom<ast::SchemaExtension> for crate::SchemaDefinition {
             }
         }
 
-        apply_root_operation_type_definitions(&mut encoder_node, node.root_operation_type_definitions())?;
+        apply_root_operation_type_definitions(
+            &mut encoder_node,
+            node.root_operation_type_definitions(),
+        )?;
 
         encoder_node.extend();
 
@@ -966,7 +1127,11 @@ impl TryFrom<ast::ScalarTypeExtension> for crate::ScalarDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::ScalarTypeExtension) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
         if let Some(directives) = node.directives() {
@@ -991,7 +1156,11 @@ impl TryFrom<ast::ObjectTypeExtension> for crate::ObjectDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::ObjectTypeExtension) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
         if let Some(directives) = node.directives() {
@@ -1002,7 +1171,11 @@ impl TryFrom<ast::ObjectTypeExtension> for crate::ObjectDefinition {
 
         if let Some(implements_interfaces) = node.implements_interfaces() {
             for implements in implements_interfaces.named_types() {
-                let name = implements.name().ok_or(FromError::MissingNode)?.text().to_string();
+                let name = implements
+                    .name()
+                    .ok_or(FromError::MissingNode)?
+                    .text()
+                    .to_string();
                 encoder_node.interface(name);
             }
         }
@@ -1029,7 +1202,11 @@ impl TryFrom<ast::InterfaceTypeExtension> for crate::InterfaceDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::InterfaceTypeExtension) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
         if let Some(directives) = node.directives() {
@@ -1040,7 +1217,11 @@ impl TryFrom<ast::InterfaceTypeExtension> for crate::InterfaceDefinition {
 
         if let Some(implements_interfaces) = node.implements_interfaces() {
             for implements in implements_interfaces.named_types() {
-                let name = implements.name().ok_or(FromError::MissingNode)?.text().to_string();
+                let name = implements
+                    .name()
+                    .ok_or(FromError::MissingNode)?
+                    .text()
+                    .to_string();
                 encoder_node.interface(name);
             }
         }
@@ -1067,7 +1248,11 @@ impl TryFrom<ast::UnionTypeExtension> for crate::UnionDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::UnionTypeExtension) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
         if let Some(directives) = node.directives() {
@@ -1078,7 +1263,13 @@ impl TryFrom<ast::UnionTypeExtension> for crate::UnionDefinition {
 
         if let Some(members) = node.union_member_types() {
             for member in members.named_types() {
-                encoder_node.member(member.name().ok_or(FromError::MissingNode)?.text().to_string());
+                encoder_node.member(
+                    member
+                        .name()
+                        .ok_or(FromError::MissingNode)?
+                        .text()
+                        .to_string(),
+                );
             }
         }
 
@@ -1098,7 +1289,11 @@ impl TryFrom<ast::EnumTypeExtension> for crate::EnumDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::EnumTypeExtension) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
         if let Some(directives) = node.directives() {
@@ -1129,7 +1324,11 @@ impl TryFrom<ast::InputObjectTypeExtension> for crate::InputObjectDefinition {
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
     fn try_from(node: ast::InputObjectTypeExtension) -> Result<Self, Self::Error> {
-        let name = node.name().ok_or(FromError::MissingNode)?.text().to_string();
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
         let mut encoder_node = Self::new(name);
 
         if let Some(directives) = node.directives() {
@@ -1164,23 +1363,35 @@ impl TryFrom<ast::Document> for crate::Document {
 
         for definition in node.definitions() {
             match definition {
-                ast::Definition::OperationDefinition(def) => encoder_node.operation(def.try_into()?),
+                ast::Definition::OperationDefinition(def) => {
+                    encoder_node.operation(def.try_into()?)
+                }
                 ast::Definition::FragmentDefinition(def) => encoder_node.fragment(def.try_into()?),
-                ast::Definition::DirectiveDefinition(def) => encoder_node.directive(def.try_into()?),
+                ast::Definition::DirectiveDefinition(def) => {
+                    encoder_node.directive(def.try_into()?)
+                }
                 ast::Definition::SchemaDefinition(def) => encoder_node.schema(def.try_into()?),
                 ast::Definition::ScalarTypeDefinition(def) => encoder_node.scalar(def.try_into()?),
                 ast::Definition::ObjectTypeDefinition(def) => encoder_node.object(def.try_into()?),
-                ast::Definition::InterfaceTypeDefinition(def) => encoder_node.interface(def.try_into()?),
+                ast::Definition::InterfaceTypeDefinition(def) => {
+                    encoder_node.interface(def.try_into()?)
+                }
                 ast::Definition::UnionTypeDefinition(def) => encoder_node.union(def.try_into()?),
                 ast::Definition::EnumTypeDefinition(def) => encoder_node.enum_(def.try_into()?),
-                ast::Definition::InputObjectTypeDefinition(def) => encoder_node.input_object(def.try_into()?),
+                ast::Definition::InputObjectTypeDefinition(def) => {
+                    encoder_node.input_object(def.try_into()?)
+                }
                 ast::Definition::SchemaExtension(ext) => encoder_node.schema(ext.try_into()?),
                 ast::Definition::ScalarTypeExtension(ext) => encoder_node.scalar(ext.try_into()?),
                 ast::Definition::ObjectTypeExtension(ext) => encoder_node.object(ext.try_into()?),
-                ast::Definition::InterfaceTypeExtension(ext) => encoder_node.interface(ext.try_into()?),
+                ast::Definition::InterfaceTypeExtension(ext) => {
+                    encoder_node.interface(ext.try_into()?)
+                }
                 ast::Definition::UnionTypeExtension(ext) => encoder_node.union(ext.try_into()?),
                 ast::Definition::EnumTypeExtension(ext) => encoder_node.enum_(ext.try_into()?),
-                ast::Definition::InputObjectTypeExtension(ext) => encoder_node.input_object(ext.try_into()?),
+                ast::Definition::InputObjectTypeExtension(ext) => {
+                    encoder_node.input_object(ext.try_into()?)
+                }
             }
         }
 
@@ -1190,12 +1401,13 @@ impl TryFrom<ast::Document> for crate::Document {
 
 #[cfg(test)]
 mod tests {
-    use apollo_parser::Parser;
     use crate::Document;
+    use apollo_parser::Parser;
 
     #[test]
     fn operation_definition() {
-        let parser = Parser::new(r#"
+        let parser = Parser::new(
+            r#"
 query HeroForEpisode($ep: Episode!) {
   hero(episode: $ep) {
     name
@@ -1207,12 +1419,15 @@ query HeroForEpisode($ep: Episode!) {
     }
   }
 }
-"#);
+"#,
+        );
         let ast = parser.parse();
         let doc = ast.document();
 
         let encoder = Document::try_from(doc).unwrap();
-        assert_eq!(encoder.to_string(), r#"
+        assert_eq!(
+            encoder.to_string(),
+            r#"
 query HeroForEpisode($ep: Episode!) {
   hero(episode: $ep) {
     name
@@ -1224,39 +1439,49 @@ query HeroForEpisode($ep: Episode!) {
     }
   }
 }
-"#.trim_start());
+"#
+            .trim_start()
+        );
     }
 
     #[test]
     fn fragment_definition() {
-        let parser = Parser::new(r#"
+        let parser = Parser::new(
+            r#"
 fragment FragmentDefinition on VeryRealType {
   id
   title
   text
 }
-"#);
+"#,
+        );
         let ast = parser.parse();
         let doc = ast.document();
 
         let encoder = Document::try_from(doc).unwrap();
-        assert_eq!(encoder.to_string(), r#"
+        assert_eq!(
+            encoder.to_string(),
+            r#"
 fragment FragmentDefinition on VeryRealType {
   id
   title
   text
 }
-"#.trim_start());
+"#
+            .trim_start()
+        );
     }
 
     #[test]
     fn directive_definition() {
-        let parser = Parser::new(r#"
+        let parser = Parser::new(
+            r#"
 directive @withDeprecatedArgs(
   deprecatedArg: String @deprecated(reason: "Use `newArg`")
   newArg: String
 ) on FIELD
-"#);
+"#,
+        );
         let ast = parser.parse();
         let doc = ast.document();
 
@@ -1268,7 +1493,8 @@ directive @withDeprecatedArgs(deprecatedArg: String @deprecated(reason: "Use `ne
 
     #[test]
     fn schema_definition() {
-        let parser = Parser::new(r#"
+        let parser = Parser::new(
+            r#"
 schema {
   query: Query
   subscription: Subscription
@@ -1276,12 +1502,15 @@ schema {
 extend schema {
   mutation: Mutation
 }
-"#);
+"#,
+        );
         let ast = parser.parse();
         let doc = ast.document();
 
         let encoder = Document::try_from(doc).unwrap();
-        assert_eq!(encoder.to_string(), r#"
+        assert_eq!(
+            encoder.to_string(),
+            r#"
 schema {
   query: Query
   subscription: Subscription
@@ -1289,28 +1518,37 @@ schema {
 extend schema {
   mutation: Mutation
 }
-"#.trim_start());
+"#
+            .trim_start()
+        );
     }
 
     #[test]
     fn scalar_definition() {
-        let parser = Parser::new(r#"
+        let parser = Parser::new(
+            r#"
 scalar Date
 extend scalar Date @directive
-"#);
+"#,
+        );
         let ast = parser.parse();
         let doc = ast.document();
 
         let encoder = Document::try_from(doc).unwrap();
-        assert_eq!(encoder.to_string(), r#"
+        assert_eq!(
+            encoder.to_string(),
+            r#"
 scalar Date
 extend scalar Date @directive
-"#.trim_start());
+"#
+            .trim_start()
+        );
     }
 
     #[test]
     fn object_type_definition() {
-        let parser = Parser::new(r#"
+        let parser = Parser::new(
+            r#"
 type User implements X & Y
   @join__owner(graph: USERS)
   @join__type(graph: USERS, key: "email")
@@ -1320,24 +1558,30 @@ type User implements X & Y
   name: String @join__field(graph: USERS)
   userProduct: UserProduct @join__field(graph: USERS)
 }
-"#);
+"#,
+        );
         let ast = parser.parse();
         let doc = ast.document();
 
         let encoder = Document::try_from(doc).unwrap();
-        assert_eq!(encoder.to_string(), r#"
+        assert_eq!(
+            encoder.to_string(),
+            r#"
 type User implements X & Y @join__owner(graph: USERS) @join__type(graph: USERS, key: "email") {
   email: String! @join__field(graph: USERS)
   id: String! @join__field(graph: USERS)
   name: String @join__field(graph: USERS)
   userProduct: UserProduct @join__field(graph: USERS)
 }
-"#.trim_start());
+"#
+            .trim_start()
+        );
     }
 
     #[test]
     fn interface_definition() {
-        let parser = Parser::new(r#"
+        let parser = Parser::new(
+            r#"
 interface X {
   email: String!
 }
@@ -1345,12 +1589,15 @@ interface Y {
   id: ID!
 }
 interface Z implements X & Y @inaccessible {}
-"#);
+"#,
+        );
         let ast = parser.parse();
         let doc = ast.document();
 
         let encoder = Document::try_from(doc).unwrap();
-        assert_eq!(encoder.to_string(), r#"
+        assert_eq!(
+            encoder.to_string(),
+            r#"
 interface X {
   email: String!
 }
@@ -1359,26 +1606,35 @@ interface Y {
 }
 interface Z implements X& Y @inaccessible {
 }
-"#.trim_start());
+"#
+            .trim_start()
+        );
     }
 
     #[test]
     fn union_definition() {
-        let parser = Parser::new(r#"
+        let parser = Parser::new(
+            r#"
 union UnionType = X | Y | Z
-"#);
+"#,
+        );
         let ast = parser.parse();
         let doc = ast.document();
 
         let encoder = Document::try_from(doc).unwrap();
-        assert_eq!(encoder.to_string(), r#"
+        assert_eq!(
+            encoder.to_string(),
+            r#"
 union UnionType = X | Y | Z
-"#.trim_start());
+"#
+            .trim_start()
+        );
     }
 
     #[test]
     fn enum_definition() {
-        let parser = Parser::new(r#"
+        let parser = Parser::new(
+            r#"
 "Documentation for an enum"
 enum EnumType {
   X
@@ -1386,12 +1642,15 @@ enum EnumType {
   Y
   Z @test()
 }
-"#);
+"#,
+        );
         let ast = parser.parse();
         let doc = ast.document();
 
         let encoder = Document::try_from(doc).unwrap();
-        assert_eq!(encoder.to_string(), r#"
+        assert_eq!(
+            encoder.to_string(),
+            r#"
 "Documentation for an enum"
 enum EnumType {
   X
@@ -1399,6 +1658,8 @@ enum EnumType {
   Y
   Z @test
 }
-"#.trim_start());
+"#
+            .trim_start()
+        );
     }
 }

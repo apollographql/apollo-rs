@@ -209,11 +209,7 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let err = Error::with_loc(
-            format!("expected {:?}, got {}", kind, data),
-            data,
-            index,
-        );
+        let err = Error::with_loc(format!("expected {:?}, got {}", kind, data), data, index);
 
         self.push_err(err);
     }

@@ -11,6 +11,8 @@ mod enum_def;
 mod enum_value;
 mod field;
 mod fragment;
+#[cfg(feature = "apollo-parser")]
+mod from_parser;
 mod input_field;
 mod input_object_def;
 mod input_value;
@@ -25,8 +27,6 @@ mod ty;
 mod union_def;
 mod value;
 mod variable;
-#[cfg(feature = "apollo-parser")]
-mod from_parser;
 
 pub use argument::Argument;
 pub use argument::ArgumentsDefinition;
