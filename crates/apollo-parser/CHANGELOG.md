@@ -17,6 +17,68 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.3.0](https://crates.io/crates/apollo-parser/0.2.12) - 2022-10-31 💀
+## BREAKING
+- **remove the impl Display for generated nodes - [goto-bus-stop], [pull/330]**
+
+  The `Display` impls for generated nodes returned the source text for that
+  node. That's not a super common operation but it was very easy to access. It's
+  also a very different operation from eg. `let content: String =
+  node.string_value().into()` which returns the *content* of a string:
+  `node.string_value().to_string()` returned the string as it was written in the
+  source code, quotes and escapes and all.
+
+  Now `.to_string()` is replaced by a `.source_string()` method. It allocates a
+  new String (just like `.to_string()` did). A syntax node can represent
+  multiple slices (I think to support different structures like Ropes as
+  input?), so slicing the original source isn't actually possible.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/330]: https://github.com/apollographql/apollo-rs/pull/330
+
+## Fixes
+- **handle unexpected tokens in top-level document parsing - [JrSchild], [pull/324]**
+  Unexpected tokens directly inside a document would break the loop in the
+  parser, for example:
+
+  ```graphql
+  @
+  {
+    name
+  }}
+  ```
+
+  This resulted in the rest of the parsing to be skipped. An error is created
+  here instead.
+
+  [JrSchild]: https://github.com/JrSchild
+  [pull/324]: https://github.com/apollographql/apollo-rs/pull/324
+
+## Maintenance
+- **reduce token copying - [goto-bus-stop], [pull/323]**
+
+
+  * Reduce token copying
+
+  Since the original lexer results are not needed anymore after this step,
+  we can take ownership of the tokens and errors vectors and reverse them
+  in-place without making a copy. Big schemas can have 100K+ tokens so
+  it's actually quite a lot of work to copy them.
+
+  * Reduce double-clones of tokens in the parser
+
+  Some of these clones were not necessary. In particular the `.expect`
+  method cloned the token unconditionally (including the string inside)
+  and then cloned the string again immediately afterwards. This removes
+  the first clone by reordering the `current.index()` call to satisfy the
+  borrow checker.
+
+  The `.data().to_string()` clone is only used in the error case, but
+  avoiding that will require more work.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/323]: https://github.com/apollographql/apollo-rs/pull/323
+
 # [0.2.12](https://crates.io/crates/apollo-parser/0.2.12) - 2022-09-30
 ## Fixes
 - **unterminated string values with line terminators and unicode- [lrlna], [pull/320] fixes [issue/318]**
