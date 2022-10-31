@@ -46,7 +46,7 @@ impl<'a> Lexer<'a> {
     /// for token in lexer {
     ///     match token {
     ///         Ok(token) => tokens.push(token),
-    ///         Err(error) => panic!("{}", error),
+    ///         Err(error) => panic!("{:?}", error),
     ///     }
     /// }
     /// ```
