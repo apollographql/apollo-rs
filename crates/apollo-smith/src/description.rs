@@ -130,6 +130,7 @@ mod tests {
     #[cfg(feature = "parser-impl")]
     #[test]
     fn convert_description_from_parser() {
+        use crate::description::Description;
         use apollo_parser::ast::Definition;
         use apollo_parser::Parser;
 
