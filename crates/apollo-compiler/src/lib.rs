@@ -6,6 +6,7 @@ pub mod diagnostics;
 mod tests;
 pub mod validation;
 
+use salsa::ParallelDatabase;
 use validation::ValidationDatabase;
 
 pub use database::{hir, AstDatabase, DocumentDatabase, HirDatabase, InputDatabase, RootDatabase};
@@ -70,8 +71,8 @@ impl ApolloCompiler {
     }
 
     /// Get a snapshot of the current database.
-    pub fn snapshot(&self) -> salsa::Storage<RootDatabase> {
-        self.db.storage.snapshot()
+    pub fn snapshot(&self) -> salsa::Snapshot<RootDatabase> {
+        self.db.snapshot()
     }
 
     /// Validate your GraphQL input. Returns Diagnostics that you can pretty-print.
@@ -967,22 +968,13 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         assert!(diagnostics.is_empty());
 
-        let (sender, receiver) = std::sync::mpsc::channel();
-        let thread1 = std::thread::spawn(move || {
-            sender
-                .send(ctx.db.find_object_type_by_name("Query".into()))
-                .expect("Unable to send on channel");
-        });
-        let thread2 = std::thread::spawn(move || {
-            let op = receiver
-                .recv()
-                .expect("Unable to receive from channel")
-                .unwrap();
-            let fields: Vec<&str> = op.fields_definition().iter().map(|f| f.name()).collect();
-            assert_eq!(fields, ["website", "amount"]);
-        });
+        let snapshot = ctx.snapshot();
+        let snapshot2 = ctx.snapshot();
 
-        thread1.join().expect("sending panicked");
-        thread2.join().expect("receiving panicked");
+        let thread1 = std::thread::spawn(move || snapshot.find_object_type_by_name("Query".into()));
+        let thread2 = std::thread::spawn(move || snapshot2.scalars());
+
+        thread1.join().expect("object_type_by_name panicked");
+        thread2.join().expect("scalars failed");
     }
 }
