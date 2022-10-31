@@ -44,9 +44,5 @@ fn bench_query_lexer(c: &mut Criterion) {
     });
 }
 
-criterion_group!(
-    benches,
-    bench_query_lexer,
-    bench_query_parser
-);
+criterion_group!(benches, bench_query_lexer, bench_query_parser);
 criterion_main!(benches);

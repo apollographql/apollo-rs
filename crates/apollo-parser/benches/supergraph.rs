@@ -48,9 +48,5 @@ fn bench_supergraph_lexer(c: &mut Criterion) {
     });
 }
 
-criterion_group!(
-    benches,
-    bench_supergraph_lexer,
-    bench_supergraph_parser
-);
+criterion_group!(benches, bench_supergraph_lexer, bench_supergraph_parser);
 criterion_main!(benches);

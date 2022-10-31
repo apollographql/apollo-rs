@@ -64,7 +64,8 @@ fn assert_errors_are_absent(errors: &[Error], path: &Path) {
     if errors.len() > 0 {
         println!(
             "errors: {}",
-            errors.iter()
+            errors
+                .iter()
                 .map(|e| e.message())
                 .collect::<Vec<&str>>()
                 .join("\n")

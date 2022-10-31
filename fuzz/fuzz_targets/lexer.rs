@@ -15,7 +15,7 @@ fuzz_target!(|data: &[u8]| {
 
     let lexer = panic::catch_unwind(|| Lexer::new(&doc_generated).lex());
 
-    let (tokens, errors) = match lexer {
+    let (_tokens, errors) = match lexer {
         Err(err) => {
             panic!("error {:?}", err);
         }
@@ -27,7 +27,7 @@ fuzz_target!(|data: &[u8]| {
 
     // early return if the lexer detected an error
     let mut should_panic = false;
-    if errors.len() > 0 {
+    if !errors.is_empty() {
         should_panic = true;
         let errors = errors
             .iter()

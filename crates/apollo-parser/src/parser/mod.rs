@@ -250,7 +250,8 @@ impl<'a> Parser<'a> {
             return token;
         }
 
-        self.next_token().expect("Could not pop a token from the lexer")
+        self.next_token()
+            .expect("Could not pop a token from the lexer")
     }
 
     /// Insert a token into the AST.
