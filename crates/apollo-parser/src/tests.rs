@@ -54,14 +54,14 @@ fn parser_tests() {
 
 fn assert_errors_are_present(errors: &[Error], path: &Path) {
     assert!(
-        errors.len() != 0,
+        !errors.is_empty(),
         "There should be errors in the file {:?}",
         path.display()
     );
 }
 
 fn assert_errors_are_absent(errors: &[Error], path: &Path) {
-    if errors.len() > 0 {
+    if !errors.is_empty() {
         println!(
             "errors: {}",
             errors
