@@ -70,6 +70,9 @@ jobs:
       - run:
           name: Run cargo clippy
           command: cargo clippy --all-targets --all-features -- -D warnings && cargo clippy --benches
+      - run:
+          name: Run cargo fmt check
+          command: rustup component add rustfmt && cargo fmt --all -- --check
 
   test:
     parameters:
