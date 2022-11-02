@@ -87,7 +87,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [pull/328]: https://github.com/apollographql/apollo-rs/pull/328
   [examples]: ./examples/extend_db.rs
 
-- **validate argument name uniqueness - [goto_bus_stop], [pull/317]**
+- **validate argument name uniqueness - [goto-bus-stop], [pull/317]**
 
   It's an error to declare or provide multiple arguments by the same name, eg:
 
@@ -108,7 +108,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   This adds `UniqueArgument` diagnostics and checks for argument duplications in:
   field definitions, fields, directives, interfaces and directive definitions.
 
-  [goto_bus_stop]: https://github.com/goto_bus_stop
+  [goto-bus-stop]: https://github.com/goto-bus-stop
   [pull/317]: https://github.com/apollographql/apollo-rs/pull/317
 
 - **getter for directives in HIR FragmentSpread - [allancalix], [pull/315]**
@@ -185,9 +185,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [pull/289]: https://github.com/apollographql/apollo-rs/pull/289
 
 ## Fixes
-- **update parser version - [goto_bus_stop], [pull/331]**
+- **update parser version - [goto-bus-stop], [pull/331]**
 
-  [goto_bus_stop]: https://github.com/goto_bus_stop
+  [goto-bus-stop]: https://github.com/goto-bus-stop
   [pull/331]: https://github.com/apollographql/apollo-rs/pull/331
 
 - **unused variables return an error diagnostic - [lrlna], [pull/314]**
