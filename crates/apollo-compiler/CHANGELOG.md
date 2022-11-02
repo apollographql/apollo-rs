@@ -20,6 +20,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 # [0.3.0](https://crates.io/crates/apollo-compiler/0.3.0) - 2022-11-02
 ## Breaking
 - **compiler.parse is renamed to compiler.ast - [lrlna], [pull/290]**
+
   `compiler.ast()` returns the `SyntaxTree` produced by the parser and is much
   clearer method than `compiler.parse()`.
 
@@ -27,6 +28,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [pull/290]: https://github.com/apollographql/apollo-rs/pull/290
 
 - **selection.ty(db) now expects a `db` parameter - [lrlna], [pull/290]**
+
   As byproduct of separating compiler's query_groups into individual components.
   Selection's type can now be accessed like so:
 
@@ -53,6 +55,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 - **add subtype_map and is_subtype queries - [lrlna]/[SimonSapin], [pull/333]**
+
   This allows users to check whether a particular type is a subtype of another
   type. For example, in a UnionDefinition such as `union SearchResult = Photo |
   Person`, `Person` is a suptype of `SearchResult`. In an InterfaceDefinition such
@@ -64,6 +67,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [pull/333]: https://github.com/apollographql/apollo-rs/pull/333
 
 - **pub compiler storage - allow database composition - [lrlna], [pull/328]**
+
   This allows for internal query_groups to be exported, and allows users to
   compose various databases from compiler's existing dbs and their queries.
 
