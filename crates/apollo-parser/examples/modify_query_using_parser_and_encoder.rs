@@ -1,4 +1,4 @@
-use apollo_encoder::{self, Document, Field, OperationDefinition, Selection, SelectionSet};
+use apollo_encoder;
 use apollo_parser::{
     ast::{self, AstNode},
     Parser,
@@ -6,7 +6,7 @@ use apollo_parser::{
 
 use anyhow::Result;
 
-fn merge_queries() -> Result<Document> {
+fn merge_queries() -> Result<apollo_encoder::Document> {
     let query = r"#
     query LaunchSite {
       launches {
@@ -34,14 +34,14 @@ fn merge_queries() -> Result<Document> {
         // We want to combine all of our operations into a single one.
         if let ast::Definition::OperationDefinition(op) = def {
             let sel_set: ast::SelectionSet = op.selection_set().unwrap();
-            let selection_set: SelectionSet = sel_set.try_into()?;
+            let selection_set: apollo_encoder::SelectionSet = sel_set.try_into()?;
         }
     }
 
     Ok(new_query)
 }
 
-fn omitted_fields() -> Result<Document> {
+fn omitted_fields() -> Result<apollo_encoder::Document> {
     let query = r"#
     query Products{
       isbn @omitted
@@ -63,7 +63,7 @@ fn omitted_fields() -> Result<Document> {
     for def in doc.definitions() {
         // We want to combine all of our operations into a single one.
         if let ast::Definition::OperationDefinition(op) = def {
-            let selection_set = SelectionSet::new();
+            let selection_set = apollo_encoder::SelectionSet::new();
             for selection in op.selection_set().unwrap().selections() {
                 if let ast::Selection::Field(field) = selection {
                     let incl = field
@@ -72,13 +72,17 @@ fn omitted_fields() -> Result<Document> {
                         .directives()
                         .into_iter()
                         .filter(|d| d.name().unwrap().source_string() != "omitted");
-                    incl.for_each(|f| selection_set.selection(Selection::Field(field.try_into()?)));
+                    incl.for_each(|f| {
+                        selection_set.selection(apollo_encoder::Selection::Field(field.try_into()?))
+                    });
                 } else {
                     selection_set.selection(selection.try_into()?)
                 }
             }
-            let op_def =
-                OperationDefinition::new(op.operation_type().unwrap().try_into()?, selection_set);
+            let op_def = apollo_encoder::OperationDefinition::new(
+                op.operation_type().unwrap().try_into()?,
+                selection_set,
+            );
         }
     }
 
