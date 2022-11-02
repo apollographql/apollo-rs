@@ -30,13 +30,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   As byproduct of separating compiler's query_groups into individual components.
   Selection's type can now be accessed like so:
 
-```rust
-let ctx = ApolloCompiler::new(input);
-let top_product_fields: Vec<String> = top_products
-  .iter()
-  .filter_map(|field| Some(field.ty(&ctx.db)?.name()))
-  .collect();
-```
+    ```rust
+    let ctx = ApolloCompiler::new(input);
+    let top_product_fields: Vec<String> = top_products
+      .iter()
+      .filter_map(|field| Some(field.ty(&ctx.db)?.name()))
+      .collect();
+    ```
 
   [lrlna]: https://github.com/lrlna
   [pull/290]: https://github.com/apollographql/apollo-rs/pull/290
@@ -68,14 +68,14 @@ let top_product_fields: Vec<String> = top_products
   compose various databases from compiler's existing dbs and their queries.
 
   This is how you'd create a database with storage from apollo-compiler:
-```rust
-use apollo_compiler::{database::{AstStorage, DocumentStorage}};
+    ```rust
+    use apollo_compiler::{database::{AstStorage, DocumentStorage}};
 
-#[salsa::database(AstStorage, DoumentStorage)]
-pub struct AnotherDatabase {
-    pub storage: salsa::Storage<AnotherDatabase>,
-}
-```
+    #[salsa::database(AstStorage, DoumentStorage)]
+    pub struct AnotherDatabase {
+        pub storage: salsa::Storage<AnotherDatabase>,
+    }
+    ```
 
   You can also see a more detailed linting example in [examples] dir.
 
@@ -87,19 +87,19 @@ pub struct AnotherDatabase {
 
   It's an error to declare or provide multiple arguments by the same name, eg:
 
-```graphql
-type Query {
-  things(offset: Int!, offset: Int!): [Thing]
-  # ERR: duplicate argument definition: offset
-}
-```
+    ```graphql
+    type Query {
+      things(offset: Int!, offset: Int!): [Thing]
+      # ERR: duplicate argument definition: offset
+    }
+    ```
 
-```graphql
-query GetThings {
-  things(offset: 10, offset: 20) { id }
-  # ERR: duplicate argument values: offset
-}
-```
+    ```graphql
+    query GetThings {
+      things(offset: 10, offset: 20) { id }
+      # ERR: duplicate argument values: offset
+    }
+    ```
 
   This adds `UniqueArgument` diagnostics and checks for argument duplications in:
   field definitions, fields, directives, interfaces and directive definitions.
@@ -129,33 +129,33 @@ query GetThings {
   us to create snapshots that can allow users to query the database from
   multiple threads. For example:
 
-```rust
-let input = r#"
-type Query {
-  website: URL,
-  amount: Int
-}
+    ```rust
+    let input = r#"
+    type Query {
+      website: URL,
+      amount: Int
+    }
 
-scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
-"#;
+    scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+    "#;
 
-let ctx = ApolloCompiler::new(input);
-let diagnostics = ctx.validate();
-for diagnostic in &diagnostics {
-    println!("{}", diagnostic);
-}
+    let ctx = ApolloCompiler::new(input);
+    let diagnostics = ctx.validate();
+    for diagnostic in &diagnostics {
+        println!("{}", diagnostic);
+    }
 
-assert!(diagnostics.is_empty());
+    assert!(diagnostics.is_empty());
 
-let snapshot = ctx.snapshot();
-let snapshot2 = ctx.snapshot();
+    let snapshot = ctx.snapshot();
+    let snapshot2 = ctx.snapshot();
 
-let thread1 = std::thread::spawn(move || snapshot.find_object_type_by_name("Query".into()));
-let thread2 = std::thread::spawn(move || snapshot2.scalars());
+    let thread1 = std::thread::spawn(move || snapshot.find_object_type_by_name("Query".into()));
+    let thread2 = std::thread::spawn(move || snapshot2.scalars());
 
-thread1.join().expect("object_type_by_name panicked");
-thread2.join().expect("scalars failed");
-```
+    thread1.join().expect("object_type_by_name panicked");
+    thread2.join().expect("scalars failed");
+    ```
 
   [lrlna]: https://github.com/lrlna
   [pull/295]: https://github.com/apollographql/apollo-rs/pull/295
@@ -165,18 +165,18 @@ thread2.join().expect("scalars failed");
 
   Expose getters for descriptions that can be accessed for any definitions that
   support them. For example:
-```rust
-let input = r#"
-"Books in a given libary"
-type Book {
-  id: ID!
-}
-"#;
+    ```rust
+    let input = r#"
+    "Books in a given libary"
+    type Book {
+      id: ID!
+    }
+    "#;
 
-let ctx = ApolloCompiler::new(input);
+    let ctx = ApolloCompiler::new(input);
 
-let desc = ctx.db.find_object_type_by_name("Book".to_string()).unwrap().description();
-```
+    let desc = ctx.db.find_object_type_by_name("Book".to_string()).unwrap().description();
+    ```
   [aschaeffer]: https://github.com/aschaeffer
   [pull/289]: https://github.com/apollographql/apollo-rs/pull/289
 
@@ -217,8 +217,6 @@ let desc = ctx.db.find_object_type_by_name("Book".to_string()).unwrap().descript
   [allancalix]: https://github.com/allancalix
   [pull/287]: https://github.com/apollographql/apollo-rs/pull/287
   [issue/288]: https://github.com/apollographql/apollo-rs/issues/288
-
-## Documentation
 
 # [0.2.0](https://crates.io/crates/apollo-compiler/0.2.0) - 2022-08-16
 
