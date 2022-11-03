@@ -17,6 +17,36 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+
+# [x.x.x] (unreleased) - 2021-mm-dd
+
+## Features
+
+- **extend `ast::*Value` node conversions - [SimonSapin], [pull/344]**
+
+  These node types implement conversion to standard types, extracting their value:
+
+  - `StringValue` → `String`
+  - `IntValue` → `i32`
+  - `FloatValue` → `f64`
+  - `BoolValue` → `bool`
+
+  These conversions are now also available:
+
+  - Through the `From` trait, not just the `Into` trait
+  - With borrowed nodes, not just owned
+
+  Example:
+
+  ```rust
+  let node: &apollo_parser::ast::StringValue = /* something */;
+  let value: String = node.clone().into(); // before
+  let value = String::from(node); // now also possible
+  ```
+
+  [simonsapin]: https://github.com/SimonSapin
+  [pull/344]: https://github.com/apollographql/apollo-rs/pull/344
+
 # [0.3.0](https://crates.io/crates/apollo-parser/0.2.12) - 2022-10-31 💀
 ## BREAKING
 - **remove the impl Display for generated nodes - [goto-bus-stop], [pull/330]**
