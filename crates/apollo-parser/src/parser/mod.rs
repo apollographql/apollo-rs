@@ -228,7 +228,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// gets the next token from the lexer
+    /// Gets the next token from the lexer.
     fn next_token(&mut self) -> Option<Token> {
         for res in &mut self.lexer {
             match res {
