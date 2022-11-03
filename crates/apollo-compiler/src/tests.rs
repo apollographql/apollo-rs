@@ -97,7 +97,7 @@ fn collect_graphql_files(root_dir: &Path, paths: &[&str]) -> Vec<(PathBuf, Strin
 /// Collects paths to all `.graphql` files from `dir` in a sorted `Vec<PathBuf>`.
 fn graphql_files_in_dir(dir: &Path) -> Vec<PathBuf> {
     let mut acc = Vec::new();
-    for file in fs::read_dir(&dir).unwrap() {
+    for file in fs::read_dir(dir).unwrap() {
         let file = file.unwrap();
         let path = file.path();
         if path.extension().unwrap_or_default() == "graphql" {
