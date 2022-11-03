@@ -2,7 +2,7 @@ mod cursor;
 mod token;
 mod token_kind;
 
-use crate::{lexer::cursor::Cursor, Error};
+use crate::{lexer::cursor::Cursor, Error, LimitTracker};
 
 pub use token::Token;
 pub use token_kind::TokenKind;
@@ -30,6 +30,7 @@ pub struct Lexer<'a> {
     input: &'a str,
     index: usize,
     finished: bool,
+    limit: LimitTracker,
 }
 
 impl<'a> Lexer<'a> {
@@ -55,7 +56,14 @@ impl<'a> Lexer<'a> {
             input,
             index: 0,
             finished: false,
+            // An arbitrary default limit that fits most documents without risking memory exhaustion.
+            limit: LimitTracker::new(15_000),
         }
+    }
+
+    pub fn with_limit(mut self, limit: usize) -> Self {
+        self.limit = LimitTracker::new(limit);
+        self
     }
 
     /// Lex the full source text, consuming the lexer.
@@ -87,6 +95,15 @@ impl<'a> Iterator for Lexer<'a> {
 
             self.finished = true;
             return Some(Ok(eof));
+        }
+
+        self.limit.consume();
+        if self.limit.limited() {
+            self.finished = true;
+            return Some(Err(Error::limit(
+                "token limit reached, aborting lexing",
+                self.index,
+            )));
         }
 
         let mut c = Cursor::new(self.input);
@@ -190,7 +207,7 @@ impl Cursor<'_> {
                 }
 
                 if let Some(mut err) = self.err() {
-                    err.data = buf;
+                    err.set_data(buf);
                     return Err(err);
                 }
 
@@ -268,7 +285,7 @@ impl Cursor<'_> {
         }
 
         if let Some(mut err) = self.err() {
-            err.data = buf;
+            err.set_data(buf);
             return Err(err);
         }
 
@@ -377,7 +394,7 @@ impl Cursor<'_> {
         }
 
         if let Some(mut err) = self.err() {
-            err.data = buf;
+            err.set_data(buf);
             return Err(err);
         }
 
@@ -446,10 +463,21 @@ mod test {
     use super::*;
 
     #[test]
-    fn tests() {
+    fn unterminated_string() {
         let gql_1 = "\"\nhello";
         let (tokens, errors) = Lexer::new(gql_1).lex();
         dbg!(tokens);
         dbg!(errors);
+    }
+
+    #[test]
+    fn token_limit() {
+        let lexer = Lexer::new("type Query { a a a a a a a a a }").with_limit(10);
+        let (tokens, errors) = lexer.lex();
+        assert_eq!(tokens.len(), 10);
+        assert_eq!(
+            errors,
+            &[Error::limit("token limit reached, aborting lexing", 17)]
+        );
     }
 }

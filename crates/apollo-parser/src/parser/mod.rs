@@ -107,6 +107,15 @@ impl<'a> Parser<'a> {
         parser
     }
 
+    /// Configure the limit on the number of tokens to parse. If an input document
+    /// is too big, parsing will be aborted.
+    ///
+    /// The default limit is 15 000.
+    pub fn with_token_limit(mut self, token_limit: usize) -> Self {
+        self.lexer = self.lexer.with_limit(token_limit);
+        self
+    }
+
     /// Parse the current tokens.
     pub fn parse(mut self) -> SyntaxTree {
         grammar::document::document(&mut self);
@@ -170,7 +179,7 @@ impl<'a> Parser<'a> {
     pub(crate) fn limit_err<S: Into<String>>(&mut self, message: S) {
         let current = self.current();
         // this needs to be the computed location
-        let err = Error::with_loc(message, current.data().to_string(), current.index());
+        let err = Error::limit(message, current.index());
         self.push_err(err);
         self.accept_errors = false;
     }
@@ -232,8 +241,11 @@ impl<'a> Parser<'a> {
     fn next_token(&mut self) -> Option<Token> {
         for res in &mut self.lexer {
             match res {
-                Err(e) => {
-                    self.errors.push(e);
+                Err(err) => {
+                    if err.is_limit() {
+                        self.accept_errors = false;
+                    }
+                    self.errors.push(err);
                 }
                 Ok(token) => {
                     return Some(token);

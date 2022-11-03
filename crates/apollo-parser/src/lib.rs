@@ -6,8 +6,8 @@ mod tests;
 
 pub mod ast;
 mod error;
-mod parser;
 mod limit;
+mod parser;
 
 pub use crate::lexer::Lexer;
 pub use crate::lexer::{Token, TokenKind};
@@ -16,5 +16,5 @@ pub(crate) use crate::parser::{
 };
 
 pub use crate::error::Error;
-pub use crate::parser::{Parser, SyntaxNode, SyntaxTree};
 pub use crate::limit::LimitTracker;
+pub use crate::parser::{Parser, SyntaxNode, SyntaxTree};
