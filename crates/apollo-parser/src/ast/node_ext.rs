@@ -79,6 +79,12 @@ impl ast::DirectiveLocation {
 
 impl From<ast::StringValue> for String {
     fn from(val: ast::StringValue) -> Self {
+        Self::from(&val)
+    }
+}
+
+impl From<&'_ ast::StringValue> for String {
+    fn from(val: &'_ ast::StringValue) -> Self {
         let text = text_of_first_token(val.syntax());
         text.trim_start_matches('"')
             .trim_end_matches('"')
@@ -88,6 +94,12 @@ impl From<ast::StringValue> for String {
 
 impl From<ast::IntValue> for i32 {
     fn from(val: ast::IntValue) -> Self {
+        Self::from(&val)
+    }
+}
+
+impl From<&'_ ast::IntValue> for i32 {
+    fn from(val: &'_ ast::IntValue) -> Self {
         let text = text_of_first_token(val.syntax());
         text.parse().expect("Cannot parse IntValue")
     }
@@ -95,6 +107,12 @@ impl From<ast::IntValue> for i32 {
 
 impl From<ast::FloatValue> for f64 {
     fn from(val: ast::FloatValue) -> Self {
+        Self::from(&val)
+    }
+}
+
+impl From<&'_ ast::FloatValue> for f64 {
+    fn from(val: &'_ ast::FloatValue) -> Self {
         let text = text_of_first_token(val.syntax());
         text.parse().expect("Cannot parse FloatValue")
     }
@@ -102,6 +120,12 @@ impl From<ast::FloatValue> for f64 {
 
 impl From<ast::BooleanValue> for bool {
     fn from(val: ast::BooleanValue) -> Self {
+        Self::from(&val)
+    }
+}
+
+impl From<&'_ ast::BooleanValue> for bool {
+    fn from(val: &'_ ast::BooleanValue) -> Self {
         let text = text_of_first_token(val.syntax());
         text.parse().expect("Cannot parse BooleanValue")
     }
