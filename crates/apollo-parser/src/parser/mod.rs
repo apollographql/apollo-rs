@@ -187,8 +187,12 @@ impl<'a> Parser<'a> {
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err(&mut self, message: &str) {
         let current = self.current();
-        // this needs to be the computed location
-        let err = Error::with_loc(message, current.data().to_string(), current.index());
+        let err = if current.kind == TokenKind::Eof {
+            Error::eof(message, current.index())
+        } else {
+            // this needs to be the computed location
+            Error::with_loc(message, current.data().to_string(), current.index())
+        };
         self.push_err(err);
     }
 
@@ -198,8 +202,12 @@ impl<'a> Parser<'a> {
         // we usually bump ignored after we pop a token, so make sure we also do
         // this when we create an error and pop.
         self.bump_ignored();
-        // this needs to be the computed location
-        let err = Error::with_loc(message, current.data().to_string(), current.index());
+        let err = if current.kind == TokenKind::Eof {
+            Error::eof(message, current.index())
+        } else {
+            // this needs to be the computed location
+            Error::with_loc(message, current.data().to_string(), current.index())
+        };
         self.push_err(err);
     }
 
@@ -207,6 +215,7 @@ impl<'a> Parser<'a> {
     /// otherwise.
     pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
         let current = self.current();
+        let is_eof = current.kind == TokenKind::Eof;
         // TODO(@goto-bus-stop) this allocation is only required if we have an
         // error, but has to be done eagerly here as the &str reference gets
         // invalidated by `self.at()`. Can we avoid that?
@@ -218,7 +227,12 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let err = Error::with_loc(format!("expected {:?}, got {}", kind, data), data, index);
+        let message = format!("expected {:?}, got {}", kind, data);
+        let err = if is_eof {
+            Error::eof(message, index)
+        } else {
+            Error::with_loc(message, data, index)
+        };
 
         self.push_err(err);
     }

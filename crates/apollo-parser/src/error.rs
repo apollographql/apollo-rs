@@ -36,6 +36,7 @@ use std::fmt;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub(crate) enum ErrorData {
+    Eof,
     LimitExceeded,
     Text(String),
 }
@@ -43,7 +44,7 @@ pub(crate) enum ErrorData {
 impl ErrorData {
     pub fn len(&self) -> usize {
         match self {
-            Self::LimitExceeded => 0,
+            Self::Eof | Self::LimitExceeded => 0,
             Self::Text(text) => text.len(),
         }
     }
@@ -52,6 +53,7 @@ impl ErrorData {
 impl fmt::Display for ErrorData {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Eof => write!(f, "EOF"),
             Self::LimitExceeded => Ok(()),
             Self::Text(text) => write!(f, "{}", text),
         }
@@ -93,6 +95,14 @@ impl Error {
         }
     }
 
+    pub fn eof<S: Into<String>>(message: S, index: usize) -> Self {
+        Self {
+            message: message.into(),
+            data: ErrorData::Eof,
+            index,
+        }
+    }
+
     /// Get a reference to the error's data. This is usually the token that
     /// `apollo-parser` has found to be lexically or syntactically incorrect.
     pub fn data(&self) -> &str {
@@ -104,6 +114,10 @@ impl Error {
 
     pub fn is_limit(&self) -> bool {
         matches!(&self.data, ErrorData::LimitExceeded)
+    }
+
+    pub fn is_eof(&self) -> bool {
+        matches!(&self.data, ErrorData::Eof)
     }
 
     pub(crate) fn set_data(&mut self, data: String) {
