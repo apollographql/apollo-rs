@@ -21,6 +21,8 @@ rowan = "0.15.5"
 
 [dev-dependencies]
 miette = { version = "3.2.0", features = ["fancy"] }
+apollo-encoder = { path = "../apollo-encoder", version = "0.3.3", features = ["apollo-parser"] }
+anyhow = "1.0.66"
 thiserror = "1.0.30"
 pretty_assertions = "0.7.1"
 annotate-snippets = "0.9.1"
