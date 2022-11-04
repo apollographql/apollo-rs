@@ -1,7 +1,4 @@
-use apollo_parser::{
-    ast::{self, AstNode},
-    Parser,
-};
+use apollo_parser::{ast, Parser};
 
 use anyhow::Result;
 
@@ -84,7 +81,9 @@ fn omitted_fields() -> Result<apollo_encoder::Document> {
             for selection in op.selection_set().unwrap().selections() {
                 if let ast::Selection::Field(field) = selection {
                     if let Some(dir) = field.directives() {
-                        let omit = dir.directives().any(|dir| dir.name().unwrap().text() == "omitted");
+                        let omit = dir
+                            .directives()
+                            .any(|dir| dir.name().unwrap().text() == "omitted");
                         if !omit {
                             selection_set.selection(apollo_encoder::Selection::Field(
                                 field.clone().try_into()?,
