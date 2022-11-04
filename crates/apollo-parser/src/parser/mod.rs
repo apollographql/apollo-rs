@@ -161,13 +161,16 @@ impl<'a> Parser<'a> {
     }
 
     /// Get current token's data.
-    pub(crate) fn current(&mut self) -> &Token {
+    pub(crate) fn current(&mut self) -> Option<&Token> {
         self.peek_token()
-            .expect("Could not peek at the current token")
     }
 
     /// Consume a token from the lexer and add it to the AST.
     fn eat(&mut self, kind: SyntaxKind) {
+        if self.current().is_none() {
+            return;
+        }
+
         let token = self.pop();
         self.builder.borrow_mut().token(kind, token.data());
     }
@@ -177,7 +180,9 @@ impl<'a> Parser<'a> {
     /// Note: After a limit error is pushed, any further errors pushed
     /// are silently discarded.
     pub(crate) fn limit_err<S: Into<String>>(&mut self, message: S) {
-        let current = self.current();
+        let Some(current) = self.current() else {
+            return;
+        };
         // this needs to be the computed location
         let err = Error::limit(message, current.index());
         self.push_err(err);
@@ -186,7 +191,9 @@ impl<'a> Parser<'a> {
 
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err(&mut self, message: &str) {
-        let current = self.current();
+        let Some(current) = self.current() else {
+            return;
+        };
         let err = if current.kind == TokenKind::Eof {
             Error::eof(message, current.index())
         } else {
@@ -198,6 +205,10 @@ impl<'a> Parser<'a> {
 
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err_and_pop(&mut self, message: &str) {
+        if self.current().is_none() {
+            return;
+        }
+
         let current = self.pop();
         // we usually bump ignored after we pop a token, so make sure we also do
         // this when we create an error and pop.
@@ -214,7 +225,9 @@ impl<'a> Parser<'a> {
     /// Consume the next token if it is `kind` or emit an error
     /// otherwise.
     pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
-        let current = self.current();
+        let Some(current) = self.current() else {
+            return;
+        };
         let is_eof = current.kind == TokenKind::Eof;
         // TODO(@goto-bus-stop) this allocation is only required if we have an
         // error, but has to be done eagerly here as the &str reference gets
