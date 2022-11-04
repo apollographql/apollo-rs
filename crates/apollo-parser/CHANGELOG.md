@@ -18,13 +18,22 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [x.x.x] (unreleased) - 2021-mm-dd
+# [0.3.1](https://crates.io/crates/apollo-parser/0.3.1) - 2022-11-04
 
 ## Features
+- **streaming lexer - [Geal] + [goto-bus-stop], [pull/115]**
+
+  To help improve performance and memory usage in the lexer, we are now
+  streaming all incoming tokens in the lexer implementation.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [Geal]: https://github.com/Geal
+  [pull/115]: https://github.com/apollographql/apollo-rs/pull/115
 
 - **extend `ast::*Value` node conversions - [SimonSapin], [pull/344]**
 
-  These node types implement conversion to standard types, extracting their value:
+  The following node types implement conversion to standard types, extracting
+  their value:
 
   - `StringValue` → `String`
   - `IntValue` → `i32`
@@ -47,7 +56,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [simonsapin]: https://github.com/SimonSapin
   [pull/344]: https://github.com/apollographql/apollo-rs/pull/344
 
-# [0.3.0](https://crates.io/crates/apollo-parser/0.2.12) - 2022-10-31 💀
+## Documentation
+- **example of modifying queries with parser + encoder - [lrlna], [pull/346]**
+  An addition to `apollo-parser`'s [example] directory encoding various parts of the AST using `apollo-encoder`'s new `TryFrom` implementation. Examples include:
+
+    - merging two queries
+    - omitting certain fields in a query.
+
+  [lrlna]: https://github.com/lrlna
+  [pull/346]: https://github.com/apollographql/apollo-rs/pull/346
+  [example]: ./examples/modify_query_using_parser_and_encoder.rs
+
+
+# [0.3.0](https://crates.io/crates/apollo-parser/0.3.0) - 2022-10-31 💀
 ## BREAKING
 - **remove the impl Display for generated nodes - [goto-bus-stop], [pull/330]**
 
