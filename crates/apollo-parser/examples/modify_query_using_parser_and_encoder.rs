@@ -5,7 +5,7 @@ use apollo_parser::{
 
 use anyhow::Result;
 
-// This exampel merges the two operation definitions into a single one.
+// This example merges the two operation definitions into a single one.
 fn merge_queries() -> Result<apollo_encoder::Document> {
     let query = r"#
     query LaunchSite {
@@ -84,12 +84,11 @@ fn omitted_fields() -> Result<apollo_encoder::Document> {
             for selection in op.selection_set().unwrap().selections() {
                 if let ast::Selection::Field(field) = selection {
                     if let Some(dir) = field.directives() {
-                        for dir in dir.directives() {
-                            if dir.name().unwrap().source_string() != "omitted" {
-                                selection_set.selection(apollo_encoder::Selection::Field(
-                                    field.clone().try_into()?,
-                                ))
-                            }
+                        let omit = dir.directives().any(|dir| dir.name().unwrap().text() == "omitted");
+                        if !omit {
+                            selection_set.selection(apollo_encoder::Selection::Field(
+                                field.clone().try_into()?,
+                            ))
                         }
                     } else {
                         selection_set.selection(apollo_encoder::Selection::Field(field.try_into()?))
