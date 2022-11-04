@@ -2,13 +2,12 @@ mod cursor;
 mod token;
 mod token_kind;
 
-use std::slice::Iter;
-
 use crate::{lexer::cursor::Cursor, Error};
 
 pub use token::Token;
 pub use token_kind::TokenKind;
-/// Parses tokens into text.
+
+/// Parses GraphQL source text into tokens.
 /// ```rust
 /// use apollo_parser::Lexer;
 ///
@@ -23,70 +22,92 @@ pub use token_kind::TokenKind;
 ///     }
 /// }
 /// ";
-/// let lexer = Lexer::new(query);
-/// assert_eq!(lexer.errors().len(), 0);
-///
-/// let tokens = lexer.tokens();
+/// let (tokens, errors) = Lexer::new(query).lex();
+/// assert_eq!(errors.len(), 0);
 /// ```
-pub struct Lexer {
-    tokens: Vec<Token>,
-    errors: Vec<Error>,
+#[derive(Clone, Debug)]
+pub struct Lexer<'a> {
+    input: &'a str,
+    index: usize,
+    finished: bool,
 }
 
-impl Lexer {
-    /// Create a new instance of `Lexer`.
-    pub fn new(mut input: &str) -> Self {
-        let mut tokens = Vec::new();
-        let mut errors = Vec::new();
+impl<'a> Lexer<'a> {
+    /// Create a lexer for a GraphQL source text.
+    ///
+    /// The Lexer is an iterator over tokens and errors:
+    /// ```rust
+    /// use apollo_parser::Lexer;
+    ///
+    /// let query = "# --- GraphQL here ---";
+    ///
+    /// let mut lexer = Lexer::new(query);
+    /// let mut tokens = vec![];
+    /// for token in lexer {
+    ///     match token {
+    ///         Ok(token) => tokens.push(token),
+    ///         Err(error) => panic!("{:?}", error),
+    ///     }
+    /// }
+    /// ```
+    pub fn new(input: &'a str) -> Self {
+        Self {
+            input,
+            index: 0,
+            finished: false,
+        }
+    }
 
-        let mut index = 0;
+    /// Lex the full source text, consuming the lexer.
+    pub fn lex(self) -> (Vec<Token>, Vec<Error>) {
+        let mut tokens = vec![];
+        let mut errors = vec![];
 
-        while !input.is_empty() {
-            let old_input = input;
-
-            if old_input.len() == input.len() {
-                let mut c = Cursor::new(input);
-                let r = c.advance();
-
-                match r {
-                    Ok(mut token) => {
-                        token.index = index;
-                        index += token.data.len();
-
-                        input = &input[token.data.len()..];
-                        tokens.push(token);
-                    }
-                    Err(mut err) => {
-                        err.index = index;
-                        index += err.data.len();
-
-                        input = &input[err.data.len()..];
-                        errors.push(err);
-                    }
-                }
+        for item in self {
+            match item {
+                Ok(token) => tokens.push(token),
+                Err(error) => errors.push(error),
             }
         }
 
-        let mut eof = Token::new(TokenKind::Eof, String::from("EOF"));
-        eof.index = index;
-        tokens.push(eof);
-
-        Self { tokens, errors }
+        (tokens, errors)
     }
+}
 
-    /// Get a reference to the lexer's tokens.
-    pub fn tokens(&self) -> &[Token] {
-        self.tokens.as_slice()
-    }
+impl<'a> Iterator for Lexer<'a> {
+    type Item = Result<Token, Error>;
 
-    /// Get a reference to the lexer's errors.
-    pub fn errors(&self) -> Iter<'_, Error> {
-        self.errors.iter()
-    }
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.finished {
+            return None;
+        }
+        if self.input.is_empty() {
+            let mut eof = Token::new(TokenKind::Eof, String::from("EOF"));
+            eof.index = self.index;
 
-    /// Consume the lexer and return the tokens and errors.
-    pub fn into_parts(self) -> (Vec<Token>, Vec<Error>) {
-        (self.tokens, self.errors)
+            self.finished = true;
+            return Some(Ok(eof));
+        }
+
+        let mut c = Cursor::new(self.input);
+        let r = c.advance();
+
+        match r {
+            Ok(mut token) => {
+                token.index = self.index;
+                self.index += token.data.len();
+
+                self.input = &self.input[token.data.len()..];
+                Some(Ok(token))
+            }
+            Err(mut err) => {
+                err.index = self.index;
+                self.index += err.data.len();
+
+                self.input = &self.input[err.data.len()..];
+                Some(Err(err))
+            }
+        }
     }
 }
 
@@ -427,8 +448,8 @@ mod test {
     #[test]
     fn tests() {
         let gql_1 = "\"\nhello";
-        let lexer_1 = Lexer::new(gql_1);
-        dbg!(lexer_1.tokens);
-        dbg!(lexer_1.errors);
+        let (tokens, errors) = Lexer::new(gql_1).lex();
+        dbg!(tokens);
+        dbg!(errors);
     }
 }

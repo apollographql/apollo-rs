@@ -6,7 +6,6 @@ use std::{
     fmt::Write,
     fs,
     path::{Path, PathBuf},
-    slice::Iter,
 };
 
 use expect_test::expect_file;
@@ -24,15 +23,15 @@ use crate::{Error, Lexer, Parser, Token};
 #[test]
 fn lexer_tests() {
     dir_tests(&test_data_dir(), &["lexer/ok"], "txt", |text, path| {
-        let tokens = Lexer::new(text);
-        assert_errors_are_absent(tokens.errors(), path);
-        dump_tokens_and_errors(tokens.tokens(), tokens.errors())
+        let (tokens, errors) = Lexer::new(text).lex();
+        assert_errors_are_absent(&errors, path);
+        dump_tokens_and_errors(&tokens, &errors)
     });
 
     dir_tests(&test_data_dir(), &["lexer/err"], "txt", |text, path| {
-        let tokens = Lexer::new(text);
-        assert_errors_are_present(tokens.errors(), path);
-        dump_tokens_and_errors(tokens.tokens(), tokens.errors())
+        let (tokens, errors) = Lexer::new(text).lex();
+        assert_errors_are_present(&errors, path);
+        dump_tokens_and_errors(&tokens, &errors)
     });
 }
 
@@ -41,31 +40,32 @@ fn parser_tests() {
     dir_tests(&test_data_dir(), &["parser/ok"], "txt", |text, path| {
         let parser = Parser::new(text);
         let ast = parser.parse();
-        assert_errors_are_absent(ast.errors(), path);
+        assert_errors_are_absent(&ast.errors().cloned().collect::<Vec<_>>(), path);
         format!("{:?}", ast)
     });
 
     dir_tests(&test_data_dir(), &["parser/err"], "txt", |text, path| {
         let parser = Parser::new(text);
         let ast = parser.parse();
-        assert_errors_are_present(ast.errors(), path);
+        assert_errors_are_present(&ast.errors().cloned().collect::<Vec<_>>(), path);
         format!("{:?}", ast)
     });
 }
 
-fn assert_errors_are_present(errors: Iter<'_, Error>, path: &Path) {
+fn assert_errors_are_present(errors: &[Error], path: &Path) {
     assert!(
-        errors.len() != 0,
+        !errors.is_empty(),
         "There should be errors in the file {:?}",
         path.display()
     );
 }
 
-fn assert_errors_are_absent(errors: Iter<'_, Error>, path: &Path) {
-    if errors.len() > 0 {
+fn assert_errors_are_absent(errors: &[Error], path: &Path) {
+    if !errors.is_empty() {
         println!(
             "errors: {}",
             errors
+                .iter()
                 .map(|e| e.message())
                 .collect::<Vec<&str>>()
                 .join("\n")
@@ -75,7 +75,7 @@ fn assert_errors_are_absent(errors: Iter<'_, Error>, path: &Path) {
 }
 
 /// Concatenate tokens and errors.
-fn dump_tokens_and_errors(tokens: &[Token], errors: Iter<'_, Error>) -> String {
+fn dump_tokens_and_errors(tokens: &[Token], errors: &[Error]) -> String {
     let mut acc = String::new();
     for token in tokens {
         writeln!(acc, "{:?}", token).unwrap();
@@ -123,7 +123,7 @@ fn collect_graphql_files(root_dir: &Path, paths: &[&str]) -> Vec<(PathBuf, Strin
 /// Collects paths to all `.graphql` files from `dir` in a sorted `Vec<PathBuf>`.
 fn graphql_files_in_dir(dir: &Path) -> Vec<PathBuf> {
     let mut acc = Vec::new();
-    for file in fs::read_dir(&dir).unwrap() {
+    for file in fs::read_dir(dir).unwrap() {
         let file = file.unwrap();
         let path = file.path();
         if path.extension().unwrap_or_default() == "graphql" {
