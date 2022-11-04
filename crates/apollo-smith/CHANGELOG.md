@@ -18,6 +18,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.1.4](https://crates.io/crates/apollo-smith/0.1.4) - 2022-11-04
+
+## Maintenance
+- **update apollo-parser@0.3.0 - [lrlna], [pull/340]
+  [lrlna]: https://github.com/lrlna
+  [pull/340]: https://github.com/apollographql/apollo-rs/pull/340
+
 # [0.1.3](https://crates.io/crates/apollo-smith/0.1.3) - 2022-05-12
 
 ## Fixes
