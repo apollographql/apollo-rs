@@ -22,6 +22,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Features
 - **streaming lexer - [Geal] + [goto-bus-stop], [pull/115]**
+
   To help improve performance and memory usage in the lexer, we are now
   streaming all incoming tokens in the lexer implementation.
 
