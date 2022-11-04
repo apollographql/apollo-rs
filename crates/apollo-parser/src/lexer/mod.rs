@@ -447,8 +447,13 @@ mod test {
 
     #[test]
     fn tests() {
-        let gql_1 = "\"\nhello";
-        let (tokens, errors) = Lexer::new(gql_1).lex();
+        let schema = r#"
+"""unicode in block string 🤷"""
+input Filter {
+    title: String
+}
+        "#;
+        let (tokens, errors) = Lexer::new(schema).lex();
         dbg!(tokens);
         dbg!(errors);
     }
