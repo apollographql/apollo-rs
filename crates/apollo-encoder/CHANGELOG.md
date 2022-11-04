@@ -17,6 +17,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.3.4](https://crates.io/crates/apollo-encoder/0.3.4) - 2022-11-04
+## Maintenance
+- **apollo-parser@0.3.1 - [lrlna], [pull/348]**
+
+  [lrlna]: https://github.com/lrlna
+  [pull/348]: https://github.com/apollographql/apollo-rs/pull/348
+
 # [0.3.3](https://crates.io/crates/apollo-encoder/0.3.3) - 2022-10-31
 
 ## Features
