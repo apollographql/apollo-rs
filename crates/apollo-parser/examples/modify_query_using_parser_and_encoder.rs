@@ -1,4 +1,3 @@
-use apollo_encoder;
 use apollo_parser::{
     ast::{self, AstNode},
     Parser,
@@ -6,6 +5,7 @@ use apollo_parser::{
 
 use anyhow::Result;
 
+// This exampel merges the two operation definitions into a single one.
 fn merge_queries() -> Result<apollo_encoder::Document> {
     let query = r"#
     query LaunchSite {
@@ -29,26 +29,44 @@ fn merge_queries() -> Result<apollo_encoder::Document> {
 
     let doc = ast.document();
 
-    let new_query = apollo_encoder::Document::new();
+    let mut new_query = apollo_encoder::Document::new();
+    let mut sel_set = Vec::new();
     for def in doc.definitions() {
         // We want to combine all of our operations into a single one.
         if let ast::Definition::OperationDefinition(op) = def {
-            let sel_set: ast::SelectionSet = op.selection_set().unwrap();
-            let selection_set: apollo_encoder::SelectionSet = sel_set.try_into()?;
+            let selections: Vec<apollo_encoder::Selection> = op
+                .selection_set()
+                .unwrap()
+                .selections()
+                .map(|sel| sel.try_into())
+                .collect::<Result<Vec<apollo_encoder::Selection>, _>>()?;
+            sel_set.extend(selections)
         }
     }
+
+    let op_def = apollo_encoder::OperationDefinition::new(
+        apollo_encoder::OperationType::Query,
+        apollo_encoder::SelectionSet::with_selections(sel_set),
+    );
+    new_query.operation(op_def);
 
     Ok(new_query)
 }
 
+// This example only includes fields without the `@omitted` directive.
 fn omitted_fields() -> Result<apollo_encoder::Document> {
     let query = r"#
-    query Products{
+    query Products {
       isbn @omitted
       title
       year @omitted
       metadata @omitted
       reviews
+      ...details
+    }
+
+    fragment details on ProductDetails {
+        country
     }
 
     #";
@@ -59,22 +77,23 @@ fn omitted_fields() -> Result<apollo_encoder::Document> {
 
     let doc = ast.document();
 
-    let new_query = apollo_encoder::Document::new();
+    let mut new_query = apollo_encoder::Document::new();
     for def in doc.definitions() {
-        // We want to combine all of our operations into a single one.
         if let ast::Definition::OperationDefinition(op) = def {
-            let selection_set = apollo_encoder::SelectionSet::new();
+            let mut selection_set = apollo_encoder::SelectionSet::new();
             for selection in op.selection_set().unwrap().selections() {
                 if let ast::Selection::Field(field) = selection {
-                    let incl = field
-                        .directives()
-                        .unwrap()
-                        .directives()
-                        .into_iter()
-                        .filter(|d| d.name().unwrap().source_string() != "omitted");
-                    incl.for_each(|f| {
+                    if let Some(dir) = field.directives() {
+                        for dir in dir.directives() {
+                            if dir.name().unwrap().source_string() != "omitted" {
+                                selection_set.selection(apollo_encoder::Selection::Field(
+                                    field.clone().try_into()?,
+                                ))
+                            }
+                        }
+                    } else {
                         selection_set.selection(apollo_encoder::Selection::Field(field.try_into()?))
-                    });
+                    }
                 } else {
                     selection_set.selection(selection.try_into()?)
                 }
@@ -83,6 +102,9 @@ fn omitted_fields() -> Result<apollo_encoder::Document> {
                 op.operation_type().unwrap().try_into()?,
                 selection_set,
             );
+            new_query.operation(op_def)
+        } else if let ast::Definition::FragmentDefinition(fragment) = def {
+            new_query.fragment(fragment.try_into()?);
         }
     }
 
@@ -94,6 +116,7 @@ fn main() -> Result<()> {
     println!("{}", merged);
 
     let omitted_fields = omitted_fields()?;
+    println!("{}", omitted_fields);
 
     Ok(())
 }
