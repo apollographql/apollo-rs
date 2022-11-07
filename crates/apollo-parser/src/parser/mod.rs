@@ -180,7 +180,9 @@ impl<'a> Parser<'a> {
     /// Note: After a limit error is pushed, any further errors pushed
     /// are silently discarded.
     pub(crate) fn limit_err<S: Into<String>>(&mut self, message: S) {
-        let Some(current) = self.current() else {
+        let current = if let Some(current) = self.current() {
+            current
+        } else {
             return;
         };
         // this needs to be the computed location
@@ -191,7 +193,9 @@ impl<'a> Parser<'a> {
 
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err(&mut self, message: &str) {
-        let Some(current) = self.current() else {
+        let current = if let Some(current) = self.current() {
+            current
+        } else {
             return;
         };
         let err = if current.kind == TokenKind::Eof {
@@ -225,7 +229,9 @@ impl<'a> Parser<'a> {
     /// Consume the next token if it is `kind` or emit an error
     /// otherwise.
     pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
-        let Some(current) = self.current() else {
+        let current = if let Some(current) = self.current() {
+            current
+        } else {
             return;
         };
         let is_eof = current.kind == TokenKind::Eof;
