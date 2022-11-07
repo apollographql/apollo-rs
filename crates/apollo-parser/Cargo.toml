@@ -1,6 +1,6 @@
 [package]
 name = "apollo-parser"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Irina Shestak <shestak.irina@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
@@ -22,6 +22,10 @@ thiserror = "1.0.30"
 
 [dev-dependencies]
 miette = { version = "3.2.0", features = ["fancy"] }
+apollo-encoder = { path = "../apollo-encoder", version = "0.3.3", features = [
+    "apollo-parser",
+] }
+anyhow = "1.0.66"
 thiserror = "1.0.30"
 pretty_assertions = "0.7.1"
 annotate-snippets = "0.9.1"
