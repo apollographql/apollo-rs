@@ -18,7 +18,24 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [0.1.5](https://crates.io/crates/apollo-smith/0.1.5) - 2022-11-04
+# [0.2.0](https://crates.io/crates/apollo-smith/0.2.0) - 2022-11-08
+
+## BREAKING
+
+- **update apollo-parser@0.3.x - [lrlna], [pull/340], [pull/348]**
+
+  This change was first released in the apollo-smith@0.1.4 patch release.
+  It should have been a breaking change, as the update to the new version
+  requires users to also update apollo-parser to 0.3.0 at the same time.
+
+  This version is identical to 0.1.5 except for the version number.
+  apollo-smith versions 0.1.4 and 0.1.5 have been yanked.
+
+  [lrlna]: https://github.com/lrlna
+  [pull/340]: https://github.com/apollographql/apollo-rs/pull/340
+  [pull/348]: https://github.com/apollographql/apollo-rs/pull/348
+
+# [0.1.5](https://crates.io/crates/apollo-smith/0.1.5) - 2022-11-04 (YANKED)
 
 ## Maintenance
 - **update apollo-parser@0.3.1 - [lrlna], [pull/348]**
@@ -31,7 +48,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [lrlna]: https://github.com/lrlna
   [pull/349]: https://github.com/apollographql/apollo-rs/pull/349
 
-# [0.1.4](https://crates.io/crates/apollo-smith/0.1.4) - 2022-11-04
+# [0.1.4](https://crates.io/crates/apollo-smith/0.1.4) - 2022-11-04 (YANKED)
 
 ## Maintenance
 - **update apollo-parser@0.3.0 - [lrlna], [pull/340]**
