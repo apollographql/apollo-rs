@@ -17,6 +17,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+
+# [x.x.x] (unreleased) - 2021-mm-dd
+## Features
+- **add parser recursion limit API - [SimonSapin], [pull/353], [issue/296]**
+
+  Calling `ApolloCompiler::with_parser_recursion_limit` instead of `ApolloCompiler::new`
+  makes the compiler call apollo-parser’s [`Parser::with_recursion_limit`][with]
+  instead of `Parser::new`.
+
+  [SimonSapin]: https://github.com/SimonSapin
+  [pull/353]: https://github.com/apollographql/apollo-rs/pull/353
+  [issue/296]: https://github.com/apollographql/apollo-rs/issues/296
+  [with]: https://docs.rs/apollo-parser/0.3.1/apollo_parser/struct.Parser.html#method.with_recursion_limit
+
 # [0.3.0](https://crates.io/crates/apollo-compiler/0.3.0) - 2022-11-02
 ## Breaking
 - **compiler.parse is renamed to compiler.ast - [lrlna], [pull/290]**
