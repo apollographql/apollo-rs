@@ -384,3 +384,27 @@ impl Drop for NodeGuard {
         self.builder.borrow_mut().finish_node();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{Error, Parser};
+
+    #[test]
+    fn limited_mid_node() {
+        let source = r#"
+            type Query {
+                field(arg1: Int, arg2: Int, arg3: Int, arg4: Int, arg5: Int, arg6: Int): Int
+            }
+        "#;
+        let parser = Parser::new(source)
+            // Make it stop inside the arguments list
+            .with_token_limit(18);
+        let tree = parser.parse();
+        let mut errors = tree.errors();
+        assert_eq!(
+            errors.next(),
+            Some(&Error::limit("token limit reached, aborting lexing", 65))
+        );
+        assert_eq!(errors.next(), None);
+    }
+}
