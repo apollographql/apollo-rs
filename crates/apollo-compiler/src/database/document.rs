@@ -31,6 +31,8 @@ pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
 
     fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
 
+    fn find_definitions_with_directive(&self, directive: String) -> Arc<Vec<Definition>>;
+
     fn find_input_object(&self, id: Uuid) -> Option<Arc<InputObjectTypeDefinition>>;
 
     fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
@@ -215,6 +217,23 @@ fn find_directive_definition_by_name(
         }
         None
     })
+}
+
+/// Find any definitions that use the specified directive.
+fn find_definitions_with_directive(
+    db: &dyn DocumentDatabase,
+    directive: String,
+) -> Arc<Vec<Definition>> {
+    let mut definitions = Vec::new();
+    for def in db.db_definitions().iter() {
+        let any = def.directives().iter().any(|dir| dir.name() == directive);
+
+        if any {
+            definitions.push(def.clone())
+        }
+    }
+
+    Arc::new(definitions)
 }
 
 fn find_input_object(
@@ -418,24 +437,31 @@ mod tests {
     use crate::ApolloCompiler;
     use crate::DocumentDatabase;
 
-    fn with_supergraph_boilerplate(content: &str) -> String {
-        format!(
-            "{}\n{}",
-            r#"
-            schema
-                @core(feature: "https://specs.apollo.dev/core/v0.1")
-                @core(feature: "https://specs.apollo.dev/join/v0.1") {
-                query: Query
-            }
-            directive @core(feature: String!) repeatable on SCHEMA
-            directive @join__graph(name: String!, url: String!) on ENUM_VALUE
-            enum join__Graph {
-                TEST @join__graph(name: "test", url: "http://localhost:4001/graphql")
+    #[test]
+    fn find_definitions_with_directive() {
+        let schema = r#"
+            type ObjectOne @key(field: "id") {
+              id: ID!
+              inStock: Boolean!
             }
 
-            "#,
-            content
-        )
+            type ObjectTwo @key(field: "name") {
+              name: String!
+              address: String!
+            }
+
+            type ObjectThree {
+                price: Int
+            }
+        "#;
+
+        let ctx = ApolloCompiler::new(schema);
+        let key_definitions = ctx.db.find_definitions_with_directive(String::from("key"));
+        let key_definition_names: Vec<&str> = key_definitions
+            .iter()
+            .filter_map(|def| def.name())
+            .collect();
+        assert_eq!(key_definition_names, ["ObjectOne", "ObjectTwo"])
     }
 
     #[test]
@@ -455,7 +481,7 @@ mod tests {
                 type Baz {
                 me: String
                 }
-                
+
                 union UnionType2 = Foo | Bar
                 "#,
             );
@@ -520,5 +546,25 @@ mod tests {
         // assert!(ctx.db.is_subtype("Foo".into(), "InterfaceType2".into()));
         // assert!(ctx.db.is_subtype("Bar".into(), "InterfaceType2".into()));
         // assert!(ctx.db.is_subtype("Baz".into(), "InterfaceType2".into()));
+    }
+
+    fn with_supergraph_boilerplate(content: &str) -> String {
+        format!(
+            "{}\n{}",
+            r#"
+            schema
+                @core(feature: "https://specs.apollo.dev/core/v0.1")
+                @core(feature: "https://specs.apollo.dev/join/v0.1") {
+                query: Query
+            }
+            directive @core(feature: String!) repeatable on SCHEMA
+            directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+            enum join__Graph {
+                TEST @join__graph(name: "test", url: "http://localhost:4001/graphql")
+            }
+
+            "#,
+            content
+        )
     }
 }
