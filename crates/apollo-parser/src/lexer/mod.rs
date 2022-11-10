@@ -178,7 +178,6 @@ impl Cursor<'_> {
                     } else if is_line_terminator(c) {
                         self.add_err(Error::new("unexpected line terminator", c.to_string()));
                     }
-                    was_backslash = c == '\\';
                 }
 
                 if !buf.ends_with('"') {
@@ -214,8 +213,20 @@ impl Cursor<'_> {
 
             while !self.is_eof() {
                 let c = self.bump().unwrap();
-                if c == '"' {
-                    buf.push(c);
+                let was_backslash = c == '\\';
+
+                if was_backslash && !is_escaped_char(c) && c != 'u' {
+                    self.add_err(Error::new("unexpected escaped character", c.to_string()));
+                }
+
+                buf.push(c);
+
+                if was_backslash {
+                    while self.first() == '"' {
+                        buf.push(self.first());
+                        self.bump();
+                    }
+                } else if c == '"' {
                     if ('"', '"') == (self.first(), self.second()) {
                         buf.push(self.first());
                         buf.push(self.second());
@@ -223,10 +234,6 @@ impl Cursor<'_> {
                         self.bump();
                         break;
                     }
-                } else if is_source_char(c) {
-                    buf.push(c);
-                } else {
-                    break;
                 }
             }
         }
@@ -437,9 +444,9 @@ fn is_escaped_char(c: char) -> bool {
 
 // SourceCharacter
 //     /[\u0009\u000A\u000D\u0020-\uFFFF]/
-fn is_source_char(c: char) -> bool {
-    matches!(c, '\t' | '\r' | '\n' | '\u{0020}'..='\u{FFFF}')
-}
+// fn is_source_char(c: char) -> bool {
+//     matches!(c, '\t' | '\r' | '\n' | '\u{0020}'..='\u{FFFF}')
+// }
 
 #[cfg(test)]
 mod test {
