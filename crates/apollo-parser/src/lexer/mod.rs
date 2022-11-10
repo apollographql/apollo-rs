@@ -227,14 +227,12 @@ impl Cursor<'_> {
                         buf.push(self.first());
                         self.bump();
                     }
-                } else if c == '"' {
-                    if ('"', '"') == (self.first(), self.second()) {
-                        buf.push(self.first());
-                        buf.push(self.second());
-                        self.bump();
-                        self.bump();
-                        break;
-                    }
+                } else if c == '"' && ('"', '"') == (self.first(), self.second()) {
+                    buf.push(self.first());
+                    buf.push(self.second());
+                    self.bump();
+                    self.bump();
+                    break;
                 }
             }
         }
