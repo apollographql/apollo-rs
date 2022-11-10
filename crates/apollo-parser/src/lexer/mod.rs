@@ -178,6 +178,7 @@ impl Cursor<'_> {
                     } else if is_line_terminator(c) {
                         self.add_err(Error::new("unexpected line terminator", c.to_string()));
                     }
+                    was_backslash = c == '\\' && !was_backslash;
                 }
 
                 if !buf.ends_with('"') {
@@ -455,9 +456,9 @@ mod test {
     #[test]
     fn tests() {
         let schema = r#"
-"""unicode in block string 🤷"""
-input Filter {
-    title: String
+type Query {
+    name: String
+    format: String = "Y-m-d\\TH:i:sP" 
 }
         "#;
         let (tokens, errors) = Lexer::new(schema).lex();
