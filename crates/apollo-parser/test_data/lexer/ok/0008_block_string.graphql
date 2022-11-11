@@ -2,5 +2,13 @@
 Input Filter with title fitlering
 """
 input Filter {
+  """unicode in block string 🤷"""
+    title: String
+}
+
+"""
+\""" a/b \"""
+"""
+input Filter {
     title: String
 }

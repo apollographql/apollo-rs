@@ -29,4 +29,6 @@ WHITESPACE@587:588 "\n"
 STRING_VALUE@588:624 "\"string with \\\"escaped\\\" characters\""
 WHITESPACE@624:625 "\n"
 STRING_VALUE@625:687 "\"string with multiple languages котя, 猫, ねこ, قطة\""
-EOF@687:687
+WHITESPACE@687:688 "\n"
+STRING_VALUE@688:775 "\"\"\"\nblock string with unusual whitespaces\na b  c\nd\n\ne\tf\ng\u{2028}\u{2029}h\ni\u{b}j\u{c}k\u{feff}l\u{85}\u{200e}\u{200f}m\n\"\"\""
+EOF@775:775

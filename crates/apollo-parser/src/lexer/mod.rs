@@ -178,7 +178,7 @@ impl Cursor<'_> {
                     } else if is_line_terminator(c) {
                         self.add_err(Error::new("unexpected line terminator", c.to_string()));
                     }
-                    was_backslash = c == '\\';
+                    was_backslash = c == '\\' && !was_backslash;
                 }
 
                 if !buf.ends_with('"') {
@@ -214,18 +214,24 @@ impl Cursor<'_> {
 
             while !self.is_eof() {
                 let c = self.bump().unwrap();
-                if c == '"' {
-                    buf.push(c);
-                    if ('"', '"') == (self.first(), self.second()) {
+                let was_backslash = c == '\\';
+
+                if was_backslash && !is_escaped_char(c) && c != 'u' {
+                    self.add_err(Error::new("unexpected escaped character", c.to_string()));
+                }
+
+                buf.push(c);
+
+                if was_backslash {
+                    while self.first() == '"' {
                         buf.push(self.first());
-                        buf.push(self.second());
                         self.bump();
-                        self.bump();
-                        break;
                     }
-                } else if is_source_char(c) {
-                    buf.push(c);
-                } else {
+                } else if c == '"' && ('"', '"') == (self.first(), self.second()) {
+                    buf.push(self.first());
+                    buf.push(self.second());
+                    self.bump();
+                    self.bump();
                     break;
                 }
             }
@@ -437,9 +443,9 @@ fn is_escaped_char(c: char) -> bool {
 
 // SourceCharacter
 //     /[\u0009\u000A\u000D\u0020-\uFFFF]/
-fn is_source_char(c: char) -> bool {
-    matches!(c, '\t' | '\r' | '\n' | '\u{0020}'..='\u{FFFF}')
-}
+// fn is_source_char(c: char) -> bool {
+//     matches!(c, '\t' | '\r' | '\n' | '\u{0020}'..='\u{FFFF}')
+// }
 
 #[cfg(test)]
 mod test {
@@ -447,8 +453,13 @@ mod test {
 
     #[test]
     fn tests() {
-        let gql_1 = "\"\nhello";
-        let (tokens, errors) = Lexer::new(gql_1).lex();
+        let schema = r#"
+type Query {
+    name: String
+    format: String = "Y-m-d\\TH:i:sP" 
+}
+        "#;
+        let (tokens, errors) = Lexer::new(schema).lex();
         dbg!(tokens);
         dbg!(errors);
     }
