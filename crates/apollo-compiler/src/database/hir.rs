@@ -950,11 +950,28 @@ impl SelectionSet {
     }
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq)]
 pub enum Selection {
     Field(Arc<Field>),
     FragmentSpread(Arc<FragmentSpread>),
     InlineFragment(Arc<InlineFragment>),
+}
+
+impl PartialEq for Selection {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Field(l0), Self::Field(r0)) => l0 == r0,
+            (Self::FragmentSpread(l0), Self::FragmentSpread(r0)) => l0 == r0,
+            (Self::InlineFragment(l0), Self::InlineFragment(r0)) => l0 == r0,
+            (_, _) => false,
+        }
+    }
+}
+
+impl std::hash::Hash for Selection {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        core::mem::discriminant(self).hash(state);
+    }
 }
 impl Selection {
     /// Get variables used in the selection set.
@@ -991,7 +1008,7 @@ impl Selection {
     }
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub struct Field {
     pub(crate) alias: Option<Arc<Alias>>,
     pub(crate) name: Name,
@@ -1001,6 +1018,20 @@ pub struct Field {
     pub(crate) selection_set: SelectionSet,
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
+
+impl std::hash::Hash for Field {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
+}
+
+impl PartialEq for Field {
+    fn eq(&self, other: &Self) -> bool {
+        self.name() == other.name()
+    }
+}
+
+impl Eq for Field {}
 
 impl Field {
     /// Get a reference to the field's alias.

@@ -75,6 +75,7 @@ pub trait LintValidation:
     // Define any queries that should be part of this database.
     fn lint(&self) -> Vec<LintDiagnostic>;
     fn capitalised_definitions(&self) -> Vec<LintDiagnostic>;
+    fn snake_case(&self) -> Vec<LintDiagnostic>;
 }
 
 // Implemenatation of the queries defined above. The lint query calls on
@@ -83,8 +84,13 @@ pub trait LintValidation:
 fn lint(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
     let mut lints = Vec::new();
     lints.extend(db.capitalised_definitions());
+    // lints.extend(db.snake_case());
 
     lints
+}
+
+fn snake_case(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
+    todo!();
 }
 
 fn capitalised_definitions(db: &dyn LintValidation) -> Vec<LintDiagnostic> {

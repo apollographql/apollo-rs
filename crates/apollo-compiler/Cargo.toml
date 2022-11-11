@@ -30,4 +30,7 @@ uuid = { version = "1.1", features = ["serde", "v4", "js"] }
 
 [dev-dependencies]
 expect-test = "1.1"
+apollo-encoder = { path = "../apollo-encoder", version = "0.3.3", features = [
+  "apollo-parser",
+] }
 anyhow = "1.0"
