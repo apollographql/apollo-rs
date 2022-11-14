@@ -64,9 +64,20 @@ pub struct ApolloCompiler {
 impl ApolloCompiler {
     /// Create a new instance of Apollo Compiler.
     pub fn new(input: &str) -> Self {
+        Self::with_opt_recursion_limit(input, None)
+    }
+
+    /// Create a new instance of Apollo Compiler,
+    /// and configure the parser with the given recursion limit.
+    pub fn with_recursion_limit(input: &str, limit: usize) -> Self {
+        Self::with_opt_recursion_limit(input, Some(limit))
+    }
+
+    fn with_opt_recursion_limit(input: &str, limit: Option<usize>) -> Self {
         let mut db = RootDatabase::default();
         let input = input.to_string();
         db.set_input(input);
+        db.set_recursion_limit(limit);
         Self { db }
     }
 
