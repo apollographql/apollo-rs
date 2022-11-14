@@ -4,7 +4,7 @@ pub trait InputDatabase {
     fn input(&self) -> String;
 
     #[salsa::input]
-    fn parser_recursion_limit(&self) -> Option<usize>;
+    fn recursion_limit(&self) -> Option<usize>;
 }
 
 // #[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]

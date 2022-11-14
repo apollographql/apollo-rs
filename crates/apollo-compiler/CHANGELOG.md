@@ -22,9 +22,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Features
 - **add parser recursion limit API - [SimonSapin], [pull/353], [issue/296]**
 
-  Calling `ApolloCompiler::with_parser_recursion_limit` instead of `ApolloCompiler::new`
-  makes the compiler call apollo-parser’s [`Parser::with_recursion_limit`][with]
-  instead of `Parser::new`.
+  Calling `ApolloCompiler::with_recursion_limit` instead of `ApolloCompiler::new`
+  makes the compiler call [the corresponding parser constructor][with].
+  This limit protects against stack overflow and is enabled either way.
+  Configuring it may be useful for example if you’re also configuring the stack size.
 
   [SimonSapin]: https://github.com/SimonSapin
   [pull/353]: https://github.com/apollographql/apollo-rs/pull/353

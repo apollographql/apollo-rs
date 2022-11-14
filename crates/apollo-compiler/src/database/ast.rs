@@ -16,7 +16,7 @@ pub trait AstDatabase: InputDatabase {
 fn ast(db: &dyn AstDatabase) -> SyntaxTree {
     let input = db.input();
 
-    let parser = if let Some(limit) = db.parser_recursion_limit() {
+    let parser = if let Some(limit) = db.recursion_limit() {
         ApolloParser::with_recursion_limit(&input, limit)
     } else {
         ApolloParser::new(&input)
@@ -56,7 +56,7 @@ mod tests {
           }
         }
         "#;
-        let compiler = ApolloCompiler::with_parser_recursion_limit(schema, 1);
+        let compiler = ApolloCompiler::with_recursion_limit(schema, 1);
 
         let ast = compiler.db.ast();
 
@@ -74,7 +74,7 @@ mod tests {
           }
         }
         "#;
-        let compiler = ApolloCompiler::with_parser_recursion_limit(schema, 7);
+        let compiler = ApolloCompiler::with_recursion_limit(schema, 7);
 
         let ast = compiler.db.ast();
 
