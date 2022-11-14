@@ -315,7 +315,7 @@ query SomeQuery(
           }
         }
         "#;
-        let parser = Parser::with_recursion_limit(schema, 1);
+        let parser = Parser::new(schema).with_recursion_limit(1);
 
         let ast = parser.parse();
 
@@ -333,7 +333,7 @@ query SomeQuery(
           }
         }
         "#;
-        let parser = Parser::with_recursion_limit(schema, 7);
+        let parser = Parser::new(schema).with_recursion_limit(7);
 
         let ast = parser.parse();
 
@@ -352,7 +352,7 @@ query SomeQuery(
           }
         }
         "#;
-        let parser = Parser::with_recursion_limit(schema, 2);
+        let parser = Parser::new(schema).with_recursion_limit(2);
 
         let ast = parser.parse();
 
@@ -370,7 +370,7 @@ query SomeQuery(
           }
         }
         "#;
-        let parser = Parser::with_recursion_limit(schema, 2);
+        let parser = Parser::new(schema).with_recursion_limit(2);
 
         let ast = parser.parse();
 
@@ -396,7 +396,7 @@ query SomeQuery(
           }
         }
         "#;
-        let parser = Parser::with_recursion_limit(schema, 1);
+        let parser = Parser::new(schema).with_recursion_limit(1);
 
         let ast = parser.parse();
 

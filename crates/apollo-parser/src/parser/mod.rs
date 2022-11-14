@@ -99,12 +99,10 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Create a new resource limited instance of a parser given an input string
-    /// and a recursion limit.
-    pub fn with_recursion_limit(input: &'a str, recursion_limit: usize) -> Self {
-        let mut parser = Parser::new(input);
-        parser.recursion_limit = LimitTracker::new(recursion_limit);
-        parser
+    /// Configure the recursion limit to use while parsing.
+    pub fn with_recursion_limit(mut self, recursion_limit: usize) -> Self {
+        self.recursion_limit = LimitTracker::new(recursion_limit);
+        self
     }
 
     /// Configure the limit on the number of tokens to parse. If an input document

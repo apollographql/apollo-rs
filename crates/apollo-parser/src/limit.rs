@@ -19,7 +19,7 @@ use std::fmt;
 /// ";
 /// // Create a new instance of a parser given a query and a
 /// // recursion limit
-/// let parser = Parser::with_recursion_limit(query, 4);
+/// let parser = Parser::new(query).with_recursion_limit(4);
 /// // Parse the query, and return a SyntaxTree.
 /// let ast = parser.parse();
 /// // Retrieve the limits
