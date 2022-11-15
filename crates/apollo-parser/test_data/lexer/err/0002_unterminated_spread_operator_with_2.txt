@@ -1,3 +1,2 @@
 EOF@2:2
-ERROR@0:1 "Unterminated spread operator" .
-ERROR@1:2 "Unterminated spread operator" .
+ERROR@0:2 "Unterminated spread operator" ..
