@@ -100,7 +100,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Configure the recursion limit to use while parsing.
-    pub fn with_recursion_limit(mut self, recursion_limit: usize) -> Self {
+    pub fn recursion_limit(mut self, recursion_limit: usize) -> Self {
         self.recursion_limit = LimitTracker::new(recursion_limit);
         self
     }
@@ -109,7 +109,7 @@ impl<'a> Parser<'a> {
     /// is too big, parsing will be aborted.
     ///
     /// The default limit is 15 000.
-    pub fn with_token_limit(mut self, token_limit: usize) -> Self {
+    pub fn token_limit(mut self, token_limit: usize) -> Self {
         self.lexer = self.lexer.with_limit(token_limit);
         self
     }
@@ -397,7 +397,7 @@ mod tests {
         "#;
         let parser = Parser::new(source)
             // Make it stop inside the arguments list
-            .with_token_limit(18);
+            .token_limit(18);
         let tree = parser.parse();
         let mut errors = tree.errors();
         assert_eq!(
@@ -417,12 +417,18 @@ mod tests {
                 field2: !String
             } and then some garbage
         "#;
-        let parser = Parser::new(source).with_token_limit(22);
+        let parser = Parser::new(source).token_limit(22);
         let ast = parser.parse();
         let mut errors = ast.errors();
-        assert_eq!(errors.next(), Some(&Error::with_loc("expected a Name", ")".to_string(), 70)));
+        assert_eq!(
+            errors.next(),
+            Some(&Error::with_loc("expected a Name", ")".to_string(), 70))
+        );
         // index 113 is immediately after the comment, before the newline
-        assert_eq!(errors.next(), Some(&Error::limit("token limit reached, aborting lexing", 113)));
+        assert_eq!(
+            errors.next(),
+            Some(&Error::limit("token limit reached, aborting lexing", 113))
+        );
         assert_eq!(errors.next(), None);
 
         // TODO the comment or the ": Int" is positioned wrong?

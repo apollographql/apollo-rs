@@ -18,7 +18,7 @@ fn ast(db: &dyn AstDatabase) -> SyntaxTree {
 
     let parser = ApolloParser::new(&input);
     let parser = if let Some(limit) = db.recursion_limit() {
-        parser.with_recursion_limit(limit)
+        parser.recursion_limit(limit)
     } else {
         parser
     };
