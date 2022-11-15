@@ -279,6 +279,14 @@ pub fn check_db_definitions(
             SchemaDefinition(def) => {
                 diagnostics.extend(db.check_schema_definition(def.clone()));
             }
+            // FIXME: what validation is needed for extensions?
+            SchemaExtension(_) => {}
+            ScalarTypeExtension(_) => {}
+            ObjectTypeExtension(_) => {}
+            InterfaceTypeExtension(_) => {}
+            UnionTypeExtension(_) => {}
+            EnumTypeExtension(_) => {}
+            InputObjectTypeExtension(_) => {}
         }
     }
 
