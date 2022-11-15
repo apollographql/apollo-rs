@@ -284,6 +284,15 @@ impl Cursor<'_> {
                 self.bump();
                 self.bump();
             }
+            ('.', b) => {
+                self.bump();
+                buf.push('.');
+
+                self.add_err(Error::new(
+                    "Unterminated spread operator",
+                    format!("..{}", b),
+                ));
+            }
             (a, b) => self.add_err(Error::new(
                 "Unterminated spread operator",
                 format!(".{}{}", a, b),
@@ -489,6 +498,21 @@ type Query {
         assert_eq!(
             errors,
             &[Error::limit("token limit reached, aborting lexing", 17)]
+        );
+    }
+
+    #[test]
+    fn errors_and_token_limit() {
+        let lexer = Lexer::new("type Query { ..a a a a a a a a a }").with_limit(10);
+        let (tokens, errors) = lexer.lex();
+        // Errors contribute to the token limit
+        assert_eq!(tokens.len(), 9);
+        assert_eq!(
+            errors,
+            &[
+                Error::with_loc("Unterminated spread operator", "..".to_string(), 13),
+                Error::limit("token limit reached, aborting lexing", 18),
+            ],
         );
     }
 }
