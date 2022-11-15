@@ -1240,7 +1240,7 @@ impl SchemaDefinition {
     pub fn query(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_query() {
-                db.find_object_type(op.object_type_id(db)?)
+                op.object_type(db)
             } else {
                 None
             }
@@ -1251,7 +1251,7 @@ impl SchemaDefinition {
     pub fn mutation(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_mutation() {
-                db.find_object_type(op.object_type_id(db)?)
+                op.object_type(db)
             } else {
                 None
             }
@@ -1262,7 +1262,7 @@ impl SchemaDefinition {
     pub fn subscription(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_subscription() {
-                db.find_object_type(op.object_type_id(db)?)
+                op.object_type(db)
             } else {
                 None
             }
@@ -1288,9 +1288,12 @@ impl RootOperationTypeDefinition {
         self.operation_type
     }
 
-    pub fn object_type_id(&self, db: &dyn DocumentDatabase) -> Option<Uuid> {
+    pub fn object_type(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         db.find_object_type_by_name(self.named_type().name())
-            .map(|object_type| *object_type.id())
+    }
+
+    pub fn object_type_id(&self, db: &dyn DocumentDatabase) -> Option<Uuid> {
+        self.object_type(db).map(|object_type| *object_type.id())
     }
 
     // Get a reference to SyntaxNodePtr of the current HIR node.
