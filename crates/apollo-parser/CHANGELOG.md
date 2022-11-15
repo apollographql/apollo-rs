@@ -17,6 +17,33 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.3.2](https://crates.io/crates/apollo-parser/0.3.2) - 2022-11-15
+## Fixes
+- **lexing escaped and unicode characters in block strings - [lrlna], [pull/357] fixing [issue/341], [issue/342], [issue/343]**
+
+  Fixes lexing the following string values:
+```graphql
+"""unicode in block string 🤷"""
+input Filter {
+    title: String
+}
+"""
+\""" a/b \"""
+"""
+input Filter {
+    title: String
+}
+
+type Query {
+    format: String = "Y-m-d\\TH:i:sP"
+}
+```
+
+  [lrlna]: https://github.com/lrlna
+  [pull/357]: https://github.com/apollographql/apollo-rs/pull/357
+  [issue/341]: https://github.com/apollographql/apollo-rs/pull/341
+  [issue/342]: https://github.com/apollographql/apollo-rs/pull/342
+  [issue/343]: https://github.com/apollographql/apollo-rs/pull/343
 
 # [0.3.1](https://crates.io/crates/apollo-parser/0.3.1) - 2022-11-04
 
