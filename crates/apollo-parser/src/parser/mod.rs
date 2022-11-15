@@ -386,6 +386,7 @@ impl Drop for NodeGuard {
 #[cfg(test)]
 mod tests {
     use crate::{Error, Parser};
+    use expect_test::expect;
 
     #[test]
     fn limited_mid_node() {
@@ -404,5 +405,66 @@ mod tests {
             Some(&Error::limit("token limit reached, aborting lexing", 65))
         );
         assert_eq!(errors.next(), None);
+    }
+
+    #[test]
+    fn syntax_errors_and_limits() {
+        // Syntax errors before and after the limit
+        let source = r#"
+            type Query {
+                field(arg1: Int, missing_arg): Int
+                # limit reached here
+                field2: !String
+            } and then some garbage
+        "#;
+        let parser = Parser::new(source).with_token_limit(22);
+        let ast = parser.parse();
+        let mut errors = ast.errors();
+        assert_eq!(errors.next(), Some(&Error::with_loc("expected a Name", ")".to_string(), 70)));
+        // index 113 is immediately after the comment, before the newline
+        assert_eq!(errors.next(), Some(&Error::limit("token limit reached, aborting lexing", 113)));
+        assert_eq!(errors.next(), None);
+
+        // TODO the comment or the ": Int" is positioned wrong?
+        let tree = expect![[r##"
+            DOCUMENT@0..113
+              WHITESPACE@0..13 "\n            "
+              OBJECT_TYPE_DEFINITION@13..113
+                type_KW@13..17 "type"
+                WHITESPACE@17..18 " "
+                NAME@18..24
+                  IDENT@18..23 "Query"
+                  WHITESPACE@23..24 " "
+                FIELDS_DEFINITION@24..113
+                  L_CURLY@24..25 "{"
+                  WHITESPACE@25..42 "\n                "
+                  FIELD_DEFINITION@42..113
+                    NAME@42..47
+                      IDENT@42..47 "field"
+                    ARGUMENTS_DEFINITION@47..71
+                      L_PAREN@47..48 "("
+                      INPUT_VALUE_DEFINITION@48..59
+                        NAME@48..52
+                          IDENT@48..52 "arg1"
+                        COLON@52..53 ":"
+                        WHITESPACE@53..54 " "
+                        NAMED_TYPE@54..57
+                          NAME@54..57
+                            IDENT@54..57 "Int"
+                        COMMA@57..58 ","
+                        WHITESPACE@58..59 " "
+                      INPUT_VALUE_DEFINITION@59..70
+                        NAME@59..70
+                          IDENT@59..70 "missing_arg"
+                      R_PAREN@70..71 ")"
+                    COLON@71..72 ":"
+                    WHITESPACE@72..73 " "
+                    NAMED_TYPE@73..96
+                      COMMENT@73..93 "# limit reached here"
+                      NAME@93..96
+                        IDENT@93..96 "Int"
+                    WHITESPACE@96..113 "\n                "
+        "##]];
+        tree.assert_eq(&format!("{:#?}", ast.document().syntax));
     }
 }
