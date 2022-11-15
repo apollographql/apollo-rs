@@ -140,13 +140,13 @@ impl<'a> Parser<'a> {
         while let Some(TokenKind::Comment | TokenKind::Whitespace | TokenKind::Comma) = self.peek()
         {
             if let Some(TokenKind::Comment) = self.peek() {
-                self.bump(SyntaxKind::COMMENT);
+                self.eat(SyntaxKind::COMMENT);
             }
             if let Some(TokenKind::Whitespace) = self.peek() {
-                self.bump(SyntaxKind::WHITESPACE);
+                self.eat(SyntaxKind::WHITESPACE);
             }
             if let Some(TokenKind::Comma) = self.peek() {
-                self.bump(SyntaxKind::COMMA);
+                self.eat(SyntaxKind::COMMA);
             }
         }
     }
