@@ -97,6 +97,13 @@ impl ApolloCompiler {
         id
     }
 
+    pub fn with_snapshot(&mut self, input: Snapshot<RootDatabase>) -> FileId {
+        let id = FileId(2);
+        self.db.set_schema_snapshot(id, input);
+
+        id
+    }
+
     /// Get a snapshot of the current database.
     pub fn snapshot(&self) -> salsa::Snapshot<RootDatabase> {
         self.db.snapshot()

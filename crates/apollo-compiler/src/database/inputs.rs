@@ -1,4 +1,6 @@
-use crate::database::sources::FileId;
+use salsa::Snapshot;
+
+use crate::{database::sources::FileId, RootDatabase};
 #[salsa::query_group(InputStorage)]
 pub trait InputDatabase {
     #[salsa::input]
@@ -14,4 +16,7 @@ pub trait InputDatabase {
 
     #[salsa::input]
     fn input_query(&self, file_id: FileId) -> String;
+
+    #[salsa::input]
+    fn schema_snapshot(&self, snapshot: Snapshot<RootDatabase>) -> String;
 }
