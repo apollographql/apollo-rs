@@ -408,6 +408,39 @@ mod tests {
     }
 
     #[test]
+    fn multiple_limits() {
+        let source = r#"
+            query {
+                a {
+                    a {
+                        a {
+                            a
+                        }
+                    }
+                }
+            }
+        "#;
+
+        let parser = Parser::new(source)
+            .recursion_limit(10)
+            .token_limit(22);
+        let ast = parser.parse();
+        let errors = ast.errors().collect::<Vec<_>>();
+        assert_eq!(errors, &[
+           &Error::limit("token limit reached, aborting lexing", 170),
+        ]);
+
+        let parser = Parser::new(source)
+            .recursion_limit(3)
+            .token_limit(200);
+        let ast = parser.parse();
+        let errors = ast.errors().collect::<Vec<_>>();
+        assert_eq!(errors, &[
+           &Error::limit("parser limit(3) reached", 61),
+        ]);
+    }
+
+    #[test]
     fn syntax_errors_and_limits() {
         // Syntax errors before and after the limit
         let source = r#"
