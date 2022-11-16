@@ -30,7 +30,7 @@ pub struct Lexer<'a> {
     input: &'a str,
     index: usize,
     finished: bool,
-    limit: LimitTracker,
+    limit: Option<LimitTracker>,
 }
 
 impl<'a> Lexer<'a> {
@@ -56,13 +56,12 @@ impl<'a> Lexer<'a> {
             input,
             index: 0,
             finished: false,
-            // An arbitrary default limit that fits most documents without risking memory exhaustion.
-            limit: LimitTracker::new(15_000),
+            limit: None,
         }
     }
 
     pub fn with_limit(mut self, limit: usize) -> Self {
-        self.limit = LimitTracker::new(limit);
+        self.limit = Some(LimitTracker::new(limit));
         self
     }
 
@@ -97,13 +96,15 @@ impl<'a> Iterator for Lexer<'a> {
             return Some(Ok(eof));
         }
 
-        self.limit.consume();
-        if self.limit.limited() {
-            self.finished = true;
-            return Some(Err(Error::limit(
-                "token limit reached, aborting lexing",
-                self.index,
-            )));
+        if let Some(limit) = &mut self.limit {
+            limit.consume();
+            if limit.limited() {
+                self.finished = true;
+                return Some(Err(Error::limit(
+                    "token limit reached, aborting lexing",
+                    self.index,
+                )));
+            }
         }
 
         let mut c = Cursor::new(self.input);

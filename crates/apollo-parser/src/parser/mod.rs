@@ -108,7 +108,7 @@ impl<'a> Parser<'a> {
     /// Configure the limit on the number of tokens to parse. If an input document
     /// is too big, parsing will be aborted.
     ///
-    /// The default limit is 15 000.
+    /// By default, there is no limit.
     pub fn token_limit(mut self, token_limit: usize) -> Self {
         self.lexer = self.lexer.with_limit(token_limit);
         self
@@ -421,23 +421,18 @@ mod tests {
             }
         "#;
 
-        let parser = Parser::new(source)
-            .recursion_limit(10)
-            .token_limit(22);
+        let parser = Parser::new(source).recursion_limit(10).token_limit(22);
         let ast = parser.parse();
         let errors = ast.errors().collect::<Vec<_>>();
-        assert_eq!(errors, &[
-           &Error::limit("token limit reached, aborting lexing", 170),
-        ]);
+        assert_eq!(
+            errors,
+            &[&Error::limit("token limit reached, aborting lexing", 170),]
+        );
 
-        let parser = Parser::new(source)
-            .recursion_limit(3)
-            .token_limit(200);
+        let parser = Parser::new(source).recursion_limit(3).token_limit(200);
         let ast = parser.parse();
         let errors = ast.errors().collect::<Vec<_>>();
-        assert_eq!(errors, &[
-           &Error::limit("parser limit(3) reached", 61),
-        ]);
+        assert_eq!(errors, &[&Error::limit("parser limit(3) reached", 61),]);
     }
 
     #[test]
