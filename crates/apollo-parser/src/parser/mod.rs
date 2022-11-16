@@ -431,7 +431,8 @@ mod tests {
         );
         assert_eq!(errors.next(), None);
 
-        // TODO the comment or the ": Int" is positioned wrong?
+        // TODO(@goto-bus-stop) the comment is positioned wrong:
+        // https://github.com/apollographql/apollo-rs/issues/362
         let tree = expect![[r##"
             DOCUMENT@0..113
               WHITESPACE@0..13 "\n            "
