@@ -737,6 +737,11 @@ impl DirectiveDefinition {
         self.directive_locations.as_ref()
     }
 
+    /// Indicates whether a directive may be used multiple times in a single location.
+    pub fn repeatable(&self) -> bool {
+        self.repeatable
+    }
+
     /// Get a reference to SyntaxNodePtr of the current HIR node.
     pub fn ast_ptr(&self) -> Option<&SyntaxNodePtr> {
         self.ast_ptr.as_ref()
