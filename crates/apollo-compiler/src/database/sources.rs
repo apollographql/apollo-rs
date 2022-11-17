@@ -1,49 +1,23 @@
-use std::{collections::HashSet, hash::BuildHasherDefault, path::PathBuf};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
-#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
-pub struct FileId(pub u32);
+use uuid::Uuid;
 
-// #[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
-// pub struct Sources {
-//     interner: SourceInterner,
-//     manifest: Vec<SourceInfo>,
-// }
+#[derive(Clone, Debug, Default)]
+pub(crate) struct SourceManifest {
+    pub(crate) manifest: HashMap<FileId, PathBuf>,
+}
 
-// impl Sources {
-//     pub fn new(source: String) -> Self {
-//         Self {
-//             manifest: vec![SourceInfo::new(source)],
-//         }
-//     }
-//
-//     pub fn with_sources(sources: Vec<String>) -> Self {
-//         Self {
-//             manifest: sources.into_iter().map(|s| SourceInfo::new(s)).collect(),
-//         }
-//     }
-//
-//     pub(crate) fn manifest(&self, source: String) {
-//         self.manifest.push(SourceInfo::new(source))
-//     }
-// }
-// #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-// pub struct SourceInfo {
-//     pub(crate) file_id: FileId,
-//     // @lrlna probably `path`?
-//     pub(crate) name: String,
-// }
+impl SourceManifest {
+    pub(crate) fn add_source(&self, path: impl AsRef<Path>) -> FileId {
+        let file_id = FileId(Uuid::new_v4());
+        self.manifest.insert(file_id, path.as_ref().into());
 
-// impl SourceInfo {
-//     pub fn new(name: String) -> Self {
-//         Self {
-//             file_id: FileId(Uuid::new_v4()),
-//             name,
-//         }
-//     }
-// }
-//
-// pub(crate) struct SourceInterner {
-//     map: HashSet<SourcePath, BuildHasherDefault<FxHasher>>,
-// }
+        file_id
+    }
+}
 
-pub struct SourcePath(PathBuf);
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub struct FileId(Uuid);

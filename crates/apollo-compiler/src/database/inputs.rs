@@ -1,12 +1,14 @@
-use salsa::Snapshot;
+use crate::database::sources::FileId;
 
-use crate::{database::sources::FileId, RootDatabase};
+use super::sources::SourceManifest;
+
 #[salsa::query_group(InputStorage)]
 pub trait InputDatabase {
     #[salsa::input]
     fn recursion_limit(&self) -> Option<usize>;
+
     #[salsa::input]
-    fn input_document(&self) -> String;
+    fn input_document(&self, file_id: FileId) -> String;
 
     // NOTE(@lrlna): in the context of an environment where a schema represents
     // the current state that must not be modified from incoming queries, we
@@ -17,6 +19,7 @@ pub trait InputDatabase {
     #[salsa::input]
     fn input_query(&self, file_id: FileId) -> String;
 
+    // Arc?
     #[salsa::input]
-    fn schema_snapshot(&self, snapshot: Snapshot<RootDatabase>) -> String;
+    fn sources(&self) -> SourceManifest;
 }

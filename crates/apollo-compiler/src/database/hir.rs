@@ -9,6 +9,8 @@ use uuid::Uuid;
 
 use crate::DocumentDatabase;
 
+use super::FileId;
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Definition {
     OperationDefinition(OperationDefinition),
@@ -276,6 +278,7 @@ pub struct FragmentDefinition {
     pub(crate) type_condition: String,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) selection_set: SelectionSet,
+    pub(crate) location: Location,
     pub(crate) ast_ptr: SyntaxNodePtr,
 }
 
@@ -2236,5 +2239,14 @@ impl InputObjectTypeExtension {
     pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
+pub struct Location {
+    pub(crate) offset: usize,
+    pub(crate) len: usize,
+    pub(crate) file_id: FileId,
+}
+
+impl Location {
+    pub fn file_id(&self) -> FileId {
+        self.file_id
     }
 }

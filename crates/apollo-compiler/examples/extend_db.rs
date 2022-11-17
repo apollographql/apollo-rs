@@ -17,7 +17,7 @@ impl Linter {
     pub fn new(input: &str) -> Self {
         let mut db = LinterDatabase::default();
         let input = input.to_string();
-        db.set_input(input);
+        db.set_input_document(input);
         Self { db }
     }
 
@@ -99,7 +99,7 @@ fn capitalised_definitions(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
 
                     Some(LintDiagnostic::CapitalisedDefinitions(
                         CapitalisedDefinitions {
-                            src: db.input(),
+                            src: db.input_document(),
                             definition: (offset, len).into(),
                         },
                     ))
