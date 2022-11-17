@@ -5,9 +5,9 @@ mod token_text;
 
 pub(crate) mod grammar;
 
-use std::{cell::RefCell, fmt, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
-use crate::{lexer::Lexer, Error, Token, TokenKind};
+use crate::{lexer::Lexer, Error, LimitTracker, Token, TokenKind};
 
 pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxNode, SyntaxNodeChildren, SyntaxNodePtr, SyntaxToken};
@@ -99,12 +99,19 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Create a new resource limited instance of a parser given an input string
-    /// and a recursion limit.
-    pub fn with_recursion_limit(input: &'a str, recursion_limit: usize) -> Self {
-        let mut parser = Parser::new(input);
-        parser.recursion_limit = LimitTracker::new(recursion_limit);
-        parser
+    /// Configure the recursion limit to use while parsing.
+    pub fn recursion_limit(mut self, recursion_limit: usize) -> Self {
+        self.recursion_limit = LimitTracker::new(recursion_limit);
+        self
+    }
+
+    /// Configure the limit on the number of tokens to parse. If an input document
+    /// is too big, parsing will be aborted.
+    ///
+    /// By default, there is no limit.
+    pub fn token_limit(mut self, token_limit: usize) -> Self {
+        self.lexer = self.lexer.with_limit(token_limit);
+        self
     }
 
     /// Parse the current tokens.
@@ -152,13 +159,16 @@ impl<'a> Parser<'a> {
     }
 
     /// Get current token's data.
-    pub(crate) fn current(&mut self) -> &Token {
+    pub(crate) fn current(&mut self) -> Option<&Token> {
         self.peek_token()
-            .expect("Could not peek at the current token")
     }
 
     /// Consume a token from the lexer and add it to the AST.
     fn eat(&mut self, kind: SyntaxKind) {
+        if self.current().is_none() {
+            return;
+        }
+
         let token = self.pop();
         self.builder.borrow_mut().token(kind, token.data());
     }
@@ -168,36 +178,61 @@ impl<'a> Parser<'a> {
     /// Note: After a limit error is pushed, any further errors pushed
     /// are silently discarded.
     pub(crate) fn limit_err<S: Into<String>>(&mut self, message: S) {
-        let current = self.current();
+        let current = if let Some(current) = self.current() {
+            current
+        } else {
+            return;
+        };
         // this needs to be the computed location
-        let err = Error::with_loc(message, current.data().to_string(), current.index());
+        let err = Error::limit(message, current.index());
         self.push_err(err);
         self.accept_errors = false;
     }
 
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err(&mut self, message: &str) {
-        let current = self.current();
-        // this needs to be the computed location
-        let err = Error::with_loc(message, current.data().to_string(), current.index());
+        let current = if let Some(current) = self.current() {
+            current
+        } else {
+            return;
+        };
+        let err = if current.kind == TokenKind::Eof {
+            Error::eof(message, current.index())
+        } else {
+            // this needs to be the computed location
+            Error::with_loc(message, current.data().to_string(), current.index())
+        };
         self.push_err(err);
     }
 
     /// Create a parser error and push it into the error vector.
     pub(crate) fn err_and_pop(&mut self, message: &str) {
+        if self.current().is_none() {
+            return;
+        }
+
         let current = self.pop();
         // we usually bump ignored after we pop a token, so make sure we also do
         // this when we create an error and pop.
         self.bump_ignored();
-        // this needs to be the computed location
-        let err = Error::with_loc(message, current.data().to_string(), current.index());
+        let err = if current.kind == TokenKind::Eof {
+            Error::eof(message, current.index())
+        } else {
+            // this needs to be the computed location
+            Error::with_loc(message, current.data().to_string(), current.index())
+        };
         self.push_err(err);
     }
 
     /// Consume the next token if it is `kind` or emit an error
     /// otherwise.
     pub(crate) fn expect(&mut self, token: TokenKind, kind: SyntaxKind) {
-        let current = self.current();
+        let current = if let Some(current) = self.current() {
+            current
+        } else {
+            return;
+        };
+        let is_eof = current.kind == TokenKind::Eof;
         // TODO(@goto-bus-stop) this allocation is only required if we have an
         // error, but has to be done eagerly here as the &str reference gets
         // invalidated by `self.at()`. Can we avoid that?
@@ -209,7 +244,12 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let err = Error::with_loc(format!("expected {:?}, got {}", kind, data), data, index);
+        let message = format!("expected {:?}, got {}", kind, data);
+        let err = if is_eof {
+            Error::eof(message, index)
+        } else {
+            Error::with_loc(message, data, index)
+        };
 
         self.push_err(err);
     }
@@ -232,8 +272,11 @@ impl<'a> Parser<'a> {
     fn next_token(&mut self) -> Option<Token> {
         for res in &mut self.lexer {
             match res {
-                Err(e) => {
-                    self.errors.push(e);
+                Err(err) => {
+                    if err.is_limit() {
+                        self.accept_errors = false;
+                    }
+                    self.errors.push(err);
                 }
                 Ok(token) => {
                     return Some(token);
@@ -314,93 +357,6 @@ impl<'a> Parser<'a> {
     }
 }
 
-/// A LimitTracker enforces a particular limit within the parser. It keeps
-/// track of utilization so that we can report how close to a limit we
-/// approached over the lifetime of the tracker.
-/// ```rust
-/// use apollo_parser::Parser;
-///
-/// let query = "
-/// {
-///     animal
-///     ...snackSelection
-///     ... on Pet {
-///       playmates {
-///         count
-///       }
-///     }
-/// }
-/// ";
-/// // Create a new instance of a parser given a query and a
-/// // recursion limit
-/// let parser = Parser::with_recursion_limit(query, 4);
-/// // Parse the query, and return a SyntaxTree.
-/// let ast = parser.parse();
-/// // Retrieve the limits
-/// let usage = ast.recursion_limit();
-/// // Print out some of the usage details to see what happened during
-/// // our parse. `limit` just reports the limit we set, `high` is the
-/// // high-water mark of recursion usage.
-/// println!("{:?}", usage);
-/// println!("{:?}", usage.limit);
-/// println!("{:?}", usage.high);
-/// // Check that are no errors. These are not part of the AST.
-/// assert_eq!(0, ast.errors().len());
-///
-/// // Get the document root node
-/// let doc = ast.document();
-/// // ... continue
-/// ```
-#[derive(PartialEq, Eq, Clone, Copy)]
-pub struct LimitTracker {
-    current: usize,
-    /// High Water mark for this limit
-    pub high: usize,
-    /// Limit.
-    pub limit: usize,
-}
-
-impl Default for LimitTracker {
-    fn default() -> Self {
-        Self {
-            current: 0,
-            high: 0,
-            limit: 4_096, // Derived from router experimentation
-        }
-    }
-}
-
-impl LimitTracker {
-    pub fn new(limit: usize) -> Self {
-        Self {
-            current: 0,
-            high: 0,
-            limit,
-        }
-    }
-
-    fn limited(&self) -> bool {
-        self.current > self.limit
-    }
-
-    fn consume(&mut self) {
-        self.current += 1;
-        if self.current > self.high {
-            self.high = self.current;
-        }
-    }
-
-    fn reset(&mut self) {
-        self.current = 0;
-    }
-}
-
-impl fmt::Debug for LimitTracker {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "recursion limit: {}, high: {}", self.limit, self.high)
-    }
-}
-
 /// A wrapper around the SyntaxTreeBuilder used to self-close nodes.
 ///
 /// When the NodeGuard goes out of scope, it automatically runs `finish_node()`
@@ -424,5 +380,126 @@ impl NodeGuard {
 impl Drop for NodeGuard {
     fn drop(&mut self) {
         self.builder.borrow_mut().finish_node();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{Error, Parser};
+    use expect_test::expect;
+
+    #[test]
+    fn limited_mid_node() {
+        let source = r#"
+            type Query {
+                field(arg1: Int, arg2: Int, arg3: Int, arg4: Int, arg5: Int, arg6: Int): Int
+            }
+        "#;
+        let parser = Parser::new(source)
+            // Make it stop inside the arguments list
+            .token_limit(18);
+        let tree = parser.parse();
+        let mut errors = tree.errors();
+        assert_eq!(
+            errors.next(),
+            Some(&Error::limit("token limit reached, aborting lexing", 65))
+        );
+        assert_eq!(errors.next(), None);
+    }
+
+    #[test]
+    fn multiple_limits() {
+        let source = r#"
+            query {
+                a {
+                    a {
+                        a {
+                            a
+                        }
+                    }
+                }
+            }
+        "#;
+
+        let parser = Parser::new(source).recursion_limit(10).token_limit(22);
+        let ast = parser.parse();
+        let errors = ast.errors().collect::<Vec<_>>();
+        assert_eq!(
+            errors,
+            &[&Error::limit("token limit reached, aborting lexing", 170),]
+        );
+
+        let parser = Parser::new(source).recursion_limit(3).token_limit(200);
+        let ast = parser.parse();
+        let errors = ast.errors().collect::<Vec<_>>();
+        assert_eq!(errors, &[&Error::limit("parser limit(3) reached", 61),]);
+    }
+
+    #[test]
+    fn syntax_errors_and_limits() {
+        // Syntax errors before and after the limit
+        let source = r#"
+            type Query {
+                field(arg1: Int, missing_arg): Int
+                # limit reached here
+                field2: !String
+            } and then some garbage
+        "#;
+        let parser = Parser::new(source).token_limit(22);
+        let ast = parser.parse();
+        let mut errors = ast.errors();
+        assert_eq!(
+            errors.next(),
+            Some(&Error::with_loc("expected a Name", ")".to_string(), 70))
+        );
+        // index 113 is immediately after the comment, before the newline
+        assert_eq!(
+            errors.next(),
+            Some(&Error::limit("token limit reached, aborting lexing", 113))
+        );
+        assert_eq!(errors.next(), None);
+
+        // TODO(@goto-bus-stop) the comment is positioned wrong:
+        // https://github.com/apollographql/apollo-rs/issues/362
+        let tree = expect![[r##"
+            DOCUMENT@0..113
+              WHITESPACE@0..13 "\n            "
+              OBJECT_TYPE_DEFINITION@13..113
+                type_KW@13..17 "type"
+                WHITESPACE@17..18 " "
+                NAME@18..24
+                  IDENT@18..23 "Query"
+                  WHITESPACE@23..24 " "
+                FIELDS_DEFINITION@24..113
+                  L_CURLY@24..25 "{"
+                  WHITESPACE@25..42 "\n                "
+                  FIELD_DEFINITION@42..113
+                    NAME@42..47
+                      IDENT@42..47 "field"
+                    ARGUMENTS_DEFINITION@47..71
+                      L_PAREN@47..48 "("
+                      INPUT_VALUE_DEFINITION@48..59
+                        NAME@48..52
+                          IDENT@48..52 "arg1"
+                        COLON@52..53 ":"
+                        WHITESPACE@53..54 " "
+                        NAMED_TYPE@54..57
+                          NAME@54..57
+                            IDENT@54..57 "Int"
+                        COMMA@57..58 ","
+                        WHITESPACE@58..59 " "
+                      INPUT_VALUE_DEFINITION@59..70
+                        NAME@59..70
+                          IDENT@59..70 "missing_arg"
+                      R_PAREN@70..71 ")"
+                    COLON@71..72 ":"
+                    WHITESPACE@72..73 " "
+                    NAMED_TYPE@73..96
+                      COMMENT@73..93 "# limit reached here"
+                      NAME@93..96
+                        IDENT@93..96 "Int"
+                    WHITESPACE@96..113 "\n                "
+        "##]];
+        tree.assert_eq(&format!("{:#?}", ast.document().syntax));
     }
 }

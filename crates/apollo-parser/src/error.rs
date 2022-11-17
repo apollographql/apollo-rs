@@ -34,10 +34,37 @@ use std::fmt;
 /// [annotate_snippets]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/annotate_snippet.rs
 /// [miette crate]: https://docs.rs/miette/3.2.0/miette/index.html
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub(crate) enum ErrorData {
+    Eof,
+    LimitExceeded,
+    Text(String),
+}
+
+impl ErrorData {
+    pub fn len(&self) -> usize {
+        match self {
+            Self::Eof | Self::LimitExceeded => 0,
+            Self::Text(text) => text.len(),
+        }
+    }
+}
+
+impl fmt::Display for ErrorData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Eof => write!(f, "EOF"),
+            Self::LimitExceeded => Ok(()),
+            Self::Text(text) => write!(f, "{}", text),
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, Clone, thiserror::Error)]
+#[error("ERROR@{index}:{} {message:?} {data}", .index + .data.len())]
 pub struct Error {
     pub(crate) message: String,
-    pub(crate) data: String,
+    pub(crate) data: ErrorData,
     pub(crate) index: usize,
 }
 
@@ -46,7 +73,7 @@ impl Error {
     pub fn new<S: Into<String>>(message: S, data: String) -> Self {
         Self {
             message: message.into(),
-            data,
+            data: ErrorData::Text(data),
             index: 0,
         }
     }
@@ -55,7 +82,23 @@ impl Error {
     pub fn with_loc<S: Into<String>>(message: S, data: String, index: usize) -> Self {
         Self {
             message: message.into(),
-            data,
+            data: ErrorData::Text(data),
+            index,
+        }
+    }
+
+    pub fn limit<S: Into<String>>(message: S, index: usize) -> Self {
+        Self {
+            message: message.into(),
+            data: ErrorData::LimitExceeded,
+            index,
+        }
+    }
+
+    pub fn eof<S: Into<String>>(message: S, index: usize) -> Self {
+        Self {
+            message: message.into(),
+            data: ErrorData::Eof,
             index,
         }
     }
@@ -63,7 +106,22 @@ impl Error {
     /// Get a reference to the error's data. This is usually the token that
     /// `apollo-parser` has found to be lexically or syntactically incorrect.
     pub fn data(&self) -> &str {
-        self.data.as_ref()
+        match &self.data {
+            ErrorData::Text(text) => text,
+            _ => "",
+        }
+    }
+
+    pub fn is_limit(&self) -> bool {
+        matches!(&self.data, ErrorData::LimitExceeded)
+    }
+
+    pub fn is_eof(&self) -> bool {
+        matches!(&self.data, ErrorData::Eof)
+    }
+
+    pub(crate) fn set_data(&mut self, data: String) {
+        self.data = ErrorData::Text(data);
     }
 
     /// Get a reference to the error's index. This is where the error begins in
@@ -83,18 +141,10 @@ impl fmt::Debug for Error {
         let start = self.index;
         let end = self.index + self.data.len();
 
-        if &self.data == "EOF" {
-            write!(
-                f,
-                "ERROR@{}:{} {:?} {}",
-                start, start, self.message, self.data
-            )
-        } else {
-            write!(
-                f,
-                "ERROR@{}:{} {:?} {}",
-                start, end, self.message, self.data
-            )
-        }
+        write!(
+            f,
+            "ERROR@{}:{} {:?} {}",
+            start, end, self.message, self.data
+        )
     }
 }

@@ -16,10 +16,11 @@ pub trait AstDatabase: InputDatabase {
 fn ast(db: &dyn AstDatabase) -> SyntaxTree {
     let input = db.input();
 
+    let parser = ApolloParser::new(&input);
     let parser = if let Some(limit) = db.recursion_limit() {
-        ApolloParser::with_recursion_limit(&input, limit)
+        parser.recursion_limit(limit)
     } else {
-        ApolloParser::new(&input)
+        parser
     };
     parser.parse()
 }

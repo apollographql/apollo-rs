@@ -6,6 +6,7 @@ mod tests;
 
 pub mod ast;
 mod error;
+mod limit;
 mod parser;
 
 pub use crate::lexer::Lexer;
@@ -15,4 +16,5 @@ pub(crate) use crate::parser::{
 };
 
 pub use crate::error::Error;
-pub use crate::parser::{LimitTracker, Parser, SyntaxNode, SyntaxTree};
+pub use crate::limit::LimitTracker;
+pub use crate::parser::{Parser, SyntaxNode, SyntaxTree};
