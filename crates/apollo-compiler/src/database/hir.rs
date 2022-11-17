@@ -21,6 +21,13 @@ pub enum Definition {
     EnumTypeDefinition(EnumTypeDefinition),
     InputObjectTypeDefinition(InputObjectTypeDefinition),
     SchemaDefinition(SchemaDefinition),
+    SchemaExtension(SchemaExtension),
+    ScalarTypeExtension(ScalarTypeExtension),
+    ObjectTypeExtension(ObjectTypeExtension),
+    InterfaceTypeExtension(InterfaceTypeExtension),
+    UnionTypeExtension(UnionTypeExtension),
+    EnumTypeExtension(EnumTypeExtension),
+    InputObjectTypeExtension(InputObjectTypeExtension),
 }
 
 impl Definition {
@@ -37,6 +44,13 @@ impl Definition {
             Definition::EnumTypeDefinition(def) => Some(def.name()),
             Definition::InputObjectTypeDefinition(def) => Some(def.name()),
             Definition::SchemaDefinition(_) => None,
+            Definition::SchemaExtension(_) => None,
+            Definition::ScalarTypeExtension(def) => Some(def.name()),
+            Definition::ObjectTypeExtension(def) => Some(def.name()),
+            Definition::InterfaceTypeExtension(def) => Some(def.name()),
+            Definition::UnionTypeExtension(def) => Some(def.name()),
+            Definition::EnumTypeExtension(def) => Some(def.name()),
+            Definition::InputObjectTypeExtension(def) => Some(def.name()),
         }
     }
 
@@ -52,6 +66,13 @@ impl Definition {
             Definition::EnumTypeDefinition(def) => Some(def.name_src()),
             Definition::InputObjectTypeDefinition(def) => Some(def.name_src()),
             Definition::SchemaDefinition(_) => None,
+            Definition::SchemaExtension(_) => None,
+            Definition::ScalarTypeExtension(def) => Some(def.name_src()),
+            Definition::ObjectTypeExtension(def) => Some(def.name_src()),
+            Definition::InterfaceTypeExtension(def) => Some(def.name_src()),
+            Definition::UnionTypeExtension(def) => Some(def.name_src()),
+            Definition::EnumTypeExtension(def) => Some(def.name_src()),
+            Definition::InputObjectTypeExtension(def) => Some(def.name_src()),
         }
     }
 
@@ -69,6 +90,13 @@ impl Definition {
             Definition::EnumTypeDefinition(_) => "EnumTypeDefinition".to_string(),
             Definition::InputObjectTypeDefinition(_) => "InputObjectTypeDefinition".to_string(),
             Definition::SchemaDefinition(_) => "SchemaDefinition".to_string(),
+            Definition::SchemaExtension(_) => "SchemaExtension".to_string(),
+            Definition::ScalarTypeExtension(_) => "ScalarTypeExtension".to_string(),
+            Definition::ObjectTypeExtension(_) => "ObjectTypeExtension".to_string(),
+            Definition::InterfaceTypeExtension(_) => "InterfaceTypeExtension".to_string(),
+            Definition::UnionTypeExtension(_) => "UnionTypeExtension".to_string(),
+            Definition::EnumTypeExtension(_) => "EnumTypeExtension".to_string(),
+            Definition::InputObjectTypeExtension(_) => "InputObjectTypeExtension".to_string(),
         }
     }
 
@@ -84,6 +112,13 @@ impl Definition {
             Definition::EnumTypeDefinition(def) => Some(def.id()),
             Definition::InputObjectTypeDefinition(def) => Some(def.id()),
             Definition::SchemaDefinition(_) => None,
+            Definition::SchemaExtension(_) => None,
+            Definition::ScalarTypeExtension(_) => None,
+            Definition::ObjectTypeExtension(_) => None,
+            Definition::InterfaceTypeExtension(_) => None,
+            Definition::UnionTypeExtension(_) => None,
+            Definition::EnumTypeExtension(_) => None,
+            Definition::InputObjectTypeExtension(_) => None,
         }
     }
 
@@ -107,6 +142,13 @@ impl Definition {
             Definition::EnumTypeDefinition(def) => def.directives(),
             Definition::InputObjectTypeDefinition(def) => def.directives(),
             Definition::SchemaDefinition(def) => def.directives(),
+            Definition::SchemaExtension(def) => def.directives(),
+            Definition::ScalarTypeExtension(def) => def.directives(),
+            Definition::ObjectTypeExtension(def) => def.directives(),
+            Definition::InterfaceTypeExtension(def) => def.directives(),
+            Definition::UnionTypeExtension(def) => def.directives(),
+            Definition::EnumTypeExtension(def) => def.directives(),
+            Definition::InputObjectTypeExtension(def) => def.directives(),
         }
     }
 
@@ -1640,6 +1682,7 @@ impl EnumTypeDefinition {
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct EnumValueDefinition {
     pub(crate) description: Option<String>,
@@ -1898,5 +1941,295 @@ impl From<String> for Name {
             src: name,
             ast_ptr: None,
         }
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct SchemaExtension {
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) root_operation_type_definition: Arc<Vec<RootOperationTypeDefinition>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
+}
+
+impl SchemaExtension {
+    /// Get a reference to the schema definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
+    /// Get a reference to the schema definition's root operation type definition.
+    pub fn root_operation_type_definition(&self) -> &[RootOperationTypeDefinition] {
+        self.root_operation_type_definition.as_ref()
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
+        self.ast_ptr
+            .to_node(&rowan::SyntaxNode::new_root(db.document()))
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct ScalarTypeExtension {
+    pub(crate) name: Name,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
+}
+
+impl ScalarTypeExtension {
+    /// Get a reference to the scalar definition's name.
+    pub fn name(&self) -> &str {
+        self.name.src()
+    }
+
+    /// Get a reference to Name's source.
+    pub fn name_src(&self) -> &Name {
+        &self.name
+    }
+
+    /// Get a reference to scalar definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
+        self.ast_ptr
+            .to_node(&rowan::SyntaxNode::new_root(db.document()))
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct ObjectTypeExtension {
+    pub(crate) name: Name,
+    pub(crate) implements_interfaces: Arc<Vec<ImplementsInterface>>,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
+}
+
+impl ObjectTypeExtension {
+    /// Get a reference to the object type definition's name.
+    pub fn name(&self) -> &str {
+        self.name.src()
+    }
+
+    /// Get a reference to Name's source.
+    pub fn name_src(&self) -> &Name {
+        &self.name
+    }
+    /// Get a reference to the object type definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
+    /// Get a reference to the object type definition's field definitions.
+    pub fn fields_definition(&self) -> &[FieldDefinition] {
+        self.fields_definition.as_ref()
+    }
+
+    /// Find a field in object type definition.
+    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
+        self.fields_definition().iter().find(|f| f.name() == name)
+    }
+
+    /// Get a reference to object type definition's implements interfaces vector.
+    pub fn implements_interfaces(&self) -> &[ImplementsInterface] {
+        self.implements_interfaces.as_ref()
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct InterfaceTypeExtension {
+    pub(crate) name: Name,
+    pub(crate) implements_interfaces: Arc<Vec<ImplementsInterface>>,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
+}
+
+impl InterfaceTypeExtension {
+    /// Get a reference to the interface definition's name.
+    pub fn name(&self) -> &str {
+        self.name.src()
+    }
+
+    /// Get a reference to Name's source.
+    pub fn name_src(&self) -> &Name {
+        &self.name
+    }
+
+    /// Get a reference to interface definition's implements interfaces vector.
+    pub fn implements_interfaces(&self) -> &[ImplementsInterface] {
+        self.implements_interfaces.as_ref()
+    }
+
+    /// Get a reference to the interface definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
+    /// Get a reference to interface definition's fields.
+    pub fn fields_definition(&self) -> &[FieldDefinition] {
+        self.fields_definition.as_ref()
+    }
+
+    /// Find a field in interface face definition.
+    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
+        self.fields_definition().iter().find(|f| f.name() == name)
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct UnionTypeExtension {
+    pub(crate) name: Name,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) union_members: Arc<Vec<UnionMember>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
+}
+
+impl UnionTypeExtension {
+    /// Get a reference to the union definition's name.
+    pub fn name(&self) -> &str {
+        self.name.src()
+    }
+
+    /// Get a reference to Name's source.
+    pub fn name_src(&self) -> &Name {
+        &self.name
+    }
+
+    /// Get a reference to union definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
+    /// Get a reference to union definition's union members.
+    pub fn union_members(&self) -> &[UnionMember] {
+        self.union_members.as_ref()
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct EnumTypeExtension {
+    pub(crate) name: Name,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) enum_values_definition: Arc<Vec<EnumValueDefinition>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
+}
+
+impl EnumTypeExtension {
+    /// Get a reference to the enum definition's name.
+    pub fn name(&self) -> &str {
+        self.name.src()
+    }
+
+    /// Get a reference to Name's source.
+    pub fn name_src(&self) -> &Name {
+        &self.name
+    }
+
+    /// Get a reference to enum definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
+    /// Get a reference to enum definition's enum values definition vector.
+    pub fn enum_values_definition(&self) -> &[EnumValueDefinition] {
+        self.enum_values_definition.as_ref()
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
+    }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub struct InputObjectTypeExtension {
+    pub(crate) name: Name,
+    pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) input_fields_definition: Arc<Vec<InputValueDefinition>>,
+    pub(crate) ast_ptr: SyntaxNodePtr,
+}
+
+impl InputObjectTypeExtension {
+    /// Get a reference to the input object definition's name.
+    pub fn name(&self) -> &str {
+        self.name.src()
+    }
+
+    /// Get a reference to Name's source.
+    pub fn name_src(&self) -> &Name {
+        &self.name
+    }
+
+    /// Get a reference to input object definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
+    pub fn input_fields_definition(&self) -> &[InputValueDefinition] {
+        self.input_fields_definition.as_ref()
+    }
+
+    // Get a reference to SyntaxNodePtr of the current HIR node.
+    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
+        &self.ast_ptr
+    }
+
+    // Get current HIR node's AST node.
+    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
+        let syntax_node_ptr = self.ast_ptr();
+        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
     }
 }

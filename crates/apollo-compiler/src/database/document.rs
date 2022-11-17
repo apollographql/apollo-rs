@@ -403,7 +403,17 @@ fn subtype_map(db: &dyn DocumentDatabase) -> Arc<HashMap<String, HashSet<String>
                     add(implements.interface().to_owned(), def.name().to_owned());
                 }
             }
+            Definition::ObjectTypeExtension(def) => {
+                for implements in def.implements_interfaces() {
+                    add(implements.interface().to_owned(), def.name().to_owned());
+                }
+            }
             Definition::InterfaceTypeDefinition(def) => {
+                for implements in def.implements_interfaces() {
+                    add(implements.interface().to_owned(), def.name().to_owned());
+                }
+            }
+            Definition::InterfaceTypeExtension(def) => {
                 for implements in def.implements_interfaces() {
                     add(implements.interface().to_owned(), def.name().to_owned());
                 }
@@ -413,14 +423,22 @@ fn subtype_map(db: &dyn DocumentDatabase) -> Arc<HashMap<String, HashSet<String>
                     add(def.name().to_owned(), member.name().to_owned());
                 }
             }
-
+            Definition::UnionTypeExtension(def) => {
+                for member in def.union_members() {
+                    add(def.name().to_owned(), member.name().to_owned());
+                }
+            }
             Definition::InputObjectTypeDefinition(_)
             | Definition::EnumTypeDefinition(_)
             | Definition::ScalarTypeDefinition(_)
             | Definition::DirectiveDefinition(_)
             | Definition::OperationDefinition(_)
             | Definition::FragmentDefinition(_)
-            | Definition::SchemaDefinition(_) => {}
+            | Definition::SchemaDefinition(_)
+            | Definition::SchemaExtension(_)
+            | Definition::ScalarTypeExtension(_)
+            | Definition::EnumTypeExtension(_)
+            | Definition::InputObjectTypeExtension(_) => {}
         }
     }
     Arc::new(map)
@@ -531,21 +549,21 @@ mod tests {
         assert!(ctx.db.is_subtype("Bar".into(), "InterfaceType".into()));
         assert!(ctx.db.is_subtype("Baz".into(), "InterfaceType".into()));
 
-        // let ctx = gen_schema_types("extend union UnionType2 = Baz");
-        // assert!(ctx.db.is_subtype("UnionType2".into(), "Foo".into()));
-        // assert!(ctx.db.is_subtype("UnionType2".into(), "Bar".into()));
-        // assert!(ctx.db.is_subtype("UnionType2".into(), "Baz".into()));
+        let ctx = gen_schema_types("extend union UnionType2 = Baz");
+        assert!(ctx.db.is_subtype("UnionType2".into(), "Foo".into()));
+        assert!(ctx.db.is_subtype("UnionType2".into(), "Bar".into()));
+        assert!(ctx.db.is_subtype("UnionType2".into(), "Baz".into()));
 
-        // let ctx = gen_schema_interfaces("extend type ObjectType2 implements Baz { me2: String }");
-        // assert!(ctx.db.is_subtype("Foo".into(), "ObjectType2".into()));
-        // assert!(ctx.db.is_subtype("Bar".into(), "ObjectType2".into()));
-        // assert!(ctx.db.is_subtype("Baz".into(), "ObjectType2".into()));
+        let ctx = gen_schema_interfaces("extend type ObjectType2 implements Baz { me2: String }");
+        assert!(ctx.db.is_subtype("Foo".into(), "ObjectType2".into()));
+        assert!(ctx.db.is_subtype("Bar".into(), "ObjectType2".into()));
+        assert!(ctx.db.is_subtype("Baz".into(), "ObjectType2".into()));
 
-        // let ctx =
-        //     gen_schema_interfaces("extend interface InterfaceType2 implements Baz { me2: String }");
-        // assert!(ctx.db.is_subtype("Foo".into(), "InterfaceType2".into()));
-        // assert!(ctx.db.is_subtype("Bar".into(), "InterfaceType2".into()));
-        // assert!(ctx.db.is_subtype("Baz".into(), "InterfaceType2".into()));
+        let ctx =
+            gen_schema_interfaces("extend interface InterfaceType2 implements Baz { me2: String }");
+        assert!(ctx.db.is_subtype("Foo".into(), "InterfaceType2".into()));
+        assert!(ctx.db.is_subtype("Bar".into(), "InterfaceType2".into()));
+        assert!(ctx.db.is_subtype("Baz".into(), "InterfaceType2".into()));
     }
 
     fn with_supergraph_boilerplate(content: &str) -> String {
