@@ -22,4 +22,13 @@ pub trait InputDatabase {
     // Arc?
     #[salsa::input]
     fn sources(&self) -> SourceManifest;
+
+    // should we cache instead?
+    /// Get all file ids currently in the compiler.
+    #[salsa::transparent]
+    fn source_files(&self) -> Vec<FileId>;
+}
+
+fn source_files(db: &dyn InputDatabase) -> Vec<FileId> {
+    db.sources().manifest.keys().map(|id| *id).collect()
 }
