@@ -55,10 +55,10 @@ impl From<apollo_parser::ast::Value> for InputValue {
             apollo_parser::ast::Value::Variable(variable) => {
                 Self::Variable(variable.name().unwrap().into())
             }
-            apollo_parser::ast::Value::StringValue(val) => Self::String(val.into()),
-            apollo_parser::ast::Value::FloatValue(val) => Self::Float(val.into()),
-            apollo_parser::ast::Value::IntValue(val) => Self::Int(val.into()),
-            apollo_parser::ast::Value::BooleanValue(val) => Self::Boolean(val.into()),
+            apollo_parser::ast::Value::StringValue(val) => Self::String(val.try_into().unwrap()),
+            apollo_parser::ast::Value::FloatValue(val) => Self::Float(val.try_into().unwrap()),
+            apollo_parser::ast::Value::IntValue(val) => Self::Int(val.try_into().unwrap()),
+            apollo_parser::ast::Value::BooleanValue(val) => Self::Boolean(val.try_into().unwrap()),
             apollo_parser::ast::Value::NullValue(_val) => Self::Null,
             apollo_parser::ast::Value::EnumValue(val) => Self::Enum(val.name().unwrap().into()),
             apollo_parser::ast::Value::ListValue(val) => {
