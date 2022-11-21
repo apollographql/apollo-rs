@@ -726,7 +726,7 @@ fn input_value_definitions(
             let description = description(input.description());
             let name = name(input.name());
             let ty = ty(input.ty().expect("Input Definition must have a type"));
-            let default_value = default_value(input.default_value());
+            let default_value = default_value(input.default_value(), Some(&ty));
             let directives = directives(input.directives());
             let ast_ptr = SyntaxNodePtr::new(input.syntax());
 
@@ -743,8 +743,16 @@ fn input_value_definitions(
     Arc::new(input_values)
 }
 
-fn default_value(default_value: Option<ast::DefaultValue>) -> Option<DefaultValue> {
-    default_value.map(|val| value(val.value().expect("Default Value must have a value token")))
+fn default_value(
+    default_value: Option<ast::DefaultValue>,
+    expected_type: Option<&Type>,
+) -> Option<DefaultValue> {
+    default_value.map(|val| {
+        value(
+            val.value().expect("Default Value must have a value token"),
+            expected_type,
+        )
+    })
 }
 
 fn root_operation_type_definition(
@@ -812,10 +820,10 @@ fn variable_definition(var: ast::VariableDefinition) -> VariableDefinition {
             .name(),
     );
     let directives = directives(var.directives());
-    let default_value = default_value(var.default_value());
     let ty = ty(var
         .ty()
         .expect("values::Variable Definition must have a type"));
+    let default_value = default_value(var.default_value(), Some(&ty));
     let ast_ptr = SyntaxNodePtr::new(var.syntax());
 
     VariableDefinition {
@@ -919,7 +927,12 @@ fn arguments(arguments: Option<ast::Arguments>) -> Arc<Vec<Argument>> {
 
 fn argument(argument: ast::Argument) -> Argument {
     let name = name(argument.name());
-    let value = value(argument.value().expect("Argument must have a value"));
+    // TODO: find expected type in the type system definitions?
+    let expected_type = None; // Unknown
+    let value = value(
+        argument.value().expect("Argument must have a value"),
+        expected_type,
+    );
     let ast_ptr = SyntaxNodePtr::new(argument.syntax());
 
     Argument {
@@ -929,7 +942,12 @@ fn argument(argument: ast::Argument) -> Argument {
     }
 }
 
-fn value(val: ast::Value) -> Value {
+/// `expected_type` is the type of value that is expected to be returned,
+/// as far as known based on type system definitions.
+/// This affects values with integer syntax that should be interpreted as floats.
+///
+/// `None` means unknown, or type inference not fully implemented yet.
+fn value(val: ast::Value, expected_type: Option<&Type>) -> Value {
     match val {
         ast::Value::Variable(var) => Value::Variable(Variable {
             name: var
@@ -941,12 +959,24 @@ fn value(val: ast::Value) -> Value {
         }),
         ast::Value::StringValue(string_val) => Value::String(string_val.into()),
         ast::Value::FloatValue(float) => Value::Float(Float::new(float.into())),
-        ast::Value::IntValue(int) => Value::Int(int.into()),
+        ast::Value::IntValue(int) => {
+            if let Some(Type::Named { name, .. }) = expected_type {
+                if name == "Float" {
+                    return Value::Float(Float::new(int.as_float()));
+                }
+            }
+            Value::Int(int.into())
+        }
         ast::Value::BooleanValue(bool) => Value::Boolean(bool.into()),
         ast::Value::NullValue(_) => Value::Null,
         ast::Value::EnumValue(enum_) => Value::Enum(name(enum_.name())),
         ast::Value::ListValue(list) => {
-            let list: Vec<Value> = list.values().map(value).collect();
+            let sub_type = if let Some(Type::List { ty, .. }) = expected_type {
+                Some(&**ty)
+            } else {
+                None
+            };
+            let list: Vec<Value> = list.values().map(|v| value(v, sub_type)).collect();
             Value::List(list)
         }
         ast::Value::ObjectValue(object) => {
@@ -954,7 +984,9 @@ fn value(val: ast::Value) -> Value {
                 .object_fields()
                 .map(|o| {
                     let name = name(o.name());
-                    let value = value(o.value().expect("Object Value must have a value"));
+                    // TODO: for `Type::Named` look up the type definition and its `name` field?
+                    let sub_type = None; // Unknown
+                    let value = value(o.value().expect("Object Value must have a value"), sub_type);
                     (name, value)
                 })
                 .collect();

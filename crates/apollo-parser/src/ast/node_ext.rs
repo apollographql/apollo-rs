@@ -131,6 +131,19 @@ impl From<&'_ ast::BooleanValue> for bool {
     }
 }
 
+impl ast::IntValue {
+    /// A value literal that is syntactically an integer can be used
+    /// in contexts where the type system expects a Float.
+    ///
+    /// This method should be used in such cases since it
+    /// correctly handle some values that would overflow
+    /// when converting through `i32`.
+    pub fn as_float(&self) -> f64 {
+        let text = text_of_first_token(self.syntax());
+        text.parse().expect("Cannot parse IntValue as Float")
+    }
+}
+
 fn text_of_first_token(node: &SyntaxNode) -> TokenText {
     let first_token = node
         .green()
