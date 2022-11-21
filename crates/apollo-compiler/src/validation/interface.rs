@@ -17,9 +17,11 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     //
     // Return a Unique Definition error in case of a duplicate name.
     let mut seen: HashMap<&str, &InterfaceTypeDefinition> = HashMap::new();
+    dbg!(db.interfaces());
     for interface in db.interfaces().iter() {
         let name = interface.name();
         if let Some(prev_def) = seen.get(&name) {
+            dbg!(prev_def.loc());
             let prev_offset = prev_def.loc().offset();
             let prev_node_len = prev_def.loc().node_len();
 
@@ -276,7 +278,7 @@ interface NamedEntity {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.schema(input, "schema.graphql");
+        compiler.document(input, "schema.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();
@@ -311,7 +313,7 @@ interface NamedEntity {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.schema(input, "schema.graphql");
+        compiler.document(input, "schema.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();
@@ -340,7 +342,7 @@ interface NamedEntity implements NamedEntity {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.schema(input, "schema.graphql");
+        compiler.document(input, "schema.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();
@@ -362,7 +364,7 @@ interface NamedEntity implements NewEntity {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.schema(input, "schema.graphql");
+        compiler.document(input, "schema.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();
@@ -394,7 +396,7 @@ interface Image implements Resource & Node {
 }
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.schema(input, "schema.graphql");
+        compiler.document(input, "schema.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();
@@ -458,7 +460,7 @@ input Point2D {
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.schema(input, "schema.graphql");
+        compiler.document(input, "schema.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();

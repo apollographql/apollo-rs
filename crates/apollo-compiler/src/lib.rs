@@ -59,8 +59,11 @@ pub struct ApolloCompiler {
 ///   }
 /// "#;
 ///
-/// let ctx = ApolloCompiler::new(input);
-/// let diagnostics = ctx.validate();
+/// let mut compiler = ApolloCompiler::new();
+/// compiler.document(input, "document.graphql");
+/// compiler.compile();
+///
+/// let diagnostics = compiler.validate();
 /// for diagnostic in &diagnostics {
 ///     // this will pretty-print diagnostics using the miette crate.
 ///     println!("{}", diagnostic);
@@ -137,8 +140,11 @@ impl ApolloCompiler {
     /// }
     /// "#;
     ///
-    /// let ctx = ApolloCompiler::new(input);
-    /// let diagnostics = ctx.validate();
+    /// let mut compiler = ApolloCompiler::new();
+    /// compiler.document(input, "document.graphql");
+    /// compiler.compile();
+    ///
+    /// let diagnostics = compiler.validate();
     /// for diagnostic in &diagnostics {
     ///     println!("{}", diagnostic);
     /// }
@@ -181,7 +187,7 @@ query ExampleQuery {
       "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.schema(schema, "schema.graphql");
+        compiler.document(schema, "schema.graphql");
         compiler.query(query, "query.graphql");
         compiler.compile();
     }
