@@ -8,11 +8,13 @@ pub mod validation;
 
 use std::path::Path;
 
-use database::{FileId, SourceManifest};
 use salsa::ParallelDatabase;
 use validation::ValidationDatabase;
 
-pub use database::{hir, AstDatabase, DocumentDatabase, HirDatabase, InputDatabase, RootDatabase};
+pub use database::{
+    hir, AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, RootDatabase,
+    SourceManifest,
+};
 pub use diagnostics::ApolloDiagnostic;
 
 pub struct ApolloCompiler {
@@ -68,7 +70,7 @@ pub struct ApolloCompiler {
 impl ApolloCompiler {
     /// Create a new instance of Apollo Compiler.
     pub fn new() -> Self {
-        Self::with_opt_recursion_limit(None)
+        Default::default()
     }
 
     /// Create a new instance of Apollo Compiler,
@@ -86,6 +88,8 @@ impl ApolloCompiler {
         }
     }
 
+    /// Add a document with executable _and_ type system definitions and
+    /// extensions to the compiler.
     pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let id = self.source_manifest.add_source(path);
         self.db.set_input_document(id, input.to_string());
@@ -93,6 +97,8 @@ impl ApolloCompiler {
         id
     }
 
+    /// Add a schema - a document with type system definitions and extensions only
+    /// - to the compiler.
     pub fn schema(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let id = self.source_manifest.add_source(path);
         self.db.set_input_schema(id, input.to_string());
@@ -100,6 +106,8 @@ impl ApolloCompiler {
         id
     }
 
+    /// Add a query - a document with executable definition only - to the
+    /// compiler.
     pub fn query(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let id = self.source_manifest.add_source(path);
         self.db.set_input_query(id, input.to_string());
@@ -107,8 +115,9 @@ impl ApolloCompiler {
         id
     }
 
+    /// Compile with currently set sources.
     pub fn compile(&mut self) {
-        self.db.set_sources(self.source_manifest);
+        self.db.set_sources(self.source_manifest.clone());
     }
 
     /// Get a snapshot of the current database.
@@ -140,6 +149,11 @@ impl ApolloCompiler {
     }
 }
 
+impl Default for ApolloCompiler {
+    fn default() -> Self {
+        Self::with_opt_recursion_limit(None)
+    }
+}
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
@@ -167,8 +181,8 @@ query ExampleQuery {
       "#;
 
         let mut compiler = ApolloCompiler::new();
-        let schema_id = compiler.schema(schema, "schema.graphql");
-        let query_id = compiler.query(query, "query.graphql");
+        compiler.schema(schema, "schema.graphql");
+        compiler.query(query, "query.graphql");
         compiler.compile();
     }
 
@@ -207,7 +221,7 @@ type User {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -262,7 +276,7 @@ type Query {
 }
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -322,7 +336,7 @@ type Concrete implements Interface {
 union Union = Concrete
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -413,7 +427,7 @@ type Product {
 }
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -505,7 +519,7 @@ type User {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -566,7 +580,7 @@ type Result {
 }
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -588,7 +602,7 @@ type Query {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -625,7 +639,7 @@ enum Pet {
 }
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -671,7 +685,7 @@ type SearchQuery {
 }
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -726,7 +740,7 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
 }
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -773,7 +787,7 @@ input Point2D {
 }
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -813,7 +827,7 @@ type Book @directiveA(name: "pageCount") @directiveB(name: "author") {
 }
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -848,7 +862,7 @@ enum Number {
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -931,7 +945,7 @@ input Person {
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -1047,7 +1061,7 @@ type User
 }
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 
@@ -1077,7 +1091,7 @@ type Query {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.document(input, "document.graphql");
         compiler.compile();
 

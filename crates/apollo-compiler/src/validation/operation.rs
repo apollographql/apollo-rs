@@ -23,10 +23,10 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .iter()
             .filter_map(|op| {
                 if op.name().is_none() {
-                    let offset = op.ast_node(db.upcast()).text_range().start().into();
-                    let len: usize = op.ast_node(db.upcast()).text_range().len().into();
+                    let offset = op.loc().offset();
+                    let len= op.loc().node_len();
                     return Some(ApolloDiagnostic::MissingIdent(MissingIdent {
-                        src: db.input_document(),
+                        src: db.input_document(op.loc().file_id()),
                         definition: (offset, len).into(),
                         help: Some(format!("GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are {op_len} operations in this document."))
                     }));
@@ -44,15 +44,15 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     for op in db.operations().iter() {
         if let Some(name) = op.name() {
             if let Some(prev_def) = seen.get(&name) {
-                let prev_offset: usize = prev_def.ast_node(db.upcast()).text_range().start().into();
-                let prev_node_len: usize = prev_def.ast_node(db.upcast()).text_range().len().into();
+                let prev_offset = prev_def.loc().offset();
+                let prev_node_len = prev_def.loc().node_len();
 
-                let current_offset: usize = op.ast_node(db.upcast()).text_range().start().into();
-                let current_node_len: usize = op.ast_node(db.upcast()).text_range().len().into();
+                let current_offset = op.loc().offset();
+                let current_node_len = op.loc().node_len();
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     ty: "operation".into(),
                     name: name.into(),
-                    src: db.input_document(),
+                    src: db.input_document(prev_def.loc().file_id()),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
                     help: Some(format!(
@@ -78,11 +78,11 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 fields.extend(op.fields_in_fragment_spread(db.upcast()).as_ref().clone());
                 if fields.len() > 1 {
                     let field_names: Vec<&str> = fields.iter().map(|f| f.name()).collect();
-                    let offset = op.ast_node(db.upcast()).text_range().start().into();
-                    let len: usize = op.ast_node(db.upcast()).text_range().len().into();
+                    let offset = op.loc().offset();
+                    let len = op.loc().node_len();
                     Some(ApolloDiagnostic::SingleRootField(SingleRootField {
                         fields: fields.len(),
-                        src: db.input_document(),
+                        src: db.input_document(op.loc().file_id()),
                         subscription: (offset, len).into(),
                         help: Some(format!(
                             "There are {} root fields: {}. This is not allowed.",
@@ -110,16 +110,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .subscription_operations()
             .iter()
             .map(|op| {
-                let op_offset: usize = op.ast_node(db.upcast()).text_range().start().into();
-                let op_len: usize = op.ast_node(db.upcast()).text_range().len().into();
+                let op_offset = op.loc().offset();
+                let op_len = op.loc().node_len();
 
-                if let Some(schema_node) = db.schema().ast_node(db.upcast()) {
-                    let schema_offset: usize = schema_node.text_range().start().into();
-                    let schema_len: usize = schema_node.text_range().len().into();
+                if let Some(loc) = db.schema().loc() {
+                    let schema_offset = loc.offset();
+                    let schema_len = loc.node_len();
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Subscription".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input_document(),
+                        src: db.input_document(loc.file_id()),
                         schema: Some((schema_offset, schema_len).into()),
                         help: None,
                     })
@@ -127,7 +127,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Subscription".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input_document(),
+                        src: db.input_document(op.loc().file_id()),
                         schema: None,
                         help: Some(
                             "consider defining a `subscription` root operation type in your schema"
@@ -147,16 +147,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .query_operations()
             .iter()
             .map(|op| {
-                let op_offset: usize = op.ast_node(db.upcast()).text_range().start().into();
-                let op_len: usize = op.ast_node(db.upcast()).text_range().len().into();
+                let op_offset = op.loc().offset();
+                let op_len = op.loc().node_len();
 
-                if let Some(schema_node) = db.schema().ast_node(db.upcast()) {
-                    let schema_offset: usize = schema_node.text_range().start().into();
-                    let schema_len: usize = schema_node.text_range().len().into();
+                if let Some(loc) = db.schema().loc() {
+                    let schema_offset = loc.offset();
+                    let schema_len = loc.node_len();
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Query".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input_document(),
+                        src: db.input_document(loc.file_id()),
                         schema: Some((schema_offset, schema_len).into()),
                         help: None,
                     })
@@ -164,7 +164,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Query".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input_document(),
+                        src: db.input_document(op.loc().file_id()),
                         schema: None,
                         help: Some(
                             "consider defining a `query` root operation type in your schema".into(),
@@ -183,16 +183,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .mutation_operations()
             .iter()
             .map(|op| {
-                let op_offset: usize = op.ast_node(db.upcast()).text_range().start().into();
-                let op_len: usize = op.ast_node(db.upcast()).text_range().len().into();
+                let op_offset = op.loc().offset();
+                let op_len = op.loc().node_len();
 
-                if let Some(schema_node) = db.schema().ast_node(db.upcast()) {
-                    let schema_offset: usize = schema_node.text_range().start().into();
-                    let schema_len: usize = schema_node.text_range().len().into();
+                if let Some(loc) = db.schema().loc() {
+                    let schema_offset = loc.offset();
+                    let schema_len = loc.node_len();
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Mutation".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input_document(),
+                        src: db.input_document(loc.file_id()),
                         schema: Some((schema_offset, schema_len).into()),
                         help: None,
                     })
@@ -200,7 +200,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
                         ty: "Mutation".into(),
                         operation: (op_offset, op_len).into(),
-                        src: db.input_document(),
+                        src: db.input_document(op.loc().file_id()),
                         schema: None,
                         help: Some(
                             "consider defining a `mutation` root operation type in your schema"
@@ -219,8 +219,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             let obj_name = op.object_type(db.upcast()).map(|obj| obj.name().to_owned());
             if let Selection::Field(field) = selection {
                 if field.ty(db.upcast()).is_none() {
-                    let offset: usize = field.ast_node(db.upcast()).text_range().start().into();
-                    let len: usize = field.ast_node(db.upcast()).text_range().len().into();
+                    let offset = field.loc().offset();
+                    let len = field.loc().node_len();
                     let field_name = field.name().into();
                     let help = if let Some(obj_type) = obj_name {
                         format!("`{}` is not defined on `{}` type", field_name, obj_type)
@@ -233,7 +233,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     };
                     diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
                         field: field_name,
-                        src: db.input_document(),
+                        src: db.input_document(field.loc().file_id()),
                         definition: (offset, len).into(),
                         help,
                     }))
@@ -306,8 +306,11 @@ type Cat implements Pet {
 
 union CatOrDog = Cat | Dog
 "#;
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.schema(input, "schema.graphql");
+        compiler.compile();
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
@@ -353,8 +356,11 @@ type Cat implements Pet {
   meowVolume: Int
 }
 "#;
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.schema(input, "schema.graphql");
+        compiler.compile();
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
@@ -400,8 +406,11 @@ type Cat implements Pet {
   meowVolume: Int
 }
 "#;
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.schema(input, "schema.graphql");
+        compiler.compile();
+
+        let diagnostics = compiler.validate();
         assert!(diagnostics.is_empty());
     }
 
@@ -437,8 +446,11 @@ type Cat implements Pet {
   meowVolume: Int
 }
 "#;
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.schema(input, "schema.graphql");
+        compiler.compile();
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
@@ -465,8 +477,11 @@ type Product {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.schema(input, "schema.graphql");
+        compiler.compile();
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }

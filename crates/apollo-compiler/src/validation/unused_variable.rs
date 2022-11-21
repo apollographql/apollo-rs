@@ -18,7 +18,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 .iter()
                 .map(|var| ValidationSet {
                     name: var.name().into(),
-                    node: var.ast_node(db.upcast()),
+                    loc: *var.loc(),
                 })
                 .collect();
             let used_vars: HashSet<ValidationSet> = op
@@ -32,7 +32,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         .iter()
                         .map(|var| ValidationSet {
                             name: var.name().into(),
-                            node: var.ast_node(db.upcast()),
+                            loc: *var.loc(),
                         })
                         .collect();
                     vars
@@ -41,11 +41,11 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             let undefined_vars = used_vars.difference(&defined_vars);
             let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
                 .map(|undefined_var| {
-                    let offset = undefined_var.node.text_range().start().into();
-                    let len: usize = undefined_var.node.text_range().len().into();
+                    let offset = undefined_var.loc.offset();
+                    let len = undefined_var.loc.node_len();
                     ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                         ty: undefined_var.name.clone(),
-                        src: db.input_document(),
+                        src: db.input_document(undefined_var.loc.file_id()),
                         definition: (offset, len).into(),
                     })
                 })
@@ -53,11 +53,11 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 
             let unused_vars = defined_vars.difference(&used_vars);
             let warnings = unused_vars.map(|unused_var| {
-                let offset = unused_var.node.text_range().start().into();
-                let len: usize = unused_var.node.text_range().len().into();
+                let offset = unused_var.loc.offset();
+                let len = unused_var.loc.node_len();
                 ApolloDiagnostic::UnusedVariable(UnusedVariable {
                     ty: unused_var.name.clone(),
-                    src: db.input_document(),
+                    src: db.input_document(unused_var.loc.file_id()),
                     definition: (offset, len).into(),
                 })
             });
@@ -100,8 +100,11 @@ type Products {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.document(input, "document.graphql");
+        compiler.compile();
+
+        let diagnostics = compiler.validate();
 
         for error in &diagnostics {
             println!("{}", error)
@@ -130,8 +133,11 @@ type Product {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.document(input, "document.graphql");
+        compiler.compile();
+
+        let diagnostics = compiler.validate();
 
         for error in diagnostics {
             println!("{}", error)
@@ -169,8 +175,11 @@ type Product {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.document(input, "document.graphql");
+        compiler.compile();
+
+        let diagnostics = compiler.validate();
 
         for error in &diagnostics {
             println!("{}", error)

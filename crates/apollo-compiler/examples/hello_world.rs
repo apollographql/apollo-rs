@@ -6,13 +6,15 @@ fn compile_query() -> Option<hir::FragmentDefinition> {
     let file = Path::new("crates/apollo-compiler/examples/query_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
 
-    let ctx = ApolloCompiler::new(&src);
+    let mut compiler = ApolloCompiler::new();
+    compiler.document(&src, file);
+    compiler.compile();
     // let errors = ctx.validate();
 
-    let operations = ctx.db.operations();
+    let operations = compiler.db.operations();
     let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
     assert_eq!(["ExampleQuery"], operation_names.as_slice());
-    let frags = ctx.db.fragments();
+    let frags = compiler.db.fragments();
     let fragments: Vec<_> = frags.iter().map(|frag| frag.name()).collect();
     assert_eq!(["vipCustomer"], fragments.as_slice());
 
@@ -25,7 +27,8 @@ fn compile_query() -> Option<hir::FragmentDefinition> {
         .collect();
 
     assert_eq!(operation_variables, ["definedVariable"]);
-    ctx.db
+    compiler
+        .db
         .fragments()
         .iter()
         .find(|op| op.name() == "vipCustomer")

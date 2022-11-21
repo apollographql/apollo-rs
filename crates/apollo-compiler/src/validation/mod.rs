@@ -11,14 +11,14 @@ mod schema;
 mod union_;
 mod unused_variable;
 
-use apollo_parser::SyntaxNode;
-
 pub use validation_db::{ValidationDatabase, ValidationStorage};
+
+use crate::hir::HirNodeLocation;
 
 #[derive(Debug, Eq)]
 struct ValidationSet {
     name: String,
-    node: SyntaxNode,
+    loc: HirNodeLocation,
 }
 
 impl std::hash::Hash for ValidationSet {

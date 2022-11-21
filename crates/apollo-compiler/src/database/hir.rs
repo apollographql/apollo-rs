@@ -601,7 +601,7 @@ impl Type {
     }
 
     /// Get a reference to location information of the current HIR node.
-    pub fn ast_ptr(&self) -> Option<&HirNodeLocation> {
+    pub fn loc(&self) -> Option<&HirNodeLocation> {
         match self {
             Type::NonNull { ty: _, loc } => loc.as_ref(),
             Type::List { ty: _, loc } => loc.as_ref(),
@@ -1394,6 +1394,11 @@ impl FieldDefinition {
         self.description.as_deref()
     }
 
+    /// Get a reference to the field's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
+    }
+
     /// Get field definition's hir node location.
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
@@ -2040,15 +2045,26 @@ impl InputObjectTypeExtension {
     }
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct HirNodeLocation {
     pub(crate) offset: usize,
-    pub(crate) len: usize,
+    pub(crate) node_len: usize,
     pub(crate) file_id: FileId,
 }
 
 impl HirNodeLocation {
+    /// Get file id of the current node.
     pub fn file_id(&self) -> FileId {
         self.file_id
+    }
+
+    /// Get source offset of the current node.
+    pub fn offset(&self) -> usize {
+        self.offset
+    }
+
+    /// Get node length.
+    pub fn node_len(&self) -> usize {
+        self.node_len
     }
 }

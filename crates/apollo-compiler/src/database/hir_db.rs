@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use apollo_parser::{
-    ast::{self, AstChildren, AstNode, SyntaxNodePtr},
+    ast::{self, AstChildren, AstNode},
     SyntaxNode,
 };
 use uuid::Uuid;
@@ -662,7 +662,6 @@ fn schema_definition(schema_def: ast::SchemaDefinition, file_id: FileId) -> Sche
     let directives = directives(schema_def.directives(), file_id);
     let root_operation_type_definition =
         root_operation_type_definition(schema_def.root_operation_type_definitions(), file_id);
-    let ast_ptr = SyntaxNodePtr::new(schema_def.syntax());
     let loc = location(file_id, schema_def.syntax());
 
     SchemaDefinition {
@@ -805,7 +804,6 @@ fn union_members(
 
 fn union_member(member: ast::NamedType, file_id: FileId) -> UnionMember {
     let name = name(member.name(), file_id);
-    let ast_ptr = SyntaxNodePtr::new(member.syntax());
     let loc = location(file_id, member.syntax());
 
     UnionMember { name, loc }
@@ -957,7 +955,6 @@ fn field_definition(field: ast::FieldDefinition, file_id: FileId) -> FieldDefini
     let arguments = arguments_definition(field.arguments_definition(), file_id);
     let ty = ty(field.ty().expect("Field must have a type"), file_id);
     let directives = directives(field.directives(), file_id);
-    let ast_ptr = SyntaxNodePtr::new(field.syntax());
     let loc = location(file_id, field.syntax());
 
     FieldDefinition {
@@ -1204,7 +1201,6 @@ fn directives(directives: Option<ast::Directives>, file_id: FileId) -> Arc<Vec<D
 fn directive(directive: ast::Directive, file_id: FileId) -> Directive {
     let name = name(directive.name(), file_id);
     let arguments = arguments(directive.arguments(), file_id);
-    let ast_ptr = SyntaxNodePtr::new(directive.syntax());
     let loc = location(file_id, directive.syntax());
 
     Directive {
@@ -1452,7 +1448,7 @@ fn location(file_id: FileId, syntax_node: &SyntaxNode) -> HirNodeLocation {
 
     HirNodeLocation {
         offset: text_range.start().into(),
-        len: text_range.len().into(),
+        node_len: text_range.len().into(),
         file_id,
     }
 }

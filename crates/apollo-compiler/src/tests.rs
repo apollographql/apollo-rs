@@ -25,7 +25,7 @@ use crate::{ApolloCompiler, ApolloDiagnostic, AstDatabase};
 #[test]
 fn compiler_tests() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         let file_id = compiler.document(text, path);
         compiler.compile();
 
@@ -36,8 +36,8 @@ fn compiler_tests() {
     });
 
     dir_tests(&test_data_dir(), &["diagnostics"], "txt", |text, path| {
-        let compiler = ApolloCompiler::new();
-        let file_id = compiler.document(text, path);
+        let mut compiler = ApolloCompiler::new();
+        compiler.document(text, path);
         compiler.compile();
 
         let diagnostics = compiler.validate();

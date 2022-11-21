@@ -385,7 +385,7 @@ fn operation_definition_variables(db: &dyn DocumentDatabase, id: Uuid) -> Arc<Ha
             .iter()
             .map(|v| Variable {
                 name: v.name().to_owned(),
-                loc: v.loc().clone(),
+                loc: *v.loc(),
             })
             .collect(),
         None => HashSet::new(),
@@ -473,7 +473,7 @@ mod tests {
             }
         "#;
 
-        let compiler = ApolloCompiler::new();
+        let mut compiler = ApolloCompiler::new();
         compiler.schema(schema, "schema.graphql");
         compiler.compile();
 
@@ -509,7 +509,7 @@ mod tests {
                 "#,
             );
             let schema = format!("{}\n{}", base_schema, schema);
-            let compiler = ApolloCompiler::new();
+            let mut compiler = ApolloCompiler::new();
             compiler.schema(&schema, "schema.graphql");
             compiler.compile();
             compiler
@@ -536,7 +536,7 @@ mod tests {
                 "#,
             );
             let schema = format!("{}\n{}", base_schema, schema);
-            let compiler = ApolloCompiler::new();
+            let mut compiler = ApolloCompiler::new();
             compiler.schema(&schema, "schema.graphql");
             compiler.compile();
             compiler

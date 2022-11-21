@@ -1,24 +1,31 @@
-use std::fmt;
+use std::{fmt, path::Path};
 
 use apollo_compiler::{
     database::{AstStorage, DocumentStorage, HirStorage, InputStorage},
-    AstDatabase, DocumentDatabase, HirDatabase, InputDatabase,
+    AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, SourceManifest,
 };
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
 
 /// A small example public API for this linter example.
+#[derive(Default)]
 pub struct Linter {
     pub db: LinterDatabase,
+    pub source_manifest: SourceManifest,
 }
 
 impl Linter {
     /// Create a new instance of Linter.
-    pub fn new(input: &str) -> Self {
-        let mut db = LinterDatabase::default();
-        let input = input.to_string();
-        db.set_input_document(input);
-        Self { db }
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+        let id = self.source_manifest.add_source(path);
+        self.db.set_input_document(id, input.to_string());
+        self.db.set_sources(self.source_manifest.clone());
+
+        id
     }
 
     /// Runs lints.
@@ -93,13 +100,13 @@ fn capitalised_definitions(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
         .iter()
         .filter_map(|def| {
             if !def.name()?.chars().next()?.is_uppercase() {
-                if let Some(node) = def.name_src()?.ast_node(db.upcast()) {
-                    let offset: usize = node.text_range().start().into();
-                    let len: usize = node.text_range().len().into();
+                if let Some(loc) = def.name_src()?.loc() {
+                    let offset = loc.offset();
+                    let len = loc.node_len();
 
                     Some(LintDiagnostic::CapitalisedDefinitions(
                         CapitalisedDefinitions {
-                            src: db.input_document(),
+                            src: db.input_document(loc.file_id()),
                             definition: (offset, len).into(),
                         },
                     ))
@@ -172,7 +179,8 @@ type user {
 scalar url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     "#;
 
-    let linter = Linter::new(input);
+    let mut linter = Linter::new();
+    linter.document(input, "document.graphql");
     let lints = linter.lint();
 
     // Display lints.

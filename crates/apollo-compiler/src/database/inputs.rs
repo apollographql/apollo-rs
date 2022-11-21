@@ -30,5 +30,5 @@ pub trait InputDatabase {
 }
 
 fn source_files(db: &dyn InputDatabase) -> Vec<FileId> {
-    db.sources().manifest.keys().map(|id| *id).collect()
+    db.sources().manifest.keys().copied().collect()
 }

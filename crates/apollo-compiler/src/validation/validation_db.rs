@@ -197,35 +197,15 @@ pub fn check_input_values(
     for input_value in input_values.iter() {
         let name = input_value.name();
         if let Some(prev_arg) = seen.get(name) {
-            let prev_offset: usize = prev_arg
-                .ast_node(db.upcast())
-                .unwrap()
-                .text_range()
-                .start()
-                .into();
-            let prev_node_len: usize = prev_arg
-                .ast_node(db.upcast())
-                .unwrap()
-                .text_range()
-                .len()
-                .into();
+            let prev_offset = prev_arg.loc().unwrap().offset();
+            let prev_node_len = prev_arg.loc().unwrap().node_len();
 
-            let current_offset: usize = input_value
-                .ast_node(db.upcast())
-                .unwrap()
-                .text_range()
-                .start()
-                .into();
-            let current_node_len: usize = input_value
-                .ast_node(db.upcast())
-                .unwrap()
-                .text_range()
-                .len()
-                .into();
+            let current_offset = input_value.loc().unwrap().offset();
+            let current_node_len = input_value.loc().unwrap().node_len();
 
             diagnostics.push(ApolloDiagnostic::UniqueArgument(UniqueArgument {
                 name: name.into(),
-                src: db.input_document(),
+                src: db.input_document(prev_arg.loc().unwrap().file_id()),
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!("`{name}` argument must only be defined once.")),
@@ -325,15 +305,15 @@ pub fn check_arguments(
     for argument in &arguments {
         let name = argument.name();
         if let Some(prev_arg) = seen.get(name) {
-            let prev_offset: usize = prev_arg.ast_node(db.upcast()).text_range().start().into();
-            let prev_node_len: usize = prev_arg.ast_node(db.upcast()).text_range().len().into();
+            let prev_offset = prev_arg.loc().offset();
+            let prev_node_len = prev_arg.loc().node_len();
 
-            let current_offset: usize = argument.ast_node(db.upcast()).text_range().start().into();
-            let current_node_len: usize = argument.ast_node(db.upcast()).text_range().len().into();
+            let current_offset = argument.loc().offset();
+            let current_node_len = argument.loc().node_len();
 
             diagnostics.push(ApolloDiagnostic::UniqueArgument(UniqueArgument {
                 name: name.into(),
-                src: db.input_document(),
+                src: db.input_document(prev_arg.loc().file_id()),
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!("`{name}` argument must only be provided once.")),
