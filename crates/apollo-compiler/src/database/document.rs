@@ -385,7 +385,7 @@ fn operation_definition_variables(db: &dyn DocumentDatabase, id: Uuid) -> Arc<Ha
             .iter()
             .map(|v| Variable {
                 name: v.name().to_owned(),
-                ast_ptr: v.ast_ptr().clone(),
+                loc: v.loc().clone(),
             })
             .collect(),
         None => HashSet::new(),
@@ -473,8 +473,13 @@ mod tests {
             }
         "#;
 
-        let ctx = ApolloCompiler::new(schema);
-        let key_definitions = ctx.db.find_definitions_with_directive(String::from("key"));
+        let compiler = ApolloCompiler::new();
+        compiler.schema(schema, "schema.graphql");
+        compiler.compile();
+
+        let key_definitions = compiler
+            .db
+            .find_definitions_with_directive(String::from("key"));
         let key_definition_names: Vec<&str> = key_definitions
             .iter()
             .filter_map(|def| def.name())
@@ -504,7 +509,10 @@ mod tests {
                 "#,
             );
             let schema = format!("{}\n{}", base_schema, schema);
-            ApolloCompiler::new(&schema)
+            let compiler = ApolloCompiler::new();
+            compiler.schema(&schema, "schema.graphql");
+            compiler.compile();
+            compiler
         }
 
         fn gen_schema_interfaces(schema: &str) -> ApolloCompiler {
@@ -528,7 +536,10 @@ mod tests {
                 "#,
             );
             let schema = format!("{}\n{}", base_schema, schema);
-            ApolloCompiler::new(&schema)
+            let compiler = ApolloCompiler::new();
+            compiler.schema(&schema, "schema.graphql");
+            compiler.compile();
+            compiler
         }
 
         let ctx = gen_schema_types("union UnionType = Foo | Bar | Baz");

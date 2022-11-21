@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs::File, sync::Arc};
+use std::sync::Arc;
 
 use apollo_parser::{
     ast::{self, AstChildren, AstNode, SyntaxNodePtr},
@@ -214,23 +214,18 @@ fn fragments(db: &dyn HirDatabase) -> Arc<Vec<FragmentDefinition>> {
 // This implementation currently just finds the first schema definition, which
 // means we can't really diagnose the "multiple schema definitions" errors.
 fn schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
-    let schema: Option<HashMap<FileId, ast::SchemaDefinition>> =
-        db.source_files().iter().find_map(|id| {
-            let schema: Option<HashMap<FileId, ast::SchemaDefinition>> = db
-                .ast(*id)
-                .document()
-                .definitions()
-                .into_iter()
-                .find_map(|definition| match definition {
-                    ast::Definition::SchemaDefinition(schema) => {
-                        let s = HashMap::new();
-                        Some(s.insert(*id, schema))
-                    }
+    let schema: Option<(FileId, ast::SchemaDefinition)> = db.source_files().iter().find_map(|id| {
+        let schema: Option<(FileId, ast::SchemaDefinition)> =
+            db.ast(*id).document().definitions().into_iter().find_map(
+                |definition| match definition {
+                    ast::Definition::SchemaDefinition(schema) => Some((*id, schema)),
                     _ => None,
-                });
-            schema
-        });
-    let mut schema_def = schema.map_or(SchemaDefinition::default(), schema_definition);
+                },
+            );
+        schema
+    });
+    let mut schema_def =
+        schema.map_or(SchemaDefinition::default(), |s| schema_definition(s.1, s.0));
 
     // NOTE(@lrlna):
     //
