@@ -244,7 +244,7 @@ fn schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
 }
 
 fn schema_extensions(db: &dyn HirDatabase) -> Arc<Vec<SchemaExtension>> {
-    let objects = db
+    let schema_ext = db
         .source_files()
         .iter()
         .flat_map(|id| {
@@ -266,7 +266,7 @@ fn schema_extensions(db: &dyn HirDatabase) -> Arc<Vec<SchemaExtension>> {
                 .collect::<Vec<SchemaExtension>>()
         })
         .collect();
-    Arc::new(objects)
+    Arc::new(schema_ext)
 }
 
 fn object_types(db: &dyn HirDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
@@ -342,7 +342,7 @@ fn scalars(db: &dyn HirDatabase) -> Arc<Vec<ScalarTypeDefinition>> {
 }
 
 fn scalar_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<ScalarTypeExtension>> {
-    let objects = db
+    let scalars = db
         .source_files()
         .iter()
         .flat_map(|id| {
@@ -361,7 +361,7 @@ fn scalar_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<ScalarTypeExtension>>
                 .collect::<Vec<ScalarTypeExtension>>()
         })
         .collect();
-    Arc::new(objects)
+    Arc::new(scalars)
 }
 
 fn enums(db: &dyn HirDatabase) -> Arc<Vec<EnumTypeDefinition>> {
@@ -386,7 +386,7 @@ fn enums(db: &dyn HirDatabase) -> Arc<Vec<EnumTypeDefinition>> {
 }
 
 fn enum_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<EnumTypeExtension>> {
-    let objects = db
+    let enums = db
         .source_files()
         .iter()
         .flat_map(|id| {
@@ -409,7 +409,7 @@ fn enum_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<EnumTypeExtension>> {
                 .collect::<Vec<EnumTypeExtension>>()
         })
         .collect();
-    Arc::new(objects)
+    Arc::new(enums)
 }
 
 fn unions(db: &dyn HirDatabase) -> Arc<Vec<UnionTypeDefinition>> {
@@ -434,7 +434,7 @@ fn unions(db: &dyn HirDatabase) -> Arc<Vec<UnionTypeDefinition>> {
 }
 
 fn union_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<UnionTypeExtension>> {
-    let objects = db
+    let unions = db
         .source_files()
         .iter()
         .flat_map(|id| {
@@ -454,7 +454,7 @@ fn union_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<UnionTypeExtension>> {
                 .collect::<Vec<UnionTypeExtension>>()
         })
         .collect();
-    Arc::new(objects)
+    Arc::new(unions)
 }
 
 fn interfaces(db: &dyn HirDatabase) -> Arc<Vec<InterfaceTypeDefinition>> {
@@ -479,7 +479,7 @@ fn interfaces(db: &dyn HirDatabase) -> Arc<Vec<InterfaceTypeDefinition>> {
 }
 
 fn interface_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<InterfaceTypeExtension>> {
-    let objects = db
+    let interfaces = db
         .source_files()
         .iter()
         .flat_map(|id| {
@@ -503,7 +503,7 @@ fn interface_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<InterfaceTypeExten
                 .collect::<Vec<InterfaceTypeExtension>>()
         })
         .collect();
-    Arc::new(objects)
+    Arc::new(interfaces)
 }
 fn directive_definitions(db: &dyn HirDatabase) -> Arc<Vec<DirectiveDefinition>> {
     let directives = db
