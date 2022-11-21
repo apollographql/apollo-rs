@@ -1,6 +1,7 @@
 use rowan::{GreenToken, SyntaxKind};
 
 use crate::{ast, ast::AstNode, SyntaxNode, TokenText};
+use std::num::{ParseFloatError, ParseIntError};
 
 impl ast::Name {
     pub fn text(&self) -> TokenText {
@@ -91,8 +92,6 @@ impl From<&'_ ast::StringValue> for String {
             .to_string()
     }
 }
-
-use std::num::{ParseIntError, ParseFloatError};
 
 impl TryFrom<ast::IntValue> for i32 {
     type Error = ParseIntError;
