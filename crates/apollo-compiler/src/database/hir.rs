@@ -1796,7 +1796,7 @@ impl From<String> for Name {
 pub struct SchemaExtension {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) root_operation_type_definition: Arc<Vec<RootOperationTypeDefinition>>,
-    pub(crate) ast_ptr: SyntaxNodePtr,
+    pub(crate) loc: HirNodeLocation,
 }
 
 impl SchemaExtension {
@@ -1810,15 +1810,9 @@ impl SchemaExtension {
         self.root_operation_type_definition.as_ref()
     }
 
-    // Get a reference to SyntaxNodePtr of the current HIR node.
-    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
-        &self.ast_ptr
-    }
-
-    // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
-        self.ast_ptr
-            .to_node(&rowan::SyntaxNode::new_root(db.document()))
+    /// Get schema extension's hir node location.
+    pub fn loc(&self) -> &HirNodeLocation {
+        &self.loc
     }
 }
 
@@ -1826,7 +1820,7 @@ impl SchemaExtension {
 pub struct ScalarTypeExtension {
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
-    pub(crate) ast_ptr: SyntaxNodePtr,
+    pub(crate) loc: HirNodeLocation,
 }
 
 impl ScalarTypeExtension {
@@ -1845,15 +1839,9 @@ impl ScalarTypeExtension {
         self.directives.as_ref()
     }
 
-    // Get a reference to SyntaxNodePtr of the current HIR node.
-    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
-        &self.ast_ptr
-    }
-
-    // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
-        self.ast_ptr
-            .to_node(&rowan::SyntaxNode::new_root(db.document()))
+    /// Get scalar type extension's hir node location.
+    pub fn loc(&self) -> &HirNodeLocation {
+        &self.loc
     }
 }
 
@@ -1863,7 +1851,7 @@ pub struct ObjectTypeExtension {
     pub(crate) implements_interfaces: Arc<Vec<ImplementsInterface>>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
-    pub(crate) ast_ptr: SyntaxNodePtr,
+    pub(crate) loc: HirNodeLocation,
 }
 
 impl ObjectTypeExtension {
@@ -1896,15 +1884,9 @@ impl ObjectTypeExtension {
         self.implements_interfaces.as_ref()
     }
 
-    // Get a reference to SyntaxNodePtr of the current HIR node.
-    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
-        &self.ast_ptr
-    }
-
-    // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
-        let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
+    /// Get object type extension's hir node location.
+    pub fn loc(&self) -> &HirNodeLocation {
+        &self.loc
     }
 }
 
@@ -1914,7 +1896,7 @@ pub struct InterfaceTypeExtension {
     pub(crate) implements_interfaces: Arc<Vec<ImplementsInterface>>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
-    pub(crate) ast_ptr: SyntaxNodePtr,
+    pub(crate) loc: HirNodeLocation,
 }
 
 impl InterfaceTypeExtension {
@@ -1948,15 +1930,9 @@ impl InterfaceTypeExtension {
         self.fields_definition().iter().find(|f| f.name() == name)
     }
 
-    // Get a reference to SyntaxNodePtr of the current HIR node.
-    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
-        &self.ast_ptr
-    }
-
-    // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
-        let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
+    /// Get interface type extension's hir node location.
+    pub fn loc(&self) -> &HirNodeLocation {
+        &self.loc
     }
 }
 
@@ -1965,7 +1941,7 @@ pub struct UnionTypeExtension {
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) union_members: Arc<Vec<UnionMember>>,
-    pub(crate) ast_ptr: SyntaxNodePtr,
+    pub(crate) loc: HirNodeLocation,
 }
 
 impl UnionTypeExtension {
@@ -1989,15 +1965,9 @@ impl UnionTypeExtension {
         self.union_members.as_ref()
     }
 
-    // Get a reference to SyntaxNodePtr of the current HIR node.
-    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
-        &self.ast_ptr
-    }
-
-    // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
-        let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
+    /// Get union type extension's hir node location.
+    pub fn loc(&self) -> &HirNodeLocation {
+        &self.loc
     }
 }
 
@@ -2006,7 +1976,7 @@ pub struct EnumTypeExtension {
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) enum_values_definition: Arc<Vec<EnumValueDefinition>>,
-    pub(crate) ast_ptr: SyntaxNodePtr,
+    pub(crate) loc: HirNodeLocation,
 }
 
 impl EnumTypeExtension {
@@ -2030,15 +2000,9 @@ impl EnumTypeExtension {
         self.enum_values_definition.as_ref()
     }
 
-    // Get a reference to SyntaxNodePtr of the current HIR node.
-    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
-        &self.ast_ptr
-    }
-
-    // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
-        let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
+    /// Get enum type extension's hir node location.
+    pub fn loc(&self) -> &HirNodeLocation {
+        &self.loc
     }
 }
 
@@ -2047,7 +2011,7 @@ pub struct InputObjectTypeExtension {
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) input_fields_definition: Arc<Vec<InputValueDefinition>>,
-    pub(crate) ast_ptr: SyntaxNodePtr,
+    pub(crate) loc: HirNodeLocation,
 }
 
 impl InputObjectTypeExtension {
@@ -2070,16 +2034,13 @@ impl InputObjectTypeExtension {
         self.input_fields_definition.as_ref()
     }
 
-    // Get a reference to SyntaxNodePtr of the current HIR node.
-    pub fn ast_ptr(&self) -> &SyntaxNodePtr {
-        &self.ast_ptr
+    /// Get input object type extension's hir node location.
+    pub fn loc(&self) -> &HirNodeLocation {
+        &self.loc
     }
+}
 
-    // Get current HIR node's AST node.
-    pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
-        let syntax_node_ptr = self.ast_ptr();
-        syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
-pub struct Location {
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct HirNodeLocation {
     pub(crate) offset: usize,
     pub(crate) len: usize,
