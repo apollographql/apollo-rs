@@ -57,7 +57,10 @@ impl TryFrom<apollo_parser::ast::FieldDefinition> for FieldDef {
                 .name()
                 .expect("field definition must have a name")
                 .into(),
-            arguments_definition: field_def.arguments_definition().map(ArgumentsDef::try_from).transpose()?,
+            arguments_definition: field_def
+                .arguments_definition()
+                .map(ArgumentsDef::try_from)
+                .transpose()?,
             ty: field_def.ty().unwrap().into(),
             directives: field_def
                 .directives()
@@ -111,7 +114,12 @@ impl TryFrom<apollo_parser::ast::Field> for Field {
             name: field.name().unwrap().into(),
             args: field
                 .arguments()
-                .map(|arguments| arguments.arguments().map(Argument::try_from).collect::<Result<_, _>>())
+                .map(|arguments| {
+                    arguments
+                        .arguments()
+                        .map(Argument::try_from)
+                        .collect::<Result<_, _>>()
+                })
                 .transpose()?
                 .unwrap_or_default(),
             directives: field
@@ -119,7 +127,10 @@ impl TryFrom<apollo_parser::ast::Field> for Field {
                 .map(Directive::convert_directives)
                 .transpose()?
                 .unwrap_or_default(),
-            selection_set: field.selection_set().map(SelectionSet::try_from).transpose()?,
+            selection_set: field
+                .selection_set()
+                .map(SelectionSet::try_from)
+                .transpose()?,
         })
     }
 }

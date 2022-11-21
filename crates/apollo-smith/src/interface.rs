@@ -58,7 +58,9 @@ impl From<InterfaceTypeDef> for InterfaceDefinition {
 impl TryFrom<apollo_parser::ast::InterfaceTypeDefinition> for InterfaceTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(interface_def: apollo_parser::ast::InterfaceTypeDefinition) -> Result<Self, Self::Error> {
+    fn try_from(
+        interface_def: apollo_parser::ast::InterfaceTypeDefinition,
+    ) -> Result<Self, Self::Error> {
         Ok(Self {
             name: interface_def
                 .name()
@@ -93,7 +95,9 @@ impl TryFrom<apollo_parser::ast::InterfaceTypeDefinition> for InterfaceTypeDef {
 impl TryFrom<apollo_parser::ast::InterfaceTypeExtension> for InterfaceTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(interface_def: apollo_parser::ast::InterfaceTypeExtension) -> Result<Self, Self::Error> {
+    fn try_from(
+        interface_def: apollo_parser::ast::InterfaceTypeExtension,
+    ) -> Result<Self, Self::Error> {
         Ok(Self {
             name: interface_def
                 .name()

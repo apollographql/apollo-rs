@@ -64,14 +64,16 @@ impl TryFrom<apollo_parser::ast::Value> for InputValue {
             apollo_parser::ast::Value::BooleanValue(val) => Self::Boolean(val.try_into()?),
             apollo_parser::ast::Value::NullValue(_val) => Self::Null,
             apollo_parser::ast::Value::EnumValue(val) => Self::Enum(val.name().unwrap().into()),
-            apollo_parser::ast::Value::ListValue(val) => {
-                Self::List(val.values().map(Self::try_from).collect::<Result<Vec<_>, _>>()?)
-            }
+            apollo_parser::ast::Value::ListValue(val) => Self::List(
+                val.values()
+                    .map(Self::try_from)
+                    .collect::<Result<Vec<_>, _>>()?,
+            ),
             apollo_parser::ast::Value::ObjectValue(val) => Self::Object(
                 val.object_fields()
-                .map(|of| Ok((of.name().unwrap().into(), of.value().unwrap().try_into()?)))
-                .collect::<Result<Vec<_>, crate::FromError>>()?,
-                ),
+                    .map(|of| Ok((of.name().unwrap().into(), of.value().unwrap().try_into()?)))
+                    .collect::<Result<Vec<_>, crate::FromError>>()?,
+            ),
         };
         Ok(smith_value)
     }
@@ -142,12 +144,17 @@ impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
 impl TryFrom<apollo_parser::ast::InputValueDefinition> for InputValueDef {
     type Error = crate::FromError;
 
-    fn try_from(input_val_def: apollo_parser::ast::InputValueDefinition) -> Result<Self, Self::Error> {
+    fn try_from(
+        input_val_def: apollo_parser::ast::InputValueDefinition,
+    ) -> Result<Self, Self::Error> {
         Ok(Self {
             description: input_val_def.description().map(Description::from),
             name: input_val_def.name().unwrap().into(),
             ty: input_val_def.ty().unwrap().into(),
-            default_value: input_val_def.default_value().map(InputValue::try_from).transpose()?,
+            default_value: input_val_def
+                .default_value()
+                .map(InputValue::try_from)
+                .transpose()?,
             directives: input_val_def
                 .directives()
                 .map(Directive::convert_directives)

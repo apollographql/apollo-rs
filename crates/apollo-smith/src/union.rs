@@ -60,7 +60,8 @@ impl TryFrom<apollo_parser::ast::UnionTypeDefinition> for UnionTypeDef {
                 .expect("object type definition must have a name")
                 .into(),
             description: union_def.description().map(Description::from),
-            directives: union_def.directives()
+            directives: union_def
+                .directives()
                 .map(Directive::convert_directives)
                 .transpose()?
                 .unwrap_or_default(),

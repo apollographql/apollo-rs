@@ -54,7 +54,9 @@ impl From<OperationDef> for String {
 impl TryFrom<apollo_parser::ast::OperationDefinition> for OperationDef {
     type Error = crate::FromError;
 
-    fn try_from(operation_def: apollo_parser::ast::OperationDefinition) -> Result<Self, Self::Error> {
+    fn try_from(
+        operation_def: apollo_parser::ast::OperationDefinition,
+    ) -> Result<Self, Self::Error> {
         Ok(Self {
             name: operation_def.name().map(Name::from),
             directives: operation_def

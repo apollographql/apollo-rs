@@ -36,7 +36,10 @@ impl TryFrom<apollo_parser::ast::SelectionSet> for SelectionSet {
 
     fn try_from(selection_set: apollo_parser::ast::SelectionSet) -> Result<Self, Self::Error> {
         Ok(Self {
-            selections: selection_set.selections().map(Selection::try_from).collect::<Result<_, _>>()?,
+            selections: selection_set
+                .selections()
+                .map(Selection::try_from)
+                .collect::<Result<_, _>>()?,
         })
     }
 }

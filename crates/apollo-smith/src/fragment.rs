@@ -140,10 +140,7 @@ impl TryFrom<apollo_parser::ast::InlineFragment> for InlineFragment {
                 .map(Directive::convert_directives)
                 .transpose()?
                 .unwrap_or_default(),
-            selection_set: inline_fragment
-                .selection_set()
-                .unwrap()
-                .try_into()?,
+            selection_set: inline_fragment.selection_set().unwrap().try_into()?,
             type_condition: inline_fragment.type_condition().map(TypeCondition::from),
         })
     }

@@ -52,14 +52,19 @@ impl From<DirectiveDef> for apollo_encoder::DirectiveDefinition {
 impl TryFrom<apollo_parser::ast::DirectiveDefinition> for DirectiveDef {
     type Error = crate::FromError;
 
-    fn try_from(directive_def: apollo_parser::ast::DirectiveDefinition) -> Result<Self, Self::Error> {
+    fn try_from(
+        directive_def: apollo_parser::ast::DirectiveDefinition,
+    ) -> Result<Self, Self::Error> {
         Ok(Self {
             description: directive_def
                 .description()
                 .and_then(|d| d.string_value())
                 .map(|s| Description::from(Into::<String>::into(s))),
             name: directive_def.name().unwrap().into(),
-            arguments_definition: directive_def.arguments_definition().map(ArgumentsDef::try_from).transpose()?,
+            arguments_definition: directive_def
+                .arguments_definition()
+                .map(ArgumentsDef::try_from)
+                .transpose()?,
             repeatable: directive_def.repeatable_token().is_some(),
             directive_locations: directive_def
                 .directive_locations()
@@ -106,7 +111,11 @@ impl TryFrom<apollo_parser::ast::Directive> for Directive {
             name: directive.name().unwrap().into(),
             arguments: directive
                 .arguments()
-                .map(|args| args.arguments().map(Argument::try_from).collect::<Result<_, _>>())
+                .map(|args| {
+                    args.arguments()
+                        .map(Argument::try_from)
+                        .collect::<Result<_, _>>()
+                })
                 .transpose()?
                 .unwrap_or_default(),
         })
@@ -115,8 +124,11 @@ impl TryFrom<apollo_parser::ast::Directive> for Directive {
 
 #[cfg(feature = "parser-impl")]
 impl Directive {
-    pub(crate) fn convert_directives(directives: apollo_parser::ast::Directives) -> Result<HashMap<Name, Directive>, crate::FromError> {
-        directives.directives()
+    pub(crate) fn convert_directives(
+        directives: apollo_parser::ast::Directives,
+    ) -> Result<HashMap<Name, Directive>, crate::FromError> {
+        directives
+            .directives()
             .map(|d| Ok((d.name().unwrap().into(), Directive::try_from(d)?)))
             .collect()
     }

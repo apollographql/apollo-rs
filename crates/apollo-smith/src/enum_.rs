@@ -133,7 +133,9 @@ impl From<EnumValueDefinition> for EnumValue {
 impl TryFrom<apollo_parser::ast::EnumValueDefinition> for EnumValueDefinition {
     type Error = crate::FromError;
 
-    fn try_from(enum_value_def: apollo_parser::ast::EnumValueDefinition) -> Result<Self, Self::Error> {
+    fn try_from(
+        enum_value_def: apollo_parser::ast::EnumValueDefinition,
+    ) -> Result<Self, Self::Error> {
         Ok(Self {
             description: enum_value_def.description().map(Description::from),
             value: enum_value_def
