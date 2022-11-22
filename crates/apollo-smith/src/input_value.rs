@@ -10,7 +10,6 @@ use crate::{
 use arbitrary::Result;
 
 #[derive(Debug, Clone, PartialEq)]
-
 pub enum InputValue {
     Variable(Name),
     Int(i32),
@@ -42,34 +41,41 @@ impl From<InputValue> for apollo_encoder::Value {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::DefaultValue> for InputValue {
-    fn from(default_val: apollo_parser::ast::DefaultValue) -> Self {
-        default_val.value().unwrap().into()
+impl TryFrom<apollo_parser::ast::DefaultValue> for InputValue {
+    type Error = crate::FromError;
+
+    fn try_from(default_val: apollo_parser::ast::DefaultValue) -> Result<Self, Self::Error> {
+        default_val.value().unwrap().try_into()
     }
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::Value> for InputValue {
-    fn from(value: apollo_parser::ast::Value) -> Self {
-        match value {
+impl TryFrom<apollo_parser::ast::Value> for InputValue {
+    type Error = crate::FromError;
+
+    fn try_from(value: apollo_parser::ast::Value) -> Result<Self, Self::Error> {
+        let smith_value = match value {
             apollo_parser::ast::Value::Variable(variable) => {
                 Self::Variable(variable.name().unwrap().into())
             }
-            apollo_parser::ast::Value::StringValue(val) => Self::String(val.into()),
-            apollo_parser::ast::Value::FloatValue(val) => Self::Float(val.into()),
-            apollo_parser::ast::Value::IntValue(val) => Self::Int(val.into()),
-            apollo_parser::ast::Value::BooleanValue(val) => Self::Boolean(val.into()),
+            apollo_parser::ast::Value::StringValue(val) => Self::String(val.try_into().unwrap()),
+            apollo_parser::ast::Value::FloatValue(val) => Self::Float(val.try_into()?),
+            apollo_parser::ast::Value::IntValue(val) => Self::Int(val.try_into()?),
+            apollo_parser::ast::Value::BooleanValue(val) => Self::Boolean(val.try_into()?),
             apollo_parser::ast::Value::NullValue(_val) => Self::Null,
             apollo_parser::ast::Value::EnumValue(val) => Self::Enum(val.name().unwrap().into()),
-            apollo_parser::ast::Value::ListValue(val) => {
-                Self::List(val.values().map(Self::from).collect())
-            }
+            apollo_parser::ast::Value::ListValue(val) => Self::List(
+                val.values()
+                    .map(Self::try_from)
+                    .collect::<Result<Vec<_>, _>>()?,
+            ),
             apollo_parser::ast::Value::ObjectValue(val) => Self::Object(
                 val.object_fields()
-                    .map(|of| (of.name().unwrap().into(), of.value().unwrap().into()))
-                    .collect(),
+                    .map(|of| Ok((of.name().unwrap().into(), of.value().unwrap().try_into()?)))
+                    .collect::<Result<Vec<_>, crate::FromError>>()?,
             ),
-        }
+        };
+        Ok(smith_value)
     }
 }
 
@@ -135,22 +141,26 @@ impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::InputValueDefinition> for InputValueDef {
-    fn from(input_val_def: apollo_parser::ast::InputValueDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::InputValueDefinition> for InputValueDef {
+    type Error = crate::FromError;
+
+    fn try_from(
+        input_val_def: apollo_parser::ast::InputValueDefinition,
+    ) -> Result<Self, Self::Error> {
+        Ok(Self {
             description: input_val_def.description().map(Description::from),
             name: input_val_def.name().unwrap().into(),
             ty: input_val_def.ty().unwrap().into(),
-            default_value: input_val_def.default_value().map(InputValue::from),
+            default_value: input_val_def
+                .default_value()
+                .map(InputValue::try_from)
+                .transpose()?,
             directives: input_val_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
-        }
+        })
     }
 }
 

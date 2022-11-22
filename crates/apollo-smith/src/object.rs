@@ -55,9 +55,11 @@ impl From<ObjectTypeDef> for ObjectDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
-    fn from(object_def: apollo_parser::ast::ObjectTypeDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(object_def: apollo_parser::ast::ObjectTypeDefinition) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: object_def
                 .name()
                 .expect("object type definition must have a name")
@@ -65,11 +67,8 @@ impl From<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
             description: object_def.description().map(Description::from),
             directives: object_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             implements_interfaces: object_def
                 .implements_interfaces()
@@ -85,16 +84,18 @@ impl From<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
                 .fields_definition()
                 .expect("object type definition must have fields definition")
                 .field_definitions()
-                .map(FieldDef::from)
-                .collect(),
-        }
+                .map(FieldDef::try_from)
+                .collect::<Result<Vec<_>, _>>()?,
+        })
     }
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::ObjectTypeExtension> for ObjectTypeDef {
-    fn from(object_def: apollo_parser::ast::ObjectTypeExtension) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::ObjectTypeExtension> for ObjectTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(object_def: apollo_parser::ast::ObjectTypeExtension) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: object_def
                 .name()
                 .expect("object type definition must have a name")
@@ -102,11 +103,8 @@ impl From<apollo_parser::ast::ObjectTypeExtension> for ObjectTypeDef {
             description: None,
             directives: object_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             implements_interfaces: object_def
                 .implements_interfaces()
@@ -122,9 +120,9 @@ impl From<apollo_parser::ast::ObjectTypeExtension> for ObjectTypeDef {
                 .fields_definition()
                 .expect("object type definition must have fields definition")
                 .field_definitions()
-                .map(FieldDef::from)
-                .collect(),
-        }
+                .map(FieldDef::try_from)
+                .collect::<Result<Vec<_>, _>>()?,
+        })
     }
 }
 

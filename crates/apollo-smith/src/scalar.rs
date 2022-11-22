@@ -43,9 +43,11 @@ impl From<ScalarTypeDef> for apollo_encoder::ScalarDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::ScalarTypeDefinition> for ScalarTypeDef {
-    fn from(scalar_def: apollo_parser::ast::ScalarTypeDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::ScalarTypeDefinition> for ScalarTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(scalar_def: apollo_parser::ast::ScalarTypeDefinition) -> Result<Self, Self::Error> {
+        Ok(Self {
             description: scalar_def
                 .description()
                 .and_then(|d| d.string_value())
@@ -53,33 +55,29 @@ impl From<apollo_parser::ast::ScalarTypeDefinition> for ScalarTypeDef {
             name: scalar_def.name().unwrap().into(),
             directives: scalar_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             extend: false,
-        }
+        })
     }
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::ScalarTypeExtension> for ScalarTypeDef {
-    fn from(scalar_def: apollo_parser::ast::ScalarTypeExtension) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::ScalarTypeExtension> for ScalarTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(scalar_def: apollo_parser::ast::ScalarTypeExtension) -> Result<Self, Self::Error> {
+        Ok(Self {
             description: None,
             name: scalar_def.name().unwrap().into(),
             directives: scalar_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             extend: true,
-        }
+        })
     }
 }
 

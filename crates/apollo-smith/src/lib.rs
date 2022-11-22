@@ -24,6 +24,19 @@ use std::{collections::HashMap, fmt::Debug};
 
 use arbitrary::Unstructured;
 
+#[cfg(feature = "parser-impl")]
+#[derive(Debug, Clone, thiserror::Error)]
+pub enum FromError {
+    #[error("parse tree is missing a node")]
+    MissingNode,
+    #[error("invalid i32")]
+    ParseIntError(#[from] std::num::ParseIntError),
+    #[error("invalid f64")]
+    ParseFloatError(#[from] std::num::ParseFloatError),
+    #[error("invalid boolean")]
+    ParseBoolError(#[from] std::str::ParseBoolError),
+}
+
 pub use arbitrary::Result;
 use argument::Argument;
 pub use directive::DirectiveDef;

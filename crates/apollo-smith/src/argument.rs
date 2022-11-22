@@ -31,14 +31,16 @@ impl From<ArgumentsDef> for apollo_encoder::ArgumentsDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::ArgumentsDefinition> for ArgumentsDef {
-    fn from(args_def: apollo_parser::ast::ArgumentsDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::ArgumentsDefinition> for ArgumentsDef {
+    type Error = crate::FromError;
+
+    fn try_from(args_def: apollo_parser::ast::ArgumentsDefinition) -> Result<Self, Self::Error> {
+        Ok(Self {
             input_value_definitions: args_def
                 .input_value_definitions()
-                .map(InputValueDef::from)
-                .collect(),
-        }
+                .map(InputValueDef::try_from)
+                .collect::<Result<_, _>>()?,
+        })
     }
 }
 
@@ -61,12 +63,14 @@ impl From<Argument> for apollo_encoder::Argument {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::Argument> for Argument {
-    fn from(argument: apollo_parser::ast::Argument) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::Argument> for Argument {
+    type Error = crate::FromError;
+
+    fn try_from(argument: apollo_parser::ast::Argument) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: argument.name().unwrap().into(),
-            value: argument.value().unwrap().into(),
-        }
+            value: argument.value().unwrap().try_into()?,
+        })
     }
 }
 

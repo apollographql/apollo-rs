@@ -50,9 +50,11 @@ impl From<UnionTypeDef> for UnionDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::UnionTypeDefinition> for UnionTypeDef {
-    fn from(union_def: apollo_parser::ast::UnionTypeDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::UnionTypeDefinition> for UnionTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(union_def: apollo_parser::ast::UnionTypeDefinition) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: union_def
                 .name()
                 .expect("object type definition must have a name")
@@ -60,11 +62,8 @@ impl From<apollo_parser::ast::UnionTypeDefinition> for UnionTypeDef {
             description: union_def.description().map(Description::from),
             directives: union_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             extend: false,
             members: union_def
@@ -76,14 +75,16 @@ impl From<apollo_parser::ast::UnionTypeDefinition> for UnionTypeDef {
                         .collect()
                 })
                 .unwrap_or_default(),
-        }
+        })
     }
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::UnionTypeExtension> for UnionTypeDef {
-    fn from(union_def: apollo_parser::ast::UnionTypeExtension) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::UnionTypeExtension> for UnionTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(union_def: apollo_parser::ast::UnionTypeExtension) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: union_def
                 .name()
                 .expect("object type definition must have a name")
@@ -93,9 +94,10 @@ impl From<apollo_parser::ast::UnionTypeExtension> for UnionTypeDef {
                 .directives()
                 .map(|d| {
                     d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
+                        .map(|d| Ok((d.name().unwrap().into(), Directive::try_from(d)?)))
+                        .collect::<Result<_, crate::FromError>>()
                 })
+                .transpose()?
                 .unwrap_or_default(),
             extend: true,
             members: union_def
@@ -107,7 +109,7 @@ impl From<apollo_parser::ast::UnionTypeExtension> for UnionTypeDef {
                         .collect()
                 })
                 .unwrap_or_default(),
-        }
+        })
     }
 }
 

@@ -1067,7 +1067,7 @@ impl TryFrom<ast::InputObjectTypeDefinition> for crate::InputObjectDefinition {
         let description = node
             .description()
             .and_then(|description| description.string_value())
-            .map(|string| string.into());
+            .and_then(|string| string.try_into().ok());
         if let Some(description) = description {
             encoder_node.description(description);
         }

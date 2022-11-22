@@ -53,8 +53,10 @@ impl From<SchemaDef> for apollo_encoder::SchemaDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::SchemaDefinition> for SchemaDef {
-    fn from(schema_def: apollo_parser::ast::SchemaDefinition) -> Self {
+impl TryFrom<apollo_parser::ast::SchemaDefinition> for SchemaDef {
+    type Error = crate::FromError;
+
+    fn try_from(schema_def: apollo_parser::ast::SchemaDefinition) -> Result<Self, Self::Error> {
         let mut query = None;
         let mut mutation = None;
         let mut subcription = None;
@@ -71,27 +73,26 @@ impl From<apollo_parser::ast::SchemaDefinition> for SchemaDef {
                 panic!("operation type must be one of query|mutation|subscription");
             }
         }
-        Self {
+        Ok(Self {
             description: schema_def.description().map(Description::from),
             directives: schema_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             query: query.map(Ty::from),
             mutation: mutation.map(Ty::from),
             subscription: subcription.map(Ty::from),
             extend: false,
-        }
+        })
     }
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::SchemaExtension> for SchemaDef {
-    fn from(schema_def: apollo_parser::ast::SchemaExtension) -> Self {
+impl TryFrom<apollo_parser::ast::SchemaExtension> for SchemaDef {
+    type Error = crate::FromError;
+
+    fn try_from(schema_def: apollo_parser::ast::SchemaExtension) -> Result<Self, Self::Error> {
         let mut query = None;
         let mut mutation = None;
         let mut subcription = None;
@@ -108,21 +109,18 @@ impl From<apollo_parser::ast::SchemaExtension> for SchemaDef {
                 panic!("operation type must be one of query|mutation|subscription");
             }
         }
-        Self {
+        Ok(Self {
             description: None,
             directives: schema_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             query: query.map(Ty::from),
             mutation: mutation.map(Ty::from),
             subscription: subcription.map(Ty::from),
             extend: true,
-        }
+        })
     }
 }
 

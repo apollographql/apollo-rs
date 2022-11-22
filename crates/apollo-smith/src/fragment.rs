@@ -41,21 +41,20 @@ impl From<FragmentDef> for apollo_encoder::FragmentDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::FragmentDefinition> for FragmentDef {
-    fn from(fragment_def: apollo_parser::ast::FragmentDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::FragmentDefinition> for FragmentDef {
+    type Error = crate::FromError;
+
+    fn try_from(fragment_def: apollo_parser::ast::FragmentDefinition) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: fragment_def.fragment_name().unwrap().name().unwrap().into(),
             directives: fragment_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             type_condition: fragment_def.type_condition().unwrap().into(),
-            selection_set: fragment_def.selection_set().unwrap().into(),
-        }
+            selection_set: fragment_def.selection_set().unwrap().try_into()?,
+        })
     }
 }
 
@@ -84,9 +83,11 @@ impl From<FragmentSpread> for apollo_encoder::FragmentSpread {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::FragmentSpread> for FragmentSpread {
-    fn from(fragment_spread: apollo_parser::ast::FragmentSpread) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::FragmentSpread> for FragmentSpread {
+    type Error = crate::FromError;
+
+    fn try_from(fragment_spread: apollo_parser::ast::FragmentSpread) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: fragment_spread
                 .fragment_name()
                 .unwrap()
@@ -95,13 +96,10 @@ impl From<apollo_parser::ast::FragmentSpread> for FragmentSpread {
                 .into(),
             directives: fragment_spread
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
-        }
+        })
     }
 }
 
@@ -132,23 +130,19 @@ impl From<InlineFragment> for apollo_encoder::InlineFragment {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::InlineFragment> for InlineFragment {
-    fn from(inline_fragment: apollo_parser::ast::InlineFragment) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::InlineFragment> for InlineFragment {
+    type Error = crate::FromError;
+
+    fn try_from(inline_fragment: apollo_parser::ast::InlineFragment) -> Result<Self, Self::Error> {
+        Ok(Self {
             directives: inline_fragment
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
-            selection_set: inline_fragment
-                .selection_set()
-                .map(SelectionSet::from)
-                .unwrap(),
+            selection_set: inline_fragment.selection_set().unwrap().try_into()?,
             type_condition: inline_fragment.type_condition().map(TypeCondition::from),
-        }
+        })
     }
 }
 

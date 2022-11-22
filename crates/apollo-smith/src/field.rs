@@ -47,25 +47,27 @@ impl From<FieldDef> for apollo_encoder::FieldDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::FieldDefinition> for FieldDef {
-    fn from(field_def: apollo_parser::ast::FieldDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::FieldDefinition> for FieldDef {
+    type Error = crate::FromError;
+
+    fn try_from(field_def: apollo_parser::ast::FieldDefinition) -> Result<Self, Self::Error> {
+        Ok(Self {
             description: field_def.description().map(Description::from),
             name: field_def
                 .name()
                 .expect("field definition must have a name")
                 .into(),
-            arguments_definition: field_def.arguments_definition().map(ArgumentsDef::from),
+            arguments_definition: field_def
+                .arguments_definition()
+                .map(ArgumentsDef::try_from)
+                .transpose()?,
             ty: field_def.ty().unwrap().into(),
             directives: field_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
-        }
+        })
     }
 }
 
@@ -103,25 +105,33 @@ impl From<Field> for apollo_encoder::Field {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::Field> for Field {
-    fn from(field: apollo_parser::ast::Field) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::Field> for Field {
+    type Error = crate::FromError;
+
+    fn try_from(field: apollo_parser::ast::Field) -> Result<Self, Self::Error> {
+        Ok(Self {
             alias: field.alias().map(|alias| alias.name().unwrap().into()),
             name: field.name().unwrap().into(),
             args: field
                 .arguments()
-                .map(|arguments| arguments.arguments().map(Argument::from).collect())
+                .map(|arguments| {
+                    arguments
+                        .arguments()
+                        .map(Argument::try_from)
+                        .collect::<Result<_, _>>()
+                })
+                .transpose()?
                 .unwrap_or_default(),
             directives: field
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
-            selection_set: field.selection_set().map(SelectionSet::from),
-        }
+            selection_set: field
+                .selection_set()
+                .map(SelectionSet::try_from)
+                .transpose()?,
+        })
     }
 }
 

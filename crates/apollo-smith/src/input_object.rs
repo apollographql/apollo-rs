@@ -55,9 +55,13 @@ impl From<InputObjectTypeDef> for apollo_encoder::InputObjectDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::InputObjectTypeDefinition> for InputObjectTypeDef {
-    fn from(input_object: apollo_parser::ast::InputObjectTypeDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::InputObjectTypeDefinition> for InputObjectTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(
+        input_object: apollo_parser::ast::InputObjectTypeDefinition,
+    ) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: input_object
                 .name()
                 .expect("object type definition must have a name")
@@ -65,11 +69,8 @@ impl From<apollo_parser::ast::InputObjectTypeDefinition> for InputObjectTypeDef 
             description: input_object.description().map(Description::from),
             directives: input_object
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             extend: false,
             fields: input_object
@@ -77,29 +78,31 @@ impl From<apollo_parser::ast::InputObjectTypeDefinition> for InputObjectTypeDef 
                 .map(|input_fields| {
                     input_fields
                         .input_value_definitions()
-                        .map(InputValueDef::from)
-                        .collect()
+                        .map(InputValueDef::try_from)
+                        .collect::<Result<_, _>>()
                 })
+                .transpose()?
                 .unwrap_or_default(),
-        }
+        })
     }
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::InputObjectTypeExtension> for InputObjectTypeDef {
-    fn from(input_object: apollo_parser::ast::InputObjectTypeExtension) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::InputObjectTypeExtension> for InputObjectTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(
+        input_object: apollo_parser::ast::InputObjectTypeExtension,
+    ) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: input_object
                 .name()
                 .expect("object type definition must have a name")
                 .into(),
             directives: input_object
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             extend: true,
             fields: input_object
@@ -107,12 +110,13 @@ impl From<apollo_parser::ast::InputObjectTypeExtension> for InputObjectTypeDef {
                 .map(|input_fields| {
                     input_fields
                         .input_value_definitions()
-                        .map(InputValueDef::from)
-                        .collect()
+                        .map(InputValueDef::try_from)
+                        .collect::<Result<Vec<_>, crate::FromError>>()
                 })
+                .transpose()?
                 .unwrap_or_default(),
             description: None,
-        }
+        })
     }
 }
 

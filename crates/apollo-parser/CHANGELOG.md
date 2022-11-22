@@ -4,7 +4,7 @@ All notable changes to `apollo-parser` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- # [x.x.x] (unreleased) - 2021-mm-dd
+<!-- # [x.x.x] (unreleased) - 2022-mm-dd
 
 > Important: X breaking changes below, indicated by **BREAKING**
 
@@ -17,6 +17,27 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+
+# [x.x.x] (unreleased) - 2022-mm-dd
+## BREAKING
+- **make conversions from GraphQL Values to Rust types fallible - [goto-bus-stop], [pull/371] fixing [issue/358]**
+
+  In the past you could do:
+  ```rust
+  let graphql_value: IntValue = get_a_value();
+  let x: i32 = graphql_value.into();
+  ```
+  But this `.into()` implementation could panic if the number was out of range.
+  Now, this conversion is implemented with the `TryFrom` trait, so you handle out-of-range errors however you want:
+  ```rust
+  let graphql_value: IntValue = get_a_value();
+  let x: i32 = graphql_value.try_into()?;
+  ```
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop 
+  [pull/371]: https://github.com/apollographql/apollo-rs/pull/371
+  [issue/358]: https://github.com/apollographql/apollo-rs/pull/358
+
 # [0.3.2](https://crates.io/crates/apollo-parser/0.3.2) - 2022-11-15
 ## Fixes
 - **lexing escaped and unicode characters in block strings - [lrlna], [pull/357] fixing [issue/341], [issue/342], [issue/343]**

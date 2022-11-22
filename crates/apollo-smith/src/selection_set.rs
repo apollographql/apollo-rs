@@ -31,11 +31,16 @@ impl From<SelectionSet> for apollo_encoder::SelectionSet {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::SelectionSet> for SelectionSet {
-    fn from(selection_set: apollo_parser::ast::SelectionSet) -> Self {
-        Self {
-            selections: selection_set.selections().map(Selection::from).collect(),
-        }
+impl TryFrom<apollo_parser::ast::SelectionSet> for SelectionSet {
+    type Error = crate::FromError;
+
+    fn try_from(selection_set: apollo_parser::ast::SelectionSet) -> Result<Self, Self::Error> {
+        Ok(Self {
+            selections: selection_set
+                .selections()
+                .map(Selection::try_from)
+                .collect::<Result<_, _>>()?,
+        })
     }
 }
 
@@ -69,15 +74,17 @@ impl From<Selection> for apollo_encoder::Selection {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::Selection> for Selection {
-    fn from(selection: apollo_parser::ast::Selection) -> Self {
+impl TryFrom<apollo_parser::ast::Selection> for Selection {
+    type Error = crate::FromError;
+
+    fn try_from(selection: apollo_parser::ast::Selection) -> Result<Self, Self::Error> {
         match selection {
-            apollo_parser::ast::Selection::Field(field) => Self::Field(field.into()),
+            apollo_parser::ast::Selection::Field(field) => field.try_into().map(Self::Field),
             apollo_parser::ast::Selection::FragmentSpread(fragment_spread) => {
-                Self::FragmentSpread(fragment_spread.into())
+                fragment_spread.try_into().map(Self::FragmentSpread)
             }
             apollo_parser::ast::Selection::InlineFragment(inline_fragment) => {
-                Self::InlineFragment(inline_fragment.into())
+                inline_fragment.try_into().map(Self::InlineFragment)
             }
         }
     }
