@@ -20,7 +20,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2022-mm-dd
 ## BREAKING
-- **make conversions from GraphQL Values to Rust types fallible - [goto-bus-stop], [pull/xyz] fixing [issue/358]**
+- **make conversions from GraphQL Values to Rust types fallible - [goto-bus-stop], [pull/371] fixing [issue/358]**
 
   In the past you could do:
   ```rust
@@ -34,8 +34,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   let x: i32 = graphql_value.try_into()?;
   ```
 
-  [goto-bus-stop]: https://github.com/goto-bus-stop
-  [pull/xyz]: https://github.com/apollographql/apollo-rs/pull/xyz
+  [goto-bus-stop]: https://github.com/goto-bus-stop 
+  [pull/371]: https://github.com/apollographql/apollo-rs/pull/371
   [issue/358]: https://github.com/apollographql/apollo-rs/pull/358
 
 # [0.3.2](https://crates.io/crates/apollo-parser/0.3.2) - 2022-11-15
