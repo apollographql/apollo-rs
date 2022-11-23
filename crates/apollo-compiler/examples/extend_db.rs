@@ -1,8 +1,8 @@
-use std::{fmt, path::Path};
+use std::{fmt, path::Path, sync::Arc};
 
 use apollo_compiler::{
     database::{AstStorage, DocumentStorage, HirStorage, InputStorage},
-    AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, SourceManifest,
+    AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, Source, SourceManifest,
 };
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
@@ -22,7 +22,7 @@ impl Linter {
 
     pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let id = self.source_manifest.add_source(path);
-        self.db.set_input_document(id, input.to_string());
+        self.db.set_input(id, Source::document(input.to_string()));
         self.db.set_sources(self.source_manifest.clone());
 
         id
@@ -106,7 +106,7 @@ fn capitalised_definitions(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
 
                     Some(LintDiagnostic::CapitalisedDefinitions(
                         CapitalisedDefinitions {
-                            src: db.input_document(loc.file_id()),
+                            src: db.source_code(loc.file_id()),
                             definition: (offset, len).into(),
                         },
                     ))
@@ -152,7 +152,7 @@ impl fmt::Display for LintDiagnostic {
 #[diagnostic(code("graphql linter diagnostic"))]
 pub struct CapitalisedDefinitions {
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label = "capitalise this definition"]
     pub definition: SourceSpan,

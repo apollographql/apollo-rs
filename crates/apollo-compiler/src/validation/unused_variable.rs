@@ -45,7 +45,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     let len = undefined_var.loc.node_len();
                     ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                         ty: undefined_var.name.clone(),
-                        src: db.input_document(undefined_var.loc.file_id()),
+                        src: db.source_code(undefined_var.loc.file_id()),
                         definition: (offset, len).into(),
                     })
                 })
@@ -57,7 +57,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 let len = unused_var.loc.node_len();
                 ApolloDiagnostic::UnusedVariable(UnusedVariable {
                     ty: unused_var.name.clone(),
-                    src: db.input_document(unused_var.loc.file_id()),
+                    src: db.source_code(unused_var.loc.file_id()),
                     definition: (offset, len).into(),
                 })
             });

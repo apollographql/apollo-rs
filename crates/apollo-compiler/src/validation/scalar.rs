@@ -19,7 +19,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 diagnostics.push(ApolloDiagnostic::BuiltInScalarDefinition(
                     BuiltInScalarDefinition {
                         scalar: (offset, len).into(),
-                        src: db.input_document(loc.file_id()),
+                        src: db.source_code(loc.file_id()),
                     },
                 ));
             } else if !scalar.is_built_in() {
@@ -33,7 +33,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     diagnostics.push(ApolloDiagnostic::ScalarSpecificationURL(
                         ScalarSpecificationURL {
                             scalar: (offset, len).into(),
-                            src: db.input_document(loc.file_id()),
+                            src: db.source_code(loc.file_id()),
                         },
                     ))
                 }

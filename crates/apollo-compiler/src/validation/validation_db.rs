@@ -205,7 +205,7 @@ pub fn check_input_values(
 
             diagnostics.push(ApolloDiagnostic::UniqueArgument(UniqueArgument {
                 name: name.into(),
-                src: db.input_document(prev_arg.loc().unwrap().file_id()),
+                src: db.source_code(prev_arg.loc().unwrap().file_id()),
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!("`{name}` argument must only be defined once.")),
@@ -313,7 +313,7 @@ pub fn check_arguments(
 
             diagnostics.push(ApolloDiagnostic::UniqueArgument(UniqueArgument {
                 name: name.into(),
-                src: db.input_document(prev_arg.loc().file_id()),
+                src: db.source_code(prev_arg.loc().file_id()),
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!("`{name}` argument must only be provided once.")),

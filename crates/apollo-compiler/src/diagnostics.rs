@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, sync::Arc};
 
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
@@ -100,7 +100,7 @@ impl fmt::Display for ApolloDiagnostic {
 #[diagnostic(code("apollo-compiler validation error"))]
 pub struct MissingIdent {
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label = "provide a name for this definition"]
     pub definition: SourceSpan,
@@ -117,7 +117,7 @@ pub struct MissingField {
     pub ty: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("`{}` was originally defined here", self.ty)]
     pub super_definition: SourceSpan,
@@ -140,7 +140,7 @@ pub struct UniqueDefinition {
     pub ty: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("previous definition of `{}` here", self.name)]
     pub original_definition: SourceSpan,
@@ -157,7 +157,7 @@ pub struct UniqueDefinition {
 #[diagnostic(code("apollo-compiler validation error"))]
 pub struct SingleRootField {
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     pub fields: usize,
 
@@ -176,7 +176,7 @@ pub struct UnsupportedOperation {
     pub ty: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("{} operation is not defined in the schema and is therefore not supported", self.ty)]
     pub operation: SourceSpan,
@@ -195,7 +195,7 @@ pub struct SyntaxError {
     pub message: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("{}", self.message)]
     pub span: SourceSpan,
@@ -209,7 +209,7 @@ pub struct UniqueField {
     pub field: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("previous definition of `{}` field here", self.field)]
     pub original_field: SourceSpan,
@@ -226,7 +226,7 @@ pub struct UniqueField {
 #[diagnostic(code("apollo-compiler validation error"))]
 pub struct RecursiveDefinition {
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("{}", self.definition_label)]
     pub definition: SourceSpan,
@@ -244,7 +244,7 @@ pub struct UndefinedDefinition {
     pub ty: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("not found in this scope")]
     pub definition: SourceSpan,
@@ -258,7 +258,7 @@ pub struct TransitiveImplementedInterfaces {
     pub missing_interface: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("{} must also be implemented here", self.missing_interface)]
     pub definition: SourceSpan,
@@ -269,7 +269,7 @@ pub struct TransitiveImplementedInterfaces {
 #[diagnostic(code("apollo-compiler validation error"))]
 pub struct QueryRootOperationType {
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("`query` root operation type must be defined here")]
     pub schema: SourceSpan,
@@ -280,7 +280,7 @@ pub struct QueryRootOperationType {
 #[diagnostic(code("apollo-compiler validation error"))]
 pub struct BuiltInScalarDefinition {
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("remove this scalar definition")]
     pub scalar: SourceSpan,
@@ -291,7 +291,7 @@ pub struct BuiltInScalarDefinition {
 #[diagnostic(code("apollo-compiler validation advice"), severity(advice))]
 pub struct ScalarSpecificationURL {
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("consider adding a @specifiedBy directive to this scalar definition")]
     pub scalar: SourceSpan,
@@ -304,7 +304,7 @@ pub struct CapitalizedValue {
     pub ty: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("consider capitalizing {}", self.ty)]
     pub value: SourceSpan,
@@ -317,7 +317,7 @@ pub struct UnusedVariable {
     pub ty: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("unused variable")]
     pub definition: SourceSpan,
@@ -336,7 +336,7 @@ pub struct OutputType {
     pub ty: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("this is of `{}` type", self.ty)]
     pub definition: SourceSpan,
@@ -355,7 +355,7 @@ pub struct ObjectType {
     pub ty: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("this is of `{}` type", self.ty)]
     pub definition: SourceSpan,
@@ -370,7 +370,7 @@ pub struct UndefinedField {
     pub field: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("`{}` field is not in scope", self.field)]
     pub definition: SourceSpan,
@@ -387,7 +387,7 @@ pub struct UniqueArgument {
     pub name: String,
 
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label("previous definition of `{}` here", self.name)]
     pub original_definition: SourceSpan,

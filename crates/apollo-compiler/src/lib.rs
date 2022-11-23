@@ -12,7 +12,7 @@ use salsa::ParallelDatabase;
 use validation::ValidationDatabase;
 
 pub use database::{
-    hir, AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, RootDatabase,
+    hir, AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source,
     SourceManifest,
 };
 pub use diagnostics::ApolloDiagnostic;
@@ -95,7 +95,7 @@ impl ApolloCompiler {
     /// extensions to the compiler.
     pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let id = self.source_manifest.add_source(path);
-        self.db.set_input_document(id, input.to_string());
+        self.db.set_input(id, Source::document(input));
 
         id
     }
@@ -104,16 +104,16 @@ impl ApolloCompiler {
     /// - to the compiler.
     pub fn schema(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let id = self.source_manifest.add_source(path);
-        self.db.set_input_schema(id, input.to_string());
+        self.db.set_input(id, Source::schema(input));
 
         id
     }
 
-    /// Add a query - a document with executable definition only - to the
+    /// Add a query - a document with executable definitions only - to the
     /// compiler.
     pub fn query(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let id = self.source_manifest.add_source(path);
-        self.db.set_input_query(id, input.to_string());
+        self.db.set_input(id, Source::query(input));
 
         id
     }

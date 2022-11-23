@@ -25,7 +25,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     name: name.into(),
                     ty: "union member".into(),
-                    src: db.input_document(prev_def.loc().file_id()),
+                    src: db.source_code(prev_def.loc().file_id()),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (offset, len).into(),
                     help: Some(format!(
@@ -43,7 +43,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if union_member_type.is_none() {
                 diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                     ty: name.into(),
-                    src: db.input_document(union_member.loc().file_id()),
+                    src: db.source_code(union_member.loc().file_id()),
                     definition: (offset, len).into(),
                 }))
             } else if let Some(ty) = union_member_type {
@@ -52,7 +52,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     diagnostics.push(ApolloDiagnostic::ObjectType(ObjectType {
                         name: name.into(),
                         ty: ty.ty(),
-                        src: db.input_document(union_member.loc().file_id()),
+                        src: db.source_code(union_member.loc().file_id()),
                         definition: (offset, len).into(),
                     }))
                 }

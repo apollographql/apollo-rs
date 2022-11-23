@@ -20,7 +20,7 @@ pub trait AstDatabase: InputDatabase {
 }
 
 fn ast(db: &dyn AstDatabase, file_id: FileId) -> SyntaxTree {
-    let input = db.input_document(file_id);
+    let input = db.source_code(file_id);
 
     let parser = ApolloParser::new(&input);
     let parser = if let Some(limit) = db.recursion_limit() {
@@ -45,7 +45,7 @@ fn syntax_errors(db: &dyn AstDatabase) -> Vec<ApolloDiagnostic> {
                 .into_iter()
                 .map(|err| {
                     ApolloDiagnostic::SyntaxError(SyntaxError {
-                        src: db.input_document(*file_id),
+                        src: db.source_code(*file_id),
                         span: (err.index(), err.data().len()).into(), // (offset, length of error token)
                         message: err.message().into(),
                     })

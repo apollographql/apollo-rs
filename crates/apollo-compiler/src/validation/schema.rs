@@ -16,7 +16,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             let len = loc.node_len();
             diagnostics.push(ApolloDiagnostic::QueryRootOperationType(
                 QueryRootOperationType {
-                    src: db.input_document(loc.file_id()),
+                    src: db.source_code(loc.file_id()),
                     schema: (offset, len).into(),
                 },
             ));
@@ -39,7 +39,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     name: name.clone(),
                     ty: "root operation type definition".into(),
-                    src: db.input_document(prev_def.loc().unwrap().file_id()),
+                    src: db.source_code(prev_def.loc().unwrap().file_id()),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
                     help: Some(format!(
