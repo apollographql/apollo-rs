@@ -206,7 +206,7 @@ enum Test @dir__one(int_value: -10) {
                         if let ast::Value::IntValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
-                            let i: i32 = val.into();
+                            let i: i32 = val.try_into().unwrap();
                             assert_eq!(i, -10);
                         }
                     }
@@ -237,7 +237,7 @@ enum Test @dir__one(float_value: -1.123E4) {
                         if let ast::Value::FloatValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
-                            let f: f64 = val.into();
+                            let f: f64 = val.try_into().unwrap();
                             assert_eq!(f, -1.123E4);
                         }
                     }
@@ -265,7 +265,7 @@ enum Test @dir__one(bool_value: false) {
                         if let ast::Value::BooleanValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
-                            let b: bool = val.into();
+                            let b: bool = val.try_into().unwrap();
                             assert!(!b);
                         }
                     }

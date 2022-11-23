@@ -55,9 +55,13 @@ impl From<InterfaceTypeDef> for InterfaceDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::InterfaceTypeDefinition> for InterfaceTypeDef {
-    fn from(interface_def: apollo_parser::ast::InterfaceTypeDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::InterfaceTypeDefinition> for InterfaceTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(
+        interface_def: apollo_parser::ast::InterfaceTypeDefinition,
+    ) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: interface_def
                 .name()
                 .expect("object type definition must have a name")
@@ -65,19 +69,16 @@ impl From<apollo_parser::ast::InterfaceTypeDefinition> for InterfaceTypeDef {
             description: interface_def.description().map(Description::from),
             directives: interface_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             extend: false,
             fields_def: interface_def
                 .fields_definition()
                 .expect("object type definition must have fields definition")
                 .field_definitions()
-                .map(FieldDef::from)
-                .collect(),
+                .map(FieldDef::try_from)
+                .collect::<Result<Vec<_>, _>>()?,
             interfaces: interface_def
                 .implements_interfaces()
                 .map(|itfs| {
@@ -86,14 +87,18 @@ impl From<apollo_parser::ast::InterfaceTypeDefinition> for InterfaceTypeDef {
                         .collect()
                 })
                 .unwrap_or_default(),
-        }
+        })
     }
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::InterfaceTypeExtension> for InterfaceTypeDef {
-    fn from(interface_def: apollo_parser::ast::InterfaceTypeExtension) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::InterfaceTypeExtension> for InterfaceTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(
+        interface_def: apollo_parser::ast::InterfaceTypeExtension,
+    ) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: interface_def
                 .name()
                 .expect("object type definition must have a name")
@@ -101,19 +106,16 @@ impl From<apollo_parser::ast::InterfaceTypeExtension> for InterfaceTypeDef {
             description: None,
             directives: interface_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             extend: true,
             fields_def: interface_def
                 .fields_definition()
                 .expect("object type definition must have fields definition")
                 .field_definitions()
-                .map(FieldDef::from)
-                .collect(),
+                .map(FieldDef::try_from)
+                .collect::<Result<Vec<_>, _>>()?,
             interfaces: interface_def
                 .implements_interfaces()
                 .map(|itfs| {
@@ -122,7 +124,7 @@ impl From<apollo_parser::ast::InterfaceTypeExtension> for InterfaceTypeDef {
                         .collect()
                 })
                 .unwrap_or_default(),
-        }
+        })
     }
 }
 

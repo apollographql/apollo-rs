@@ -51,26 +51,27 @@ impl From<OperationDef> for String {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::OperationDefinition> for OperationDef {
-    fn from(operation_def: apollo_parser::ast::OperationDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::OperationDefinition> for OperationDef {
+    type Error = crate::FromError;
+
+    fn try_from(
+        operation_def: apollo_parser::ast::OperationDefinition,
+    ) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: operation_def.name().map(Name::from),
             directives: operation_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             operation_type: operation_def
                 .operation_type()
                 .map(OperationType::from)
                 .unwrap_or(OperationType::Query),
             variable_definitions: Vec::new(),
-            selection_set: operation_def.selection_set().unwrap().into(),
+            selection_set: operation_def.selection_set().unwrap().try_into()?,
             shorthand: operation_def.operation_type().is_none(),
-        }
+        })
     }
 }
 

@@ -51,9 +51,11 @@ impl From<EnumTypeDef> for EnumDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
-    fn from(enum_def: apollo_parser::ast::EnumTypeDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(enum_def: apollo_parser::ast::EnumTypeDefinition) -> Result<Self, Self::Error> {
+        Ok(Self {
             description: enum_def
                 .description()
                 .and_then(|d| d.string_value())
@@ -61,45 +63,41 @@ impl From<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
             name: enum_def.name().unwrap().into(),
             directives: enum_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             enum_values_def: enum_def
                 .enum_values_definition()
                 .expect("must have enum values definition")
                 .enum_value_definitions()
-                .map(EnumValueDefinition::from)
-                .collect(),
+                .map(EnumValueDefinition::try_from)
+                .collect::<Result<_, _>>()?,
             extend: false,
-        }
+        })
     }
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::EnumTypeExtension> for EnumTypeDef {
-    fn from(enum_def: apollo_parser::ast::EnumTypeExtension) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::EnumTypeExtension> for EnumTypeDef {
+    type Error = crate::FromError;
+
+    fn try_from(enum_def: apollo_parser::ast::EnumTypeExtension) -> Result<Self, Self::Error> {
+        Ok(Self {
             description: None,
             name: enum_def.name().unwrap().into(),
             directives: enum_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
             enum_values_def: enum_def
                 .enum_values_definition()
                 .expect("must have enum values definition")
                 .enum_value_definitions()
-                .map(EnumValueDefinition::from)
-                .collect(),
+                .map(EnumValueDefinition::try_from)
+                .collect::<Result<_, _>>()?,
             extend: true,
-        }
+        })
     }
 }
 
@@ -132,9 +130,13 @@ impl From<EnumValueDefinition> for EnumValue {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::EnumValueDefinition> for EnumValueDefinition {
-    fn from(enum_value_def: apollo_parser::ast::EnumValueDefinition) -> Self {
-        Self {
+impl TryFrom<apollo_parser::ast::EnumValueDefinition> for EnumValueDefinition {
+    type Error = crate::FromError;
+
+    fn try_from(
+        enum_value_def: apollo_parser::ast::EnumValueDefinition,
+    ) -> Result<Self, Self::Error> {
+        Ok(Self {
             description: enum_value_def.description().map(Description::from),
             value: enum_value_def
                 .enum_value()
@@ -144,13 +146,10 @@ impl From<apollo_parser::ast::EnumValueDefinition> for EnumValueDefinition {
                 .into(),
             directives: enum_value_def
                 .directives()
-                .map(|d| {
-                    d.directives()
-                        .map(|d| (d.name().unwrap().into(), Directive::from(d)))
-                        .collect()
-                })
+                .map(Directive::convert_directives)
+                .transpose()?
                 .unwrap_or_default(),
-        }
+        })
     }
 }
 

@@ -18,6 +18,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [x.x.x] (unreleased) - 2022-mm-dd
+
+## BREAKING
+- **make conversions from apollo-parser types fallible - [goto-bus-stop], [pull/371]**
+
+  The `parser-impl` feature flag contains conversion code from apollo-parser AST node types
+  to apollo-smith types. With this change, those conversions now use the `TryFrom` trait
+  instead of the `From` trait, and return errors instead of panicking.
+
+  You now have to use the `try_from()` and `try_into()` methods instead of `from()` and
+  `into()`.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/371]: https://github.com/apollographql/apollo-rs/pull/371
+
 # [0.2.0](https://crates.io/crates/apollo-smith/0.2.0) - 2022-11-08
 
 ## BREAKING

@@ -1246,9 +1246,10 @@ fn value(val: ast::Value, file_id: FileId) -> Value {
             loc: location(file_id, var.syntax()),
         }),
         ast::Value::StringValue(string_val) => Value::String(string_val.into()),
-        ast::Value::FloatValue(float) => Value::Float(Float::new(float.into())),
-        ast::Value::IntValue(int) => Value::Int(int.into()),
-        ast::Value::BooleanValue(bool) => Value::Boolean(bool.into()),
+        // TODO(@goto-bus-stop) do not unwrap
+        ast::Value::FloatValue(float) => Value::Float(Float::new(float.try_into().unwrap())),
+        ast::Value::IntValue(int) => Value::Int(int.try_into().unwrap()),
+        ast::Value::BooleanValue(bool) => Value::Boolean(bool.try_into().unwrap()),
         ast::Value::NullValue(_) => Value::Null,
         ast::Value::EnumValue(enum_) => Value::Enum(name(enum_.name(), file_id)),
         ast::Value::ListValue(list) => {
