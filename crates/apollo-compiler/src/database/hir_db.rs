@@ -214,16 +214,19 @@ fn fragments(db: &dyn HirDatabase) -> Arc<Vec<FragmentDefinition>> {
 // This implementation currently just finds the first schema definition, which
 // means we can't really diagnose the "multiple schema definitions" errors.
 fn schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
-    let schema: Option<(FileId, ast::SchemaDefinition)> = db.type_definition_files().into_iter().find_map(|id| {
-        let schema: Option<(FileId, ast::SchemaDefinition)> =
-            db.ast(id).document().definitions().into_iter().find_map(
-                |definition| match definition {
+    let schema: Option<(FileId, ast::SchemaDefinition)> =
+        db.type_definition_files().into_iter().find_map(|id| {
+            let schema: Option<(FileId, ast::SchemaDefinition)> = db
+                .ast(id)
+                .document()
+                .definitions()
+                .into_iter()
+                .find_map(|definition| match definition {
                     ast::Definition::SchemaDefinition(schema) => Some((id, schema)),
                     _ => None,
-                },
-            );
-        schema
-    });
+                });
+            schema
+        });
     let mut schema_def =
         schema.map_or(SchemaDefinition::default(), |s| schema_definition(s.1, s.0));
 

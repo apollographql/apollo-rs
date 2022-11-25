@@ -1,6 +1,6 @@
 use crate::database::sources::FileId;
 
-use super::sources::{Source, SourceType, SourceManifest};
+use super::sources::{Source, SourceManifest, SourceType};
 use std::sync::Arc;
 
 #[salsa::query_group(InputStorage)]
@@ -44,13 +44,23 @@ fn source_files(db: &dyn InputDatabase) -> Vec<FileId> {
 fn type_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {
     db.source_files()
         .into_iter()
-        .filter(|source| matches!(db.source_type(*source), SourceType::Schema | SourceType::Document))
+        .filter(|source| {
+            matches!(
+                db.source_type(*source),
+                SourceType::Schema | SourceType::Document
+            )
+        })
         .collect()
 }
 
 fn executable_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {
     db.source_files()
         .into_iter()
-        .filter(|source| matches!(db.source_type(*source), SourceType::Query | SourceType::Document))
+        .filter(|source| {
+            matches!(
+                db.source_type(*source),
+                SourceType::Query | SourceType::Document
+            )
+        })
         .collect()
 }
