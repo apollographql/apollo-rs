@@ -491,6 +491,42 @@ type Product {
     }
 
     #[test]
+    fn it_supports_multiple_independent_queries() {
+        let schema = r#"
+type Query {
+  topProducts: Product
+  customer: User
+}
+
+type Product {
+  type: String
+  price(setPrice: Int): Int
+}
+
+type User {
+  id: ID
+  name: String
+  profilePic(size: Int): URL
+}
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+
+        let product_query = r#"query getProduct { topProducts { type } }"#;
+        let customer_query = r#"{ customer }"#;
+        let colliding_query = r#"query getProduct { topProducts { type, price } }"#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.schema(schema, "schema.graphql");
+        compiler.query(product_query, "product.graphql");
+        compiler.query(customer_query, "customer.graphql");
+        compiler.query(colliding_query, "colliding.graphql");
+        compiler.compile();
+
+        assert_eq!(compiler.validate(), &[]);
+    }
+
+    #[test]
     fn it_accesses_fragment_definition_field_types() {
         let schema = r#"
 type Query {
