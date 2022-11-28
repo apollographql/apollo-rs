@@ -22,10 +22,7 @@ rowan = "0.15.5"
 salsa = "0.16.1"
 uuid = { version = "1.1", features = ["serde", "v4"] }
 ordered-float = { version = "2.10.0", features = ["std"] }
-# TODO(@goto-bus-stop) We are currently affected by issue #215:
-# https://github.com/zkat/miette/issues/215
-# Once that is fixed we can unpin this :)
-miette = { version = "= 5.3.0", features = ["fancy"] }
+miette = { version = "5.5.0", features = ["fancy"] }
 thiserror = "1.0.31"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
