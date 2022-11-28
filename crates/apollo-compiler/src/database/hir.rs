@@ -941,6 +941,8 @@ impl TryFrom<&'_ Value> for f64 {
     }
 }
 
+#[derive(thiserror::Error, Debug)]
+#[error("coercing a non-numeric value to a `Float` input value")]
 pub struct FloatCoercionError(());
 
 /// Coerce to an `Int` input type
@@ -977,8 +979,11 @@ impl TryFrom<&'_ Value> for i32 {
     }
 }
 
+#[derive(thiserror::Error, Debug)]
 pub enum IntCoercionError {
+    #[error("coercing a non-integer value to an `Int` input value")]
     NotAnInteger,
+    #[error("integer input value overflows the signed 32-bit range")]
     RangeOverflow,
 }
 
@@ -2342,7 +2347,6 @@ mod tests {
             .iter()
             .map(|field| {
                 f64::try_from(field.default_value().unwrap())
-                    .ok()
                     .unwrap()
                     .to_string()
             })
