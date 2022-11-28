@@ -18,7 +18,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [0.4.0] (https://crates.io/crates/apollo-parser/0.4.0) - 2022-11-28
+# [0.4.0](https://crates.io/crates/apollo-parser/0.4.0) - 2022-11-28
 ## BREAKING
 - **make conversions from GraphQL Values to Rust types fallible - [goto-bus-stop], [pull/371] fixing [issue/358]**
 
