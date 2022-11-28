@@ -882,7 +882,16 @@ pub type DefaultValue = Value;
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Value {
     Variable(Variable),
-    Int(i32),
+
+    // A value of integer syntax may be coerced to a Float input value:
+    // https://spec.graphql.org/draft/#sec-Float.Input-Coercion
+    // Keep a f64 here instead of i32 in order to support
+    // the full range of f64 integer values for that case.
+    //
+    // All i32 values can be represented exactly in f64,
+    // so conversion to an Int input value is still exact:
+    // https://spec.graphql.org/draft/#sec-Int.Input-Coercion
+    Int(Float),
     Float(Float),
     String(String),
     Boolean(bool),
@@ -900,6 +909,82 @@ impl Value {
     pub fn is_variable(&self) -> bool {
         matches!(self, Self::Variable(..))
     }
+}
+
+/// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
+///
+/// <https://spec.graphql.org/draft/#sec-Float.Input-Coercion>
+impl TryFrom<Value> for f64 {
+    type Error = FloatCoercionError;
+
+    #[inline]
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        f64::try_from(&value)
+    }
+}
+
+/// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
+///
+/// <https://spec.graphql.org/draft/#sec-Float.Input-Coercion>
+impl TryFrom<&'_ Value> for f64 {
+    type Error = FloatCoercionError;
+
+    fn try_from(value: &'_ Value) -> Result<Self, Self::Error> {
+        if let Value::Int(float) | Value::Float(float) = value {
+            // FIXME: what does "a value outside the available precision" mean?
+            // Should coercion fail when f64 does not have enough mantissa bits
+            // to represent the source token exactly?
+            Ok(float.inner.0)
+        } else {
+            Err(FloatCoercionError(()))
+        }
+    }
+}
+
+#[derive(thiserror::Error, Debug)]
+#[error("coercing a non-numeric value to a `Float` input value")]
+pub struct FloatCoercionError(());
+
+/// Coerce to an `Int` input type
+///
+/// <https://spec.graphql.org/draft/#sec-Int.Input-Coercion>
+impl TryFrom<Value> for i32 {
+    type Error = IntCoercionError;
+
+    #[inline]
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        i32::try_from(&value)
+    }
+}
+
+/// Coerce to an `Int` input type
+///
+/// <https://spec.graphql.org/draft/#sec-Int.Input-Coercion>
+impl TryFrom<&'_ Value> for i32 {
+    type Error = IntCoercionError;
+
+    fn try_from(value: &'_ Value) -> Result<Self, Self::Error> {
+        if let Value::Int(float) = value {
+            let float = float.inner.0;
+            // The parser emitted an `ast::IntValue` instead of `ast::FloatValue`
+            // so we already know `float` does not have a frational part.
+            if float <= (i32::MAX as f64) && float >= (i32::MIN as f64) {
+                Ok(float as i32)
+            } else {
+                Err(IntCoercionError::RangeOverflow)
+            }
+        } else {
+            Err(IntCoercionError::NotAnInteger)
+        }
+    }
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum IntCoercionError {
+    #[error("coercing a non-integer value to an `Int` input value")]
+    NotAnInteger,
+    #[error("integer input value overflows the signed 32-bit range")]
+    RangeOverflow,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -2236,5 +2321,42 @@ impl InputObjectTypeExtension {
     pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ApolloCompiler;
+    use crate::DocumentDatabase;
+
+    #[test]
+    fn huge_floats() {
+        let compiler = ApolloCompiler::new(
+            "input HugeFloats {
+                a: Float = 9876543210
+                b: Float = 9876543210.0
+                c: Float = 98765432109876543210
+                d: Float = 98765432109876543210.0
+            }",
+        );
+        let default_values: Vec<_> = compiler
+            .db
+            .find_input_object_by_name("HugeFloats".into())
+            .unwrap()
+            .input_fields_definition
+            .iter()
+            .map(|field| {
+                f64::try_from(field.default_value().unwrap())
+                    .unwrap()
+                    .to_string()
+            })
+            .collect();
+        // The exact value is preserved, even outside of the range of i32
+        assert_eq!(default_values[0], "9876543210");
+        assert_eq!(default_values[1], "9876543210");
+        // Beyond ~53 bits of mantissa we may lose precision,
+        // but this is approximation is still in the range of finite f64 values.
+        assert_eq!(default_values[2], "98765432109876540000");
+        assert_eq!(default_values[3], "98765432109876540000");
     }
 }
