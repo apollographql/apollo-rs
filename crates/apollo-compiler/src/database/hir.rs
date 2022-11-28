@@ -909,39 +909,77 @@ impl Value {
     pub fn is_variable(&self) -> bool {
         matches!(self, Self::Variable(..))
     }
+}
 
-    /// Coerce to a `Float` input type
-    ///
-    /// <https://spec.graphql.org/draft/#sec-Float.Input-Coercion>
-    pub fn coerce_to_float(&self) -> Option<Float> {
-        if let Value::Int(value) | Value::Float(value) = self {
+/// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
+///
+/// <https://spec.graphql.org/draft/#sec-Float.Input-Coercion>
+impl TryFrom<Value> for f64 {
+    type Error = FloatCoercionError;
+
+    #[inline]
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        f64::try_from(&value)
+    }
+}
+
+/// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
+///
+/// <https://spec.graphql.org/draft/#sec-Float.Input-Coercion>
+impl TryFrom<&'_ Value> for f64 {
+    type Error = FloatCoercionError;
+
+    fn try_from(value: &'_ Value) -> Result<Self, Self::Error> {
+        if let Value::Int(float) | Value::Float(float) = value {
             // FIXME: what does "a value outside the available precision" mean?
             // Should coercion fail when f64 does not have enough mantissa bits
             // to represent the source token exactly?
-            Some(value.clone())
+            Ok(float.inner.0)
         } else {
-            None
+            Err(FloatCoercionError(()))
         }
     }
+}
 
-    /// Coerce to an `Int` input type
-    ///
-    /// <https://spec.graphql.org/draft/#sec-Int.Input-Coercion>
-    pub fn coerce_to_int(&self) -> Option<i32> {
-        if let Value::Int(value) = self {
-            let float = value.inner.0;
+pub struct FloatCoercionError(());
+
+/// Coerce to an `Int` input type
+///
+/// <https://spec.graphql.org/draft/#sec-Int.Input-Coercion>
+impl TryFrom<Value> for i32 {
+    type Error = IntCoercionError;
+
+    #[inline]
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        i32::try_from(&value)
+    }
+}
+
+/// Coerce to an `Int` input type
+///
+/// <https://spec.graphql.org/draft/#sec-Int.Input-Coercion>
+impl TryFrom<&'_ Value> for i32 {
+    type Error = IntCoercionError;
+
+    fn try_from(value: &'_ Value) -> Result<Self, Self::Error> {
+        if let Value::Int(float) = value {
+            let float = float.inner.0;
             // The parser emitted an `ast::IntValue` instead of `ast::FloatValue`
             // so we already know `float` does not have a frational part.
             if float <= (i32::MAX as f64) && float >= (i32::MIN as f64) {
-                Some(float as i32)
+                Ok(float as i32)
             } else {
-                // FIXME: return a `Result` with an error enum to separate the two error cases?
-                None
+                Err(IntCoercionError::RangeOverflow)
             }
         } else {
-            None
+            Err(IntCoercionError::NotAnInteger)
         }
     }
+}
+
+pub enum IntCoercionError {
+    NotAnInteger,
+    RangeOverflow,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -2303,12 +2341,9 @@ mod tests {
             .input_fields_definition
             .iter()
             .map(|field| {
-                field
-                    .default_value()
+                f64::try_from(field.default_value().unwrap())
+                    .ok()
                     .unwrap()
-                    .coerce_to_float()
-                    .unwrap()
-                    .inner
                     .to_string()
             })
             .collect();
