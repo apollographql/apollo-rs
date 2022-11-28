@@ -228,7 +228,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        let document_id = compiler.document(input, "document.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();
@@ -237,11 +237,11 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         }
         assert!(diagnostics.is_empty());
 
-        let operations = compiler.db.operations();
+        let operations = compiler.db.operations(document_id);
         let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
         assert_eq!(["ExampleQuery"], operation_names.as_slice());
 
-        let fragments = compiler.db.fragments();
+        let fragments = compiler.db.fragments(document_id);
         let fragment_names: Vec<_> = fragments.iter().map(|fragment| fragment.name()).collect();
         assert_eq!(["vipCustomer"], fragment_names.as_slice());
 
@@ -283,7 +283,7 @@ type Query {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        let document_id = compiler.document(input, "document.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();
@@ -292,7 +292,7 @@ type Query {
         }
         assert!(diagnostics.is_empty());
 
-        let operations = compiler.db.operations();
+        let operations = compiler.db.operations(document_id);
         let fields = operations
             .iter()
             .find(|op| op.name() == Some("ExampleQuery"))
@@ -343,13 +343,13 @@ union Union = Concrete
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        let document_id = compiler.document(input, "document.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();
         assert!(diagnostics.is_empty());
 
-        let operations = compiler.db.operations();
+        let operations = compiler.db.operations(document_id);
         let fields = operations
             .iter()
             .find(|op| op.name() == Some("ExampleQuery"))
@@ -434,7 +434,7 @@ type Product {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        let document_id = compiler.document(input, "document.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();
@@ -444,7 +444,7 @@ type Product {
         assert!(diagnostics.is_empty());
 
         // Get the types of the two top level fields - topProducts and size
-        let operations = compiler.db.operations();
+        let operations = compiler.db.operations(document_id);
         let get_product_op = operations
             .iter()
             .find(|op| op.name() == Some("getProduct"))
@@ -492,20 +492,7 @@ type Product {
 
     #[test]
     fn it_accesses_fragment_definition_field_types() {
-        let input = r#"
-query getProduct {
-  topProducts {
-    type
-  }
-  ... vipCustomer
-}
-
-fragment vipCustomer on User {
-  id
-  name
-  profilePic(size: 50)
-}
-
+        let schema = r#"
 type Query {
   topProducts: Product
   customer: User
@@ -524,9 +511,24 @@ type User {
 
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
+        let query = r#"
+query getProduct {
+  topProducts {
+    type
+  }
+  ... vipCustomer
+}
+
+fragment vipCustomer on User {
+  id
+  name
+  profilePic(size: 50)
+}
+"#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.schema(schema, "schema.graphql");
+        let query_id = compiler.query(query, "query.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();
@@ -537,7 +539,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let op = compiler
             .db
-            .find_operation_by_name(String::from("getProduct"));
+            .find_operation_by_name(query_id, String::from("getProduct"));
         let fragment_in_op: Vec<crate::hir::FragmentDefinition> = op
             .unwrap()
             .selection_set()

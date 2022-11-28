@@ -5,17 +5,25 @@ use std::{
 
 use uuid::Uuid;
 
-use crate::{hir::*, AstDatabase, HirDatabase, InputDatabase};
+use crate::{hir::*, AstDatabase, FileId, HirDatabase, InputDatabase};
 
 #[salsa::query_group(DocumentStorage)]
 pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
     fn find_operation(&self, id: Uuid) -> Option<Arc<OperationDefinition>>;
 
-    fn find_operation_by_name(&self, name: String) -> Option<Arc<OperationDefinition>>;
+    fn find_operation_by_name(
+        &self,
+        file_id: FileId,
+        name: String,
+    ) -> Option<Arc<OperationDefinition>>;
 
     fn find_fragment(&self, id: Uuid) -> Option<Arc<FragmentDefinition>>;
 
-    fn find_fragment_by_name(&self, name: String) -> Option<Arc<FragmentDefinition>>;
+    fn find_fragment_by_name(
+        &self,
+        file_id: FileId,
+        name: String,
+    ) -> Option<Arc<FragmentDefinition>>;
 
     fn find_object_type(&self, id: Uuid) -> Option<Arc<ObjectTypeDefinition>>;
 
@@ -43,11 +51,11 @@ pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
 
     fn find_type_system_definition_by_name(&self, name: String) -> Option<Arc<Definition>>;
 
-    fn query_operations(&self) -> Arc<Vec<OperationDefinition>>;
+    fn query_operations(&self, file_id: FileId) -> Arc<Vec<OperationDefinition>>;
 
-    fn mutation_operations(&self) -> Arc<Vec<OperationDefinition>>;
+    fn mutation_operations(&self, file_id: FileId) -> Arc<Vec<OperationDefinition>>;
 
-    fn subscription_operations(&self) -> Arc<Vec<OperationDefinition>>;
+    fn subscription_operations(&self, file_id: FileId) -> Arc<Vec<OperationDefinition>>;
 
     fn operation_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
@@ -101,19 +109,22 @@ fn find_type_system_definition_by_name(
 }
 
 fn find_operation(db: &dyn DocumentDatabase, id: Uuid) -> Option<Arc<OperationDefinition>> {
-    db.operations().iter().find_map(|op| {
-        if &id == op.id() {
-            return Some(Arc::new(op.clone()));
-        }
-        None
+    db.executable_definition_files().iter().find_map(|file_id| {
+        db.operations(*file_id).iter().find_map(|op| {
+            if &id == op.id() {
+                return Some(Arc::new(op.clone()));
+            }
+            None
+        })
     })
 }
 
 fn find_operation_by_name(
     db: &dyn DocumentDatabase,
+    file_id: FileId,
     name: String,
 ) -> Option<Arc<OperationDefinition>> {
-    db.operations().iter().find_map(|op| {
+    db.operations(file_id).iter().find_map(|op| {
         if let Some(n) = op.name() {
             if n == name {
                 return Some(Arc::new(op.clone()));
@@ -124,19 +135,22 @@ fn find_operation_by_name(
 }
 
 fn find_fragment(db: &dyn DocumentDatabase, id: Uuid) -> Option<Arc<FragmentDefinition>> {
-    db.fragments().iter().find_map(|fragment| {
-        if &id == fragment.id() {
-            return Some(Arc::new(fragment.clone()));
-        }
-        None
+    db.executable_definition_files().iter().find_map(|file_id| {
+        db.fragments(*file_id).iter().find_map(|fragment| {
+            if &id == fragment.id() {
+                return Some(Arc::new(fragment.clone()));
+            }
+            None
+        })
     })
 }
 
 fn find_fragment_by_name(
     db: &dyn DocumentDatabase,
+    file_id: FileId,
     name: String,
 ) -> Option<Arc<FragmentDefinition>> {
-    db.fragments().iter().find_map(|fragment| {
+    db.fragments(file_id).iter().find_map(|fragment| {
         if name == fragment.name() {
             return Some(Arc::new(fragment.clone()));
         }
@@ -260,27 +274,33 @@ fn find_input_object_by_name(
     })
 }
 
-fn query_operations(db: &dyn DocumentDatabase) -> Arc<Vec<OperationDefinition>> {
+fn query_operations(db: &dyn DocumentDatabase, file_id: FileId) -> Arc<Vec<OperationDefinition>> {
     let operations = db
-        .operations()
+        .operations(file_id)
         .iter()
         .filter_map(|op| op.operation_ty.is_query().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
 
-fn subscription_operations(db: &dyn DocumentDatabase) -> Arc<Vec<OperationDefinition>> {
+fn subscription_operations(
+    db: &dyn DocumentDatabase,
+    file_id: FileId,
+) -> Arc<Vec<OperationDefinition>> {
     let operations = db
-        .operations()
+        .operations(file_id)
         .iter()
         .filter_map(|op| op.operation_ty.is_subscription().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
 
-fn mutation_operations(db: &dyn DocumentDatabase) -> Arc<Vec<OperationDefinition>> {
+fn mutation_operations(
+    db: &dyn DocumentDatabase,
+    file_id: FileId,
+) -> Arc<Vec<OperationDefinition>> {
     let operations = db
-        .operations()
+        .operations(file_id)
         .iter()
         .filter_map(|op| op.operation_ty.is_mutation().then(|| op.clone()))
         .collect();

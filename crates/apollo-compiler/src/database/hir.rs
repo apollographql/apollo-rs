@@ -1132,7 +1132,7 @@ impl FragmentSpread {
 
     /// Get the fragment definition this fragment spread is referencing.
     pub fn fragment(&self, db: &dyn DocumentDatabase) -> Option<Arc<FragmentDefinition>> {
-        db.find_fragment_by_name(self.name().to_string())
+        db.find_fragment_by_name(self.loc.file_id(), self.name().to_string())
     }
 
     /// Get framgent spread's defined variables.

@@ -7,14 +7,14 @@ fn compile_query() -> Option<hir::FragmentDefinition> {
     let src = fs::read_to_string(file).expect("Could not read schema file.");
 
     let mut compiler = ApolloCompiler::new();
-    compiler.document(&src, file);
+    let document_id = compiler.document(&src, file);
     compiler.compile();
     // let errors = ctx.validate();
 
-    let operations = compiler.db.operations();
+    let operations = compiler.db.operations(document_id);
     let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
     assert_eq!(["ExampleQuery"], operation_names.as_slice());
-    let frags = compiler.db.fragments();
+    let frags = compiler.db.fragments(document_id);
     let fragments: Vec<_> = frags.iter().map(|frag| frag.name()).collect();
     assert_eq!(["vipCustomer"], fragments.as_slice());
 
@@ -29,7 +29,7 @@ fn compile_query() -> Option<hir::FragmentDefinition> {
     assert_eq!(operation_variables, ["definedVariable"]);
     compiler
         .db
-        .fragments()
+        .fragments(document_id)
         .iter()
         .find(|op| op.name() == "vipCustomer")
         .cloned()

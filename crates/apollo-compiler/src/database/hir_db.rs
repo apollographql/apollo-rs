@@ -12,13 +12,21 @@ use crate::{database::FileId, hir::*, AstDatabase, InputDatabase};
 pub trait HirDatabase: InputDatabase + AstDatabase {
     // fn definitions(&self) -> Arc<Vec<ast::Definition>>;
 
+    /// Return all definitions known to the compiler.
+    ///
+    /// This includes all type system definitions and all executable definitions
+    /// from all files. If multiple executable documents are known to the compiler,
+    /// there may be duplicate executable definitions that are still valid.
     fn db_definitions(&self) -> Arc<Vec<Definition>>;
 
+    /// Return the type system definitions.
     fn type_system_definitions(&self) -> Arc<Vec<Definition>>;
 
-    fn operations(&self) -> Arc<Vec<OperationDefinition>>;
+    /// Return all the operations defined in a file.
+    fn operations(&self, file_id: FileId) -> Arc<Vec<OperationDefinition>>;
 
-    fn fragments(&self) -> Arc<Vec<FragmentDefinition>>;
+    /// Return all the fragments defined in a file.
+    fn fragments(&self, file_id: FileId) -> Arc<Vec<FragmentDefinition>>;
 
     fn schema(&self) -> Arc<SchemaDefinition>;
 
@@ -54,19 +62,19 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
 fn db_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
     let mut definitions = Vec::clone(&*db.type_system_definitions());
 
-    let operations: Vec<Definition> = db
-        .operations()
-        .iter()
-        .map(|def| Definition::OperationDefinition(def.clone()))
-        .collect();
-    let fragments: Vec<Definition> = db
-        .fragments()
-        .iter()
-        .map(|def| Definition::FragmentDefinition(def.clone()))
-        .collect();
-
-    definitions.extend(operations);
-    definitions.extend(fragments);
+    // collect *all* executable definitions.
+    for file_id in db.executable_definition_files() {
+        definitions.extend(
+            db.operations(file_id)
+                .iter()
+                .map(|def| Definition::OperationDefinition(def.clone())),
+        );
+        definitions.extend(
+            db.fragments(file_id)
+                .iter()
+                .map(|def| Definition::FragmentDefinition(def.clone())),
+        );
+    }
 
     Arc::new(definitions)
 }
@@ -165,45 +173,37 @@ fn type_system_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
     Arc::new(definitions)
 }
 
-fn operations(db: &dyn HirDatabase) -> Arc<Vec<OperationDefinition>> {
+fn operations(db: &dyn HirDatabase, file_id: FileId) -> Arc<Vec<OperationDefinition>> {
     let operations = db
-        .executable_definition_files()
+        .ast(file_id)
+        .document()
+        .definitions()
         .into_iter()
-        .flat_map(|id| {
-            db.ast(id)
-                .document()
-                .definitions()
-                .into_iter()
-                .filter_map(|definition| match definition {
-                    ast::Definition::OperationDefinition(op_def) => {
-                        Some(operation_definition(db, op_def, id))
-                    }
-                    _ => None,
-                })
-                .collect::<Vec<OperationDefinition>>()
+        .filter_map(|definition| match definition {
+            ast::Definition::OperationDefinition(op_def) => {
+                Some(operation_definition(db, op_def, file_id))
+            }
+            _ => None,
         })
-        .collect();
+        .collect::<Vec<OperationDefinition>>();
+
     Arc::new(operations)
 }
 
-fn fragments(db: &dyn HirDatabase) -> Arc<Vec<FragmentDefinition>> {
+fn fragments(db: &dyn HirDatabase, file_id: FileId) -> Arc<Vec<FragmentDefinition>> {
     let fragments = db
-        .executable_definition_files()
+        .ast(file_id)
+        .document()
+        .definitions()
         .into_iter()
-        .flat_map(|id| {
-            db.ast(id)
-                .document()
-                .definitions()
-                .into_iter()
-                .filter_map(|definition| match definition {
-                    ast::Definition::FragmentDefinition(fragment_def) => {
-                        Some(fragment_definition(db, fragment_def, id))
-                    }
-                    _ => None,
-                })
-                .collect::<Vec<FragmentDefinition>>()
+        .filter_map(|definition| match definition {
+            ast::Definition::FragmentDefinition(fragment_def) => {
+                Some(fragment_definition(db, fragment_def, file_id))
+            }
+            _ => None,
         })
-        .collect();
+        .collect::<Vec<FragmentDefinition>>();
+
     Arc::new(fragments)
 }
 
