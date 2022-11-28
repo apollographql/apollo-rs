@@ -882,7 +882,16 @@ pub type DefaultValue = Value;
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum Value {
     Variable(Variable),
-    Int(i32),
+
+    // A value of integer syntax may be coerced to a Float input value:
+    // https://spec.graphql.org/draft/#sec-Float.Input-Coercion
+    // Keep a f64 here instead of i32 in order to support
+    // the full range of f64 integer values for that case.
+    //
+    // All i32 values can be represented exactly in f64,
+    // so conversion to an Int input value is still exact:
+    // https://spec.graphql.org/draft/#sec-Int.Input-Coercion
+    Int(Float),
     Float(Float),
     String(String),
     Boolean(bool),
@@ -899,6 +908,39 @@ impl Value {
     #[must_use]
     pub fn is_variable(&self) -> bool {
         matches!(self, Self::Variable(..))
+    }
+
+    /// Coerce to a `Float` input type
+    ///
+    /// <https://spec.graphql.org/draft/#sec-Float.Input-Coercion>
+    pub fn coerce_to_float(&self) -> Option<Float> {
+        if let Value::Int(value) | Value::Float(value) = self {
+            // FIXME: what does "a value outside the available precision" mean?
+            // Should coercion fail when f64 does not have enough mantissa bits
+            // to represent the source token exactly?
+            Some(value.clone())
+        } else {
+            None
+        }
+    }
+
+    /// Coerce to an `Int` input type
+    ///
+    /// <https://spec.graphql.org/draft/#sec-Int.Input-Coercion>
+    pub fn coerce_to_int(&self) -> Option<i32> {
+        if let Value::Int(value) = self {
+            let float = value.inner.0;
+            // The parser emitted an `ast::IntValue` instead of `ast::FloatValue`
+            // so we already know `float` does not have a frational part.
+            if float <= (i32::MAX as f64) && float >= (i32::MIN as f64) {
+                Some(float as i32)
+            } else {
+                // FIXME: return a `Result` with an error enum to separate the two error cases?
+                None
+            }
+        } else {
+            None
+        }
     }
 }
 
@@ -2236,5 +2278,46 @@ impl InputObjectTypeExtension {
     pub fn ast_node(&self, db: &dyn DocumentDatabase) -> SyntaxNode {
         let syntax_node_ptr = self.ast_ptr();
         syntax_node_ptr.to_node(&rowan::SyntaxNode::new_root(db.document()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ApolloCompiler;
+    use crate::DocumentDatabase;
+
+    #[test]
+    fn huge_floats() {
+        let compiler = ApolloCompiler::new(
+            "input HugeFloats {
+                a: Float = 9876543210
+                b: Float = 9876543210.0
+                c: Float = 98765432109876543210
+                d: Float = 98765432109876543210.0
+            }",
+        );
+        let default_values: Vec<_> = compiler
+            .db
+            .find_input_object_by_name("HugeFloats".into())
+            .unwrap()
+            .input_fields_definition
+            .iter()
+            .map(|field| {
+                field
+                    .default_value()
+                    .unwrap()
+                    .coerce_to_float()
+                    .unwrap()
+                    .inner
+                    .to_string()
+            })
+            .collect();
+        // The exact value is preserved, even outside of the range of i32
+        assert_eq!(default_values[0], "9876543210");
+        assert_eq!(default_values[1], "9876543210");
+        // Beyond ~53 bits of mantissa we may lose precision,
+        // but this is approximation is still in the range of finite f64 values.
+        assert_eq!(default_values[2], "98765432109876540000");
+        assert_eq!(default_values[3], "98765432109876540000");
     }
 }
