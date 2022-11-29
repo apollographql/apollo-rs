@@ -18,7 +18,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [x.x.x] (unreleased) - 2022-mm-dd
+# [0.4.0](https://crates.io/crates/apollo-parser/0.4.0) - 2022-11-28
 ## BREAKING
 - **make conversions from GraphQL Values to Rust types fallible - [goto-bus-stop], [pull/371] fixing [issue/358]**
 
@@ -34,9 +34,45 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   let x: i32 = graphql_value.try_into()?;
   ```
 
-  [goto-bus-stop]: https://github.com/goto-bus-stop 
+  [goto-bus-stop]: https://github.com/goto-bus-stop
   [pull/371]: https://github.com/apollographql/apollo-rs/pull/371
   [issue/358]: https://github.com/apollographql/apollo-rs/pull/358
+
+- **Move `with_recursion_limit` constructor to a builder method - [goto-bus-stop], [pull/347]**
+
+  If you were using the `Parser::with_recursion_limit` constructor, you now need to use `Parser::new().recursion_limit()` instead.
+
+## Features
+- **add API to limit number of tokens to parse - [goto-bus-stop], [pull/347]**
+
+  When dealing with untrusted queries, malicious users can submit very large queries to attempt to cause
+  denial-of-service by using lots of memory. To accompany the existing `recursion_limit` API preventing
+  stack overflows, you can now use `token_limit` to abort parsing when a large number of tokens is reached.
+
+  You can use the new `err.is_limit()` API to check if a parse failed because a hard limit was reached.
+
+  ```rust
+  let source = format!("query {{ {fields} }}", fields = "a ".repeat(20_000));
+
+  let parser = Parser::new(source)
+      .recursion_limit(10)
+      // You may need an even higher limit if your application actually sends very large queries!
+      .token_limit(10_000);
+
+  let (ast, errors) = parser.parse();
+  if errors.iter().any(|err| err.is_limit()) {
+      // there was a limiting error
+  }
+  ```
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/347]: https://github.com/apollographql/apollo-rs/pull/347
+
+## Maintenance
+- **Use `eat()` in a loop instead of recursing in `bump()` - [goto-bus-stop], [pull/361]**
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/361]: https://github.com/apollographql/apollo-rs/pull/361
 
 # [0.3.2](https://crates.io/crates/apollo-parser/0.3.2) - 2022-11-15
 ## Fixes
