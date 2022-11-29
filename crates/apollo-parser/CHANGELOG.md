@@ -38,14 +38,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   [pull/371]: https://github.com/apollographql/apollo-rs/pull/371
   [issue/358]: https://github.com/apollographql/apollo-rs/pull/358
 
+- **Move `with_recursion_limit` constructor to a builder method - [goto-bus-stop], [pull/347]**
+
+  If you were using the `Parser::with_recursion_limit` constructor, you now need to use `Parser::new().recursion_limit()` instead.
+
 ## Features
 - **add API to limit number of tokens to parse - [goto-bus-stop], [pull/347]**
 
   When dealing with untrusted queries, malicious users can submit very large queries to attempt to cause
   denial-of-service by using lots of memory. To accompany the existing `recursion_limit` API preventing
   stack overflows, you can now use `token_limit` to abort parsing when a large number of tokens is reached.
-
-  If you were using the `Parser::with_recursion_limit` constructor, you now need to use `Parser::new().recursion_limit()` instead.
 
   You can use the new `err.is_limit()` API to check if a parse failed because a hard limit was reached.
 
