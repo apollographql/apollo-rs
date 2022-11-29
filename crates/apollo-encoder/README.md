@@ -24,7 +24,7 @@ Add this to your `Cargo.toml` to start using `apollo-encoder`:
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-encoder = "0.3.3"
+apollo-encoder = "0.4.0"
 ```
 
 Or using [cargo-edit]:
