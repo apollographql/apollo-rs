@@ -18,7 +18,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [x.x.x] (unreleased) - 2022-mm-dd
+# [0.3.0](https://crates.io/crates/apollo-smith/0.3.0) - 2022-11-29
 
 ## BREAKING
 - **make conversions from apollo-parser types fallible - [goto-bus-stop], [pull/371]**
