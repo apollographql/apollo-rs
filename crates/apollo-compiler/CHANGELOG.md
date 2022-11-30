@@ -18,19 +18,52 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [x.x.x] (unreleased) - 2021-mm-dd
+# [0.4.0](https://crates.io/crates/apollo-compiler/0.4.0) - 2022-11-29
 ## Features
 - **add parser recursion limit API - [SimonSapin], [pull/353], [issue/296]**
 
   Calling `ApolloCompiler::with_recursion_limit` instead of `ApolloCompiler::new`
-  makes the compiler call [the corresponding parser constructor][with].
+  makes the compiler configure [the corresponding parser limit][with].
   This limit protects against stack overflow and is enabled either way.
   Configuring it may be useful for example if you’re also configuring the stack size.
 
   [SimonSapin]: https://github.com/SimonSapin
   [pull/353]: https://github.com/apollographql/apollo-rs/pull/353
   [issue/296]: https://github.com/apollographql/apollo-rs/issues/296
-  [with]: https://docs.rs/apollo-parser/0.3.1/apollo_parser/struct.Parser.html#method.with_recursion_limit
+  [with]: https://docs.rs/apollo-parser/0.3.1/apollo_parser/struct.Parser.html#method.recursion_limit
+
+- **expose the repeatable attribute on `DirectiveDefinition` - [allancalix], [pull/367]**
+
+  There was previously no way to access the `repeatable` field on the `DirectiveDefinition` type.
+  This field is required for validation rules.
+
+  [allancalix]: https://github.com/allancalix
+  [pull/367]: https://github.com/apollographql/apollo-rs/pull/367
+
+- **add type extensions - [SimonSapin], [pull/369]**
+
+  apollo-compiler now partially supports GraphQL `extend` types. The `is_subtype` query takes
+  extensions into account.
+
+  Some other parts of the compiler, like validation, do not yet support extensions.
+
+  [SimonSapin]: https://github.com/SimonSapin
+  [pull/369]: https://github.com/apollographql/apollo-rs/pull/369
+
+## Fixes
+- **fix `@include` allowed directive locations - [allancalix], [pull/366]**
+
+  The locations for the `@include` directive wrongly specified `FragmentDefinition` instead of `FragmentSpread`.
+  It now matches the spec.
+
+  [allancalix]: https://github.com/allancalix
+  [pull/366]: https://github.com/apollographql/apollo-rs/pull/366
+
+## Maintenance
+- **avoid double lookup in `SchemaDefinition::{query,mutation,subscription}` - [SimonSapin], [pull/364]**
+
+  [SimonSapin]: https://github.com/SimonSapin
+  [pull/364]: https://github.com/apollographql/apollo-rs/pull/364
 
 # [0.3.0](https://crates.io/crates/apollo-compiler/0.3.0) - 2022-11-02
 ## Breaking

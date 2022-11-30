@@ -43,7 +43,7 @@ and add `apollo-smith` to your Cargo.toml:
 ## fuzz/Cargo.toml
 
 [dependencies]
-apollo-smith = "0.2.0"
+apollo-smith = "0.3.1"
 ```
 
 It can then be used in a `fuzz_target` along with the [`arbitrary`] crate,
@@ -82,7 +82,7 @@ can be done with the `parser-impl` feature flag.
 ## Cargo.toml
 
 [dependencies]
-apollo-smith = { version = "0.1.1", features = ["parser-impl"] }
+apollo-smith = { version = "0.3.1", features = ["parser-impl"] }
 ```
 
 ```rust,compile_fail
@@ -125,7 +125,7 @@ the test-case generator to generate documents based on a given schema.
 ## Cargo.toml
 
 [dependencies]
-apollo-smith = { version = "0.1.1", features = ["parser-impl"] }
+apollo-smith = { version = "0.3.1", features = ["parser-impl"] }
 ```
 
 ## Limitations

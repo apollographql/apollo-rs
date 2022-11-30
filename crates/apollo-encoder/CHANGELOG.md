@@ -17,6 +17,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.4.0](https://crates.io/crates/apollo-encoder/0.4.0) - 2022-11-29
+
+## BREAKING
+- **apollo-parser@0.4.0 - [goto-bus-stop], [pull/371], [pull/376]**
+
+  This updates the version of `apollo-parser` required by the `TryFrom`
+  implementations in this crate.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/371]: https://github.com/apollographql/apollo-rs/pull/371
+  [pull/376]: https://github.com/apollographql/apollo-rs/pull/376
+
 # [0.3.4](https://crates.io/crates/apollo-encoder/0.3.4) - 2022-11-04
 ## Maintenance
 - **apollo-parser@0.3.1 - [lrlna], [pull/348]**
