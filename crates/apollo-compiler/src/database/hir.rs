@@ -2161,14 +2161,18 @@ mod tests {
 
     #[test]
     fn huge_floats() {
-        let compiler = ApolloCompiler::new(
+        let mut compiler = ApolloCompiler::new();
+        compiler.schema(
             "input HugeFloats {
                 a: Float = 9876543210
                 b: Float = 9876543210.0
                 c: Float = 98765432109876543210
                 d: Float = 98765432109876543210.0
             }",
+            "huge_floats.graphql",
         );
+        compiler.compile();
+
         let default_values: Vec<_> = compiler
             .db
             .find_input_object_by_name("HugeFloats".into())
