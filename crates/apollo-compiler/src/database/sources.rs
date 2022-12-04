@@ -30,7 +30,7 @@ impl Source {
     }
 
     /// Create a GraphQL query source file.
-    pub fn query(text: impl Into<Arc<str>>) -> Self {
+    pub fn executable(text: impl Into<Arc<str>>) -> Self {
         Self {
             ty: SourceType::Query,
             text: text.into(),

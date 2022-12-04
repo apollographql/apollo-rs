@@ -111,9 +111,9 @@ impl ApolloCompiler {
 
     /// Add a query - a document with executable definitions only - to the
     /// compiler.
-    pub fn query(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+    pub fn executable(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let id = self.source_manifest.add_source(path);
-        self.db.set_input(id, Source::query(input));
+        self.db.set_input(id, Source::executable(input));
 
         id
     }
@@ -188,7 +188,7 @@ query ExampleQuery {
 
         let mut compiler = ApolloCompiler::new();
         compiler.document(schema, "schema.graphql");
-        compiler.query(query, "query.graphql");
+        compiler.executable(query, "query.graphql");
         compiler.compile();
     }
 
@@ -518,9 +518,9 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let mut compiler = ApolloCompiler::new();
         compiler.schema(schema, "schema.graphql");
-        compiler.query(product_query, "product.graphql");
-        compiler.query(customer_query, "customer.graphql");
-        compiler.query(colliding_query, "colliding.graphql");
+        compiler.executable(product_query, "product.graphql");
+        compiler.executable(customer_query, "customer.graphql");
+        compiler.executable(colliding_query, "colliding.graphql");
         compiler.compile();
 
         assert_eq!(compiler.validate(), &[]);
@@ -564,7 +564,7 @@ fragment vipCustomer on User {
 
         let mut compiler = ApolloCompiler::new();
         compiler.schema(schema, "schema.graphql");
-        let query_id = compiler.query(query, "query.graphql");
+        let query_id = compiler.executable(query, "query.graphql");
         compiler.compile();
 
         let diagnostics = compiler.validate();
