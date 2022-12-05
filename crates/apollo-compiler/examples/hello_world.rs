@@ -8,7 +8,6 @@ fn compile_query() -> Option<hir::FragmentDefinition> {
 
     let mut compiler = ApolloCompiler::new();
     let document_id = compiler.document(&src, file);
-    compiler.compile();
     // let errors = ctx.validate();
 
     let operations = compiler.db.operations(document_id);

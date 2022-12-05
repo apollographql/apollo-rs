@@ -75,7 +75,6 @@ let input = r#"
 
 let mut compiler = ApolloCompiler::new();
 compiler.document(input, "document.graphql");
-compiler.compile();
 
 let diagnostics = compiler.validate();
 for diagnostic in &diagnostics {
@@ -131,7 +130,6 @@ fn main() -> Result<()> {
     let mut compiler = ApolloCompiler::new();
     let _schema_id = compiler.schema(schema_input, "schema.graphql");
     let query_id = compiler.executable(query_input, "query.graphql");
-    compiler.compile();
 
     let diagnostics = compiler.validate();
     for diagnostic in &diagnostics {
@@ -194,7 +192,6 @@ fn main() -> Result<()> {
     let mut compiler = ApolloCompiler::new();
     compiler.schema(schema_input, "schema.graphql");
     let query_id = compiler.executable(query_input, "query.graphql");
-    compiler.compile();
 
     let diagnostics = compiler.validate();
     for diagnostic in &diagnostics {
@@ -290,7 +287,6 @@ union CatOrDog = Cat | Dog
 
 let mut compiler = ApolloCompiler::new();
 compiler.document(input, "document.graphql");
-compiler.compile();
 
 let diagnostics = compiler.validate();
 for diagnostic in &diagnostics {

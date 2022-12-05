@@ -495,7 +495,6 @@ mod tests {
 
         let mut compiler = ApolloCompiler::new();
         compiler.document(schema, "schema.graphql");
-        compiler.compile();
 
         let key_definitions = compiler
             .db
@@ -531,7 +530,6 @@ mod tests {
             let schema = format!("{}\n{}", base_schema, schema);
             let mut compiler = ApolloCompiler::new();
             compiler.document(&schema, "schema.graphql");
-            compiler.compile();
             compiler
         }
 
@@ -558,7 +556,6 @@ mod tests {
             let schema = format!("{}\n{}", base_schema, schema);
             let mut compiler = ApolloCompiler::new();
             compiler.document(&schema, "schema.graphql");
-            compiler.compile();
             compiler
         }
 

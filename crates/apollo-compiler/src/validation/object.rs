@@ -275,7 +275,6 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
         compiler.document(input, "schema.graphql");
-        compiler.compile();
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {

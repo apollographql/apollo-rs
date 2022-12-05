@@ -302,7 +302,6 @@ union CatOrDog = Cat | Dog
 "#;
         let mut compiler = ApolloCompiler::new();
         compiler.document(input, "schema.graphql");
-        compiler.compile();
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -352,7 +351,6 @@ type Cat implements Pet {
 "#;
         let mut compiler = ApolloCompiler::new();
         compiler.document(input, "schema.graphql");
-        compiler.compile();
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -402,7 +400,6 @@ type Cat implements Pet {
 "#;
         let mut compiler = ApolloCompiler::new();
         compiler.document(input, "schema.graphql");
-        compiler.compile();
 
         let diagnostics = compiler.validate();
         assert!(diagnostics.is_empty());
@@ -442,7 +439,6 @@ type Cat implements Pet {
 "#;
         let mut compiler = ApolloCompiler::new();
         compiler.document(input, "schema.graphql");
-        compiler.compile();
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -473,7 +469,6 @@ type Product {
 
         let mut compiler = ApolloCompiler::new();
         compiler.document(input, "schema.graphql");
-        compiler.compile();
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {

@@ -2171,7 +2171,6 @@ mod tests {
             }",
             "huge_floats.graphql",
         );
-        compiler.compile();
 
         let default_values: Vec<_> = compiler
             .db
