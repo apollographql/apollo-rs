@@ -147,9 +147,7 @@ impl Default for ApolloCompiler {
         db.set_recursion_limit(None);
         db.set_sources(Default::default());
 
-        Self {
-            db,
-        }
+        Self { db }
     }
 }
 #[cfg(test)]
