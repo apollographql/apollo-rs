@@ -59,7 +59,7 @@ pub struct ApolloCompiler {
 /// "#;
 ///
 /// let mut compiler = ApolloCompiler::new();
-/// compiler.document(input, "document.graphql");
+/// compiler.schema(input, "schema.graphql");
 ///
 /// let diagnostics = compiler.validate();
 /// for diagnostic in &diagnostics {
