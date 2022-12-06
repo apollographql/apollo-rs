@@ -36,16 +36,15 @@ fn document(db: &dyn AstDatabase, file_id: FileId) -> GreenNode {
 }
 
 fn syntax_errors(db: &dyn AstDatabase) -> Vec<ApolloDiagnostic> {
-    db.sources()
-        .manifest
-        .keys()
+    db.source_files()
+        .into_iter()
         .flat_map(|file_id| {
-            db.ast(*file_id)
+            db.ast(file_id)
                 .errors()
                 .into_iter()
                 .map(|err| {
                     ApolloDiagnostic::SyntaxError(SyntaxError {
-                        src: db.source_code(*file_id),
+                        src: db.source_code(file_id),
                         span: (err.index(), err.data().len()).into(), // (offset, length of error token)
                         message: err.message().into(),
                     })

@@ -1,10 +1,9 @@
 use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::Arc,
 };
 
-use uuid::Uuid;
+use salsa::{InternId, InternKey};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum SourceType {
@@ -17,22 +16,25 @@ pub enum SourceType {
 #[derive(Clone, Debug, Hash)]
 pub struct Source {
     ty: SourceType,
+    filename: PathBuf,
     text: Arc<str>,
 }
 
 impl Source {
     /// Create a GraphQL schema source file.
-    pub fn schema(text: impl Into<Arc<str>>) -> Self {
+    pub fn schema(filename: PathBuf, text: impl Into<Arc<str>>) -> Self {
         Self {
             ty: SourceType::Schema,
+            filename,
             text: text.into(),
         }
     }
 
     /// Create a GraphQL executable source file.
-    pub fn executable(text: impl Into<Arc<str>>) -> Self {
+    pub fn executable(filename: PathBuf, text: impl Into<Arc<str>>) -> Self {
         Self {
             ty: SourceType::Query,
+            filename,
             text: text.into(),
         }
     }
@@ -41,9 +43,10 @@ impl Source {
     ///
     /// A Document can contain type definitions *and* executable definitions. You can also use it
     /// when you don't know the actual source type.
-    pub fn document(text: impl Into<Arc<str>>) -> Self {
+    pub fn document(filename: PathBuf, text: impl Into<Arc<str>>) -> Self {
         Self {
             ty: SourceType::Document,
+            filename,
             text: text.into(),
         }
     }
@@ -57,19 +60,14 @@ impl Source {
     }
 }
 
-#[derive(Clone, Debug, Default)]
-pub struct SourceManifest {
-    pub(crate) manifest: HashMap<FileId, PathBuf>,
-}
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub struct FileId(InternId);
 
-impl SourceManifest {
-    pub fn add_source(&mut self, path: impl AsRef<Path>) -> FileId {
-        let file_id = FileId(Uuid::new_v4());
-        self.manifest.insert(file_id, path.as_ref().into());
-
-        file_id
+impl InternKey for FileId {
+    fn from_intern_id(id: InternId) -> Self {
+        Self(id)
+    }
+    fn as_intern_id(&self) -> InternId {
+        self.0
     }
 }
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct FileId(Uuid);

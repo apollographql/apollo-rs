@@ -2,7 +2,7 @@ use std::{fmt, path::Path, sync::Arc};
 
 use apollo_compiler::{
     database::{AstStorage, DocumentStorage, HirStorage, InputStorage},
-    AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, Source, SourceManifest,
+    AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, Source,
 };
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
@@ -11,7 +11,6 @@ use thiserror::Error;
 #[derive(Default)]
 pub struct Linter {
     pub db: LinterDatabase,
-    pub source_manifest: SourceManifest,
 }
 
 impl Linter {
@@ -21,9 +20,13 @@ impl Linter {
     }
 
     pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        let id = self.source_manifest.add_source(path);
-        self.db.set_input(id, Source::document(input.to_string()));
-        self.db.set_sources(self.source_manifest.clone());
+        let filename = path.as_ref().to_owned();
+        let id = self.db.intern_filename(filename.clone());
+        self.db.set_input(id, Source::document(filename, input.to_string()));
+
+        let mut source_files = self.db.source_files();
+        source_files.push(id);
+        self.db.set_source_files(source_files);
 
         id
     }

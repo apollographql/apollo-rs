@@ -13,7 +13,6 @@ use validation::ValidationDatabase;
 
 pub use database::{
     hir, AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source,
-    SourceManifest,
 };
 pub use diagnostics::ApolloDiagnostic;
 
@@ -82,31 +81,37 @@ impl ApolloCompiler {
         compiler
     }
 
-    fn add_input(&mut self, path: &Path, source: Source) -> FileId {
-        let mut sources = self.db.sources();
-        let id = sources.add_source(path);
-        self.db.set_input(id, source);
-        self.db.set_sources(sources);
+    fn add_input(&mut self, file_id: FileId, source: Source) -> FileId {
+        let mut sources = self.db.source_files();
+        sources.push(file_id);
+        self.db.set_input(file_id, source);
+        self.db.set_source_files(sources);
 
-        id
+        file_id
     }
 
     /// Add a document with executable _and_ type system definitions and
     /// extensions to the compiler.
     pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        self.add_input(path.as_ref(), Source::document(input))
+        let filename = path.as_ref().to_owned();
+        let file_id = self.db.intern_filename(filename.clone());
+        self.add_input(file_id, Source::document(filename, input))
     }
 
     /// Add a schema - a document with type system definitions and extensions only
     /// - to the compiler.
     pub fn schema(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        self.add_input(path.as_ref(), Source::schema(input))
+        let filename = path.as_ref().to_owned();
+        let file_id = self.db.intern_filename(filename.clone());
+        self.add_input(file_id, Source::schema(filename, input))
     }
 
     /// Add a query - a document with executable definitions only - to the
     /// compiler.
     pub fn executable(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        self.add_input(path.as_ref(), Source::executable(input))
+        let filename = path.as_ref().to_owned();
+        let file_id = self.db.intern_filename(filename.clone());
+        self.add_input(file_id, Source::executable(filename, input))
     }
 
     /// Get a snapshot of the current database.
@@ -145,7 +150,7 @@ impl Default for ApolloCompiler {
         let mut db = RootDatabase::default();
         // TODO(@goto-bus-stop) can we make salsa fill in these defaults for us…?
         db.set_recursion_limit(None);
-        db.set_sources(Default::default());
+        db.set_source_files(vec![]);
 
         Self { db }
     }
