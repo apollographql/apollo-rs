@@ -17,11 +17,9 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     //
     // Return a Unique Definition error in case of a duplicate name.
     let mut seen: HashMap<&str, &InterfaceTypeDefinition> = HashMap::new();
-    dbg!(db.interfaces());
     for interface in db.interfaces().iter() {
         let name = interface.name();
         if let Some(prev_def) = seen.get(&name) {
-            dbg!(prev_def.loc());
             let prev_offset = prev_def.loc().offset();
             let prev_node_len = prev_def.loc().node_len();
 
