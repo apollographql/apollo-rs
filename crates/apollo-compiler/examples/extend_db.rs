@@ -22,7 +22,8 @@ impl Linter {
     pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let filename = path.as_ref().to_owned();
         let id = self.db.intern_filename(filename.clone());
-        self.db.set_input(id, Source::document(filename, input.to_string()));
+        self.db
+            .set_input(id, Source::document(filename, input.to_string()));
 
         let mut source_files = self.db.source_files();
         source_files.push(id);

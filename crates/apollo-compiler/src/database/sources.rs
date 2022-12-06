@@ -1,7 +1,4 @@
-use std::{
-    path::PathBuf,
-    sync::Arc,
-};
+use std::{path::PathBuf, sync::Arc};
 
 use salsa::{InternId, InternKey};
 

@@ -1,6 +1,6 @@
 use super::sources::{FileId, Source, SourceType};
-use std::sync::Arc;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 #[salsa::query_group(InputStorage)]
 pub trait InputDatabase {
