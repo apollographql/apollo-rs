@@ -29,7 +29,7 @@ impl Source {
         }
     }
 
-    /// Create a GraphQL query source file.
+    /// Create a GraphQL executable source file.
     pub fn executable(text: impl Into<Arc<str>>) -> Self {
         Self {
             ty: SourceType::Query,
@@ -39,7 +39,8 @@ impl Source {
 
     /// Create a GraphQL document source file.
     ///
-    /// A Document can contain type definitions *and* queries.
+    /// A Document can contain type definitions *and* executable definitions. You can also use it
+    /// when you don't know the actual source type.
     pub fn document(text: impl Into<Arc<str>>) -> Self {
         Self {
             ty: SourceType::Document,
