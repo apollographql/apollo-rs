@@ -92,6 +92,10 @@ impl ApolloCompiler {
 
     /// Add a document with executable _and_ type system definitions and
     /// extensions to the compiler.
+    ///
+    /// The `path` argument uniquely identifies the file. If you call this method
+    /// multiple times with the same file path, it will update the file in the
+    /// database and return the same file ID.
     pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let filename = path.as_ref().to_owned();
         let file_id = self.db.intern_filename(filename.clone());
@@ -100,14 +104,21 @@ impl ApolloCompiler {
 
     /// Add a schema - a document with type system definitions and extensions only
     /// - to the compiler.
+    ///
+    /// The `path` argument uniquely identifies the file. If you call this method
+    /// multiple times with the same file path, it will update the file in the
+    /// database and return the same file ID.
     pub fn schema(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let filename = path.as_ref().to_owned();
         let file_id = self.db.intern_filename(filename.clone());
         self.add_input(file_id, Source::schema(filename, input))
     }
 
-    /// Add a query - a document with executable definitions only - to the
-    /// compiler.
+    /// Add a an executable document to the compiler.
+    ///
+    /// The `path` argument uniquely identifies the file. If you call this method
+    /// multiple times with the same file path, it will update the file in the
+    /// database and return the same file ID.
     pub fn executable(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let filename = path.as_ref().to_owned();
         let file_id = self.db.intern_filename(filename.clone());
@@ -155,6 +166,7 @@ impl Default for ApolloCompiler {
         Self { db }
     }
 }
+
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
