@@ -189,7 +189,18 @@ impl<'a> Parser<'a> {
         self.accept_errors = false;
     }
 
-    /// Create a parser error and push it into the error vector.
+    /// Create a parser error at a given location and push it into the error vector.
+    pub(crate) fn err_at_token(&mut self, current: &Token, message: &str) {
+        let err = if current.kind == TokenKind::Eof {
+            Error::eof(message, current.index())
+        } else {
+            // this needs to be the computed location
+            Error::with_loc(message, current.data().to_string(), current.index())
+        };
+        self.push_err(err);
+    }
+
+    /// Create a parser error at the current location and push it into the error vector.
     pub(crate) fn err(&mut self, message: &str) {
         let current = if let Some(current) = self.current() {
             current
@@ -205,7 +216,7 @@ impl<'a> Parser<'a> {
         self.push_err(err);
     }
 
-    /// Create a parser error and push it into the error vector.
+    /// Create a parser error at the current location and eat the responsible token.
     pub(crate) fn err_and_pop(&mut self, message: &str) {
         if self.current().is_none() {
             return;

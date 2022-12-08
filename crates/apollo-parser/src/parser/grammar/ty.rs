@@ -21,7 +21,7 @@ use crate::{parser::grammar::name, Parser, SyntaxKind, Token, TokenKind, S, T};
 pub(crate) fn ty(p: &mut Parser) {
     match parse(p) {
         Ok(ty) => process(ty, p),
-        Err(_token) => p.err("expected a type"),
+        Err(token) => p.err_at_token(&token, "expected a type"),
     }
 }
 
@@ -48,14 +48,16 @@ enum TokenTy {
 /// When errors occur deeper inside nested types like lists, this function
 /// pushes errors *inside* the list to the parser, and returns an Ok() with
 /// an incomplete type.
-fn parse(p: &mut Parser) -> Result<TokenTy, TokenKind> {
+fn parse(p: &mut Parser) -> Result<TokenTy, Token> {
     let token = p.pop();
     let mut types = match token.kind() {
         T!['['] => {
             let inner = match parse(p) {
                 Ok(ty) => Some(Box::new(ty)),
-                Err(_token) => {
-                    p.err("expected item type");
+                Err(token) => {
+                    // TODO(@goto-bus-stop) ideally the span here would point to the entire list
+                    // type, so both opening and closing brackets `[]`.
+                    p.err_at_token(&token, "expected item type");
                     None
                 }
             };
@@ -80,7 +82,7 @@ fn parse(p: &mut Parser) -> Result<TokenTy, TokenKind> {
             comma: None,
             trailing_ws: None,
         },
-        token => return Err(token),
+        _ => return Err(token),
     };
 
     // Deal with nullable types
