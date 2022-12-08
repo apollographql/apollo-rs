@@ -162,7 +162,12 @@ fn process_ignored_tokens(comma: Option<Token>, p: &mut Parser, whitespace: Opti
     }
 }
 
-fn process_list(p: &mut Parser, open_token: Token, inner: Option<Box<TokenTy>>, close_token: Option<Token>) {
+fn process_list(
+    p: &mut Parser,
+    open_token: Token,
+    inner: Option<Box<TokenTy>>,
+    close_token: Option<Token>,
+) {
     let _list_g = p.start_node(SyntaxKind::LIST_TYPE);
     p.push_ast(S!['['], open_token);
     if let Some(inner) = inner {

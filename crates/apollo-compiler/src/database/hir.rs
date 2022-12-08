@@ -2370,8 +2370,15 @@ mod tests {
                 directed: [Film]
             }",
         );
-        let person = compiler.db.find_object_type_by_name("Person".into()).unwrap();
-        let hir_field_names: Vec<_> = person.fields_definition.iter().map(|field| field.name()).collect();
+        let person = compiler
+            .db
+            .find_object_type_by_name("Person".into())
+            .unwrap();
+        let hir_field_names: Vec<_> = person
+            .fields_definition
+            .iter()
+            .map(|field| field.name())
+            .collect();
         assert_eq!(hir_field_names, ["id", "name", "appearedIn", "directed"]);
     }
 }
