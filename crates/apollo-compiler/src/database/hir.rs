@@ -2359,4 +2359,19 @@ mod tests {
         assert_eq!(default_values[2], "98765432109876540000");
         assert_eq!(default_values[3], "98765432109876540000");
     }
+
+    #[test]
+    fn syntax_errors() {
+        let compiler = ApolloCompiler::new(
+            "type Person {
+                id: ID!
+                name: String
+                appearedIn: [Film]s
+                directed: [Film]
+            }",
+        );
+        let person = compiler.db.find_object_type_by_name("Person".into()).unwrap();
+        let hir_field_names: Vec<_> = person.fields_definition.iter().map(|field| field.name()).collect();
+        assert_eq!(hir_field_names, ["id", "name", "appearedIn", "directed"]);
+    }
 }
