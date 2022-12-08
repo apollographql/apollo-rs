@@ -63,7 +63,14 @@ pub(crate) fn field(p: &mut Parser) {
 pub(crate) fn fields_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FIELDS_DEFINITION);
     p.bump(S!['{']);
-    field_definition(p);
+    loop {
+        field_definition(p);
+        // If we reach the end of the file or the end of the field definitions,
+        // break the loop.
+        if matches!(p.peek(), None | Some(T!['}']) | Some(TokenKind::Eof)) {
+            break;
+        }
+    }
     p.expect(T!['}'], S!['}']);
 }
 
@@ -73,7 +80,7 @@ pub(crate) fn fields_definition(p: &mut Parser) {
 ///     Description? Name ArgumentsDefinition? **:** Type Directives?
 pub(crate) fn field_definition(p: &mut Parser) {
     if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
-        let guard = p.start_node(SyntaxKind::FIELD_DEFINITION);
+        let _guard = p.start_node(SyntaxKind::FIELD_DEFINITION);
 
         if let Some(TokenKind::StringValue) = p.peek() {
             description::description(p);
@@ -94,8 +101,7 @@ pub(crate) fn field_definition(p: &mut Parser) {
                         directive::directives(p);
                     }
                     if p.peek().is_some() {
-                        guard.finish_node();
-                        return field_definition(p);
+                        return;
                     }
                 }
                 _ => {
@@ -105,9 +111,5 @@ pub(crate) fn field_definition(p: &mut Parser) {
         } else {
             p.err("expected a type");
         }
-    }
-
-    if let Some(T!['}']) = p.peek() {
-        return;
     }
 }
