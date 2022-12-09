@@ -19,8 +19,10 @@ use crate::{parser::grammar::name, Parser, SyntaxKind, Token, TokenKind, S, T};
 // unwrap them once the last possible child has been parsed. Nodes are then
 // created in the processing stage of this parsing rule.
 pub(crate) fn ty(p: &mut Parser) {
-    let ty = parse(p);
-    process(ty, p);
+    match parse(p) {
+        Ok(ty) => process(ty, p),
+        Err(token) => p.err_at_token(&token, "expected a type"),
+    }
 }
 
 #[derive(Debug)]
@@ -29,7 +31,7 @@ enum TokenTy {
         nullable: Option<Token>,
         open_token: Token,
         close_token: Option<Token>,
-        inner: Box<TokenTy>,
+        inner: Option<Box<TokenTy>>,
         comma: Option<Token>,
         trailing_ws: Option<Token>,
     },
@@ -41,11 +43,24 @@ enum TokenTy {
     },
 }
 
-fn parse(p: &mut Parser) -> TokenTy {
+/// Returns the type on success, or the TokenKind that caused an error.
+///
+/// When errors occur deeper inside nested types like lists, this function
+/// pushes errors *inside* the list to the parser, and returns an Ok() with
+/// an incomplete type.
+fn parse(p: &mut Parser) -> Result<TokenTy, Token> {
     let token = p.pop();
     let mut types = match token.kind() {
         T!['['] => {
-            let inner = parse(p);
+            let inner = match parse(p) {
+                Ok(ty) => Some(Box::new(ty)),
+                Err(token) => {
+                    // TODO(@goto-bus-stop) ideally the span here would point to the entire list
+                    // type, so both opening and closing brackets `[]`.
+                    p.err_at_token(&token, "expected item type");
+                    None
+                }
+            };
             let close_token = if let Some(T![']']) = p.peek() {
                 Some(p.pop())
             } else {
@@ -53,7 +68,7 @@ fn parse(p: &mut Parser) -> TokenTy {
             };
 
             TokenTy::List {
-                inner: Box::new(inner),
+                inner,
                 open_token: token,
                 close_token,
                 nullable: None,
@@ -67,8 +82,7 @@ fn parse(p: &mut Parser) -> TokenTy {
             comma: None,
             trailing_ws: None,
         },
-        // TODO(@lrlna): this should not panic
-        token => panic!("unexpected token, {:?}", token),
+        _ => return Err(token),
     };
 
     // Deal with nullable types
@@ -94,7 +108,7 @@ fn parse(p: &mut Parser) -> TokenTy {
         };
     }
 
-    types
+    Ok(types)
 }
 
 fn process(ty: TokenTy, p: &mut Parser) {
@@ -109,12 +123,12 @@ fn process(ty: TokenTy, p: &mut Parser) {
         } => match nullable {
             Some(nullable_token) => {
                 let _non_null_g = p.start_node(SyntaxKind::NON_NULL_TYPE);
-                process_list(p, open_token, *inner, close_token);
+                process_list(p, open_token, inner, close_token);
                 p.push_ast(S![!], nullable_token);
                 process_ignored_tokens(comma, p, trailing_ws);
             }
             None => {
-                process_list(p, open_token, *inner, close_token);
+                process_list(p, open_token, inner, close_token);
                 process_ignored_tokens(comma, p, trailing_ws);
             }
         },
@@ -148,10 +162,17 @@ fn process_ignored_tokens(comma: Option<Token>, p: &mut Parser, whitespace: Opti
     }
 }
 
-fn process_list(p: &mut Parser, open_token: Token, inner: TokenTy, close_token: Option<Token>) {
+fn process_list(
+    p: &mut Parser,
+    open_token: Token,
+    inner: Option<Box<TokenTy>>,
+    close_token: Option<Token>,
+) {
     let _list_g = p.start_node(SyntaxKind::LIST_TYPE);
     p.push_ast(S!['['], open_token);
-    process(inner, p);
+    if let Some(inner) = inner {
+        process(*inner, p);
+    }
     if let Some(close_token) = close_token {
         p.push_ast(S![']'], close_token);
     }

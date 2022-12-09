@@ -63,7 +63,10 @@ pub(crate) fn field(p: &mut Parser) {
 pub(crate) fn fields_definition(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::FIELDS_DEFINITION);
     p.bump(S!['{']);
-    field_definition(p);
+    while let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
+        // Guaranteed to eat at least one token if the next token is a Name or StringValue
+        field_definition(p);
+    }
     p.expect(T!['}'], S!['}']);
 }
 
@@ -72,42 +75,35 @@ pub(crate) fn fields_definition(p: &mut Parser) {
 /// *FieldDefinition*:
 ///     Description? Name ArgumentsDefinition? **:** Type Directives?
 pub(crate) fn field_definition(p: &mut Parser) {
-    if let Some(TokenKind::Name | TokenKind::StringValue) = p.peek() {
-        let guard = p.start_node(SyntaxKind::FIELD_DEFINITION);
+    let _guard = p.start_node(SyntaxKind::FIELD_DEFINITION);
 
-        if let Some(TokenKind::StringValue) = p.peek() {
-            description::description(p);
-        }
-
-        name::name(p);
-
-        if let Some(T!['(']) = p.peek() {
-            argument::arguments_definition(p);
-        }
-
-        if let Some(T![:]) = p.peek() {
-            p.bump(S![:]);
-            match p.peek() {
-                Some(TokenKind::Name) | Some(T!['[']) => {
-                    ty::ty(p);
-                    if let Some(T![@]) = p.peek() {
-                        directive::directives(p);
-                    }
-                    if p.peek().is_some() {
-                        guard.finish_node();
-                        return field_definition(p);
-                    }
-                }
-                _ => {
-                    p.err("expected a Type");
-                }
-            }
-        } else {
-            p.err("expected a type");
-        }
+    if let Some(TokenKind::StringValue) = p.peek() {
+        description::description(p);
     }
 
-    if let Some(T!['}']) = p.peek() {
-        return;
+    name::name(p);
+
+    if let Some(T!['(']) = p.peek() {
+        argument::arguments_definition(p);
+    }
+
+    if let Some(T![:]) = p.peek() {
+        p.bump(S![:]);
+        match p.peek() {
+            Some(TokenKind::Name) | Some(T!['[']) => {
+                ty::ty(p);
+                if let Some(T![@]) = p.peek() {
+                    directive::directives(p);
+                }
+                if p.peek().is_some() {
+                    return;
+                }
+            }
+            _ => {
+                p.err("expected a Type");
+            }
+        }
+    } else {
+        p.err("expected a type");
     }
 }
