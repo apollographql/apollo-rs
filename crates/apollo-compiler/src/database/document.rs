@@ -23,6 +23,8 @@ pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
 
     fn find_union_by_name(&self, name: String) -> Option<Arc<UnionTypeDefinition>>;
 
+    fn find_enum_by_name(&self, name: String) -> Option<Arc<EnumTypeDefinition>>;
+
     fn find_interface(&self, id: Uuid) -> Option<Arc<InterfaceTypeDefinition>>;
 
     fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceTypeDefinition>>;
@@ -169,6 +171,15 @@ fn find_union_by_name(db: &dyn DocumentDatabase, name: String) -> Option<Arc<Uni
     db.unions().iter().find_map(|union| {
         if name == union.name() {
             return Some(Arc::new(union.clone()));
+        }
+        None
+    })
+}
+
+fn find_enum_by_name(db: &dyn DocumentDatabase, name: String) -> Option<Arc<EnumTypeDefinition>> {
+    db.enums().iter().find_map(|enum_def| {
+        if name == enum_def.name() {
+            return Some(Arc::new(enum_def.clone()));
         }
         None
     })

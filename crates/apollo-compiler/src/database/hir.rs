@@ -678,6 +678,16 @@ impl Directive {
         self.arguments.as_ref()
     }
 
+    /// Get a reference to the value of the directive argument with the given name, if it exists.
+    pub fn argument_by_name(&self, name: &str) -> Option<&Value> {
+        Some(
+            self.arguments
+                .iter()
+                .find(|arg| arg.name() == name)?
+                .value(),
+        )
+    }
+
     // Get directive definition of the currently used directive
     pub fn directive(&self, db: &dyn DocumentDatabase) -> Option<Arc<DirectiveDefinition>> {
         db.find_directive_definition_by_name(self.name().to_string())
@@ -965,14 +975,11 @@ impl TryFrom<&'_ Value> for i32 {
 
     fn try_from(value: &'_ Value) -> Result<Self, Self::Error> {
         if let Value::Int(float) = value {
-            let float = float.inner.0;
             // The parser emitted an `ast::IntValue` instead of `ast::FloatValue`
             // so we already know `float` does not have a frational part.
-            if float <= (i32::MAX as f64) && float >= (i32::MIN as f64) {
-                Ok(float as i32)
-            } else {
-                Err(IntCoercionError::RangeOverflow)
-            }
+            float
+                .to_i32_checked()
+                .ok_or(IntCoercionError::RangeOverflow)
         } else {
             Err(IntCoercionError::NotAnInteger)
         }
@@ -1315,7 +1322,7 @@ impl FragmentSpread {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Alias(pub String);
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Float {
     inner: ordered_float::OrderedFloat<f64>,
 }
@@ -1324,6 +1331,20 @@ impl Float {
     pub fn new(float: f64) -> Self {
         Self {
             inner: OrderedFloat(float),
+        }
+    }
+
+    pub fn get(self) -> f64 {
+        self.inner.0
+    }
+
+    /// Convert the value to the nearest i32, if it is finite and in the i32 range.
+    pub fn to_i32_checked(self) -> Option<i32> {
+        let float = self.inner.0;
+        if float <= (i32::MAX as f64) && float >= (i32::MIN as f64) {
+            Some(float as i32)
+        } else {
+            None
         }
     }
 }
@@ -1714,8 +1735,8 @@ impl ScalarTypeDefinition {
             .map(|ptr| ptr.to_node(&rowan::SyntaxNode::new_root(db.document())))
     }
 
-    // Returns true if the current scalar is a GraphQL built in.
-    pub(crate) fn is_built_in(&self) -> bool {
+    /// Returns true if the current scalar is a GraphQL built in.
+    pub fn is_built_in(&self) -> bool {
         self.built_in
     }
 }
@@ -1785,6 +1806,11 @@ impl EnumValueDefinition {
     /// Get a reference to enum value definition's enum value
     pub fn enum_value(&self) -> &str {
         self.enum_value.src()
+    }
+
+    /// Get a reference to enum value definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
     }
 
     // Get a reference to SyntaxNodePtr of the current HIR node.
