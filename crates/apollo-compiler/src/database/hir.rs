@@ -1338,7 +1338,11 @@ impl Float {
         self.inner.0
     }
 
-    /// Convert the value to the nearest i32, if it is finite and in the i32 range.
+    /// If the value is in the `i32` range, convert by rounding towards zero.
+    ///
+    /// (This is mostly useful when matching on [`Value::Int`]
+    /// where the value is known not to have a fractional part
+    ///  so the rounding mode doesn’t affect the result.)
     pub fn to_i32_checked(self) -> Option<i32> {
         let float = self.inner.0;
         if float <= (i32::MAX as f64) && float >= (i32::MIN as f64) {
