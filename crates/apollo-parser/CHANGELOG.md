@@ -18,6 +18,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.4.1](https://crates.io/crates/apollo-parser/0.4.1) - 2022-12-13
+## Fixes
+- **fix panics when parsing type names with syntax errors - [goto-bus-stop], [pull/381]**
+
+  For example, `field: []` does not panic anymore. Instead it produces a syntax error and an incomplete List type.
+
+- **continue parsing after a syntax error in an object type field - [goto-bus-stop], [pull/381]**
+
+   ```graphql
+   type A {
+      fieldA: [] # ← has error, missing item type
+      fieldB: Int
+      fieldC: Int
+   }
+   ```
+   Previously fieldB and fieldC would not be parsed, now they are.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/381]: https://github.com/apollographql/apollo-rs/pull/381
+
 # [0.4.0](https://crates.io/crates/apollo-parser/0.4.0) - 2022-11-28
 ## BREAKING
 - **make conversions from GraphQL Values to Rust types fallible - [goto-bus-stop], [pull/371] fixing [issue/358]**
