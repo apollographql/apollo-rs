@@ -21,13 +21,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 # [0.4.1](https://crates.io/crates/apollo-compiler/0.4.1) - 2022-12-13
 ## Features
 - **add new APIs - [SimonSapin], [pull/382]**
-  - `db.find_enum_by_name()` to look up an `EnumTypeDefinition`.
-  - `directive.argument_by_name()` to look up the value of an argument to a directive call.
-  - `scalar_type.is_built_in()` to check if a scalar type is defined by the GraphQL spec rather than the schema text.
-  - `hir::Float` is now `Copy` so it can be passed around more easily; use `hir_float.get()` to access the underlying `f64` or `hir_float.to_i32_checked()` to convert to an `i32`.
+  - [`db.find_enum_by_name()`] to look up an `EnumTypeDefinition`.
+  - [`directive.argument_by_name()`] to look up the value of an argument to a directive call.
+  - [`scalar_type.is_built_in()`] to check if a `ScalarTypeDefinition` is defined by the GraphQL spec rather than the schema text.
+  - [`enum_value.directives()`] to access the directives used on an enum value.
+  - `hir::Float` is now `Copy` so it can be passed around more easily; use [`hir_float.get()`] to access the underlying `f64` or [`hir_float.to_i32_checked()`] to convert to an `i32`.
 
   [SimonSapin]: https://github.com/SimonSapin
   [pull/382]: https://github.com/apollographql/apollo-rs/pull/382
+  [`db.find_enum_by_name()`]: https://docs.rs/apollo-compiler/0.4.1/apollo_compiler/trait.DocumentDatabase.html#tymethod.find_union_by_name
+  [`directive.argument_by_name()`]: https://docs.rs/apollo-compiler/0.4.1/apollo_compiler/database/hir/struct.Directive.html#method.argument_by_name
+  [`scalar_type.is_built_in()`]: https://docs.rs/apollo-compiler/0.4.1/apollo_compiler/database/hir/struct.ScalarTypeDefinition.html#method.is_built_in
+  [`enum_value.directives()`]: https://docs.rs/apollo-compiler/0.4.1/apollo_compiler/database/hir/struct.EnumValueDefinition.html#method.directives
+  [`hir_float.get()`]: https://docs.rs/apollo-compiler/0.4.1/apollo_compiler/database/hir/struct.Float.html#method.get
+  [`hir_float.to_i32_checked()`]: https://docs.rs/apollo-compiler/0.4.1/apollo_compiler/database/hir/struct.Float.html#method.to_i32_checked
 
 ## Fixes
 - **do not panic when creating HIR from a parse tree with syntax errors - [goto-bus-stop], [pull/381]**
