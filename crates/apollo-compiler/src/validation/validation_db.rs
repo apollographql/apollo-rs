@@ -36,29 +36,29 @@ pub trait ValidationDatabase:
 
     fn check_directive_definition(
         &self,
-        directive: hir::DirectiveDefinition,
+        def: Arc<hir::DirectiveDefinition>,
     ) -> Vec<ApolloDiagnostic>;
     fn check_object_type_definition(
         &self,
-        object_type: hir::ObjectTypeDefinition,
+        def: Arc<hir::ObjectTypeDefinition>,
     ) -> Vec<ApolloDiagnostic>;
     fn check_interface_type_definition(
         &self,
-        object_type: hir::InterfaceTypeDefinition,
+        def: Arc<hir::InterfaceTypeDefinition>,
     ) -> Vec<ApolloDiagnostic>;
     fn check_union_type_definition(
         &self,
-        object_type: hir::UnionTypeDefinition,
+        def: Arc<hir::UnionTypeDefinition>,
     ) -> Vec<ApolloDiagnostic>;
     fn check_enum_type_definition(
         &self,
-        object_type: hir::EnumTypeDefinition,
+        def: Arc<hir::EnumTypeDefinition>,
     ) -> Vec<ApolloDiagnostic>;
     fn check_input_object_type_definition(
         &self,
-        object_type: hir::InputObjectTypeDefinition,
+        def: Arc<hir::InputObjectTypeDefinition>,
     ) -> Vec<ApolloDiagnostic>;
-    fn check_schema_definition(&self, object_type: hir::SchemaDefinition) -> Vec<ApolloDiagnostic>;
+    fn check_schema_definition(&self, def: Arc<hir::SchemaDefinition>) -> Vec<ApolloDiagnostic>;
     fn check_selection_set(&self, selection_set: hir::SelectionSet) -> Vec<ApolloDiagnostic>;
     fn check_arguments_definition(
         &self,
@@ -78,18 +78,18 @@ pub trait ValidationDatabase:
 
 pub fn check_directive_definition(
     db: &dyn ValidationDatabase,
-    directive: hir::DirectiveDefinition,
+    directive: Arc<hir::DirectiveDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(db.check_arguments_definition(directive.arguments));
+    diagnostics.extend(db.check_arguments_definition(directive.arguments.clone()));
 
     diagnostics
 }
 
 pub fn check_object_type_definition(
     db: &dyn ValidationDatabase,
-    object_type: hir::ObjectTypeDefinition,
+    object_type: Arc<hir::ObjectTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -102,7 +102,7 @@ pub fn check_object_type_definition(
 
 pub fn check_interface_type_definition(
     db: &dyn ValidationDatabase,
-    interface_type: hir::InterfaceTypeDefinition,
+    interface_type: Arc<hir::InterfaceTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -115,21 +115,21 @@ pub fn check_interface_type_definition(
 
 pub fn check_union_type_definition(
     _db: &dyn ValidationDatabase,
-    _union_type: hir::UnionTypeDefinition,
+    _union_type: Arc<hir::UnionTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     vec![]
 }
 
 pub fn check_enum_type_definition(
     _db: &dyn ValidationDatabase,
-    _enum_type: hir::EnumTypeDefinition,
+    _enum_type: Arc<hir::EnumTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     vec![]
 }
 
 pub fn check_input_object_type_definition(
     _db: &dyn ValidationDatabase,
-    _input_object_type: hir::InputObjectTypeDefinition,
+    _input_object_type: Arc<hir::InputObjectTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     // Not checking the `input_values` here as those are checked as fields elsewhere.
     vec![]
@@ -137,7 +137,7 @@ pub fn check_input_object_type_definition(
 
 pub fn check_schema_definition(
     db: &dyn ValidationDatabase,
-    schema_def: hir::SchemaDefinition,
+    schema_def: Arc<hir::SchemaDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -236,6 +236,7 @@ pub fn check_db_definitions(
             diagnostics.extend(db.check_directive(directive.clone()));
         }
 
+        // TODO: validate extensions too
         use hir::Definition::*;
         match definition {
             OperationDefinition(def) => {
@@ -266,14 +267,6 @@ pub fn check_db_definitions(
             SchemaDefinition(def) => {
                 diagnostics.extend(db.check_schema_definition(def.clone()));
             }
-            // FIXME: what validation is needed for extensions?
-            SchemaExtension(_) => {}
-            ScalarTypeExtension(_) => {}
-            ObjectTypeExtension(_) => {}
-            InterfaceTypeExtension(_) => {}
-            UnionTypeExtension(_) => {}
-            EnumTypeExtension(_) => {}
-            InputObjectTypeExtension(_) => {}
         }
     }
 

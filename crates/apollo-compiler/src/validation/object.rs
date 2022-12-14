@@ -5,10 +5,11 @@ use crate::{
         MissingField, OutputType, TransitiveImplementedInterfaces, UndefinedDefinition,
         UniqueDefinition, UniqueField,
     },
-    hir::{FieldDefinition, ObjectTypeDefinition},
-    validation::ValidationSet,
+    hir::FieldDefinition,
+    validation::{type_definitions, ValidationSet},
     ApolloDiagnostic, ValidationDatabase,
 };
+use apollo_parser::ast;
 
 pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
@@ -16,32 +17,31 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     // Object Type definitions must have unique names.
     //
     // Return a Unique Definition error in case of a duplicate name.
-    let mut seen: HashMap<&str, &ObjectTypeDefinition> = HashMap::new();
-    for object in db.object_types().iter() {
-        let name = object.name();
-        if let Some(prev_def) = seen.get(&name) {
-            let prev_offset = prev_def.loc().offset();
-            let prev_node_len = prev_def.loc().node_len();
-
-            let current_offset = object.loc().offset();
-            let current_node_len = object.loc().node_len();
-            diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                ty: "object type".into(),
-                name: name.into(),
-                src: db.source_code(prev_def.loc().file_id()),
-                original_definition: (prev_offset, prev_node_len).into(),
-                redefined_definition: (current_offset, current_node_len).into(),
-                help: Some(format!(
-                    "`{name}` must only be defined once in this document."
-                )),
-            }));
-        } else {
-            seen.insert(name, object);
+    let hir = db.object_types();
+    for (file_id, ast_def) in type_definitions::<ast::ObjectTypeDefinition>(db) {
+        if let Some(name) = ast_def.name() {
+            let name = &*name.text();
+            let hir_def = &hir[name];
+            let ast_loc = (file_id, &ast_def).into();
+            if *hir_def.loc() == ast_loc {
+                // The HIR node was built from this AST node. This is fine.
+            } else {
+                diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
+                    ty: "object type".into(),
+                    name: name.to_owned(),
+                    src: db.source_code(hir_def.loc().file_id()),
+                    original_definition: hir_def.loc().into(),
+                    redefined_definition: ast_loc.into(),
+                    help: Some(format!(
+                        "`{name}` must only be defined once in this document."
+                    )),
+                }));
+            }
         }
     }
 
     // Object Type field validations.
-    for object in db.object_types().iter() {
+    for object in db.object_types().values() {
         let mut seen: HashMap<&str, &FieldDefinition> = HashMap::new();
 
         let fields = object.fields_definition();
@@ -102,12 +102,12 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let defined_interfaces: HashSet<ValidationSet> = db
         .interfaces()
         .iter()
-        .map(|interface| ValidationSet {
-            name: interface.name().to_owned(),
+        .map(|(name, interface)| ValidationSet {
+            name: name.to_owned(),
             loc: *interface.loc(),
         })
         .collect();
-    for object in objects.iter() {
+    for object in objects.values() {
         // Implements Interfaces must be defined.
         //
         // Returns Undefined Definition error.

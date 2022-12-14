@@ -5,10 +5,11 @@ use crate::{
         MissingField, OutputType, RecursiveDefinition, TransitiveImplementedInterfaces,
         UndefinedDefinition, UniqueDefinition, UniqueField,
     },
-    hir::{FieldDefinition, InterfaceTypeDefinition},
-    validation::ValidationSet,
+    hir::FieldDefinition,
+    validation::{type_definitions, ValidationSet},
     ApolloDiagnostic, ValidationDatabase,
 };
+use apollo_parser::ast;
 
 pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
@@ -16,27 +17,26 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     // Interface definitions must have unique names.
     //
     // Return a Unique Definition error in case of a duplicate name.
-    let mut seen: HashMap<&str, &InterfaceTypeDefinition> = HashMap::new();
-    for interface in db.interfaces().iter() {
-        let name = interface.name();
-        if let Some(prev_def) = seen.get(&name) {
-            let prev_offset = prev_def.loc().offset();
-            let prev_node_len = prev_def.loc().node_len();
-
-            let current_offset = interface.loc().offset();
-            let current_node_len = interface.loc().node_len();
-            diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                ty: "interface".into(),
-                name: name.into(),
-                src: db.source_code(prev_def.loc().file_id()),
-                original_definition: (prev_offset, prev_node_len).into(),
-                redefined_definition: (current_offset, current_node_len).into(),
-                help: Some(format!(
-                    "`{name}` must only be defined once in this document."
-                )),
-            }));
-        } else {
-            seen.insert(name, interface);
+    let hir = db.interfaces();
+    for (file_id, ast_def) in type_definitions::<ast::InterfaceTypeDefinition>(db) {
+        if let Some(name) = ast_def.name() {
+            let name = &*name.text();
+            let hir_def = &hir[name];
+            let ast_loc = (file_id, &ast_def).into();
+            if *hir_def.loc() == ast_loc {
+                // The HIR node was built from this AST node. This is fine.
+            } else {
+                diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
+                    ty: "interface".into(),
+                    name: name.to_owned(),
+                    src: db.source_code(hir_def.loc().file_id()),
+                    original_definition: hir_def.loc().into(),
+                    redefined_definition: ast_loc.into(),
+                    help: Some(format!(
+                        "`{name}` must only be defined once in this document."
+                    )),
+                }));
+            }
         }
     }
 
@@ -55,11 +55,10 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     //   id: ID!
     //   name: String
     // }
-    for interface_def in db.interfaces().iter() {
-        let name = interface_def.name();
+    for (name, interface_def) in db.interfaces().iter() {
         for implements_interface in interface_def.implements_interfaces() {
             if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
-                let i_name = (*interface.name()).to_string();
+                let i_name = interface.name();
                 if name == i_name {
                     let offset = implements_interface.loc().offset();
                     let len = implements_interface.loc().node_len();
@@ -75,7 +74,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     }
 
     // Interface Type field validations.
-    for interface_def in db.interfaces().iter() {
+    for interface_def in db.interfaces().values() {
         let mut seen: HashMap<&str, &FieldDefinition> = HashMap::new();
 
         let fields = interface_def.fields_definition();
@@ -136,12 +135,12 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let interfaces = db.interfaces();
     let defined_interfaces: HashSet<ValidationSet> = interfaces
         .iter()
-        .map(|interface| ValidationSet {
-            name: interface.name().to_owned(),
+        .map(|(name, interface)| ValidationSet {
+            name: name.to_owned(),
             loc: *interface.loc(),
         })
         .collect();
-    for interface_def in interfaces.iter() {
+    for interface_def in interfaces.values() {
         // Implements Interfaces must be defined.
         //
         // Returns Undefined Definition error.

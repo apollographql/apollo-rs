@@ -285,7 +285,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         assert_eq!(["ExampleQuery"], operation_names.as_slice());
 
         let fragments = compiler.db.fragments(document_id);
-        let fragment_names: Vec<_> = fragments.iter().map(|fragment| fragment.name()).collect();
+        let fragment_names: Vec<_> = fragments.keys().map(|name| &**name).collect();
         assert_eq!(["vipCustomer"], fragment_names.as_slice());
 
         let operation_variables: Vec<String> = match operations
@@ -694,10 +694,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let scalars = compiler.db.scalars();
 
-        let directives: Vec<&str> = scalars
-            .iter()
-            .find(|scalar| scalar.name() == "URL")
-            .unwrap()
+        let directives: Vec<&str> = scalars["URL"]
             .directives()
             .iter()
             .map(|directive| directive.name())
@@ -729,10 +726,7 @@ enum Pet {
         assert!(diagnostics.is_empty());
 
         let enums = compiler.db.enums();
-        let enum_values: Vec<&str> = enums
-            .iter()
-            .find(|enum_def| enum_def.name() == "Pet")
-            .unwrap()
+        let enum_values: Vec<&str> = enums["Pet"]
             .enum_values_definition()
             .iter()
             .map(|enum_val| enum_val.enum_value())
@@ -774,20 +768,14 @@ type SearchQuery {
         assert!(diagnostics.is_empty());
 
         let unions = compiler.db.unions();
-        let union_members: Vec<&str> = unions
-            .iter()
-            .find(|def| def.name() == "SearchResult")
-            .unwrap()
+        let union_members: Vec<&str> = unions["SearchResult"]
             .union_members()
             .iter()
             .map(|member| member.name())
             .collect();
         assert_eq!(union_members, ["Photo", "Person"]);
 
-        let photo_object = unions
-            .iter()
-            .find(|def| def.name() == "SearchResult")
-            .unwrap()
+        let photo_object = unions["SearchResult"]
             .union_members()
             .iter()
             .find(|mem| mem.name() == "Person")
@@ -828,21 +816,10 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
         assert!(diagnostics.is_empty());
 
         let directives = compiler.db.directive_definitions();
-        let locations: Vec<String> = directives
+        let locations: Vec<String> = directives["delegateField"]
+            .directive_locations()
             .iter()
-            .filter_map(|dir| {
-                if dir.name() == "delegateField" {
-                    let locations: Vec<String> = dir
-                        .directive_locations()
-                        .iter()
-                        .map(|loc| loc.clone().into())
-                        .collect();
-                    Some(locations)
-                } else {
-                    None
-                }
-            })
-            .flatten()
+            .map(|loc| loc.clone().into())
             .collect();
 
         assert_eq!(locations, ["OBJECT", "INTERFACE"]);
@@ -874,21 +851,10 @@ input Point2D {
         assert!(diagnostics.is_empty());
 
         let input_objects = compiler.db.input_objects();
-        let fields: Vec<&str> = input_objects
+        let fields: Vec<&str> = input_objects["Point2D"]
+            .input_fields_definition()
             .iter()
-            .filter_map(|input| {
-                if input.name() == "Point2D" {
-                    let fields: Vec<&str> = input
-                        .input_fields_definition()
-                        .iter()
-                        .map(|val| val.name())
-                        .collect();
-                    Some(fields)
-                } else {
-                    None
-                }
-            })
-            .flatten()
+            .map(|val| val.name())
             .collect();
 
         assert_eq!(fields, ["x", "y"]);
@@ -955,7 +921,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                 .filter_map(|f| {
                     // get access to the actual definition the field is using
                     if let Some(field_ty) = f.ty().ty(&compiler.db) {
-                        match field_ty.as_ref() {
+                        match field_ty {
                             // get that definition's directives, for example
                             Definition::ScalarTypeDefinition(scalar) => {
                                 let dir_names: Vec<String> = scalar
@@ -984,7 +950,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                         .iter()
                         .filter_map(|val| {
                             if let Some(input_ty) = val.ty().ty(&compiler.db) {
-                                match input_ty.as_ref() {
+                                match input_ty {
                                     // get that definition's directives, for example
                                     Definition::EnumTypeDefinition(enum_) => {
                                         let dir_names: Vec<String> = enum_
@@ -1036,7 +1002,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                 .iter()
                 .filter_map(|f| {
                     if let Some(field_ty) = f.ty().ty(&compiler.db) {
-                        match field_ty.as_ref() {
+                        match field_ty {
                             Definition::ScalarTypeDefinition(scalar) => {
                                 let dir_names: Vec<String> = scalar
                                     .directives()
@@ -1145,7 +1111,7 @@ type User
         assert_eq!(diagnostics.len(), 1);
 
         let object_types = compiler.db.object_types();
-        let object_names: Vec<_> = object_types.iter().map(|op| op.name()).collect();
+        let object_names: Vec<_> = object_types.keys().map(|name| &**name).collect();
         assert_eq!(
             ["Mutation", "Product", "Query", "Review", "User"],
             object_names.as_slice()

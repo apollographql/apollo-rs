@@ -9,7 +9,7 @@ use crate::{
 pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    for union_def in db.unions().iter() {
+    for union_def in db.unions().values() {
         let mut seen: HashMap<&str, &UnionMember> = HashMap::new();
         for union_member in union_def.union_members().iter() {
             let name = union_member.name();
