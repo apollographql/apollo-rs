@@ -2192,7 +2192,7 @@ mod tests {
     #[test]
     fn huge_floats() {
         let mut compiler = ApolloCompiler::new();
-        compiler.schema(
+        compiler.create_schema(
             "input HugeFloats {
                 a: Float = 9876543210
                 b: Float = 9876543210.0
@@ -2226,7 +2226,7 @@ mod tests {
     #[test]
     fn syntax_errors() {
         let mut compiler = ApolloCompiler::new();
-        compiler.schema(
+        compiler.create_schema(
             "type Person {
                 id: ID!
                 name: String

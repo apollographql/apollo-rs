@@ -1,6 +1,7 @@
-use std::{path::PathBuf, sync::Arc};
-
-use salsa::{InternId, InternKey};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum SourceType {
@@ -48,6 +49,10 @@ impl Source {
         }
     }
 
+    pub fn filename(&self) -> &Path {
+        &self.filename
+    }
+
     pub fn source_type(&self) -> SourceType {
         self.ty
     }
@@ -58,13 +63,4 @@ impl Source {
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct FileId(InternId);
-
-impl InternKey for FileId {
-    fn from_intern_id(id: InternId) -> Self {
-        Self(id)
-    }
-    fn as_intern_id(&self) -> InternId {
-        self.0
-    }
-}
+pub struct FileId(pub u32);

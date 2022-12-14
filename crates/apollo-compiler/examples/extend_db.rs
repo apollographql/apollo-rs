@@ -11,6 +11,7 @@ use thiserror::Error;
 #[derive(Default)]
 pub struct Linter {
     pub db: LinterDatabase,
+    next_file_id: u32,
 }
 
 impl Linter {
@@ -20,11 +21,15 @@ impl Linter {
     }
 
     pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        let filename = path.as_ref().to_owned();
-        let id = self.db.intern_filename(filename.clone());
-        self.db
-            .set_input(id, Source::document(filename, input.to_string()));
+        let id = FileId(self.next_file_id);
+        self.next_file_id += 1;
 
+        self.db.set_input(
+            id,
+            Source::document(path.as_ref().to_owned(), input.to_string()),
+        );
+
+        // Inform the queries about this new file.
         let mut source_files = self.db.source_files();
         source_files.push(id);
         self.db.set_source_files(source_files);

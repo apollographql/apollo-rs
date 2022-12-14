@@ -1,5 +1,4 @@
 use super::sources::{FileId, Source, SourceType};
-use std::path::PathBuf;
 use std::sync::Arc;
 
 #[salsa::query_group(InputStorage)]
@@ -10,12 +9,10 @@ pub trait InputDatabase {
     #[salsa::input]
     fn input(&self, file_id: FileId) -> Source;
 
-    #[salsa::interned]
-    fn intern_filename(&self, filename: PathBuf) -> FileId;
-
     /// Get the GraphQL source text for a file.
     fn source_code(&self, file_id: FileId) -> Arc<str>;
 
+    /// Get the source type (document/schema/executable) for a file.
     fn source_type(&self, file_id: FileId) -> SourceType;
 
     /// Get all file ids currently in the compiler.

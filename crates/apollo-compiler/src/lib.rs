@@ -18,6 +18,7 @@ pub use diagnostics::ApolloDiagnostic;
 
 pub struct ApolloCompiler {
     pub db: RootDatabase,
+    next_file_id: FileId,
 }
 
 /// Apollo compiler creates a context around your GraphQL. It creates refernces
@@ -58,7 +59,7 @@ pub struct ApolloCompiler {
 /// "#;
 ///
 /// let mut compiler = ApolloCompiler::new();
-/// compiler.schema(input, "schema.graphql");
+/// compiler.create_schema(input, "schema.graphql");
 ///
 /// let diagnostics = compiler.validate();
 /// for diagnostic in &diagnostics {
@@ -81,7 +82,10 @@ impl ApolloCompiler {
         compiler
     }
 
-    fn add_input(&mut self, file_id: FileId, source: Source) -> FileId {
+    fn add_input(&mut self, source: Source) -> FileId {
+        let next_file_id = FileId(self.next_file_id.0 + 1);
+        let file_id = std::mem::replace(&mut self.next_file_id, next_file_id);
+
         let mut sources = self.db.source_files();
         sources.push(file_id);
         self.db.set_input(file_id, source);
@@ -93,36 +97,67 @@ impl ApolloCompiler {
     /// Add a document with executable _and_ type system definitions and
     /// extensions to the compiler.
     ///
-    /// The `path` argument uniquely identifies the file. If you call this method
-    /// multiple times with the same file path, it will update the file in the
-    /// database and return the same file ID.
-    pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+    /// The `path` argument is used to display diagnostics. If your GraphQL document
+    /// doesn't come from a file, you can make up a name or provide the empty string.
+    /// It does not need to be unique.
+    ///
+    /// Returns a `FileId` that you can use to update the source text of this document.
+    pub fn create_document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let filename = path.as_ref().to_owned();
-        let file_id = self.db.intern_filename(filename.clone());
-        self.add_input(file_id, Source::document(filename, input))
+        self.add_input(Source::document(filename, input))
     }
 
     /// Add a schema - a document with type system definitions and extensions only
     /// - to the compiler.
     ///
-    /// The `path` argument uniquely identifies the file. If you call this method
-    /// multiple times with the same file path, it will update the file in the
-    /// database and return the same file ID.
-    pub fn schema(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+    /// The `path` argument is used to display diagnostics. If your GraphQL document
+    /// doesn't come from a file, you can make up a name or provide the empty string.
+    /// It does not need to be unique.
+    ///
+    /// Returns a `FileId` that you can use to update the source text of this document.
+    pub fn create_schema(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let filename = path.as_ref().to_owned();
-        let file_id = self.db.intern_filename(filename.clone());
-        self.add_input(file_id, Source::schema(filename, input))
+        self.add_input(Source::schema(filename, input))
     }
 
     /// Add a an executable document to the compiler.
     ///
-    /// The `path` argument uniquely identifies the file. If you call this method
-    /// multiple times with the same file path, it will update the file in the
-    /// database and return the same file ID.
-    pub fn executable(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+    /// The `path` argument is used to display diagnostics. If your GraphQL document
+    /// doesn't come from a file, you can make up a name or provide the empty string.
+    /// It does not need to be unique.
+    ///
+    /// Returns a `FileId` that you can use to update the source text of this document.
+    pub fn create_executable(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let filename = path.as_ref().to_owned();
-        let file_id = self.db.intern_filename(filename.clone());
-        self.add_input(file_id, Source::executable(filename, input))
+        self.add_input(Source::executable(filename, input))
+    }
+
+    /// Update an existing GraphQL document with new source text. Queries that depend
+    /// on this document will be recomputed.
+    pub fn update_document(&mut self, file_id: FileId, input: &str) {
+        let document = self.db.input(file_id);
+        self.db.set_input(
+            file_id,
+            Source::document(document.filename().to_owned(), input),
+        )
+    }
+
+    /// Update an existing GraphQL document with new source text. Queries that depend
+    /// on this document will be recomputed.
+    pub fn update_schema(&mut self, file_id: FileId, input: &str) {
+        let schema = self.db.input(file_id);
+        self.db
+            .set_input(file_id, Source::schema(schema.filename().to_owned(), input))
+    }
+
+    /// Update an existing GraphQL document with new source text. Queries that depend
+    /// on this document will be recomputed.
+    pub fn update_executable(&mut self, file_id: FileId, input: &str) {
+        let executable = self.db.input(file_id);
+        self.db.set_input(
+            file_id,
+            Source::executable(executable.filename().to_owned(), input),
+        )
     }
 
     /// Get a snapshot of the current database.
@@ -143,7 +178,7 @@ impl ApolloCompiler {
     /// "#;
     ///
     /// let mut compiler = ApolloCompiler::new();
-    /// compiler.document(input, "document.graphql");
+    /// compiler.create_document(input, "document.graphql");
     ///
     /// let diagnostics = compiler.validate();
     /// for diagnostic in &diagnostics {
@@ -163,7 +198,10 @@ impl Default for ApolloCompiler {
         db.set_recursion_limit(None);
         db.set_source_files(vec![]);
 
-        Self { db }
+        Self {
+            db,
+            next_file_id: FileId(0),
+        }
     }
 }
 
@@ -194,8 +232,8 @@ query ExampleQuery {
       "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(schema, "schema.graphql");
-        compiler.executable(query, "query.graphql");
+        compiler.create_document(schema, "schema.graphql");
+        compiler.create_executable(query, "query.graphql");
     }
 
     #[test]
@@ -234,7 +272,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        let document_id = compiler.document(input, "document.graphql");
+        let document_id = compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -288,7 +326,7 @@ type Query {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        let document_id = compiler.document(input, "document.graphql");
+        let document_id = compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -347,7 +385,7 @@ union Union = Concrete
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        let document_id = compiler.document(input, "document.graphql");
+        let document_id = compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         assert!(diagnostics.is_empty());
@@ -437,7 +475,7 @@ type Product {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        let document_id = compiler.document(input, "document.graphql");
+        let document_id = compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -519,10 +557,10 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         let colliding_query = r#"query getProduct { topProducts { type, price } }"#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.schema(schema, "schema.graphql");
-        compiler.executable(product_query, "product.graphql");
-        compiler.executable(customer_query, "customer.graphql");
-        compiler.executable(colliding_query, "colliding.graphql");
+        compiler.create_schema(schema, "schema.graphql");
+        compiler.create_executable(product_query, "query.graphql");
+        compiler.create_executable(customer_query, "query.graphql");
+        compiler.create_executable(colliding_query, "query.graphql");
 
         assert_eq!(compiler.validate(), &[]);
     }
@@ -564,8 +602,8 @@ fragment vipCustomer on User {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.schema(schema, "schema.graphql");
-        let query_id = compiler.executable(query, "query.graphql");
+        compiler.create_schema(schema, "schema.graphql");
+        let query_id = compiler.create_executable(query, "query.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -625,7 +663,7 @@ type Result {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -646,7 +684,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -682,7 +720,7 @@ enum Pet {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -727,7 +765,7 @@ type SearchQuery {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -781,7 +819,7 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -827,7 +865,7 @@ input Point2D {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -866,7 +904,7 @@ type Book @directiveA(name: "pageCount") @directiveB(name: "author") {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -900,7 +938,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -982,7 +1020,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -1097,7 +1135,7 @@ type User
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -1126,7 +1164,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.document(input, "document.graphql");
+        compiler.create_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
