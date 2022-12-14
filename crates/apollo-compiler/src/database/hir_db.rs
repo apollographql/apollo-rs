@@ -309,7 +309,10 @@ fn object_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<ObjectTypeExtension>>
                     ast::Definition::ObjectTypeExtension(def) => Some(ObjectTypeExtension {
                         directives: directives(def.directives(), id),
                         name: name(def.name(), id)?,
-                        implements_interfaces: implements_interfaces(def.implements_interfaces(), id),
+                        implements_interfaces: implements_interfaces(
+                            def.implements_interfaces(),
+                            id,
+                        ),
                         fields_definition: fields_definition(def.fields_definition(), id),
                         loc: location(id, def.syntax()),
                     }),
@@ -399,7 +402,10 @@ fn enum_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<EnumTypeExtension>> {
                     ast::Definition::EnumTypeExtension(def) => Some(EnumTypeExtension {
                         directives: directives(def.directives(), id),
                         name: name(def.name(), id)?,
-                        enum_values_definition: enum_values_definition(def.enum_values_definition(), id),
+                        enum_values_definition: enum_values_definition(
+                            def.enum_values_definition(),
+                            id,
+                        ),
                         loc: location(id, def.syntax()),
                     }),
                     _ => None,
@@ -489,7 +495,10 @@ fn interface_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<InterfaceTypeExten
                     ast::Definition::InterfaceTypeExtension(def) => Some(InterfaceTypeExtension {
                         directives: directives(def.directives(), id),
                         name: name(def.name(), id)?,
-                        implements_interfaces: implements_interfaces(def.implements_interfaces(), id),
+                        implements_interfaces: implements_interfaces(
+                            def.implements_interfaces(),
+                            id,
+                        ),
                         fields_definition: fields_definition(def.fields_definition(), id),
                         loc: location(id, def.syntax()),
                     }),
