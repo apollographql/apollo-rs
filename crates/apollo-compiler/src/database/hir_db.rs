@@ -8,6 +8,9 @@ use uuid::Uuid;
 
 use crate::{database::FileId, hir::*, AstDatabase, InputDatabase};
 
+// HIR creators *ignore* missing data entirely. *Only* missing data
+// as a result of parser errors should be ignored.
+
 #[salsa::query_group(HirStorage)]
 pub trait HirDatabase: InputDatabase + AstDatabase {
     // fn definitions(&self) -> Arc<Vec<ast::Definition>>;
@@ -198,7 +201,7 @@ fn fragments(db: &dyn HirDatabase, file_id: FileId) -> Arc<Vec<FragmentDefinitio
         .into_iter()
         .filter_map(|definition| match definition {
             ast::Definition::FragmentDefinition(fragment_def) => {
-                Some(fragment_definition(db, fragment_def, file_id))
+                fragment_definition(db, fragment_def, file_id)
             }
             _ => None,
         })
@@ -283,7 +286,7 @@ fn object_types(db: &dyn HirDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
                 .into_iter()
                 .filter_map(|definition| match definition {
                     ast::Definition::ObjectTypeDefinition(obj_def) => {
-                        Some(object_type_definition(obj_def, id))
+                        object_type_definition(obj_def, id)
                     }
                     _ => None,
                 })
@@ -305,11 +308,8 @@ fn object_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<ObjectTypeExtension>>
                 .filter_map(|definition| match definition {
                     ast::Definition::ObjectTypeExtension(def) => Some(ObjectTypeExtension {
                         directives: directives(def.directives(), id),
-                        name: name(def.name(), id),
-                        implements_interfaces: implements_interfaces(
-                            def.implements_interfaces(),
-                            id,
-                        ),
+                        name: name(def.name(), id)?,
+                        implements_interfaces: implements_interfaces(def.implements_interfaces(), id),
                         fields_definition: fields_definition(def.fields_definition(), id),
                         loc: location(id, def.syntax()),
                     }),
@@ -332,7 +332,7 @@ fn scalars(db: &dyn HirDatabase) -> Arc<Vec<ScalarTypeDefinition>> {
                 .into_iter()
                 .filter_map(|definition| match definition {
                     ast::Definition::ScalarTypeDefinition(scalar_def) => {
-                        Some(scalar_definition(scalar_def, id))
+                        scalar_definition(scalar_def, id)
                     }
                     _ => None,
                 })
@@ -356,7 +356,7 @@ fn scalar_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<ScalarTypeExtension>>
                 .filter_map(|definition| match definition {
                     ast::Definition::ScalarTypeExtension(def) => Some(ScalarTypeExtension {
                         directives: directives(def.directives(), id),
-                        name: name(def.name(), id),
+                        name: name(def.name(), id)?,
                         loc: location(id, def.syntax()),
                     }),
                     _ => None,
@@ -377,9 +377,7 @@ fn enums(db: &dyn HirDatabase) -> Arc<Vec<EnumTypeDefinition>> {
                 .definitions()
                 .into_iter()
                 .filter_map(|definition| match definition {
-                    ast::Definition::EnumTypeDefinition(enum_def) => {
-                        Some(enum_definition(enum_def, id))
-                    }
+                    ast::Definition::EnumTypeDefinition(enum_def) => enum_definition(enum_def, id),
                     _ => None,
                 })
                 .collect::<Vec<EnumTypeDefinition>>()
@@ -400,11 +398,8 @@ fn enum_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<EnumTypeExtension>> {
                 .filter_map(|definition| match definition {
                     ast::Definition::EnumTypeExtension(def) => Some(EnumTypeExtension {
                         directives: directives(def.directives(), id),
-                        name: name(def.name(), id),
-                        enum_values_definition: enum_values_definition(
-                            def.enum_values_definition(),
-                            id,
-                        ),
+                        name: name(def.name(), id)?,
+                        enum_values_definition: enum_values_definition(def.enum_values_definition(), id),
                         loc: location(id, def.syntax()),
                     }),
                     _ => None,
@@ -426,7 +421,7 @@ fn unions(db: &dyn HirDatabase) -> Arc<Vec<UnionTypeDefinition>> {
                 .into_iter()
                 .filter_map(|definition| match definition {
                     ast::Definition::UnionTypeDefinition(union_def) => {
-                        Some(union_definition(union_def, id))
+                        union_definition(union_def, id)
                     }
                     _ => None,
                 })
@@ -448,7 +443,7 @@ fn union_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<UnionTypeExtension>> {
                 .filter_map(|definition| match definition {
                     ast::Definition::UnionTypeExtension(def) => Some(UnionTypeExtension {
                         directives: directives(def.directives(), id),
-                        name: name(def.name(), id),
+                        name: name(def.name(), id)?,
                         union_members: union_members(def.union_member_types(), id),
                         loc: location(id, def.syntax()),
                     }),
@@ -471,7 +466,7 @@ fn interfaces(db: &dyn HirDatabase) -> Arc<Vec<InterfaceTypeDefinition>> {
                 .into_iter()
                 .filter_map(|definition| match definition {
                     ast::Definition::InterfaceTypeDefinition(interface_def) => {
-                        Some(interface_definition(interface_def, id))
+                        interface_definition(interface_def, id)
                     }
                     _ => None,
                 })
@@ -493,11 +488,8 @@ fn interface_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<InterfaceTypeExten
                 .filter_map(|definition| match definition {
                     ast::Definition::InterfaceTypeExtension(def) => Some(InterfaceTypeExtension {
                         directives: directives(def.directives(), id),
-                        name: name(def.name(), id),
-                        implements_interfaces: implements_interfaces(
-                            def.implements_interfaces(),
-                            id,
-                        ),
+                        name: name(def.name(), id)?,
+                        implements_interfaces: implements_interfaces(def.implements_interfaces(), id),
                         fields_definition: fields_definition(def.fields_definition(), id),
                         loc: location(id, def.syntax()),
                     }),
@@ -519,7 +511,7 @@ fn directive_definitions(db: &dyn HirDatabase) -> Arc<Vec<DirectiveDefinition>> 
                 .into_iter()
                 .filter_map(|definition| match definition {
                     ast::Definition::DirectiveDefinition(directive_def) => {
-                        Some(directive_definition(directive_def, id))
+                        directive_definition(directive_def, id)
                     }
                     _ => None,
                 })
@@ -543,7 +535,7 @@ fn input_objects(db: &dyn HirDatabase) -> Arc<Vec<InputObjectTypeDefinition>> {
                 .into_iter()
                 .filter_map(|definition| match definition {
                     ast::Definition::InputObjectTypeDefinition(input_obj) => {
-                        Some(input_object_definition(input_obj, id))
+                        input_object_definition(input_obj, id)
                     }
                     _ => None,
                 })
@@ -567,7 +559,7 @@ fn input_object_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<InputObjectType
                     ast::Definition::InputObjectTypeExtension(def) => {
                         Some(InputObjectTypeExtension {
                             directives: directives(def.directives(), id),
-                            name: name(def.name(), id),
+                            name: name(def.name(), id)?,
                             input_fields_definition: input_fields_definition(
                                 def.input_fields_definition(),
                                 id,
@@ -624,21 +616,12 @@ fn fragment_definition(
     db: &dyn HirDatabase,
     fragment_def: ast::FragmentDefinition,
     file_id: FileId,
-) -> FragmentDefinition {
-    let name = name(
-        fragment_def
-            .fragment_name()
-            .expect("Fragment Definition must have a name")
-            .name(),
-        file_id,
-    );
+) -> Option<FragmentDefinition> {
+    let name = name(fragment_def.fragment_name()?.name(), file_id)?;
     let type_condition = fragment_def
-        .type_condition()
-        .expect("Fragment Definition must have a type condition")
-        .named_type()
-        .expect("Type Condition must have a name")
-        .name()
-        .expect("Name must have text")
+        .type_condition()?
+        .named_type()?
+        .name()?
         .text()
         .to_string();
     let selection_set = selection_set(
@@ -650,14 +633,14 @@ fn fragment_definition(
     let directives = directives(fragment_def.directives(), file_id);
     let loc = location(file_id, fragment_def.syntax());
 
-    FragmentDefinition {
+    Some(FragmentDefinition {
         id: Uuid::new_v4(),
-        loc,
         name,
         type_condition,
         selection_set,
         directives,
-    }
+        loc,
+    })
 }
 
 fn schema_definition(schema_def: ast::SchemaDefinition, file_id: FileId) -> SchemaDefinition {
@@ -678,16 +661,18 @@ fn schema_definition(schema_def: ast::SchemaDefinition, file_id: FileId) -> Sche
 fn object_type_definition(
     obj_def: ast::ObjectTypeDefinition,
     file_id: FileId,
-) -> ObjectTypeDefinition {
+) -> Option<ObjectTypeDefinition> {
     let id = Uuid::new_v4();
     let description = description(obj_def.description());
-    let name = name(obj_def.name(), file_id);
+    let name = name(obj_def.name(), file_id)?;
     let implements_interfaces = implements_interfaces(obj_def.implements_interfaces(), file_id);
     let directives = directives(obj_def.directives(), file_id);
     let fields_definition = fields_definition(obj_def.fields_definition(), file_id);
     let loc = location(file_id, obj_def.syntax());
 
-    ObjectTypeDefinition {
+    // TODO(@goto-bus-stop) when a name is missing on this,
+    // we might still want to produce a HIR node, so we can validate other parts of the definition
+    Some(ObjectTypeDefinition {
         id,
         description,
         name,
@@ -695,45 +680,52 @@ fn object_type_definition(
         directives,
         fields_definition,
         loc,
-    }
+    })
 }
 
 fn scalar_definition(
     scalar_def: ast::ScalarTypeDefinition,
     file_id: FileId,
-) -> ScalarTypeDefinition {
+) -> Option<ScalarTypeDefinition> {
     let id = Uuid::new_v4();
     let description = description(scalar_def.description());
-    let name = name(scalar_def.name(), file_id);
+    let name = name(scalar_def.name(), file_id)?;
     let directives = directives(scalar_def.directives(), file_id);
     let loc = location(file_id, scalar_def.syntax());
 
-    ScalarTypeDefinition {
+    // TODO(@goto-bus-stop) when a name is missing on this,
+    // we might still want to produce a HIR node, so we can validate other parts of the definition
+    Some(ScalarTypeDefinition {
         id,
         description,
         name,
         directives,
         loc: Some(loc),
         built_in: false,
-    }
+    })
 }
 
-fn enum_definition(enum_def: ast::EnumTypeDefinition, file_id: FileId) -> EnumTypeDefinition {
+fn enum_definition(
+    enum_def: ast::EnumTypeDefinition,
+    file_id: FileId,
+) -> Option<EnumTypeDefinition> {
     let id = Uuid::new_v4();
     let description = description(enum_def.description());
-    let name = name(enum_def.name(), file_id);
+    let name = name(enum_def.name(), file_id)?;
     let directives = directives(enum_def.directives(), file_id);
     let enum_values_definition = enum_values_definition(enum_def.enum_values_definition(), file_id);
     let loc = location(file_id, enum_def.syntax());
 
-    EnumTypeDefinition {
+    // TODO(@goto-bus-stop) when a name is missing on this,
+    // we might still want to produce a HIR node, so we can validate other parts of the definition
+    Some(EnumTypeDefinition {
         id,
         description,
         name,
         directives,
         enum_values_definition,
         loc,
-    }
+    })
 }
 
 fn enum_values_definition(
@@ -745,7 +737,7 @@ fn enum_values_definition(
             let enum_values = enum_values
                 .enum_value_definitions()
                 .into_iter()
-                .map(|e| enum_value_definition(e, file_id))
+                .filter_map(|e| enum_value_definition(e, file_id))
                 .collect();
             Arc::new(enum_values)
         }
@@ -756,36 +748,41 @@ fn enum_values_definition(
 fn enum_value_definition(
     enum_value_def: ast::EnumValueDefinition,
     file_id: FileId,
-) -> EnumValueDefinition {
+) -> Option<EnumValueDefinition> {
     let description = description(enum_value_def.description());
-    let enum_value = enum_value(enum_value_def.enum_value(), file_id);
+    let enum_value = enum_value(enum_value_def.enum_value(), file_id)?;
     let directives = directives(enum_value_def.directives(), file_id);
     let loc = location(file_id, enum_value_def.syntax());
 
-    EnumValueDefinition {
+    Some(EnumValueDefinition {
         description,
         enum_value,
         directives,
         loc,
-    }
+    })
 }
 
-fn union_definition(union_def: ast::UnionTypeDefinition, file_id: FileId) -> UnionTypeDefinition {
+fn union_definition(
+    union_def: ast::UnionTypeDefinition,
+    file_id: FileId,
+) -> Option<UnionTypeDefinition> {
     let id = Uuid::new_v4();
     let description = description(union_def.description());
-    let name = name(union_def.name(), file_id);
+    let name = name(union_def.name(), file_id)?;
     let directives = directives(union_def.directives(), file_id);
     let union_members = union_members(union_def.union_member_types(), file_id);
     let loc = location(file_id, union_def.syntax());
 
-    UnionTypeDefinition {
+    // TODO(@goto-bus-stop) when a name is missing on this,
+    // we might still want to produce a HIR node, so we can validate other parts of the definition
+    Some(UnionTypeDefinition {
         id,
         description,
         name,
         directives,
         union_members,
         loc,
-    }
+    })
 }
 
 fn union_members(
@@ -797,7 +794,7 @@ fn union_members(
             let mems = members
                 .named_types()
                 .into_iter()
-                .map(|u| union_member(u, file_id))
+                .filter_map(|u| union_member(u, file_id))
                 .collect();
             Arc::new(mems)
         }
@@ -805,27 +802,29 @@ fn union_members(
     }
 }
 
-fn union_member(member: ast::NamedType, file_id: FileId) -> UnionMember {
-    let name = name(member.name(), file_id);
+fn union_member(member: ast::NamedType, file_id: FileId) -> Option<UnionMember> {
+    let name = name(member.name(), file_id)?;
     let loc = location(file_id, member.syntax());
 
-    UnionMember { name, loc }
+    Some(UnionMember { name, loc })
 }
 
 fn interface_definition(
     interface_def: ast::InterfaceTypeDefinition,
     file_id: FileId,
-) -> InterfaceTypeDefinition {
+) -> Option<InterfaceTypeDefinition> {
     let id = Uuid::new_v4();
     let description = description(interface_def.description());
-    let name = name(interface_def.name(), file_id);
+    let name = name(interface_def.name(), file_id)?;
     let implements_interfaces =
         implements_interfaces(interface_def.implements_interfaces(), file_id);
     let directives = directives(interface_def.directives(), file_id);
     let fields_definition = fields_definition(interface_def.fields_definition(), file_id);
     let loc = location(file_id, interface_def.syntax());
 
-    InterfaceTypeDefinition {
+    // TODO(@goto-bus-stop) when a name is missing on this,
+    // we might still want to produce a HIR node, so we can validate other parts of the definition
+    Some(InterfaceTypeDefinition {
         id,
         description,
         name,
@@ -833,21 +832,23 @@ fn interface_definition(
         directives,
         fields_definition,
         loc,
-    }
+    })
 }
 
 fn directive_definition(
     directive_def: ast::DirectiveDefinition,
     file_id: FileId,
-) -> DirectiveDefinition {
-    let name = name(directive_def.name(), file_id);
+) -> Option<DirectiveDefinition> {
+    let name = name(directive_def.name(), file_id)?;
     let description = description(directive_def.description());
     let arguments = arguments_definition(directive_def.arguments_definition(), file_id);
     let repeatable = directive_def.repeatable_token().is_some();
     let directive_locations = directive_locations(directive_def.directive_locations());
     let loc = location(file_id, directive_def.syntax());
 
-    DirectiveDefinition {
+    // TODO(@goto-bus-stop) when a name is missing on this,
+    // we might still want to produce a HIR node, so we can validate other parts of the definition
+    Some(DirectiveDefinition {
         id: Uuid::new_v4(),
         description,
         name,
@@ -855,29 +856,31 @@ fn directive_definition(
         repeatable,
         directive_locations,
         loc: Some(loc),
-    }
+    })
 }
 
 fn input_object_definition(
     input_obj: ast::InputObjectTypeDefinition,
     file_id: FileId,
-) -> InputObjectTypeDefinition {
+) -> Option<InputObjectTypeDefinition> {
     let id = Uuid::new_v4();
     let description = description(input_obj.description());
-    let name = name(input_obj.name(), file_id);
+    let name = name(input_obj.name(), file_id)?;
     let directives = directives(input_obj.directives(), file_id);
     let input_fields_definition =
         input_fields_definition(input_obj.input_fields_definition(), file_id);
     let loc = location(file_id, input_obj.syntax());
 
-    InputObjectTypeDefinition {
+    // TODO(@goto-bus-stop) when a name is missing on this,
+    // we might still want to produce a HIR node, so we can validate other parts of the definition
+    Some(InputObjectTypeDefinition {
         id,
         description,
         name,
         directives,
         input_fields_definition,
         loc,
-    }
+    })
 }
 
 fn add_object_type_id_to_schema(db: &dyn HirDatabase) -> Arc<Vec<RootOperationTypeDefinition>> {
@@ -921,12 +924,12 @@ fn implements_interfaces(
         .flat_map(|interfaces| {
             let types: Vec<ImplementsInterface> = interfaces
                 .named_types()
-                .map(|n| {
-                    let name = n.name().expect("Name must have text");
-                    ImplementsInterface {
+                .filter_map(|n| {
+                    let name = n.name()?;
+                    Some(ImplementsInterface {
                         interface: name_hir_node(name, file_id),
                         loc: location(file_id, n.syntax()),
-                    }
+                    })
                 })
                 .collect();
             types
@@ -944,7 +947,7 @@ fn fields_definition(
         Some(fields_def) => {
             let fields: Vec<FieldDefinition> = fields_def
                 .field_definitions()
-                .map(|f| field_definition(f, file_id))
+                .filter_map(|f| field_definition(f, file_id))
                 .collect();
             Arc::new(fields)
         }
@@ -952,22 +955,22 @@ fn fields_definition(
     }
 }
 
-fn field_definition(field: ast::FieldDefinition, file_id: FileId) -> FieldDefinition {
+fn field_definition(field: ast::FieldDefinition, file_id: FileId) -> Option<FieldDefinition> {
     let description = description(field.description());
-    let name = name(field.name(), file_id);
+    let name = name(field.name(), file_id)?;
     let arguments = arguments_definition(field.arguments_definition(), file_id);
-    let ty = ty(field.ty().expect("Field must have a type"), file_id);
+    let ty = ty(field.ty()?, file_id)?;
     let directives = directives(field.directives(), file_id);
     let loc = location(file_id, field.syntax());
 
-    FieldDefinition {
+    Some(FieldDefinition {
         description,
         name,
         arguments,
         ty,
         directives,
         loc,
-    }
+    })
 }
 
 fn arguments_definition(
@@ -1007,25 +1010,22 @@ fn input_value_definitions(
     file_id: FileId,
 ) -> Arc<Vec<InputValueDefinition>> {
     let input_values: Vec<InputValueDefinition> = input_values
-        .map(|input| {
+        .filter_map(|input| {
             let description = description(input.description());
-            let name = name(input.name(), file_id);
-            let ty = ty(
-                input.ty().expect("Input Definition must have a type"),
-                file_id,
-            );
+            let name = name(input.name(), file_id)?;
+            let ty = ty(input.ty()?, file_id)?;
             let default_value = default_value(input.default_value(), file_id);
             let directives = directives(input.directives(), file_id);
             let loc = location(file_id, input.syntax());
 
-            InputValueDefinition {
+            Some(InputValueDefinition {
                 description,
                 name,
                 ty,
                 default_value,
                 directives,
                 loc: Some(loc),
-            }
+            })
         })
         .collect();
     Arc::new(input_values)
@@ -1035,12 +1035,9 @@ fn default_value(
     default_value: Option<ast::DefaultValue>,
     file_id: FileId,
 ) -> Option<DefaultValue> {
-    default_value.map(|val| {
-        value(
-            val.value().expect("Default Value must have a value token"),
-            file_id,
-        )
-    })
+    default_value
+        .and_then(|val| val.value())
+        .and_then(|val| value(val, file_id))
 }
 
 fn root_operation_type_definition(
@@ -1049,21 +1046,16 @@ fn root_operation_type_definition(
 ) -> Arc<Vec<RootOperationTypeDefinition>> {
     let type_defs: Vec<RootOperationTypeDefinition> = root_type_def
         .into_iter()
-        .map(|ty| {
+        .filter_map(|ty| {
             let operation_type = operation_type(ty.operation_type());
-            let named_type = named_type(
-                ty.named_type()
-                    .expect("Root Operation Type Definition must have Named Type.")
-                    .name(),
-                file_id,
-            );
+            let named_type = named_type(ty.named_type()?.name()?, file_id);
             let loc = location(file_id, ty.syntax());
 
-            RootOperationTypeDefinition {
+            Some(RootOperationTypeDefinition {
                 operation_type,
                 named_type,
                 loc: Some(loc),
-            }
+            })
         })
         .collect();
 
@@ -1096,7 +1088,7 @@ fn variable_definitions(
             let variable_definitions = vars
                 .variable_definitions()
                 .into_iter()
-                .map(|v| variable_definition(v, file_id))
+                .filter_map(|v| variable_definition(v, file_id))
                 .collect();
             Arc::new(variable_definitions)
         }
@@ -1104,54 +1096,48 @@ fn variable_definitions(
     }
 }
 
-fn variable_definition(var: ast::VariableDefinition, file_id: FileId) -> VariableDefinition {
-    let name = name(
-        var.variable()
-            .expect("values::Variable Definition must have a variable")
-            .name(),
-        file_id,
-    );
+fn variable_definition(
+    var: ast::VariableDefinition,
+    file_id: FileId,
+) -> Option<VariableDefinition> {
+    let name = name(var.variable()?.name(), file_id)?;
     let directives = directives(var.directives(), file_id);
     let default_value = default_value(var.default_value(), file_id);
-    let ty = ty(
-        var.ty()
-            .expect("values::Variable Definition must have a type"),
-        file_id,
-    );
+    let ty = ty(var.ty()?, file_id)?;
     let loc = location(file_id, var.syntax());
 
-    VariableDefinition {
+    Some(VariableDefinition {
         name,
         directives,
         ty,
         default_value,
         loc,
-    }
+    })
 }
 
-fn ty(ty_: ast::Type, file_id: FileId) -> Type {
+fn ty(ty_: ast::Type, file_id: FileId) -> Option<Type> {
     match ty_ {
-        ast::Type::NamedType(name) => named_type(name.name(), file_id),
-        ast::Type::ListType(list) => Type::List {
-            ty: Box::new(ty(list.ty().expect("List Type must have a type"), file_id)),
+        ast::Type::NamedType(name) => name.name().map(|name| named_type(name, file_id)),
+        ast::Type::ListType(list) => Some(Type::List {
+            ty: Box::new(ty(list.ty()?, file_id)?),
             loc: Some(location(file_id, list.syntax())),
-        },
+        }),
         ast::Type::NonNullType(non_null) => {
             if let Some(n) = non_null.named_type() {
-                let named_type = named_type(n.name(), file_id);
-                Type::NonNull {
+                let named_type = n.name().map(|name| named_type(name, file_id))?;
+                Some(Type::NonNull {
                     ty: Box::new(named_type),
                     loc: Some(location(file_id, n.syntax())),
-                }
+                })
             } else if let Some(list) = non_null.list_type() {
                 let list_type = Type::List {
-                    ty: Box::new(ty(list.ty().expect("List Type must have a type"), file_id)),
+                    ty: Box::new(ty(list.ty()?, file_id)?),
                     loc: Some(location(file_id, list.syntax())),
                 };
-                Type::NonNull {
+                Some(Type::NonNull {
                     ty: Box::new(list_type),
                     loc: Some(location(file_id, list.syntax())),
-                }
+                })
             } else {
                 // TODO: parser should have caught an error if there wasn't
                 // either a named type or list type. Figure out a graceful way
@@ -1162,9 +1148,7 @@ fn ty(ty_: ast::Type, file_id: FileId) -> Type {
     }
 }
 
-fn named_type(n: Option<ast::Name>, file_id: FileId) -> Type {
-    let name = n.expect("Named Type must have a name");
-
+fn named_type(name: ast::Name, file_id: FileId) -> Type {
     Type::Named {
         name: name.text().to_string(),
         loc: Some(location(file_id, name.syntax())),
@@ -1193,7 +1177,7 @@ fn directives(directives: Option<ast::Directives>, file_id: FileId) -> Arc<Vec<D
             let directives = directives
                 .directives()
                 .into_iter()
-                .map(|d| directive(d, file_id))
+                .filter_map(|d| directive(d, file_id))
                 .collect();
             Arc::new(directives)
         }
@@ -1201,16 +1185,16 @@ fn directives(directives: Option<ast::Directives>, file_id: FileId) -> Arc<Vec<D
     }
 }
 
-fn directive(directive: ast::Directive, file_id: FileId) -> Directive {
-    let name = name(directive.name(), file_id);
+fn directive(directive: ast::Directive, file_id: FileId) -> Option<Directive> {
+    let name = name(directive.name(), file_id)?;
     let arguments = arguments(directive.arguments(), file_id);
     let loc = location(file_id, directive.syntax());
 
-    Directive {
+    Some(Directive {
         name,
         arguments,
         loc,
-    }
+    })
 }
 
 fn arguments(arguments: Option<ast::Arguments>, file_id: FileId) -> Arc<Vec<Argument>> {
@@ -1219,7 +1203,7 @@ fn arguments(arguments: Option<ast::Arguments>, file_id: FileId) -> Arc<Vec<Argu
             let arguments = arguments
                 .arguments()
                 .into_iter()
-                .map(|a| argument(a, file_id))
+                .filter_map(|a| argument(a, file_id))
                 .collect();
             Arc::new(arguments)
         }
@@ -1227,25 +1211,18 @@ fn arguments(arguments: Option<ast::Arguments>, file_id: FileId) -> Arc<Vec<Argu
     }
 }
 
-fn argument(argument: ast::Argument, file_id: FileId) -> Argument {
-    let name = name(argument.name(), file_id);
-    let value = value(
-        argument.value().expect("Argument must have a value"),
-        file_id,
-    );
+fn argument(argument: ast::Argument, file_id: FileId) -> Option<Argument> {
+    let name = name(argument.name(), file_id)?;
+    let value = value(argument.value()?, file_id)?;
     let loc = location(file_id, argument.syntax());
 
-    Argument { name, value, loc }
+    Some(Argument { name, value, loc })
 }
 
-fn value(val: ast::Value, file_id: FileId) -> Value {
-    match val {
+fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
+    let hir_val = match val {
         ast::Value::Variable(var) => Value::Variable(Variable {
-            name: var
-                .name()
-                .expect("Variable must have text")
-                .text()
-                .to_string(),
+            name: var.name()?.text().to_string(),
             loc: location(file_id, var.syntax()),
         }),
         ast::Value::StringValue(string_val) => Value::String(string_val.into()),
@@ -1254,23 +1231,24 @@ fn value(val: ast::Value, file_id: FileId) -> Value {
         ast::Value::IntValue(int) => Value::Int(Float::new(f64::try_from(int).unwrap())),
         ast::Value::BooleanValue(bool) => Value::Boolean(bool.try_into().unwrap()),
         ast::Value::NullValue(_) => Value::Null,
-        ast::Value::EnumValue(enum_) => Value::Enum(name(enum_.name(), file_id)),
+        ast::Value::EnumValue(enum_) => Value::Enum(name(enum_.name(), file_id)?),
         ast::Value::ListValue(list) => {
-            let list: Vec<Value> = list.values().map(|v| value(v, file_id)).collect();
+            let list: Vec<Value> = list.values().filter_map(|v| value(v, file_id)).collect();
             Value::List(list)
         }
         ast::Value::ObjectValue(object) => {
             let object_values: Vec<(Name, Value)> = object
                 .object_fields()
-                .map(|o| {
-                    let name = name(o.name(), file_id);
-                    let value = value(o.value().expect("Object Value must have a value"), file_id);
-                    (name, value)
+                .filter_map(|o| {
+                    let name = name(o.name(), file_id)?;
+                    let value = value(o.value()?, file_id)?;
+                    Some((name, value))
                 })
                 .collect();
             Value::Object(object_values)
         }
-    }
+    };
+    Some(hir_val)
 }
 
 fn selection_set(
@@ -1283,7 +1261,7 @@ fn selection_set(
         Some(sel) => sel
             .selections()
             .into_iter()
-            .map(|sel| selection(db, sel, parent_obj_ty.as_ref().cloned(), file_id))
+            .filter_map(|sel| selection(db, sel, parent_obj_ty.as_ref().cloned(), file_id))
             .collect(),
         None => Vec::new(),
     };
@@ -1298,20 +1276,17 @@ fn selection(
     selection: ast::Selection,
     parent_obj_ty: Option<String>,
     file_id: FileId,
-) -> Selection {
+) -> Option<Selection> {
     match selection {
         ast::Selection::Field(sel_field) => {
-            let field = field(db, sel_field, parent_obj_ty, file_id);
-            Selection::Field(field)
+            field(db, sel_field, parent_obj_ty, file_id).map(Selection::Field)
         }
         ast::Selection::FragmentSpread(fragment) => {
-            let fragment_spread = fragment_spread(fragment, file_id);
-            Selection::FragmentSpread(fragment_spread)
+            fragment_spread(fragment, file_id).map(Selection::FragmentSpread)
         }
-        ast::Selection::InlineFragment(fragment) => {
-            let inline_fragment = inline_fragment(db, fragment, parent_obj_ty, file_id);
-            Selection::InlineFragment(inline_fragment)
-        }
+        ast::Selection::InlineFragment(fragment) => Some(Selection::InlineFragment(
+            inline_fragment(db, fragment, parent_obj_ty, file_id),
+        )),
     }
 }
 
@@ -1321,13 +1296,9 @@ fn inline_fragment(
     parent_obj: Option<String>,
     file_id: FileId,
 ) -> Arc<InlineFragment> {
-    let type_condition = fragment.type_condition().map(|tc| {
-        let tc = tc
-            .named_type()
-            .expect("Type Condition must have a name")
-            .name()
-            .expect("Name must have text");
-        name_hir_node(tc, file_id)
+    let type_condition = fragment.type_condition().and_then(|tc| {
+        let tc = tc.named_type()?.name()?;
+        Some(name_hir_node(tc, file_id))
     });
     let directives = directives(fragment.directives(), file_id);
     let new_parent_obj = if let Some(type_condition) = type_condition.clone() {
@@ -1348,14 +1319,8 @@ fn inline_fragment(
     Arc::new(fragment_data)
 }
 
-fn fragment_spread(fragment: ast::FragmentSpread, file_id: FileId) -> Arc<FragmentSpread> {
-    let name = name(
-        fragment
-            .fragment_name()
-            .expect("Fragment Spread must have a name")
-            .name(),
-        file_id,
-    );
+fn fragment_spread(fragment: ast::FragmentSpread, file_id: FileId) -> Option<Arc<FragmentSpread>> {
+    let name = name(fragment.fragment_name()?.name(), file_id)?;
     let directives = directives(fragment.directives(), file_id);
     let loc = location(file_id, fragment.syntax());
 
@@ -1364,7 +1329,7 @@ fn fragment_spread(fragment: ast::FragmentSpread, file_id: FileId) -> Arc<Fragme
         directives,
         loc,
     };
-    Arc::new(fragment_data)
+    Some(Arc::new(fragment_data))
 }
 
 fn field(
@@ -1372,8 +1337,8 @@ fn field(
     field: ast::Field,
     parent_obj: Option<String>,
     file_id: FileId,
-) -> Arc<Field> {
-    let name = name(field.name(), file_id);
+) -> Option<Arc<Field>> {
+    let name = name(field.name(), file_id)?;
     let alias = alias(field.alias());
     let new_parent_obj = parent_ty(db, name.src(), parent_obj.clone());
     let selection_set = selection_set(db, field.selection_set(), new_parent_obj, file_id);
@@ -1390,7 +1355,7 @@ fn field(
         arguments,
         loc,
     };
-    Arc::new(field_data)
+    Some(Arc::new(field_data))
 }
 
 fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<String>) -> Option<String> {
@@ -1408,8 +1373,8 @@ fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<String>)
     }
 }
 
-fn name(name: Option<ast::Name>, file_id: FileId) -> Name {
-    name_hir_node(name.expect("Field must have a name"), file_id)
+fn name(name: Option<ast::Name>, file_id: FileId) -> Option<Name> {
+    name.map(|name| name_hir_node(name, file_id))
 }
 
 fn name_hir_node(name: ast::Name, file_id: FileId) -> Name {
@@ -1419,31 +1384,20 @@ fn name_hir_node(name: ast::Name, file_id: FileId) -> Name {
     }
 }
 
-fn enum_value(enum_value: Option<ast::EnumValue>, file_id: FileId) -> Name {
-    let name = enum_value
-        .expect("Enum value must have a name")
-        .name()
-        .expect("Name must have text");
-    name_hir_node(name, file_id)
+fn enum_value(enum_value: Option<ast::EnumValue>, file_id: FileId) -> Option<Name> {
+    let name = enum_value?.name()?;
+    Some(name_hir_node(name, file_id))
 }
 
 fn description(description: Option<ast::Description>) -> Option<String> {
-    description.map(|desc| {
-        desc.string_value()
-            .expect("Description must have text")
-            .into()
-    })
+    description.and_then(|desc| Some(desc.string_value()?.into()))
 }
 
 fn alias(alias: Option<ast::Alias>) -> Option<Arc<Alias>> {
-    alias.map(|alias| {
-        let name = alias
-            .name()
-            .expect("Alias must have a name")
-            .text()
-            .to_string();
+    alias.and_then(|alias| {
+        let name = alias.name()?.text().to_string();
         let alias_data = Alias(name);
-        Arc::new(alias_data)
+        Some(Arc::new(alias_data))
     })
 }
 
@@ -1634,23 +1588,23 @@ fn deprecated_directive() -> DirectiveDefinition {
         arguments: ArgumentsDefinition {
             input_values: Arc::new(vec![InputValueDefinition {
                 description: Some(
-                    "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).".into(),
-                ),
-                name: "reason".to_string().into(),
-                ty: Type::Named {
-                    name: "String".into(),
-                    loc: None,
-                },
-                default_value: Some(DefaultValue::String("No longer supported".into())),
-                directives: Arc::new(Vec::new()),
-                loc: None
+                                 "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).".into(),
+                                 ),
+                                 name: "reason".to_string().into(),
+                                 ty: Type::Named {
+                                     name: "String".into(),
+                                     loc: None,
+                                 },
+                                 default_value: Some(DefaultValue::String("No longer supported".into())),
+                                 directives: Arc::new(Vec::new()),
+                                 loc: None
             }]),
             loc: None
         },
         repeatable: false,
         directive_locations: Arc::new(vec![
-            DirectiveLocation::FieldDefinition,
-            DirectiveLocation::EnumValue
+                                      DirectiveLocation::FieldDefinition,
+                                      DirectiveLocation::EnumValue
         ]),
         loc: None
     }
@@ -1669,27 +1623,27 @@ fn include_directive() -> DirectiveDefinition {
         arguments: ArgumentsDefinition {
             input_values: Arc::new(vec![InputValueDefinition {
                 description: Some(
-                    "Included when true.".into(),
-                ),
-                name: "if".to_string().into(),
-                ty: Type::NonNull {
-                    ty: Box::new(Type::Named {
-                        name: "Boolean".into(),
-                        loc: None,
-                    }),
-                    loc: None,
-                },
-                default_value: None,
-                directives: Arc::new(Vec::new()),
-                loc: None
+                                 "Included when true.".into(),
+                                 ),
+                                 name: "if".to_string().into(),
+                                 ty: Type::NonNull {
+                                     ty: Box::new(Type::Named {
+                                         name: "Boolean".into(),
+                                         loc: None,
+                                     }),
+                                     loc: None,
+                                 },
+                                 default_value: None,
+                                 directives: Arc::new(Vec::new()),
+                                 loc: None
             }]),
             loc: None
         },
         repeatable: false,
         directive_locations: Arc::new(vec![
-            DirectiveLocation::Field,
-            DirectiveLocation::FragmentSpread,
-            DirectiveLocation::InlineFragment,
+                                      DirectiveLocation::Field,
+                                      DirectiveLocation::FragmentSpread,
+                                      DirectiveLocation::InlineFragment,
         ]),
         loc: None
     }

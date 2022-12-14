@@ -656,6 +656,16 @@ impl Directive {
         self.arguments.as_ref()
     }
 
+    /// Get a reference to the value of the directive argument with the given name, if it exists.
+    pub fn argument_by_name(&self, name: &str) -> Option<&Value> {
+        Some(
+            self.arguments
+                .iter()
+                .find(|arg| arg.name() == name)?
+                .value(),
+        )
+    }
+
     // Get directive definition of the currently used directive
     pub fn directive(&self, db: &dyn DocumentDatabase) -> Option<Arc<DirectiveDefinition>> {
         db.find_directive_definition_by_name(self.name().to_string())
@@ -925,14 +935,11 @@ impl TryFrom<&'_ Value> for i32 {
 
     fn try_from(value: &'_ Value) -> Result<Self, Self::Error> {
         if let Value::Int(float) = value {
-            let float = float.inner.0;
             // The parser emitted an `ast::IntValue` instead of `ast::FloatValue`
             // so we already know `float` does not have a frational part.
-            if float <= (i32::MAX as f64) && float >= (i32::MIN as f64) {
-                Ok(float as i32)
-            } else {
-                Err(IntCoercionError::RangeOverflow)
-            }
+            float
+                .to_i32_checked()
+                .ok_or(IntCoercionError::RangeOverflow)
         } else {
             Err(IntCoercionError::NotAnInteger)
         }
@@ -1248,7 +1255,7 @@ impl FragmentSpread {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Alias(pub String);
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Float {
     inner: ordered_float::OrderedFloat<f64>,
 }
@@ -1257,6 +1264,24 @@ impl Float {
     pub fn new(float: f64) -> Self {
         Self {
             inner: OrderedFloat(float),
+        }
+    }
+
+    pub fn get(self) -> f64 {
+        self.inner.0
+    }
+
+    /// If the value is in the `i32` range, convert by rounding towards zero.
+    ///
+    /// (This is mostly useful when matching on [`Value::Int`]
+    /// where the value is known not to have a fractional part
+    ///  so the rounding mode doesn’t affect the result.)
+    pub fn to_i32_checked(self) -> Option<i32> {
+        let float = self.inner.0;
+        if float <= (i32::MAX as f64) && float >= (i32::MIN as f64) {
+            Some(float as i32)
+        } else {
+            None
         }
     }
 }
@@ -1596,14 +1621,14 @@ impl ScalarTypeDefinition {
         self.directives.as_ref()
     }
 
+    /// Returns true if the current scalar is a GraphQL built in.
+    pub fn is_built_in(&self) -> bool {
+        self.built_in
+    }
+
     /// Get scalar type definition's hir node location.
     pub fn loc(&self) -> Option<&HirNodeLocation> {
         self.loc.as_ref()
-    }
-
-    /// Returns true if the current scalar is a GraphQL built in.
-    pub(crate) fn is_built_in(&self) -> bool {
-        self.built_in
     }
 }
 
@@ -1666,6 +1691,11 @@ impl EnumValueDefinition {
     /// Get a reference to enum value definition's enum value
     pub fn enum_value(&self) -> &str {
         self.enum_value.src()
+    }
+
+    /// Get a reference to enum value definition's directives.
+    pub fn directives(&self) -> &[Directive] {
+        self.directives.as_ref()
     }
 
     /// Get enum value definition's hir node location.
@@ -2191,5 +2221,29 @@ mod tests {
         // but this is approximation is still in the range of finite f64 values.
         assert_eq!(default_values[2], "98765432109876540000");
         assert_eq!(default_values[3], "98765432109876540000");
+    }
+
+    #[test]
+    fn syntax_errors() {
+        let mut compiler = ApolloCompiler::new();
+        compiler.schema(
+            "type Person {
+                id: ID!
+                name: String
+                appearedIn: [Film]s
+                directed: [Film]
+            }",
+            "person.graphql",
+        );
+        let person = compiler
+            .db
+            .find_object_type_by_name("Person".into())
+            .unwrap();
+        let hir_field_names: Vec<_> = person
+            .fields_definition
+            .iter()
+            .map(|field| field.name())
+            .collect();
+        assert_eq!(hir_field_names, ["id", "name", "appearedIn", "directed"]);
     }
 }
