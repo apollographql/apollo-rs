@@ -1195,7 +1195,10 @@ type Query {
         let mut compiler = ApolloCompiler::new();
         let input_id = compiler.create_document(input, "document.graphql");
 
-        let object_type = compiler.db.find_object_type_by_name("Query".into()).unwrap();
+        let object_type = compiler
+            .db
+            .find_object_type_by_name("Query".into())
+            .unwrap();
         assert!(object_type.directives().is_empty());
 
         let input = r#"
@@ -1206,7 +1209,10 @@ type Query @withDirective {
 "#;
         compiler.update_document(input_id, input);
 
-        let object_type = compiler.db.find_object_type_by_name("Query".into()).unwrap();
+        let object_type = compiler
+            .db
+            .find_object_type_by_name("Query".into())
+            .unwrap();
         assert_eq!(object_type.directives().len(), 1);
     }
 }
