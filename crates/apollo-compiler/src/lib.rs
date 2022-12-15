@@ -1182,4 +1182,31 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         thread1.join().expect("object_type_by_name panicked");
         thread2.join().expect("scalars failed");
     }
+
+    #[test]
+    fn inputs_can_be_updated() {
+        let input = r#"
+type Query {
+  website: URL,
+  amount: Int
+}
+"#;
+
+        let mut compiler = ApolloCompiler::new();
+        let input_id = compiler.create_document(input, "document.graphql");
+
+        let object_type = compiler.db.find_object_type_by_name("Query".into()).unwrap();
+        assert!(object_type.directives().is_empty());
+
+        let input = r#"
+type Query @withDirective {
+  website: URL,
+  amount: Int
+}
+"#;
+        compiler.update_document(input_id, input);
+
+        let object_type = compiler.db.find_object_type_by_name("Query".into()).unwrap();
+        assert_eq!(object_type.directives().len(), 1);
+    }
 }
