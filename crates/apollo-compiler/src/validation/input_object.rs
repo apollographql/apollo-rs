@@ -16,20 +16,15 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     for input_object in db.input_objects().iter() {
         let name = input_object.name();
         if let Some(prev_def) = seen.get(name) {
-            let prev_offset: usize = prev_def.ast_node(db.upcast()).text_range().start().into();
-            let prev_node_len: usize = prev_def.ast_node(db.upcast()).text_range().len().into();
+            let prev_offset = prev_def.loc().offset();
+            let prev_node_len = prev_def.loc().node_len();
 
-            let current_offset: usize = input_object
-                .ast_node(db.upcast())
-                .text_range()
-                .start()
-                .into();
-            let current_node_len: usize =
-                input_object.ast_node(db.upcast()).text_range().len().into();
+            let current_offset = input_object.loc().offset();
+            let current_node_len = input_object.loc().node_len();
             diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                 ty: "input object".into(),
                 name: name.into(),
-                src: db.input(),
+                src: db.source_code(prev_def.loc().file_id()),
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!(
@@ -52,38 +47,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         for field in input_fields {
             let field_name = field.name();
             if let Some(prev_field) = seen.get(&field_name) {
-                if prev_field.ast_node(db.upcast()).is_some()
-                    && field.ast_node(db.upcast()).is_some()
-                {
-                    let prev_offset: usize = prev_field
-                        .ast_node(db.upcast())
-                        .unwrap()
-                        .text_range()
-                        .start()
-                        .into();
-                    let prev_node_len: usize = prev_field
-                        .ast_node(db.upcast())
-                        .unwrap()
-                        .text_range()
-                        .len()
-                        .into();
+                if prev_field.loc().is_some() && field.loc().is_some() {
+                    let prev_offset = prev_field.loc().unwrap().offset();
+                    let prev_node_len = prev_field.loc().unwrap().node_len();
 
-                    let current_offset: usize = field
-                        .ast_node(db.upcast())
-                        .unwrap()
-                        .text_range()
-                        .start()
-                        .into();
-                    let current_node_len: usize = field
-                        .ast_node(db.upcast())
-                        .unwrap()
-                        .text_range()
-                        .len()
-                        .into();
+                    let current_offset = field.loc().unwrap().offset();
+                    let current_node_len = field.loc().unwrap().node_len();
 
                     diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                         field: field_name.into(),
-                        src: db.input(),
+                        src: db.source_code(prev_field.loc().unwrap().file_id()),
                         original_field: (prev_offset, prev_node_len).into(),
                         redefined_field: (current_offset, current_node_len).into(),
                         help: Some(format!(

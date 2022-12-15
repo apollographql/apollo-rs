@@ -6,14 +6,19 @@ pub mod diagnostics;
 mod tests;
 pub mod validation;
 
+use std::path::Path;
+
 use salsa::ParallelDatabase;
 use validation::ValidationDatabase;
 
-pub use database::{hir, AstDatabase, DocumentDatabase, HirDatabase, InputDatabase, RootDatabase};
+pub use database::{
+    hir, AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source,
+};
 pub use diagnostics::ApolloDiagnostic;
 
 pub struct ApolloCompiler {
     pub db: RootDatabase,
+    next_file_id: FileId,
 }
 
 /// Apollo compiler creates a context around your GraphQL. It creates refernces
@@ -53,8 +58,10 @@ pub struct ApolloCompiler {
 ///   }
 /// "#;
 ///
-/// let ctx = ApolloCompiler::new(input);
-/// let diagnostics = ctx.validate();
+/// let mut compiler = ApolloCompiler::new();
+/// compiler.create_schema(input, "schema.graphql");
+///
+/// let diagnostics = compiler.validate();
 /// for diagnostic in &diagnostics {
 ///     // this will pretty-print diagnostics using the miette crate.
 ///     println!("{}", diagnostic);
@@ -63,22 +70,94 @@ pub struct ApolloCompiler {
 /// ```
 impl ApolloCompiler {
     /// Create a new instance of Apollo Compiler.
-    pub fn new(input: &str) -> Self {
-        Self::with_opt_recursion_limit(input, None)
+    pub fn new() -> Self {
+        Default::default()
     }
 
     /// Create a new instance of Apollo Compiler,
     /// and configure the parser with the given recursion limit.
-    pub fn with_recursion_limit(input: &str, limit: usize) -> Self {
-        Self::with_opt_recursion_limit(input, Some(limit))
+    pub fn with_recursion_limit(limit: usize) -> Self {
+        let mut compiler = Self::new();
+        compiler.db.set_recursion_limit(Some(limit));
+        compiler
     }
 
-    fn with_opt_recursion_limit(input: &str, limit: Option<usize>) -> Self {
-        let mut db = RootDatabase::default();
-        let input = input.to_string();
-        db.set_input(input);
-        db.set_recursion_limit(limit);
-        Self { db }
+    fn add_input(&mut self, source: Source) -> FileId {
+        let next_file_id = FileId(self.next_file_id.0 + 1);
+        let file_id = std::mem::replace(&mut self.next_file_id, next_file_id);
+
+        let mut sources = self.db.source_files();
+        sources.push(file_id);
+        self.db.set_input(file_id, source);
+        self.db.set_source_files(sources);
+
+        file_id
+    }
+
+    /// Add a document with executable _and_ type system definitions and
+    /// extensions to the compiler.
+    ///
+    /// The `path` argument is used to display diagnostics. If your GraphQL document
+    /// doesn't come from a file, you can make up a name or provide the empty string.
+    /// It does not need to be unique.
+    ///
+    /// Returns a `FileId` that you can use to update the source text of this document.
+    pub fn create_document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+        let filename = path.as_ref().to_owned();
+        self.add_input(Source::document(filename, input))
+    }
+
+    /// Add a schema - a document with type system definitions and extensions only
+    /// - to the compiler.
+    ///
+    /// The `path` argument is used to display diagnostics. If your GraphQL document
+    /// doesn't come from a file, you can make up a name or provide the empty string.
+    /// It does not need to be unique.
+    ///
+    /// Returns a `FileId` that you can use to update the source text of this document.
+    pub fn create_schema(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+        let filename = path.as_ref().to_owned();
+        self.add_input(Source::schema(filename, input))
+    }
+
+    /// Add a an executable document to the compiler.
+    ///
+    /// The `path` argument is used to display diagnostics. If your GraphQL document
+    /// doesn't come from a file, you can make up a name or provide the empty string.
+    /// It does not need to be unique.
+    ///
+    /// Returns a `FileId` that you can use to update the source text of this document.
+    pub fn create_executable(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+        let filename = path.as_ref().to_owned();
+        self.add_input(Source::executable(filename, input))
+    }
+
+    /// Update an existing GraphQL document with new source text. Queries that depend
+    /// on this document will be recomputed.
+    pub fn update_document(&mut self, file_id: FileId, input: &str) {
+        let document = self.db.input(file_id);
+        self.db.set_input(
+            file_id,
+            Source::document(document.filename().to_owned(), input),
+        )
+    }
+
+    /// Update an existing GraphQL document with new source text. Queries that depend
+    /// on this document will be recomputed.
+    pub fn update_schema(&mut self, file_id: FileId, input: &str) {
+        let schema = self.db.input(file_id);
+        self.db
+            .set_input(file_id, Source::schema(schema.filename().to_owned(), input))
+    }
+
+    /// Update an existing GraphQL document with new source text. Queries that depend
+    /// on this document will be recomputed.
+    pub fn update_executable(&mut self, file_id: FileId, input: &str) {
+        let executable = self.db.input(file_id);
+        self.db.set_input(
+            file_id,
+            Source::executable(executable.filename().to_owned(), input),
+        )
     }
 
     /// Get a snapshot of the current database.
@@ -98,8 +177,10 @@ impl ApolloCompiler {
     /// }
     /// "#;
     ///
-    /// let ctx = ApolloCompiler::new(input);
-    /// let diagnostics = ctx.validate();
+    /// let mut compiler = ApolloCompiler::new();
+    /// compiler.create_document(input, "document.graphql");
+    ///
+    /// let diagnostics = compiler.validate();
     /// for diagnostic in &diagnostics {
     ///     println!("{}", diagnostic);
     /// }
@@ -110,11 +191,50 @@ impl ApolloCompiler {
     }
 }
 
+impl Default for ApolloCompiler {
+    fn default() -> Self {
+        let mut db = RootDatabase::default();
+        // TODO(@goto-bus-stop) can we make salsa fill in these defaults for us…?
+        db.set_recursion_limit(None);
+        db.set_source_files(vec![]);
+
+        Self {
+            db,
+            next_file_id: FileId(0),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
 
     use crate::{hir::Definition, ApolloCompiler, DocumentDatabase, HirDatabase};
+
+    #[test]
+    fn it_creates_compiler_from_multiple_sources() {
+        let schema = r#"
+type Query {
+  name: String
+  price: Int
+  dimensions: Int
+  size: Int
+  weight: Int
+}"#;
+        let query = r#"
+query ExampleQuery {
+  name
+  price
+  dimensions
+  size
+  weight
+}
+      "#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(schema, "schema.graphql");
+        compiler.create_executable(query, "query.graphql");
+    }
 
     #[test]
     fn it_accesses_operation_definition_parts() {
@@ -151,18 +271,20 @@ type User {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        let document_id = compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
-        let operations = ctx.db.operations();
+        let operations = compiler.db.operations(document_id);
         let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
         assert_eq!(["ExampleQuery"], operation_names.as_slice());
 
-        let fragments = ctx.db.fragments();
+        let fragments = compiler.db.fragments(document_id);
         let fragment_names: Vec<_> = fragments.iter().map(|fragment| fragment.name()).collect();
         assert_eq!(["vipCustomer"], fragment_names.as_slice());
 
@@ -203,19 +325,21 @@ type Query {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        let document_id = compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
-        let operations = ctx.db.operations();
+        let operations = compiler.db.operations(document_id);
         let fields = operations
             .iter()
             .find(|op| op.name() == Some("ExampleQuery"))
             .unwrap()
-            .fields(&ctx.db);
+            .fields(&compiler.db);
         let field_names: Vec<&str> = fields.iter().map(|f| f.name()).collect();
         assert_eq!(
             field_names,
@@ -260,23 +384,25 @@ type Concrete implements Interface {
 union Union = Concrete
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        let document_id = compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         assert!(diagnostics.is_empty());
 
-        let operations = ctx.db.operations();
+        let operations = compiler.db.operations(document_id);
         let fields = operations
             .iter()
             .find(|op| op.name() == Some("ExampleQuery"))
             .unwrap()
-            .fields(&ctx.db);
+            .fields(&compiler.db);
 
         let interface_field = fields.iter().find(|f| f.name() == "interface").unwrap();
 
         let interface_fields = interface_field.selection_set().fields();
         let interface_selection_fields_types: HashMap<_, _> = interface_fields
             .iter()
-            .map(|f| (f.name(), f.ty(&ctx.db).map(|f| f.name())))
+            .map(|f| (f.name(), f.ty(&compiler.db).map(|f| f.name())))
             .collect();
         assert_eq!(
             interface_selection_fields_types,
@@ -292,7 +418,7 @@ union Union = Concrete
         let inline_fragment_fields = inline_fragment.selection_set().fields();
         let inline_fragment_fields_types: HashMap<_, _> = inline_fragment_fields
             .iter()
-            .map(|f| (f.name(), f.ty(&ctx.db).map(|ty| ty.name())))
+            .map(|f| (f.name(), f.ty(&compiler.db).map(|ty| ty.name())))
             .collect();
         assert_eq!(
             inline_fragment_fields_types,
@@ -310,7 +436,7 @@ union Union = Concrete
         let union_inline_fragment_fields = union_inline_fragment.selection_set().fields();
         let union_inline_fragment_field_types: HashMap<_, _> = union_inline_fragment_fields
             .iter()
-            .map(|f| (f.name(), f.ty(&ctx.db).map(|ty| ty.name())))
+            .map(|f| (f.name(), f.ty(&compiler.db).map(|ty| ty.name())))
             .collect();
         assert_eq!(
             union_inline_fragment_field_types,
@@ -348,23 +474,25 @@ type Product {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        let document_id = compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
         // Get the types of the two top level fields - topProducts and size
-        let operations = ctx.db.operations();
+        let operations = compiler.db.operations(document_id);
         let get_product_op = operations
             .iter()
             .find(|op| op.name() == Some("getProduct"))
             .unwrap();
-        let op_fields = get_product_op.fields(&ctx.db);
+        let op_fields = get_product_op.fields(&compiler.db);
         let name_field_def: Vec<String> = op_fields
             .iter()
-            .filter_map(|field| Some(field.ty(&ctx.db)?.name()))
+            .filter_map(|field| Some(field.ty(&compiler.db)?.name()))
             .collect();
         assert_eq!(name_field_def, ["Int", "Product"]);
 
@@ -378,7 +506,7 @@ type Product {
 
         let top_product_fields: Vec<String> = top_products
             .iter()
-            .filter_map(|f| Some(f.ty(&ctx.db)?.name()))
+            .filter_map(|f| Some(f.ty(&compiler.db)?.name()))
             .collect();
         assert_eq!(top_product_fields, ["String", "Boolean"]);
 
@@ -392,7 +520,7 @@ type Product {
             .selection_set()
             .field("inStock")
             .unwrap()
-            .field_definition(&ctx.db)
+            .field_definition(&compiler.db)
             .unwrap();
         let in_stock_directive: Vec<&str> = in_stock_field
             .directives()
@@ -403,21 +531,8 @@ type Product {
     }
 
     #[test]
-    fn it_accesses_fragment_definition_field_types() {
-        let input = r#"
-query getProduct {
-  topProducts {
-    type
-  }
-  ... vipCustomer
-}
-
-fragment vipCustomer on User {
-  id
-  name
-  profilePic(size: 50)
-}
-
+    fn it_supports_multiple_independent_queries() {
+        let schema = r#"
 type Query {
   topProducts: Product
   customer: User
@@ -437,14 +552,68 @@ type User {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let product_query = r#"query getProduct { topProducts { type } }"#;
+        let customer_query = r#"{ customer }"#;
+        let colliding_query = r#"query getProduct { topProducts { type, price } }"#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_schema(schema, "schema.graphql");
+        compiler.create_executable(product_query, "query.graphql");
+        compiler.create_executable(customer_query, "query.graphql");
+        compiler.create_executable(colliding_query, "query.graphql");
+
+        assert_eq!(compiler.validate(), &[]);
+    }
+
+    #[test]
+    fn it_accesses_fragment_definition_field_types() {
+        let schema = r#"
+type Query {
+  topProducts: Product
+  customer: User
+}
+
+type Product {
+  type: String
+  price(setPrice: Int): Int
+}
+
+type User {
+  id: ID
+  name: String
+  profilePic(size: Int): URL
+}
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+"#;
+        let query = r#"
+query getProduct {
+  topProducts {
+    type
+  }
+  ... vipCustomer
+}
+
+fragment vipCustomer on User {
+  id
+  name
+  profilePic(size: 50)
+}
+"#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_schema(schema, "schema.graphql");
+        let query_id = compiler.create_executable(query, "query.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
-        let op = ctx.db.find_operation_by_name(String::from("getProduct"));
+        let op = compiler
+            .db
+            .find_operation_by_name(query_id, String::from("getProduct"));
         let fragment_in_op: Vec<crate::hir::FragmentDefinition> = op
             .unwrap()
             .selection_set()
@@ -452,7 +621,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
             .iter()
             .filter_map(|sel| match sel {
                 crate::hir::Selection::FragmentSpread(frag) => {
-                    Some(frag.fragment(&ctx.db)?.as_ref().clone())
+                    Some(frag.fragment(&compiler.db)?.as_ref().clone())
                 }
                 _ => None,
             })
@@ -463,7 +632,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
             .collect();
         let field_ty: Vec<String> = fragment_fields
             .iter()
-            .filter_map(|f| Some(f.ty(&ctx.db)?.name()))
+            .filter_map(|f| Some(f.ty(&compiler.db)?.name()))
             .collect();
         assert_eq!(field_ty, ["ID", "String", "URL"])
     }
@@ -493,8 +662,10 @@ type Result {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
@@ -512,14 +683,16 @@ type Query {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
-        let scalars = ctx.db.scalars();
+        let scalars = compiler.db.scalars();
 
         let directives: Vec<&str> = scalars
             .iter()
@@ -546,14 +719,16 @@ enum Pet {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
-        let enums = ctx.db.enums();
+        let enums = compiler.db.enums();
         let enum_values: Vec<&str> = enums
             .iter()
             .find(|enum_def| enum_def.name() == "Pet")
@@ -589,14 +764,16 @@ type SearchQuery {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
-        let unions = ctx.db.unions();
+        let unions = compiler.db.unions();
         let union_members: Vec<&str> = unions
             .iter()
             .find(|def| def.name() == "SearchResult")
@@ -615,7 +792,7 @@ type SearchQuery {
             .iter()
             .find(|mem| mem.name() == "Person")
             .unwrap()
-            .object(&ctx.db);
+            .object(&compiler.db);
 
         if let Some(photo) = photo_object {
             let fields: Vec<&str> = photo
@@ -641,14 +818,16 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
-        let directives = ctx.db.directive_definitions();
+        let directives = compiler.db.directive_definitions();
         let locations: Vec<String> = directives
             .iter()
             .filter_map(|dir| {
@@ -685,14 +864,16 @@ input Point2D {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
-        let input_objects = ctx.db.input_objects();
+        let input_objects = compiler.db.input_objects();
         let fields: Vec<&str> = input_objects
             .iter()
             .filter_map(|input| {
@@ -722,14 +903,19 @@ type Book @directiveA(name: "pageCount") @directiveB(name: "author") {
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
-        let book_obj = ctx.db.find_object_type_by_name("Book".to_string()).unwrap();
+        let book_obj = compiler
+            .db
+            .find_object_type_by_name("Book".to_string())
+            .unwrap();
 
         let directive_names: Vec<&str> = book_obj.directives().iter().map(|d| d.name()).collect();
         assert_eq!(directive_names, ["directiveA", "directiveB"]);
@@ -751,14 +937,16 @@ enum Number {
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
-        let person_obj = ctx.db.find_object_type_by_name("Person".to_string());
+        let person_obj = compiler.db.find_object_type_by_name("Person".to_string());
 
         if let Some(person) = person_obj {
             let field_ty_directive: Vec<String> = person
@@ -766,7 +954,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                 .iter()
                 .filter_map(|f| {
                     // get access to the actual definition the field is using
-                    if let Some(field_ty) = f.ty().ty(&ctx.db) {
+                    if let Some(field_ty) = f.ty().ty(&compiler.db) {
                         match field_ty.as_ref() {
                             // get that definition's directives, for example
                             Definition::ScalarTypeDefinition(scalar) => {
@@ -795,7 +983,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                         .input_values()
                         .iter()
                         .filter_map(|val| {
-                            if let Some(input_ty) = val.ty().ty(&ctx.db) {
+                            if let Some(input_ty) = val.ty().ty(&compiler.db) {
                                 match input_ty.as_ref() {
                                     // get that definition's directives, for example
                                     Definition::EnumTypeDefinition(enum_) => {
@@ -831,21 +1019,23 @@ input Person {
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         assert!(diagnostics.is_empty());
 
-        let person_obj = ctx.db.find_input_object_by_name("Person".to_string());
+        let person_obj = compiler.db.find_input_object_by_name("Person".to_string());
 
         if let Some(person) = person_obj {
             let field_ty_directive: Vec<String> = person
                 .input_fields_definition()
                 .iter()
                 .filter_map(|f| {
-                    if let Some(field_ty) = f.ty().ty(&ctx.db) {
+                    if let Some(field_ty) = f.ty().ty(&compiler.db) {
                         match field_ty.as_ref() {
                             Definition::ScalarTypeDefinition(scalar) => {
                                 let dir_names: Vec<String> = scalar
@@ -944,15 +1134,17 @@ type User
 }
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
         // the scalar warning diagnostic
         assert_eq!(diagnostics.len(), 1);
 
-        let object_types = ctx.db.object_types();
+        let object_types = compiler.db.object_types();
         let object_names: Vec<_> = object_types.iter().map(|op| op.name()).collect();
         assert_eq!(
             ["Mutation", "Product", "Query", "Review", "User"],
@@ -971,21 +1163,56 @@ type Query {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "document.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic);
         }
 
         assert!(diagnostics.is_empty());
 
-        let snapshot = ctx.snapshot();
-        let snapshot2 = ctx.snapshot();
+        let snapshot = compiler.snapshot();
+        let snapshot2 = compiler.snapshot();
 
         let thread1 = std::thread::spawn(move || snapshot.find_object_type_by_name("Query".into()));
         let thread2 = std::thread::spawn(move || snapshot2.scalars());
 
         thread1.join().expect("object_type_by_name panicked");
         thread2.join().expect("scalars failed");
+    }
+
+    #[test]
+    fn inputs_can_be_updated() {
+        let input = r#"
+type Query {
+  website: URL,
+  amount: Int
+}
+"#;
+
+        let mut compiler = ApolloCompiler::new();
+        let input_id = compiler.create_document(input, "document.graphql");
+
+        let object_type = compiler
+            .db
+            .find_object_type_by_name("Query".into())
+            .unwrap();
+        assert!(object_type.directives().is_empty());
+
+        let input = r#"
+type Query @withDirective {
+  website: URL,
+  amount: Int
+}
+"#;
+        compiler.update_document(input_id, input);
+
+        let object_type = compiler
+            .db
+            .find_object_type_by_name("Query".into())
+            .unwrap();
+        assert_eq!(object_type.directives().len(), 1);
     }
 }

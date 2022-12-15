@@ -11,12 +11,12 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 
     // A GraphQL schema must have a Query root operation.
     if db.schema().query(db.upcast()).is_none() {
-        if let Some(node) = db.schema().ast_node(db.upcast()) {
-            let offset: usize = node.text_range().start().into();
-            let len: usize = node.text_range().len().into();
+        if let Some(loc) = db.schema().loc() {
+            let offset = loc.offset();
+            let len = loc.node_len();
             diagnostics.push(ApolloDiagnostic::QueryRootOperationType(
                 QueryRootOperationType {
-                    src: db.input(),
+                    src: db.source_code(loc.file_id()),
                     schema: (offset, len).into(),
                 },
             ));
@@ -30,36 +30,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     for op_type in db.schema().root_operation_type_definition().iter() {
         let name = op_type.named_type().name();
         if let Some(prev_def) = seen.get(&name) {
-            if prev_def.ast_node(db.upcast()).is_some() && op_type.ast_node(db.upcast()).is_some() {
-                let prev_offset: usize = prev_def
-                    .ast_node(db.upcast())
-                    .unwrap()
-                    .text_range()
-                    .start()
-                    .into();
-                let prev_node_len: usize = prev_def
-                    .ast_node(db.upcast())
-                    .unwrap()
-                    .text_range()
-                    .len()
-                    .into();
+            if prev_def.loc().is_some() && op_type.loc().is_some() {
+                let prev_offset = prev_def.loc().unwrap().offset();
+                let prev_node_len = prev_def.loc().unwrap().node_len();
 
-                let current_offset: usize = op_type
-                    .ast_node(db.upcast())
-                    .unwrap()
-                    .text_range()
-                    .start()
-                    .into();
-                let current_node_len: usize = op_type
-                    .ast_node(db.upcast())
-                    .unwrap()
-                    .text_range()
-                    .len()
-                    .into();
+                let current_offset = op_type.loc().unwrap().offset();
+                let current_node_len = op_type.loc().unwrap().node_len();
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     name: name.clone(),
                     ty: "root operation type definition".into(),
-                    src: db.input(),
+                    src: db.source_code(prev_def.loc().unwrap().file_id()),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
                     help: Some(format!(

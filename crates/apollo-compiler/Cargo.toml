@@ -22,7 +22,7 @@ rowan = "0.15.5"
 salsa = "0.16.1"
 uuid = { version = "1.1", features = ["serde", "v4"] }
 ordered-float = { version = "2.10.0", features = ["std"] }
-miette = { version = "4.7.1", features = ["fancy"] }
+miette = { version = "5.5.0", features = ["fancy"] }
 thiserror = "1.0.31"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

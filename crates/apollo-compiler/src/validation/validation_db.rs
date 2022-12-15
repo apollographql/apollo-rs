@@ -8,24 +8,31 @@ use crate::{
         directive, enum_, input_object, interface, object, operation, scalar, schema, union_,
         unused_variable,
     },
-    ApolloDiagnostic, AstDatabase, DocumentDatabase, HirDatabase, InputDatabase,
+    ApolloDiagnostic, AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase,
 };
 
 #[salsa::query_group(ValidationStorage)]
 pub trait ValidationDatabase:
     Upcast<dyn DocumentDatabase> + InputDatabase + AstDatabase + HirDatabase
 {
+    /// Validate all documents.
     fn validate(&self) -> Vec<ApolloDiagnostic>;
+
+    /// Validate the schema, combined of all schema documents known to the compiler.
     fn validate_schema(&self) -> Vec<ApolloDiagnostic>;
-    fn validate_scalar(&self) -> Vec<ApolloDiagnostic>;
-    fn validate_enum(&self) -> Vec<ApolloDiagnostic>;
-    fn validate_union(&self) -> Vec<ApolloDiagnostic>;
-    fn validate_interface(&self) -> Vec<ApolloDiagnostic>;
-    fn validate_directive(&self) -> Vec<ApolloDiagnostic>;
-    fn validate_input_object(&self) -> Vec<ApolloDiagnostic>;
-    fn validate_object(&self) -> Vec<ApolloDiagnostic>;
-    fn validate_operation(&self) -> Vec<ApolloDiagnostic>;
-    fn validate_unused_variable(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_schema_definition(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_scalar_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_enum_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_union_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_interface_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_directive_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_input_object_definitions(&self) -> Vec<ApolloDiagnostic>;
+    fn validate_object_type_definitions(&self) -> Vec<ApolloDiagnostic>;
+
+    /// Validate an executable document.
+    fn validate_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+    fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+    fn validate_unused_variable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
     fn check_directive_definition(
         &self,
@@ -197,35 +204,15 @@ pub fn check_input_values(
     for input_value in input_values.iter() {
         let name = input_value.name();
         if let Some(prev_arg) = seen.get(name) {
-            let prev_offset: usize = prev_arg
-                .ast_node(db.upcast())
-                .unwrap()
-                .text_range()
-                .start()
-                .into();
-            let prev_node_len: usize = prev_arg
-                .ast_node(db.upcast())
-                .unwrap()
-                .text_range()
-                .len()
-                .into();
+            let prev_offset = prev_arg.loc().unwrap().offset();
+            let prev_node_len = prev_arg.loc().unwrap().node_len();
 
-            let current_offset: usize = input_value
-                .ast_node(db.upcast())
-                .unwrap()
-                .text_range()
-                .start()
-                .into();
-            let current_node_len: usize = input_value
-                .ast_node(db.upcast())
-                .unwrap()
-                .text_range()
-                .len()
-                .into();
+            let current_offset = input_value.loc().unwrap().offset();
+            let current_node_len = input_value.loc().unwrap().node_len();
 
             diagnostics.push(ApolloDiagnostic::UniqueArgument(UniqueArgument {
                 name: name.into(),
-                src: db.input(),
+                src: db.source_code(prev_arg.loc().unwrap().file_id()),
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!("`{name}` argument must only be defined once.")),
@@ -325,15 +312,15 @@ pub fn check_arguments(
     for argument in &arguments {
         let name = argument.name();
         if let Some(prev_arg) = seen.get(name) {
-            let prev_offset: usize = prev_arg.ast_node(db.upcast()).text_range().start().into();
-            let prev_node_len: usize = prev_arg.ast_node(db.upcast()).text_range().len().into();
+            let prev_offset = prev_arg.loc().offset();
+            let prev_node_len = prev_arg.loc().node_len();
 
-            let current_offset: usize = argument.ast_node(db.upcast()).text_range().start().into();
-            let current_node_len: usize = argument.ast_node(db.upcast()).text_range().len().into();
+            let current_offset = argument.loc().offset();
+            let current_node_len = argument.loc().node_len();
 
             diagnostics.push(ApolloDiagnostic::UniqueArgument(UniqueArgument {
                 name: name.into(),
-                src: db.input(),
+                src: db.source_code(prev_arg.loc().file_id()),
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!("`{name}` argument must only be provided once.")),
@@ -351,62 +338,85 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     diagnostics.extend(db.syntax_errors());
 
     diagnostics.extend(db.validate_schema());
-
-    diagnostics.extend(db.validate_scalar());
-    diagnostics.extend(db.validate_enum());
-    diagnostics.extend(db.validate_union());
-
-    diagnostics.extend(db.validate_interface());
-    diagnostics.extend(db.validate_directive());
-    diagnostics.extend(db.validate_input_object());
-    diagnostics.extend(db.validate_object());
-    diagnostics.extend(db.validate_operation());
-
-    diagnostics.extend(db.validate_unused_variable());
-
     diagnostics.extend(db.check_db_definitions(db.db_definitions()));
+
+    for file_id in db.executable_definition_files() {
+        diagnostics.extend(db.validate_executable(file_id));
+    }
 
     diagnostics
 }
 
 pub fn validate_schema(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    diagnostics.extend(db.validate_schema_definition());
+
+    diagnostics.extend(db.validate_scalar_definitions());
+    diagnostics.extend(db.validate_enum_definitions());
+    diagnostics.extend(db.validate_union_definitions());
+
+    diagnostics.extend(db.validate_interface_definitions());
+    diagnostics.extend(db.validate_directive_definitions());
+    diagnostics.extend(db.validate_input_object_definitions());
+    diagnostics.extend(db.validate_object_type_definitions());
+
+    diagnostics
+}
+
+pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    diagnostics.extend(db.validate_operation_definitions(file_id));
+    diagnostics.extend(db.validate_unused_variable(file_id));
+
+    diagnostics
+}
+
+pub fn validate_schema_definition(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     schema::check(db)
 }
 
-pub fn validate_scalar(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     scalar::check(db)
 }
 
-pub fn validate_enum(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     enum_::check(db)
 }
 
-pub fn validate_union(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     union_::check(db)
 }
 
-pub fn validate_interface(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     interface::check(db)
 }
 
-pub fn validate_directive(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     directive::check(db)
 }
 
-pub fn validate_input_object(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_input_object_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     input_object::check(db)
 }
 
-pub fn validate_object(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     object::check(db)
 }
 
-pub fn validate_operation(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    operation::check(db)
+pub fn validate_operation_definitions(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
+    operation::check(db, file_id)
 }
 
-pub fn validate_unused_variable(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    unused_variable::check(db)
+pub fn validate_unused_variable(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
+    unused_variable::check(db, file_id)
 }
 
 // #[salsa::query_group(ValidationStorage)]

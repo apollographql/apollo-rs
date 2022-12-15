@@ -73,8 +73,10 @@ let input = r#"
   }
 "#;
 
-let ctx = ApolloCompiler::new(input);
-let diagnostics = ctx.validate();
+let mut compiler = ApolloCompiler::new();
+compiler.create_document(input, "document.graphql");
+
+let diagnostics = compiler.validate();
 for diagnostic in &diagnostics {
     // this will pretty-print diagnostics using the miette crate.
     println!("{}", diagnostic);
@@ -90,21 +92,7 @@ use apollo_compiler::{ApolloCompiler, hir, DocumentDatabase};
 use miette::Result;
 
 fn main() -> Result<()> {
-    let input = r#"
-    query getProduct {
-      topProducts {
-          type
-      }
-      ... vipCustomer
-    }
-
-    #fragment definition where we want to know the field types.
-    fragment vipCustomer on User {
-      id
-      name
-      profilePic(size: 50)
-    }
-
+    let schema_input = r#"
     type Query {
       topProducts: Product
       customer: User
@@ -123,18 +111,37 @@ fn main() -> Result<()> {
 
     scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     "#;
+    let query_input = r#"
+    query getProduct {
+      topProducts {
+          type
+      }
+      ... vipCustomer
+    }
 
-    let ctx = ApolloCompiler::new(input);
-    let diagnostics = ctx.validate();
+    #fragment definition where we want to know the field types.
+    fragment vipCustomer on User {
+      id
+      name
+      profilePic(size: 50)
+    }
+    "#;
+
+    let mut compiler = ApolloCompiler::new();
+    let _schema_id = compiler.create_schema(schema_input, "schema.graphql");
+    let query_id = compiler.create_executable(query_input, "query.graphql");
+
+    let diagnostics = compiler.validate();
     for diagnostic in &diagnostics {
         println!("{}", diagnostic);
     }
     assert!(diagnostics.is_empty());
 
-    let op = ctx.db.find_operation_by_name(String::from("getProduct")).expect("getProduct query does not exist");
+    let op = compiler.db.find_operation_by_name(query_id, String::from("getProduct"))
+        .expect("getProduct query does not exist");
     let fragment_in_op: Vec<hir::FragmentDefinition> = op.selection_set().selection().iter().filter_map(|sel| match sel {
         hir::Selection::FragmentSpread(frag) => {
-            Some(frag.fragment(&ctx.db)?.as_ref().clone())
+            Some(frag.fragment(&compiler.db)?.as_ref().clone())
         }
         _ => None
     }).collect();
@@ -142,7 +149,7 @@ fn main() -> Result<()> {
     let fragment_fields: Vec<hir::Field> = fragment_in_op.iter().flat_map(|frag| frag.selection_set().fields()).collect();
     let field_ty: Vec<String> = fragment_fields
         .iter()
-        .filter_map(|f| Some(f.ty(&ctx.db)?.name()))
+        .filter_map(|f| Some(f.ty(&compiler.db)?.name()))
         .collect();
     assert_eq!(field_ty, ["ID", "String", "URL"]);
     Ok(())
@@ -155,15 +162,7 @@ use apollo_compiler::{ApolloCompiler, hir, HirDatabase};
 use anyhow::{anyhow, Result};
 
 fn main() -> Result<()> {
-    let input = r#"
-    query getProduct {
-      size
-      topProducts {
-        name
-        inStock
-      }
-    }
-
+    let schema_input = r#"
     type Query {
       topProducts: Product
       name: String
@@ -179,26 +178,33 @@ fn main() -> Result<()> {
       weight: Int
     }
     "#;
+    let query_input = r#"
+    query getProduct {
+      size
+      topProducts {
+        name
+        inStock
+      }
+    }
+    "#;
 
-    let ctx = ApolloCompiler::new(input);
-    let diagnostics = ctx.validate();
+
+    let mut compiler = ApolloCompiler::new();
+    compiler.create_schema(schema_input, "schema.graphql");
+    let query_id = compiler.create_executable(query_input, "query.graphql");
+
+    let diagnostics = compiler.validate();
     for diagnostic in &diagnostics {
         println!("{}", diagnostic);
     }
     assert!(diagnostics.is_empty());
 
-    let ctx = ApolloCompiler::new(input);
-    let diagnostics = ctx.validate();
-    for diagnostic in &diagnostics {
-        println!("{}", diagnostic);
-    }
-    assert!(diagnostics.is_empty());
-
-    let operations = ctx.db.operations();
+    let operations = compiler.db.operations(query_id);
     let get_product_op = operations
         .iter()
-        .find(|op| op.name() == Some("getProduct")).expect("getProduct query does not exist");
-    let op_fields = get_product_op.fields(&ctx.db);
+        .find(|op| op.name() == Some("getProduct"))
+        .expect("getProduct query does not exist");
+    let op_fields = get_product_op.fields(&compiler.db);
 
     let in_stock_field = op_fields
         .iter()
@@ -207,7 +213,7 @@ fn main() -> Result<()> {
         .selection_set()
         .field("inStock")
         .expect("inStock field does not exist")
-        .field_definition(&ctx.db)
+        .field_definition(&compiler.db)
         .expect("field definition does not exist");
     let in_stock_directive: Vec<&str> = in_stock_field
         .directives()
@@ -279,8 +285,10 @@ type Cat implements Pet {
 union CatOrDog = Cat | Dog
 "#;
 
-let ctx = ApolloCompiler::new(input);
-let diagnostics = ctx.validate();
+let mut compiler = ApolloCompiler::new();
+compiler.create_document(input, "document.graphql");
+
+let diagnostics = compiler.validate();
 for diagnostic in &diagnostics {
     println!("{}", diagnostic)
 }

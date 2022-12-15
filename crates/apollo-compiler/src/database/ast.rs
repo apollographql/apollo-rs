@@ -1,20 +1,26 @@
 use apollo_parser::{Parser as ApolloParser, SyntaxTree};
 use rowan::GreenNode;
 
-use crate::{database::inputs::InputDatabase, diagnostics::SyntaxError, ApolloDiagnostic};
+use crate::{database::inputs::InputDatabase, diagnostics::SyntaxError, ApolloDiagnostic, FileId};
 
 #[salsa::query_group(AstStorage)]
 pub trait AstDatabase: InputDatabase {
-    fn ast(&self) -> SyntaxTree;
+    /// Get an AST for a particular file. Returns a `rowan` SyntaxTree.  The
+    /// SyntaxTree can be safely shared between threads as it's `Send` and
+    /// `Sync`.
+    fn ast(&self, file_id: FileId) -> SyntaxTree;
 
-    // root node
-    fn document(&self) -> GreenNode;
+    /// Get a file's GraphQL Document. Returns a `rowan` Green Node. This is the
+    /// top level document node that can be used when going between an
+    /// SyntaxNodePtr to an actual SyntaxNode.
+    fn document(&self, file_id: FileId) -> GreenNode;
 
+    /// Get syntax errors found in the compiler's manifest.
     fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
 }
 
-fn ast(db: &dyn AstDatabase) -> SyntaxTree {
-    let input = db.input();
+fn ast(db: &dyn AstDatabase, file_id: FileId) -> SyntaxTree {
+    let input = db.source_code(file_id);
 
     let parser = ApolloParser::new(&input);
     let parser = if let Some(limit) = db.recursion_limit() {
@@ -25,20 +31,25 @@ fn ast(db: &dyn AstDatabase) -> SyntaxTree {
     parser.parse()
 }
 
-fn document(db: &dyn AstDatabase) -> GreenNode {
-    db.ast().green()
+fn document(db: &dyn AstDatabase, file_id: FileId) -> GreenNode {
+    db.ast(file_id).green()
 }
 
 fn syntax_errors(db: &dyn AstDatabase) -> Vec<ApolloDiagnostic> {
-    db.ast()
-        .errors()
+    db.source_files()
         .into_iter()
-        .map(|err| {
-            ApolloDiagnostic::SyntaxError(SyntaxError {
-                src: db.input(),
-                span: (err.index(), err.data().len()).into(), // (offset, length of error token)
-                message: err.message().into(),
-            })
+        .flat_map(|file_id| {
+            db.ast(file_id)
+                .errors()
+                .into_iter()
+                .map(|err| {
+                    ApolloDiagnostic::SyntaxError(SyntaxError {
+                        src: db.source_code(file_id),
+                        span: (err.index(), err.data().len()).into(), // (offset, length of error token)
+                        message: err.message().into(),
+                    })
+                })
+                .collect::<Vec<ApolloDiagnostic>>()
         })
         .collect()
 }
@@ -57,9 +68,10 @@ mod tests {
           }
         }
         "#;
-        let compiler = ApolloCompiler::with_recursion_limit(schema, 1);
+        let mut compiler = ApolloCompiler::with_recursion_limit(1);
+        let doc_id = compiler.create_document(schema, "schema.graphql");
 
-        let ast = compiler.db.ast();
+        let ast = compiler.db.ast(doc_id);
 
         assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 1);
@@ -75,9 +87,10 @@ mod tests {
           }
         }
         "#;
-        let compiler = ApolloCompiler::with_recursion_limit(schema, 7);
+        let mut compiler = ApolloCompiler::with_recursion_limit(7);
+        let doc_id = compiler.create_document(schema, "schema.graphql");
 
-        let ast = compiler.db.ast();
+        let ast = compiler.db.ast(doc_id);
 
         assert_eq!(ast.recursion_limit().high, 4);
         assert_eq!(ast.errors().len(), 0);

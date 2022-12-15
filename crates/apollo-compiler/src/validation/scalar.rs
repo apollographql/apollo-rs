@@ -10,16 +10,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 
     for scalar in db.scalars().iter() {
         let name = scalar.name();
-        if let Some(node) = scalar.ast_node(db.upcast()) {
-            let offset: usize = node.text_range().start().into();
-            let len: usize = node.text_range().len().into();
+        if let Some(loc) = scalar.loc() {
+            let offset = loc.offset();
+            let len = loc.node_len();
 
             // All built-in scalars must be omitted for brevity.
             if BUILT_IN_SCALARS.contains(&name) && !scalar.is_built_in() {
                 diagnostics.push(ApolloDiagnostic::BuiltInScalarDefinition(
                     BuiltInScalarDefinition {
                         scalar: (offset, len).into(),
-                        src: db.input(),
+                        src: db.source_code(loc.file_id()),
                     },
                 ));
             } else if !scalar.is_built_in() {
@@ -33,7 +33,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     diagnostics.push(ApolloDiagnostic::ScalarSpecificationURL(
                         ScalarSpecificationURL {
                             scalar: (offset, len).into(),
-                            src: db.input(),
+                            src: db.source_code(loc.file_id()),
                         },
                     ))
                 }

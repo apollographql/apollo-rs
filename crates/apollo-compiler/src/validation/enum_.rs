@@ -17,17 +17,15 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         for enum_value in enum_def.enum_values_definition().iter() {
             let value = enum_value.enum_value();
             if let Some(prev_def) = seen.get(&value) {
-                let prev_offset: usize = prev_def.ast_node(db.upcast()).text_range().start().into();
-                let prev_node_len: usize = prev_def.ast_node(db.upcast()).text_range().len().into();
+                let prev_offset = prev_def.loc().offset();
+                let prev_node_len = prev_def.loc().node_len();
 
-                let current_offset: usize =
-                    enum_value.ast_node(db.upcast()).text_range().start().into();
-                let current_node_len: usize =
-                    enum_value.ast_node(db.upcast()).text_range().len().into();
+                let current_offset = enum_value.loc().offset();
+                let current_node_len = enum_value.loc().node_len();
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                     ty: "enum".into(),
                     name: value.into(),
-                    src: db.input(),
+                    src: db.source_code(prev_def.loc().file_id()),
                     original_definition: (prev_offset, prev_node_len).into(),
                     redefined_definition: (current_offset, current_node_len).into(),
                     help: Some(format!("{value} must only be defined once in this enum.")),
@@ -44,13 +42,13 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     for enum_def in db.enums().iter() {
         for enum_value in enum_def.enum_values_definition().iter() {
             let value = enum_value.enum_value();
-            let offset: usize = enum_value.ast_node(db.upcast()).text_range().start().into();
-            let len: usize = enum_value.ast_node(db.upcast()).text_range().len().into();
+            let offset = enum_value.loc().offset();
+            let len = enum_value.loc().node_len();
 
             if value.to_uppercase() != value {
                 diagnostics.push(ApolloDiagnostic::CapitalizedValue(CapitalizedValue {
                     ty: value.into(),
-                    src: db.input(),
+                    src: db.source_code(enum_value.loc().file_id()),
                     value: (offset, len).into(),
                 }));
             }

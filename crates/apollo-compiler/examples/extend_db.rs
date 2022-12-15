@@ -1,24 +1,40 @@
-use std::fmt;
+use std::{fmt, path::Path, sync::Arc};
 
 use apollo_compiler::{
     database::{AstStorage, DocumentStorage, HirStorage, InputStorage},
-    AstDatabase, DocumentDatabase, HirDatabase, InputDatabase,
+    AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, Source,
 };
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
 
 /// A small example public API for this linter example.
+#[derive(Default)]
 pub struct Linter {
     pub db: LinterDatabase,
+    next_file_id: u32,
 }
 
 impl Linter {
     /// Create a new instance of Linter.
-    pub fn new(input: &str) -> Self {
-        let mut db = LinterDatabase::default();
-        let input = input.to_string();
-        db.set_input(input);
-        Self { db }
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+        let id = FileId(self.next_file_id);
+        self.next_file_id += 1;
+
+        self.db.set_input(
+            id,
+            Source::document(path.as_ref().to_owned(), input.to_string()),
+        );
+
+        // Inform the queries about this new file.
+        let mut source_files = self.db.source_files();
+        source_files.push(id);
+        self.db.set_source_files(source_files);
+
+        id
     }
 
     /// Runs lints.
@@ -93,13 +109,13 @@ fn capitalised_definitions(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
         .iter()
         .filter_map(|def| {
             if !def.name()?.chars().next()?.is_uppercase() {
-                if let Some(node) = def.name_src()?.ast_node(db.upcast()) {
-                    let offset: usize = node.text_range().start().into();
-                    let len: usize = node.text_range().len().into();
+                if let Some(loc) = def.name_src()?.loc() {
+                    let offset = loc.offset();
+                    let len = loc.node_len();
 
                     Some(LintDiagnostic::CapitalisedDefinitions(
                         CapitalisedDefinitions {
-                            src: db.input(),
+                            src: db.source_code(loc.file_id()),
                             definition: (offset, len).into(),
                         },
                     ))
@@ -145,7 +161,7 @@ impl fmt::Display for LintDiagnostic {
 #[diagnostic(code("graphql linter diagnostic"))]
 pub struct CapitalisedDefinitions {
     #[source_code]
-    pub src: String,
+    pub src: Arc<str>,
 
     #[label = "capitalise this definition"]
     pub definition: SourceSpan,
@@ -172,7 +188,8 @@ type user {
 scalar url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     "#;
 
-    let linter = Linter::new(input);
+    let mut linter = Linter::new();
+    linter.document(input, "document.graphql");
     let lints = linter.lint();
 
     // Display lints.

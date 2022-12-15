@@ -20,15 +20,15 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     for interface in db.interfaces().iter() {
         let name = interface.name();
         if let Some(prev_def) = seen.get(&name) {
-            let prev_offset: usize = prev_def.ast_node(db.upcast()).text_range().start().into();
-            let prev_node_len: usize = prev_def.ast_node(db.upcast()).text_range().len().into();
+            let prev_offset = prev_def.loc().offset();
+            let prev_node_len = prev_def.loc().node_len();
 
-            let current_offset: usize = interface.ast_node(db.upcast()).text_range().start().into();
-            let current_node_len: usize = interface.ast_node(db.upcast()).text_range().len().into();
+            let current_offset = interface.loc().offset();
+            let current_node_len = interface.loc().node_len();
             diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                 ty: "interface".into(),
                 name: name.into(),
-                src: db.input(),
+                src: db.source_code(prev_def.loc().file_id()),
                 original_definition: (prev_offset, prev_node_len).into(),
                 redefined_definition: (current_offset, current_node_len).into(),
                 help: Some(format!(
@@ -61,20 +61,12 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
                 let i_name = (*interface.name()).to_string();
                 if name == i_name {
-                    let offset = implements_interface
-                        .ast_node(db.upcast())
-                        .text_range()
-                        .start()
-                        .into();
-                    let len: usize = implements_interface
-                        .ast_node(db.upcast())
-                        .text_range()
-                        .len()
-                        .into();
+                    let offset = implements_interface.loc().offset();
+                    let len = implements_interface.loc().node_len();
                     diagnostics.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
                         message: format!("{} interface cannot implement itself", i_name),
                         definition: (offset, len).into(),
-                        src: db.input(),
+                        src: db.source_code(implements_interface.loc().file_id()),
                         definition_label: "recursive implements interfaces".into(),
                     }));
                 }
@@ -93,18 +85,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             //
             // Returns Unique Value error.
             let field_name = field.name();
-            let offset: usize = field.ast_node(db.upcast()).text_range().start().into();
-            let len: usize = field.ast_node(db.upcast()).text_range().len().into();
+            let offset = field.loc().offset();
+            let len = field.loc().node_len();
 
             if let Some(prev_field) = seen.get(&field_name) {
-                let prev_offset: usize =
-                    prev_field.ast_node(db.upcast()).text_range().start().into();
-                let prev_node_len: usize =
-                    prev_field.ast_node(db.upcast()).text_range().len().into();
+                let prev_offset = prev_field.loc().offset();
+                let prev_node_len = prev_field.loc().node_len();
 
                 diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                     field: field_name.into(),
-                    src: db.input(),
+                    src: db.source_code(prev_field.loc().file_id()),
                     original_field: (prev_offset, prev_node_len).into(),
                     redefined_field: (offset, len).into(),
                     help: Some(format!(
@@ -121,22 +111,22 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     diagnostics.push(ApolloDiagnostic::OutputType(OutputType {
                         name: field.name().into(),
                         ty: field_ty.ty(),
-                        src: db.input(),
+                        src: db.source_code(field.loc().file_id()),
                         definition: (offset, len).into(),
                     }))
                 }
-            } else if let Some(node) = field.ty().ast_node(db.upcast()) {
-                let field_ty_offset: usize = node.text_range().start().into();
-                let field_ty_len: usize = node.text_range().len().into();
+            } else if let Some(loc) = field.ty().loc() {
+                let field_ty_offset = loc.offset();
+                let field_ty_len = loc.node_len();
                 diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                     ty: field.ty().name(),
-                    src: db.input(),
+                    src: db.source_code(loc.file_id()),
                     definition: (field_ty_offset, field_ty_len).into(),
                 }))
             } else {
                 diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                     ty: field.ty().name(),
-                    src: db.input(),
+                    src: db.source_code(field.loc().file_id()),
                     definition: (offset, len).into(),
                 }))
             }
@@ -148,7 +138,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         .iter()
         .map(|interface| ValidationSet {
             name: interface.name().to_owned(),
-            node: interface.ast_node(db.upcast()),
+            loc: *interface.loc(),
         })
         .collect();
     for interface_def in interfaces.iter() {
@@ -160,16 +150,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .iter()
             .map(|interface| ValidationSet {
                 name: interface.interface().to_owned(),
-                node: interface.ast_node(db.upcast()),
+                loc: *interface.loc(),
             })
             .collect();
         let diff = implements_interfaces.difference(&defined_interfaces);
         for undefined in diff {
-            let offset = undefined.node.text_range().start().into();
-            let len: usize = undefined.node.text_range().len().into();
+            let offset = undefined.loc.offset();
+            let len: usize = undefined.loc.node_len();
             diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
                 ty: undefined.name.clone(),
-                src: db.input(),
+                src: db.source_code(undefined.loc.file_id()),
                 definition: (offset, len).into(),
             }))
         }
@@ -188,7 +178,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         .iter()
                         .map(|interface| ValidationSet {
                             name: interface.interface().to_owned(),
-                            node: implements_interface.ast_node(db.upcast()),
+                            loc: *implements_interface.loc(),
                         })
                         .collect();
                     Some(child_interfaces)
@@ -200,12 +190,12 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .collect();
         let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
         for undefined in transitive_diff {
-            let offset = undefined.node.text_range().start().into();
-            let len: usize = undefined.node.text_range().len().into();
+            let offset = undefined.loc.offset();
+            let len = undefined.loc.node_len();
             diagnostics.push(ApolloDiagnostic::TransitiveImplementedInterfaces(
                 TransitiveImplementedInterfaces {
                     missing_interface: undefined.name.clone(),
-                    src: db.input(),
+                    src: db.source_code(undefined.loc.file_id()),
                     definition: (offset, len).into(),
                 },
             ))
@@ -221,7 +211,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .iter()
             .map(|field| ValidationSet {
                 name: field.name().into(),
-                node: field.ast_node(db.upcast()),
+                loc: *field.loc(),
             })
             .collect();
         for implements_interface in interface_def.implements_interfaces().iter() {
@@ -231,31 +221,22 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     .iter()
                     .map(|field| ValidationSet {
                         name: field.name().into(),
-                        node: field.ast_node(db.upcast()),
+                        loc: *field.loc(),
                     })
                     .collect();
 
                 let field_diff = implements_interface_fields.difference(&fields);
 
                 for missing_field in field_diff {
-                    let current_offset: usize = interface_def
-                        .ast_node(db.upcast())
-                        .text_range()
-                        .start()
-                        .into();
-                    let current_len = interface_def
-                        .ast_node(db.upcast())
-                        .text_range()
-                        .len()
-                        .into();
+                    let current_offset = interface_def.loc().offset();
+                    let current_len = interface_def.loc().node_len();
 
-                    let super_offset = interface.ast_node(db.upcast()).text_range().start().into();
-                    let super_len: usize =
-                        interface.ast_node(db.upcast()).text_range().len().into();
+                    let super_offset = interface.loc().offset();
+                    let super_len = interface.loc().node_len();
 
                     diagnostics.push(ApolloDiagnostic::MissingField(MissingField {
                         ty: missing_field.name.clone(),
-                        src: db.input(),
+                        src: db.source_code(interface_def.loc.file_id()),
                         current_definition: (current_offset, current_len).into(),
                         super_definition: (super_offset, super_len).into(),
                         help: Some(
@@ -294,8 +275,10 @@ interface NamedEntity {
 
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
@@ -326,8 +309,10 @@ interface NamedEntity {
 
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
@@ -352,8 +337,10 @@ interface NamedEntity implements NamedEntity {
 
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
@@ -371,8 +358,10 @@ interface NamedEntity implements NewEntity {
 
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
@@ -400,8 +389,10 @@ interface Image implements Resource & Node {
   thumbnail: String
 }
 "#;
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
@@ -461,8 +452,10 @@ input Point2D {
 
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-        let ctx = ApolloCompiler::new(input);
-        let diagnostics = ctx.validate();
+        let mut compiler = ApolloCompiler::new();
+        compiler.create_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             println!("{}", diagnostic)
         }
