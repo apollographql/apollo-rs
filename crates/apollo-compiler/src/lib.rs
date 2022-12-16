@@ -209,7 +209,7 @@ impl Default for ApolloCompiler {
 mod test {
     use std::collections::HashMap;
 
-    use crate::{hir::Definition, ApolloCompiler, DocumentDatabase, HirDatabase};
+    use crate::{hir::TypeDefinition, ApolloCompiler, DocumentDatabase, HirDatabase};
 
     #[test]
     fn it_creates_compiler_from_multiple_sources() {
@@ -923,7 +923,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                     if let Some(field_ty) = f.ty().ty(&compiler.db) {
                         match field_ty {
                             // get that definition's directives, for example
-                            Definition::ScalarTypeDefinition(scalar) => {
+                            TypeDefinition::ScalarTypeDefinition(scalar) => {
                                 let dir_names: Vec<String> = scalar
                                     .directives()
                                     .iter()
@@ -952,7 +952,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                             if let Some(input_ty) = val.ty().ty(&compiler.db) {
                                 match input_ty {
                                     // get that definition's directives, for example
-                                    Definition::EnumTypeDefinition(enum_) => {
+                                    TypeDefinition::EnumTypeDefinition(enum_) => {
                                         let dir_names: Vec<String> = enum_
                                             .enum_values_definition()
                                             .iter()
@@ -1003,7 +1003,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                 .filter_map(|f| {
                     if let Some(field_ty) = f.ty().ty(&compiler.db) {
                         match field_ty {
-                            Definition::ScalarTypeDefinition(scalar) => {
+                            TypeDefinition::ScalarTypeDefinition(scalar) => {
                                 let dir_names: Vec<String> = scalar
                                     .directives()
                                     .iter()

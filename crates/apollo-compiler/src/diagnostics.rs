@@ -333,7 +333,7 @@ pub struct OutputType {
     // field name
     pub name: String,
     // field type
-    pub ty: String,
+    pub ty: &'static str,
 
     #[source_code]
     pub src: Arc<str>,
@@ -352,7 +352,7 @@ pub struct ObjectType {
     // union member
     pub name: String,
     // actual type
-    pub ty: String,
+    pub ty: &'static str,
 
     #[source_code]
     pub src: Arc<str>,

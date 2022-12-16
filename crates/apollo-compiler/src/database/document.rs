@@ -4,6 +4,7 @@ use std::{
 };
 
 use crate::{hir::*, AstDatabase, FileId, HirDatabase, InputDatabase};
+use indexmap::IndexMap;
 
 #[salsa::query_group(DocumentStorage)]
 pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
@@ -36,6 +37,10 @@ pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
     fn find_definition_by_name(&self, name: String) -> Option<Definition>;
 
     fn find_type_system_definition_by_name(&self, name: String) -> Option<Definition>;
+
+    fn types_definitions_by_name(&self) -> Arc<IndexMap<String, TypeDefinition>>;
+
+    fn find_type_definition_by_name(&self, name: String) -> Option<TypeDefinition>;
 
     fn query_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
@@ -76,6 +81,29 @@ fn find_type_system_definition_by_name(
         .iter()
         .find(|def| def.name() == Some(&*name))
         .cloned()
+}
+
+fn types_definitions_by_name(db: &dyn DocumentDatabase) -> Arc<IndexMap<String, TypeDefinition>> {
+    let mut map = IndexMap::new();
+    macro_rules! add {
+        ($get: ident, $variant: ident) => {
+            for (name, def) in db.$get().iter() {
+                map.entry(name.clone())
+                    .or_insert_with(|| TypeDefinition::$variant(def.clone()));
+            }
+        };
+    }
+    add!(scalars, ScalarTypeDefinition);
+    add!(object_types, ObjectTypeDefinition);
+    add!(interfaces, InterfaceTypeDefinition);
+    add!(unions, UnionTypeDefinition);
+    add!(enums, EnumTypeDefinition);
+    add!(input_objects, InputObjectTypeDefinition);
+    Arc::new(map)
+}
+
+fn find_type_definition_by_name(db: &dyn DocumentDatabase, name: String) -> Option<TypeDefinition> {
+    db.types_definitions_by_name().get(&name).cloned()
 }
 
 fn find_operation_by_name(
