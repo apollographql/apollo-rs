@@ -238,6 +238,7 @@ pub fn check_db_definitions(
 
         // TODO: validate extensions too
         use hir::Definition::*;
+        use hir::TypeDefinition::*;
         match definition {
             OperationDefinition(def) => {
                 diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
@@ -248,22 +249,24 @@ pub fn check_db_definitions(
             DirectiveDefinition(def) => {
                 diagnostics.extend(db.check_directive_definition(def.clone()));
             }
-            ScalarTypeDefinition(_def) => {}
-            ObjectTypeDefinition(def) => {
-                diagnostics.extend(db.check_object_type_definition(def.clone()));
-            }
-            InterfaceTypeDefinition(def) => {
-                diagnostics.extend(db.check_interface_type_definition(def.clone()));
-            }
-            UnionTypeDefinition(def) => {
-                diagnostics.extend(db.check_union_type_definition(def.clone()));
-            }
-            EnumTypeDefinition(def) => {
-                diagnostics.extend(db.check_enum_type_definition(def.clone()));
-            }
-            InputObjectTypeDefinition(def) => {
-                diagnostics.extend(db.check_input_object_type_definition(def.clone()));
-            }
+            TypeDefinition(def) => match def {
+                ScalarTypeDefinition(_def) => {}
+                ObjectTypeDefinition(def) => {
+                    diagnostics.extend(db.check_object_type_definition(def.clone()));
+                }
+                InterfaceTypeDefinition(def) => {
+                    diagnostics.extend(db.check_interface_type_definition(def.clone()));
+                }
+                UnionTypeDefinition(def) => {
+                    diagnostics.extend(db.check_union_type_definition(def.clone()));
+                }
+                EnumTypeDefinition(def) => {
+                    diagnostics.extend(db.check_enum_type_definition(def.clone()));
+                }
+                InputObjectTypeDefinition(def) => {
+                    diagnostics.extend(db.check_input_object_type_definition(def.clone()));
+                }
+            },
             SchemaDefinition(def) => {
                 diagnostics.extend(db.check_schema_definition(def.clone()));
             }

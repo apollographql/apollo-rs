@@ -82,37 +82,43 @@ fn type_system_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
         db.scalars()
             .values()
             .cloned()
-            .map(Definition::ScalarTypeDefinition),
+            .map(TypeDefinition::ScalarTypeDefinition)
+            .map(Definition::TypeDefinition),
     );
     definitions.extend(
         db.object_types()
             .values()
             .cloned()
-            .map(Definition::ObjectTypeDefinition),
+            .map(TypeDefinition::ObjectTypeDefinition)
+            .map(Definition::TypeDefinition),
     );
     definitions.extend(
         db.interfaces()
             .values()
             .cloned()
-            .map(Definition::InterfaceTypeDefinition),
+            .map(TypeDefinition::InterfaceTypeDefinition)
+            .map(Definition::TypeDefinition),
     );
     definitions.extend(
         db.unions()
             .values()
             .cloned()
-            .map(Definition::UnionTypeDefinition),
+            .map(TypeDefinition::UnionTypeDefinition)
+            .map(Definition::TypeDefinition),
     );
     definitions.extend(
         db.enums()
             .values()
             .cloned()
-            .map(Definition::EnumTypeDefinition),
+            .map(TypeDefinition::EnumTypeDefinition)
+            .map(Definition::TypeDefinition),
     );
     definitions.extend(
         db.input_objects()
             .values()
             .cloned()
-            .map(Definition::InputObjectTypeDefinition),
+            .map(TypeDefinition::InputObjectTypeDefinition)
+            .map(Definition::TypeDefinition),
     );
     definitions.push(Definition::SchemaDefinition(db.schema()));
 
