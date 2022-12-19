@@ -10,13 +10,16 @@ use indexmap::IndexMap;
 
 pub type ByName<T> = Arc<IndexMap<String, Arc<T>>>;
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum Definition {
-    OperationDefinition(Arc<OperationDefinition>),
-    FragmentDefinition(Arc<FragmentDefinition>),
-    DirectiveDefinition(Arc<DirectiveDefinition>),
-    TypeDefinition(TypeDefinition),
-    SchemaDefinition(Arc<SchemaDefinition>),
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct TypeSystemDefinitions {
+    pub schema: Arc<SchemaDefinition>,
+    pub scalars: ByName<ScalarTypeDefinition>,
+    pub objects: ByName<ObjectTypeDefinition>,
+    pub interfaces: ByName<InterfaceTypeDefinition>,
+    pub unions: ByName<UnionTypeDefinition>,
+    pub enums: ByName<EnumTypeDefinition>,
+    pub input_objects: ByName<InputObjectTypeDefinition>,
+    pub directives: ByName<DirectiveDefinition>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -27,174 +30,6 @@ pub enum TypeDefinition {
     UnionTypeDefinition(Arc<UnionTypeDefinition>),
     EnumTypeDefinition(Arc<EnumTypeDefinition>),
     InputObjectTypeDefinition(Arc<InputObjectTypeDefinition>),
-}
-
-impl Definition {
-    // Get a reference to definition's name.
-    pub fn name(&self) -> Option<&str> {
-        match self {
-            Self::OperationDefinition(def) => def.name(),
-            Self::FragmentDefinition(def) => Some(def.name()),
-            Self::DirectiveDefinition(def) => Some(def.name()),
-            Self::TypeDefinition(def) => Some(def.name()),
-            Self::SchemaDefinition(_) => None,
-        }
-    }
-
-    pub fn name_src(&self) -> Option<&Name> {
-        match self {
-            Self::OperationDefinition(def) => def.name_src(),
-            Self::FragmentDefinition(def) => Some(def.name_src()),
-            Self::DirectiveDefinition(def) => Some(def.name_src()),
-            Self::TypeDefinition(def) => match def {
-                TypeDefinition::ScalarTypeDefinition(def) => Some(def.name_src()),
-                TypeDefinition::ObjectTypeDefinition(def) => Some(def.name_src()),
-                TypeDefinition::InterfaceTypeDefinition(def) => Some(def.name_src()),
-                TypeDefinition::UnionTypeDefinition(def) => Some(def.name_src()),
-                TypeDefinition::EnumTypeDefinition(def) => Some(def.name_src()),
-                TypeDefinition::InputObjectTypeDefinition(def) => Some(def.name_src()),
-            },
-            Self::SchemaDefinition(_) => None,
-        }
-    }
-
-    // Get the current definition type, e..g OperationDefinition,
-    // EnumTypeDefinition, ObjectTypeDefinition etc.
-    pub fn ty(&self) -> &'static str {
-        match self {
-            Self::OperationDefinition(_) => "OperationDefinition",
-            Self::FragmentDefinition(_) => "FragmentDefinition",
-            Self::DirectiveDefinition(_) => "DirectiveDefinition",
-            Self::TypeDefinition(def) => def.ty(),
-            Self::SchemaDefinition(_) => "SchemaDefinition",
-        }
-    }
-
-    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
-        match self {
-            Self::TypeDefinition(def) => match def {
-                TypeDefinition::ObjectTypeDefinition(def) => def.field(name),
-                TypeDefinition::InterfaceTypeDefinition(def) => def.field(name),
-                _ => None,
-            },
-            _ => None,
-        }
-    }
-
-    pub fn directives(&self) -> &[Directive] {
-        match self {
-            Self::OperationDefinition(def) => def.directives(),
-            Self::FragmentDefinition(def) => def.directives(),
-            Self::DirectiveDefinition(_) => &[],
-            Self::TypeDefinition(def) => match def {
-                TypeDefinition::ScalarTypeDefinition(def) => def.directives(),
-                TypeDefinition::ObjectTypeDefinition(def) => def.directives(),
-                TypeDefinition::InterfaceTypeDefinition(def) => def.directives(),
-                TypeDefinition::UnionTypeDefinition(def) => def.directives(),
-                TypeDefinition::EnumTypeDefinition(def) => def.directives(),
-                TypeDefinition::InputObjectTypeDefinition(def) => def.directives(),
-            },
-            Self::SchemaDefinition(def) => def.directives(),
-        }
-    }
-
-    /// Returns `true` if the definition is [`OperationDefinition`].
-    ///
-    /// [`OperationDefinition`]: Definition::OperationDefinition
-    #[must_use]
-    pub fn is_operation_definition(&self) -> bool {
-        matches!(self, Self::OperationDefinition(..))
-    }
-
-    /// Returns `true` if the definition is [`FragmentDefinition`].
-    ///
-    /// [`FragmentDefinition`]: Definition::FragmentDefinition
-    #[must_use]
-    pub fn is_fragment_definition(&self) -> bool {
-        matches!(self, Self::FragmentDefinition(..))
-    }
-
-    /// Returns `true` if the definition is [`DirectiveDefinition`].
-    ///
-    /// [`DirectiveDefinition`]: Definition::DirectiveDefinition
-    #[must_use]
-    pub fn is_directive_definition(&self) -> bool {
-        matches!(self, Self::DirectiveDefinition(..))
-    }
-
-    /// Returns `true` if the definition is [`ScalarTypeDefinition`].
-    ///
-    /// [`ScalarTypeDefinition`]: Definition::ScalarTypeDefinition
-    #[must_use]
-    pub fn is_scalar_type_definition(&self) -> bool {
-        matches!(
-            self,
-            Self::TypeDefinition(TypeDefinition::ScalarTypeDefinition(..))
-        )
-    }
-
-    /// Returns `true` if the definition is [`ObjectTypeDefinition`].
-    ///
-    /// [`ObjectTypeDefinition`]: Definition::ObjectTypeDefinition
-    #[must_use]
-    pub fn is_object_type_definition(&self) -> bool {
-        matches!(
-            self,
-            Self::TypeDefinition(TypeDefinition::ObjectTypeDefinition { .. })
-        )
-    }
-
-    /// Returns `true` if the definition is [`InterfaceTypeDefinition`].
-    ///
-    /// [`InterfaceTypeDefinition`]: Definition::InterfaceTypeDefinition
-    #[must_use]
-    pub fn is_interface_type_definition(&self) -> bool {
-        matches!(
-            self,
-            Self::TypeDefinition(TypeDefinition::InterfaceTypeDefinition(..))
-        )
-    }
-
-    /// Returns `true` if the definition is [`UnionTypeDefinition`].
-    ///
-    /// [`UnionTypeDefinition`]: Definition::UnionTypeDefinition
-    #[must_use]
-    pub fn is_union_type_definition(&self) -> bool {
-        matches!(
-            self,
-            Self::TypeDefinition(TypeDefinition::UnionTypeDefinition(..))
-        )
-    }
-
-    /// Returns `true` if the definition is [`EnumTypeDefinition`].
-    ///
-    /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
-    #[must_use]
-    pub fn is_enum_type_definition(&self) -> bool {
-        matches!(
-            self,
-            Self::TypeDefinition(TypeDefinition::EnumTypeDefinition(..))
-        )
-    }
-
-    /// Returns `true` if the definition is [`InputObjectTypeDefinition`].
-    ///
-    /// [`InputObjectTypeDefinition`]: Definition::InputObjectTypeDefinition
-    #[must_use]
-    pub fn is_input_object_type_definition(&self) -> bool {
-        matches!(
-            self,
-            Self::TypeDefinition(TypeDefinition::InputObjectTypeDefinition(..))
-        )
-    }
-
-    /// Returns `true` if the definition is [`SchemaDefinition`].
-    ///
-    /// [`SchemaDefinition`]: Definition::SchemaDefinition
-    #[must_use]
-    pub fn is_schema_definition(&self) -> bool {
-        matches!(self, Self::SchemaDefinition(..))
-    }
 }
 
 impl TypeDefinition {
@@ -209,6 +44,16 @@ impl TypeDefinition {
         }
     }
 
+    pub fn name_src(&self) -> &Name {
+        match self {
+            Self::ScalarTypeDefinition(def) => def.name_src(),
+            Self::ObjectTypeDefinition(def) => def.name_src(),
+            Self::InterfaceTypeDefinition(def) => def.name_src(),
+            Self::UnionTypeDefinition(def) => def.name_src(),
+            Self::EnumTypeDefinition(def) => def.name_src(),
+            Self::InputObjectTypeDefinition(def) => def.name_src(),
+        }
+    }
     pub fn ty(&self) -> &'static str {
         match self {
             Self::ScalarTypeDefinition(_) => "ScalarTypeDefinition",
@@ -246,6 +91,17 @@ impl TypeDefinition {
                 | Self::EnumTypeDefinition(..)
                 | Self::InputObjectTypeDefinition(..)
         )
+    }
+
+    pub fn directives(&self) -> &[Directive] {
+        match self {
+            Self::ScalarTypeDefinition(def) => def.directives(),
+            Self::ObjectTypeDefinition(def) => def.directives(),
+            Self::InterfaceTypeDefinition(def) => def.directives(),
+            Self::UnionTypeDefinition(def) => def.directives(),
+            Self::EnumTypeDefinition(def) => def.directives(),
+            Self::InputObjectTypeDefinition(def) => def.directives(),
+        }
     }
 
     pub fn field(&self, name: &str) -> Option<&FieldDefinition> {

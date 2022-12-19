@@ -6,23 +6,6 @@ use std::{
 use crate::{hir::*, FileId, HirDatabase};
 use indexmap::IndexMap;
 
-pub(crate) fn find_definition_by_name(db: &dyn HirDatabase, name: String) -> Option<Definition> {
-    db.db_definitions()
-        .iter()
-        .find(|def| def.name() == Some(&*name))
-        .cloned()
-}
-
-pub(crate) fn find_type_system_definition_by_name(
-    db: &dyn HirDatabase,
-    name: String,
-) -> Option<Definition> {
-    db.type_system_definitions()
-        .iter()
-        .find(|def| def.name() == Some(&*name))
-        .cloned()
-}
-
 pub(crate) fn types_definitions_by_name(
     db: &dyn HirDatabase,
 ) -> Arc<IndexMap<String, TypeDefinition>> {
@@ -106,19 +89,16 @@ pub(crate) fn find_directive_definition_by_name(
 }
 
 /// Find any definitions that use the specified directive.
-pub(crate) fn find_definitions_with_directive(
+pub(crate) fn find_types_with_directive(
     db: &dyn HirDatabase,
     directive: String,
-) -> Arc<Vec<Definition>> {
-    let mut definitions = Vec::new();
-    for def in db.db_definitions().iter() {
-        let any = def.directives().iter().any(|dir| dir.name() == directive);
-
-        if any {
-            definitions.push(def.clone())
-        }
-    }
-
+) -> Arc<Vec<TypeDefinition>> {
+    let definitions = db
+        .types_definitions_by_name()
+        .values()
+        .filter(|def| def.directives().iter().any(|dir| dir.name() == directive))
+        .cloned()
+        .collect();
     Arc::new(definitions)
 }
 
@@ -346,13 +326,9 @@ mod tests {
         let mut compiler = ApolloCompiler::new();
         compiler.create_document(schema, "schema.graphql");
 
-        let key_definitions = compiler
-            .db
-            .find_definitions_with_directive(String::from("key"));
-        let mut key_definition_names: Vec<&str> = key_definitions
-            .iter()
-            .filter_map(|def| def.name())
-            .collect();
+        let key_definitions = compiler.db.find_types_with_directive(String::from("key"));
+        let mut key_definition_names: Vec<&str> =
+            key_definitions.iter().map(|def| def.name()).collect();
         key_definition_names.sort();
         assert_eq!(key_definition_names, ["ObjectOne", "ObjectTwo"])
     }

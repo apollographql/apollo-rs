@@ -46,6 +46,10 @@ pub trait ValidationDatabase:
         &self,
         def: Arc<hir::InterfaceTypeDefinition>,
     ) -> Vec<ApolloDiagnostic>;
+    fn check_scalar_type_definition(
+        &self,
+        def: Arc<hir::ScalarTypeDefinition>,
+    ) -> Vec<ApolloDiagnostic>;
     fn check_union_type_definition(
         &self,
         def: Arc<hir::UnionTypeDefinition>,
@@ -69,8 +73,7 @@ pub trait ValidationDatabase:
         &self,
         input_values: Arc<Vec<hir::InputValueDefinition>>,
     ) -> Vec<ApolloDiagnostic>;
-    fn check_db_definitions(&self, definitions: Arc<Vec<hir::Definition>>)
-        -> Vec<ApolloDiagnostic>;
+    fn check_db_definitions(&self) -> Vec<ApolloDiagnostic>;
     fn check_directive(&self, schema: hir::Directive) -> Vec<ApolloDiagnostic>;
     fn check_arguments(&self, schema: Vec<hir::Argument>) -> Vec<ApolloDiagnostic>;
     fn check_field(&self, field: Arc<hir::Field>) -> Vec<ApolloDiagnostic>;
@@ -93,6 +96,7 @@ pub fn check_object_type_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    // TODO: validate extensions
     for field in object_type.fields_definition() {
         diagnostics.extend(db.check_field_definition(field.clone()));
     }
@@ -106,6 +110,7 @@ pub fn check_interface_type_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    // TODO: validate extensions
     for field in interface_type.fields_definition() {
         diagnostics.extend(db.check_field_definition(field.clone()));
     }
@@ -113,10 +118,19 @@ pub fn check_interface_type_definition(
     diagnostics
 }
 
+pub fn check_scalar_type_definition(
+    _db: &dyn ValidationDatabase,
+    _union_type: Arc<hir::ScalarTypeDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    // TODO: validate extensions
+    vec![]
+}
+
 pub fn check_union_type_definition(
     _db: &dyn ValidationDatabase,
     _union_type: Arc<hir::UnionTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
+    // TODO: validate extensions
     vec![]
 }
 
@@ -124,6 +138,7 @@ pub fn check_enum_type_definition(
     _db: &dyn ValidationDatabase,
     _enum_type: Arc<hir::EnumTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
+    // TODO: validate extensions
     vec![]
 }
 
@@ -131,6 +146,7 @@ pub fn check_input_object_type_definition(
     _db: &dyn ValidationDatabase,
     _input_object_type: Arc<hir::InputObjectTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
+    // TODO: validate extensions
     // Not checking the `input_values` here as those are checked as fields elsewhere.
     vec![]
 }
@@ -141,6 +157,7 @@ pub fn check_schema_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    // TODO: validate extensions
     for directive in schema_def.directives() {
         diagnostics.extend(db.check_directive(directive.clone()));
     }
@@ -225,53 +242,68 @@ pub fn check_input_values(
     diagnostics
 }
 
-pub fn check_db_definitions(
-    db: &dyn ValidationDatabase,
-    definitions: Arc<Vec<hir::Definition>>,
-) -> Vec<ApolloDiagnostic> {
+pub fn check_db_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
+    let type_system = db.type_system_definitions();
+    let hir::TypeSystemDefinitions {
+        schema,
+        scalars,
+        objects,
+        interfaces,
+        unions,
+        enums,
+        input_objects,
+        directives,
+    } = &*type_system;
 
-    for definition in definitions.iter() {
-        for directive in definition.directives() {
-            diagnostics.extend(db.check_directive(directive.clone()));
-        }
-
-        // TODO: validate extensions too
-        use hir::Definition::*;
-        use hir::TypeDefinition::*;
-        match definition {
-            OperationDefinition(def) => {
-                diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
+    macro_rules! check_directives {
+        ($def: ident) => {
+            for directive in $def.directives() {
+                diagnostics.extend(db.check_directive(directive.clone()));
             }
-            FragmentDefinition(def) => {
-                diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
-            }
-            DirectiveDefinition(def) => {
-                diagnostics.extend(db.check_directive_definition(def.clone()));
-            }
-            TypeDefinition(def) => match def {
-                ScalarTypeDefinition(_def) => {}
-                ObjectTypeDefinition(def) => {
-                    diagnostics.extend(db.check_object_type_definition(def.clone()));
-                }
-                InterfaceTypeDefinition(def) => {
-                    diagnostics.extend(db.check_interface_type_definition(def.clone()));
-                }
-                UnionTypeDefinition(def) => {
-                    diagnostics.extend(db.check_union_type_definition(def.clone()));
-                }
-                EnumTypeDefinition(def) => {
-                    diagnostics.extend(db.check_enum_type_definition(def.clone()));
-                }
-                InputObjectTypeDefinition(def) => {
-                    diagnostics.extend(db.check_input_object_type_definition(def.clone()));
-                }
-            },
-            SchemaDefinition(def) => {
-                diagnostics.extend(db.check_schema_definition(def.clone()));
-            }
-        }
+        };
     }
+
+    for def in db.all_operations().iter() {
+        check_directives!(def);
+        diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
+    }
+    for def in db.all_fragments().values() {
+        check_directives!(def);
+        diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
+    }
+    for def in directives.values() {
+        diagnostics.extend(db.check_directive_definition(def.clone()));
+    }
+    for def in scalars.values() {
+        check_directives!(def);
+        diagnostics.extend(db.check_scalar_type_definition(def.clone()));
+    }
+    for def in objects.values() {
+        check_directives!(def);
+        diagnostics.extend(db.check_object_type_definition(def.clone()));
+    }
+    for def in interfaces.values() {
+        check_directives!(def);
+        diagnostics.extend(db.check_interface_type_definition(def.clone()));
+        // TODO: validate extensions
+    }
+    for def in unions.values() {
+        check_directives!(def);
+        diagnostics.extend(db.check_union_type_definition(def.clone()));
+        // TODO: validate extensions
+    }
+    for def in enums.values() {
+        check_directives!(def);
+        diagnostics.extend(db.check_enum_type_definition(def.clone()));
+        // TODO: validate extensions
+    }
+    for def in input_objects.values() {
+        check_directives!(def);
+        diagnostics.extend(db.check_input_object_type_definition(def.clone()));
+        // TODO: validate extensions
+    }
+    diagnostics.extend(db.check_schema_definition(schema.clone()));
 
     diagnostics
 }
@@ -334,7 +366,7 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     diagnostics.extend(db.syntax_errors());
 
     diagnostics.extend(db.validate_schema());
-    diagnostics.extend(db.check_db_definitions(db.db_definitions()));
+    diagnostics.extend(db.check_db_definitions());
 
     for file_id in db.executable_definition_files() {
         diagnostics.extend(db.validate_executable(file_id));

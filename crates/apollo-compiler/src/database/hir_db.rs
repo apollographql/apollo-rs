@@ -20,23 +20,19 @@ use indexmap::IndexMap;
 
 #[salsa::query_group(HirStorage)]
 pub trait HirDatabase: InputDatabase + AstDatabase {
-    // fn definitions(&self) -> Arc<Vec<ast::Definition>>;
-
-    /// Return all definitions known to the compiler.
-    ///
-    /// This includes all type system definitions and all executable definitions
-    /// from all files. If multiple executable documents are known to the compiler,
-    /// there may be duplicate executable definitions that are still valid.
-    fn db_definitions(&self) -> Arc<Vec<Definition>>;
-
-    /// Return the type system definitions.
-    fn type_system_definitions(&self) -> Arc<Vec<Definition>>;
+    fn type_system_definitions(&self) -> Arc<TypeSystemDefinitions>;
 
     /// Return all the operations defined in a file.
     fn operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
     /// Return all the fragments defined in a file.
     fn fragments(&self, file_id: FileId) -> ByName<FragmentDefinition>;
+
+    /// Return all the operations defined in any file.
+    fn all_operations(&self) -> Arc<Vec<Arc<OperationDefinition>>>;
+
+    /// Return all the fragments defined in any file.
+    fn all_fragments(&self) -> ByName<FragmentDefinition>;
 
     fn schema(&self) -> Arc<SchemaDefinition>;
 
@@ -78,13 +74,9 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
 
     fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
 
-    fn find_definitions_with_directive(&self, directive: String) -> Arc<Vec<Definition>>;
+    fn find_types_with_directive(&self, directive: String) -> Arc<Vec<TypeDefinition>>;
 
     fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
-
-    fn find_definition_by_name(&self, name: String) -> Option<Definition>;
-
-    fn find_type_system_definition_by_name(&self, name: String) -> Option<Definition>;
 
     fn types_definitions_by_name(&self) -> Arc<IndexMap<String, TypeDefinition>>;
 
@@ -114,81 +106,17 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     fn is_subtype(&self, abstract_type: String, maybe_subtype: String) -> bool;
 }
 
-fn db_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
-    let mut definitions = Vec::clone(&*db.type_system_definitions());
-
-    // collect *all* executable definitions.
-    for file_id in db.executable_definition_files() {
-        definitions.extend(
-            db.operations(file_id)
-                .iter()
-                .map(|def| Definition::OperationDefinition(def.clone())),
-        );
-        definitions.extend(
-            db.fragments(file_id)
-                .values()
-                .cloned()
-                .map(Definition::FragmentDefinition),
-        );
-    }
-
-    Arc::new(definitions)
-}
-
-fn type_system_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
-    let mut definitions = Vec::new();
-
-    definitions.extend(
-        db.directive_definitions()
-            .values()
-            .cloned()
-            .map(Definition::DirectiveDefinition),
-    );
-    definitions.extend(
-        db.scalars()
-            .values()
-            .cloned()
-            .map(TypeDefinition::ScalarTypeDefinition)
-            .map(Definition::TypeDefinition),
-    );
-    definitions.extend(
-        db.object_types()
-            .values()
-            .cloned()
-            .map(TypeDefinition::ObjectTypeDefinition)
-            .map(Definition::TypeDefinition),
-    );
-    definitions.extend(
-        db.interfaces()
-            .values()
-            .cloned()
-            .map(TypeDefinition::InterfaceTypeDefinition)
-            .map(Definition::TypeDefinition),
-    );
-    definitions.extend(
-        db.unions()
-            .values()
-            .cloned()
-            .map(TypeDefinition::UnionTypeDefinition)
-            .map(Definition::TypeDefinition),
-    );
-    definitions.extend(
-        db.enums()
-            .values()
-            .cloned()
-            .map(TypeDefinition::EnumTypeDefinition)
-            .map(Definition::TypeDefinition),
-    );
-    definitions.extend(
-        db.input_objects()
-            .values()
-            .cloned()
-            .map(TypeDefinition::InputObjectTypeDefinition)
-            .map(Definition::TypeDefinition),
-    );
-    definitions.push(Definition::SchemaDefinition(db.schema()));
-
-    Arc::new(definitions)
+fn type_system_definitions(db: &dyn HirDatabase) -> Arc<TypeSystemDefinitions> {
+    Arc::new(TypeSystemDefinitions {
+        schema: db.schema(),
+        scalars: db.scalars(),
+        objects: db.object_types(),
+        interfaces: db.interfaces(),
+        unions: db.unions(),
+        enums: db.enums(),
+        input_objects: db.input_objects(),
+        directives: db.directive_definitions(),
+    })
 }
 
 fn operations(db: &dyn HirDatabase, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>> {
@@ -218,6 +146,24 @@ fn fragments(db: &dyn HirDatabase, file_id: FileId) -> ByName<FragmentDefinition
         map.entry(name).or_insert_with(|| Arc::new(def));
     }
     Arc::new(map)
+}
+
+fn all_operations(db: &dyn HirDatabase) -> Arc<Vec<Arc<OperationDefinition>>> {
+    let mut operations = Vec::new();
+    for file_id in db.executable_definition_files() {
+        operations.extend(db.operations(file_id).iter().cloned())
+    }
+    Arc::new(operations)
+}
+
+fn all_fragments(db: &dyn HirDatabase) -> ByName<FragmentDefinition> {
+    let mut fragments = IndexMap::new();
+    for file_id in db.executable_definition_files() {
+        for (name, def) in db.fragments(file_id).iter() {
+            fragments.entry(name.clone()).or_insert_with(|| def.clone());
+        }
+    }
+    Arc::new(fragments)
 }
 
 /// Takes a fallible conversion from a specific AST type to an HIR type,
