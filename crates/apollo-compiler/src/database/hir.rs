@@ -247,6 +247,14 @@ impl TypeDefinition {
                 | Self::InputObjectTypeDefinition(..)
         )
     }
+
+    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
+        match self {
+            Self::ObjectTypeDefinition(def) => def.field(name),
+            Self::InterfaceTypeDefinition(def) => def.field(name),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -303,8 +311,8 @@ impl FragmentDefinition {
             .collect()
     }
 
-    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<Definition> {
-        db.find_type_system_definition_by_name(self.name().to_string())
+    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<TypeDefinition> {
+        db.find_type_definition_by_name(self.name().to_string())
     }
 
     /// Get fragment definition's hir node location.
@@ -1058,7 +1066,7 @@ impl Field {
     /// Get a reference to field's type.
     pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<Type> {
         let def = db
-            .find_type_system_definition_by_name(self.parent_obj.as_ref()?.to_string())?
+            .find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())?
             .field(self.name())?
             .ty()
             .to_owned();

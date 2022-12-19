@@ -1134,7 +1134,7 @@ fn field(
 ) -> Option<Arc<Field>> {
     let name = name(field.name(), file_id)?;
     let alias = alias(field.alias());
-    let new_parent_obj = parent_ty(db, name.src(), parent_obj.clone());
+    let new_parent_obj = parent_ty(db, name.src(), parent_obj.as_deref());
     let selection_set = selection_set(db, field.selection_set(), new_parent_obj, file_id);
     let directives = directives(field.directives(), file_id);
     let arguments = arguments(field.arguments(), file_id);
@@ -1152,19 +1152,18 @@ fn field(
     Some(Arc::new(field_data))
 }
 
-fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<String>) -> Option<String> {
-    if let Some(name) = parent_obj {
-        db.type_system_definitions().iter().find_map(|def| {
-            if let Some(n) = def.name() {
-                if name == n {
-                    return Some(def.field(field_name)?.ty().name());
-                }
+fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<&str>) -> Option<String> {
+    let name = parent_obj?;
+    // TODO: this should use `db.find_type_definition_by_name(name)`
+    // but can’t (yet?) because `HirDatabase` is not `DocumentDatabase`.
+    db.type_system_definitions()
+        .iter()
+        .find_map(|def| match def {
+            Definition::TypeDefinition(def) if def.name() == name => {
+                Some(def.field(field_name)?.ty().name())
             }
-            None
+            _ => None,
         })
-    } else {
-        None
-    }
 }
 
 fn name(name: Option<ast::Name>, file_id: FileId) -> Option<Name> {

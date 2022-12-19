@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     diagnostics::{ObjectType, UndefinedDefinition, UniqueDefinition},
-    hir::UnionMember,
+    hir::{TypeDefinition, UnionMember},
     ApolloDiagnostic, ValidationDatabase,
 };
 
@@ -36,19 +36,18 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 seen.insert(name, union_member);
             }
 
-            // Union member must be defined.
-            let union_member_type = db
-                .upcast()
-                .find_type_system_definition_by_name(name.to_string());
-            if union_member_type.is_none() {
-                diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                    ty: name.into(),
-                    src: db.source_code(union_member.loc().file_id()),
-                    definition: (offset, len).into(),
-                }))
-            } else if let Some(ty) = union_member_type {
-                // Union member must be of object type.
-                if !ty.is_object_type_definition() {
+            match db.upcast().find_type_definition_by_name(name.to_string()) {
+                None => {
+                    // Union member must be defined.
+                    diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
+                        ty: name.into(),
+                        src: db.source_code(union_member.loc().file_id()),
+                        definition: (offset, len).into(),
+                    }))
+                }
+                Some(TypeDefinition::ObjectTypeDefinition { .. }) => {} // good
+                Some(ty) => {
+                    // Union member must be of object type.
                     diagnostics.push(ApolloDiagnostic::ObjectType(ObjectType {
                         name: name.into(),
                         ty: ty.ty(),
