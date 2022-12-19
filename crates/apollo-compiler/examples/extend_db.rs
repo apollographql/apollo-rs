@@ -11,7 +11,6 @@ use thiserror::Error;
 #[derive(Default)]
 pub struct Linter {
     pub db: LinterDatabase,
-    next_file_id: u32,
 }
 
 impl Linter {
@@ -21,9 +20,7 @@ impl Linter {
     }
 
     pub fn document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        let id = FileId(self.next_file_id);
-        self.next_file_id += 1;
-
+        let id = FileId::new();
         self.db.set_input(
             id,
             Source::document(path.as_ref().to_owned(), input.to_string()),

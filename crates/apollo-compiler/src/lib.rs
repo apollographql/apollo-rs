@@ -16,7 +16,6 @@ pub use diagnostics::ApolloDiagnostic;
 
 pub struct ApolloCompiler {
     pub db: RootDatabase,
-    next_file_id: FileId,
 }
 
 /// Apollo compiler creates a context around your GraphQL. It creates refernces
@@ -81,9 +80,7 @@ impl ApolloCompiler {
     }
 
     fn add_input(&mut self, source: Source) -> FileId {
-        let next_file_id = FileId(self.next_file_id.0 + 1);
-        let file_id = std::mem::replace(&mut self.next_file_id, next_file_id);
-
+        let file_id = FileId::new();
         let mut sources = self.db.source_files();
         sources.push(file_id);
         self.db.set_input(file_id, source);
@@ -196,10 +193,7 @@ impl Default for ApolloCompiler {
         db.set_recursion_limit(None);
         db.set_source_files(vec![]);
 
-        Self {
-            db,
-            next_file_id: FileId(0),
-        }
+        Self { db }
     }
 }
 

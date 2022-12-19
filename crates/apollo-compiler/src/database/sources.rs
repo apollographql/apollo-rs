@@ -1,6 +1,6 @@
 use std::{
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{atomic, Arc},
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -63,4 +63,17 @@ impl Source {
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct FileId(pub u32);
+pub struct FileId {
+    id: u64,
+}
+
+impl FileId {
+    // Returning a different value every time does not sound like good `impl Default`
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Self {
+        static NEXT: atomic::AtomicU64 = atomic::AtomicU64::new(0);
+        Self {
+            id: NEXT.fetch_add(1, atomic::Ordering::Relaxed),
+        }
+    }
+}
