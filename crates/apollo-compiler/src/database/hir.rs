@@ -1,9 +1,12 @@
-use std::sync::Arc;
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 use apollo_parser::{ast, SyntaxNode};
 use ordered_float::{self, OrderedFloat};
 
-use crate::HirDatabase;
+use crate::{HirDatabase, Source};
 
 use super::FileId;
 use indexmap::IndexMap;
@@ -20,6 +23,18 @@ pub struct TypeSystemDefinitions {
     pub enums: ByName<EnumTypeDefinition>,
     pub input_objects: ByName<InputObjectTypeDefinition>,
     pub directives: ByName<DirectiveDefinition>,
+}
+
+/// Contains a `TypeSystemDefinition` together with:
+///
+/// * Other data that can be derived from it.
+/// * Relevant inputs
+#[derive(PartialEq, Eq, Debug)]
+pub struct PrecomputedTypeSystem {
+    pub definitions: Arc<TypeSystemDefinitions>,
+    pub inputs: IndexMap<FileId, Source>,
+    pub type_definitions_by_name: Arc<IndexMap<String, TypeDefinition>>,
+    pub subtype_map: Arc<HashMap<String, HashSet<String>>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]

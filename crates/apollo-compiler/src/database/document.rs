@@ -45,6 +45,16 @@ pub(crate) fn find_operation_by_name(
         .cloned()
 }
 
+pub(crate) fn find_unnamed_operation(
+    db: &dyn HirDatabase,
+    file_id: FileId,
+) -> Option<Arc<OperationDefinition>> {
+    db.operations(file_id)
+        .iter()
+        .find(|def| def.name().is_none())
+        .cloned()
+}
+
 pub(crate) fn find_fragment_by_name(
     db: &dyn HirDatabase,
     file_id: FileId,

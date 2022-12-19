@@ -11,7 +11,7 @@ pub enum SourceType {
 }
 
 /// Represents a GraphQL source file.
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Source {
     ty: SourceType,
     filename: PathBuf,

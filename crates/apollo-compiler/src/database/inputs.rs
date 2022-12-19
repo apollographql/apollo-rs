@@ -1,4 +1,5 @@
 use super::sources::{FileId, Source, SourceType};
+use crate::hir::PrecomputedTypeSystem;
 use std::sync::Arc;
 
 #[salsa::query_group(InputStorage)]
@@ -8,6 +9,9 @@ pub trait InputDatabase {
     fn recursion_limit(&self) -> Option<usize>;
 
     /// Get input source of the corresponding file.
+    #[salsa::input]
+    fn precomputed_input(&self) -> Option<Arc<PrecomputedTypeSystem>>;
+
     #[salsa::input]
     fn input(&self, file_id: FileId) -> Source;
 
@@ -29,6 +33,12 @@ pub trait InputDatabase {
 }
 
 fn source_code(db: &dyn InputDatabase, file_id: FileId) -> Arc<str> {
+    // For diagnostics, also include sources for a precomputed input.
+    if let Some(precomputed) = db.precomputed_input() {
+        if let Some(source) = precomputed.inputs.get(&file_id) {
+            return source.text();
+        }
+    }
     db.input(file_id).text()
 }
 
