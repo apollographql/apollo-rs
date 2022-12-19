@@ -3,21 +3,15 @@ use std::{
     sync::Arc,
 };
 
-use uuid::Uuid;
-
 use crate::{hir::*, AstDatabase, FileId, HirDatabase, InputDatabase};
 
 #[salsa::query_group(DocumentStorage)]
 pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
-    fn find_operation(&self, id: Uuid) -> Option<Arc<OperationDefinition>>;
-
     fn find_operation_by_name(
         &self,
         file_id: FileId,
         name: String,
     ) -> Option<Arc<OperationDefinition>>;
-
-    fn find_fragment(&self, id: Uuid) -> Option<Arc<FragmentDefinition>>;
 
     fn find_fragment_by_name(
         &self,
@@ -25,31 +19,21 @@ pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
         name: String,
     ) -> Option<Arc<FragmentDefinition>>;
 
-    fn find_object_type(&self, id: Uuid) -> Option<Arc<ObjectTypeDefinition>>;
-
     fn find_object_type_by_name(&self, name: String) -> Option<Arc<ObjectTypeDefinition>>;
 
     fn find_union_by_name(&self, name: String) -> Option<Arc<UnionTypeDefinition>>;
 
     fn find_enum_by_name(&self, name: String) -> Option<Arc<EnumTypeDefinition>>;
 
-    fn find_interface(&self, id: Uuid) -> Option<Arc<InterfaceTypeDefinition>>;
-
     fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceTypeDefinition>>;
-
-    fn find_directive_definition(&self, id: Uuid) -> Option<Arc<DirectiveDefinition>>;
 
     fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
 
     fn find_definitions_with_directive(&self, directive: String) -> Arc<Vec<Definition>>;
 
-    fn find_input_object(&self, id: Uuid) -> Option<Arc<InputObjectTypeDefinition>>;
-
     fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
 
     fn find_definition_by_name(&self, name: String) -> Option<Definition>;
-
-    fn find_type_system_definition(&self, id: Uuid) -> Option<Definition>;
 
     fn find_type_system_definition_by_name(&self, name: String) -> Option<Definition>;
 
@@ -59,15 +43,18 @@ pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
 
     fn subscription_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
-    fn operation_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
+    fn operation_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
-    fn operation_inline_fragment_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
+    fn operation_inline_fragment_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
-    fn operation_fragment_spread_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
+    fn operation_fragment_spread_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
-    fn selection_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
+    fn selection_variables(&self, selection_set: SelectionSet) -> Arc<HashSet<Variable>>;
 
-    fn operation_definition_variables(&self, id: Uuid) -> Arc<HashSet<Variable>>;
+    fn operation_definition_variables(
+        &self,
+        variables: Arc<Vec<VariableDefinition>>,
+    ) -> Arc<HashSet<Variable>>;
 
     fn subtype_map(&self) -> Arc<HashMap<String, HashSet<String>>>;
 
@@ -81,13 +68,6 @@ fn find_definition_by_name(db: &dyn DocumentDatabase, name: String) -> Option<De
         .cloned()
 }
 
-fn find_type_system_definition(db: &dyn DocumentDatabase, id: Uuid) -> Option<Definition> {
-    db.type_system_definitions()
-        .iter()
-        .find(|def| def.id() == Some(&id))
-        .cloned()
-}
-
 fn find_type_system_definition_by_name(
     db: &dyn DocumentDatabase,
     name: String,
@@ -96,15 +76,6 @@ fn find_type_system_definition_by_name(
         .iter()
         .find(|def| def.name() == Some(&*name))
         .cloned()
-}
-
-fn find_operation(db: &dyn DocumentDatabase, id: Uuid) -> Option<Arc<OperationDefinition>> {
-    db.executable_definition_files().iter().find_map(|file_id| {
-        db.operations(*file_id)
-            .iter()
-            .find(|def| def.id() == &id)
-            .cloned()
-    })
 }
 
 fn find_operation_by_name(
@@ -118,28 +89,12 @@ fn find_operation_by_name(
         .cloned()
 }
 
-fn find_fragment(db: &dyn DocumentDatabase, id: Uuid) -> Option<Arc<FragmentDefinition>> {
-    db.executable_definition_files().iter().find_map(|file_id| {
-        db.fragments(*file_id)
-            .values()
-            .find(|def| def.id() == &id)
-            .cloned()
-    })
-}
-
 fn find_fragment_by_name(
     db: &dyn DocumentDatabase,
     file_id: FileId,
     name: String,
 ) -> Option<Arc<FragmentDefinition>> {
     db.fragments(file_id).get(&name).cloned()
-}
-
-fn find_object_type(db: &dyn DocumentDatabase, id: Uuid) -> Option<Arc<ObjectTypeDefinition>> {
-    db.object_types()
-        .values()
-        .find(|def| def.id() == &id)
-        .cloned()
 }
 
 fn find_object_type_by_name(
@@ -157,28 +112,11 @@ fn find_enum_by_name(db: &dyn DocumentDatabase, name: String) -> Option<Arc<Enum
     db.enums().get(&name).cloned()
 }
 
-fn find_interface(db: &dyn DocumentDatabase, id: Uuid) -> Option<Arc<InterfaceTypeDefinition>> {
-    db.interfaces()
-        .values()
-        .find(|def| def.id() == &id)
-        .cloned()
-}
-
 fn find_interface_by_name(
     db: &dyn DocumentDatabase,
     name: String,
 ) -> Option<Arc<InterfaceTypeDefinition>> {
     db.interfaces().get(&name).cloned()
-}
-
-fn find_directive_definition(
-    db: &dyn DocumentDatabase,
-    id: Uuid,
-) -> Option<Arc<DirectiveDefinition>> {
-    db.directive_definitions()
-        .values()
-        .find(|def| def.id() == &id)
-        .cloned()
 }
 
 fn find_directive_definition_by_name(
@@ -203,16 +141,6 @@ fn find_definitions_with_directive(
     }
 
     Arc::new(definitions)
-}
-
-fn find_input_object(
-    db: &dyn DocumentDatabase,
-    id: Uuid,
-) -> Option<Arc<InputObjectTypeDefinition>> {
-    db.input_objects()
-        .values()
-        .find(|def| def.id() == &id)
-        .cloned()
 }
 
 fn find_input_object_by_name(
@@ -258,67 +186,64 @@ fn mutation_operations(
     Arc::new(operations)
 }
 
-fn operation_fields(db: &dyn DocumentDatabase, id: Uuid) -> Arc<Vec<Field>> {
-    let fields = match db.find_operation(id) {
-        Some(op) => op
-            .selection_set()
-            .selection()
-            .iter()
-            .filter_map(|sel| match sel {
-                Selection::Field(field) => Some(field.as_ref().clone()),
-                _ => None,
-            })
-            .collect(),
-        None => Vec::new(),
-    };
+fn operation_fields(_db: &dyn DocumentDatabase, selection_set: SelectionSet) -> Arc<Vec<Field>> {
+    let fields = selection_set
+        .selection()
+        .iter()
+        .filter_map(|sel| match sel {
+            Selection::Field(field) => Some(field.as_ref().clone()),
+            _ => None,
+        })
+        .collect();
     Arc::new(fields)
 }
 
-fn operation_inline_fragment_fields(db: &dyn DocumentDatabase, id: Uuid) -> Arc<Vec<Field>> {
-    let fields: Vec<Field> = match db.find_operation(id) {
-        Some(op) => op
-            .selection_set()
-            .selection()
-            .iter()
-            .filter_map(|sel| match sel {
-                Selection::InlineFragment(fragment) => {
-                    let fields: Vec<Field> = fragment.selection_set().fields();
-                    Some(fields)
-                }
-                _ => None,
-            })
-            .flatten()
-            .collect(),
-        None => Vec::new(),
-    };
+fn operation_inline_fragment_fields(
+    _db: &dyn DocumentDatabase,
+    selection_set: SelectionSet,
+) -> Arc<Vec<Field>> {
+    let fields = selection_set
+        .selection()
+        .iter()
+        .filter_map(|sel| match sel {
+            Selection::InlineFragment(fragment) => {
+                let fields: Vec<Field> = fragment.selection_set().fields();
+                Some(fields)
+            }
+            _ => None,
+        })
+        .flatten()
+        .collect();
     Arc::new(fields)
 }
 
-fn operation_fragment_spread_fields(db: &dyn DocumentDatabase, id: Uuid) -> Arc<Vec<Field>> {
-    let fields: Vec<Field> = match db.find_operation(id) {
-        Some(op) => op
-            .selection_set()
-            .selection()
-            .iter()
-            .filter_map(|sel| match sel {
-                Selection::FragmentSpread(fragment_spread) => {
-                    let fields: Vec<Field> = fragment_spread.fragment(db)?.selection_set().fields();
-                    Some(fields)
-                }
-                _ => None,
-            })
-            .flatten()
-            .collect(),
-        None => Vec::new(),
-    };
+fn operation_fragment_spread_fields(
+    db: &dyn DocumentDatabase,
+    selection_set: SelectionSet,
+) -> Arc<Vec<Field>> {
+    let fields = selection_set
+        .selection()
+        .iter()
+        .filter_map(|sel| match sel {
+            Selection::FragmentSpread(fragment_spread) => {
+                let fields: Vec<Field> = fragment_spread.fragment(db)?.selection_set().fields();
+                Some(fields)
+            }
+            _ => None,
+        })
+        .flatten()
+        .collect();
     Arc::new(fields)
 }
 
 // Should be part of operation's db
 // NOTE: potentially want to return a hashmap of variables and their types?
-fn selection_variables(db: &dyn DocumentDatabase, id: Uuid) -> Arc<HashSet<Variable>> {
+fn selection_variables(
+    db: &dyn DocumentDatabase,
+    selection_set: SelectionSet,
+) -> Arc<HashSet<Variable>> {
     let vars = db
-        .operation_fields(id)
+        .operation_fields(selection_set)
         .iter()
         .flat_map(|field| {
             let vars: Vec<_> = field
@@ -349,18 +274,17 @@ fn get_field_variable_value(val: Value) -> Vec<Variable> {
 
 // should be part of operation's db
 // NOTE: potentially want to return a hashset of variables and their types?
-fn operation_definition_variables(db: &dyn DocumentDatabase, id: Uuid) -> Arc<HashSet<Variable>> {
-    let vars: HashSet<Variable> = match db.find_operation(id) {
-        Some(op) => op
-            .variables()
-            .iter()
-            .map(|v| Variable {
-                name: v.name().to_owned(),
-                loc: *v.loc(),
-            })
-            .collect(),
-        None => HashSet::new(),
-    };
+fn operation_definition_variables(
+    _db: &dyn DocumentDatabase,
+    variables: Arc<Vec<VariableDefinition>>,
+) -> Arc<HashSet<Variable>> {
+    let vars = variables
+        .iter()
+        .map(|v| Variable {
+            name: v.name().to_owned(),
+            loc: *v.loc(),
+        })
+        .collect();
     Arc::new(vars)
 }
 

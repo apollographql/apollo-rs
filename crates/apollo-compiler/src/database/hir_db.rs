@@ -4,7 +4,6 @@ use apollo_parser::{
     ast::{self, AstChildren, AstNode},
     SyntaxNode,
 };
-use uuid::Uuid;
 
 use crate::{database::FileId, hir::*, AstDatabase, InputDatabase};
 use indexmap::IndexMap;
@@ -297,7 +296,6 @@ fn operation_definition(
     let loc = location(file_id, op_def.syntax());
 
     Some(OperationDefinition {
-        id: Uuid::new_v4(),
         operation_ty: ty,
         name,
         variables,
@@ -329,7 +327,6 @@ fn fragment_definition(
     let loc = location(file_id, fragment_def.syntax());
 
     Some(FragmentDefinition {
-        id: Uuid::new_v4(),
         name,
         type_condition,
         selection_set,
@@ -375,7 +372,6 @@ fn object_type_definition(
     obj_def: ast::ObjectTypeDefinition,
     file_id: FileId,
 ) -> Option<ObjectTypeDefinition> {
-    let id = Uuid::new_v4();
     let description = description(obj_def.description());
     let name = name(obj_def.name(), file_id)?;
     let implements_interfaces = implements_interfaces(obj_def.implements_interfaces(), file_id);
@@ -386,7 +382,6 @@ fn object_type_definition(
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
     Some(ObjectTypeDefinition {
-        id,
         description,
         name,
         implements_interfaces,
@@ -416,7 +411,6 @@ fn scalar_definition(
     scalar_def: ast::ScalarTypeDefinition,
     file_id: FileId,
 ) -> Option<ScalarTypeDefinition> {
-    let id = Uuid::new_v4();
     let description = description(scalar_def.description());
     let name = name(scalar_def.name(), file_id)?;
     let directives = directives(scalar_def.directives(), file_id);
@@ -425,7 +419,6 @@ fn scalar_definition(
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
     Some(ScalarTypeDefinition {
-        id,
         description,
         name,
         directives,
@@ -452,7 +445,6 @@ fn enum_definition(
     enum_def: ast::EnumTypeDefinition,
     file_id: FileId,
 ) -> Option<EnumTypeDefinition> {
-    let id = Uuid::new_v4();
     let description = description(enum_def.description());
     let name = name(enum_def.name(), file_id)?;
     let directives = directives(enum_def.directives(), file_id);
@@ -462,7 +454,6 @@ fn enum_definition(
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
     Some(EnumTypeDefinition {
-        id,
         description,
         name,
         directives,
@@ -524,7 +515,6 @@ fn union_definition(
     union_def: ast::UnionTypeDefinition,
     file_id: FileId,
 ) -> Option<UnionTypeDefinition> {
-    let id = Uuid::new_v4();
     let description = description(union_def.description());
     let name = name(union_def.name(), file_id)?;
     let directives = directives(union_def.directives(), file_id);
@@ -534,7 +524,6 @@ fn union_definition(
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
     Some(UnionTypeDefinition {
-        id,
         description,
         name,
         directives,
@@ -586,7 +575,6 @@ fn interface_definition(
     interface_def: ast::InterfaceTypeDefinition,
     file_id: FileId,
 ) -> Option<InterfaceTypeDefinition> {
-    let id = Uuid::new_v4();
     let description = description(interface_def.description());
     let name = name(interface_def.name(), file_id)?;
     let implements_interfaces =
@@ -598,7 +586,6 @@ fn interface_definition(
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
     Some(InterfaceTypeDefinition {
-        id,
         description,
         name,
         implements_interfaces,
@@ -638,7 +625,6 @@ fn directive_definition(
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
     Some(DirectiveDefinition {
-        id: Uuid::new_v4(),
         description,
         name,
         arguments,
@@ -653,7 +639,6 @@ fn input_object_definition(
     input_obj: ast::InputObjectTypeDefinition,
     file_id: FileId,
 ) -> Option<InputObjectTypeDefinition> {
-    let id = Uuid::new_v4();
     let description = description(input_obj.description());
     let name = name(input_obj.name(), file_id)?;
     let directives = directives(input_obj.directives(), file_id);
@@ -664,7 +649,6 @@ fn input_object_definition(
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
     Some(InputObjectTypeDefinition {
-        id,
         description,
         name,
         directives,
@@ -1229,7 +1213,6 @@ fn built_in_scalars(
 
 fn int_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
-        id: Uuid::new_v4(),
         description: Some("The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.".into()),
         name: "Int".to_string().into(),
         directives: Arc::new(Vec::new()),
@@ -1241,7 +1224,6 @@ fn int_scalar() -> ScalarTypeDefinition {
 
 fn float_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
-        id: Uuid::new_v4(),
         description: Some("The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).".into()),
         name: "Float".to_string().into(),
         directives: Arc::new(Vec::new()),
@@ -1253,7 +1235,6 @@ fn float_scalar() -> ScalarTypeDefinition {
 
 fn string_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
-        id: Uuid::new_v4(),
         description: Some("The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.".into()),
         name: "String".to_string().into(),
         directives: Arc::new(Vec::new()),
@@ -1265,7 +1246,6 @@ fn string_scalar() -> ScalarTypeDefinition {
 
 fn boolean_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
-        id: Uuid::new_v4(),
         description: Some("The `Boolean` scalar type represents `true` or `false`.".into()),
         name: "Boolean".to_string().into(),
         directives: Arc::new(Vec::new()),
@@ -1277,7 +1257,6 @@ fn boolean_scalar() -> ScalarTypeDefinition {
 
 fn id_scalar() -> ScalarTypeDefinition {
     ScalarTypeDefinition {
-        id: Uuid::new_v4(),
         description: Some("The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `\"4\"`) or integer (such as `4`) input value will be accepted as an ID.".into()),
         name: "ID".to_string().into(),
         directives: Arc::new(Vec::new()),
@@ -1312,7 +1291,6 @@ fn skip_directive() -> DirectiveDefinition {
     //   if: Boolean!
     // ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
     DirectiveDefinition {
-        id: Uuid::new_v4(),
         description: Some(
             "Directs the executor to skip this field or fragment when the `if` argument is true."
                 .into(),
@@ -1352,7 +1330,6 @@ fn specified_by_directive() -> DirectiveDefinition {
     //     url: String!
     // ) on SCALAR
     DirectiveDefinition {
-        id: Uuid::new_v4(),
         description: Some("Exposes a URL that specifies the behaviour of this scalar.".into()),
         name: "specifiedBy".to_string().into(),
         arguments: ArgumentsDefinition {
@@ -1390,7 +1367,6 @@ fn deprecated_directive() -> DirectiveDefinition {
     //   reason: String = "No longer supported"
     // ) on FIELD_DEFINITION | ENUM_VALUE
     DirectiveDefinition {
-        id: Uuid::new_v4(),
         description: Some("Marks an element of a GraphQL schema as no longer supported.".into()),
         name: "deprecated".to_string().into(),
         arguments: ArgumentsDefinition {
@@ -1425,7 +1401,6 @@ fn include_directive() -> DirectiveDefinition {
     //   if: Boolean!
     // ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
     DirectiveDefinition {
-        id: Uuid::new_v4(),
         description: Some("Directs the executor to include this field or fragment only when the `if` argument is true.".into()),
         name: "include".to_string().into(),
         arguments: ArgumentsDefinition {

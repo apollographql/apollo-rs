@@ -21,7 +21,6 @@ apollo-parser = { path = "../apollo-parser", version = "0.4.0" }
 indexmap = "1.9.2"
 rowan = "0.15.5"
 salsa = "0.16.1"
-uuid = { version = "1.1", features = ["serde", "v4"] }
 ordered-float = { version = "2.10.0", features = ["std"] }
 miette = { version = "5.5.0", features = ["fancy"] }
 thiserror = "1.0.31"
