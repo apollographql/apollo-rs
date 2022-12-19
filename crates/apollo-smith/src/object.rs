@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use apollo_encoder::ObjectDefinition;
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 use crate::{
     description::Description,
@@ -128,7 +128,7 @@ impl TryFrom<apollo_parser::ast::ObjectTypeExtension> for ObjectTypeDef {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `ObjectTypeDef`
-    pub fn object_type_definition(&mut self) -> Result<ObjectTypeDef> {
+    pub fn object_type_definition(&mut self) -> ArbitraryResult<ObjectTypeDef> {
         let extend = !self.object_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let description = self
             .u

@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use apollo_encoder::InterfaceDefinition;
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 use crate::{
     description::Description,
@@ -130,7 +130,7 @@ impl TryFrom<apollo_parser::ast::InterfaceTypeExtension> for InterfaceTypeDef {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `InterfaceTypeDef`
-    pub fn interface_type_definition(&mut self) -> Result<InterfaceTypeDef> {
+    pub fn interface_type_definition(&mut self) -> ArbitraryResult<InterfaceTypeDef> {
         let extend = !self.interface_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let description = self
             .u
@@ -163,7 +163,7 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `HashSet` of implemented interfaces
-    pub fn implements_interfaces(&mut self) -> Result<HashSet<Name>> {
+    pub fn implements_interfaces(&mut self) -> ArbitraryResult<HashSet<Name>> {
         if self.interface_type_defs.is_empty() {
             return Ok(HashSet::new());
         }

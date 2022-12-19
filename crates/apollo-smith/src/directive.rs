@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use arbitrary::{Arbitrary, Result};
+use arbitrary::{Arbitrary, Result as ArbitraryResult};
 
 use crate::{
     argument::{Argument, ArgumentsDef},
@@ -139,7 +139,7 @@ impl<'a> DocumentBuilder<'a> {
     pub fn directives(
         &mut self,
         directive_location: DirectiveLocation,
-    ) -> Result<HashMap<Name, Directive>> {
+    ) -> ArbitraryResult<HashMap<Name, Directive>> {
         if self.directive_defs.is_empty() {
             return Ok(HashMap::new());
         }
@@ -147,7 +147,7 @@ impl<'a> DocumentBuilder<'a> {
         let num_directives = self.u.int_in_range(0..=(self.directive_defs.len() - 1))?;
         let directives = (0..num_directives)
             .map(|_| self.directive(directive_location))
-            .collect::<Result<Vec<_>>>()?
+            .collect::<ArbitraryResult<Vec<_>>>()?
             .into_iter()
             .flat_map(|d| d.map(|d| (d.name.clone(), d)))
             .collect();
@@ -159,7 +159,7 @@ impl<'a> DocumentBuilder<'a> {
     pub fn directive(
         &mut self,
         directive_location: DirectiveLocation,
-    ) -> Result<Option<Directive>> {
+    ) -> ArbitraryResult<Option<Directive>> {
         let available_directive_defs: Vec<&DirectiveDef> = self
             .directive_defs
             .iter()
@@ -184,7 +184,7 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `DirectiveDef`
-    pub fn directive_def(&mut self) -> Result<DirectiveDef> {
+    pub fn directive_def(&mut self) -> ArbitraryResult<DirectiveDef> {
         let description = self
             .u
             .arbitrary()
@@ -211,10 +211,10 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `HashSet` of `DirectiveLocation`
-    pub fn directive_locations(&mut self) -> Result<HashSet<DirectiveLocation>> {
+    pub fn directive_locations(&mut self) -> ArbitraryResult<HashSet<DirectiveLocation>> {
         (1..self.u.int_in_range(2..=5usize)?)
             .map(|_| self.u.arbitrary())
-            .collect::<Result<HashSet<_>>>()
+            .collect::<ArbitraryResult<HashSet<_>>>()
     }
 }
 

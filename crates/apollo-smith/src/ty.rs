@@ -1,5 +1,5 @@
 use apollo_encoder::Type_;
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 use once_cell::sync::Lazy;
 
 use crate::{input_value::InputValue, name::Name, DocumentBuilder};
@@ -95,17 +95,17 @@ impl Ty {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `Ty`
-    pub fn ty(&mut self) -> Result<Ty> {
+    pub fn ty(&mut self) -> ArbitraryResult<Ty> {
         self.generate_ty(true)
     }
 
     /// Choose an arbitrary existing `Ty` given a slice of existing types
-    pub fn choose_ty(&mut self, existing_types: &[Ty]) -> Result<Ty> {
+    pub fn choose_ty(&mut self, existing_types: &[Ty]) -> ArbitraryResult<Ty> {
         self.choose_ty_given_nullable(existing_types, true)
     }
 
     /// Choose an arbitrary existing named `Ty` given a slice of existing types
-    pub fn choose_named_ty(&mut self, existing_types: &[Ty]) -> Result<Ty> {
+    pub fn choose_named_ty(&mut self, existing_types: &[Ty]) -> ArbitraryResult<Ty> {
         let used_type_names: Vec<&Ty> = existing_types
             .iter()
             .chain(BUILTIN_SCALAR_NAMES.iter())
@@ -114,7 +114,11 @@ impl<'a> DocumentBuilder<'a> {
         Ok(self.u.choose(&used_type_names)?.to_owned().clone())
     }
 
-    fn choose_ty_given_nullable(&mut self, existing_types: &[Ty], is_nullable: bool) -> Result<Ty> {
+    fn choose_ty_given_nullable(
+        &mut self,
+        existing_types: &[Ty],
+        is_nullable: bool,
+    ) -> ArbitraryResult<Ty> {
         let ty: Ty = match self.u.int_in_range(0..=2usize)? {
             // Named type
             0 => {
@@ -145,7 +149,7 @@ impl<'a> DocumentBuilder<'a> {
         Ok(ty)
     }
 
-    fn generate_ty(&mut self, is_nullable: bool) -> Result<Ty> {
+    fn generate_ty(&mut self, is_nullable: bool) -> ArbitraryResult<Ty> {
         let ty = match self.u.int_in_range(0..=2usize)? {
             // Named type
             0 => Ty::Named(self.name()?),

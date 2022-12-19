@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use apollo_encoder::UnionDefinition;
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 use crate::{
     description::Description,
@@ -115,7 +115,7 @@ impl TryFrom<apollo_parser::ast::UnionTypeExtension> for UnionTypeDef {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `UnionTypeDef`
-    pub fn union_type_definition(&mut self) -> Result<UnionTypeDef> {
+    pub fn union_type_definition(&mut self) -> ArbitraryResult<UnionTypeDef> {
         let extend = !self.union_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let name = if extend {
             let available_unions: Vec<&Name> = self
@@ -150,7 +150,7 @@ impl<'a> DocumentBuilder<'a> {
 
         let members = (0..self.u.int_in_range(2..=10)?)
             .map(|_| Ok(self.choose_named_ty(&existing_types)?.name().clone()))
-            .collect::<Result<HashSet<_>>>()?;
+            .collect::<ArbitraryResult<HashSet<_>>>()?;
 
         Ok(UnionTypeDef {
             name,

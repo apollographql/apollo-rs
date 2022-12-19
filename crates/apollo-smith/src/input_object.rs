@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 use crate::{
     description::Description,
@@ -122,7 +122,7 @@ impl TryFrom<apollo_parser::ast::InputObjectTypeExtension> for InputObjectTypeDe
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `InputObjectTypeDef`
-    pub fn input_object_type_definition(&mut self) -> Result<InputObjectTypeDef> {
+    pub fn input_object_type_definition(&mut self) -> ArbitraryResult<InputObjectTypeDef> {
         let extend = !self.input_object_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let name = if extend {
             let available_input_objects: Vec<&Name> = self

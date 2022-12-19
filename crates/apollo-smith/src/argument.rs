@@ -1,4 +1,4 @@
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 use crate::{
     input_value::{InputValue, InputValueDef},
@@ -76,28 +76,31 @@ impl TryFrom<apollo_parser::ast::Argument> for Argument {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary vector of `Argument`
-    pub fn arguments(&mut self) -> Result<Vec<Argument>> {
+    pub fn arguments(&mut self) -> ArbitraryResult<Vec<Argument>> {
         let num_arguments = self.u.int_in_range(0..=4)?;
         let arguments = (0..num_arguments)
             .map(|_| self.argument())
-            .collect::<Result<Vec<_>>>()?;
+            .collect::<ArbitraryResult<Vec<_>>>()?;
 
         Ok(arguments)
     }
 
     /// Create an arbitrary vector of `Argument` given ArgumentsDef
-    pub fn arguments_with_def(&mut self, args_def: &ArgumentsDef) -> Result<Vec<Argument>> {
+    pub fn arguments_with_def(
+        &mut self,
+        args_def: &ArgumentsDef,
+    ) -> ArbitraryResult<Vec<Argument>> {
         let arguments = args_def
             .input_value_definitions
             .iter()
             .map(|input_val_def| self.argument_with_def(input_val_def))
-            .collect::<Result<Vec<_>>>()?;
+            .collect::<ArbitraryResult<Vec<_>>>()?;
 
         Ok(arguments)
     }
 
     /// Create an arbitrary `Argument`
-    pub fn argument(&mut self) -> Result<Argument> {
+    pub fn argument(&mut self) -> ArbitraryResult<Argument> {
         let name = self.name()?;
         let value = self.input_value()?;
 
@@ -105,7 +108,10 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `Argument`
-    pub fn argument_with_def(&mut self, input_val_def: &InputValueDef) -> Result<Argument> {
+    pub fn argument_with_def(
+        &mut self,
+        input_val_def: &InputValueDef,
+    ) -> ArbitraryResult<Argument> {
         let name = input_val_def.name.clone();
         let value = self.input_value_for_type(&input_val_def.ty)?;
 
@@ -113,7 +119,7 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `ArgumentsDef`
-    pub fn arguments_definition(&mut self) -> Result<ArgumentsDef> {
+    pub fn arguments_definition(&mut self) -> ArbitraryResult<ArgumentsDef> {
         Ok(ArgumentsDef {
             input_value_definitions: self.input_values_def()?,
         })
