@@ -1,8 +1,8 @@
-use std::{fs, path::Path};
+use std::{fs, path::Path, sync::Arc};
 
 use apollo_compiler::{hir, ApolloCompiler, HirDatabase};
 
-fn compile_query() -> Option<hir::FragmentDefinition> {
+fn compile_query() -> Option<Arc<hir::FragmentDefinition>> {
     let file = Path::new("crates/apollo-compiler/examples/query_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
 
@@ -14,7 +14,7 @@ fn compile_query() -> Option<hir::FragmentDefinition> {
     let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
     assert_eq!(["ExampleQuery"], operation_names.as_slice());
     let frags = compiler.db.fragments(document_id);
-    let fragments: Vec<_> = frags.iter().map(|frag| frag.name()).collect();
+    let fragments: Vec<_> = frags.keys().map(|name| &**name).collect();
     assert_eq!(["vipCustomer"], fragments.as_slice());
 
     let operation_variables: Vec<&str> = operations
@@ -29,8 +29,7 @@ fn compile_query() -> Option<hir::FragmentDefinition> {
     compiler
         .db
         .fragments(document_id)
-        .iter()
-        .find(|op| op.name() == "vipCustomer")
+        .get("vipCustomer")
         .cloned()
 }
 

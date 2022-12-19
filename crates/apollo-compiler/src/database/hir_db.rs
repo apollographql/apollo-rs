@@ -7,6 +7,7 @@ use apollo_parser::{
 use uuid::Uuid;
 
 use crate::{database::FileId, hir::*, AstDatabase, InputDatabase};
+use indexmap::IndexMap;
 
 // HIR creators *ignore* missing data entirely. *Only* missing data
 // as a result of parser errors should be ignored.
@@ -26,40 +27,26 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     fn type_system_definitions(&self) -> Arc<Vec<Definition>>;
 
     /// Return all the operations defined in a file.
-    fn operations(&self, file_id: FileId) -> Arc<Vec<OperationDefinition>>;
+    fn operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
     /// Return all the fragments defined in a file.
-    fn fragments(&self, file_id: FileId) -> Arc<Vec<FragmentDefinition>>;
+    fn fragments(&self, file_id: FileId) -> ByName<FragmentDefinition>;
 
     fn schema(&self) -> Arc<SchemaDefinition>;
 
-    fn object_types(&self) -> Arc<Vec<ObjectTypeDefinition>>;
+    fn object_types(&self) -> ByName<ObjectTypeDefinition>;
 
-    fn scalars(&self) -> Arc<Vec<ScalarTypeDefinition>>;
+    fn scalars(&self) -> ByName<ScalarTypeDefinition>;
 
-    fn enums(&self) -> Arc<Vec<EnumTypeDefinition>>;
+    fn enums(&self) -> ByName<EnumTypeDefinition>;
 
-    fn unions(&self) -> Arc<Vec<UnionTypeDefinition>>;
+    fn unions(&self) -> ByName<UnionTypeDefinition>;
 
-    fn interfaces(&self) -> Arc<Vec<InterfaceTypeDefinition>>;
+    fn interfaces(&self) -> ByName<InterfaceTypeDefinition>;
 
-    fn directive_definitions(&self) -> Arc<Vec<DirectiveDefinition>>;
+    fn directive_definitions(&self) -> ByName<DirectiveDefinition>;
 
-    fn input_objects(&self) -> Arc<Vec<InputObjectTypeDefinition>>;
-
-    fn schema_extensions(&self) -> Arc<Vec<SchemaExtension>>;
-
-    fn scalar_type_extensions(&self) -> Arc<Vec<ScalarTypeExtension>>;
-
-    fn object_type_extensions(&self) -> Arc<Vec<ObjectTypeExtension>>;
-
-    fn interface_type_extensions(&self) -> Arc<Vec<InterfaceTypeExtension>>;
-
-    fn union_type_extensions(&self) -> Arc<Vec<UnionTypeExtension>>;
-
-    fn enum_type_extensions(&self) -> Arc<Vec<EnumTypeExtension>>;
-
-    fn input_object_type_extensions(&self) -> Arc<Vec<InputObjectTypeExtension>>;
+    fn input_objects(&self) -> ByName<InputObjectTypeDefinition>;
 }
 
 fn db_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
@@ -74,8 +61,9 @@ fn db_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
         );
         definitions.extend(
             db.fragments(file_id)
-                .iter()
-                .map(|def| Definition::FragmentDefinition(def.clone())),
+                .values()
+                .cloned()
+                .map(Definition::FragmentDefinition),
         );
     }
 
@@ -85,141 +73,105 @@ fn db_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
 fn type_system_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
     let mut definitions = Vec::new();
 
-    let directives: Vec<Definition> = db
-        .directive_definitions()
-        .iter()
-        .map(|def| Definition::DirectiveDefinition(def.clone()))
-        .collect();
-    let scalars: Vec<Definition> = db
-        .scalars()
-        .iter()
-        .map(|def| Definition::ScalarTypeDefinition(def.clone()))
-        .collect();
-    let objects: Vec<Definition> = db
-        .object_types()
-        .iter()
-        .map(|def| Definition::ObjectTypeDefinition(def.clone()))
-        .collect();
-    let interfaces: Vec<Definition> = db
-        .interfaces()
-        .iter()
-        .map(|def| Definition::InterfaceTypeDefinition(def.clone()))
-        .collect();
-    let unions: Vec<Definition> = db
-        .unions()
-        .iter()
-        .map(|def| Definition::UnionTypeDefinition(def.clone()))
-        .collect();
-    let enums: Vec<Definition> = db
-        .enums()
-        .iter()
-        .map(|def| Definition::EnumTypeDefinition(def.clone()))
-        .collect();
-    let input_objects: Vec<Definition> = db
-        .input_objects()
-        .iter()
-        .map(|def| Definition::InputObjectTypeDefinition(def.clone()))
-        .collect();
-    let schema = Definition::SchemaDefinition(db.schema().as_ref().clone());
-    let schema_extensions: Vec<Definition> = db
-        .schema_extensions()
-        .iter()
-        .map(|def| Definition::SchemaExtension(def.clone()))
-        .collect();
-    let scalar_type_extensions: Vec<Definition> = db
-        .scalar_type_extensions()
-        .iter()
-        .map(|def| Definition::ScalarTypeExtension(def.clone()))
-        .collect();
-    let object_type_extensions: Vec<Definition> = db
-        .object_type_extensions()
-        .iter()
-        .map(|def| Definition::ObjectTypeExtension(def.clone()))
-        .collect();
-    let interface_type_extensions: Vec<Definition> = db
-        .interface_type_extensions()
-        .iter()
-        .map(|def| Definition::InterfaceTypeExtension(def.clone()))
-        .collect();
-    let union_type_extensions: Vec<Definition> = db
-        .union_type_extensions()
-        .iter()
-        .map(|def| Definition::UnionTypeExtension(def.clone()))
-        .collect();
-    let enum_type_extensions: Vec<Definition> = db
-        .enum_type_extensions()
-        .iter()
-        .map(|def| Definition::EnumTypeExtension(def.clone()))
-        .collect();
-    let input_object_type_extensions: Vec<Definition> = db
-        .input_object_type_extensions()
-        .iter()
-        .map(|def| Definition::InputObjectTypeExtension(def.clone()))
-        .collect();
-
-    definitions.extend(directives);
-    definitions.extend(scalars);
-    definitions.extend(objects);
-    definitions.extend(interfaces);
-    definitions.extend(unions);
-    definitions.extend(enums);
-    definitions.extend(input_objects);
-    definitions.push(schema);
-    definitions.extend(schema_extensions);
-    definitions.extend(scalar_type_extensions);
-    definitions.extend(object_type_extensions);
-    definitions.extend(interface_type_extensions);
-    definitions.extend(union_type_extensions);
-    definitions.extend(enum_type_extensions);
-    definitions.extend(input_object_type_extensions);
+    definitions.extend(
+        db.directive_definitions()
+            .values()
+            .cloned()
+            .map(Definition::DirectiveDefinition),
+    );
+    definitions.extend(
+        db.scalars()
+            .values()
+            .cloned()
+            .map(Definition::ScalarTypeDefinition),
+    );
+    definitions.extend(
+        db.object_types()
+            .values()
+            .cloned()
+            .map(Definition::ObjectTypeDefinition),
+    );
+    definitions.extend(
+        db.interfaces()
+            .values()
+            .cloned()
+            .map(Definition::InterfaceTypeDefinition),
+    );
+    definitions.extend(
+        db.unions()
+            .values()
+            .cloned()
+            .map(Definition::UnionTypeDefinition),
+    );
+    definitions.extend(
+        db.enums()
+            .values()
+            .cloned()
+            .map(Definition::EnumTypeDefinition),
+    );
+    definitions.extend(
+        db.input_objects()
+            .values()
+            .cloned()
+            .map(Definition::InputObjectTypeDefinition),
+    );
+    definitions.push(Definition::SchemaDefinition(db.schema()));
 
     Arc::new(definitions)
 }
 
-fn operations(db: &dyn HirDatabase, file_id: FileId) -> Arc<Vec<OperationDefinition>> {
-    let operations = db
-        .ast(file_id)
-        .document()
-        .definitions()
-        .into_iter()
-        .filter_map(|definition| match definition {
-            ast::Definition::OperationDefinition(op_def) => {
-                Some(operation_definition(db, op_def, file_id))
-            }
-            _ => None,
-        })
-        .collect::<Vec<OperationDefinition>>();
-
-    Arc::new(operations)
-}
-
-fn fragments(db: &dyn HirDatabase, file_id: FileId) -> Arc<Vec<FragmentDefinition>> {
-    let fragments = db
-        .ast(file_id)
-        .document()
-        .definitions()
-        .into_iter()
-        .filter_map(|definition| match definition {
-            ast::Definition::FragmentDefinition(fragment_def) => {
-                fragment_definition(db, fragment_def, file_id)
-            }
-            _ => None,
-        })
-        .collect::<Vec<FragmentDefinition>>();
-
-    Arc::new(fragments)
-}
-
-/// Return an iterator over all type definition AST nodes in all type definition files.
-fn all_type_definitions(
-    db: &dyn HirDatabase,
-) -> impl Iterator<Item = (FileId, ast::Definition)> + '_ {
-    db.type_definition_files().into_iter().flat_map(|file_id| {
+fn operations(db: &dyn HirDatabase, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>> {
+    Arc::new(
         db.ast(file_id)
             .document()
-            .definitions()
-            .map(move |definition| (file_id, definition))
-    })
+            .syntax()
+            .children()
+            .filter_map(ast::OperationDefinition::cast)
+            .filter_map(|def| operation_definition(db, def, file_id))
+            .map(Arc::new)
+            .collect(),
+    )
+}
+
+fn fragments(db: &dyn HirDatabase, file_id: FileId) -> ByName<FragmentDefinition> {
+    let mut map = IndexMap::new();
+    for def in db
+        .ast(file_id)
+        .document()
+        .syntax()
+        .children()
+        .filter_map(ast::FragmentDefinition::cast)
+        .filter_map(|def| fragment_definition(db, def, file_id))
+    {
+        let name = def.name().to_owned();
+        map.entry(name).or_insert_with(|| Arc::new(def));
+    }
+    Arc::new(map)
+}
+
+/// Takes a fallible conversion from a specific AST type to an HIR type,
+/// finds matching top-level AST nodes in type definition files,
+/// and returns an iterator of successful conversion results.
+///
+/// Failed conversions are ignored.
+fn type_definitions<'db, AstType, TryConvert, HirType>(
+    db: &'db dyn HirDatabase,
+    try_convert: TryConvert,
+) -> impl Iterator<Item = HirType> + 'db
+where
+    AstType: 'db + ast::AstNode,
+    TryConvert: 'db + Copy + Fn(&dyn HirDatabase, AstType, FileId) -> Option<HirType>,
+{
+    db.type_definition_files()
+        .into_iter()
+        .flat_map(move |file_id| {
+            db.ast(file_id)
+                .document()
+                .syntax()
+                .children()
+                .filter_map(AstNode::cast)
+                .filter_map(move |def| try_convert(db, def, file_id))
+        })
 }
 
 // FIXME(@lrlna): if our compiler is composed of multiple documents that for
@@ -229,13 +181,9 @@ fn all_type_definitions(
 // This implementation currently just finds the first schema definition, which
 // means we can't really diagnose the "multiple schema definitions" errors.
 fn schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
-    let schema: Option<(FileId, ast::SchemaDefinition)> =
-        all_type_definitions(db).find_map(|(id, definition)| match definition {
-            ast::Definition::SchemaDefinition(schema) => Some((id, schema)),
-            _ => None,
-        });
-    let mut schema_def =
-        schema.map_or(SchemaDefinition::default(), |s| schema_definition(s.1, s.0));
+    let mut schema_def = type_definitions(db, schema_definition)
+        .next()
+        .unwrap_or_default();
 
     // NOTE(@lrlna):
     //
@@ -253,201 +201,80 @@ fn schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
     Arc::new(schema_def)
 }
 
-fn schema_extensions(db: &dyn HirDatabase) -> Arc<Vec<SchemaExtension>> {
-    let schema_ext = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::SchemaExtension(def) => Some(SchemaExtension {
-                directives: directives(def.directives(), id),
-                root_operation_type_definition: root_operation_type_definition(
-                    def.root_operation_type_definitions(),
-                    id,
-                ),
-                loc: location(id, def.syntax()),
-            }),
-            _ => None,
-        })
-        .collect();
-    Arc::new(schema_ext)
+macro_rules! by_name {
+    ($db: ident, $convert: expr) => {{
+        let mut map = IndexMap::new();
+        for def in type_definitions($db, $convert) {
+            let name = def.name().to_owned();
+            map.entry(name).or_insert_with(|| Arc::new(def));
+        }
+        map
+    }};
 }
 
-fn object_types(db: &dyn HirDatabase) -> Arc<Vec<ObjectTypeDefinition>> {
-    let objects = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::ObjectTypeDefinition(obj_def) => object_type_definition(obj_def, id),
-            _ => None,
-        })
-        .collect();
-    Arc::new(objects)
-}
-
-fn object_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<ObjectTypeExtension>> {
-    let objects = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::ObjectTypeExtension(def) => Some(ObjectTypeExtension {
-                directives: directives(def.directives(), id),
-                name: name(def.name(), id)?,
-                implements_interfaces: implements_interfaces(def.implements_interfaces(), id),
-                fields_definition: fields_definition(def.fields_definition(), id),
-                loc: location(id, def.syntax()),
-            }),
-            _ => None,
-        })
-        .collect();
-    Arc::new(objects)
-}
-
-fn scalars(db: &dyn HirDatabase) -> Arc<Vec<ScalarTypeDefinition>> {
-    let scalars = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::ScalarTypeDefinition(scalar_def) => scalar_definition(scalar_def, id),
-            _ => None,
-        })
-        .collect();
-    let scalars = built_in_scalars(scalars);
-
-    Arc::new(scalars)
-}
-
-fn scalar_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<ScalarTypeExtension>> {
-    let scalars = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::ScalarTypeExtension(def) => Some(ScalarTypeExtension {
-                directives: directives(def.directives(), id),
-                name: name(def.name(), id)?,
-                loc: location(id, def.syntax()),
-            }),
-            _ => None,
-        })
-        .collect();
-    Arc::new(scalars)
-}
-
-fn enums(db: &dyn HirDatabase) -> Arc<Vec<EnumTypeDefinition>> {
-    let enums = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::EnumTypeDefinition(enum_def) => enum_definition(enum_def, id),
-            _ => None,
-        })
-        .collect();
-    Arc::new(enums)
-}
-
-fn enum_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<EnumTypeExtension>> {
-    let enums = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::EnumTypeExtension(def) => Some(EnumTypeExtension {
-                directives: directives(def.directives(), id),
-                name: name(def.name(), id)?,
-                enum_values_definition: enum_values_definition(def.enum_values_definition(), id),
-                loc: location(id, def.syntax()),
-            }),
-            _ => None,
-        })
-        .collect();
-    Arc::new(enums)
-}
-
-fn unions(db: &dyn HirDatabase) -> Arc<Vec<UnionTypeDefinition>> {
-    let unions = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::UnionTypeDefinition(union_def) => union_definition(union_def, id),
-            _ => None,
-        })
-        .collect();
-    Arc::new(unions)
-}
-
-fn union_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<UnionTypeExtension>> {
-    let unions = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::UnionTypeExtension(def) => Some(UnionTypeExtension {
-                directives: directives(def.directives(), id),
-                name: name(def.name(), id)?,
-                union_members: union_members(def.union_member_types(), id),
-                loc: location(id, def.syntax()),
-            }),
-            _ => None,
-        })
-        .collect();
-    Arc::new(unions)
-}
-
-fn interfaces(db: &dyn HirDatabase) -> Arc<Vec<InterfaceTypeDefinition>> {
-    let interfaces = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::InterfaceTypeDefinition(interface_def) => {
-                interface_definition(interface_def, id)
+macro_rules! by_name_extensible {
+    ($db: ident, $convert: expr, $convert_extension: expr) => {{
+        let mut map = by_name!($db, $convert);
+        for ext in type_definitions($db, $convert_extension) {
+            if let Some(def) = map.get_mut(ext.name()) {
+                Arc::get_mut(def).unwrap().extensions.push(ext)
+            } else {
+                // TODO: record orphan extensions for validation purpose?
             }
-            _ => None,
-        })
-        .collect();
-    Arc::new(interfaces)
+        }
+        map
+    }};
 }
 
-fn interface_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<InterfaceTypeExtension>> {
-    let interfaces = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::InterfaceTypeExtension(def) => Some(InterfaceTypeExtension {
-                directives: directives(def.directives(), id),
-                name: name(def.name(), id)?,
-                implements_interfaces: implements_interfaces(def.implements_interfaces(), id),
-                fields_definition: fields_definition(def.fields_definition(), id),
-                loc: location(id, def.syntax()),
-            }),
-            _ => None,
-        })
-        .collect();
-    Arc::new(interfaces)
+fn object_types(db: &dyn HirDatabase) -> ByName<ObjectTypeDefinition> {
+    Arc::new(by_name_extensible!(
+        db,
+        object_type_definition,
+        object_type_extension
+    ))
 }
 
-fn directive_definitions(db: &dyn HirDatabase) -> Arc<Vec<DirectiveDefinition>> {
-    let directives = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::DirectiveDefinition(directive_def) => {
-                directive_definition(directive_def, id)
-            }
-            _ => None,
-        })
-        .collect();
-
-    let directives = built_in_directives(directives);
-
-    Arc::new(directives)
+fn scalars(db: &dyn HirDatabase) -> ByName<ScalarTypeDefinition> {
+    Arc::new(built_in_scalars(by_name_extensible!(
+        db,
+        scalar_definition,
+        scalar_extension
+    )))
 }
 
-fn input_objects(db: &dyn HirDatabase) -> Arc<Vec<InputObjectTypeDefinition>> {
-    let input_objs = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::InputObjectTypeDefinition(input_obj) => {
-                input_object_definition(input_obj, id)
-            }
-            _ => None,
-        })
-        .collect();
-
-    Arc::new(input_objs)
+fn enums(db: &dyn HirDatabase) -> ByName<EnumTypeDefinition> {
+    Arc::new(by_name_extensible!(db, enum_definition, enum_extension))
 }
 
-fn input_object_type_extensions(db: &dyn HirDatabase) -> Arc<Vec<InputObjectTypeExtension>> {
-    let input_objs = all_type_definitions(db)
-        .filter_map(|(id, definition)| match definition {
-            ast::Definition::InputObjectTypeExtension(def) => Some(InputObjectTypeExtension {
-                directives: directives(def.directives(), id),
-                name: name(def.name(), id)?,
-                input_fields_definition: input_fields_definition(def.input_fields_definition(), id),
-                loc: location(id, def.syntax()),
-            }),
-            _ => None,
-        })
-        .collect();
-    Arc::new(input_objs)
+fn unions(db: &dyn HirDatabase) -> ByName<UnionTypeDefinition> {
+    Arc::new(by_name_extensible!(db, union_definition, union_extension))
+}
+
+fn interfaces(db: &dyn HirDatabase) -> ByName<InterfaceTypeDefinition> {
+    Arc::new(by_name_extensible!(
+        db,
+        interface_definition,
+        interface_extension
+    ))
+}
+
+fn input_objects(db: &dyn HirDatabase) -> ByName<InputObjectTypeDefinition> {
+    Arc::new(by_name_extensible!(
+        db,
+        input_object_definition,
+        input_object_extension
+    ))
+}
+
+fn directive_definitions(db: &dyn HirDatabase) -> ByName<DirectiveDefinition> {
+    Arc::new(built_in_directives(by_name!(db, directive_definition)))
 }
 
 fn operation_definition(
     db: &dyn HirDatabase,
     op_def: ast::OperationDefinition,
     file_id: FileId,
-) -> OperationDefinition {
+) -> Option<OperationDefinition> {
     // check if there are already operations
     // if there are operations, they must have names
     // if there are no names, an error must be raised that all operations must have a name
@@ -469,7 +296,7 @@ fn operation_definition(
     let directives = directives(op_def.directives(), file_id);
     let loc = location(file_id, op_def.syntax());
 
-    OperationDefinition {
+    Some(OperationDefinition {
         id: Uuid::new_v4(),
         operation_ty: ty,
         name,
@@ -477,7 +304,7 @@ fn operation_definition(
         selection_set,
         directives,
         loc,
-    }
+    })
 }
 
 fn fragment_definition(
@@ -511,22 +338,40 @@ fn fragment_definition(
     })
 }
 
-fn schema_definition(schema_def: ast::SchemaDefinition, file_id: FileId) -> SchemaDefinition {
+fn schema_definition(
+    db: &dyn HirDatabase,
+    schema_def: ast::SchemaDefinition,
+    file_id: FileId,
+) -> Option<SchemaDefinition> {
+    let extensions = type_definitions(db, |_db, def: ast::SchemaExtension, file_id| {
+        Some(SchemaExtension {
+            directives: directives(def.directives(), file_id),
+            root_operation_type_definition: root_operation_type_definition(
+                def.root_operation_type_definitions(),
+                file_id,
+            ),
+            loc: location(file_id, def.syntax()),
+        })
+    })
+    .collect();
+
     let description = description(schema_def.description());
     let directives = directives(schema_def.directives(), file_id);
     let root_operation_type_definition =
         root_operation_type_definition(schema_def.root_operation_type_definitions(), file_id);
     let loc = location(file_id, schema_def.syntax());
 
-    SchemaDefinition {
+    Some(SchemaDefinition {
         description,
         directives,
         root_operation_type_definition,
         loc: Some(loc),
-    }
+        extensions,
+    })
 }
 
 fn object_type_definition(
+    _db: &dyn HirDatabase,
     obj_def: ast::ObjectTypeDefinition,
     file_id: FileId,
 ) -> Option<ObjectTypeDefinition> {
@@ -548,10 +393,26 @@ fn object_type_definition(
         directives,
         fields_definition,
         loc,
+        extensions: Vec::new(),
+    })
+}
+
+fn object_type_extension(
+    _db: &dyn HirDatabase,
+    def: ast::ObjectTypeExtension,
+    file_id: FileId,
+) -> Option<ObjectTypeExtension> {
+    Some(ObjectTypeExtension {
+        directives: directives(def.directives(), file_id),
+        name: name(def.name(), file_id)?,
+        implements_interfaces: implements_interfaces(def.implements_interfaces(), file_id),
+        fields_definition: fields_definition(def.fields_definition(), file_id),
+        loc: location(file_id, def.syntax()),
     })
 }
 
 fn scalar_definition(
+    _db: &dyn HirDatabase,
     scalar_def: ast::ScalarTypeDefinition,
     file_id: FileId,
 ) -> Option<ScalarTypeDefinition> {
@@ -570,10 +431,24 @@ fn scalar_definition(
         directives,
         loc: Some(loc),
         built_in: false,
+        extensions: Vec::new(),
+    })
+}
+
+fn scalar_extension(
+    _db: &dyn HirDatabase,
+    def: ast::ScalarTypeExtension,
+    file_id: FileId,
+) -> Option<ScalarTypeExtension> {
+    Some(ScalarTypeExtension {
+        directives: directives(def.directives(), file_id),
+        name: name(def.name(), file_id)?,
+        loc: location(file_id, def.syntax()),
     })
 }
 
 fn enum_definition(
+    _db: &dyn HirDatabase,
     enum_def: ast::EnumTypeDefinition,
     file_id: FileId,
 ) -> Option<EnumTypeDefinition> {
@@ -593,6 +468,20 @@ fn enum_definition(
         directives,
         enum_values_definition,
         loc,
+        extensions: Vec::new(),
+    })
+}
+
+fn enum_extension(
+    _db: &dyn HirDatabase,
+    def: ast::EnumTypeExtension,
+    file_id: FileId,
+) -> Option<EnumTypeExtension> {
+    Some(EnumTypeExtension {
+        directives: directives(def.directives(), file_id),
+        name: name(def.name(), file_id)?,
+        enum_values_definition: enum_values_definition(def.enum_values_definition(), file_id),
+        loc: location(file_id, def.syntax()),
     })
 }
 
@@ -631,6 +520,7 @@ fn enum_value_definition(
 }
 
 fn union_definition(
+    _db: &dyn HirDatabase,
     union_def: ast::UnionTypeDefinition,
     file_id: FileId,
 ) -> Option<UnionTypeDefinition> {
@@ -650,6 +540,20 @@ fn union_definition(
         directives,
         union_members,
         loc,
+        extensions: Vec::new(),
+    })
+}
+
+fn union_extension(
+    _db: &dyn HirDatabase,
+    def: ast::UnionTypeExtension,
+    file_id: FileId,
+) -> Option<UnionTypeExtension> {
+    Some(UnionTypeExtension {
+        directives: directives(def.directives(), file_id),
+        name: name(def.name(), file_id)?,
+        union_members: union_members(def.union_member_types(), file_id),
+        loc: location(file_id, def.syntax()),
     })
 }
 
@@ -678,6 +582,7 @@ fn union_member(member: ast::NamedType, file_id: FileId) -> Option<UnionMember> 
 }
 
 fn interface_definition(
+    _db: &dyn HirDatabase,
     interface_def: ast::InterfaceTypeDefinition,
     file_id: FileId,
 ) -> Option<InterfaceTypeDefinition> {
@@ -700,10 +605,26 @@ fn interface_definition(
         directives,
         fields_definition,
         loc,
+        extensions: Vec::new(),
+    })
+}
+
+fn interface_extension(
+    _db: &dyn HirDatabase,
+    def: ast::InterfaceTypeExtension,
+    file_id: FileId,
+) -> Option<InterfaceTypeExtension> {
+    Some(InterfaceTypeExtension {
+        directives: directives(def.directives(), file_id),
+        name: name(def.name(), file_id)?,
+        implements_interfaces: implements_interfaces(def.implements_interfaces(), file_id),
+        fields_definition: fields_definition(def.fields_definition(), file_id),
+        loc: location(file_id, def.syntax()),
     })
 }
 
 fn directive_definition(
+    _db: &dyn HirDatabase,
     directive_def: ast::DirectiveDefinition,
     file_id: FileId,
 ) -> Option<DirectiveDefinition> {
@@ -728,6 +649,7 @@ fn directive_definition(
 }
 
 fn input_object_definition(
+    _db: &dyn HirDatabase,
     input_obj: ast::InputObjectTypeDefinition,
     file_id: FileId,
 ) -> Option<InputObjectTypeDefinition> {
@@ -748,6 +670,20 @@ fn input_object_definition(
         directives,
         input_fields_definition,
         loc,
+        extensions: Vec::new(),
+    })
+}
+
+fn input_object_extension(
+    _db: &dyn HirDatabase,
+    def: ast::InputObjectTypeExtension,
+    file_id: FileId,
+) -> Option<InputObjectTypeExtension> {
+    Some(InputObjectTypeExtension {
+        directives: directives(def.directives(), file_id),
+        name: name(def.name(), file_id)?,
+        input_fields_definition: input_fields_definition(def.input_fields_definition(), file_id),
+        loc: location(file_id, def.syntax()),
     })
 }
 
@@ -761,7 +697,7 @@ fn add_object_type_id_to_schema(db: &dyn HirDatabase) -> Arc<Vec<RootOperationTy
     // object types if they are present
     let type_defs: Vec<RootOperationTypeDefinition> = db
         .object_types()
-        .iter()
+        .values()
         .filter_map(|obj_type| {
             let obj_name = obj_type.name();
             if matches!(obj_name, "Query" | "Subscription" | "Mutation") {
@@ -1270,23 +1206,24 @@ fn alias(alias: Option<ast::Alias>) -> Option<Arc<Alias>> {
 }
 
 fn location(file_id: FileId, syntax_node: &SyntaxNode) -> HirNodeLocation {
-    let text_range = syntax_node.text_range();
-
-    HirNodeLocation {
-        offset: text_range.start().into(),
-        node_len: text_range.len().into(),
-        file_id,
-    }
+    HirNodeLocation::new(file_id, syntax_node)
 }
 
-//  Int, Float, String, Boolean, and ID
-fn built_in_scalars(mut scalars: Vec<ScalarTypeDefinition>) -> Vec<ScalarTypeDefinition> {
-    scalars.push(int_scalar());
-    scalars.push(float_scalar());
-    scalars.push(string_scalar());
-    scalars.push(boolean_scalar());
-    scalars.push(id_scalar());
-
+// Add `Int`, `Float`, `String`, `Boolean`, and `ID`
+fn built_in_scalars(
+    mut scalars: IndexMap<String, Arc<ScalarTypeDefinition>>,
+) -> IndexMap<String, Arc<ScalarTypeDefinition>> {
+    for built_in in [
+        int_scalar(),
+        float_scalar(),
+        string_scalar(),
+        boolean_scalar(),
+        id_scalar(),
+    ] {
+        scalars
+            .entry(built_in.name().to_owned())
+            .or_insert_with(|| Arc::new(built_in));
+    }
     scalars
 }
 
@@ -1297,7 +1234,8 @@ fn int_scalar() -> ScalarTypeDefinition {
         name: "Int".to_string().into(),
         directives: Arc::new(Vec::new()),
         loc: None,
-        built_in: true
+        built_in: true,
+        extensions: Vec::new(),
     }
 }
 
@@ -1308,7 +1246,8 @@ fn float_scalar() -> ScalarTypeDefinition {
         name: "Float".to_string().into(),
         directives: Arc::new(Vec::new()),
         loc: None,
-        built_in: true
+        built_in: true,
+        extensions: Vec::new(),
     }
 }
 
@@ -1319,7 +1258,8 @@ fn string_scalar() -> ScalarTypeDefinition {
         name: "String".to_string().into(),
         directives: Arc::new(Vec::new()),
         loc: None,
-        built_in: true
+        built_in: true,
+        extensions: Vec::new(),
     }
 }
 
@@ -1331,6 +1271,7 @@ fn boolean_scalar() -> ScalarTypeDefinition {
         directives: Arc::new(Vec::new()),
         loc: None,
         built_in: true,
+        extensions: Vec::new(),
     }
 }
 
@@ -1341,27 +1282,26 @@ fn id_scalar() -> ScalarTypeDefinition {
         name: "ID".to_string().into(),
         directives: Arc::new(Vec::new()),
         loc: None,
-        built_in: true
+        built_in: true,
+        extensions: Vec::new(),
     }
 }
 
-fn built_in_directives(mut directives: Vec<DirectiveDefinition>) -> Vec<DirectiveDefinition> {
-    if !directives.iter().any(|dir| dir.name() == "skip") {
-        directives.push(skip_directive());
-    }
-
-    if !directives.iter().any(|dir| dir.name() == "specifiedBy") {
-        directives.push(specified_by_directive());
-    }
-
-    if !directives.iter().any(|dir| dir.name() == "deprecated") {
-        directives.push(deprecated_directive());
-    }
-
-    if !directives.iter().any(|dir| dir.name() == "include") {
-        directives.push(include_directive());
-    }
-
+fn built_in_directives(
+    mut directives: IndexMap<String, Arc<DirectiveDefinition>>,
+) -> IndexMap<String, Arc<DirectiveDefinition>> {
+    directives
+        .entry("skip".to_owned())
+        .or_insert_with(|| Arc::new(skip_directive()));
+    directives
+        .entry("specifiedBy".to_owned())
+        .or_insert_with(|| Arc::new(specified_by_directive()));
+    directives
+        .entry("deprecated".to_owned())
+        .or_insert_with(|| Arc::new(deprecated_directive()));
+    directives
+        .entry("include".to_owned())
+        .or_insert_with(|| Arc::new(include_directive()));
     directives
 }
 

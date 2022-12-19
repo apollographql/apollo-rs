@@ -47,17 +47,17 @@ pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
 
     fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
 
-    fn find_definition_by_name(&self, name: String) -> Option<Arc<Definition>>;
+    fn find_definition_by_name(&self, name: String) -> Option<Definition>;
 
-    fn find_type_system_definition(&self, id: Uuid) -> Option<Arc<Definition>>;
+    fn find_type_system_definition(&self, id: Uuid) -> Option<Definition>;
 
-    fn find_type_system_definition_by_name(&self, name: String) -> Option<Arc<Definition>>;
+    fn find_type_system_definition_by_name(&self, name: String) -> Option<Definition>;
 
-    fn query_operations(&self, file_id: FileId) -> Arc<Vec<OperationDefinition>>;
+    fn query_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
-    fn mutation_operations(&self, file_id: FileId) -> Arc<Vec<OperationDefinition>>;
+    fn mutation_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
-    fn subscription_operations(&self, file_id: FileId) -> Arc<Vec<OperationDefinition>>;
+    fn subscription_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
     fn operation_fields(&self, id: Uuid) -> Arc<Vec<Field>>;
 
@@ -74,50 +74,36 @@ pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
     fn is_subtype(&self, abstract_type: String, maybe_subtype: String) -> bool;
 }
 
-fn find_definition_by_name(db: &dyn DocumentDatabase, name: String) -> Option<Arc<Definition>> {
-    db.db_definitions().iter().find_map(|def| {
-        if let Some(n) = def.name() {
-            if name == n {
-                return Some(Arc::new(def.clone()));
-            }
-        }
-        None
-    })
+fn find_definition_by_name(db: &dyn DocumentDatabase, name: String) -> Option<Definition> {
+    db.db_definitions()
+        .iter()
+        .find(|def| def.name() == Some(&*name))
+        .cloned()
 }
 
-fn find_type_system_definition(db: &dyn DocumentDatabase, id: Uuid) -> Option<Arc<Definition>> {
-    db.type_system_definitions().iter().find_map(|op| {
-        if let Some(op_id) = op.id() {
-            if op_id == &id {
-                return Some(Arc::new(op.clone()));
-            }
-        }
-        None
-    })
+fn find_type_system_definition(db: &dyn DocumentDatabase, id: Uuid) -> Option<Definition> {
+    db.type_system_definitions()
+        .iter()
+        .find(|def| def.id() == Some(&id))
+        .cloned()
 }
 
 fn find_type_system_definition_by_name(
     db: &dyn DocumentDatabase,
     name: String,
-) -> Option<Arc<Definition>> {
-    db.type_system_definitions().iter().find_map(|def| {
-        if let Some(n) = def.name() {
-            if name == n {
-                return Some(Arc::new(def.clone()));
-            }
-        }
-        None
-    })
+) -> Option<Definition> {
+    db.type_system_definitions()
+        .iter()
+        .find(|def| def.name() == Some(&*name))
+        .cloned()
 }
 
 fn find_operation(db: &dyn DocumentDatabase, id: Uuid) -> Option<Arc<OperationDefinition>> {
     db.executable_definition_files().iter().find_map(|file_id| {
-        db.operations(*file_id).iter().find_map(|op| {
-            if &id == op.id() {
-                return Some(Arc::new(op.clone()));
-            }
-            None
-        })
+        db.operations(*file_id)
+            .iter()
+            .find(|def| def.id() == &id)
+            .cloned()
     })
 }
 
@@ -126,24 +112,18 @@ fn find_operation_by_name(
     file_id: FileId,
     name: String,
 ) -> Option<Arc<OperationDefinition>> {
-    db.operations(file_id).iter().find_map(|op| {
-        if let Some(n) = op.name() {
-            if n == name {
-                return Some(Arc::new(op.clone()));
-            }
-        }
-        None
-    })
+    db.operations(file_id)
+        .iter()
+        .find(|def| def.name() == Some(&*name))
+        .cloned()
 }
 
 fn find_fragment(db: &dyn DocumentDatabase, id: Uuid) -> Option<Arc<FragmentDefinition>> {
     db.executable_definition_files().iter().find_map(|file_id| {
-        db.fragments(*file_id).iter().find_map(|fragment| {
-            if &id == fragment.id() {
-                return Some(Arc::new(fragment.clone()));
-            }
-            None
-        })
+        db.fragments(*file_id)
+            .values()
+            .find(|def| def.id() == &id)
+            .cloned()
     })
 }
 
@@ -152,96 +132,60 @@ fn find_fragment_by_name(
     file_id: FileId,
     name: String,
 ) -> Option<Arc<FragmentDefinition>> {
-    db.fragments(file_id).iter().find_map(|fragment| {
-        if name == fragment.name() {
-            return Some(Arc::new(fragment.clone()));
-        }
-        None
-    })
+    db.fragments(file_id).get(&name).cloned()
 }
 
 fn find_object_type(db: &dyn DocumentDatabase, id: Uuid) -> Option<Arc<ObjectTypeDefinition>> {
-    db.object_types().iter().find_map(|object_type| {
-        if &id == object_type.id() {
-            return Some(Arc::new(object_type.clone()));
-        }
-        None
-    })
+    db.object_types()
+        .values()
+        .find(|def| def.id() == &id)
+        .cloned()
 }
 
 fn find_object_type_by_name(
     db: &dyn DocumentDatabase,
     name: String,
 ) -> Option<Arc<ObjectTypeDefinition>> {
-    db.object_types().iter().find_map(|object_type| {
-        if name == object_type.name() {
-            return Some(Arc::new(object_type.clone()));
-        }
-        None
-    })
+    db.object_types().get(&name).cloned()
 }
 
 fn find_union_by_name(db: &dyn DocumentDatabase, name: String) -> Option<Arc<UnionTypeDefinition>> {
-    db.unions().iter().find_map(|union| {
-        if name == union.name() {
-            return Some(Arc::new(union.clone()));
-        }
-        None
-    })
+    db.unions().get(&name).cloned()
 }
 
 fn find_enum_by_name(db: &dyn DocumentDatabase, name: String) -> Option<Arc<EnumTypeDefinition>> {
-    db.enums().iter().find_map(|enum_def| {
-        if name == enum_def.name() {
-            return Some(Arc::new(enum_def.clone()));
-        }
-        None
-    })
+    db.enums().get(&name).cloned()
 }
 
 fn find_interface(db: &dyn DocumentDatabase, id: Uuid) -> Option<Arc<InterfaceTypeDefinition>> {
-    db.interfaces().iter().find_map(|interface| {
-        if &id == interface.id() {
-            return Some(Arc::new(interface.clone()));
-        }
-        None
-    })
+    db.interfaces()
+        .values()
+        .find(|def| def.id() == &id)
+        .cloned()
 }
 
 fn find_interface_by_name(
     db: &dyn DocumentDatabase,
     name: String,
 ) -> Option<Arc<InterfaceTypeDefinition>> {
-    db.interfaces().iter().find_map(|interface| {
-        if name == interface.name() {
-            return Some(Arc::new(interface.clone()));
-        }
-        None
-    })
+    db.interfaces().get(&name).cloned()
 }
 
 fn find_directive_definition(
     db: &dyn DocumentDatabase,
     id: Uuid,
 ) -> Option<Arc<DirectiveDefinition>> {
-    db.directive_definitions().iter().find_map(|directive_def| {
-        if &id == directive_def.id() {
-            return Some(Arc::new(directive_def.clone()));
-        }
-        None
-    })
+    db.directive_definitions()
+        .values()
+        .find(|def| def.id() == &id)
+        .cloned()
 }
 
 fn find_directive_definition_by_name(
     db: &dyn DocumentDatabase,
     name: String,
 ) -> Option<Arc<DirectiveDefinition>> {
-    db.directive_definitions().iter().find_map(|directive_def| {
-        if name == directive_def.name() {
-            return Some(Arc::new(directive_def.clone()));
-        }
-        None
-    })
+    db.directive_definitions().get(&name).cloned()
 }
 
 /// Find any definitions that use the specified directive.
@@ -265,27 +209,23 @@ fn find_input_object(
     db: &dyn DocumentDatabase,
     id: Uuid,
 ) -> Option<Arc<InputObjectTypeDefinition>> {
-    db.input_objects().iter().find_map(|input_obj| {
-        if &id == input_obj.id() {
-            return Some(Arc::new(input_obj.clone()));
-        }
-        None
-    })
+    db.input_objects()
+        .values()
+        .find(|def| def.id() == &id)
+        .cloned()
 }
 
 fn find_input_object_by_name(
     db: &dyn DocumentDatabase,
     name: String,
 ) -> Option<Arc<InputObjectTypeDefinition>> {
-    db.input_objects().iter().find_map(|input_obj| {
-        if name == input_obj.name() {
-            return Some(Arc::new(input_obj.clone()));
-        }
-        None
-    })
+    db.input_objects().get(&name).cloned()
 }
 
-fn query_operations(db: &dyn DocumentDatabase, file_id: FileId) -> Arc<Vec<OperationDefinition>> {
+fn query_operations(
+    db: &dyn DocumentDatabase,
+    file_id: FileId,
+) -> Arc<Vec<Arc<OperationDefinition>>> {
     let operations = db
         .operations(file_id)
         .iter()
@@ -297,7 +237,7 @@ fn query_operations(db: &dyn DocumentDatabase, file_id: FileId) -> Arc<Vec<Opera
 fn subscription_operations(
     db: &dyn DocumentDatabase,
     file_id: FileId,
-) -> Arc<Vec<OperationDefinition>> {
+) -> Arc<Vec<Arc<OperationDefinition>>> {
     let operations = db
         .operations(file_id)
         .iter()
@@ -309,7 +249,7 @@ fn subscription_operations(
 fn mutation_operations(
     db: &dyn DocumentDatabase,
     file_id: FileId,
-) -> Arc<Vec<OperationDefinition>> {
+) -> Arc<Vec<Arc<OperationDefinition>>> {
     let operations = db
         .operations(file_id)
         .iter()
@@ -426,50 +366,39 @@ fn operation_definition_variables(db: &dyn DocumentDatabase, id: Uuid) -> Arc<Ha
 
 fn subtype_map(db: &dyn DocumentDatabase) -> Arc<HashMap<String, HashSet<String>>> {
     let mut map = HashMap::<String, HashSet<String>>::new();
-    let mut add = |key, value| map.entry(key).or_default().insert(value);
-    for definition in &*db.type_system_definitions() {
-        match definition {
-            Definition::ObjectTypeDefinition(def) => {
-                for implements in def.implements_interfaces() {
-                    add(implements.interface().to_owned(), def.name().to_owned());
-                }
+    let mut add = |key: &str, value: &str| {
+        map.entry(key.to_owned())
+            .or_default()
+            .insert(value.to_owned())
+    };
+    for (name, definition) in &*db.object_types() {
+        for implements in definition.implements_interfaces() {
+            add(implements.interface(), name);
+        }
+        for extension in definition.extensions() {
+            for implements in extension.implements_interfaces() {
+                add(implements.interface(), name);
             }
-            Definition::ObjectTypeExtension(def) => {
-                for implements in def.implements_interfaces() {
-                    add(implements.interface().to_owned(), def.name().to_owned());
-                }
+        }
+    }
+    for (name, definition) in &*db.interfaces() {
+        for implements in definition.implements_interfaces() {
+            add(implements.interface(), name);
+        }
+        for extension in definition.extensions() {
+            for implements in extension.implements_interfaces() {
+                add(implements.interface(), name);
             }
-            Definition::InterfaceTypeDefinition(def) => {
-                for implements in def.implements_interfaces() {
-                    add(implements.interface().to_owned(), def.name().to_owned());
-                }
+        }
+    }
+    for (name, definition) in &*db.unions() {
+        for member in definition.union_members() {
+            add(name, member.name());
+        }
+        for extension in definition.extensions() {
+            for member in extension.union_members() {
+                add(name, member.name());
             }
-            Definition::InterfaceTypeExtension(def) => {
-                for implements in def.implements_interfaces() {
-                    add(implements.interface().to_owned(), def.name().to_owned());
-                }
-            }
-            Definition::UnionTypeDefinition(def) => {
-                for member in def.union_members() {
-                    add(def.name().to_owned(), member.name().to_owned());
-                }
-            }
-            Definition::UnionTypeExtension(def) => {
-                for member in def.union_members() {
-                    add(def.name().to_owned(), member.name().to_owned());
-                }
-            }
-            Definition::InputObjectTypeDefinition(_)
-            | Definition::EnumTypeDefinition(_)
-            | Definition::ScalarTypeDefinition(_)
-            | Definition::DirectiveDefinition(_)
-            | Definition::OperationDefinition(_)
-            | Definition::FragmentDefinition(_)
-            | Definition::SchemaDefinition(_)
-            | Definition::SchemaExtension(_)
-            | Definition::ScalarTypeExtension(_)
-            | Definition::EnumTypeExtension(_)
-            | Definition::InputObjectTypeExtension(_) => {}
         }
     }
     Arc::new(map)
@@ -510,10 +439,11 @@ mod tests {
         let key_definitions = compiler
             .db
             .find_definitions_with_directive(String::from("key"));
-        let key_definition_names: Vec<&str> = key_definitions
+        let mut key_definition_names: Vec<&str> = key_definitions
             .iter()
             .filter_map(|def| def.name())
             .collect();
+        key_definition_names.sort();
         assert_eq!(key_definition_names, ["ObjectOne", "ObjectTwo"])
     }
 

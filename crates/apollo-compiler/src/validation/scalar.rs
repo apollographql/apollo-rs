@@ -8,14 +8,13 @@ const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    for scalar in db.scalars().iter() {
-        let name = scalar.name();
+    for (name, scalar) in db.scalars().iter() {
         if let Some(loc) = scalar.loc() {
             let offset = loc.offset();
             let len = loc.node_len();
 
             // All built-in scalars must be omitted for brevity.
-            if BUILT_IN_SCALARS.contains(&name) && !scalar.is_built_in() {
+            if BUILT_IN_SCALARS.contains(&&**name) && !scalar.is_built_in() {
                 diagnostics.push(ApolloDiagnostic::BuiltInScalarDefinition(
                     BuiltInScalarDefinition {
                         scalar: (offset, len).into(),

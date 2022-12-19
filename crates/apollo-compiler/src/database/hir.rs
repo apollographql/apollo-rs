@@ -1,32 +1,28 @@
 use std::sync::Arc;
 
-use apollo_parser::ast;
+use apollo_parser::{ast, SyntaxNode};
 use ordered_float::{self, OrderedFloat};
 use uuid::Uuid;
 
 use crate::DocumentDatabase;
 
 use super::FileId;
+use indexmap::IndexMap;
+
+pub type ByName<T> = Arc<IndexMap<String, Arc<T>>>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Definition {
-    OperationDefinition(OperationDefinition),
-    FragmentDefinition(FragmentDefinition),
-    DirectiveDefinition(DirectiveDefinition),
-    ScalarTypeDefinition(ScalarTypeDefinition),
-    ObjectTypeDefinition(ObjectTypeDefinition),
-    InterfaceTypeDefinition(InterfaceTypeDefinition),
-    UnionTypeDefinition(UnionTypeDefinition),
-    EnumTypeDefinition(EnumTypeDefinition),
-    InputObjectTypeDefinition(InputObjectTypeDefinition),
-    SchemaDefinition(SchemaDefinition),
-    SchemaExtension(SchemaExtension),
-    ScalarTypeExtension(ScalarTypeExtension),
-    ObjectTypeExtension(ObjectTypeExtension),
-    InterfaceTypeExtension(InterfaceTypeExtension),
-    UnionTypeExtension(UnionTypeExtension),
-    EnumTypeExtension(EnumTypeExtension),
-    InputObjectTypeExtension(InputObjectTypeExtension),
+    OperationDefinition(Arc<OperationDefinition>),
+    FragmentDefinition(Arc<FragmentDefinition>),
+    DirectiveDefinition(Arc<DirectiveDefinition>),
+    ScalarTypeDefinition(Arc<ScalarTypeDefinition>),
+    ObjectTypeDefinition(Arc<ObjectTypeDefinition>),
+    InterfaceTypeDefinition(Arc<InterfaceTypeDefinition>),
+    UnionTypeDefinition(Arc<UnionTypeDefinition>),
+    EnumTypeDefinition(Arc<EnumTypeDefinition>),
+    InputObjectTypeDefinition(Arc<InputObjectTypeDefinition>),
+    SchemaDefinition(Arc<SchemaDefinition>),
 }
 
 impl Definition {
@@ -43,13 +39,6 @@ impl Definition {
             Definition::EnumTypeDefinition(def) => Some(def.name()),
             Definition::InputObjectTypeDefinition(def) => Some(def.name()),
             Definition::SchemaDefinition(_) => None,
-            Definition::SchemaExtension(_) => None,
-            Definition::ScalarTypeExtension(def) => Some(def.name()),
-            Definition::ObjectTypeExtension(def) => Some(def.name()),
-            Definition::InterfaceTypeExtension(def) => Some(def.name()),
-            Definition::UnionTypeExtension(def) => Some(def.name()),
-            Definition::EnumTypeExtension(def) => Some(def.name()),
-            Definition::InputObjectTypeExtension(def) => Some(def.name()),
         }
     }
 
@@ -65,13 +54,6 @@ impl Definition {
             Definition::EnumTypeDefinition(def) => Some(def.name_src()),
             Definition::InputObjectTypeDefinition(def) => Some(def.name_src()),
             Definition::SchemaDefinition(_) => None,
-            Definition::SchemaExtension(_) => None,
-            Definition::ScalarTypeExtension(def) => Some(def.name_src()),
-            Definition::ObjectTypeExtension(def) => Some(def.name_src()),
-            Definition::InterfaceTypeExtension(def) => Some(def.name_src()),
-            Definition::UnionTypeExtension(def) => Some(def.name_src()),
-            Definition::EnumTypeExtension(def) => Some(def.name_src()),
-            Definition::InputObjectTypeExtension(def) => Some(def.name_src()),
         }
     }
 
@@ -89,13 +71,6 @@ impl Definition {
             Definition::EnumTypeDefinition(_) => "EnumTypeDefinition".to_string(),
             Definition::InputObjectTypeDefinition(_) => "InputObjectTypeDefinition".to_string(),
             Definition::SchemaDefinition(_) => "SchemaDefinition".to_string(),
-            Definition::SchemaExtension(_) => "SchemaExtension".to_string(),
-            Definition::ScalarTypeExtension(_) => "ScalarTypeExtension".to_string(),
-            Definition::ObjectTypeExtension(_) => "ObjectTypeExtension".to_string(),
-            Definition::InterfaceTypeExtension(_) => "InterfaceTypeExtension".to_string(),
-            Definition::UnionTypeExtension(_) => "UnionTypeExtension".to_string(),
-            Definition::EnumTypeExtension(_) => "EnumTypeExtension".to_string(),
-            Definition::InputObjectTypeExtension(_) => "InputObjectTypeExtension".to_string(),
         }
     }
 
@@ -111,13 +86,6 @@ impl Definition {
             Definition::EnumTypeDefinition(def) => Some(def.id()),
             Definition::InputObjectTypeDefinition(def) => Some(def.id()),
             Definition::SchemaDefinition(_) => None,
-            Definition::SchemaExtension(_) => None,
-            Definition::ScalarTypeExtension(_) => None,
-            Definition::ObjectTypeExtension(_) => None,
-            Definition::InterfaceTypeExtension(_) => None,
-            Definition::UnionTypeExtension(_) => None,
-            Definition::EnumTypeExtension(_) => None,
-            Definition::InputObjectTypeExtension(_) => None,
         }
     }
 
@@ -141,13 +109,6 @@ impl Definition {
             Definition::EnumTypeDefinition(def) => def.directives(),
             Definition::InputObjectTypeDefinition(def) => def.directives(),
             Definition::SchemaDefinition(def) => def.directives(),
-            Definition::SchemaExtension(def) => def.directives(),
-            Definition::ScalarTypeExtension(def) => def.directives(),
-            Definition::ObjectTypeExtension(def) => def.directives(),
-            Definition::InterfaceTypeExtension(def) => def.directives(),
-            Definition::UnionTypeExtension(def) => def.directives(),
-            Definition::EnumTypeExtension(def) => def.directives(),
-            Definition::InputObjectTypeExtension(def) => def.directives(),
         }
     }
 
@@ -328,7 +289,7 @@ impl FragmentDefinition {
             .collect()
     }
 
-    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<Arc<Definition>> {
+    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<Definition> {
         db.find_type_system_definition_by_name(self.name().to_string())
     }
 
@@ -579,7 +540,7 @@ impl Type {
     #[must_use]
     pub fn is_output_type(&self, db: &dyn DocumentDatabase) -> bool {
         if let Some(ty) = self.ty(db) {
-            ty.as_ref().is_output_definition()
+            ty.is_output_definition()
         } else {
             false
         }
@@ -594,7 +555,7 @@ impl Type {
     #[must_use]
     pub fn is_input_type(&self, db: &dyn DocumentDatabase) -> bool {
         if let Some(ty) = self.ty(db) {
-            ty.as_ref().is_input_definition()
+            ty.is_input_definition()
         } else {
             false
         }
@@ -609,7 +570,7 @@ impl Type {
         }
     }
 
-    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<Arc<Definition>> {
+    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<Definition> {
         db.find_definition_by_name(self.name())
     }
 
@@ -1292,6 +1253,7 @@ pub struct SchemaDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) root_operation_type_definition: Arc<Vec<RootOperationTypeDefinition>>,
     pub(crate) loc: Option<HirNodeLocation>,
+    pub(crate) extensions: Vec<SchemaExtension>,
 }
 
 impl SchemaDefinition {
@@ -1315,6 +1277,11 @@ impl SchemaDefinition {
     /// Get schema definition's hir node location.
     pub fn loc(&self) -> Option<&HirNodeLocation> {
         self.loc.as_ref()
+    }
+
+    /// Extensions that apply to this definition
+    pub fn extensions(&self) -> &[SchemaExtension] {
+        &self.extensions
     }
 
     // NOTE(@lrlna): potentially have the following fns on the database itself
@@ -1408,6 +1375,7 @@ pub struct ObjectTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
     pub(crate) loc: HirNodeLocation,
+    pub(crate) extensions: Vec<ObjectTypeExtension>,
 }
 
 impl ObjectTypeDefinition {
@@ -1454,6 +1422,11 @@ impl ObjectTypeDefinition {
     /// Get object type definition's hir node location.
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
+    }
+
+    /// Extensions that apply to this definition
+    pub fn extensions(&self) -> &[ObjectTypeExtension] {
+        &self.extensions
     }
 }
 
@@ -1593,6 +1566,7 @@ pub struct ScalarTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) built_in: bool,
     pub(crate) loc: Option<HirNodeLocation>,
+    pub(crate) extensions: Vec<ScalarTypeExtension>,
 }
 
 impl ScalarTypeDefinition {
@@ -1630,6 +1604,11 @@ impl ScalarTypeDefinition {
     pub fn loc(&self) -> Option<&HirNodeLocation> {
         self.loc.as_ref()
     }
+
+    /// Extensions that apply to this definition
+    pub fn extensions(&self) -> &[ScalarTypeExtension] {
+        &self.extensions
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1640,6 +1619,7 @@ pub struct EnumTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) enum_values_definition: Arc<Vec<EnumValueDefinition>>,
     pub(crate) loc: HirNodeLocation,
+    pub(crate) extensions: Vec<EnumTypeExtension>,
 }
 
 impl EnumTypeDefinition {
@@ -1677,6 +1657,11 @@ impl EnumTypeDefinition {
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
     }
+
+    /// Extensions that apply to this definition
+    pub fn extensions(&self) -> &[EnumTypeExtension] {
+        &self.extensions
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1712,6 +1697,7 @@ pub struct UnionTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) union_members: Arc<Vec<UnionMember>>,
     pub(crate) loc: HirNodeLocation,
+    pub(crate) extensions: Vec<UnionTypeExtension>,
 }
 
 impl UnionTypeDefinition {
@@ -1749,6 +1735,11 @@ impl UnionTypeDefinition {
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
     }
+
+    /// Extensions that apply to this definition
+    pub fn extensions(&self) -> &[UnionTypeExtension] {
+        &self.extensions
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1783,6 +1774,7 @@ pub struct InterfaceTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
     pub(crate) loc: HirNodeLocation,
+    pub(crate) extensions: Vec<InterfaceTypeExtension>,
 }
 
 impl InterfaceTypeDefinition {
@@ -1830,6 +1822,11 @@ impl InterfaceTypeDefinition {
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
     }
+
+    /// Extensions that apply to this definition
+    pub fn extensions(&self) -> &[InterfaceTypeExtension] {
+        &self.extensions
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1840,6 +1837,7 @@ pub struct InputObjectTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) input_fields_definition: Arc<Vec<InputValueDefinition>>,
     pub(crate) loc: HirNodeLocation,
+    pub(crate) extensions: Vec<InputObjectTypeExtension>,
 }
 
 impl InputObjectTypeDefinition {
@@ -1876,6 +1874,11 @@ impl InputObjectTypeDefinition {
     /// Get input object type definition's hir node location.
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
+    }
+
+    /// Extensions that apply to this definition
+    pub fn extensions(&self) -> &[InputObjectTypeExtension] {
+        &self.extensions
     }
 }
 
@@ -2168,6 +2171,15 @@ pub struct HirNodeLocation {
 }
 
 impl HirNodeLocation {
+    pub(crate) fn new(file_id: FileId, node: &'_ SyntaxNode) -> Self {
+        let text_range = node.text_range();
+        Self {
+            offset: text_range.start().into(),
+            node_len: text_range.len().into(),
+            file_id,
+        }
+    }
+
     /// Get file id of the current node.
     pub fn file_id(&self) -> FileId {
         self.file_id
@@ -2181,6 +2193,24 @@ impl HirNodeLocation {
     /// Get node length.
     pub fn node_len(&self) -> usize {
         self.node_len
+    }
+}
+
+impl<Ast: ast::AstNode> From<(FileId, &'_ Ast)> for HirNodeLocation {
+    fn from((file_id, node): (FileId, &'_ Ast)) -> Self {
+        Self::new(file_id, node.syntax())
+    }
+}
+
+impl From<&'_ HirNodeLocation> for miette::SourceSpan {
+    fn from(loc: &'_ HirNodeLocation) -> Self {
+        (loc.offset, loc.node_len).into()
+    }
+}
+
+impl From<HirNodeLocation> for miette::SourceSpan {
+    fn from(loc: HirNodeLocation) -> Self {
+        (loc.offset, loc.node_len).into()
     }
 }
 
