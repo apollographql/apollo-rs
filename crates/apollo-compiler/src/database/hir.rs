@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use apollo_parser::{ast, SyntaxNode};
 use ordered_float::{self, OrderedFloat};
-use uuid::Uuid;
 
 use crate::DocumentDatabase;
 
@@ -71,21 +70,6 @@ impl Definition {
             Definition::EnumTypeDefinition(_) => "EnumTypeDefinition".to_string(),
             Definition::InputObjectTypeDefinition(_) => "InputObjectTypeDefinition".to_string(),
             Definition::SchemaDefinition(_) => "SchemaDefinition".to_string(),
-        }
-    }
-
-    pub fn id(&self) -> Option<&Uuid> {
-        match self {
-            Definition::OperationDefinition(def) => Some(def.id()),
-            Definition::FragmentDefinition(def) => Some(def.id()),
-            Definition::DirectiveDefinition(def) => Some(def.id()),
-            Definition::ScalarTypeDefinition(def) => Some(def.id()),
-            Definition::ObjectTypeDefinition(def) => Some(def.id()),
-            Definition::InterfaceTypeDefinition(def) => Some(def.id()),
-            Definition::UnionTypeDefinition(def) => Some(def.id()),
-            Definition::EnumTypeDefinition(def) => Some(def.id()),
-            Definition::InputObjectTypeDefinition(def) => Some(def.id()),
-            Definition::SchemaDefinition(_) => None,
         }
     }
 
@@ -231,7 +215,6 @@ impl Definition {
 }
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct FragmentDefinition {
-    pub(crate) id: Uuid,
     pub(crate) name: Name,
     pub(crate) type_condition: String,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -244,11 +227,6 @@ pub struct FragmentDefinition {
 // the underlying values, as what's important is that the values are Arc<>'d in
 // the database.
 impl FragmentDefinition {
-    /// Get the fragment definition's id.
-    pub fn id(&self) -> &Uuid {
-        &self.id
-    }
-
     /// Get a reference to the fragment definition's name.
     pub fn name(&self) -> &str {
         self.name.src()
@@ -301,7 +279,6 @@ impl FragmentDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OperationDefinition {
-    pub(crate) id: Uuid,
     pub(crate) operation_ty: OperationType,
     pub(crate) name: Option<Name>,
     pub(crate) variables: Arc<Vec<VariableDefinition>>,
@@ -311,11 +288,6 @@ pub struct OperationDefinition {
 }
 
 impl OperationDefinition {
-    /// Get a reference to operation definition's id.
-    pub fn id(&self) -> &Uuid {
-        &self.id
-    }
-
     /// Get a reference to the operation definition's ty.
     pub fn operation_ty(&self) -> &OperationType {
         &self.operation_ty
@@ -358,7 +330,7 @@ impl OperationDefinition {
     /// Get fields in the operation definition (excluding inline fragments and
     /// fragment spreads).
     pub fn fields(&self, db: &dyn DocumentDatabase) -> Arc<Vec<Field>> {
-        db.operation_fields(self.id)
+        db.operation_fields(self.selection_set.clone())
     }
 
     // NOTE @lrlna: this is quite messy. it should live under the
@@ -370,12 +342,12 @@ impl OperationDefinition {
 
     /// Get all fields in an inline fragment.
     pub fn fields_in_inline_fragments(&self, db: &dyn DocumentDatabase) -> Arc<Vec<Field>> {
-        db.operation_inline_fragment_fields(self.id)
+        db.operation_inline_fragment_fields(self.selection_set.clone())
     }
 
     /// Get all fields in a fragment spread
     pub fn fields_in_fragment_spread(&self, db: &dyn DocumentDatabase) -> Arc<Vec<Field>> {
-        db.operation_fragment_spread_fields(self.id)
+        db.operation_fragment_spread_fields(self.selection_set.clone())
     }
 
     /// Get operation definition's hir node location.
@@ -640,7 +612,6 @@ impl Directive {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct DirectiveDefinition {
-    pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: Name,
     pub(crate) arguments: ArgumentsDefinition,
@@ -663,11 +634,6 @@ impl DirectiveDefinition {
     /// Get a reference to the directive definition's description.
     pub fn description(&self) -> Option<&str> {
         self.description.as_deref()
-    }
-
-    /// Get a reference to the directive definition's id.
-    pub fn id(&self) -> &Uuid {
-        &self.id
     }
 
     // Get a reference to argument definition's locations.
@@ -1343,10 +1309,6 @@ impl RootOperationTypeDefinition {
         db.find_object_type_by_name(self.named_type().name())
     }
 
-    pub fn object_type_id(&self, db: &dyn DocumentDatabase) -> Option<Uuid> {
-        self.object_type(db).map(|object_type| *object_type.id())
-    }
-
     /// Get root operation type definition's hir node location.
     pub fn loc(&self) -> Option<&HirNodeLocation> {
         self.loc.as_ref()
@@ -1368,7 +1330,6 @@ impl Default for RootOperationTypeDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ObjectTypeDefinition {
-    pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: Name,
     pub(crate) implements_interfaces: Arc<Vec<ImplementsInterface>>,
@@ -1379,11 +1340,6 @@ pub struct ObjectTypeDefinition {
 }
 
 impl ObjectTypeDefinition {
-    /// Get the object type definition's id.
-    pub fn id(&self) -> &Uuid {
-        &self.id
-    }
-
     /// Get a reference to the object type definition's name.
     pub fn name(&self) -> &str {
         self.name.src()
@@ -1560,7 +1516,6 @@ impl InputValueDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ScalarTypeDefinition {
-    pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -1571,9 +1526,6 @@ pub struct ScalarTypeDefinition {
 
 impl ScalarTypeDefinition {
     /// Get the scalar type definition's id.
-    pub fn id(&self) -> &Uuid {
-        &self.id
-    }
 
     /// Get a reference to the scalar definition's name.
     pub fn name(&self) -> &str {
@@ -1613,7 +1565,6 @@ impl ScalarTypeDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct EnumTypeDefinition {
-    pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -1623,11 +1574,6 @@ pub struct EnumTypeDefinition {
 }
 
 impl EnumTypeDefinition {
-    /// Get the scalar type definition's id.
-    pub fn id(&self) -> &Uuid {
-        &self.id
-    }
-
     /// Get a reference to the enum definition's name.
     pub fn name(&self) -> &str {
         self.name.src()
@@ -1691,7 +1637,6 @@ impl EnumValueDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct UnionTypeDefinition {
-    pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -1701,11 +1646,6 @@ pub struct UnionTypeDefinition {
 }
 
 impl UnionTypeDefinition {
-    /// Get the union type definition's id.
-    pub fn id(&self) -> &Uuid {
-        &self.id
-    }
-
     /// Get a reference to the union definition's name.
     pub fn name(&self) -> &str {
         self.name.src()
@@ -1767,7 +1707,6 @@ impl UnionMember {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct InterfaceTypeDefinition {
-    pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: Name,
     pub(crate) implements_interfaces: Arc<Vec<ImplementsInterface>>,
@@ -1778,11 +1717,6 @@ pub struct InterfaceTypeDefinition {
 }
 
 impl InterfaceTypeDefinition {
-    /// Get the interface definition's id.
-    pub fn id(&self) -> &Uuid {
-        &self.id
-    }
-
     /// Get a reference to the interface definition's name.
     pub fn name(&self) -> &str {
         self.name.src()
@@ -1831,7 +1765,6 @@ impl InterfaceTypeDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct InputObjectTypeDefinition {
-    pub(crate) id: Uuid,
     pub(crate) description: Option<String>,
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -1841,11 +1774,6 @@ pub struct InputObjectTypeDefinition {
 }
 
 impl InputObjectTypeDefinition {
-    /// Get the input object definition's id.
-    pub fn id(&self) -> &Uuid {
-        &self.id
-    }
-
     /// Get a reference to the input object definition's name.
     pub fn name(&self) -> &str {
         self.name.src()
