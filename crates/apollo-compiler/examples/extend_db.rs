@@ -1,8 +1,8 @@
 use std::{fmt, path::Path, sync::Arc};
 
 use apollo_compiler::{
-    database::{AstStorage, DocumentStorage, HirStorage, InputStorage},
-    AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, Source,
+    database::{AstStorage, HirStorage, InputStorage},
+    AstDatabase, FileId, HirDatabase, InputDatabase, Source,
 };
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
@@ -45,13 +45,7 @@ impl Linter {
 
 // Includes all the necessary database's storage units that will now be
 // accessible from LinterDatabase.
-#[salsa::database(
-    DocumentStorage,
-    InputStorage,
-    AstStorage,
-    HirStorage,
-    LintValidationStorage
-)]
+#[salsa::database(InputStorage, AstStorage, HirStorage, LintValidationStorage)]
 #[derive(Default)]
 pub struct LinterDatabase {
     pub storage: salsa::Storage<LinterDatabase>,
@@ -70,23 +64,23 @@ impl salsa::ParallelDatabase for LinterDatabase {
 }
 
 // We need this upcast to upcast LinterDatabase query groups to Apollo
-// Compiler's DocumentDatabase.
+// Compiler's HirDatabase.
 pub trait Upcast<T: ?Sized> {
     fn upcast(&self) -> &T;
 }
 
-impl Upcast<dyn DocumentDatabase> for LinterDatabase {
-    fn upcast(&self) -> &(dyn DocumentDatabase + 'static) {
+impl Upcast<dyn HirDatabase> for LinterDatabase {
+    fn upcast(&self) -> &(dyn HirDatabase + 'static) {
         self
     }
 }
 
 // LintValidation database. It's based on four other Apollo Compiler databases.
-// We are also making sure we can upcast to DocumentDatabase with Upcast<dyn
-// DocumentDatabase>.
+// We are also making sure we can upcast to HirDatabase with Upcast<dyn
+// HirDatabase>.
 #[salsa::query_group(LintValidationStorage)]
 pub trait LintValidation:
-    Upcast<dyn DocumentDatabase> + InputDatabase + AstDatabase + HirDatabase
+    Upcast<dyn HirDatabase> + InputDatabase + AstDatabase + HirDatabase
 {
     // Define any queries that should be part of this database.
     fn lint(&self) -> Vec<LintDiagnostic>;

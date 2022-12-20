@@ -3,78 +3,18 @@ use std::{
     sync::Arc,
 };
 
-use crate::{hir::*, AstDatabase, FileId, HirDatabase, InputDatabase};
+use crate::{hir::*, FileId, HirDatabase};
 use indexmap::IndexMap;
 
-#[salsa::query_group(DocumentStorage)]
-pub trait DocumentDatabase: InputDatabase + AstDatabase + HirDatabase {
-    fn find_operation_by_name(
-        &self,
-        file_id: FileId,
-        name: String,
-    ) -> Option<Arc<OperationDefinition>>;
-
-    fn find_fragment_by_name(
-        &self,
-        file_id: FileId,
-        name: String,
-    ) -> Option<Arc<FragmentDefinition>>;
-
-    fn find_object_type_by_name(&self, name: String) -> Option<Arc<ObjectTypeDefinition>>;
-
-    fn find_union_by_name(&self, name: String) -> Option<Arc<UnionTypeDefinition>>;
-
-    fn find_enum_by_name(&self, name: String) -> Option<Arc<EnumTypeDefinition>>;
-
-    fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceTypeDefinition>>;
-
-    fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
-
-    fn find_definitions_with_directive(&self, directive: String) -> Arc<Vec<Definition>>;
-
-    fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
-
-    fn find_definition_by_name(&self, name: String) -> Option<Definition>;
-
-    fn find_type_system_definition_by_name(&self, name: String) -> Option<Definition>;
-
-    fn types_definitions_by_name(&self) -> Arc<IndexMap<String, TypeDefinition>>;
-
-    fn find_type_definition_by_name(&self, name: String) -> Option<TypeDefinition>;
-
-    fn query_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
-
-    fn mutation_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
-
-    fn subscription_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
-
-    fn operation_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
-
-    fn operation_inline_fragment_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
-
-    fn operation_fragment_spread_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
-
-    fn selection_variables(&self, selection_set: SelectionSet) -> Arc<HashSet<Variable>>;
-
-    fn operation_definition_variables(
-        &self,
-        variables: Arc<Vec<VariableDefinition>>,
-    ) -> Arc<HashSet<Variable>>;
-
-    fn subtype_map(&self) -> Arc<HashMap<String, HashSet<String>>>;
-
-    fn is_subtype(&self, abstract_type: String, maybe_subtype: String) -> bool;
-}
-
-fn find_definition_by_name(db: &dyn DocumentDatabase, name: String) -> Option<Definition> {
+pub(crate) fn find_definition_by_name(db: &dyn HirDatabase, name: String) -> Option<Definition> {
     db.db_definitions()
         .iter()
         .find(|def| def.name() == Some(&*name))
         .cloned()
 }
 
-fn find_type_system_definition_by_name(
-    db: &dyn DocumentDatabase,
+pub(crate) fn find_type_system_definition_by_name(
+    db: &dyn HirDatabase,
     name: String,
 ) -> Option<Definition> {
     db.type_system_definitions()
@@ -83,7 +23,9 @@ fn find_type_system_definition_by_name(
         .cloned()
 }
 
-fn types_definitions_by_name(db: &dyn DocumentDatabase) -> Arc<IndexMap<String, TypeDefinition>> {
+pub(crate) fn types_definitions_by_name(
+    db: &dyn HirDatabase,
+) -> Arc<IndexMap<String, TypeDefinition>> {
     let mut map = IndexMap::new();
     macro_rules! add {
         ($get: ident, $variant: ident) => {
@@ -102,12 +44,15 @@ fn types_definitions_by_name(db: &dyn DocumentDatabase) -> Arc<IndexMap<String, 
     Arc::new(map)
 }
 
-fn find_type_definition_by_name(db: &dyn DocumentDatabase, name: String) -> Option<TypeDefinition> {
+pub(crate) fn find_type_definition_by_name(
+    db: &dyn HirDatabase,
+    name: String,
+) -> Option<TypeDefinition> {
     db.types_definitions_by_name().get(&name).cloned()
 }
 
-fn find_operation_by_name(
-    db: &dyn DocumentDatabase,
+pub(crate) fn find_operation_by_name(
+    db: &dyn HirDatabase,
     file_id: FileId,
     name: String,
 ) -> Option<Arc<OperationDefinition>> {
@@ -117,46 +62,52 @@ fn find_operation_by_name(
         .cloned()
 }
 
-fn find_fragment_by_name(
-    db: &dyn DocumentDatabase,
+pub(crate) fn find_fragment_by_name(
+    db: &dyn HirDatabase,
     file_id: FileId,
     name: String,
 ) -> Option<Arc<FragmentDefinition>> {
     db.fragments(file_id).get(&name).cloned()
 }
 
-fn find_object_type_by_name(
-    db: &dyn DocumentDatabase,
+pub(crate) fn find_object_type_by_name(
+    db: &dyn HirDatabase,
     name: String,
 ) -> Option<Arc<ObjectTypeDefinition>> {
     db.object_types().get(&name).cloned()
 }
 
-fn find_union_by_name(db: &dyn DocumentDatabase, name: String) -> Option<Arc<UnionTypeDefinition>> {
+pub(crate) fn find_union_by_name(
+    db: &dyn HirDatabase,
+    name: String,
+) -> Option<Arc<UnionTypeDefinition>> {
     db.unions().get(&name).cloned()
 }
 
-fn find_enum_by_name(db: &dyn DocumentDatabase, name: String) -> Option<Arc<EnumTypeDefinition>> {
+pub(crate) fn find_enum_by_name(
+    db: &dyn HirDatabase,
+    name: String,
+) -> Option<Arc<EnumTypeDefinition>> {
     db.enums().get(&name).cloned()
 }
 
-fn find_interface_by_name(
-    db: &dyn DocumentDatabase,
+pub(crate) fn find_interface_by_name(
+    db: &dyn HirDatabase,
     name: String,
 ) -> Option<Arc<InterfaceTypeDefinition>> {
     db.interfaces().get(&name).cloned()
 }
 
-fn find_directive_definition_by_name(
-    db: &dyn DocumentDatabase,
+pub(crate) fn find_directive_definition_by_name(
+    db: &dyn HirDatabase,
     name: String,
 ) -> Option<Arc<DirectiveDefinition>> {
     db.directive_definitions().get(&name).cloned()
 }
 
 /// Find any definitions that use the specified directive.
-fn find_definitions_with_directive(
-    db: &dyn DocumentDatabase,
+pub(crate) fn find_definitions_with_directive(
+    db: &dyn HirDatabase,
     directive: String,
 ) -> Arc<Vec<Definition>> {
     let mut definitions = Vec::new();
@@ -171,15 +122,15 @@ fn find_definitions_with_directive(
     Arc::new(definitions)
 }
 
-fn find_input_object_by_name(
-    db: &dyn DocumentDatabase,
+pub(crate) fn find_input_object_by_name(
+    db: &dyn HirDatabase,
     name: String,
 ) -> Option<Arc<InputObjectTypeDefinition>> {
     db.input_objects().get(&name).cloned()
 }
 
-fn query_operations(
-    db: &dyn DocumentDatabase,
+pub(crate) fn query_operations(
+    db: &dyn HirDatabase,
     file_id: FileId,
 ) -> Arc<Vec<Arc<OperationDefinition>>> {
     let operations = db
@@ -190,8 +141,8 @@ fn query_operations(
     Arc::new(operations)
 }
 
-fn subscription_operations(
-    db: &dyn DocumentDatabase,
+pub(crate) fn subscription_operations(
+    db: &dyn HirDatabase,
     file_id: FileId,
 ) -> Arc<Vec<Arc<OperationDefinition>>> {
     let operations = db
@@ -202,8 +153,8 @@ fn subscription_operations(
     Arc::new(operations)
 }
 
-fn mutation_operations(
-    db: &dyn DocumentDatabase,
+pub(crate) fn mutation_operations(
+    db: &dyn HirDatabase,
     file_id: FileId,
 ) -> Arc<Vec<Arc<OperationDefinition>>> {
     let operations = db
@@ -214,7 +165,10 @@ fn mutation_operations(
     Arc::new(operations)
 }
 
-fn operation_fields(_db: &dyn DocumentDatabase, selection_set: SelectionSet) -> Arc<Vec<Field>> {
+pub(crate) fn operation_fields(
+    _db: &dyn HirDatabase,
+    selection_set: SelectionSet,
+) -> Arc<Vec<Field>> {
     let fields = selection_set
         .selection()
         .iter()
@@ -226,8 +180,8 @@ fn operation_fields(_db: &dyn DocumentDatabase, selection_set: SelectionSet) -> 
     Arc::new(fields)
 }
 
-fn operation_inline_fragment_fields(
-    _db: &dyn DocumentDatabase,
+pub(crate) fn operation_inline_fragment_fields(
+    _db: &dyn HirDatabase,
     selection_set: SelectionSet,
 ) -> Arc<Vec<Field>> {
     let fields = selection_set
@@ -245,8 +199,8 @@ fn operation_inline_fragment_fields(
     Arc::new(fields)
 }
 
-fn operation_fragment_spread_fields(
-    db: &dyn DocumentDatabase,
+pub(crate) fn operation_fragment_spread_fields(
+    db: &dyn HirDatabase,
     selection_set: SelectionSet,
 ) -> Arc<Vec<Field>> {
     let fields = selection_set
@@ -266,8 +220,8 @@ fn operation_fragment_spread_fields(
 
 // Should be part of operation's db
 // NOTE: potentially want to return a hashmap of variables and their types?
-fn selection_variables(
-    db: &dyn DocumentDatabase,
+pub(crate) fn selection_variables(
+    db: &dyn HirDatabase,
     selection_set: SelectionSet,
 ) -> Arc<HashSet<Variable>> {
     let vars = db
@@ -285,7 +239,7 @@ fn selection_variables(
     Arc::new(vars)
 }
 
-fn get_field_variable_value(val: Value) -> Vec<Variable> {
+pub(crate) fn get_field_variable_value(val: Value) -> Vec<Variable> {
     match val {
         Value::Variable(var) => vec![var],
         Value::List(list) => list
@@ -302,8 +256,8 @@ fn get_field_variable_value(val: Value) -> Vec<Variable> {
 
 // should be part of operation's db
 // NOTE: potentially want to return a hashset of variables and their types?
-fn operation_definition_variables(
-    _db: &dyn DocumentDatabase,
+pub(crate) fn operation_definition_variables(
+    _db: &dyn HirDatabase,
     variables: Arc<Vec<VariableDefinition>>,
 ) -> Arc<HashSet<Variable>> {
     let vars = variables
@@ -316,7 +270,7 @@ fn operation_definition_variables(
     Arc::new(vars)
 }
 
-fn subtype_map(db: &dyn DocumentDatabase) -> Arc<HashMap<String, HashSet<String>>> {
+pub(crate) fn subtype_map(db: &dyn HirDatabase) -> Arc<HashMap<String, HashSet<String>>> {
     let mut map = HashMap::<String, HashSet<String>>::new();
     let mut add = |key: &str, value: &str| {
         map.entry(key.to_owned())
@@ -356,7 +310,11 @@ fn subtype_map(db: &dyn DocumentDatabase) -> Arc<HashMap<String, HashSet<String>
     Arc::new(map)
 }
 
-fn is_subtype(db: &dyn DocumentDatabase, abstract_type: String, maybe_subtype: String) -> bool {
+pub(crate) fn is_subtype(
+    db: &dyn HirDatabase,
+    abstract_type: String,
+    maybe_subtype: String,
+) -> bool {
     db.subtype_map()
         .get(&abstract_type)
         .map_or(false, |set| set.contains(&maybe_subtype))
@@ -365,7 +323,7 @@ fn is_subtype(db: &dyn DocumentDatabase, abstract_type: String, maybe_subtype: S
 #[cfg(test)]
 mod tests {
     use crate::ApolloCompiler;
-    use crate::DocumentDatabase;
+    use crate::HirDatabase;
 
     #[test]
     fn find_definitions_with_directive() {

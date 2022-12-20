@@ -11,9 +11,7 @@ use std::path::Path;
 use salsa::ParallelDatabase;
 use validation::ValidationDatabase;
 
-pub use database::{
-    hir, AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source,
-};
+pub use database::{hir, AstDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source};
 pub use diagnostics::ApolloDiagnostic;
 
 pub struct ApolloCompiler {
@@ -209,7 +207,7 @@ impl Default for ApolloCompiler {
 mod test {
     use std::collections::HashMap;
 
-    use crate::{hir::TypeDefinition, ApolloCompiler, DocumentDatabase, HirDatabase};
+    use crate::{hir::TypeDefinition, ApolloCompiler, HirDatabase};
 
     #[test]
     fn it_creates_compiler_from_multiple_sources() {

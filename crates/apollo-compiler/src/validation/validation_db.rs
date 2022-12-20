@@ -8,12 +8,12 @@ use crate::{
         directive, enum_, input_object, interface, object, operation, scalar, schema, union_,
         unused_variable,
     },
-    ApolloDiagnostic, AstDatabase, DocumentDatabase, FileId, HirDatabase, InputDatabase,
+    ApolloDiagnostic, AstDatabase, FileId, HirDatabase, InputDatabase,
 };
 
 #[salsa::query_group(ValidationStorage)]
 pub trait ValidationDatabase:
-    Upcast<dyn DocumentDatabase> + InputDatabase + AstDatabase + HirDatabase
+    Upcast<dyn HirDatabase> + InputDatabase + AstDatabase + HirDatabase
 {
     /// Validate all documents.
     fn validate(&self) -> Vec<ApolloDiagnostic>;

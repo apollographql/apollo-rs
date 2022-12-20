@@ -3,7 +3,7 @@ use std::sync::Arc;
 use apollo_parser::{ast, SyntaxNode};
 use ordered_float::{self, OrderedFloat};
 
-use crate::DocumentDatabase;
+use crate::HirDatabase;
 
 use super::FileId;
 use indexmap::IndexMap;
@@ -303,7 +303,7 @@ impl FragmentDefinition {
     // which operation definition the fragment is used in.
 
     /// Get variables used in a fragment definition.
-    pub fn variables(&self, db: &dyn DocumentDatabase) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         self.selection_set
             .selection()
             .iter()
@@ -311,7 +311,7 @@ impl FragmentDefinition {
             .collect()
     }
 
-    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<TypeDefinition> {
+    pub fn ty(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
         db.find_type_definition_by_name(self.name().to_string())
     }
 
@@ -348,7 +348,7 @@ impl OperationDefinition {
     }
 
     /// Get operation's definition object type.
-    pub fn object_type(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn object_type(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         match self.operation_ty {
             OperationType::Query => db.schema().query(db),
             OperationType::Mutation => db.schema().mutation(db),
@@ -373,7 +373,7 @@ impl OperationDefinition {
 
     /// Get fields in the operation definition (excluding inline fragments and
     /// fragment spreads).
-    pub fn fields(&self, db: &dyn DocumentDatabase) -> Arc<Vec<Field>> {
+    pub fn fields(&self, db: &dyn HirDatabase) -> Arc<Vec<Field>> {
         db.operation_fields(self.selection_set.clone())
     }
 
@@ -385,12 +385,12 @@ impl OperationDefinition {
     // fragment spreads and inline fragments to do this
 
     /// Get all fields in an inline fragment.
-    pub fn fields_in_inline_fragments(&self, db: &dyn DocumentDatabase) -> Arc<Vec<Field>> {
+    pub fn fields_in_inline_fragments(&self, db: &dyn HirDatabase) -> Arc<Vec<Field>> {
         db.operation_inline_fragment_fields(self.selection_set.clone())
     }
 
     /// Get all fields in a fragment spread
-    pub fn fields_in_fragment_spread(&self, db: &dyn DocumentDatabase) -> Arc<Vec<Field>> {
+    pub fn fields_in_fragment_spread(&self, db: &dyn HirDatabase) -> Arc<Vec<Field>> {
         db.operation_fragment_spread_fields(self.selection_set.clone())
     }
 
@@ -554,7 +554,7 @@ impl Type {
     /// [`UnionTypeDefinition`]: Definition::UnionTypeDefinition
     /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
     #[must_use]
-    pub fn is_output_type(&self, db: &dyn DocumentDatabase) -> bool {
+    pub fn is_output_type(&self, db: &dyn HirDatabase) -> bool {
         if let Some(ty) = self.ty(db) {
             ty.is_output_definition()
         } else {
@@ -569,7 +569,7 @@ impl Type {
     /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
     /// [`InputObjectTypeDefinition`]: Definition::ObjectTypeDefinition
     #[must_use]
-    pub fn is_input_type(&self, db: &dyn DocumentDatabase) -> bool {
+    pub fn is_input_type(&self, db: &dyn HirDatabase) -> bool {
         if let Some(ty) = self.ty(db) {
             ty.is_input_definition()
         } else {
@@ -586,7 +586,7 @@ impl Type {
         }
     }
 
-    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<TypeDefinition> {
+    pub fn ty(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
         db.find_type_definition_by_name(self.name())
     }
 
@@ -627,7 +627,7 @@ impl Directive {
     }
 
     // Get directive definition of the currently used directive
-    pub fn directive(&self, db: &dyn DocumentDatabase) -> Option<Arc<DirectiveDefinition>> {
+    pub fn directive(&self, db: &dyn HirDatabase) -> Option<Arc<DirectiveDefinition>> {
         db.find_directive_definition_by_name(self.name().to_string())
     }
 
@@ -1005,7 +1005,7 @@ pub enum Selection {
 }
 impl Selection {
     /// Get variables used in the selection set.
-    pub fn variables(&self, db: &dyn DocumentDatabase) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         match self {
             Selection::Field(field) => field.variables(db),
             Selection::FragmentSpread(fragment_spread) => fragment_spread.variables(db),
@@ -1064,7 +1064,7 @@ impl Field {
     }
 
     /// Get a reference to field's type.
-    pub fn ty(&self, db: &dyn DocumentDatabase) -> Option<Type> {
+    pub fn ty(&self, db: &dyn HirDatabase) -> Option<Type> {
         let def = db
             .find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())?
             .field(self.name())?
@@ -1074,7 +1074,7 @@ impl Field {
     }
 
     /// Get field's original field definition.
-    pub fn field_definition(&self, db: &dyn DocumentDatabase) -> Option<FieldDefinition> {
+    pub fn field_definition(&self, db: &dyn HirDatabase) -> Option<FieldDefinition> {
         db.find_object_type_by_name(self.parent_obj.as_ref()?.to_string())?
             .fields_definition()
             .iter()
@@ -1098,7 +1098,7 @@ impl Field {
     }
 
     /// Get variables used in the field.
-    pub fn variables(&self, db: &dyn DocumentDatabase) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         let mut vars: Vec<_> = self
             .arguments
             .iter()
@@ -1147,7 +1147,7 @@ impl InlineFragment {
     }
 
     /// Get variables in use in the inline fragment.
-    pub fn variables(&self, db: &dyn DocumentDatabase) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         let vars = self
             .selection_set
             .selection()
@@ -1177,12 +1177,12 @@ impl FragmentSpread {
     }
 
     /// Get the fragment definition this fragment spread is referencing.
-    pub fn fragment(&self, db: &dyn DocumentDatabase) -> Option<Arc<FragmentDefinition>> {
+    pub fn fragment(&self, db: &dyn HirDatabase) -> Option<Arc<FragmentDefinition>> {
         db.find_fragment_by_name(self.loc.file_id(), self.name().to_string())
     }
 
     /// Get framgent spread's defined variables.
-    pub fn variables(&self, db: &dyn DocumentDatabase) -> Vec<Variable> {
+    pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         let vars = match self.fragment(db) {
             Some(fragment) => fragment
                 .selection_set
@@ -1281,7 +1281,7 @@ impl SchemaDefinition {
     // so they are memoised as well
 
     /// Get Schema's query object type definition.
-    pub fn query(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn query(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_query() {
                 op.object_type(db)
@@ -1292,7 +1292,7 @@ impl SchemaDefinition {
     }
 
     /// Get Schema's mutation object type definition.
-    pub fn mutation(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn mutation(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_mutation() {
                 op.object_type(db)
@@ -1303,7 +1303,7 @@ impl SchemaDefinition {
     }
 
     /// Get Schema's subscription object type definition.
-    pub fn subscription(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn subscription(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
             if op.operation_type.is_subscription() {
                 op.object_type(db)
@@ -1332,7 +1332,7 @@ impl RootOperationTypeDefinition {
         self.operation_type
     }
 
-    pub fn object_type(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn object_type(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         db.find_object_type_by_name(self.named_type().name())
     }
 
@@ -1423,7 +1423,7 @@ impl ImplementsInterface {
     /// Get the interface this implements interface is referencing.
     pub fn interface_definition(
         &self,
-        db: &dyn DocumentDatabase,
+        db: &dyn HirDatabase,
     ) -> Option<Arc<InterfaceTypeDefinition>> {
         db.find_interface_by_name(self.interface().to_string())
     }
@@ -1722,7 +1722,7 @@ impl UnionMember {
     }
 
     /// Get the object definition this union member is referencing.
-    pub fn object(&self, db: &dyn DocumentDatabase) -> Option<Arc<ObjectTypeDefinition>> {
+    pub fn object(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         db.find_object_type_by_name(self.name().to_string())
     }
 
@@ -2172,7 +2172,7 @@ impl From<HirNodeLocation> for miette::SourceSpan {
 #[cfg(test)]
 mod tests {
     use crate::ApolloCompiler;
-    use crate::DocumentDatabase;
+    use crate::HirDatabase;
 
     #[test]
     fn huge_floats() {
