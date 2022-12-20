@@ -1,11 +1,18 @@
-use std::sync::Arc;
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 use apollo_parser::{
     ast::{self, AstChildren, AstNode},
     SyntaxNode,
 };
 
-use crate::{database::FileId, hir::*, AstDatabase, InputDatabase};
+use crate::{
+    database::{document::*, FileId},
+    hir::*,
+    AstDatabase, InputDatabase,
+};
 use indexmap::IndexMap;
 
 // HIR creators *ignore* missing data entirely. *Only* missing data
@@ -46,6 +53,65 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     fn directive_definitions(&self) -> ByName<DirectiveDefinition>;
 
     fn input_objects(&self) -> ByName<InputObjectTypeDefinition>;
+
+    // Derived from above queries:
+
+    fn find_operation_by_name(
+        &self,
+        file_id: FileId,
+        name: String,
+    ) -> Option<Arc<OperationDefinition>>;
+
+    fn find_fragment_by_name(
+        &self,
+        file_id: FileId,
+        name: String,
+    ) -> Option<Arc<FragmentDefinition>>;
+
+    fn find_object_type_by_name(&self, name: String) -> Option<Arc<ObjectTypeDefinition>>;
+
+    fn find_union_by_name(&self, name: String) -> Option<Arc<UnionTypeDefinition>>;
+
+    fn find_enum_by_name(&self, name: String) -> Option<Arc<EnumTypeDefinition>>;
+
+    fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceTypeDefinition>>;
+
+    fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
+
+    fn find_definitions_with_directive(&self, directive: String) -> Arc<Vec<Definition>>;
+
+    fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
+
+    fn find_definition_by_name(&self, name: String) -> Option<Definition>;
+
+    fn find_type_system_definition_by_name(&self, name: String) -> Option<Definition>;
+
+    fn types_definitions_by_name(&self) -> Arc<IndexMap<String, TypeDefinition>>;
+
+    fn find_type_definition_by_name(&self, name: String) -> Option<TypeDefinition>;
+
+    fn query_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
+
+    fn mutation_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
+
+    fn subscription_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
+
+    fn operation_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
+
+    fn operation_inline_fragment_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
+
+    fn operation_fragment_spread_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
+
+    fn selection_variables(&self, selection_set: SelectionSet) -> Arc<HashSet<Variable>>;
+
+    fn operation_definition_variables(
+        &self,
+        variables: Arc<Vec<VariableDefinition>>,
+    ) -> Arc<HashSet<Variable>>;
+
+    fn subtype_map(&self) -> Arc<HashMap<String, HashSet<String>>>;
+
+    fn is_subtype(&self, abstract_type: String, maybe_subtype: String) -> bool;
 }
 
 fn db_definitions(db: &dyn HirDatabase) -> Arc<Vec<Definition>> {
@@ -1134,7 +1200,7 @@ fn field(
 ) -> Option<Arc<Field>> {
     let name = name(field.name(), file_id)?;
     let alias = alias(field.alias());
-    let new_parent_obj = parent_ty(db, name.src(), parent_obj.as_deref());
+    let new_parent_obj = parent_ty(db, name.src(), parent_obj.clone());
     let selection_set = selection_set(db, field.selection_set(), new_parent_obj, file_id);
     let directives = directives(field.directives(), file_id);
     let arguments = arguments(field.arguments(), file_id);
@@ -1152,18 +1218,13 @@ fn field(
     Some(Arc::new(field_data))
 }
 
-fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<&str>) -> Option<String> {
-    let name = parent_obj?;
-    // TODO: this should use `db.find_type_definition_by_name(name)`
-    // but can’t (yet?) because `HirDatabase` is not `DocumentDatabase`.
-    db.type_system_definitions()
-        .iter()
-        .find_map(|def| match def {
-            Definition::TypeDefinition(def) if def.name() == name => {
-                Some(def.field(field_name)?.ty().name())
-            }
-            _ => None,
-        })
+fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<String>) -> Option<String> {
+    Some(
+        db.find_type_definition_by_name(parent_obj?)?
+            .field(field_name)?
+            .ty()
+            .name(),
+    )
 }
 
 fn name(name: Option<ast::Name>, file_id: FileId) -> Option<Name> {

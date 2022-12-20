@@ -2,20 +2,15 @@
 // non-optional and will have an error produced in the parser if they are missing.
 
 use crate::{
-    database::{AstStorage, DocumentDatabase, DocumentStorage, HirStorage, InputStorage},
+    database::{AstStorage, HirStorage, InputStorage},
     validation::ValidationStorage,
+    HirDatabase,
 };
 
 pub trait Upcast<T: ?Sized> {
     fn upcast(&self) -> &T;
 }
-#[salsa::database(
-    DocumentStorage,
-    InputStorage,
-    AstStorage,
-    HirStorage,
-    ValidationStorage
-)]
+#[salsa::database(InputStorage, AstStorage, HirStorage, ValidationStorage)]
 #[derive(Default)]
 pub struct RootDatabase {
     pub storage: salsa::Storage<RootDatabase>,
@@ -33,8 +28,8 @@ impl salsa::ParallelDatabase for RootDatabase {
     }
 }
 
-impl Upcast<dyn DocumentDatabase> for RootDatabase {
-    fn upcast(&self) -> &(dyn DocumentDatabase + 'static) {
+impl Upcast<dyn HirDatabase> for RootDatabase {
+    fn upcast(&self) -> &(dyn HirDatabase + 'static) {
         self
     }
 }

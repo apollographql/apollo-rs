@@ -88,7 +88,7 @@ assert!(diagnostics.is_empty());
 #### Accessing fragment definition field types
 
 ```rust
-use apollo_compiler::{ApolloCompiler, hir, DocumentDatabase};
+use apollo_compiler::{ApolloCompiler, hir, HirDatabase};
 use miette::Result;
 
 fn main() -> Result<()> {
