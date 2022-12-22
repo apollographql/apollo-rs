@@ -98,12 +98,23 @@ fn lint(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
 }
 
 fn capitalised_definitions(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
-    let lints: Vec<LintDiagnostic> = db
-        .db_definitions()
+    db.all_operations()
         .iter()
-        .filter_map(|def| {
-            if !def.name()?.chars().next()?.is_uppercase() {
-                if let Some(loc) = def.name_src()?.loc() {
+        .filter_map(|def| def.name_src())
+        .chain(
+            db.types_definitions_by_name()
+                .values()
+                .map(|def| def.name_src()),
+        )
+        .chain(db.all_fragments().values().map(|def| def.name_src()))
+        .chain(
+            db.directive_definitions()
+                .values()
+                .map(|def| def.name_src()),
+        )
+        .filter_map(|name| {
+            if !name.src().chars().next()?.is_uppercase() {
+                if let Some(loc) = name.loc() {
                     let offset = loc.offset();
                     let len = loc.node_len();
 
@@ -120,9 +131,7 @@ fn capitalised_definitions(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
                 None
             }
         })
-        .collect();
-
-    lints
+        .collect()
 }
 
 // Lint Diagnostics.
