@@ -1,0 +1,16 @@
+{
+  dog {
+    ...fragmentOne
+    ...fragmentTwo
+  }
+}
+
+fragment fragmentOne on Dog {
+  name
+}
+
+fragment fragmentTwo on Dog {
+  owner {
+    name
+  }
+}
