@@ -50,5 +50,10 @@ fn bench_parser_many_aliases(c: &mut Criterion) {
     c.bench_function("many_aliases", move |b| b.iter(|| parse_query(query)));
 }
 
-criterion_group!(benches, bench_parser_many_aliases, bench_query_lexer, bench_query_parser);
+criterion_group!(
+    benches,
+    bench_parser_many_aliases,
+    bench_query_lexer,
+    bench_query_parser
+);
 criterion_main!(benches);
