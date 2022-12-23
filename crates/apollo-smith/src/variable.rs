@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 use crate::{
     directive::{Directive, DirectiveLocation},
@@ -41,14 +41,14 @@ impl From<VariableDef> for apollo_encoder::VariableDefinition {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary list of `VariableDef`
-    pub fn variable_definitions(&mut self) -> Result<Vec<VariableDef>> {
+    pub fn variable_definitions(&mut self) -> ArbitraryResult<Vec<VariableDef>> {
         (0..self.u.int_in_range(0..=7usize)?)
             .map(|_| self.variable_definition()) // TODO do not generate duplication variable name
             .collect()
     }
 
     /// Create an arbitrary `VariableDef`
-    pub fn variable_definition(&mut self) -> Result<VariableDef> {
+    pub fn variable_definition(&mut self) -> ArbitraryResult<VariableDef> {
         let name = self.type_name()?;
         let ty = self.choose_ty(&self.list_existing_types())?;
         let default_value = self

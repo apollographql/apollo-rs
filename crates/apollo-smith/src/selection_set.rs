@@ -1,4 +1,4 @@
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 use crate::{
     field::Field,
@@ -92,7 +92,7 @@ impl TryFrom<apollo_parser::ast::Selection> for Selection {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `SelectionSet`
-    pub fn selection_set(&mut self) -> Result<SelectionSet> {
+    pub fn selection_set(&mut self) -> ArbitraryResult<SelectionSet> {
         let mut exclude_names = Vec::new();
         let selection_nb = std::cmp::max(
             self.stack.last().map(|o| o.fields_def().len()).unwrap_or(7),
@@ -100,12 +100,16 @@ impl<'a> DocumentBuilder<'a> {
         );
         let selections = (0..self.u.int_in_range(2..=selection_nb)?)
             .map(|index| self.selection(index, &mut exclude_names)) // TODO do not generate duplication variable name
-            .collect::<Result<Vec<_>>>()?;
+            .collect::<ArbitraryResult<Vec<_>>>()?;
         Ok(SelectionSet { selections })
     }
 
     /// Create an arbitrary `Selection`
-    pub fn selection(&mut self, index: usize, excludes: &mut Vec<Name>) -> Result<Selection> {
+    pub fn selection(
+        &mut self,
+        index: usize,
+        excludes: &mut Vec<Name>,
+    ) -> ArbitraryResult<Selection> {
         let selection = match self.u.int_in_range(0..=2usize)? {
             0 => Selection::Field(self.field(index)?),
             1 => match self.fragment_spread(excludes)? {

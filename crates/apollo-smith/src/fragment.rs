@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 use crate::{
     directive::{Directive, DirectiveLocation},
@@ -174,7 +174,7 @@ impl From<apollo_parser::ast::TypeCondition> for TypeCondition {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `FragmentDef`
-    pub fn fragment_definition(&mut self) -> Result<FragmentDef> {
+    pub fn fragment_definition(&mut self) -> ArbitraryResult<FragmentDef> {
         // TODO: also choose between enum/scalars/object
         let selected_object_type_name = self.u.choose(&self.object_type_defs)?.name.clone();
         let _ = self.stack_ty(&Ty::Named(selected_object_type_name));
@@ -193,7 +193,10 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `FragmentSpread`, returns `None` if no fragment definition was previously created
-    pub fn fragment_spread(&mut self, excludes: &mut Vec<Name>) -> Result<Option<FragmentSpread>> {
+    pub fn fragment_spread(
+        &mut self,
+        excludes: &mut Vec<Name>,
+    ) -> ArbitraryResult<Option<FragmentSpread>> {
         let available_fragment: Vec<&FragmentDef> = self
             .fragment_defs
             .iter()
@@ -212,7 +215,7 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `InlineFragment`
-    pub fn inline_fragment(&mut self) -> Result<InlineFragment> {
+    pub fn inline_fragment(&mut self) -> ArbitraryResult<InlineFragment> {
         let type_condition = self
             .u
             .arbitrary()
@@ -230,7 +233,7 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `TypeCondition`
-    pub fn type_condition(&mut self) -> Result<TypeCondition> {
+    pub fn type_condition(&mut self) -> ArbitraryResult<TypeCondition> {
         let last_element = self.stack.last();
         match last_element {
             Some(last_element) => Ok(TypeCondition {

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 use crate::{
     description::Description,
@@ -83,7 +83,7 @@ impl TryFrom<apollo_parser::ast::ScalarTypeExtension> for ScalarTypeDef {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `ScalarTypeDef`
-    pub fn scalar_type_definition(&mut self) -> Result<ScalarTypeDef> {
+    pub fn scalar_type_definition(&mut self) -> ArbitraryResult<ScalarTypeDef> {
         let extend = !self.scalar_type_defs.is_empty() && self.u.arbitrary().unwrap_or(false);
         let name = if extend {
             let available_scalars: Vec<&Name> = self

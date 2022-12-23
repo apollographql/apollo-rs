@@ -7,7 +7,7 @@ use crate::{
     ty::Ty,
     DocumentBuilder,
 };
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum InputValue {
@@ -184,7 +184,7 @@ impl From<InputValueDef> for apollo_encoder::InputField {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `InputValue`
-    pub fn input_value(&mut self) -> Result<InputValue> {
+    pub fn input_value(&mut self) -> ArbitraryResult<InputValue> {
         let val = match self.u.int_in_range(0..=8usize)? {
             // Int
             0 => InputValue::Int(self.u.arbitrary()?),
@@ -212,14 +212,14 @@ impl<'a> DocumentBuilder<'a> {
                 InputValue::List(
                     (0..self.u.int_in_range(2..=4usize)?)
                         .map(|_| self.input_value())
-                        .collect::<Result<Vec<_>>>()?,
+                        .collect::<ArbitraryResult<Vec<_>>>()?,
                 )
             }
             // Object
             7 => InputValue::Object(
                 (0..self.u.int_in_range(2..=4usize)?)
                     .map(|_| Ok((self.name()?, self.input_value()?)))
-                    .collect::<Result<Vec<_>>>()?,
+                    .collect::<ArbitraryResult<Vec<_>>>()?,
             ),
             // Variable TODO: only generate valid variable name (existing variables)
             8 => InputValue::Variable(self.name()?),
@@ -229,8 +229,8 @@ impl<'a> DocumentBuilder<'a> {
         Ok(val)
     }
 
-    pub fn input_value_for_type(&mut self, ty: &Ty) -> Result<InputValue> {
-        let gen_val = |doc_builder: &mut DocumentBuilder<'_>| -> Result<InputValue> {
+    pub fn input_value_for_type(&mut self, ty: &Ty) -> ArbitraryResult<InputValue> {
+        let gen_val = |doc_builder: &mut DocumentBuilder<'_>| -> ArbitraryResult<InputValue> {
             if ty.is_builtin() {
                 match ty.name().name.as_str() {
                     "String" => Ok(InputValue::String(doc_builder.limited_string(1000)?)),
@@ -267,7 +267,7 @@ impl<'a> DocumentBuilder<'a> {
                                 doc_builder.input_value_for_type(&field_def.ty)?,
                             ))
                         })
-                        .collect::<Result<Vec<_>>>()?,
+                        .collect::<ArbitraryResult<Vec<_>>>()?,
                 ))
             } else {
                 todo!()
@@ -281,7 +281,7 @@ impl<'a> DocumentBuilder<'a> {
                 InputValue::List(
                     (0..nb_elt)
                         .map(|_| gen_val(self))
-                        .collect::<Result<Vec<InputValue>>>()?,
+                        .collect::<ArbitraryResult<Vec<InputValue>>>()?,
                 )
             }
             Ty::NonNull(_) => gen_val(self)?,
@@ -291,7 +291,7 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary list of `InputValueDef`
-    pub fn input_values_def(&mut self) -> Result<Vec<InputValueDef>> {
+    pub fn input_values_def(&mut self) -> ArbitraryResult<Vec<InputValueDef>> {
         let arbitrary_iv_num = self.u.int_in_range(2..=5usize)?;
         let mut input_values = Vec::with_capacity(arbitrary_iv_num - 1);
 
@@ -326,7 +326,7 @@ impl<'a> DocumentBuilder<'a> {
         Ok(input_values)
     }
     /// Create an arbitrary `InputValueDef`
-    pub fn input_value_def(&mut self) -> Result<InputValueDef> {
+    pub fn input_value_def(&mut self) -> ArbitraryResult<InputValueDef> {
         let description = self
             .u
             .arbitrary()

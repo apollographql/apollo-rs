@@ -1,6 +1,6 @@
 use std::fmt::Write as _;
 
-use arbitrary::{Arbitrary, Result, Unstructured};
+use arbitrary::{Arbitrary, Result as ArbitraryResult, Unstructured};
 
 use crate::DocumentBuilder;
 
@@ -82,7 +82,7 @@ impl From<String> for StringValue {
 }
 
 impl Arbitrary<'_> for StringValue {
-    fn arbitrary(u: &mut arbitrary::Unstructured<'_>) -> Result<Self> {
+    fn arbitrary(u: &mut arbitrary::Unstructured<'_>) -> ArbitraryResult<Self> {
         let mut arbitrary_str = limited_string_desc(u, 100)?;
         if arbitrary_str.trim_matches('"').is_empty() {
             let _ = write!(arbitrary_str, "{}", u.arbitrary::<usize>()?);
@@ -100,12 +100,12 @@ impl Arbitrary<'_> for StringValue {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `Description`
-    pub fn description(&mut self) -> Result<Description> {
+    pub fn description(&mut self) -> ArbitraryResult<Description> {
         self.u.arbitrary()
     }
 }
 
-fn limited_string_desc(u: &mut Unstructured<'_>, max_size: usize) -> Result<String> {
+fn limited_string_desc(u: &mut Unstructured<'_>, max_size: usize) -> ArbitraryResult<String> {
     let size = u.int_in_range(0..=max_size)?;
 
     let gen_str = String::from_utf8(
@@ -117,7 +117,7 @@ fn limited_string_desc(u: &mut Unstructured<'_>, max_size: usize) -> Result<Stri
 
                 Ok(CHARSET[idx])
             })
-            .collect::<Result<Vec<u8>>>()?,
+            .collect::<ArbitraryResult<Vec<u8>>>()?,
     )
     .unwrap();
 

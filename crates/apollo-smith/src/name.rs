@@ -1,6 +1,6 @@
 use std::fmt::Write as _;
 
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 use crate::DocumentBuilder;
 
@@ -62,12 +62,12 @@ impl Name {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `Name`
-    pub fn name(&mut self) -> Result<Name> {
+    pub fn name(&mut self) -> ArbitraryResult<Name> {
         Ok(Name::new(self.limited_string(30)?))
     }
 
     /// Create an arbitrary type `Name`
-    pub fn type_name(&mut self) -> Result<Name> {
+    pub fn type_name(&mut self) -> ArbitraryResult<Name> {
         let mut new_name = self.limited_string(30)?;
         if self.list_existing_type_names().any(|n| n.name == new_name) {
             let _ = write!(
@@ -80,7 +80,7 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `Name` with an index included in the name (to avoid name conflict)
-    pub fn name_with_index(&mut self, index: usize) -> Result<Name> {
+    pub fn name_with_index(&mut self, index: usize) -> ArbitraryResult<Name> {
         let mut name = self.limited_string(30)?;
         let _ = write!(name, "{}", index);
 
@@ -88,7 +88,7 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     // Mirror what happens in `Arbitrary for String`, but do so with a clamped size.
-    pub(crate) fn limited_string(&mut self, max_size: usize) -> Result<String> {
+    pub(crate) fn limited_string(&mut self, max_size: usize) -> ArbitraryResult<String> {
         loop {
             let size = self.u.int_in_range(0..=max_size)?;
 
@@ -112,7 +112,7 @@ impl<'a> DocumentBuilder<'a> {
 
                         Ok(ch)
                     })
-                    .collect::<Result<Vec<u8>>>()?,
+                    .collect::<ArbitraryResult<Vec<u8>>>()?,
             )
             .unwrap();
             let new_gen = gen_str.trim_end_matches('_');

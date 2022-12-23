@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use arbitrary::{Arbitrary, Result};
+use arbitrary::{Arbitrary, Result as ArbitraryResult};
 
 use crate::{
     directive::{Directive, DirectiveLocation},
@@ -115,7 +115,7 @@ impl From<apollo_parser::ast::OperationType> for OperationType {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `OperationDef` taking the last `SchemaDef`
-    pub fn operation_definition(&mut self) -> Result<Option<OperationDef>> {
+    pub fn operation_definition(&mut self) -> ArbitraryResult<Option<OperationDef>> {
         let schema = match self.schema_def.clone() {
             Some(schema_def) => schema_def,
             None => return Ok(None),

@@ -7,7 +7,7 @@ use crate::{
     ty::Ty,
     DocumentBuilder,
 };
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 /// A GraphQL service’s collective type system capabilities are referred to as that service’s “schema”.
 ///
@@ -126,7 +126,7 @@ impl TryFrom<apollo_parser::ast::SchemaExtension> for SchemaDef {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `SchemaDef`
-    pub fn schema_definition(&mut self) -> Result<SchemaDef> {
+    pub fn schema_definition(&mut self) -> ArbitraryResult<SchemaDef> {
         let description = self
             .u
             .arbitrary()

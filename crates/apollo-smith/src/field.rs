@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use arbitrary::Result;
+use arbitrary::Result as ArbitraryResult;
 
 use crate::{
     argument::{Argument, ArgumentsDef},
@@ -137,7 +137,7 @@ impl TryFrom<apollo_parser::ast::Field> for Field {
 
 impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary list of `FieldDef`
-    pub fn fields_definition(&mut self, exclude: &[&Name]) -> Result<Vec<FieldDef>> {
+    pub fn fields_definition(&mut self, exclude: &[&Name]) -> ArbitraryResult<Vec<FieldDef>> {
         let num_fields = self.u.int_in_range(2..=50usize)?;
         let mut fields_names = HashSet::with_capacity(num_fields);
 
@@ -176,7 +176,7 @@ impl<'a> DocumentBuilder<'a> {
     }
 
     /// Create an arbitrary `Field` given an object type
-    pub fn field(&mut self, index: usize) -> Result<Field> {
+    pub fn field(&mut self, index: usize) -> ArbitraryResult<Field> {
         let fields_defs = self
             .stack
             .last()
