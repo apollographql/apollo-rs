@@ -1,0 +1,14 @@
+query getDogName {
+  dog {
+    name
+  }
+}
+
+# duplicate name, should show up in diagnostics
+query getDogName {
+  dog {
+    owner {
+      name
+    }
+  }
+}
