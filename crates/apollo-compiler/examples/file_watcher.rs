@@ -12,10 +12,11 @@ use notify::{watcher, DebouncedEvent, RecursiveMode, Watcher};
 
 fn main() -> Result<()> {
     let dir = Path::new("crates/apollo-compiler/examples/documents");
-    let mut watcher = FileWatcher::new();
+    let mut watcher = FileWatcher::default();
     watcher.watch(dir)
 }
 
+#[derive(Default)]
 pub struct FileWatcher {
     compiler: ApolloCompiler,
     manifest: HashMap<PathBuf, FileId>,
@@ -50,15 +51,12 @@ impl FileWatcher {
         let (broadcaster, listener) = channel();
         let mut watcher = watcher(broadcaster, Duration::from_secs(1))?;
         watcher.watch(&dir, RecursiveMode::NonRecursive)?;
-        println!(
-            "{}",
-            format!("watching {} for changes", dir.as_ref().display())
-        );
+        println!("watching {} for changes", dir.as_ref().display());
         loop {
             match listener.recv() {
                 Ok(event) => match &event {
                     DebouncedEvent::NoticeWrite(path) => {
-                        println!("{}", format!("change detected in {}", &path.display()))
+                        println!("changes detected in {}", &path.display())
                     }
                     DebouncedEvent::Write(path) => {
                         match fs::read_to_string(&path) {
@@ -73,8 +71,8 @@ impl FileWatcher {
                             }
                             Err(e) => {
                                 println!(
-                                    "{} {:?}",
-                                    format!("could not read {} from disk", &dir.as_ref().display()),
+                                    "could not read {} from disk, {:?}",
+                                    &dir.as_ref().display(),
                                     Some(anyhow!("{}", e)),
                                 );
                             }
@@ -82,8 +80,8 @@ impl FileWatcher {
                     }
                     DebouncedEvent::Error(e, _) => {
                         println!(
-                            "{} {:?}",
-                            format!("unknown error while watching {}", &dir.as_ref().display()),
+                            "unknown error while watching {},  {:?}",
+                            &dir.as_ref().display(),
                             Some(anyhow!("{}", e)),
                         );
                     }
@@ -91,9 +89,9 @@ impl FileWatcher {
                 },
                 Err(e) => {
                     println!(
-                        "{} {:?}",
-                        format!("unknown error while watching {}", &dir.as_ref().display()),
-                        Some(anyhow!(e)),
+                        "unknown error while watching {},  {:?}",
+                        &dir.as_ref().display(),
+                        Some(anyhow!("{}", e)),
                     );
                 }
             }
