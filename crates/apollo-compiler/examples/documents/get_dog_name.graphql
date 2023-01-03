@@ -5,7 +5,7 @@ query getDogName {
 }
 
 # duplicate name, should show up in diagnostics
-query getDogName {
+query getDogOwner {
   dog {
     owner {
       name
