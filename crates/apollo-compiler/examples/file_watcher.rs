@@ -7,81 +7,114 @@ use std::{
 };
 
 use anyhow::{anyhow, Result};
-use apollo_compiler::{ApolloCompiler, ApolloDiagnostic, FileId};
+use apollo_compiler::{ApolloCompiler, FileId};
 use notify::{watcher, DebouncedEvent, RecursiveMode, Watcher};
 
-#[derive(Default)]
-struct Manifest {
-    sources: HashMap<PathBuf, FileId>,
-}
-
 fn main() -> Result<()> {
-    validate()?;
-    Ok(())
+    let dir = Path::new("crates/apollo-compiler/examples/documents");
+    let mut watcher = FileWatcher::new();
+    watcher.watch(dir)
 }
 
-fn validate() -> Result<()> {
-    let mut compiler = ApolloCompiler::new();
+pub struct FileWatcher {
+    compiler: ApolloCompiler,
+    manifest: HashMap<PathBuf, FileId>,
+}
 
-    let dir = Path::new("crates/apollo-compiler/examples/documents");
-    let mut manifest = Manifest::default();
-
-    for entry in fs::read_dir(dir)? {
-        let (proposed_document, src_path) = get_schema_and_maybe_path(entry?)?;
-        let file_id = compiler.create_document(&proposed_document, &src_path);
-        manifest.sources.insert(src_path, file_id);
+impl FileWatcher {
+    pub fn new() -> Self {
+        Self {
+            compiler: ApolloCompiler::new(),
+            manifest: HashMap::new(),
+        }
     }
 
-    print_diagnostics(compiler.validate());
+    // The `watch` fn first goes over every document in a given directory and
+    // creates it as a new document with compiler's
+    // `compiler.create_document()`.
+    //
+    // We then watch for file changes, and update
+    // each changed document with `compiler.update_document()`.
+    pub fn watch(&mut self, dir: impl AsRef<Path>) -> Result<()> {
+        for entry in fs::read_dir(&dir)? {
+            let (proposed_document, src_path) = get_schema_and_maybe_path(entry?)?;
+            self.add_document(proposed_document, src_path)?;
+        }
 
-    let (broadcaster, listener) = channel();
-    let mut watcher = watcher(broadcaster, Duration::from_secs(1))?;
-    watcher.watch(&dir, RecursiveMode::NonRecursive)?;
+        self.validate();
 
-    println!("{}", format!("watching {} for changes", dir.display()));
-    loop {
-        match listener.recv() {
-            Ok(event) => match &event {
-                DebouncedEvent::NoticeWrite(path) => {
-                    println!("{}", format!("Change detected in {}", &path.display()))
-                }
-                DebouncedEvent::Write(path) => {
-                    match fs::read_to_string(&path) {
-                        Ok(contents) => {
-                            let file_id = manifest.sources.get(path);
-                            if let Some(file_id) = file_id {
-                                compiler.update_document(*file_id, &contents);
-                            } else {
-                                let file_id = compiler.create_document(&contents, &path);
-                                manifest.sources.insert(path.to_path_buf(), file_id);
+        self.watch_broadcast(dir)
+    }
+
+    fn watch_broadcast(&mut self, dir: impl AsRef<Path>) -> Result<()> {
+        let (broadcaster, listener) = channel();
+        let mut watcher = watcher(broadcaster, Duration::from_secs(1))?;
+        watcher.watch(&dir, RecursiveMode::NonRecursive)?;
+        println!(
+            "{}",
+            format!("watching {} for changes", dir.as_ref().display())
+        );
+        loop {
+            match listener.recv() {
+                Ok(event) => match &event {
+                    DebouncedEvent::NoticeWrite(path) => {
+                        println!("{}", format!("change detected in {}", &path.display()))
+                    }
+                    DebouncedEvent::Write(path) => {
+                        match fs::read_to_string(&path) {
+                            Ok(contents) => {
+                                let file_id = self.manifest.get(path);
+                                if let Some(file_id) = file_id {
+                                    self.compiler.update_document(*file_id, &contents);
+                                } else {
+                                    self.add_document(contents, path.to_path_buf())?;
+                                }
+                                self.validate();
                             }
-                            print_diagnostics(compiler.validate());
-                        }
-                        Err(e) => {
-                            println!(
-                                "{} {:?}",
-                                format!("Could not read {} from disk", &dir.display()),
-                                Some(anyhow!("{}", e)),
-                            );
-                        }
-                    };
-                }
-                DebouncedEvent::Error(e, _) => {
+                            Err(e) => {
+                                println!(
+                                    "{} {:?}",
+                                    format!("could not read {} from disk", &dir.as_ref().display()),
+                                    Some(anyhow!("{}", e)),
+                                );
+                            }
+                        };
+                    }
+                    DebouncedEvent::Error(e, _) => {
+                        println!(
+                            "{} {:?}",
+                            format!("unknown error while watching {}", &dir.as_ref().display()),
+                            Some(anyhow!("{}", e)),
+                        );
+                    }
+                    _ => {}
+                },
+                Err(e) => {
                     println!(
                         "{} {:?}",
-                        format!("unknown error while watching {}", &dir.display()),
-                        Some(anyhow!("{}", e)),
+                        format!("unknown error while watching {}", &dir.as_ref().display()),
+                        Some(anyhow!(e)),
                     );
                 }
-                _ => {}
-            },
-            Err(e) => {
-                println!(
-                    "{} {:?}",
-                    format!("unknown error while watching {}", &dir.display()),
-                    Some(anyhow!(e)),
-                );
             }
+        }
+    }
+
+    fn add_document(
+        &mut self,
+        proposed_document: String,
+        src_path: PathBuf,
+    ) -> Result<(), anyhow::Error> {
+        let file_id = self.compiler.create_document(&proposed_document, &src_path);
+        let full_path = fs::canonicalize(src_path)?;
+        self.manifest.insert(full_path, file_id);
+        Ok(())
+    }
+
+    fn validate(&self) {
+        let diagnostics = self.compiler.validate();
+        for diag in diagnostics {
+            println!("{}", diag)
         }
     }
 }
@@ -89,10 +122,4 @@ fn validate() -> Result<()> {
 fn get_schema_and_maybe_path(entry: DirEntry) -> Result<(String, PathBuf)> {
     let src = fs::read_to_string(entry.path()).expect("Could not read document file.");
     Ok((src, entry.path()))
-}
-
-fn print_diagnostics(diagnostics: Vec<ApolloDiagnostic>) {
-    for diag in diagnostics {
-        println!("{}", diag)
-    }
 }
