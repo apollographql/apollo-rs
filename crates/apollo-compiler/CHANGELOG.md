@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [0.5.0](https://crates.io/crates/apollo-compiler/0.5.0) - 2023-01-03
+# [0.5.0](https://crates.io/crates/apollo-compiler/0.5.0) - 2023-01-04
 
 ## Highlights
 ### Multi-file support
