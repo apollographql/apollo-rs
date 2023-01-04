@@ -102,6 +102,7 @@ Completed in [pull/368] in collaboration with [goto-bus-stop], [SimonSapin] and 
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [lrlna]: https://github.com/lrlna
 [SimonSapin]: https://github.com/SimonSapin
+[pull/368]: https://github.com/apollographql/apollo-rs/pull/368
 [pull/391]: https://github.com/apollographql/apollo-rs/pull/391
 [pull/394]: https://github.com/apollographql/apollo-rs/pull/394
 [pull/395]: https://github.com/apollographql/apollo-rs/pull/395
