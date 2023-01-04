@@ -61,7 +61,12 @@ impl FileWatcher {
                     DebouncedEvent::Create(path) => match fs::read_to_string(path) {
                         Ok(contents) => {
                             println!("detected a new file {}", &path.display());
-                            self.add_document(contents, path.to_path_buf())?;
+                            let file_id = self.manifest.get(path);
+                            if let Some(file_id) = file_id {
+                                self.compiler.update_document(*file_id, &contents);
+                            } else {
+                                self.add_document(contents, path.to_path_buf())?;
+                            }
                             self.validate();
                         }
                         Err(e) => {
