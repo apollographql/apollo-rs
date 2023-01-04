@@ -58,8 +58,22 @@ impl FileWatcher {
                     DebouncedEvent::NoticeWrite(path) => {
                         println!("changes detected in {}", &path.display())
                     }
+                    DebouncedEvent::Create(path) => match fs::read_to_string(path) {
+                        Ok(contents) => {
+                            println!("detected a new file {}", &path.display());
+                            self.add_document(contents, path.to_path_buf())?;
+                            self.validate();
+                        }
+                        Err(e) => {
+                            println!(
+                                "could not read {} from disk, {:?}",
+                                &dir.as_ref().display(),
+                                Some(anyhow!("{}", e)),
+                            );
+                        }
+                    },
                     DebouncedEvent::Write(path) => {
-                        match fs::read_to_string(&path) {
+                        match fs::read_to_string(path) {
                             Ok(contents) => {
                                 let file_id = self.manifest.get(path);
                                 if let Some(file_id) = file_id {
