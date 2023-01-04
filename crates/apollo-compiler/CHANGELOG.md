@@ -17,6 +17,108 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.5.0](https://crates.io/crates/apollo-compiler/0.5.0) - 2023-01-04
+
+## Highlights
+### Multi-file support
+You can now build a compiler from multiple sources. This  is especially useful
+when various parts of a GraphQL document are coming in at different times and
+need to be analysed as a single context. Or, alternatively, you are looking to
+lint or validate multiple GraphQL files part of the same context in a given directory or workspace.
+
+The are three different kinds of sources:
+- `document`: for when a source is composed of executable and type system
+definitions, or you're uncertain of definitions types
+- `schema`: for sources with type system definitions or extensions
+- `executable`: for sources with executable definitions/GraphQL queries
+
+You can add a source with `create_` and update it with `update_`, for example
+`create_document` and `update_document`. Here is an example:
+
+```rust
+    let schema = r#"
+type Query {
+  dog: Dog
+}
+
+type Dog {
+  name: String!
+}
+    "#;
+
+    let query = r#"
+query getDogName {
+  dog {
+    name
+  }
+}
+
+# duplicate name, should show up in diagnostics
+query getDogName {
+  dog {
+    owner {
+      name
+    }
+  }
+}
+    "#;
+    let updated_schema = r#"
+type Query {
+  dog: Dog
+}
+
+type Dog {
+  name: String!
+  owner: Human
+}
+
+type Human {
+  name: String!
+}
+    "#;
+    let mut compiler = ApolloCompiler::new();
+    let schema_id = compiler.create_schema(schema, "schema.graphl");
+    let executable_id = compiler.create_executable(query, "query.graphql");
+    compiler.update_schema(updated_schema, schema_id);
+```
+
+For more elaborate examples, please refer to [`multi_source_validation`] and
+[`file_watcher`] examples in the `examples` dir.
+
+We look forward to your feedback on this feature, should you be using it.
+
+Completed in [pull/368] in collaboration with [goto-bus-stop], [SimonSapin] and
+[lrlna].
+
+## BREAKING
+- Remove UUID helpers and related UUID APIs from database by [SimonSapin] in
+[pull/391]
+- Merge `DocumentDatabase` trait into `HIRDatabase` by [SimonSapin] in
+[pull/394]
+- Replace `hir::Definition` enum with `hir::TypeSystemDefinitions` struct by
+[SimonSapin] in [pull/395]
+- `db.type_system_definitions` returns a `TypeSystemDefinitions` by [SimonSapin]
+in [pull/395]
+- Remove `db.db_definitions`, `find_definition_by_name` and
+`find_type_system_definition_by_name` by [SimonSapin] in [pull/395]
+- Remove queries returning type extensions, instead type definitions in the HIR
+contain extension information by [SimonSapin] in [pull/387]
+
+## Features
+- `db.fragments`, `db.object_types`, `db.scalars`, `db.enums`, `db.unions`,
+`db.interfaces`, `db.input_objects`, and `db.directive_definitions` return
+name-indexed maps by [SimonSapin] in [pull/387]
+
+[`file_watcher`]: https://github.com/apollographql/apollo-rs/blob/eb9687fc64dfe0bf618f2025f633e52950940b8a/crates/apollo-compiler/examples/file_watcher.rs
+[`multi_source_validation`]: https://github.com/apollographql/apollo-rs/blob/8c66c2c36053ff592682504276307a3fead0b3ad/crates/apollo-compiler/examples/multi_source_validation.rs
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[lrlna]: https://github.com/lrlna
+[SimonSapin]: https://github.com/SimonSapin
+[pull/368]: https://github.com/apollographql/apollo-rs/pull/368
+[pull/391]: https://github.com/apollographql/apollo-rs/pull/391
+[pull/394]: https://github.com/apollographql/apollo-rs/pull/394
+[pull/395]: https://github.com/apollographql/apollo-rs/pull/395
+[pull/387]: https://github.com/apollographql/apollo-rs/pull/387
 
 # [0.4.1](https://crates.io/crates/apollo-compiler/0.4.1) - 2022-12-13
 ## Features
