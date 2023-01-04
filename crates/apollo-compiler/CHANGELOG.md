@@ -109,7 +109,7 @@ contain extension information by [SimonSapin] in [pull/387]
 `db.interfaces`, `db.input_objects`, and `db.directive_definitions` return
 name-indexed maps by [SimonSapin] in [pull/387]
 
-[`file_watcher`]: https://github.com/apollographql/apollo-rs/blob/8c66c2c36053ff592682504276307a3fead0b3ad/crates/apollo-compiler/examples/file_watcher.rs
+[`file_watcher`]: https://github.com/apollographql/apollo-rs/blob/eb9687fc64dfe0bf618f2025f633e52950940b8a/crates/apollo-compiler/examples/file_watcher.rs
 [`multi_source_validation`]: https://github.com/apollographql/apollo-rs/blob/8c66c2c36053ff592682504276307a3fead0b3ad/crates/apollo-compiler/examples/multi_source_validation.rs
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [lrlna]: https://github.com/lrlna
