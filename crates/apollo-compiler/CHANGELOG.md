@@ -85,11 +85,28 @@ For more elaborate examples, please refer to [`multi_source_validation`] and
 
 Completed in [pull/368] in collaboration with [goto-bus-stop], [SimonSapin] and [lrlna].
 
+## BREAKING
+- Remove UUID helpers and related UUID APIs from database by [SimonSapin] in
+[pull/391]
+- Merge `DocumentDatabase` trait into `HIRDatabase` by [SimonSapin] in [pull/394]
+- Replace `hir::Definition` enum with `hir::TypeSystemDefinitions` struct by [SimonSapin] in [pull/395]
+- `db.type_system_definitions` returns a `TypeSystemDefinitions` by [SimonSapin] in [pull/395]
+- Remove `db.db_definitions`, `find_definition_by_name` and `find_type_system_definition_by_name` by [SimonSapin] in [pull/395]
+- Remove queries returning type extensions, instead type definitions in the HIR contain extension information by [SimonSapin] in [pull/387]
+
+## Features
+- `db.fragments`, `db.object_types`, `db.scalars`, `db.enums`, `db.unions`, `db.interfaces`, `db.input_objects`, and `db.directive_definitions` return name-indexed maps by [SimonSapin] in [pull/387]
+
+
 [`file_watcher`]:
 [`multi_source_validation`]: https://github.com/apollographql/apollo-rs/blob/8c66c2c36053ff592682504276307a3fead0b3ad/crates/apollo-compiler/examples/multi_source_validation.rs
 [goto-bus-stop]: https://github.com/goto-bus-stop
-[SimonSapin]: https://github.com/SimonSapin
 [lrlna]: https://github.com/lrlna
+[SimonSapin]: https://github.com/SimonSapin
+[pull/391]: https://github.com/apollographql/apollo-rs/pull/391
+[pull/394]: https://github.com/apollographql/apollo-rs/pull/394
+[pull/395]: https://github.com/apollographql/apollo-rs/pull/395
+[pull/387]: https://github.com/apollographql/apollo-rs/pull/387
 
 # [0.4.1](https://crates.io/crates/apollo-compiler/0.4.1) - 2022-12-13
 ## Features
