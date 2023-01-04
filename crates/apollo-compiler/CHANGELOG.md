@@ -17,6 +17,79 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.5.0](https://crates.io/crates/apollo-compiler/0.5.0) - 2023-01-03
+
+## Highlights
+### Multi-file support
+You can now build a compiler from multiple sources. This  is especially useful
+when various parts of a GraphQL document are coming in at different times and
+need to be analysed as a single context. Or, alternatively, you are looking to
+lint or validate multiple GraphQL files part of the same context in a given directory or workspace.
+
+The are three different kinds of sources:
+- `document`: for when a source is composed of executable and type system definitions, or you're uncertain of definitions types
+- `schema`: for sources with type system definitions or extensions
+- `executable`: for sources with executable definitions/GraphQL queries
+
+You can add a source with `create_` and update it with `update_`, for example `create_document` and `update_document`. Here is an example:
+
+```rust
+    let schema = r#"
+type Query {
+  dog: Dog
+}
+
+type Dog {
+  name: String!
+}
+    "#;
+
+    let query = r#"
+query getDogName {
+  dog {
+    name
+  }
+}
+
+# duplicate name, should show up in diagnostics
+query getDogName {
+  dog {
+    owner {
+      name
+    }
+  }
+}
+    "#;
+    let udpated_schema = r#"
+type Query {
+  dog: Dog
+}
+
+type Dog {
+  name: String!
+  owner: Human
+}
+
+type Human {
+  name: String!
+}
+    "#;
+    let mut compiler = ApolloCompiler::new();
+    let schema_id = compiler.create_schema(schema, "schema.graphl");
+    let executable_id = compiler.create_executable(query, "query.graphql");
+    compiler.update_schema(updated_schema, schema_id);
+```
+
+For more elaborate examples, please refer to [`multi_source_validation`] and
+[`file_watcher`] examples in the `example` dir.
+
+Completed in [pull/368] in collaboration with [goto-bus-stop], [SimonSapin] and [lrlna].
+
+[`file_watcher`]:
+[`multi_source_validation`]: https://github.com/apollographql/apollo-rs/blob/8c66c2c36053ff592682504276307a3fead0b3ad/crates/apollo-compiler/examples/multi_source_validation.rs
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
+[lrlna]: https://github.com/lrlna
 
 # [0.4.1](https://crates.io/crates/apollo-compiler/0.4.1) - 2022-12-13
 ## Features
