@@ -62,7 +62,7 @@ query getDogName {
   }
 }
     "#;
-    let udpated_schema = r#"
+    let updated_schema = r#"
 type Query {
   dog: Dog
 }
@@ -83,7 +83,7 @@ type Human {
 ```
 
 For more elaborate examples, please refer to [`multi_source_validation`] and
-[`file_watcher`] examples in the `example` dir.
+[`file_watcher`] examples in the `examples` dir.
 
 We look forward to your feedback on this feature, should you be using it.
 
