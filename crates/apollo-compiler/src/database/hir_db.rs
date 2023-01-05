@@ -61,8 +61,6 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
 
     // Derived from above queries:
     /// Return an operation definition corresponding to the name and file id.
-    /// Result of this query is not cached internally.
-    #[salsa::transparent]
     fn find_operation_by_name(
         &self,
         file_id: FileId,
