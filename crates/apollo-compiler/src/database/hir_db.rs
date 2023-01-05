@@ -20,6 +20,7 @@ use indexmap::IndexMap;
 
 #[salsa::query_group(HirStorage)]
 pub trait HirDatabase: InputDatabase + AstDatabase {
+    /// Return all type system definitions defined in the compiler.
     fn type_system_definitions(&self) -> Arc<TypeSystemDefinitions>;
 
     /// Return all the operations defined in a file.
@@ -34,75 +35,170 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Return all the fragments defined in any file.
     fn all_fragments(&self) -> ByName<FragmentDefinition>;
 
+    /// Return schema definition defined in the compiler.
     fn schema(&self) -> Arc<SchemaDefinition>;
 
+    /// Return all object type definitions defined in the compiler.
     fn object_types(&self) -> ByName<ObjectTypeDefinition>;
 
+    /// Return all scalar type definitions defined in the compiler.
     fn scalars(&self) -> ByName<ScalarTypeDefinition>;
 
+    /// Return all enum type definitions defined in the compiler.
     fn enums(&self) -> ByName<EnumTypeDefinition>;
 
+    /// Return all union type definitions defined in the compiler.
     fn unions(&self) -> ByName<UnionTypeDefinition>;
 
+    /// Return all interface type definitions defined in the compiler.
     fn interfaces(&self) -> ByName<InterfaceTypeDefinition>;
 
+    /// Return all directive definitions defined in the compiler.
     fn directive_definitions(&self) -> ByName<DirectiveDefinition>;
 
+    /// Return all input object type definitions defined in the compiler.
     fn input_objects(&self) -> ByName<InputObjectTypeDefinition>;
 
     // Derived from above queries:
-
+    /// Return an operation definition corresponding to the name and file id.
     fn find_operation_by_name(
         &self,
         file_id: FileId,
         name: String,
     ) -> Option<Arc<OperationDefinition>>;
 
+    /// Return an fragment definition corresponding to the name and file id.
+    /// Result of this query is not cached internally.
+    #[salsa::transparent]
     fn find_fragment_by_name(
         &self,
         file_id: FileId,
         name: String,
     ) -> Option<Arc<FragmentDefinition>>;
 
+    /// Return an object type definition corresponding to the name.
+    /// Result of this query is not cached internally.
+    #[salsa::transparent]
     fn find_object_type_by_name(&self, name: String) -> Option<Arc<ObjectTypeDefinition>>;
 
+    /// Return an union type definition corresponding to the name.
+    /// Result of this query is not cached internally.
+    #[salsa::transparent]
     fn find_union_by_name(&self, name: String) -> Option<Arc<UnionTypeDefinition>>;
 
+    /// Return an enum type definition corresponding to the name.
+    /// Result of this query is not cached internally.
+    #[salsa::transparent]
     fn find_enum_by_name(&self, name: String) -> Option<Arc<EnumTypeDefinition>>;
 
+    /// Return an interface type definition corresponding to the name.
+    /// Result of this query is not cached internally.
+    #[salsa::transparent]
     fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceTypeDefinition>>;
 
+    /// Return an directive definition corresponding to the name.
+    /// Result of this query is not cached internally.
+    #[salsa::transparent]
     fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
 
+    /// Return any type definitions that contain the corresponding directive
     fn find_types_with_directive(&self, directive: String) -> Arc<Vec<TypeDefinition>>;
 
+    /// Return an input object type definition corresponding to the name.
+    /// Result of this query is not cached internally.
+    #[salsa::transparent]
     fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
 
     fn types_definitions_by_name(&self) -> Arc<IndexMap<String, TypeDefinition>>;
 
+    /// Return a type definition corresponding to the name.
+    /// Result of this query is not cached internally.
+    #[salsa::transparent]
     fn find_type_definition_by_name(&self, name: String) -> Option<TypeDefinition>;
 
+    /// Return all query operations in a corresponding file.
     fn query_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
+    /// Return all mutation operations in a corresponding file.
     fn mutation_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
+    /// Return all subscription operations in a corresponding file.
     fn subscription_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
+    /// Return all operation fields in a corresponding selection set.
     fn operation_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
+    /// Return all operation inline fragment fields in a corresponding selection set.
     fn operation_inline_fragment_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
+    /// Return all operation fragment spread fields in a corresponding selection set.
     fn operation_fragment_spread_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
+    /// Return all variables in a corresponding selection set.
     fn selection_variables(&self, selection_set: SelectionSet) -> Arc<HashSet<Variable>>;
 
+    /// Return all variables in corresponding variable definitions.
     fn operation_definition_variables(
         &self,
         variables: Arc<Vec<VariableDefinition>>,
     ) -> Arc<HashSet<Variable>>;
 
+    /// Return a subtype map of the current compiler's type system.
+    ///
+    /// Given the following schema,
+    /// ```graphql
+    /// type Query {
+    ///   me: String
+    /// }
+    /// type Foo {
+    ///   me: String
+    /// }
+    /// type Bar {
+    ///   me: String
+    /// }
+    /// union UnionType = Foo | Bar
+    ///
+    /// interface Baz {
+    ///   me: String,
+    /// }
+    /// type ObjectType implements Baz { me: String }
+    /// interface InterfaceType implements Baz { me: String }
+    /// ```
+    /// we can say that:
+    ///
+    /// - `Foo` and `Bar` are a subtypes of `UnionType`.
+    /// - `ObjectType` and `InterfaceType` are subtypes of `Baz`.
     fn subtype_map(&self) -> Arc<HashMap<String, HashSet<String>>>;
 
+    /// Return `true` if the provided `maybe_subtype` is a subtype of the
+    /// corresponding `abstract_type`.
+    ///
+    /// Given the following schema,
+    /// ```graphql
+    /// type Query {
+    ///   me: String
+    /// }
+    /// type Foo {
+    ///   me: String
+    /// }
+    /// type Bar {
+    ///   me: String
+    /// }
+    /// union UnionType = Foo | Bar
+    ///
+    /// interface Baz {
+    ///   me: String,
+    /// }
+    /// type ObjectType implements Baz { me: String }
+    /// interface InterfaceType implements Baz { me: String }
+    /// ```
+    /// we can say that:
+    ///
+    /// - `db.is_subtype("UnionType".into(), "Foo".into()) // true`
+    /// - `db.is_subtype("UnionType".into(), "Bar".into()) // true`
+    /// - `db.is_subtype("Baz".into(), "ObjectType".into()) // true`
+    /// - `db.is_subtype("Baz".into(), "InterfaceType".into()) // true`
+    #[salsa::transparent]
     fn is_subtype(&self, abstract_type: String, maybe_subtype: String) -> bool;
 }
 

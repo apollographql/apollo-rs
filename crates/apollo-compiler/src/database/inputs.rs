@@ -3,9 +3,11 @@ use std::sync::Arc;
 
 #[salsa::query_group(InputStorage)]
 pub trait InputDatabase {
+    /// Get the currently set recursion limit.
     #[salsa::input]
     fn recursion_limit(&self) -> Option<usize>;
 
+    /// Get input source of the corresponding file.
     #[salsa::input]
     fn input(&self, file_id: FileId) -> Source;
 
@@ -19,7 +21,10 @@ pub trait InputDatabase {
     #[salsa::input]
     fn source_files(&self) -> Vec<FileId>;
 
+    /// Get all type system definition (GraphQL schema) files.
     fn type_definition_files(&self) -> Vec<FileId>;
+
+    /// Get all executable definition (GraphQL query) files.
     fn executable_definition_files(&self) -> Vec<FileId>;
 }
 
