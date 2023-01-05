@@ -1,0 +1,10 @@
+query Query {
+  allProducts {
+    id
+    sku
+    createdBy {
+      email
+      totalProductsCreated
+    }
+  }
+}
