@@ -49,6 +49,11 @@ or writing out query planning and composition algorithms in Rust. These all have
 quite different requirements when it comes to AST manipulation. We wanted to
 make sure we account for them early on.
 
+## Rust versions
+
+`apollo-rs` is tested on the latest stable version of Rust.
+Older version may or may not be compatible.
+
 ## License
 Licensed under either of
 

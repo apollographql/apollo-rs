@@ -33,6 +33,11 @@ Or using [cargo-edit]:
 cargo add apollo-encoder
 ```
 
+## Rust versions
+
+`apollo-encoder` is tested on the latest stable version of Rust.
+Older version may or may not be compatible.
+
 ## Examples
 
 ### Create executable definitions

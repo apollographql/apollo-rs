@@ -35,6 +35,11 @@ Or using [cargo-edit]:
 cargo add apollo-compiler
 ```
 
+## Rust versions
+
+`apollo-compiler` is tested on the latest stable version of Rust.
+Older version may or may not be compatible.
+
 ## Usage
 `apollo-compiler` is built using [`salsa`] to provide a
 memoised query system on top of the AST produced by `apollo-parser`.

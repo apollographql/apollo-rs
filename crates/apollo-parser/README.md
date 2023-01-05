@@ -37,6 +37,11 @@ Or using [cargo-edit]:
 cargo add apollo-parser
 ```
 
+## Rust versions
+
+`apollo-parser` is tested on the latest stable version of Rust.
+Older version may or may not be compatible.
+
 ## Usage
 `apollo-parser` is built to parse both GraphQL schemas and queries according to
 the latest [October 2021 specification]. It produces a typed syntax tree that
