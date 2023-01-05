@@ -29,6 +29,12 @@ anything that requires GraphQL document generation.
 
 This is still a work in progress, for outstanding issues, checkout out the
 [apollo-smith label] in our issue tracker.
+
+## Rust versions
+
+`apollo-smith` is tested with the latest Stable version of Rust.
+Older version may or may not be compatible.
+
 ## Using `apollo-smith` with `cargo fuzz`
 
 Define a new target with [`cargo fuzz`],
