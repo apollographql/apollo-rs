@@ -172,8 +172,8 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// - `ObjectType` and `InterfaceType` are subtypes of `Baz`.
     fn subtype_map(&self) -> Arc<HashMap<String, HashSet<String>>>;
 
-    /// Return `true` if the provided `abstract_type` is a subtype of the
-    /// corresponding `maybe_subtype`.
+    /// Return `true` if the provided `maybe_subtype` is a subtype of the
+    /// corresponding `abstract_type`.
     ///
     /// Given the following schema,
     /// ```graphql
