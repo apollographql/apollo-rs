@@ -51,7 +51,7 @@ make sure we account for them early on.
 
 ## Rust versions
 
-`apollo-rs` is tested with the latest Stable version of Rust.
+`apollo-rs` is tested on the latest stable version of Rust.
 Older version may or may not be compatible.
 
 ## License

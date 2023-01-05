@@ -32,7 +32,7 @@ This is still a work in progress, for outstanding issues, checkout out the
 
 ## Rust versions
 
-`apollo-smith` is tested with the latest Stable version of Rust.
+`apollo-smith` is tested on the latest stable version of Rust.
 Older version may or may not be compatible.
 
 ## Using `apollo-smith` with `cargo fuzz`

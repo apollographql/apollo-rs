@@ -37,7 +37,7 @@ cargo add apollo-compiler
 
 ## Rust versions
 
-`apollo-compiler` is tested with the latest Stable version of Rust.
+`apollo-compiler` is tested on the latest stable version of Rust.
 Older version may or may not be compatible.
 
 ## Usage
