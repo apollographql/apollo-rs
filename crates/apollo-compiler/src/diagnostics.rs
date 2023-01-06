@@ -1,11 +1,11 @@
 use std::{fmt, sync::Arc};
 
+use crate::database::hir::HirNodeLocation;
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
-    MissingIdent(MissingIdent),
     MissingField(MissingField),
     UniqueDefinition(UniqueDefinition),
     SingleRootField(SingleRootField),
@@ -24,14 +24,14 @@ pub enum ApolloDiagnostic {
     UnusedVariable(UnusedVariable),
     OutputType(OutputType),
     ObjectType(ObjectType),
+    Diagnostic2(Diagnostic2),
 }
 
 impl ApolloDiagnostic {
     pub fn is_error(&self) -> bool {
         matches!(
             self,
-            ApolloDiagnostic::MissingIdent(_)
-                | ApolloDiagnostic::MissingField(_)
+            ApolloDiagnostic::MissingField(_)
                 | ApolloDiagnostic::UniqueDefinition(_)
                 | ApolloDiagnostic::SingleRootField(_)
                 | ApolloDiagnostic::UnsupportedOperation(_)
@@ -46,6 +46,7 @@ impl ApolloDiagnostic {
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::OutputType(_)
                 | ApolloDiagnostic::ObjectType(_)
+                | ApolloDiagnostic::Diagnostic2(_)
         )
     }
 
@@ -62,7 +63,6 @@ impl ApolloDiagnostic {
 
     pub fn report(&self) -> Report {
         match self {
-            ApolloDiagnostic::MissingIdent(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueDefinition(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::SingleRootField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UnsupportedOperation(diagnostic) => Report::new(diagnostic.clone()),
@@ -85,28 +85,129 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::Diagnostic2(_) => unimplemented!("Diagnostic2 can only be Displayed"),
         }
     }
 }
 
 impl fmt::Display for ApolloDiagnostic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "{:?}", self.report())
+        if let Self::Diagnostic2(diagnostic) = self {
+            let mut buf = std::io::Cursor::new(vec![]);
+            diagnostic.into_report()
+                .write(todo!(), &mut buf)
+                .unwrap();
+            writeln!(f, "{}", std::str::from_utf8(&buf.into_inner()).unwrap())
+        } else {
+            writeln!(f, "{:?}", self.report())
+        }
     }
 }
 
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("expected identifier")]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct MissingIdent {
-    #[source_code]
-    pub src: Arc<str>,
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct Label {
+    // TODO do not name this type after the HIR
+    pub location: HirNodeLocation,
+    pub text: String,
+}
+impl Label {
+    pub fn new(location: impl Into<HirNodeLocation>, text: impl Into<String>) -> Self {
+        Self {
+            location: location.into(),
+            text: text.into(),
+        }
+    }
+}
 
-    #[label = "provide a name for this definition"]
-    pub definition: SourceSpan,
-
-    #[help]
+#[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("{data}")]
+pub struct Diagnostic2 {
+    pub location: HirNodeLocation,
+    pub labels: Vec<Label>,
     pub help: Option<String>,
+    pub data: DiagnosticData,
+}
+impl Diagnostic2 {
+    pub fn new(location: HirNodeLocation, data: DiagnosticData) -> Self {
+        Self {
+            location,
+            labels: vec![],
+            help: None,
+            data,
+        }
+    }
+
+    pub fn help(self, help: impl Into<String>) -> Self {
+        Self {
+            help: Some(help.into()),
+            ..self
+        }
+    }
+
+    pub fn labels(self, labels: impl Into<Vec<Label>>) -> Self {
+        Self {
+            labels: labels.into(),
+            ..self
+        }
+    }
+
+    pub fn label(mut self, label: Label) -> Self {
+        self.labels.push(label);
+        self
+    }
+}
+
+/// Structured data about a diagnostic.
+#[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum DiagnosticData {
+    #[error("expected identifier")]
+    MissingIdent,
+    #[error("the {ty} `{name}` is defined multiple times in the document")]
+    UniqueDefinition {
+        ty: &'static str,
+        name: String,
+        original_definition: HirNodeLocation,
+        redefined_definition: HirNodeLocation,
+    },
+    #[error("Subscriptions operations can only have one root field")]
+    SingleRootField {
+        // TODO(goto-bus-stop) if we keep this it should be a vec of the field names or nodes i think.
+        // Else just remove as the labeling is done separately.
+        fields: usize,
+        subscription: HirNodeLocation,
+    },
+    #[error("{ty} root operation type is not defined")]
+    UnsupportedOperation {
+        // current operation type: subscription, mutation, query
+        ty: &'static str,
+    },
+    #[error("Cannot query `{field}` field")]
+    UndefinedField {
+        /// Field name
+        field: String,
+    },
+}
+
+type Span = (crate::FileId, std::ops::Range<usize>);
+
+impl From<Label> for ariadne::Label<Span> {
+    fn from(label: Label) -> Self {
+        let start = label.location.offset();
+        let end = start + label.location.node_len();
+        Self::new((label.location.file_id(), start..end))
+            .with_message(label.text)
+    }
+}
+
+impl Diagnostic2 {
+    pub fn into_report(self) -> ariadne::Report<Span> {
+        use ariadne::{Report, ReportKind};
+
+        let mut builder = Report::build(ReportKind::Error, self.location.file_id(), 0);
+        builder.add_labels(self.labels.into_iter().map(|label| label.into()));
+        builder.finish()
+    }
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
@@ -363,7 +464,6 @@ pub struct ObjectType {
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("Cannot query `{}` field", self.field)]
-/// Returns `true` if the definition is either a [`ScalarTypeDefinition`],
 #[diagnostic(code("apollo-compiler validation error"))]
 pub struct UndefinedField {
     // field name
