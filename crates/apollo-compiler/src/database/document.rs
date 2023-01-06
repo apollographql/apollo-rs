@@ -9,6 +9,9 @@ use indexmap::IndexMap;
 pub(crate) fn types_definitions_by_name(
     db: &dyn HirDatabase,
 ) -> Arc<IndexMap<String, TypeDefinition>> {
+    if let Some(precomputed) = db.precomputed_input() {
+        return precomputed.type_definitions_by_name.clone();
+    }
     let mut map = IndexMap::new();
     macro_rules! add {
         ($get: ident, $variant: ident) => {
@@ -261,6 +264,9 @@ pub(crate) fn operation_definition_variables(
 }
 
 pub(crate) fn subtype_map(db: &dyn HirDatabase) -> Arc<HashMap<String, HashSet<String>>> {
+    if let Some(precomputed) = db.precomputed_input() {
+        return precomputed.subtype_map.clone();
+    }
     let mut map = HashMap::<String, HashSet<String>>::new();
     let mut add = |key: &str, value: &str| {
         map.entry(key.to_owned())
