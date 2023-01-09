@@ -1,5 +1,5 @@
 use super::sources::{FileId, Source, SourceType};
-use crate::hir::PrecomputedTypeSystem;
+use crate::hir::TypeSystem;
 use std::sync::Arc;
 
 #[salsa::query_group(InputStorage)]
@@ -10,7 +10,7 @@ pub trait InputDatabase {
 
     /// Get input source of the corresponding file.
     #[salsa::input]
-    fn precomputed_input(&self) -> Option<Arc<PrecomputedTypeSystem>>;
+    fn precomputed_input(&self) -> Option<Arc<TypeSystem>>;
 
     #[salsa::input]
     fn input(&self, file_id: FileId) -> Source;

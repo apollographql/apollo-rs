@@ -23,7 +23,7 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     fn type_system_definitions(&self) -> Arc<TypeSystemDefinitions>;
 
     /// Return a `PrecomputedTypeSystem` which can be used to add a type system to a new instance of `ApolloCompiler`.
-    fn precomputed_type_system(&self) -> Arc<PrecomputedTypeSystem>;
+    fn precomputed_type_system(&self) -> Arc<TypeSystem>;
 
     /// Return all the operations defined in a file.
     fn operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
@@ -220,11 +220,11 @@ fn type_system_definitions(db: &dyn HirDatabase) -> Arc<TypeSystemDefinitions> {
     })
 }
 
-fn precomputed_type_system(db: &dyn HirDatabase) -> Arc<PrecomputedTypeSystem> {
+fn precomputed_type_system(db: &dyn HirDatabase) -> Arc<TypeSystem> {
     if let Some(precomputed_input) = db.precomputed_input() {
         return precomputed_input;
     }
-    Arc::new(PrecomputedTypeSystem {
+    Arc::new(TypeSystem {
         definitions: db.type_system_definitions(),
         type_definitions_by_name: db.types_definitions_by_name(),
         subtype_map: db.subtype_map(),

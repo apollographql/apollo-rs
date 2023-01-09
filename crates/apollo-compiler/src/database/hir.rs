@@ -27,10 +27,13 @@ pub struct TypeSystemDefinitions {
 
 /// Contains `TypeSystemDefinitions` together with:
 ///
-/// * Other data that can be derived from it.
-/// * Relevant inputs
+/// * Other data that can be derived from it, computed eagerly
+/// * Relevant inputs, so that diagnostics can print context
+///
+/// This can be used with [`set_type_system_hir`][crate::ApolloCompiler::set_type_system_hir]
+/// on another compiler.
 #[derive(PartialEq, Eq, Debug)]
-pub struct PrecomputedTypeSystem {
+pub struct TypeSystem {
     pub definitions: Arc<TypeSystemDefinitions>,
     pub inputs: IndexMap<FileId, Source>,
     pub type_definitions_by_name: Arc<IndexMap<String, TypeDefinition>>,

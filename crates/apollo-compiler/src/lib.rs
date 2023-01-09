@@ -11,7 +11,6 @@ use std::{path::Path, sync::Arc};
 use salsa::ParallelDatabase;
 use validation::ValidationDatabase;
 
-use database::hir::PrecomputedTypeSystem;
 pub use database::{hir, AstDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source};
 pub use diagnostics::ApolloDiagnostic;
 
@@ -84,7 +83,7 @@ impl ApolloCompiler {
     }
 
     /// Add or update a pre-computed input for type system definitions
-    pub fn set_precomputed_schema(&mut self, schema: Arc<PrecomputedTypeSystem>) {
+    pub fn set_type_system_hir(&mut self, schema: Arc<hir::TypeSystem>) {
         if !self.db.type_definition_files().is_empty() {
             panic!(
                 "Having both string inputs and pre-computed inputs \
@@ -1222,7 +1221,7 @@ type Query {
                 std::thread::spawn(move || {
                     let mut compiler = ApolloCompiler::new();
                     let query_id = compiler.add_executable(query, "query.graphql");
-                    compiler.set_precomputed_schema(cloned);
+                    compiler.set_type_system_hir(cloned);
                     compiler
                         .db
                         .find_anonymous_operation(query_id)
