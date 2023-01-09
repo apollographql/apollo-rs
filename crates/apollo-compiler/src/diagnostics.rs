@@ -93,11 +93,7 @@ impl ApolloDiagnostic {
 impl fmt::Display for ApolloDiagnostic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Self::Diagnostic2(diagnostic) = self {
-            let mut buf = std::io::Cursor::new(vec![]);
-            diagnostic.into_report()
-                .write(todo!(), &mut buf)
-                .unwrap();
-            writeln!(f, "{}", std::str::from_utf8(&buf.into_inner()).unwrap())
+            writeln!(f, "{}", diagnostic)
         } else {
             writeln!(f, "{:?}", self.report())
         }
