@@ -69,7 +69,7 @@ mod tests {
         }
         "#;
         let mut compiler = ApolloCompiler::with_recursion_limit(1);
-        let doc_id = compiler.create_document(schema, "schema.graphql");
+        let doc_id = compiler.add_document(schema, "schema.graphql");
 
         let ast = compiler.db.ast(doc_id);
 
@@ -88,7 +88,7 @@ mod tests {
         }
         "#;
         let mut compiler = ApolloCompiler::with_recursion_limit(7);
-        let doc_id = compiler.create_document(schema, "schema.graphql");
+        let doc_id = compiler.add_document(schema, "schema.graphql");
 
         let ast = compiler.db.ast(doc_id);
 

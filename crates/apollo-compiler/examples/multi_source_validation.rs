@@ -18,7 +18,7 @@ fn compile_from_dir() -> io::Result<()> {
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
             let src = fs::read_to_string(entry.path()).expect("Could not read document file.");
-            compiler.create_document(&src, entry.path());
+            compiler.add_document(&src, entry.path());
         }
     }
 
@@ -37,18 +37,18 @@ fn compile_schema_and_query_files() -> io::Result<()> {
     // add a schema file
     let schema = Path::new("crates/apollo-compiler/examples/documents/schema.graphql");
     let src = fs::read_to_string(schema).expect("Could not read schema file.");
-    compiler.create_schema(&src, schema);
+    compiler.add_schema(&src, schema);
 
-    // schema_extension is still a file containing a type system, and it also gets added under .create_schema API
+    // schema_extension is still a file containing a type system, and it also gets added under .add_schema API
     let schema_ext =
         Path::new("crates/apollo-compiler/examples/documents/schema_extension.graphql");
     let src = fs::read_to_string(schema_ext).expect("Could not read schema ext file.");
-    compiler.create_schema(&src, schema_ext);
+    compiler.add_schema(&src, schema_ext);
 
-    // get_dog_name is a query-only file and gets added with a .create_executable API
+    // get_dog_name is a query-only file and gets added with a .add_executable API
     let query = Path::new("crates/apollo-compiler/examples/documents/get_dog_name.graphql");
     let src = fs::read_to_string(query).expect("Could not read query file.");
-    compiler.create_executable(&src, query);
+    compiler.add_executable(&src, query);
 
     let diagnostics = compiler.validate();
     for diagnostic in &diagnostics {
@@ -132,8 +132,8 @@ query getDogName {
 }
     "#;
     let mut compiler = ApolloCompiler::new();
-    compiler.create_schema(schema, "schema.graphl");
-    compiler.create_executable(query, "query.graphql");
+    compiler.add_schema(schema, "schema.graphl");
+    compiler.add_executable(query, "query.graphql");
 
     let diagnostics = compiler.validate();
     for diagnostic in &diagnostics {

@@ -7,7 +7,7 @@ fn compile_query() -> Option<Arc<hir::FragmentDefinition>> {
     let src = fs::read_to_string(file).expect("Could not read schema file.");
 
     let mut compiler = ApolloCompiler::new();
-    let document_id = compiler.create_document(&src, file);
+    let document_id = compiler.add_document(&src, file);
     // let errors = ctx.validate();
 
     let operations = compiler.db.operations(document_id);

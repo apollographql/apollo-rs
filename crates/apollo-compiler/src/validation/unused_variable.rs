@@ -101,7 +101,7 @@ type Products {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.create_document(input, "document.graphql");
+        compiler.add_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
 
@@ -133,7 +133,7 @@ type Product {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.create_document(input, "document.graphql");
+        compiler.add_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
 
@@ -174,7 +174,7 @@ type Product {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.create_document(input, "document.graphql");
+        compiler.add_document(input, "document.graphql");
 
         let diagnostics = compiler.validate();
 

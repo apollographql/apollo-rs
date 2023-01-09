@@ -32,7 +32,7 @@ impl FileWatcher {
 
     // The `watch` fn first goes over every document in a given directory and
     // creates it as a new document with compiler's
-    // `compiler.create_document()`.
+    // `compiler.add_document()`.
     //
     // We then watch for file changes, and update
     // each changed document with `compiler.update_document()`.
@@ -122,7 +122,7 @@ impl FileWatcher {
         proposed_document: String,
         src_path: PathBuf,
     ) -> Result<(), anyhow::Error> {
-        let file_id = self.compiler.create_document(&proposed_document, &src_path);
+        let file_id = self.compiler.add_document(&proposed_document, &src_path);
         let full_path = fs::canonicalize(src_path)?;
         self.manifest.insert(full_path, file_id);
         Ok(())

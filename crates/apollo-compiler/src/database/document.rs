@@ -324,7 +324,7 @@ mod tests {
         "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.create_document(schema, "schema.graphql");
+        compiler.add_document(schema, "schema.graphql");
 
         let key_definitions = compiler.db.find_types_with_directive(String::from("key"));
         let mut key_definition_names: Vec<&str> =
@@ -356,7 +356,7 @@ mod tests {
             );
             let schema = format!("{}\n{}", base_schema, schema);
             let mut compiler = ApolloCompiler::new();
-            compiler.create_document(&schema, "schema.graphql");
+            compiler.add_document(&schema, "schema.graphql");
             compiler
         }
 
@@ -382,7 +382,7 @@ mod tests {
             );
             let schema = format!("{}\n{}", base_schema, schema);
             let mut compiler = ApolloCompiler::new();
-            compiler.create_document(&schema, "schema.graphql");
+            compiler.add_document(&schema, "schema.graphql");
             compiler
         }
 
