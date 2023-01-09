@@ -1225,7 +1225,7 @@ type Query {
                     compiler.set_precomputed_schema(cloned);
                     compiler
                         .db
-                        .find_unnamed_operation(query_id)
+                        .find_anonymous_operation(query_id)
                         .unwrap()
                         .fields(&compiler.db)[0]
                         .ty(&compiler.db)

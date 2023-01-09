@@ -48,7 +48,7 @@ pub(crate) fn find_operation_by_name(
         .cloned()
 }
 
-pub(crate) fn find_unnamed_operation(
+pub(crate) fn find_anonymous_operation(
     db: &dyn HirDatabase,
     file_id: FileId,
 ) -> Option<Arc<OperationDefinition>> {
