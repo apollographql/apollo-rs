@@ -183,6 +183,22 @@ pub enum DiagnosticData {
         /// Field name
         field: String,
     },
+    #[error("cannot find type `{name}` in this document")]
+    UndefinedDefinition {
+        /// Name of the type not in scope
+        name: String,
+    },
+    #[error("{name} directive definition cannot reference itself")]
+    RecursiveDefinition { name: String },
+    #[error("values in an Enum Definition should be capitalized")]
+    CapitalizedValue { value: String },
+    #[error("Fields must be unique in a definition")]
+    UniqueField {
+        /// Name of the non-unique field.
+        field: String,
+        original_definition: HirNodeLocation,
+        redefined_definition: HirNodeLocation,
+    },
 }
 
 type Span = (crate::FileId, std::ops::Range<usize>);
@@ -191,8 +207,7 @@ impl From<Label> for ariadne::Label<Span> {
     fn from(label: Label) -> Self {
         let start = label.location.offset();
         let end = start + label.location.node_len();
-        Self::new((label.location.file_id(), start..end))
-            .with_message(label.text)
+        Self::new((label.location.file_id(), start..end)).with_message(label.text)
     }
 }
 

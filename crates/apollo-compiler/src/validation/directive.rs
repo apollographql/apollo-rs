@@ -1,5 +1,5 @@
 use crate::{
-    diagnostics::{RecursiveDefinition, UniqueDefinition},
+    diagnostics::{Diagnostic2, DiagnosticData, Label},
     validation::ast_type_definitions,
     ApolloDiagnostic, ValidationDatabase,
 };
@@ -16,21 +16,32 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         if let Some(name) = ast_def.name() {
             let name = &*name.text();
             let hir_def = &hir[name];
-            if let Some(hir_loc) = hir_def.loc() {
-                let ast_loc = (file_id, &ast_def).into();
-                if *hir_loc == ast_loc {
+            if let Some(original_definition) = hir_def.loc() {
+                let redefined_definition = (file_id, &ast_def).into();
+                if *original_definition == redefined_definition {
                     // The HIR node was built from this AST node. This is fine.
                 } else {
-                    errors.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                        ty: "directive".into(),
-                        name: name.to_owned(),
-                        src: db.source_code(hir_loc.file_id()),
-                        original_definition: hir_loc.into(),
-                        redefined_definition: ast_loc.into(),
-                        help: Some(format!(
+                    errors.push(ApolloDiagnostic::Diagnostic2(
+                        Diagnostic2::new(
+                            *original_definition,
+                            DiagnosticData::UniqueDefinition {
+                                ty: "directive",
+                                name: name.to_owned(),
+                                original_definition: *original_definition,
+                                redefined_definition,
+                            },
+                        )
+                        .help(format!(
                             "`{name}` must only be defined once in this document."
-                        )),
-                    }));
+                        ))
+                        .labels([
+                            Label::new(
+                                *original_definition,
+                                format!("previous definition of `{}` here", name),
+                            ),
+                            Label::new(redefined_definition, format!("`{}` redefined here", name)),
+                        ]),
+                    ));
                 }
             }
         }
@@ -45,12 +56,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             for directive in input_values.directives().iter() {
                 let directive_name = directive.name();
                 if name == directive_name {
-                    errors.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
-                        message: format!("{} directive definition cannot reference itself", name),
-                        definition: directive.loc().into(),
-                        src: db.source_code(directive.loc().file_id()),
-                        definition_label: "recursive directive definition".into(),
-                    }));
+                    errors.push(ApolloDiagnostic::Diagnostic2(
+                        Diagnostic2::new(
+                            *directive.loc(),
+                            DiagnosticData::RecursiveDefinition { name: name.clone() },
+                        )
+                        .label(Label::new(
+                            *directive.loc(),
+                            "recursive directive definition",
+                        )),
+                    ));
                 }
             }
         }
