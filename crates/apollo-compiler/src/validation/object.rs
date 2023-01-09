@@ -274,7 +274,7 @@ input Point2D {
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.create_document(input, "schema.graphql");
+        compiler.add_document(input, "schema.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {

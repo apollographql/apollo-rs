@@ -275,7 +275,7 @@ interface NamedEntity {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.create_document(input, "schema.graphql");
+        compiler.add_document(input, "schema.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -309,7 +309,7 @@ interface NamedEntity {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.create_document(input, "schema.graphql");
+        compiler.add_document(input, "schema.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -337,7 +337,7 @@ interface NamedEntity implements NamedEntity {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.create_document(input, "schema.graphql");
+        compiler.add_document(input, "schema.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -358,7 +358,7 @@ interface NamedEntity implements NewEntity {
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.create_document(input, "schema.graphql");
+        compiler.add_document(input, "schema.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -389,7 +389,7 @@ interface Image implements Resource & Node {
 }
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.create_document(input, "schema.graphql");
+        compiler.add_document(input, "schema.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
@@ -452,7 +452,7 @@ input Point2D {
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
         let mut compiler = ApolloCompiler::new();
-        compiler.create_document(input, "schema.graphql");
+        compiler.add_document(input, "schema.graphql");
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
