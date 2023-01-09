@@ -22,6 +22,7 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Return all type system definitions defined in the compiler.
     fn type_system_definitions(&self) -> Arc<TypeSystemDefinitions>;
 
+    /// Return a `PrecomputedTypeSystem` which can be used to add a type system to a new instance of `ApolloCompiler`.
     fn precomputed_type_system(&self) -> Arc<PrecomputedTypeSystem>;
 
     /// Return all the operations defined in a file.
