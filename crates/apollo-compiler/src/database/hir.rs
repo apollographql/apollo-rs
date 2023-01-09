@@ -25,7 +25,7 @@ pub struct TypeSystemDefinitions {
     pub directives: ByName<DirectiveDefinition>,
 }
 
-/// Contains a `TypeSystemDefinition` together with:
+/// Contains `TypeSystemDefinitions` together with:
 ///
 /// * Other data that can be derived from it.
 /// * Relevant inputs
