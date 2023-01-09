@@ -3,7 +3,7 @@ use criterion::*;
 
 fn compile(schema: &str, query: &str) -> ApolloCompiler {
     let mut compiler = ApolloCompiler::new();
-    compiler.add_schema(schema, "schema.graphql");
+    compiler.add_type_system(schema, "schema.graphql");
     let executable_id = compiler.add_executable(query, "query.graphql");
 
     compiler.db.operations(executable_id);

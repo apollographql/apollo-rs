@@ -133,7 +133,7 @@ fn main() -> Result<()> {
     "#;
 
     let mut compiler = ApolloCompiler::new();
-    let _schema_id = compiler.add_schema(schema_input, "schema.graphql");
+    let _schema_id = compiler.add_type_system(schema_input, "schema.graphql");
     let query_id = compiler.add_executable(query_input, "query.graphql");
 
     let diagnostics = compiler.validate();
@@ -195,7 +195,7 @@ fn main() -> Result<()> {
 
 
     let mut compiler = ApolloCompiler::new();
-    compiler.add_schema(schema_input, "schema.graphql");
+    compiler.add_type_system(schema_input, "schema.graphql");
     let query_id = compiler.add_executable(query_input, "query.graphql");
 
     let diagnostics = compiler.validate();

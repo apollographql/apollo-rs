@@ -59,7 +59,7 @@ pub type Snapshot = salsa::Snapshot<RootDatabase>;
 /// "#;
 ///
 /// let mut compiler = ApolloCompiler::new();
-/// compiler.add_schema(input, "schema.graphql");
+/// compiler.add_type_system(input, "schema.graphql");
 ///
 /// let diagnostics = compiler.validate();
 /// for diagnostic in &diagnostics {
@@ -105,15 +105,14 @@ impl ApolloCompiler {
         self.add_input(Source::document(filename, input))
     }
 
-    /// Add a schema - a document with type system definitions and extensions only
-    /// - to the compiler.
+    /// Add a document with type system definitions and extensions only to the compiler.
     ///
     /// The `path` argument is used to display diagnostics. If your GraphQL document
     /// doesn't come from a file, you can make up a name or provide the empty string.
     /// It does not need to be unique.
     ///
     /// Returns a `FileId` that you can use to update the source text of this document.
-    pub fn add_schema(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+    pub fn add_type_system(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
         let filename = path.as_ref().to_owned();
         self.add_input(Source::schema(filename, input))
     }
@@ -142,7 +141,7 @@ impl ApolloCompiler {
 
     /// Update an existing GraphQL document with new source text. Queries that depend
     /// on this document will be recomputed.
-    pub fn update_schema(&mut self, file_id: FileId, input: &str) {
+    pub fn update_type_system(&mut self, file_id: FileId, input: &str) {
         let schema = self.db.input(file_id);
         self.db
             .set_input(file_id, Source::schema(schema.filename().to_owned(), input))
@@ -552,7 +551,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         let colliding_query = r#"query getProduct { topProducts { type, price } }"#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.add_schema(schema, "schema.graphql");
+        compiler.add_type_system(schema, "schema.graphql");
         compiler.add_executable(product_query, "query.graphql");
         compiler.add_executable(customer_query, "query.graphql");
         compiler.add_executable(colliding_query, "query.graphql");
@@ -597,7 +596,7 @@ fragment vipCustomer on User {
 "#;
 
         let mut compiler = ApolloCompiler::new();
-        compiler.add_schema(schema, "schema.graphql");
+        compiler.add_type_system(schema, "schema.graphql");
         let query_id = compiler.add_executable(query, "query.graphql");
 
         let diagnostics = compiler.validate();
