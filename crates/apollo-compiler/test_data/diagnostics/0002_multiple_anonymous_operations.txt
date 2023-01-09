@@ -1,34 +1,56 @@
 [
-    MissingIdent(
-        MissingIdent {
-            src: "query {\n  cat {\n    name\n  }\n}\n\nmutation {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  cat: String\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  pageNumber: Int\n  response: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
+    Diagnostic2(
+        Diagnostic2 {
+            location: HirNodeLocation {
+                offset: 0,
+                node_len: 32,
+                file_id: FileId(
                     0,
                 ),
-                length: SourceOffset(
-                    32,
-                ),
             },
+            labels: [
+                Label {
+                    location: HirNodeLocation {
+                        offset: 0,
+                        node_len: 32,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "provide a name for this definition",
+                },
+            ],
             help: Some(
                 "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
             ),
+            data: MissingIdent,
         },
     ),
-    MissingIdent(
-        MissingIdent {
-            src: "query {\n  cat {\n    name\n  }\n}\n\nmutation {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  cat: String\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  pageNumber: Int\n  response: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    32,
-                ),
-                length: SourceOffset(
-                    58,
+    Diagnostic2(
+        Diagnostic2 {
+            location: HirNodeLocation {
+                offset: 32,
+                node_len: 58,
+                file_id: FileId(
+                    0,
                 ),
             },
+            labels: [
+                Label {
+                    location: HirNodeLocation {
+                        offset: 32,
+                        node_len: 58,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "provide a name for this definition",
+                },
+            ],
             help: Some(
                 "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
             ),
+            data: MissingIdent,
         },
     ),
 ]

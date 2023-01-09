@@ -1,42 +1,68 @@
 [
-    UnsupportedOperation(
-        UnsupportedOperation {
-            ty: "Subscription",
-            src: "subscription messageSubscription {\n  newMessage {\n    body\n    sender\n  }\n}\n\nschema {\n  query: customPetQuery,\n}\n\ntype customPetQuery {\n  name: String,\n  newMessage: Message\n  age: Int\n}\n\ntype Message {\n  body: String\n  sender: String\n}",
-            operation: SourceSpan {
-                offset: SourceOffset(
+    Diagnostic2(
+        Diagnostic2 {
+            location: HirNodeLocation {
+                offset: 0,
+                node_len: 77,
+                file_id: FileId(
                     0,
                 ),
-                length: SourceOffset(
-                    77,
-                ),
             },
-            schema: Some(
-                SourceSpan {
-                    offset: SourceOffset(
-                        77,
-                    ),
-                    length: SourceOffset(
-                        37,
-                    ),
+            labels: [
+                Label {
+                    location: HirNodeLocation {
+                        offset: 0,
+                        node_len: 77,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "Subscription operation is not defined in the schema and is therefore not supported",
                 },
-            ),
+                Label {
+                    location: HirNodeLocation {
+                        offset: 77,
+                        node_len: 37,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "Consider defining a `subscription` root operation type here",
+                },
+            ],
             help: None,
+            data: UnsupportedOperation {
+                ty: "subscription",
+            },
         },
     ),
-    UndefinedField(
-        UndefinedField {
-            field: "newMessage",
-            src: "subscription messageSubscription {\n  newMessage {\n    body\n    sender\n  }\n}\n\nschema {\n  query: customPetQuery,\n}\n\ntype customPetQuery {\n  name: String,\n  newMessage: Message\n  age: Int\n}\n\ntype Message {\n  body: String\n  sender: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    37,
-                ),
-                length: SourceOffset(
-                    37,
+    Diagnostic2(
+        Diagnostic2 {
+            location: HirNodeLocation {
+                offset: 37,
+                node_len: 37,
+                file_id: FileId(
+                    0,
                 ),
             },
-            help: "`newMessage` is not defined on the current Subscription root operation type.",
+            labels: [
+                Label {
+                    location: HirNodeLocation {
+                        offset: 37,
+                        node_len: 37,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "`newMessage field is not in scope",
+                },
+            ],
+            help: Some(
+                "`newMessage` is not defined on the current Subscription root operation type.",
+            ),
+            data: UndefinedField {
+                field: "newMessage",
+            },
         },
     ),
 ]

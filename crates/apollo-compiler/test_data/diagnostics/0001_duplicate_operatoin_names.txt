@@ -1,28 +1,56 @@
 [
-    UniqueDefinition(
-        UniqueDefinition {
-            name: "getName",
-            ty: "operation",
-            src: "query getName {\n  cat {\n    name\n  }\n}\n\nquery getName {\n  cat {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  cat: String\n}",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
+    Diagnostic2(
+        Diagnostic2 {
+            location: HirNodeLocation {
+                offset: 40,
+                node_len: 60,
+                file_id: FileId(
                     0,
                 ),
-                length: SourceOffset(
-                    40,
-                ),
             },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    40,
-                ),
-                length: SourceOffset(
-                    60,
-                ),
-            },
+            labels: [
+                Label {
+                    location: HirNodeLocation {
+                        offset: 0,
+                        node_len: 40,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "previous definition of `getName` here",
+                },
+                Label {
+                    location: HirNodeLocation {
+                        offset: 40,
+                        node_len: 60,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "`getName` redefined here",
+                },
+            ],
             help: Some(
                 "`getName` must only be defined once in this document.",
             ),
+            data: UniqueDefinition {
+                ty: "operation",
+                name: "getName",
+                original_definition: HirNodeLocation {
+                    offset: 0,
+                    node_len: 40,
+                    file_id: FileId(
+                        0,
+                    ),
+                },
+                redefined_definition: HirNodeLocation {
+                    offset: 40,
+                    node_len: 60,
+                    file_id: FileId(
+                        0,
+                    ),
+                },
+            },
         },
     ),
 ]

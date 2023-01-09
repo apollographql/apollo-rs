@@ -27,19 +27,33 @@
             },
         },
     ),
-    UndefinedField(
-        UndefinedField {
-            field: "undefinedMutationField",
-            src: "mutation adoptAPetMutation {\n  undefinedMutationField\n}\n\ntype Query {\n  name: String,\n  age: Int\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n\nunion PetType = Cat | Dog\n",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    31,
-                ),
-                length: SourceOffset(
-                    23,
+    Diagnostic2(
+        Diagnostic2 {
+            location: HirNodeLocation {
+                offset: 31,
+                node_len: 23,
+                file_id: FileId(
+                    0,
                 ),
             },
-            help: "`undefinedMutationField` is not defined on `Mutation` type",
+            labels: [
+                Label {
+                    location: HirNodeLocation {
+                        offset: 31,
+                        node_len: 23,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "`undefinedMutationField field is not in scope",
+                },
+            ],
+            help: Some(
+                "`undefinedMutationField` is not defined on `Mutation` type",
+            ),
+            data: UndefinedField {
+                field: "undefinedMutationField",
+            },
         },
     ),
 ]

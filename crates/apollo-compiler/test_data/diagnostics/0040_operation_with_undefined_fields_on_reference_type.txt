@@ -1,32 +1,60 @@
 [
-    UndefinedField(
-        UndefinedField {
-            field: "size",
-            src: "query getProduct {\n  size\n  weight\n}\n\ntype Query {\n  name: String\n  topProducts: Product\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    21,
-                ),
-                length: SourceOffset(
-                    7,
+    Diagnostic2(
+        Diagnostic2 {
+            location: HirNodeLocation {
+                offset: 21,
+                node_len: 7,
+                file_id: FileId(
+                    0,
                 ),
             },
-            help: "`size` is not defined on `Query` type",
+            labels: [
+                Label {
+                    location: HirNodeLocation {
+                        offset: 21,
+                        node_len: 7,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "`size field is not in scope",
+                },
+            ],
+            help: Some(
+                "`size` is not defined on `Query` type",
+            ),
+            data: UndefinedField {
+                field: "size",
+            },
         },
     ),
-    UndefinedField(
-        UndefinedField {
-            field: "weight",
-            src: "query getProduct {\n  size\n  weight\n}\n\ntype Query {\n  name: String\n  topProducts: Product\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    28,
-                ),
-                length: SourceOffset(
-                    7,
+    Diagnostic2(
+        Diagnostic2 {
+            location: HirNodeLocation {
+                offset: 28,
+                node_len: 7,
+                file_id: FileId(
+                    0,
                 ),
             },
-            help: "`weight` is not defined on `Query` type",
+            labels: [
+                Label {
+                    location: HirNodeLocation {
+                        offset: 28,
+                        node_len: 7,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "`weight field is not in scope",
+                },
+            ],
+            help: Some(
+                "`weight` is not defined on `Query` type",
+            ),
+            data: UndefinedField {
+                field: "weight",
+            },
         },
     ),
 ]

@@ -1,35 +1,60 @@
 [
-    UnsupportedOperation(
-        UnsupportedOperation {
-            ty: "Mutation",
-            src: "mutation adoptAPetMutation {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  name: String,\n  age: Int\n}",
-            operation: SourceSpan {
-                offset: SourceOffset(
+    Diagnostic2(
+        Diagnostic2 {
+            location: HirNodeLocation {
+                offset: 0,
+                node_len: 76,
+                file_id: FileId(
                     0,
                 ),
-                length: SourceOffset(
-                    76,
-                ),
             },
-            schema: None,
+            labels: [
+                Label {
+                    location: HirNodeLocation {
+                        offset: 0,
+                        node_len: 76,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "Mutation operation is not defined in the schema and is therefore not supported",
+                },
+            ],
             help: Some(
                 "consider defining a `mutation` root operation type in your schema",
             ),
+            data: UnsupportedOperation {
+                ty: "mutation",
+            },
         },
     ),
-    UndefinedField(
-        UndefinedField {
-            field: "addPet",
-            src: "mutation adoptAPetMutation {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  name: String,\n  age: Int\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    31,
-                ),
-                length: SourceOffset(
-                    42,
+    Diagnostic2(
+        Diagnostic2 {
+            location: HirNodeLocation {
+                offset: 31,
+                node_len: 42,
+                file_id: FileId(
+                    0,
                 ),
             },
-            help: "`addPet` is not defined on the current Mutation root operation type.",
+            labels: [
+                Label {
+                    location: HirNodeLocation {
+                        offset: 31,
+                        node_len: 42,
+                        file_id: FileId(
+                            0,
+                        ),
+                    },
+                    text: "`addPet field is not in scope",
+                },
+            ],
+            help: Some(
+                "`addPet` is not defined on the current Mutation root operation type.",
+            ),
+            data: UndefinedField {
+                field: "addPet",
+            },
         },
     ),
 ]
