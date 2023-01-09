@@ -68,6 +68,7 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
         name: String,
     ) -> Option<Arc<OperationDefinition>>;
 
+    /// Return an operation definition without a name corresponding to the file id.
     fn find_unnamed_operation(&self, file_id: FileId) -> Option<Arc<OperationDefinition>>;
 
     /// Return an fragment definition corresponding to the name and file id.
