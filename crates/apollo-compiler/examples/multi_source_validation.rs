@@ -37,13 +37,13 @@ fn compile_schema_and_query_files() -> io::Result<()> {
     // add a schema file
     let schema = Path::new("crates/apollo-compiler/examples/documents/schema.graphql");
     let src = fs::read_to_string(schema).expect("Could not read schema file.");
-    compiler.add_schema(&src, schema);
+    compiler.add_type_system(&src, schema);
 
-    // schema_extension is still a file containing a type system, and it also gets added under .add_schema API
+    // schema_extension is still a file containing a type system, and it also gets added under .add_type_system API
     let schema_ext =
         Path::new("crates/apollo-compiler/examples/documents/schema_extension.graphql");
     let src = fs::read_to_string(schema_ext).expect("Could not read schema ext file.");
-    compiler.add_schema(&src, schema_ext);
+    compiler.add_type_system(&src, schema_ext);
 
     // get_dog_name is a query-only file and gets added with a .add_executable API
     let query = Path::new("crates/apollo-compiler/examples/documents/get_dog_name.graphql");
@@ -132,7 +132,7 @@ query getDogName {
 }
     "#;
     let mut compiler = ApolloCompiler::new();
-    compiler.add_schema(schema, "schema.graphl");
+    compiler.add_type_system(schema, "schema.graphl");
     compiler.add_executable(query, "query.graphql");
 
     let diagnostics = compiler.validate();
