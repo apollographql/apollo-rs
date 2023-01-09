@@ -19,7 +19,7 @@ pub struct ApolloCompiler {
 }
 
 /// A read-only, `Sync` snapshot of the database.
-type Snapshot = salsa::Snapshot<RootDatabase>;
+pub type Snapshot = salsa::Snapshot<RootDatabase>;
 
 /// Apollo compiler creates a context around your GraphQL. It creates refernces
 /// between various GraphQL types in scope.
