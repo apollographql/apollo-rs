@@ -10,7 +10,7 @@ pub trait InputDatabase {
 
     /// Get input source of the corresponding file.
     #[salsa::input]
-    fn precomputed_input(&self) -> Option<Arc<TypeSystem>>;
+    fn type_system_hir_input(&self) -> Option<Arc<TypeSystem>>;
 
     #[salsa::input]
     fn input(&self, file_id: FileId) -> Source;
@@ -34,7 +34,7 @@ pub trait InputDatabase {
 
 fn source_code(db: &dyn InputDatabase, file_id: FileId) -> Arc<str> {
     // For diagnostics, also include sources for a precomputed input.
-    if let Some(precomputed) = db.precomputed_input() {
+    if let Some(precomputed) = db.type_system_hir_input() {
         if let Some(source) = precomputed.inputs.get(&file_id) {
             return source.text();
         }

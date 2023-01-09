@@ -90,7 +90,7 @@ impl ApolloCompiler {
                  for type system definitions is not supported"
             )
         }
-        self.db.set_precomputed_input(Some(schema))
+        self.db.set_type_system_hir_input(Some(schema))
     }
 
     fn add_input(&mut self, source: Source) -> FileId {
@@ -112,7 +112,7 @@ impl ApolloCompiler {
     ///
     /// Returns a `FileId` that you can use to update the source text of this document.
     pub fn add_document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        if self.db.precomputed_input().is_some() {
+        if self.db.type_system_hir_input().is_some() {
             panic!(
                 "Having both string inputs and pre-computed inputs \
                  for type system definitions is not supported"
@@ -130,7 +130,7 @@ impl ApolloCompiler {
     ///
     /// Returns a `FileId` that you can use to update the source text of this document.
     pub fn add_type_system(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        if self.db.precomputed_input().is_some() {
+        if self.db.type_system_hir_input().is_some() {
             panic!(
                 "Having both string inputs and pre-computed inputs \
                  for type system definitions is not supported"
@@ -216,7 +216,7 @@ impl Default for ApolloCompiler {
         let mut db = RootDatabase::default();
         // TODO(@goto-bus-stop) can we make salsa fill in these defaults for us…?
         db.set_recursion_limit(None);
-        db.set_precomputed_input(None);
+        db.set_type_system_hir_input(None);
         db.set_source_files(vec![]);
 
         Self { db }
@@ -1213,11 +1213,11 @@ type Query {
 
         let mut compiler = ApolloCompiler::new();
         compiler.add_type_system(schema, "schema.graphql");
-        let precomputed = compiler.db.precomputed_type_system();
+        let type_system = compiler.db.type_system();
 
         let handles: Vec<_> = (0..2)
             .map(|_| {
-                let cloned = std::sync::Arc::clone(&precomputed);
+                let cloned = std::sync::Arc::clone(&type_system); // cheap refcount increment
                 std::thread::spawn(move || {
                     let mut compiler = ApolloCompiler::new();
                     let query_id = compiler.add_executable(query, "query.graphql");

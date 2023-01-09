@@ -22,8 +22,11 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Return all type system definitions defined in the compiler.
     fn type_system_definitions(&self) -> Arc<TypeSystemDefinitions>;
 
-    /// Return a `PrecomputedTypeSystem` which can be used to add a type system to a new instance of `ApolloCompiler`.
-    fn precomputed_type_system(&self) -> Arc<TypeSystem>;
+    /// Return a [`TypeSystem`] containing definitions and more.
+    ///
+    /// This can be used with [`set_type_system_hir`][crate::ApolloCompiler::set_type_system_hir]
+    /// on another compiler.
+    fn type_system(&self) -> Arc<TypeSystem>;
 
     /// Return all the operations defined in a file.
     fn operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
@@ -220,8 +223,8 @@ fn type_system_definitions(db: &dyn HirDatabase) -> Arc<TypeSystemDefinitions> {
     })
 }
 
-fn precomputed_type_system(db: &dyn HirDatabase) -> Arc<TypeSystem> {
-    if let Some(precomputed_input) = db.precomputed_input() {
+fn type_system(db: &dyn HirDatabase) -> Arc<TypeSystem> {
+    if let Some(precomputed_input) = db.type_system_hir_input() {
         return precomputed_input;
     }
     Arc::new(TypeSystem {
@@ -315,7 +318,7 @@ where
 // This implementation currently just finds the first schema definition, which
 // means we can't really diagnose the "multiple schema definitions" errors.
 fn schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
-    if let Some(precomputed) = db.precomputed_input() {
+    if let Some(precomputed) = db.type_system_hir_input() {
         return precomputed.definitions.schema.clone();
     }
     let mut schema_def = type_definitions(db, schema_definition)
@@ -364,7 +367,7 @@ macro_rules! by_name_extensible {
 }
 
 fn object_types(db: &dyn HirDatabase) -> ByName<ObjectTypeDefinition> {
-    if let Some(precomputed) = db.precomputed_input() {
+    if let Some(precomputed) = db.type_system_hir_input() {
         return precomputed.definitions.objects.clone();
     }
     Arc::new(by_name_extensible!(
@@ -375,7 +378,7 @@ fn object_types(db: &dyn HirDatabase) -> ByName<ObjectTypeDefinition> {
 }
 
 fn scalars(db: &dyn HirDatabase) -> ByName<ScalarTypeDefinition> {
-    if let Some(precomputed) = db.precomputed_input() {
+    if let Some(precomputed) = db.type_system_hir_input() {
         return precomputed.definitions.scalars.clone();
     }
     Arc::new(built_in_scalars(by_name_extensible!(
@@ -386,14 +389,14 @@ fn scalars(db: &dyn HirDatabase) -> ByName<ScalarTypeDefinition> {
 }
 
 fn enums(db: &dyn HirDatabase) -> ByName<EnumTypeDefinition> {
-    if let Some(precomputed) = db.precomputed_input() {
+    if let Some(precomputed) = db.type_system_hir_input() {
         return precomputed.definitions.enums.clone();
     }
     Arc::new(by_name_extensible!(db, enum_definition, enum_extension))
 }
 
 fn unions(db: &dyn HirDatabase) -> ByName<UnionTypeDefinition> {
-    if let Some(precomputed) = db.precomputed_input() {
+    if let Some(precomputed) = db.type_system_hir_input() {
         return precomputed.definitions.unions.clone();
     }
     Arc::new(by_name_extensible!(db, union_definition, union_extension))
@@ -408,7 +411,7 @@ fn interfaces(db: &dyn HirDatabase) -> ByName<InterfaceTypeDefinition> {
 }
 
 fn input_objects(db: &dyn HirDatabase) -> ByName<InputObjectTypeDefinition> {
-    if let Some(precomputed) = db.precomputed_input() {
+    if let Some(precomputed) = db.type_system_hir_input() {
         return precomputed.definitions.input_objects.clone();
     }
     Arc::new(by_name_extensible!(
@@ -419,7 +422,7 @@ fn input_objects(db: &dyn HirDatabase) -> ByName<InputObjectTypeDefinition> {
 }
 
 fn directive_definitions(db: &dyn HirDatabase) -> ByName<DirectiveDefinition> {
-    if let Some(precomputed) = db.precomputed_input() {
+    if let Some(precomputed) = db.type_system_hir_input() {
         return precomputed.definitions.directives.clone();
     }
     Arc::new(built_in_directives(by_name!(db, directive_definition)))
