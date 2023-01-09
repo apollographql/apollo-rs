@@ -190,14 +190,46 @@ pub enum DiagnosticData {
     },
     #[error("{name} directive definition cannot reference itself")]
     RecursiveDefinition { name: String },
+    #[error("interface {name} cannot implement itself")]
+    RecursiveInterfaceDefinition { name: String },
     #[error("values in an Enum Definition should be capitalized")]
     CapitalizedValue { value: String },
-    #[error("Fields must be unique in a definition")]
+    #[error("fields must be unique in a definition")]
     UniqueField {
         /// Name of the non-unique field.
         field: String,
         original_definition: HirNodeLocation,
         redefined_definition: HirNodeLocation,
+    },
+    #[error("missing `{field}` field")]
+    MissingField {
+        // current field that should be defined
+        field: String,
+        // #[label("`{}` was originally defined here", self.ty)]
+        // pub super_definition: SourceSpan,
+
+        // #[label("add `{}` field to this interface", self.ty)]
+        // pub current_definition: SourceSpan,
+    },
+    #[error(
+        "Transitively implemented interfaces must also be defined on an implementing interface"
+    )]
+    TransitiveImplementedInterfaces {
+        // interface that should be defined
+        missing_interface: String,
+    },
+    #[error("`{}` field must return an output type", name)]
+    // #[diagnostic(
+    //     code("apollo-compiler validation error"),
+    //     help("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", self.name)
+    // )]
+    OutputType {
+        // field name
+        name: String,
+        // field type
+        ty: &'static str,
+        // #[label("this is of `{}` type", self.ty)]
+        // pub definition: SourceSpan,
     },
 }
 
