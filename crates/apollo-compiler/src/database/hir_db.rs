@@ -309,7 +309,7 @@ fn schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
     let type_defs = add_object_type_id_to_schema(db);
     type_defs
         .iter()
-        .for_each(|ty| schema_def.set_root_operation_type_definition(ty.clone()));
+        .for_each(|type_def| schema_def.set_root_operation_type_definition(type_def.clone()));
 
     Arc::new(schema_def)
 }

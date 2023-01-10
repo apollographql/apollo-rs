@@ -411,7 +411,7 @@ impl Type {
     /// [`EnumTypeDefinition`]: Definition::EnumTypeDefinition
     #[must_use]
     pub fn is_output_type(&self, db: &dyn HirDatabase) -> bool {
-        if let Some(ty) = self.ty(db) {
+        if let Some(ty) = self.type_def(db) {
             ty.is_output_definition()
         } else {
             false
@@ -426,7 +426,7 @@ impl Type {
     /// [`InputObjectTypeDefinition`]: Definition::ObjectTypeDefinition
     #[must_use]
     pub fn is_input_type(&self, db: &dyn HirDatabase) -> bool {
-        if let Some(ty) = self.ty(db) {
+        if let Some(ty) = self.type_def(db) {
             ty.is_input_definition()
         } else {
             false
@@ -442,7 +442,7 @@ impl Type {
         }
     }
 
-    pub fn ty(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
+    pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
         db.find_type_definition_by_name(self.name())
     }
 

@@ -918,7 +918,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                 .iter()
                 .filter_map(|f| {
                     // get access to the actual definition the field is using
-                    if let Some(field_ty) = f.ty().ty(&compiler.db) {
+                    if let Some(field_ty) = f.ty().type_def(&compiler.db) {
                         match field_ty {
                             // get that definition's directives, for example
                             TypeDefinition::ScalarTypeDefinition(scalar) => {
@@ -947,7 +947,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                         .input_values()
                         .iter()
                         .filter_map(|val| {
-                            if let Some(input_ty) = val.ty().ty(&compiler.db) {
+                            if let Some(input_ty) = val.ty().type_def(&compiler.db) {
                                 match input_ty {
                                     // get that definition's directives, for example
                                     TypeDefinition::EnumTypeDefinition(enum_) => {
@@ -999,7 +999,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                 .input_fields_definition()
                 .iter()
                 .filter_map(|f| {
-                    if let Some(field_ty) = f.ty().ty(&compiler.db) {
+                    if let Some(field_ty) = f.ty().type_def(&compiler.db) {
                         match field_ty {
                             TypeDefinition::ScalarTypeDefinition(scalar) => {
                                 let dir_names: Vec<String> = scalar
