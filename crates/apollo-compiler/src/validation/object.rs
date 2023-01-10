@@ -23,7 +23,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             let name = &*name.text();
             let hir_def = &hir[name];
             let ast_loc = (file_id, &ast_def).into();
-            if *hir_def.loc() == ast_loc {
+            if hir_def.loc() == ast_loc {
                 // The HIR node was built from this AST node. This is fine.
             } else {
                 diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
@@ -104,7 +104,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         .iter()
         .map(|(name, interface)| ValidationSet {
             name: name.to_owned(),
-            loc: *interface.loc(),
+            loc: interface.loc(),
         })
         .collect();
     for object in objects.values() {
@@ -116,7 +116,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .iter()
             .map(|interface| ValidationSet {
                 name: interface.interface().to_owned(),
-                loc: *interface.loc(),
+                loc: interface.loc(),
             })
             .collect();
         let diff = implements_interfaces.difference(&defined_interfaces);
@@ -144,7 +144,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         .iter()
                         .map(|interface| ValidationSet {
                             name: interface.interface().to_owned(),
-                            loc: *implements_interface.loc(),
+                            loc: implements_interface.loc(),
                         })
                         .collect();
                     Some(child_interfaces)
@@ -177,7 +177,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .iter()
             .map(|field| ValidationSet {
                 name: field.name().into(),
-                loc: *field.loc(),
+                loc: field.loc(),
             })
             .collect();
         for implements_interface in object.implements_interfaces().iter() {
@@ -187,7 +187,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     .iter()
                     .map(|field| ValidationSet {
                         name: field.name().into(),
-                        loc: *field.loc(),
+                        loc: field.loc(),
                     })
                     .collect();
 

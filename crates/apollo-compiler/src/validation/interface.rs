@@ -19,7 +19,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         if let Some(name) = ast_def.name() {
             let name = &*name.text();
             let hir_def = &hir[name];
-            let original_definition = *hir_def.loc();
+            let original_definition = hir_def.loc();
             let redefined_definition = (file_id, &ast_def).into();
             if original_definition == redefined_definition {
                 // The HIR node was built from this AST node. This is fine.
@@ -71,13 +71,13 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 if name == super_name {
                     diagnostics.push(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            *implements_interface.loc(),
+                            implements_interface.loc(),
                             DiagnosticData::RecursiveInterfaceDefinition {
                                 name: super_name.into(),
                             },
                         )
                         .label(Label::new(
-                            *implements_interface.loc(),
+                            implements_interface.loc(),
                             format!("interface {} cannot implement itself", super_name),
                         )),
                     ));
@@ -95,10 +95,10 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         for field in fields {
             // Fields in an Interface definition must be unique
             let field_name = field.name();
-            let redefined_definition = *field.loc();
+            let redefined_definition = field.loc();
 
             if let Some(prev_field) = seen.get(&field_name) {
-                let original_definition = *prev_field.loc();
+                let original_definition = prev_field.loc();
 
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
@@ -123,33 +123,33 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if let Some(field_ty) = field.ty().type_def(db.upcast()) {
                 if !field.ty().is_output_type(db.upcast()) {
                     diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(*field.loc(), DiagnosticData::OutputType {
+                        Diagnostic2::new(field.loc(), DiagnosticData::OutputType {
                             name: field.name().into(),
                             ty: field_ty.kind(),
                         })
-                        .label(Label::new(*field.loc(), format!("this is of `{}` type", field_ty.kind())))
+                        .label(Label::new(field.loc(), format!("this is of `{}` type", field_ty.kind())))
                         .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
                     ));
                 }
             } else if let Some(field_ty_loc) = field.ty().loc() {
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
-                        *field_ty_loc,
+                        field_ty_loc,
                         DiagnosticData::UndefinedDefinition {
                             name: field.name().into(),
                         },
                     )
-                    .label(Label::new(*field_ty_loc, "not found in this scope")),
+                    .label(Label::new(field_ty_loc, "not found in this scope")),
                 ));
             } else {
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
-                        *field.loc(),
+                        field.loc(),
                         DiagnosticData::UndefinedDefinition {
                             name: field.ty().name().into(),
                         },
                     )
-                    .label(Label::new(*field.loc(), "not found in this scope")),
+                    .label(Label::new(field.loc(), "not found in this scope")),
                 ));
             }
         }
@@ -160,7 +160,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         .iter()
         .map(|(name, interface)| ValidationSet {
             name: name.to_owned(),
-            loc: *interface.loc(),
+            loc: interface.loc(),
         })
         .collect();
     for interface_def in interfaces.values() {
@@ -172,7 +172,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .iter()
             .map(|interface| ValidationSet {
                 name: interface.interface().to_owned(),
-                loc: *interface.loc(),
+                loc: interface.loc(),
             })
             .collect();
         let diff = implements_interfaces.difference(&defined_interfaces);
@@ -202,7 +202,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         .iter()
                         .map(|interface| ValidationSet {
                             name: interface.interface().to_owned(),
-                            loc: *implements_interface.loc(),
+                            loc: implements_interface.loc(),
                         })
                         .collect();
                     Some(child_interfaces)
@@ -238,7 +238,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .iter()
             .map(|field| ValidationSet {
                 name: field.name().into(),
-                loc: *field.loc(),
+                loc: field.loc(),
             })
             .collect();
         for implements_interface in interface_def.implements_interfaces().iter() {
@@ -248,7 +248,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     .iter()
                     .map(|field| ValidationSet {
                         name: field.name().into(),
-                        loc: *field.loc(),
+                        loc: field.loc(),
                     })
                     .collect();
 
@@ -258,18 +258,18 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     let name = &missing_field.name;
                     diagnostics.push(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            *interface_def.loc(),
+                            interface_def.loc(),
                             DiagnosticData::MissingField {
                                 field: name.clone(),
                             },
                         )
                         .labels([
                             Label::new(
-                                *super_interface.loc(),
+                                super_interface.loc(),
                                 format!("`{name}` was originally defined here"),
                             ),
                             Label::new(
-                                *interface_def.loc(),
+                                interface_def.loc(),
                                 format!("add `{name}` field to this interface"),
                             ),
                         ])

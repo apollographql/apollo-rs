@@ -25,8 +25,8 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
             .filter_map(|op| {
                 if op.name().is_none() {
                     return Some(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(*op.loc(), DiagnosticData::MissingIdent)
-                            .label(Label::new(*op.loc(), "provide a name for this definition"))
+                        Diagnostic2::new(op.loc(), DiagnosticData::MissingIdent)
+                            .label(Label::new(op.loc(), "provide a name for this definition"))
                             .help(format!("GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are {op_len} operations in this document.")),
                     ));
                 }
@@ -43,8 +43,8 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
     for op in operations.iter() {
         if let Some(name) = op.name() {
             if let Some(prev_def) = seen.get(&name) {
-                let original_definition = *prev_def.loc();
-                let redefined_definition = *op.loc();
+                let original_definition = prev_def.loc();
+                let redefined_definition = op.loc();
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
                         redefined_definition,
@@ -85,14 +85,14 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                     let field_names: Vec<&str> = fields.iter().map(|f| f.name()).collect();
                     Some(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            *op.loc(),
+                            op.loc(),
                             DiagnosticData::SingleRootField {
                                 fields: fields.len(),
-                                subscription: *op.loc(),
+                                subscription: op.loc(),
                             },
                         )
                         .label(Label::new(
-                            *op.loc(),
+                            op.loc(),
                             format!("subscription with {} root fields", fields.len()),
                         ))
                         .help(format!(
@@ -117,10 +117,10 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
         let unsupported_ops: Vec<ApolloDiagnostic> = subscription_operations
             .iter()
             .map(|op| {
-                let diagnostic = Diagnostic2::new(*op.loc(), DiagnosticData::UnsupportedOperation { ty: "subscription" })
-                    .label(Label::new(*op.loc(), "Subscription operation is not defined in the schema and is therefore not supported"));
+                let diagnostic = Diagnostic2::new(op.loc(), DiagnosticData::UnsupportedOperation { ty: "subscription" })
+                    .label(Label::new(op.loc(), "Subscription operation is not defined in the schema and is therefore not supported"));
                 let diagnostic = if let Some(schema_loc) = db.schema().loc() {
-                    diagnostic.label(Label::new(*schema_loc, "Consider defining a `subscription` root operation type here"))
+                    diagnostic.label(Label::new(schema_loc, "Consider defining a `subscription` root operation type here"))
                 } else {
                     diagnostic.help("consider defining a `subscription` root operation type in your schema")
                 };
@@ -136,16 +136,16 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
             .iter()
             .map(|op| {
                 let diagnostic = Diagnostic2::new(
-                    *op.loc(),
+                    op.loc(),
                     DiagnosticData::UnsupportedOperation { ty: "query" },
                 )
                 .label(Label::new(
-                    *op.loc(),
+                    op.loc(),
                     "Query operation is not defined in the schema and is therefore not supported",
                 ));
                 let diagnostic = if let Some(schema_loc) = db.schema().loc() {
                     diagnostic.label(Label::new(
-                        *schema_loc,
+                        schema_loc,
                         "Consider defining a `query` root operation type here",
                     ))
                 } else {
@@ -163,10 +163,10 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
         let unsupported_ops: Vec<ApolloDiagnostic> = mutation_operations
             .iter()
             .map(|op| {
-                let diagnostic = Diagnostic2::new(*op.loc(), DiagnosticData::UnsupportedOperation { ty: "mutation" })
-                    .label(Label::new(*op.loc(), "Mutation operation is not defined in the schema and is therefore not supported"));
+                let diagnostic = Diagnostic2::new(op.loc(), DiagnosticData::UnsupportedOperation { ty: "mutation" })
+                    .label(Label::new(op.loc(), "Mutation operation is not defined in the schema and is therefore not supported"));
                 let diagnostic = if let Some(schema_loc) = db.schema().loc() {
-                    diagnostic.label(Label::new(*schema_loc, "Consider defining a `mutation` root operation type here"))
+                    diagnostic.label(Label::new(schema_loc, "Consider defining a `mutation` root operation type here"))
                 } else {
                     diagnostic.help("consider defining a `mutation` root operation type in your schema")
                 };
@@ -194,13 +194,13 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                     };
                     diagnostics.push(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            *field.loc(),
+                            field.loc(),
                             DiagnosticData::UndefinedField {
                                 field: field_name.into(),
                             },
                         )
                         .label(Label::new(
-                            *field.loc(),
+                            field.loc(),
                             format!("`{} field is not in scope", field_name),
                         ))
                         .help(help),

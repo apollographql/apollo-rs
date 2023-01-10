@@ -258,7 +258,7 @@ pub(crate) fn operation_definition_variables(
         .iter()
         .map(|v| Variable {
             name: v.name().to_owned(),
-            loc: *v.loc(),
+            loc: v.loc(),
         })
         .collect();
     Arc::new(vars)

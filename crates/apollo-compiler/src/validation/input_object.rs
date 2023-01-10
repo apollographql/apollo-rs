@@ -19,7 +19,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         if let Some(name) = ast_def.name() {
             let name = &*name.text();
             let hir_def = &hir[name];
-            let original_definition = *hir_def.loc();
+            let original_definition = hir_def.loc();
             let redefined_definition = (file_id, &ast_def).into();
             if original_definition == redefined_definition {
                 // The HIR node was built from this AST node. This is fine.
@@ -65,16 +65,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 {
                     diagnostics.push(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            *original_definition,
+                            original_definition,
                             DiagnosticData::UniqueField {
                                 field: field_name.into(),
-                                original_definition: *original_definition,
-                                redefined_definition: *redefined_definition,
+                                original_definition,
+                                redefined_definition,
                             }
                         )
                         .labels([
-                            Label::new(*original_definition, format!("previous definition of `{field_name}` here")),
-                            Label::new(*redefined_definition, format!("`{field_name}` redefined here")),
+                            Label::new(original_definition, format!("previous definition of `{field_name}` here")),
+                            Label::new(redefined_definition, format!("`{field_name}` redefined here")),
                         ])
                         .help(format!("{field_name} field must only be defined once in this input object definition."))
                     ));

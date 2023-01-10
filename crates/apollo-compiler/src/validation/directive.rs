@@ -18,16 +18,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             let hir_def = &hir[name];
             if let Some(original_definition) = hir_def.loc() {
                 let redefined_definition = (file_id, &ast_def).into();
-                if *original_definition == redefined_definition {
+                if original_definition == redefined_definition {
                     // The HIR node was built from this AST node. This is fine.
                 } else {
                     errors.push(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            *original_definition,
+                            original_definition,
                             DiagnosticData::UniqueDefinition {
                                 ty: "directive",
                                 name: name.to_owned(),
-                                original_definition: *original_definition,
+                                original_definition,
                                 redefined_definition,
                             },
                         )
@@ -36,7 +36,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         ))
                         .labels([
                             Label::new(
-                                *original_definition,
+                                original_definition,
                                 format!("previous definition of `{}` here", name),
                             ),
                             Label::new(redefined_definition, format!("`{}` redefined here", name)),
@@ -58,11 +58,11 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 if name == directive_name {
                     errors.push(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            *directive.loc(),
+                            directive.loc(),
                             DiagnosticData::RecursiveDefinition { name: name.clone() },
                         )
                         .label(Label::new(
-                            *directive.loc(),
+                            directive.loc(),
                             "recursive directive definition",
                         )),
                     ));

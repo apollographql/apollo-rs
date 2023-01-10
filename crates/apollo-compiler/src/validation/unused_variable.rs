@@ -18,7 +18,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                 .iter()
                 .map(|var| ValidationSet {
                     name: var.name().into(),
-                    loc: *var.loc(),
+                    loc: var.loc(),
                 })
                 .collect();
             let used_vars: HashSet<ValidationSet> = op
@@ -32,7 +32,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                         .iter()
                         .map(|var| ValidationSet {
                             name: var.name().into(),
-                            loc: *var.loc(),
+                            loc: var.loc(),
                         })
                         .collect();
                     vars

@@ -17,8 +17,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         for enum_value in enum_def.enum_values_definition().iter() {
             let value = enum_value.enum_value();
             if let Some(prev_def) = seen.get(&value) {
-                let original_definition = *prev_def.loc();
-                let redefined_definition = *enum_value.loc();
+                let original_definition = prev_def.loc();
+                let redefined_definition = enum_value.loc();
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
                         redefined_definition,
@@ -53,13 +53,13 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if value.to_uppercase() != value {
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
-                        *enum_value.loc(),
+                        enum_value.loc(),
                         DiagnosticData::CapitalizedValue {
                             value: value.into(),
                         },
                     )
                     .label(Label::new(
-                        *enum_value.loc(),
+                        enum_value.loc(),
                         format!("consider capitalizing {value}"),
                     )),
                 ));
