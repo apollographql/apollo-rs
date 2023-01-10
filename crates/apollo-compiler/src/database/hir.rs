@@ -167,7 +167,7 @@ impl FragmentDefinition {
             .collect()
     }
 
-    pub fn ty(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
+    pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
         db.find_type_definition_by_name(self.name().to_string())
     }
 
