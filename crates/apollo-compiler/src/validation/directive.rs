@@ -1,6 +1,6 @@
 use crate::{
     diagnostics::{RecursiveDefinition, UniqueDefinition},
-    validation::type_definitions,
+    validation::ast_type_definitions,
     ApolloDiagnostic, ValidationDatabase,
 };
 use apollo_parser::ast;
@@ -12,7 +12,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     //
     // Return a Unique Definition error in case of a duplicate name.
     let hir = db.directive_definitions();
-    for (file_id, ast_def) in type_definitions::<ast::DirectiveDefinition>(db) {
+    for (file_id, ast_def) in ast_type_definitions::<ast::DirectiveDefinition>(db) {
         if let Some(name) = ast_def.name() {
             let name = &*name.text();
             let hir_def = &hir[name];

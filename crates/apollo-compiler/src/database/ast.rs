@@ -20,7 +20,10 @@ pub trait AstDatabase: InputDatabase {
 }
 
 fn ast(db: &dyn AstDatabase, file_id: FileId) -> SyntaxTree {
-    let input = db.source_code(file_id);
+    // Do not use `db.source_code(file_id)` here
+    // as that would also include sources of for pre-computed input,
+    // which we don’t want to re-parse.
+    let input = db.input(file_id).text();
 
     let parser = ApolloParser::new(&input);
     let parser = if let Some(limit) = db.recursion_limit() {

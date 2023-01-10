@@ -6,7 +6,7 @@ use crate::{
         UniqueDefinition, UniqueField,
     },
     hir::FieldDefinition,
-    validation::{type_definitions, ValidationSet},
+    validation::{ast_type_definitions, ValidationSet},
     ApolloDiagnostic, ValidationDatabase,
 };
 use apollo_parser::ast;
@@ -18,7 +18,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     //
     // Return a Unique Definition error in case of a duplicate name.
     let hir = db.object_types();
-    for (file_id, ast_def) in type_definitions::<ast::ObjectTypeDefinition>(db) {
+    for (file_id, ast_def) in ast_type_definitions::<ast::ObjectTypeDefinition>(db) {
         if let Some(name) = ast_def.name() {
             let name = &*name.text();
             let hir_def = &hir[name];

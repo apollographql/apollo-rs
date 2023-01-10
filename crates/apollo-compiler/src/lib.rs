@@ -6,7 +6,7 @@ pub mod diagnostics;
 mod tests;
 pub mod validation;
 
-use std::path::Path;
+use std::{path::Path, sync::Arc};
 
 use salsa::ParallelDatabase;
 use validation::ValidationDatabase;
@@ -82,6 +82,17 @@ impl ApolloCompiler {
         compiler
     }
 
+    /// Add or update a pre-computed input for type system definitions
+    pub fn set_type_system_hir(&mut self, schema: Arc<hir::TypeSystem>) {
+        if !self.db.type_definition_files().is_empty() {
+            panic!(
+                "Having both string inputs and pre-computed inputs \
+                 for type system definitions is not supported"
+            )
+        }
+        self.db.set_type_system_hir_input(Some(schema))
+    }
+
     fn add_input(&mut self, source: Source) -> FileId {
         let file_id = FileId::new();
         let mut sources = self.db.source_files();
@@ -101,6 +112,12 @@ impl ApolloCompiler {
     ///
     /// Returns a `FileId` that you can use to update the source text of this document.
     pub fn add_document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+        if self.db.type_system_hir_input().is_some() {
+            panic!(
+                "Having both string inputs and pre-computed inputs \
+                 for type system definitions is not supported"
+            )
+        }
         let filename = path.as_ref().to_owned();
         self.add_input(Source::document(filename, input))
     }
@@ -113,6 +130,12 @@ impl ApolloCompiler {
     ///
     /// Returns a `FileId` that you can use to update the source text of this document.
     pub fn add_type_system(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
+        if self.db.type_system_hir_input().is_some() {
+            panic!(
+                "Having both string inputs and pre-computed inputs \
+                 for type system definitions is not supported"
+            )
+        }
         let filename = path.as_ref().to_owned();
         self.add_input(Source::schema(filename, input))
     }
@@ -193,6 +216,7 @@ impl Default for ApolloCompiler {
         let mut db = RootDatabase::default();
         // TODO(@goto-bus-stop) can we make salsa fill in these defaults for us…?
         db.set_recursion_limit(None);
+        db.set_type_system_hir_input(None);
         db.set_source_files(vec![]);
 
         Self { db }
@@ -203,7 +227,8 @@ impl Default for ApolloCompiler {
 mod test {
     use std::collections::HashMap;
 
-    use crate::{hir::TypeDefinition, ApolloCompiler, HirDatabase};
+    use super::*;
+    use crate::hir::TypeDefinition;
 
     #[test]
     fn it_creates_compiler_from_multiple_sources() {
@@ -1174,5 +1199,43 @@ type Query @withDirective {
             .find_object_type_by_name("Query".into())
             .unwrap();
         assert_eq!(object_type.directives().len(), 1);
+    }
+
+    #[test]
+    fn precomputed_schema_can_multi_thread() {
+        let schema = r#"
+type Query {
+    website: URL,
+    amount: Int
+}
+"#;
+        let query = "{ website }";
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(schema, "schema.graphql");
+        let type_system = compiler.db.type_system();
+
+        let handles: Vec<_> = (0..2)
+            .map(|_| {
+                let cloned = std::sync::Arc::clone(&type_system); // cheap refcount increment
+                std::thread::spawn(move || {
+                    let mut compiler = ApolloCompiler::new();
+                    let query_id = compiler.add_executable(query, "query.graphql");
+                    compiler.set_type_system_hir(cloned);
+                    compiler
+                        .db
+                        .find_anonymous_operation(query_id)
+                        .unwrap()
+                        .fields(&compiler.db)[0]
+                        .ty(&compiler.db)
+                        .unwrap()
+                        .name()
+                })
+            })
+            .collect();
+        assert_eq!(handles.len(), 2);
+        for handle in handles {
+            assert_eq!(handle.join().unwrap(), "URL");
+        }
     }
 }

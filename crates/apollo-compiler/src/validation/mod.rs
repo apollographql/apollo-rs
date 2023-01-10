@@ -35,7 +35,9 @@ impl PartialEq for ValidationSet {
 }
 
 /// Finds top-level AST nodes of a given type in type definition files.
-pub(crate) fn type_definitions<'db, AstType>(
+///
+/// This ignores pre-computed inputs.
+pub(crate) fn ast_type_definitions<'db, AstType>(
     db: &'db dyn ValidationDatabase,
 ) -> impl Iterator<Item = (FileId, AstType)> + 'db
 where

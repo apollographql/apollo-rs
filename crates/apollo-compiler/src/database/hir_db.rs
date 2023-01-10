@@ -1,19 +1,18 @@
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::sync::Arc;
 
-use apollo_parser::{
-    ast::{self, AstChildren, AstNode},
-    SyntaxNode,
-};
-
-use crate::{
-    database::{document::*, FileId},
-    hir::*,
-    AstDatabase, InputDatabase,
-};
+use apollo_parser::ast::AstChildren;
+use apollo_parser::ast::AstNode;
+use apollo_parser::ast::{self};
+use apollo_parser::SyntaxNode;
 use indexmap::IndexMap;
+
+use crate::database::document::*;
+use crate::database::FileId;
+use crate::hir::*;
+use crate::AstDatabase;
+use crate::InputDatabase;
 
 // HIR creators *ignore* missing data entirely. *Only* missing data
 // as a result of parser errors should be ignored.
@@ -22,6 +21,12 @@ use indexmap::IndexMap;
 pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Return all type system definitions defined in the compiler.
     fn type_system_definitions(&self) -> Arc<TypeSystemDefinitions>;
+
+    /// Return a [`TypeSystem`] containing definitions and more.
+    ///
+    /// This can be used with [`set_type_system_hir`][crate::ApolloCompiler::set_type_system_hir]
+    /// on another compiler.
+    fn type_system(&self) -> Arc<TypeSystem>;
 
     /// Return all the operations defined in a file.
     fn operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
@@ -66,6 +71,9 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
         file_id: FileId,
         name: String,
     ) -> Option<Arc<OperationDefinition>>;
+
+    /// Return an operation definition without a name, corresponding to the file id.
+    fn find_anonymous_operation(&self, file_id: FileId) -> Option<Arc<OperationDefinition>>;
 
     /// Return an fragment definition corresponding to the name and file id.
     /// Result of this query is not cached internally.
@@ -215,6 +223,23 @@ fn type_system_definitions(db: &dyn HirDatabase) -> Arc<TypeSystemDefinitions> {
     })
 }
 
+fn type_system(db: &dyn HirDatabase) -> Arc<TypeSystem> {
+    if let Some(precomputed_input) = db.type_system_hir_input() {
+        // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
+        return precomputed_input;
+    }
+    Arc::new(TypeSystem {
+        definitions: db.type_system_definitions(),
+        type_definitions_by_name: db.types_definitions_by_name(),
+        subtype_map: db.subtype_map(),
+        inputs: db
+            .type_definition_files()
+            .into_iter()
+            .map(|file_id| (file_id, db.input(file_id)))
+            .collect(),
+    })
+}
+
 fn operations(db: &dyn HirDatabase, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>> {
     Arc::new(
         db.ast(file_id)
@@ -294,6 +319,10 @@ where
 // This implementation currently just finds the first schema definition, which
 // means we can't really diagnose the "multiple schema definitions" errors.
 fn schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
+    if let Some(precomputed) = db.type_system_hir_input() {
+        // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
+        return precomputed.definitions.schema.clone();
+    }
     let mut schema_def = type_definitions(db, schema_definition)
         .next()
         .unwrap_or_default();
@@ -340,6 +369,10 @@ macro_rules! by_name_extensible {
 }
 
 fn object_types(db: &dyn HirDatabase) -> ByName<ObjectTypeDefinition> {
+    if let Some(precomputed) = db.type_system_hir_input() {
+        // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
+        return precomputed.definitions.objects.clone();
+    }
     Arc::new(by_name_extensible!(
         db,
         object_type_definition,
@@ -348,6 +381,10 @@ fn object_types(db: &dyn HirDatabase) -> ByName<ObjectTypeDefinition> {
 }
 
 fn scalars(db: &dyn HirDatabase) -> ByName<ScalarTypeDefinition> {
+    if let Some(precomputed) = db.type_system_hir_input() {
+        // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
+        return precomputed.definitions.scalars.clone();
+    }
     Arc::new(built_in_scalars(by_name_extensible!(
         db,
         scalar_definition,
@@ -356,10 +393,18 @@ fn scalars(db: &dyn HirDatabase) -> ByName<ScalarTypeDefinition> {
 }
 
 fn enums(db: &dyn HirDatabase) -> ByName<EnumTypeDefinition> {
+    if let Some(precomputed) = db.type_system_hir_input() {
+        // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
+        return precomputed.definitions.enums.clone();
+    }
     Arc::new(by_name_extensible!(db, enum_definition, enum_extension))
 }
 
 fn unions(db: &dyn HirDatabase) -> ByName<UnionTypeDefinition> {
+    if let Some(precomputed) = db.type_system_hir_input() {
+        // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
+        return precomputed.definitions.unions.clone();
+    }
     Arc::new(by_name_extensible!(db, union_definition, union_extension))
 }
 
@@ -372,6 +417,10 @@ fn interfaces(db: &dyn HirDatabase) -> ByName<InterfaceTypeDefinition> {
 }
 
 fn input_objects(db: &dyn HirDatabase) -> ByName<InputObjectTypeDefinition> {
+    if let Some(precomputed) = db.type_system_hir_input() {
+        // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
+        return precomputed.definitions.input_objects.clone();
+    }
     Arc::new(by_name_extensible!(
         db,
         input_object_definition,
@@ -380,6 +429,10 @@ fn input_objects(db: &dyn HirDatabase) -> ByName<InputObjectTypeDefinition> {
 }
 
 fn directive_definitions(db: &dyn HirDatabase) -> ByName<DirectiveDefinition> {
+    if let Some(precomputed) = db.type_system_hir_input() {
+        // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
+        return precomputed.definitions.directives.clone();
+    }
     Arc::new(built_in_directives(by_name!(db, directive_definition)))
 }
 
