@@ -188,7 +188,7 @@ pub struct OperationDefinition {
 }
 
 impl OperationDefinition {
-    /// Get a reference to the operation definition's ty.
+    /// Get the type of the operation: Query, Mutation, or Subscription
     pub fn ty(&self) -> &OperationType {
         &self.ty
     }
