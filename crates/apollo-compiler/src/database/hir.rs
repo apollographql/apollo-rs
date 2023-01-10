@@ -442,10 +442,12 @@ impl Type {
         }
     }
 
+    /// Get current Type's Type Definition.
     pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
         db.find_type_definition_by_name(self.name())
     }
 
+    /// Get current Type's name.
     pub fn name(&self) -> String {
         match self {
             Type::NonNull { ty, .. } | Type::List { ty, .. } => ty.name(),
@@ -1139,7 +1141,7 @@ impl SchemaDefinition {
     /// Get Schema's query object type definition.
     pub fn query(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
-            if op.operation_type.is_query() {
+            if op.ty.is_query() {
                 op.object_type(db)
             } else {
                 None
@@ -1150,7 +1152,7 @@ impl SchemaDefinition {
     /// Get Schema's mutation object type definition.
     pub fn mutation(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
-            if op.operation_type.is_mutation() {
+            if op.ty.is_mutation() {
                 op.object_type(db)
             } else {
                 None
@@ -1161,7 +1163,7 @@ impl SchemaDefinition {
     /// Get Schema's subscription object type definition.
     pub fn subscription(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
-            if op.operation_type.is_subscription() {
+            if op.ty.is_subscription() {
                 op.object_type(db)
             } else {
                 None
@@ -1172,7 +1174,7 @@ impl SchemaDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct RootOperationTypeDefinition {
-    pub(crate) operation_type: OperationType,
+    pub(crate) ty: OperationType,
     pub(crate) named_type: Type,
     pub(crate) loc: Option<HirNodeLocation>,
 }
@@ -1184,10 +1186,11 @@ impl RootOperationTypeDefinition {
     }
 
     /// Get the root operation type definition's operation type.
-    pub fn operation_type(&self) -> OperationType {
-        self.operation_type
+    pub fn ty(&self) -> OperationType {
+        self.ty
     }
 
+    /// Get the object type this root operation is referencing.
     pub fn object_type(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         db.find_object_type_by_name(self.named_type().name())
     }
@@ -1201,7 +1204,7 @@ impl RootOperationTypeDefinition {
 impl Default for RootOperationTypeDefinition {
     fn default() -> Self {
         Self {
-            operation_type: OperationType::Query,
+            ty: OperationType::Query,
             named_type: Type::Named {
                 name: "Query".to_string(),
                 loc: None,
