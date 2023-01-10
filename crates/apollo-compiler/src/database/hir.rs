@@ -54,7 +54,7 @@ impl TypeDefinition {
             Self::InputObjectTypeDefinition(def) => def.name_src(),
         }
     }
-    pub fn ty(&self) -> &'static str {
+    pub fn kind(&self) -> &'static str {
         match self {
             Self::ScalarTypeDefinition(_) => "ScalarTypeDefinition",
             Self::ObjectTypeDefinition(_) => "ObjectTypeDefinition",

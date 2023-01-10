@@ -75,7 +75,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 if !field.ty().is_output_type(db.upcast()) {
                     diagnostics.push(ApolloDiagnostic::OutputType(OutputType {
                         name: field.name().into(),
-                        ty: field_ty.ty(),
+                        ty: field_ty.kind(),
                         src: db.source_code(field.loc().file_id()),
                         definition: (offset, len).into(),
                     }))
