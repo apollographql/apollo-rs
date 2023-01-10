@@ -219,17 +219,11 @@ pub enum DiagnosticData {
         missing_interface: String,
     },
     #[error("`{}` field must return an output type", name)]
-    // #[diagnostic(
-    //     code("apollo-compiler validation error"),
-    //     help("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", self.name)
-    // )]
     OutputType {
         // field name
         name: String,
         // field type
         ty: &'static str,
-        // #[label("this is of `{}` type", self.ty)]
-        // pub definition: SourceSpan,
     },
 }
 
