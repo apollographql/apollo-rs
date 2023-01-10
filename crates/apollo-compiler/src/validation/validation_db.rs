@@ -2,8 +2,8 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     database::db::Upcast,
-    diagnostics::UniqueArgument,
-    hir,
+    diagnostics::{UndefinedDefinition, UniqueArgument},
+    hir::{self, DirectiveLocation},
     validation::{
         directive, enum_, input_object, interface, object, operation, scalar, schema, union_,
         unused_variable,
@@ -74,7 +74,11 @@ pub trait ValidationDatabase:
         input_values: Arc<Vec<hir::InputValueDefinition>>,
     ) -> Vec<ApolloDiagnostic>;
     fn check_db_definitions(&self) -> Vec<ApolloDiagnostic>;
-    fn check_directive(&self, schema: hir::Directive) -> Vec<ApolloDiagnostic>;
+    fn check_directive(
+        &self,
+        schema: hir::Directive,
+        dir_loc: hir::DirectiveLocation,
+    ) -> Vec<ApolloDiagnostic>;
     fn check_arguments(&self, schema: Vec<hir::Argument>) -> Vec<ApolloDiagnostic>;
     fn check_field(&self, field: Arc<hir::Field>) -> Vec<ApolloDiagnostic>;
 }
@@ -159,7 +163,7 @@ pub fn check_schema_definition(
 
     // TODO: validate extensions
     for directive in schema_def.directives() {
-        diagnostics.extend(db.check_directive(directive.clone()));
+        diagnostics.extend(db.check_directive(directive.clone(), DirectiveLocation::Schema));
     }
 
     diagnostics
@@ -203,7 +207,8 @@ pub fn check_field_definition(
     let mut diagnostics = Vec::new();
 
     for directive in field.directives() {
-        diagnostics.extend(db.check_directive(directive.clone()));
+        diagnostics
+            .extend(db.check_directive(directive.clone(), DirectiveLocation::FieldDefinition));
     }
 
     diagnostics.extend(db.check_arguments_definition(field.arguments));
@@ -257,49 +262,49 @@ pub fn check_db_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
     } = &*type_system;
 
     macro_rules! check_directives {
-        ($def: ident) => {
+        ($def: ident, $dir_loc: expr) => {
             for directive in $def.directives() {
-                diagnostics.extend(db.check_directive(directive.clone()));
+                diagnostics.extend(db.check_directive(directive.clone(), $dir_loc));
             }
         };
     }
 
     for def in db.all_operations().iter() {
-        check_directives!(def);
+        check_directives!(def, def.operation_ty().into());
         diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
     }
     for def in db.all_fragments().values() {
-        check_directives!(def);
+        check_directives!(def, DirectiveLocation::FragmentDefinition);
         diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
     }
     for def in directives.values() {
         diagnostics.extend(db.check_directive_definition(def.clone()));
     }
     for def in scalars.values() {
-        check_directives!(def);
+        check_directives!(def, DirectiveLocation::Scalar);
         diagnostics.extend(db.check_scalar_type_definition(def.clone()));
     }
     for def in objects.values() {
-        check_directives!(def);
+        check_directives!(def, DirectiveLocation::Object);
         diagnostics.extend(db.check_object_type_definition(def.clone()));
     }
     for def in interfaces.values() {
-        check_directives!(def);
+        check_directives!(def, DirectiveLocation::Interface);
         diagnostics.extend(db.check_interface_type_definition(def.clone()));
         // TODO: validate extensions
     }
     for def in unions.values() {
-        check_directives!(def);
+        check_directives!(def, DirectiveLocation::Union);
         diagnostics.extend(db.check_union_type_definition(def.clone()));
         // TODO: validate extensions
     }
     for def in enums.values() {
-        check_directives!(def);
+        check_directives!(def, DirectiveLocation::Enum);
         diagnostics.extend(db.check_enum_type_definition(def.clone()));
         // TODO: validate extensions
     }
     for def in input_objects.values() {
-        check_directives!(def);
+        check_directives!(def, DirectiveLocation::InputObject);
         diagnostics.extend(db.check_input_object_type_definition(def.clone()));
         // TODO: validate extensions
     }
@@ -312,7 +317,7 @@ pub fn check_field(db: &dyn ValidationDatabase, field: Arc<hir::Field>) -> Vec<A
     let mut diagnostics = Vec::new();
 
     for directive in field.directives.iter() {
-        diagnostics.extend(db.check_directive(directive.clone()));
+        diagnostics.extend(db.check_directive(directive.clone(), DirectiveLocation::Field));
     }
     diagnostics.extend(db.check_arguments(field.arguments().to_vec()));
 
@@ -322,10 +327,26 @@ pub fn check_field(db: &dyn ValidationDatabase, field: Arc<hir::Field>) -> Vec<A
 pub fn check_directive(
     db: &dyn ValidationDatabase,
     directive: hir::Directive,
+    loc: DirectiveLocation,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(db.check_arguments(directive.arguments().to_vec()));
+
+    let name = directive.name();
+    let loc = directive.loc();
+    let offset = loc.offset();
+    let len = loc.node_len();
+
+    if let Some(directive) = db.find_directive_definition_by_name(name.into()) {
+        let allowed_loc = directive.directive_locations();
+    } else {
+        diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
+            ty: name.into(),
+            src: db.source_code(loc.file_id()),
+            definition: (offset, len).into(),
+        }))
+    }
 
     diagnostics
 }

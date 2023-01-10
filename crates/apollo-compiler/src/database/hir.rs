@@ -323,6 +323,18 @@ impl<'a> From<&'a str> for OperationType {
     }
 }
 
+impl From<OperationType> for DirectiveLocation {
+    fn from(op_type: OperationType) -> Self {
+        if op_type.is_subscription() {
+            DirectiveLocation::Subscription
+        } else if op_type.is_mutation() {
+            DirectiveLocation::Mutation
+        } else {
+            DirectiveLocation::Query
+        }
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct VariableDefinition {
     pub(crate) name: Name,
