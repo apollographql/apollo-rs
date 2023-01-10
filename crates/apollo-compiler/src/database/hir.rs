@@ -179,7 +179,7 @@ impl FragmentDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OperationDefinition {
-    pub(crate) operation_ty: OperationType,
+    pub(crate) ty: OperationType,
     pub(crate) name: Option<Name>,
     pub(crate) variables: Arc<Vec<VariableDefinition>>,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -189,8 +189,8 @@ pub struct OperationDefinition {
 
 impl OperationDefinition {
     /// Get a reference to the operation definition's ty.
-    pub fn operation_ty(&self) -> &OperationType {
-        &self.operation_ty
+    pub fn ty(&self) -> &OperationType {
+        &self.ty
     }
 
     /// Get a mutable reference to the operation definition's name.
@@ -205,7 +205,7 @@ impl OperationDefinition {
 
     /// Get operation's definition object type.
     pub fn object_type(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
-        match self.operation_ty {
+        match self.ty {
             OperationType::Query => db.schema().query(db),
             OperationType::Mutation => db.schema().mutation(db),
             OperationType::Subscription => db.schema().subscription(db),

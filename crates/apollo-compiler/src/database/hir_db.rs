@@ -410,7 +410,7 @@ fn operation_definition(
     let loc = location(file_id, op_def.syntax());
 
     Some(OperationDefinition {
-        operation_ty: ty,
+        ty,
         name,
         variables,
         selection_set,

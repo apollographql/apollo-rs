@@ -116,7 +116,7 @@ pub(crate) fn query_operations(
     let operations = db
         .operations(file_id)
         .iter()
-        .filter_map(|op| op.operation_ty.is_query().then(|| op.clone()))
+        .filter_map(|op| op.ty.is_query().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
@@ -128,7 +128,7 @@ pub(crate) fn subscription_operations(
     let operations = db
         .operations(file_id)
         .iter()
-        .filter_map(|op| op.operation_ty.is_subscription().then(|| op.clone()))
+        .filter_map(|op| op.ty.is_subscription().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
@@ -140,7 +140,7 @@ pub(crate) fn mutation_operations(
     let operations = db
         .operations(file_id)
         .iter()
-        .filter_map(|op| op.operation_ty.is_mutation().then(|| op.clone()))
+        .filter_map(|op| op.ty.is_mutation().then(|| op.clone()))
         .collect();
     Arc::new(operations)
 }
