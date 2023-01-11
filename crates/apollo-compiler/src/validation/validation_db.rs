@@ -1,8 +1,13 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
+
+use miette::SourceSpan;
 
 use crate::{
     database::db::Upcast,
-    diagnostics::{UndefinedDefinition, UniqueArgument},
+    diagnostics::{UndefinedDefinition, UniqueArgument, UnsupportedLocation},
     hir::{self, DirectiveLocation},
     validation::{
         directive, enum_, input_object, interface, object, operation, scalar, schema, union_,
@@ -270,7 +275,7 @@ pub fn check_db_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
     }
 
     for def in db.all_operations().iter() {
-        check_directives!(def, def.operation_ty().into());
+        check_directives!(def, (*def.operation_ty()).into());
         diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
     }
     for def in db.all_fragments().values() {
@@ -327,7 +332,7 @@ pub fn check_field(db: &dyn ValidationDatabase, field: Arc<hir::Field>) -> Vec<A
 pub fn check_directive(
     db: &dyn ValidationDatabase,
     directive: hir::Directive,
-    loc: DirectiveLocation,
+    dir_loc: DirectiveLocation,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -339,7 +344,21 @@ pub fn check_directive(
     let len = loc.node_len();
 
     if let Some(directive) = db.find_directive_definition_by_name(name.into()) {
-        let allowed_loc = directive.directive_locations();
+        let directive_def_loc = directive
+            .loc
+            .map(|loc| SourceSpan::new(loc.offset().into(), loc.node_len().into()));
+        let allowed_loc: HashSet<DirectiveLocation> =
+            HashSet::from_iter(directive.directive_locations().iter().cloned());
+        if !allowed_loc.contains(&dir_loc) {
+            diagnostics.push(ApolloDiagnostic::UnsupportedLocation(UnsupportedLocation {
+                ty: name.into(),
+                dir_loc: dir_loc.into(),
+                src: db.source_code(loc.file_id()),
+                directive: (offset, len).into(),
+                directive_def: directive_def_loc,
+                help: Some("the directive must be used in a location that the service has declared support for".into()),
+            }))
+        }
     } else {
         diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
             ty: name.into(),

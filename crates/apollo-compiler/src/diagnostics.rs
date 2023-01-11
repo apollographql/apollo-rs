@@ -24,6 +24,7 @@ pub enum ApolloDiagnostic {
     UnusedVariable(UnusedVariable),
     OutputType(OutputType),
     ObjectType(ObjectType),
+    UnsupportedLocation(UnsupportedLocation),
 }
 
 impl ApolloDiagnostic {
@@ -46,6 +47,7 @@ impl ApolloDiagnostic {
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::OutputType(_)
                 | ApolloDiagnostic::ObjectType(_)
+                | ApolloDiagnostic::UnsupportedLocation(_)
         )
     }
 
@@ -85,6 +87,7 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UnsupportedLocation(diagnostic) => Report::new(diagnostic.clone()),
         }
     }
 }
@@ -394,6 +397,29 @@ pub struct UniqueArgument {
 
     #[label("`{}` is redefined here", self.name)]
     pub redefined_definition: SourceSpan,
+
+    #[help]
+    pub help: Option<String>,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("{} directive is not supported for {} location", self.ty, self.dir_loc)]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct UnsupportedLocation {
+    // current directive definition
+    pub ty: String,
+
+    // current location where the directive is used
+    pub dir_loc: String,
+
+    #[source_code]
+    pub src: Arc<str>,
+
+    #[label("{} is not a valid location", self.dir_loc)]
+    pub directive: SourceSpan,
+
+    #[label("consider adding {} directive location here", self.dir_loc)]
+    pub directive_def: Option<SourceSpan>,
 
     #[help]
     pub help: Option<String>,
