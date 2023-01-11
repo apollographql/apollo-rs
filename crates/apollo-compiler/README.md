@@ -182,6 +182,8 @@ fn main() -> Result<()> {
       upc: String!
       weight: Int
     }
+
+    directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
     "#;
     let query_input = r#"
     query getProduct {

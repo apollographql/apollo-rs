@@ -1,0 +1,59 @@
+[
+    UnsupportedLocation(
+        UnsupportedLocation {
+            ty: "skip",
+            dir_loc: "QUERY",
+            src: "query @skip(if: $foo) {\n  field\n}\n\ntype Query @deprecated {\n  field: String\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Int\n}",
+            directive: SourceSpan {
+                offset: SourceOffset(
+                    6,
+                ),
+                length: SourceOffset(
+                    16,
+                ),
+            },
+            directive_def: None,
+            help: Some(
+                "the directive must be used in a location that the service has declared support for",
+            ),
+        },
+    ),
+    UnsupportedLocation(
+        UnsupportedLocation {
+            ty: "deprecated",
+            dir_loc: "OBJECT",
+            src: "query @skip(if: $foo) {\n  field\n}\n\ntype Query @deprecated {\n  field: String\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Int\n}",
+            directive: SourceSpan {
+                offset: SourceOffset(
+                    46,
+                ),
+                length: SourceOffset(
+                    12,
+                ),
+            },
+            directive_def: None,
+            help: Some(
+                "the directive must be used in a location that the service has declared support for",
+            ),
+        },
+    ),
+    UnsupportedLocation(
+        UnsupportedLocation {
+            ty: "specifiedBy",
+            dir_loc: "ARGUMENT_DEFINITION",
+            src: "query @skip(if: $foo) {\n  field\n}\n\ntype Query @deprecated {\n  field: String\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Int\n}",
+            directive: SourceSpan {
+                offset: SourceOffset(
+                    102,
+                ),
+                length: SourceOffset(
+                    56,
+                ),
+            },
+            directive_def: None,
+            help: Some(
+                "the directive must be used in a location that the service has declared support for",
+            ),
+        },
+    ),
+]

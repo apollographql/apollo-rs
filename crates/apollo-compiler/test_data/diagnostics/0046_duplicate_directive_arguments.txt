@@ -1,36 +1,53 @@
 [
-    UniqueArgument(
-        UniqueArgument {
-            name: "reason",
-            src: "type X @deprecated(reason: \"as a test\", reason: \"just for fun\") {}\ntype Query {\n  something: X @skip(if: false, if: true)\n}\n",
-            original_definition: SourceSpan {
+    SyntaxError(
+        SyntaxError {
+            message: "expected a Name",
+            src: "scalar @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\", url: \"https://tools.ietf.org/html/rfc4125\") {}\ntype Query {\n  something: X @skip(if: false, if: true)\n}\n",
+            span: SourceSpan {
                 offset: SourceOffset(
-                    19,
+                    7,
                 ),
                 length: SourceOffset(
-                    21,
+                    1,
                 ),
             },
-            redefined_definition: SourceSpan {
+        },
+    ),
+    SyntaxError(
+        SyntaxError {
+            message: "expected at least one Selection in Selection Set",
+            src: "scalar @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\", url: \"https://tools.ietf.org/html/rfc4125\") {}\ntype Query {\n  something: X @skip(if: false, if: true)\n}\n",
+            span: SourceSpan {
                 offset: SourceOffset(
-                    40,
+                    109,
                 ),
                 length: SourceOffset(
-                    22,
+                    1,
                 ),
             },
-            help: Some(
-                "`reason` argument must only be provided once.",
-            ),
+        },
+    ),
+    UndefinedDefinition(
+        UndefinedDefinition {
+            ty: "X",
+            src: "scalar @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\", url: \"https://tools.ietf.org/html/rfc4125\") {}\ntype Query {\n  something: X @skip(if: false, if: true)\n}\n",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    137,
+                ),
+                length: SourceOffset(
+                    1,
+                ),
+            },
         },
     ),
     UniqueArgument(
         UniqueArgument {
             name: "if",
-            src: "type X @deprecated(reason: \"as a test\", reason: \"just for fun\") {}\ntype Query {\n  something: X @skip(if: false, if: true)\n}\n",
+            src: "scalar @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\", url: \"https://tools.ietf.org/html/rfc4125\") {}\ntype Query {\n  something: X @skip(if: false, if: true)\n}\n",
             original_definition: SourceSpan {
                 offset: SourceOffset(
-                    101,
+                    145,
                 ),
                 length: SourceOffset(
                     11,
@@ -38,7 +55,7 @@
             },
             redefined_definition: SourceSpan {
                 offset: SourceOffset(
-                    112,
+                    156,
                 ),
                 length: SourceOffset(
                     8,
@@ -46,6 +63,25 @@
             },
             help: Some(
                 "`if` argument must only be provided once.",
+            ),
+        },
+    ),
+    UnsupportedLocation(
+        UnsupportedLocation {
+            ty: "skip",
+            dir_loc: "FIELD_DEFINITION",
+            src: "scalar @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\", url: \"https://tools.ietf.org/html/rfc4125\") {}\ntype Query {\n  something: X @skip(if: false, if: true)\n}\n",
+            directive: SourceSpan {
+                offset: SourceOffset(
+                    139,
+                ),
+                length: SourceOffset(
+                    27,
+                ),
+            },
+            directive_def: None,
+            help: Some(
+                "the directive must be used in a location that the service has declared support for",
             ),
         },
     ),

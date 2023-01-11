@@ -8,7 +8,7 @@ use miette::SourceSpan;
 use crate::{
     database::db::Upcast,
     diagnostics::{UndefinedDefinition, UniqueArgument, UnsupportedLocation},
-    hir::{self, DirectiveLocation},
+    hir,
     validation::{
         directive, enum_, input_object, interface, object, operation, scalar, schema, union_,
         unused_variable,
@@ -63,6 +63,7 @@ pub trait ValidationDatabase:
         &self,
         def: Arc<hir::EnumTypeDefinition>,
     ) -> Vec<ApolloDiagnostic>;
+    fn check_enum_value(&self, enum_val: hir::EnumValueDefinition) -> Vec<ApolloDiagnostic>;
     fn check_input_object_type_definition(
         &self,
         def: Arc<hir::InputObjectTypeDefinition>,
@@ -77,6 +78,7 @@ pub trait ValidationDatabase:
     fn check_input_values(
         &self,
         input_values: Arc<Vec<hir::InputValueDefinition>>,
+        dir_loc: hir::DirectiveLocation,
     ) -> Vec<ApolloDiagnostic>;
     fn check_db_definitions(&self) -> Vec<ApolloDiagnostic>;
     fn check_directive(
@@ -86,6 +88,10 @@ pub trait ValidationDatabase:
     ) -> Vec<ApolloDiagnostic>;
     fn check_arguments(&self, schema: Vec<hir::Argument>) -> Vec<ApolloDiagnostic>;
     fn check_field(&self, field: Arc<hir::Field>) -> Vec<ApolloDiagnostic>;
+    fn check_variable_definitions(
+        &self,
+        variables: Arc<Vec<hir::VariableDefinition>>,
+    ) -> Vec<ApolloDiagnostic>;
 }
 
 pub fn check_directive_definition(
@@ -144,20 +150,51 @@ pub fn check_union_type_definition(
 }
 
 pub fn check_enum_type_definition(
-    _db: &dyn ValidationDatabase,
-    _enum_type: Arc<hir::EnumTypeDefinition>,
+    db: &dyn ValidationDatabase,
+    enum_def: Arc<hir::EnumTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    // TODO: validate extensions
-    vec![]
+    let mut diagnostics = Vec::new();
+
+    for dir in enum_def.directives() {
+        diagnostics.extend(db.check_directive(dir.clone(), hir::DirectiveLocation::Enum));
+    }
+
+    for val in enum_def.enum_values_definition() {
+        diagnostics.extend(db.check_enum_value(val.clone()))
+    }
+
+    diagnostics
+}
+
+pub fn check_enum_value(
+    db: &dyn ValidationDatabase,
+    enum_val: hir::EnumValueDefinition,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    for dir in enum_val.directives() {
+        diagnostics.extend(db.check_directive(dir.clone(), hir::DirectiveLocation::EnumValue));
+    }
+
+    diagnostics
 }
 
 pub fn check_input_object_type_definition(
-    _db: &dyn ValidationDatabase,
-    _input_object_type: Arc<hir::InputObjectTypeDefinition>,
+    db: &dyn ValidationDatabase,
+    input_obj: Arc<hir::InputObjectTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    // TODO: validate extensions
-    // Not checking the `input_values` here as those are checked as fields elsewhere.
-    vec![]
+    let mut diagnostics = Vec::new();
+
+    for dir in input_obj.directives() {
+        diagnostics.extend(db.check_directive(dir.clone(), hir::DirectiveLocation::InputObject));
+    }
+
+    diagnostics.extend(db.check_input_values(
+        (*input_obj).clone().input_fields_definition,
+        hir::DirectiveLocation::InputFieldDefinition,
+    ));
+
+    diagnostics
 }
 
 pub fn check_schema_definition(
@@ -166,9 +203,8 @@ pub fn check_schema_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    // TODO: validate extensions
-    for directive in schema_def.directives() {
-        diagnostics.extend(db.check_directive(directive.clone(), DirectiveLocation::Schema));
+    for dir in schema_def.directives() {
+        diagnostics.extend(db.check_directive(dir.clone(), hir::DirectiveLocation::Schema));
     }
 
     diagnostics
@@ -185,8 +221,19 @@ pub fn check_selection_set(
             hir::Selection::Field(field) => {
                 diagnostics.extend(db.check_field(Arc::clone(field)));
             }
-            hir::Selection::FragmentSpread(_) | hir::Selection::InlineFragment(_) => {
-                // no diagnostics yet
+            hir::Selection::FragmentSpread(frag) => {
+                for dir in frag.directives() {
+                    diagnostics.extend(
+                        db.check_directive(dir.clone(), hir::DirectiveLocation::FragmentDefinition),
+                    )
+                }
+            }
+            hir::Selection::InlineFragment(inline) => {
+                for dir in inline.directives() {
+                    diagnostics.extend(
+                        db.check_directive(dir.clone(), hir::DirectiveLocation::InlineFragment),
+                    )
+                }
             }
         }
     }
@@ -200,7 +247,10 @@ pub fn check_arguments_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(db.check_input_values(arguments_def.input_values));
+    diagnostics.extend(db.check_input_values(
+        arguments_def.input_values,
+        hir::DirectiveLocation::ArgumentDefinition,
+    ));
 
     diagnostics
 }
@@ -211,9 +261,9 @@ pub fn check_field_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    for directive in field.directives() {
+    for dir in field.directives() {
         diagnostics
-            .extend(db.check_directive(directive.clone(), DirectiveLocation::FieldDefinition));
+            .extend(db.check_directive(dir.clone(), hir::DirectiveLocation::FieldDefinition));
     }
 
     diagnostics.extend(db.check_arguments_definition(field.arguments));
@@ -224,11 +274,15 @@ pub fn check_field_definition(
 pub fn check_input_values(
     db: &dyn ValidationDatabase,
     input_values: Arc<Vec<hir::InputValueDefinition>>,
+    dir_loc: hir::DirectiveLocation,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     let mut seen: HashMap<&str, &hir::InputValueDefinition> = HashMap::new();
 
     for input_value in input_values.iter() {
+        for dir in input_value.directives() {
+            diagnostics.extend(db.check_directive(dir.clone(), dir_loc.clone()));
+        }
         let name = input_value.name();
         if let Some(prev_arg) = seen.get(name) {
             let prev_offset = prev_arg.loc().unwrap().offset();
@@ -252,6 +306,23 @@ pub fn check_input_values(
     diagnostics
 }
 
+pub fn check_variable_definitions(
+    db: &dyn ValidationDatabase,
+    variables: Arc<Vec<hir::VariableDefinition>>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    for variable in variables.iter() {
+        for dir in variable.directives() {
+            diagnostics.extend(
+                db.check_directive(dir.clone(), hir::DirectiveLocation::VariableDefinition),
+            );
+        }
+    }
+
+    diagnostics
+}
+
 pub fn check_db_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     let type_system = db.type_system_definitions();
@@ -268,48 +339,49 @@ pub fn check_db_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
 
     macro_rules! check_directives {
         ($def: ident, $dir_loc: expr) => {
-            for directive in $def.directives() {
-                diagnostics.extend(db.check_directive(directive.clone(), $dir_loc));
+            for dir in $def.directives() {
+                diagnostics.extend(db.check_directive(dir.clone(), $dir_loc));
             }
         };
     }
 
     for def in db.all_operations().iter() {
         check_directives!(def, (*def.operation_ty()).into());
+        diagnostics.extend(db.check_variable_definitions(def.variables.clone()));
         diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
     }
     for def in db.all_fragments().values() {
-        check_directives!(def, DirectiveLocation::FragmentDefinition);
+        check_directives!(def, hir::DirectiveLocation::FragmentDefinition);
         diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
     }
     for def in directives.values() {
         diagnostics.extend(db.check_directive_definition(def.clone()));
     }
     for def in scalars.values() {
-        check_directives!(def, DirectiveLocation::Scalar);
+        check_directives!(def, hir::DirectiveLocation::Scalar);
         diagnostics.extend(db.check_scalar_type_definition(def.clone()));
     }
     for def in objects.values() {
-        check_directives!(def, DirectiveLocation::Object);
+        check_directives!(def, hir::DirectiveLocation::Object);
         diagnostics.extend(db.check_object_type_definition(def.clone()));
     }
     for def in interfaces.values() {
-        check_directives!(def, DirectiveLocation::Interface);
+        check_directives!(def, hir::DirectiveLocation::Interface);
         diagnostics.extend(db.check_interface_type_definition(def.clone()));
         // TODO: validate extensions
     }
     for def in unions.values() {
-        check_directives!(def, DirectiveLocation::Union);
+        check_directives!(def, hir::DirectiveLocation::Union);
         diagnostics.extend(db.check_union_type_definition(def.clone()));
         // TODO: validate extensions
     }
     for def in enums.values() {
-        check_directives!(def, DirectiveLocation::Enum);
+        check_directives!(def, hir::DirectiveLocation::Enum);
         diagnostics.extend(db.check_enum_type_definition(def.clone()));
         // TODO: validate extensions
     }
     for def in input_objects.values() {
-        check_directives!(def, DirectiveLocation::InputObject);
+        check_directives!(def, hir::DirectiveLocation::InputObject);
         diagnostics.extend(db.check_input_object_type_definition(def.clone()));
         // TODO: validate extensions
     }
@@ -321,8 +393,8 @@ pub fn check_db_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
 pub fn check_field(db: &dyn ValidationDatabase, field: Arc<hir::Field>) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    for directive in field.directives.iter() {
-        diagnostics.extend(db.check_directive(directive.clone(), DirectiveLocation::Field));
+    for dir in field.directives.iter() {
+        diagnostics.extend(db.check_directive(dir.clone(), hir::DirectiveLocation::Field));
     }
     diagnostics.extend(db.check_arguments(field.arguments().to_vec()));
 
@@ -332,7 +404,7 @@ pub fn check_field(db: &dyn ValidationDatabase, field: Arc<hir::Field>) -> Vec<A
 pub fn check_directive(
     db: &dyn ValidationDatabase,
     directive: hir::Directive,
-    dir_loc: DirectiveLocation,
+    dir_loc: hir::DirectiveLocation,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -347,7 +419,7 @@ pub fn check_directive(
         let directive_def_loc = directive
             .loc
             .map(|loc| SourceSpan::new(loc.offset().into(), loc.node_len().into()));
-        let allowed_loc: HashSet<DirectiveLocation> =
+        let allowed_loc: HashSet<hir::DirectiveLocation> =
             HashSet::from_iter(directive.directive_locations().iter().cloned());
         if !allowed_loc.contains(&dir_loc) {
             diagnostics.push(ApolloDiagnostic::UnsupportedLocation(UnsupportedLocation {

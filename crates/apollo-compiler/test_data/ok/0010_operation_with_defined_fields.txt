@@ -1,4 +1,4 @@
-- DOCUMENT@0..313
+- DOCUMENT@0..429
     - OPERATION_DEFINITION@0..70
         - OPERATION_TYPE@0..6
             - query_KW@0..5 "query"
@@ -70,13 +70,13 @@
                 - WHITESPACE@132..133 "\n"
             - R_CURLY@133..134 "}"
             - WHITESPACE@134..136 "\n\n"
-    - OBJECT_TYPE_DEFINITION@136..313
+    - OBJECT_TYPE_DEFINITION@136..315
         - type_KW@136..140 "type"
         - WHITESPACE@140..141 " "
         - NAME@141..149
             - IDENT@141..148 "Product"
             - WHITESPACE@148..149 " "
-        - FIELDS_DEFINITION@149..313
+        - FIELDS_DEFINITION@149..315
             - L_CURLY@149..150 "{"
             - WHITESPACE@150..153 "\n  "
             - FIELD_DEFINITION@153..203
@@ -170,4 +170,48 @@
                         - IDENT@308..311 "Int"
                 - WHITESPACE@311..312 "\n"
             - R_CURLY@312..313 "}"
+            - WHITESPACE@313..315 "\n\n"
+    - DIRECTIVE_DEFINITION@315..429
+        - directive_KW@315..324 "directive"
+        - WHITESPACE@324..325 " "
+        - AT@325..326 "@"
+        - NAME@326..337
+            - IDENT@326..337 "join__field"
+        - ARGUMENTS_DEFINITION@337..410
+            - L_PAREN@337..338 "("
+            - INPUT_VALUE_DEFINITION@338..358
+                - NAME@338..343
+                    - IDENT@338..343 "graph"
+                - COLON@343..344 ":"
+                - WHITESPACE@344..345 " "
+                - NAMED_TYPE@345..356
+                    - NAME@345..356
+                        - IDENT@345..356 "join__Graph"
+                - COMMA@356..357 ","
+                - WHITESPACE@357..358 " "
+            - INPUT_VALUE_DEFINITION@358..384
+                - NAME@358..366
+                    - IDENT@358..366 "requires"
+                - COLON@366..367 ":"
+                - WHITESPACE@367..368 " "
+                - NAMED_TYPE@368..382
+                    - NAME@368..382
+                        - IDENT@368..382 "join__FieldSet"
+                - COMMA@382..383 ","
+                - WHITESPACE@383..384 " "
+            - INPUT_VALUE_DEFINITION@384..408
+                - NAME@384..392
+                    - IDENT@384..392 "provides"
+                - COLON@392..393 ":"
+                - WHITESPACE@393..394 " "
+                - NAMED_TYPE@394..408
+                    - NAME@394..408
+                        - IDENT@394..408 "join__FieldSet"
+            - R_PAREN@408..409 ")"
+            - WHITESPACE@409..410 " "
+        - on_KW@410..412 "on"
+        - WHITESPACE@412..413 " "
+        - DIRECTIVE_LOCATIONS@413..429
+            - DIRECTIVE_LOCATION@413..429
+                - FIELD_DEFINITION_KW@413..429 "FIELD_DEFINITION"
 recursion limit: 4096, high: 6

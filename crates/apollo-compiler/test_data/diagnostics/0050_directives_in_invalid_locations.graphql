@@ -1,3 +1,8 @@
 query @skip(if: $foo) {
   field
 }
+
+type Query @deprecated {
+  field: String
+  response(status: String @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")): Int
+}

@@ -466,6 +466,8 @@ type Product {
   upc: String!
   weight: Int
 }
+
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
 "#;
 
         let mut compiler = ApolloCompiler::new();
@@ -861,6 +863,9 @@ input Point2D {
 type Book @directiveA(name: "pageCount") @directiveB(name: "author") {
   id: ID!
 }
+
+directive @directiveA(name: String) on OBJECT | INTERFACE
+directive @directiveB(name: String) on OBJECT | INTERFACE
 "#;
 
         let mut compiler = ApolloCompiler::new();
