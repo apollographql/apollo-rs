@@ -70,6 +70,7 @@ pub trait ValidationDatabase:
     ) -> Vec<ApolloDiagnostic>;
     fn check_schema_definition(&self, def: Arc<hir::SchemaDefinition>) -> Vec<ApolloDiagnostic>;
     fn check_selection_set(&self, selection_set: hir::SelectionSet) -> Vec<ApolloDiagnostic>;
+    fn check_selection(&self, selection: Vec<hir::Selection>) -> Vec<ApolloDiagnostic>;
     fn check_arguments_definition(
         &self,
         arguments_def: hir::ArgumentsDefinition,
@@ -155,10 +156,6 @@ pub fn check_enum_type_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    for dir in enum_def.directives() {
-        diagnostics.extend(db.check_directive(dir.clone(), hir::DirectiveLocation::Enum));
-    }
-
     for val in enum_def.enum_values_definition() {
         diagnostics.extend(db.check_enum_value(val.clone()))
     }
@@ -185,10 +182,6 @@ pub fn check_input_object_type_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    for dir in input_obj.directives() {
-        diagnostics.extend(db.check_directive(dir.clone(), hir::DirectiveLocation::InputObject));
-    }
-
     diagnostics.extend(db.check_input_values(
         (*input_obj).clone().input_fields_definition,
         hir::DirectiveLocation::InputFieldDefinition,
@@ -214,17 +207,28 @@ pub fn check_selection_set(
     db: &dyn ValidationDatabase,
     selection_set: hir::SelectionSet,
 ) -> Vec<ApolloDiagnostic> {
+    db.check_selection((*selection_set.selection).clone())
+}
+
+pub fn check_selection(
+    db: &dyn ValidationDatabase,
+    selection: Vec<hir::Selection>,
+) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    for selection in selection_set.selection.iter() {
-        match selection {
+    for sel in selection {
+        match sel {
             hir::Selection::Field(field) => {
-                diagnostics.extend(db.check_field(Arc::clone(field)));
+                if !field.selection_set().selection().is_empty() {
+                    diagnostics
+                        .extend(db.check_selection((*field.selection_set().selection).clone()))
+                }
+                diagnostics.extend(db.check_field(field));
             }
             hir::Selection::FragmentSpread(frag) => {
                 for dir in frag.directives() {
                     diagnostics.extend(
-                        db.check_directive(dir.clone(), hir::DirectiveLocation::FragmentDefinition),
+                        db.check_directive(dir.clone(), hir::DirectiveLocation::FragmentSpread),
                     )
                 }
             }
