@@ -26,20 +26,23 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             } else {
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
-                        redefined_definition,
+                        (db, redefined_definition).into(),
                         DiagnosticData::UniqueDefinition {
                             ty: "interface",
                             name: name.into(),
-                            original_definition,
-                            redefined_definition,
+                            original_definition: (db, original_definition).into(),
+                            redefined_definition: (db, redefined_definition).into(),
                         },
                     )
                     .labels([
                         Label::new(
-                            original_definition,
+                            (db, original_definition),
                             format!("previous definition of `{}` here", name),
                         ),
-                        Label::new(redefined_definition, format!("`{}` redefined here", name)),
+                        Label::new(
+                            (db, redefined_definition),
+                            format!("`{}` redefined here", name),
+                        ),
                     ])
                     .help(format!(
                         "`{name}` must only be defined once in this document."
@@ -71,13 +74,13 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 if name == super_name {
                     diagnostics.push(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            implements_interface.loc(),
+                            (db, implements_interface.loc()).into(),
                             DiagnosticData::RecursiveInterfaceDefinition {
                                 name: super_name.into(),
                             },
                         )
                         .label(Label::new(
-                            implements_interface.loc(),
+                            (db, implements_interface.loc()),
                             format!("interface {} cannot implement itself", super_name),
                         )),
                     ));
@@ -102,16 +105,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
-                        redefined_definition,
+                        (db, redefined_definition).into(),
                         DiagnosticData::UniqueField {
                             field: field_name.into(),
-                            original_definition,
-                            redefined_definition,
+                            original_definition: (db, original_definition).into(),
+                            redefined_definition: (db, redefined_definition).into(),
                         }
                     )
                     .labels([
-                        Label::new(original_definition, format!("previous definition of `{field_name}` here")),
-                        Label::new(redefined_definition, format!("`{field_name}` redefined here")),
+                        Label::new((db, original_definition), format!("previous definition of `{field_name}` here")),
+                        Label::new((db, redefined_definition), format!("`{field_name}` redefined here")),
                     ])
                     .help(format!("`{field_name}` field must only be defined once in this interface definition."))
                 ));
@@ -123,33 +126,33 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if let Some(field_ty) = field.ty().type_def(db.upcast()) {
                 if !field.ty().is_output_type(db.upcast()) {
                     diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(field.loc(), DiagnosticData::OutputType {
+                        Diagnostic2::new((db, field.loc()).into(), DiagnosticData::OutputType {
                             name: field.name().into(),
                             ty: field_ty.kind(),
                         })
-                        .label(Label::new(field.loc(), format!("this is of `{}` type", field_ty.kind())))
+                        .label(Label::new((db, field.loc()), format!("this is of `{}` type", field_ty.kind())))
                         .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
                     ));
                 }
             } else if let Some(field_ty_loc) = field.ty().loc() {
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
-                        field_ty_loc,
+                        (db, field_ty_loc).into(),
                         DiagnosticData::UndefinedDefinition {
                             name: field.name().into(),
                         },
                     )
-                    .label(Label::new(field_ty_loc, "not found in this scope")),
+                    .label(Label::new((db, field_ty_loc), "not found in this scope")),
                 ));
             } else {
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
-                        field.loc(),
+                        (db, field.loc()).into(),
                         DiagnosticData::UndefinedDefinition {
                             name: field.ty().name().into(),
                         },
                     )
-                    .label(Label::new(field.loc(), "not found in this scope")),
+                    .label(Label::new((db, field.loc()), "not found in this scope")),
                 ));
             }
         }
@@ -179,12 +182,12 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         for undefined in diff {
             diagnostics.push(ApolloDiagnostic::Diagnostic2(
                 Diagnostic2::new(
-                    undefined.loc,
+                    (db, undefined.loc).into(),
                     DiagnosticData::UndefinedDefinition {
                         name: undefined.name.clone(),
                     },
                 )
-                .label(Label::new(undefined.loc, "not found in this scope")),
+                .label(Label::new((db, undefined.loc), "not found in this scope")),
             ));
         }
 
@@ -216,13 +219,13 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         for undefined in transitive_diff {
             diagnostics.push(ApolloDiagnostic::Diagnostic2(
                 Diagnostic2::new(
-                    undefined.loc,
+                    (db, undefined.loc).into(),
                     DiagnosticData::TransitiveImplementedInterfaces {
                         missing_interface: undefined.name.clone(),
                     },
                 )
                 .label(Label::new(
-                    undefined.loc,
+                    (db, undefined.loc),
                     format!("{} must also be implemented here", undefined.name),
                 )),
             ));
@@ -258,18 +261,18 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     let name = &missing_field.name;
                     diagnostics.push(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            interface_def.loc(),
+                            (db, interface_def.loc()).into(),
                             DiagnosticData::MissingField {
                                 field: name.clone(),
                             },
                         )
                         .labels([
                             Label::new(
-                                super_interface.loc(),
+                                (db, super_interface.loc()),
                                 format!("`{name}` was originally defined here"),
                             ),
                             Label::new(
-                                interface_def.loc(),
+                                (db, interface_def.loc()),
                                 format!("add `{name}` field to this interface"),
                             ),
                         ])

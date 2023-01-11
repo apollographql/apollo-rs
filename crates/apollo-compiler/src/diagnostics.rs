@@ -1,6 +1,8 @@
 use std::{fmt, sync::Arc};
 
 use crate::database::hir::HirNodeLocation;
+use crate::database::InputDatabase;
+use crate::{FileId, Source};
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
 
@@ -101,13 +103,44 @@ impl fmt::Display for ApolloDiagnostic {
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct DiagnosticLocation {
+    file_id: FileId,
+    pub source: Source,
+    offset: usize,
+    length: usize,
+}
+
+impl DiagnosticLocation {
+    pub fn file_id(&self) -> FileId {
+        self.file_id
+    }
+    pub fn offset(&self) -> usize {
+        self.offset
+    }
+    pub fn node_len(&self) -> usize {
+        self.length
+    }
+}
+
+impl<DB: InputDatabase + ?Sized> From<(&DB, HirNodeLocation)> for DiagnosticLocation {
+    fn from((db, location): (&DB, HirNodeLocation)) -> Self {
+        Self {
+            file_id: location.file_id(),
+            source: db.input(location.file_id()),
+            offset: location.offset(),
+            length: location.node_len(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Label {
     // TODO do not name this type after the HIR
-    pub location: HirNodeLocation,
+    pub location: DiagnosticLocation,
     pub text: String,
 }
 impl Label {
-    pub fn new(location: impl Into<HirNodeLocation>, text: impl Into<String>) -> Self {
+    pub fn new(location: impl Into<DiagnosticLocation>, text: impl Into<String>) -> Self {
         Self {
             location: location.into(),
             text: text.into(),
@@ -118,13 +151,13 @@ impl Label {
 #[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("{data}")]
 pub struct Diagnostic2 {
-    pub location: HirNodeLocation,
+    pub location: DiagnosticLocation,
     pub labels: Vec<Label>,
     pub help: Option<String>,
     pub data: DiagnosticData,
 }
 impl Diagnostic2 {
-    pub fn new(location: HirNodeLocation, data: DiagnosticData) -> Self {
+    pub fn new(location: DiagnosticLocation, data: DiagnosticData) -> Self {
         Self {
             location,
             labels: vec![],
@@ -163,15 +196,15 @@ pub enum DiagnosticData {
     UniqueDefinition {
         ty: &'static str,
         name: String,
-        original_definition: HirNodeLocation,
-        redefined_definition: HirNodeLocation,
+        original_definition: DiagnosticLocation,
+        redefined_definition: DiagnosticLocation,
     },
     #[error("Subscriptions operations can only have one root field")]
     SingleRootField {
         // TODO(goto-bus-stop) if we keep this it should be a vec of the field names or nodes i think.
         // Else just remove as the labeling is done separately.
         fields: usize,
-        subscription: HirNodeLocation,
+        subscription: DiagnosticLocation,
     },
     #[error("{ty} root operation type is not defined")]
     UnsupportedOperation {
@@ -198,18 +231,13 @@ pub enum DiagnosticData {
     UniqueField {
         /// Name of the non-unique field.
         field: String,
-        original_definition: HirNodeLocation,
-        redefined_definition: HirNodeLocation,
+        original_definition: DiagnosticLocation,
+        redefined_definition: DiagnosticLocation,
     },
     #[error("missing `{field}` field")]
     MissingField {
         // current field that should be defined
         field: String,
-        // #[label("`{}` was originally defined here", self.ty)]
-        // pub super_definition: SourceSpan,
-
-        // #[label("add `{}` field to this interface", self.ty)]
-        // pub current_definition: SourceSpan,
     },
     #[error(
         "Transitively implemented interfaces must also be defined on an implementing interface"

@@ -21,20 +21,23 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 let redefined_definition = enum_value.loc();
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
-                        redefined_definition,
+                        (db, redefined_definition).into(),
                         DiagnosticData::UniqueDefinition {
                             ty: "enum",
                             name: value.into(),
-                            original_definition,
-                            redefined_definition,
+                            original_definition: (db, original_definition).into(),
+                            redefined_definition: (db, redefined_definition).into(),
                         },
                     )
                     .labels([
                         Label::new(
-                            original_definition,
+                            (db, original_definition),
                             format!("previous definition of `{}` here", value),
                         ),
-                        Label::new(redefined_definition, format!("`{}` redefined here", value)),
+                        Label::new(
+                            (db, redefined_definition),
+                            format!("`{}` redefined here", value),
+                        ),
                     ])
                     .help(format!("{value} must only be defined once in this enum.")),
                 ));
@@ -53,13 +56,13 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if value.to_uppercase() != value {
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
-                        enum_value.loc(),
+                        (db, enum_value.loc()).into(),
                         DiagnosticData::CapitalizedValue {
                             value: value.into(),
                         },
                     )
                     .label(Label::new(
-                        enum_value.loc(),
+                        (db, enum_value.loc()),
                         format!("consider capitalizing {value}"),
                     )),
                 ));

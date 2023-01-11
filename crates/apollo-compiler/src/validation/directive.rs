@@ -23,12 +23,12 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 } else {
                     errors.push(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            original_definition,
+                            (db, original_definition).into(),
                             DiagnosticData::UniqueDefinition {
                                 ty: "directive",
                                 name: name.to_owned(),
-                                original_definition,
-                                redefined_definition,
+                                original_definition: (db, original_definition).into(),
+                                redefined_definition: (db, redefined_definition).into(),
                             },
                         )
                         .help(format!(
@@ -36,10 +36,13 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         ))
                         .labels([
                             Label::new(
-                                original_definition,
+                                (db, original_definition),
                                 format!("previous definition of `{}` here", name),
                             ),
-                            Label::new(redefined_definition, format!("`{}` redefined here", name)),
+                            Label::new(
+                                (db, redefined_definition),
+                                format!("`{}` redefined here", name),
+                            ),
                         ]),
                     ));
                 }
@@ -58,11 +61,11 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 if name == directive_name {
                     errors.push(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            directive.loc(),
+                            (db, directive.loc()).into(),
                             DiagnosticData::RecursiveDefinition { name: name.clone() },
                         )
                         .label(Label::new(
-                            directive.loc(),
+                            (db, directive.loc()),
                             "recursive directive definition",
                         )),
                     ));

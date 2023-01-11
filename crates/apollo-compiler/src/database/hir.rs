@@ -454,9 +454,7 @@ impl Type {
     /// Get the AST location information for this HIR node.
     pub fn loc(&self) -> Option<HirNodeLocation> {
         match self {
-            Type::NonNull { loc, .. } | Type::List { loc, .. } | Type::Named { loc, .. } => {
-                *loc
-            }
+            Type::NonNull { loc, .. } | Type::List { loc, .. } | Type::Named { loc, .. } => *loc,
         }
     }
 
