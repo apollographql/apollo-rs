@@ -179,7 +179,7 @@ impl FragmentDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct OperationDefinition {
-    pub(crate) ty: OperationType,
+    pub(crate) operation_ty: OperationType,
     pub(crate) name: Option<Name>,
     pub(crate) variables: Arc<Vec<VariableDefinition>>,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -189,8 +189,8 @@ pub struct OperationDefinition {
 
 impl OperationDefinition {
     /// Get the type of the operation: Query, Mutation, or Subscription
-    pub fn ty(&self) -> &OperationType {
-        &self.ty
+    pub fn operation_ty(&self) -> OperationType {
+        self.operation_ty
     }
 
     /// Get a mutable reference to the operation definition's name.
@@ -205,7 +205,7 @@ impl OperationDefinition {
 
     /// Get operation's definition object type.
     pub fn object_type(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
-        match self.ty {
+        match self.operation_ty {
             OperationType::Query => db.schema().query(db),
             OperationType::Mutation => db.schema().mutation(db),
             OperationType::Subscription => db.schema().subscription(db),
@@ -1141,7 +1141,7 @@ impl SchemaDefinition {
     /// Get Schema's query object type definition.
     pub fn query(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
-            if op.ty.is_query() {
+            if op.operation_ty.is_query() {
                 op.object_type(db)
             } else {
                 None
@@ -1152,7 +1152,7 @@ impl SchemaDefinition {
     /// Get Schema's mutation object type definition.
     pub fn mutation(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
-            if op.ty.is_mutation() {
+            if op.operation_ty.is_mutation() {
                 op.object_type(db)
             } else {
                 None
@@ -1163,7 +1163,7 @@ impl SchemaDefinition {
     /// Get Schema's subscription object type definition.
     pub fn subscription(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
         self.root_operation_type_definition().iter().find_map(|op| {
-            if op.ty.is_subscription() {
+            if op.operation_ty.is_subscription() {
                 op.object_type(db)
             } else {
                 None
@@ -1174,7 +1174,7 @@ impl SchemaDefinition {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct RootOperationTypeDefinition {
-    pub(crate) ty: OperationType,
+    pub(crate) operation_ty: OperationType,
     pub(crate) named_type: Type,
     pub(crate) loc: Option<HirNodeLocation>,
 }
@@ -1186,8 +1186,8 @@ impl RootOperationTypeDefinition {
     }
 
     /// Get the root operation type definition's operation type.
-    pub fn ty(&self) -> OperationType {
-        self.ty
+    pub fn operation_ty(&self) -> OperationType {
+        self.operation_ty
     }
 
     /// Get the object type this root operation is referencing.
@@ -1204,7 +1204,7 @@ impl RootOperationTypeDefinition {
 impl Default for RootOperationTypeDefinition {
     fn default() -> Self {
         Self {
-            ty: OperationType::Query,
+            operation_ty: OperationType::Query,
             named_type: Type::Named {
                 name: "Query".to_string(),
                 loc: None,

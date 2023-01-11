@@ -399,7 +399,7 @@ fn operation_definition(
         .root_operation_type_definition()
         .iter()
         .find_map(|op| {
-            if op.ty() == ty {
+            if op.operation_ty() == ty {
                 Some(op.named_type().name())
             } else {
                 None
@@ -410,7 +410,7 @@ fn operation_definition(
     let loc = location(file_id, op_def.syntax());
 
     Some(OperationDefinition {
-        ty,
+        operation_ty: ty,
         name,
         variables,
         selection_set,
@@ -801,7 +801,7 @@ fn add_object_type_id_to_schema(db: &dyn HirDatabase) -> Arc<Vec<RootOperationTy
             if matches!(obj_name, "Query" | "Subscription" | "Mutation") {
                 let operation_type = obj_name.into();
                 Some(RootOperationTypeDefinition {
-                    ty: operation_type,
+                    operation_ty: operation_type,
                     named_type: Type::Named {
                         name: obj_name.to_string(),
                         loc: None,
@@ -954,7 +954,7 @@ fn root_operation_type_definition(
             let loc = location(file_id, ty.syntax());
 
             Some(RootOperationTypeDefinition {
-                ty: operation_type,
+                operation_ty: operation_type,
                 named_type,
                 loc: Some(loc),
             })

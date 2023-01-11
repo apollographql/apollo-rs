@@ -222,7 +222,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                         format!(
                             "`{}` is not defined on the current {} root operation type.",
                             field_name,
-                            op.ty()
+                            op.operation_ty()
                         )
                     };
                     diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
