@@ -1,5 +1,7 @@
 use super::sources::{FileId, Source, SourceType};
 use crate::hir::TypeSystem;
+use std::collections::HashMap;
+use ariadne::Source as AriadneSource;
 use std::sync::Arc;
 
 #[salsa::query_group(InputStorage)]
@@ -25,6 +27,9 @@ pub trait InputDatabase {
     #[salsa::input]
     fn source_files(&self) -> Vec<FileId>;
 
+    fn source_with_lines(&self, file_id: FileId) -> Arc<AriadneSource>;
+    fn source_cache(&self) -> Arc<HashMap<FileId, Arc<AriadneSource>>>;
+
     /// Get all type system definition (GraphQL schema) files.
     fn type_definition_files(&self) -> Vec<FileId>;
 
@@ -44,6 +49,21 @@ fn source_code(db: &dyn InputDatabase, file_id: FileId) -> Arc<str> {
 
 fn source_type(db: &dyn InputDatabase, file_id: FileId) -> SourceType {
     db.input(file_id).source_type()
+}
+
+fn source_with_lines(db: &dyn InputDatabase, file_id: FileId) -> Arc<AriadneSource> {
+    let code = db.source_code(file_id);
+    Arc::new(AriadneSource::from(code))
+}
+
+fn source_cache(db: &dyn InputDatabase) -> Arc<HashMap<FileId, Arc<AriadneSource>>> {
+    let map = db.source_files()
+        .into_iter()
+        .map(|id| {
+            (id, db.source_with_lines(id))
+        })
+        .collect();
+    Arc::new(map)
 }
 
 fn type_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {

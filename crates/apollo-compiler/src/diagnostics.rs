@@ -1,4 +1,5 @@
 use std::{fmt, sync::Arc};
+use std::collections::HashMap;
 
 use crate::database::hir::HirNodeLocation;
 use crate::database::InputDatabase;
@@ -95,7 +96,9 @@ impl ApolloDiagnostic {
 impl fmt::Display for ApolloDiagnostic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Self::Diagnostic2(diagnostic) = self {
-            writeln!(f, "{}", diagnostic)
+            let mut buf = std::io::Cursor::new(Vec::<u8>::new());
+            diagnostic.to_report().write(AriadneCache::default(), &mut buf).unwrap();
+            writeln!(f, "{}", std::str::from_utf8(&buf.into_inner()).unwrap())
         } else {
             writeln!(f, "{:?}", self.report())
         }
@@ -110,6 +113,19 @@ pub struct DiagnosticLocation {
     length: usize,
 }
 
+impl ariadne::Span for DiagnosticLocation {
+    type SourceId = DiagnosticLocation;
+    fn source(&self) -> &DiagnosticLocation {
+        &self
+    }
+    fn start(&self) -> usize {
+        self.offset
+    }
+    fn end(&self) -> usize {
+        self.offset + self.length
+    }
+}
+
 impl DiagnosticLocation {
     pub fn file_id(&self) -> FileId {
         self.file_id
@@ -119,6 +135,21 @@ impl DiagnosticLocation {
     }
     pub fn node_len(&self) -> usize {
         self.length
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+struct AriadneCache {
+    inner: HashMap<FileId, ariadne::Source>,
+}
+impl ariadne::Cache<DiagnosticLocation> for AriadneCache {
+    fn fetch(&mut self, id: &DiagnosticLocation) -> Result<&ariadne::Source, Box<dyn std::fmt::Debug>> {
+        let source = self.inner.entry(id.file_id())
+            .or_insert_with(|| ariadne::Source::from(id.source.text()));
+        Ok(source)
+    }
+    fn display<'a>(&self, id: &'a DiagnosticLocation) -> Option<Box<dyn std::fmt::Display + 'a>> {
+        Some(Box::new(id.source.filename().display()))
     }
 }
 
@@ -135,7 +166,6 @@ impl<DB: InputDatabase + ?Sized> From<(&DB, HirNodeLocation)> for DiagnosticLoca
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Label {
-    // TODO do not name this type after the HIR
     pub location: DiagnosticLocation,
     pub text: String,
 }
@@ -255,22 +285,19 @@ pub enum DiagnosticData {
     },
 }
 
-type Span = (crate::FileId, std::ops::Range<usize>);
-
-impl From<Label> for ariadne::Label<Span> {
+impl From<Label> for ariadne::Label<DiagnosticLocation> {
     fn from(label: Label) -> Self {
-        let start = label.location.offset();
-        let end = start + label.location.node_len();
-        Self::new((label.location.file_id(), start..end)).with_message(label.text)
+        Self::new(label.location).with_message(label.text)
     }
 }
 
 impl Diagnostic2 {
-    pub fn into_report(self) -> ariadne::Report<Span> {
+    pub fn to_report(&self) -> ariadne::Report<'static, DiagnosticLocation> {
         use ariadne::{Report, ReportKind};
 
-        let mut builder = Report::build(ReportKind::Error, self.location.file_id(), 0);
-        builder.add_labels(self.labels.into_iter().map(|label| label.into()));
+        let mut builder =
+            Report::build(ReportKind::Error, self.location.clone(), 0).with_message(self);
+        builder.add_labels(self.labels.iter().map(|label| label.clone().into()));
         builder.finish()
     }
 }
