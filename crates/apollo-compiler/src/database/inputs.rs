@@ -1,7 +1,7 @@
 use super::sources::{FileId, Source, SourceType};
 use crate::hir::TypeSystem;
-use std::collections::HashMap;
 use ariadne::Source as AriadneSource;
+use std::collections::HashMap;
 use std::sync::Arc;
 
 #[salsa::query_group(InputStorage)]
@@ -57,11 +57,10 @@ fn source_with_lines(db: &dyn InputDatabase, file_id: FileId) -> Arc<AriadneSour
 }
 
 fn source_cache(db: &dyn InputDatabase) -> Arc<HashMap<FileId, Arc<AriadneSource>>> {
-    let map = db.source_files()
+    let map = db
+        .source_files()
         .into_iter()
-        .map(|id| {
-            (id, db.source_with_lines(id))
-        })
+        .map(|id| (id, db.source_with_lines(id)))
         .collect();
     Arc::new(map)
 }

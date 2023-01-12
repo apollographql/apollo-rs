@@ -1,5 +1,5 @@
-use std::{fmt, sync::Arc};
 use std::collections::HashMap;
+use std::{fmt, sync::Arc};
 
 use crate::database::hir::HirNodeLocation;
 use crate::database::InputDatabase;
@@ -97,7 +97,10 @@ impl fmt::Display for ApolloDiagnostic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Self::Diagnostic2(diagnostic) = self {
             let mut buf = std::io::Cursor::new(Vec::<u8>::new());
-            diagnostic.to_report().write(AriadneCache::default(), &mut buf).unwrap();
+            diagnostic
+                .to_report()
+                .write(AriadneCache::default(), &mut buf)
+                .unwrap();
             writeln!(f, "{}", std::str::from_utf8(&buf.into_inner()).unwrap())
         } else {
             writeln!(f, "{:?}", self.report())
@@ -143,8 +146,13 @@ struct AriadneCache {
     inner: HashMap<FileId, ariadne::Source>,
 }
 impl ariadne::Cache<DiagnosticLocation> for AriadneCache {
-    fn fetch(&mut self, id: &DiagnosticLocation) -> Result<&ariadne::Source, Box<dyn std::fmt::Debug>> {
-        let source = self.inner.entry(id.file_id())
+    fn fetch(
+        &mut self,
+        id: &DiagnosticLocation,
+    ) -> Result<&ariadne::Source, Box<dyn std::fmt::Debug>> {
+        let source = self
+            .inner
+            .entry(id.file_id())
             .or_insert_with(|| ariadne::Source::from(id.source.text()));
         Ok(source)
     }
@@ -293,11 +301,16 @@ impl From<Label> for ariadne::Label<DiagnosticLocation> {
 
 impl Diagnostic2 {
     pub fn to_report(&self) -> ariadne::Report<'static, DiagnosticLocation> {
-        use ariadne::{Report, ReportKind};
+        use ariadne::{ColorGenerator, Report, ReportKind};
 
+        let mut colors = ColorGenerator::new();
         let mut builder =
             Report::build(ReportKind::Error, self.location.clone(), 0).with_message(self);
-        builder.add_labels(self.labels.iter().map(|label| label.clone().into()));
+        builder.add_labels(
+            self.labels
+                .iter()
+                .map(|label| ariadne::Label::from(label.clone()).with_color(colors.next())),
+        );
         builder.finish()
     }
 }

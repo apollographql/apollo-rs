@@ -43,8 +43,14 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
     for op in operations.iter() {
         if let Some(name) = op.name() {
             if let Some(prev_def) = seen.get(&name) {
-                let original_definition = prev_def.loc();
-                let redefined_definition = op.loc();
+                let original_definition = prev_def
+                    .name_src()
+                    .and_then(|name| name.loc())
+                    .unwrap_or(prev_def.loc());
+                let redefined_definition = op
+                    .name_src()
+                    .and_then(|name| name.loc())
+                    .unwrap_or(op.loc());
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
                         (db, redefined_definition).into(),
