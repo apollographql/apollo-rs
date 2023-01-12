@@ -1,0 +1,29 @@
+[
+    QueryRootOperationType(
+        QueryRootOperationType {
+            src: "schema {\n    query: Query\n}",
+            schema: SourceSpan {
+                offset: SourceOffset(
+                    0,
+                ),
+                length: SourceOffset(
+                    27,
+                ),
+            },
+        },
+    ),
+    UndefinedDefinition(
+        UndefinedDefinition {
+            ty: "Query",
+            src: "schema {\n    query: Query\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    13,
+                ),
+                length: SourceOffset(
+                    13,
+                ),
+            },
+        },
+    ),
+]

@@ -1,0 +1,11 @@
+schema {
+    query: SomeInterface 
+}
+
+interface SomeInterface {
+    name: String
+}
+
+type ShouldBeTheQuery {
+    name: String
+}

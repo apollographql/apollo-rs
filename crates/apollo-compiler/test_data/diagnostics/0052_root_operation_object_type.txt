@@ -1,0 +1,31 @@
+[
+    QueryRootOperationType(
+        QueryRootOperationType {
+            src: "schema {\n    query: SomeInterface \n}\n\ninterface SomeInterface {\n    name: String\n}\n\ntype ShouldBeTheQuery {\n    name: String\n}",
+            schema: SourceSpan {
+                offset: SourceOffset(
+                    0,
+                ),
+                length: SourceOffset(
+                    38,
+                ),
+            },
+        },
+    ),
+    ObjectType(
+        ObjectType {
+            name: "SomeInterface",
+            ty: "InterfaceTypeDefinition",
+            src: "schema {\n    query: SomeInterface \n}\n\ninterface SomeInterface {\n    name: String\n}\n\ntype ShouldBeTheQuery {\n    name: String\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    13,
+                ),
+                length: SourceOffset(
+                    22,
+                ),
+            },
+            help: "root operation type must be of an Object Type.",
+        },
+    ),
+]
