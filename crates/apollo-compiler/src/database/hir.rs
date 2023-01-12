@@ -1732,7 +1732,7 @@ impl Name {
 
 impl From<Name> for String {
     fn from(name: Name) -> String {
-        name.src().to_owned()
+        name.src
     }
 }
 
