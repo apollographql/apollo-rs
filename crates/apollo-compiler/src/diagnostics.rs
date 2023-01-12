@@ -311,6 +311,9 @@ impl Diagnostic2 {
                 .iter()
                 .map(|label| ariadne::Label::from(label.clone()).with_color(colors.next())),
         );
+        if let Some(help) = &self.help {
+            builder = builder.with_help(help);
+        }
         builder.finish()
     }
 }
