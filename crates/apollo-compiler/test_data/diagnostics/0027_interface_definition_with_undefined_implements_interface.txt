@@ -1,15 +1,31 @@
 [
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Url",
-            src: "type Query implements Resource {\n  id: ID!\n  width: Int\n}\n\ninterface Resource {\n  id: ID!\n  width: Int\n}\n\ninterface Image implements Resource & Url {\n  id: ID!\n  url: String\n  width: Int\n  thumbnail: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    144,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0027_interface_definition_with_undefined_implements_interface.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    4,
-                ),
+                offset: 144,
+                length: 4,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 144,
+                        length: 4,
+                    },
+                    text: "not found in this scope",
+                },
+            ],
+            help: None,
+            data: UndefinedDefinition {
+                name: "Url",
             },
         },
     ),

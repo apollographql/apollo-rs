@@ -1,27 +1,58 @@
 [
-    UniqueField(
-        UniqueField {
-            field: "x",
-            src: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")\n\ninput Point2D {\n  x: Float\n  x: Float\n}",
-            original_field: SourceSpan {
-                offset: SourceOffset(
-                    133,
-                ),
-                length: SourceOffset(
-                    11,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0031_input_object_with_duplicate_fields.graphql",
             },
-            redefined_field: SourceSpan {
-                offset: SourceOffset(
-                    144,
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    9,
-                ),
+                offset: 133,
+                length: 11,
             },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 133,
+                        length: 11,
+                    },
+                    text: "previous definition of `x` here",
+                },
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 144,
+                        length: 9,
+                    },
+                    text: "`x` redefined here",
+                },
+            ],
             help: Some(
                 "x field must only be defined once in this input object definition.",
             ),
+            data: UniqueField {
+                field: "x",
+                original_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 133,
+                    length: 11,
+                },
+                redefined_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 144,
+                    length: 9,
+                },
+            },
         },
     ),
 ]

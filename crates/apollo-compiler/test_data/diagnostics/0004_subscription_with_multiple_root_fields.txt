@@ -1,21 +1,24 @@
 [
     Diagnostic2(
         Diagnostic2 {
-            location: HirNodeLocation {
-                offset: 0,
-                node_len: 89,
+            cache: {
+                0: "0004_subscription_with_multiple_root_fields.graphql",
+            },
+            location: DiagnosticLocation {
                 file_id: FileId(
                     0,
                 ),
+                offset: 0,
+                length: 89,
             },
             labels: [
                 Label {
-                    location: HirNodeLocation {
-                        offset: 0,
-                        node_len: 89,
+                    location: DiagnosticLocation {
                         file_id: FileId(
                             0,
                         ),
+                        offset: 0,
+                        length: 89,
                     },
                     text: "subscription with 2 root fields",
                 },
@@ -25,33 +28,36 @@
             ),
             data: SingleRootField {
                 fields: 2,
-                subscription: HirNodeLocation {
-                    offset: 0,
-                    node_len: 89,
+                subscription: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
+                    offset: 0,
+                    length: 89,
                 },
             },
         },
     ),
     Diagnostic2(
         Diagnostic2 {
-            location: HirNodeLocation {
-                offset: 60,
-                node_len: 26,
+            cache: {
+                0: "0004_subscription_with_multiple_root_fields.graphql",
+            },
+            location: DiagnosticLocation {
                 file_id: FileId(
                     0,
                 ),
+                offset: 60,
+                length: 26,
             },
             labels: [
                 Label {
-                    location: HirNodeLocation {
-                        offset: 60,
-                        node_len: 26,
+                    location: DiagnosticLocation {
                         file_id: FileId(
                             0,
                         ),
+                        offset: 60,
+                        length: 26,
                     },
                     text: "`disallowedSecondRootField field is not in scope",
                 },

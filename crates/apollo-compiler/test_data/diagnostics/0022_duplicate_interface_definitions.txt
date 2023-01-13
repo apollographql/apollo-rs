@@ -1,28 +1,59 @@
 [
-    UniqueDefinition(
-        UniqueDefinition {
-            name: "NamedEntity",
-            ty: "interface",
-            src: "type Query implements NamedEntity {\n  name: String\n}\n\ninterface NamedEntity {\n  name: String\n}\n\ninterface NamedEntity {\n  name: String\n}\n",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    54,
-                ),
-                length: SourceOffset(
-                    42,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0022_duplicate_interface_definitions.graphql",
             },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    96,
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    41,
-                ),
+                offset: 106,
+                length: 12,
             },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 64,
+                        length: 12,
+                    },
+                    text: "previous definition of `NamedEntity` here",
+                },
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 106,
+                        length: 12,
+                    },
+                    text: "`NamedEntity` redefined here",
+                },
+            ],
             help: Some(
                 "`NamedEntity` must only be defined once in this document.",
             ),
+            data: UniqueDefinition {
+                ty: "interface",
+                name: "NamedEntity",
+                original_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 64,
+                    length: 12,
+                },
+                redefined_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 106,
+                    length: 12,
+                },
+            },
         },
     ),
 ]

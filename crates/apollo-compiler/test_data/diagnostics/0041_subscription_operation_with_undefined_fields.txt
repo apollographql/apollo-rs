@@ -1,21 +1,24 @@
 [
     Diagnostic2(
         Diagnostic2 {
-            location: HirNodeLocation {
-                offset: 21,
-                node_len: 27,
+            cache: {
+                0: "0041_subscription_operation_with_undefined_fields.graphql",
+            },
+            location: DiagnosticLocation {
                 file_id: FileId(
                     0,
                 ),
+                offset: 21,
+                length: 27,
             },
             labels: [
                 Label {
-                    location: HirNodeLocation {
-                        offset: 21,
-                        node_len: 27,
+                    location: DiagnosticLocation {
                         file_id: FileId(
                             0,
                         ),
+                        offset: 21,
+                        length: 27,
                     },
                     text: "`undefinedSubscriptionField field is not in scope",
                 },

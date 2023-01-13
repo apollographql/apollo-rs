@@ -1,54 +1,116 @@
 [
-    UniqueDefinition(
-        UniqueDefinition {
-            name: "CAT",
-            ty: "enum",
-            src: "type Query {\n  pet: Pet,\n  snacks: Snack,\n}\n\nenum Pet {\n    CAT\n    DOG\n    FOX\n    CAT\n}\n\nenum Snack {\n    THRIVE_PET_FOODS\n    LILYS_KITCHEN\n    ACANA\n    THRIVE_PET_FOODS\n}",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    60,
-                ),
-                length: SourceOffset(
-                    8,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0019_enum_definition_with_duplicate_values.graphql",
             },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    84,
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    4,
-                ),
+                offset: 84,
+                length: 4,
             },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 60,
+                        length: 8,
+                    },
+                    text: "previous definition of `CAT` here",
+                },
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 84,
+                        length: 4,
+                    },
+                    text: "`CAT` redefined here",
+                },
+            ],
             help: Some(
                 "CAT must only be defined once in this enum.",
             ),
+            data: UniqueDefinition {
+                ty: "enum",
+                name: "CAT",
+                original_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 60,
+                    length: 8,
+                },
+                redefined_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 84,
+                    length: 4,
+                },
+            },
         },
     ),
-    UniqueDefinition(
-        UniqueDefinition {
-            name: "THRIVE_PET_FOODS",
-            ty: "enum",
-            src: "type Query {\n  pet: Pet,\n  snacks: Snack,\n}\n\nenum Pet {\n    CAT\n    DOG\n    FOX\n    CAT\n}\n\nenum Snack {\n    THRIVE_PET_FOODS\n    LILYS_KITCHEN\n    ACANA\n    THRIVE_PET_FOODS\n}",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    108,
-                ),
-                length: SourceOffset(
-                    21,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0019_enum_definition_with_duplicate_values.graphql",
             },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    157,
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    17,
-                ),
+                offset: 157,
+                length: 17,
             },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 108,
+                        length: 21,
+                    },
+                    text: "previous definition of `THRIVE_PET_FOODS` here",
+                },
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 157,
+                        length: 17,
+                    },
+                    text: "`THRIVE_PET_FOODS` redefined here",
+                },
+            ],
             help: Some(
                 "THRIVE_PET_FOODS must only be defined once in this enum.",
             ),
+            data: UniqueDefinition {
+                ty: "enum",
+                name: "THRIVE_PET_FOODS",
+                original_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 108,
+                    length: 21,
+                },
+                redefined_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 157,
+                    length: 17,
+                },
+            },
         },
     ),
 ]

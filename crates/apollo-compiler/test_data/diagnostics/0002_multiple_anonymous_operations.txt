@@ -1,21 +1,24 @@
 [
     Diagnostic2(
         Diagnostic2 {
-            location: HirNodeLocation {
-                offset: 0,
-                node_len: 32,
+            cache: {
+                0: "0002_multiple_anonymous_operations.graphql",
+            },
+            location: DiagnosticLocation {
                 file_id: FileId(
                     0,
                 ),
+                offset: 0,
+                length: 32,
             },
             labels: [
                 Label {
-                    location: HirNodeLocation {
-                        offset: 0,
-                        node_len: 32,
+                    location: DiagnosticLocation {
                         file_id: FileId(
                             0,
                         ),
+                        offset: 0,
+                        length: 32,
                     },
                     text: "provide a name for this definition",
                 },
@@ -28,21 +31,24 @@
     ),
     Diagnostic2(
         Diagnostic2 {
-            location: HirNodeLocation {
-                offset: 32,
-                node_len: 58,
+            cache: {
+                0: "0002_multiple_anonymous_operations.graphql",
+            },
+            location: DiagnosticLocation {
                 file_id: FileId(
                     0,
                 ),
+                offset: 32,
+                length: 58,
             },
             labels: [
                 Label {
-                    location: HirNodeLocation {
-                        offset: 32,
-                        node_len: 58,
+                    location: DiagnosticLocation {
                         file_id: FileId(
                             0,
                         ),
+                        offset: 32,
+                        length: 58,
                     },
                     text: "provide a name for this definition",
                 },

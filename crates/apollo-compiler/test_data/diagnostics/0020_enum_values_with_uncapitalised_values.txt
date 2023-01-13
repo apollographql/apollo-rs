@@ -1,71 +1,151 @@
 [
-    CapitalizedValue(
-        CapitalizedValue {
-            ty: "CAt",
-            src: "type Query {\n  pet: Pet,\n}\n\nenum Pet {\n    CAt\n    DOG_gO\n    FOX\n    _fox\n    squirrel\n    PARRot1\n}",
-            value: SourceSpan {
-                offset: SourceOffset(
-                    43,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0020_enum_values_with_uncapitalised_values.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    8,
-                ),
+                offset: 43,
+                length: 8,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 43,
+                        length: 8,
+                    },
+                    text: "consider capitalizing CAt",
+                },
+            ],
+            help: None,
+            data: CapitalizedValue {
+                value: "CAt",
             },
         },
     ),
-    CapitalizedValue(
-        CapitalizedValue {
-            ty: "DOG_gO",
-            src: "type Query {\n  pet: Pet,\n}\n\nenum Pet {\n    CAt\n    DOG_gO\n    FOX\n    _fox\n    squirrel\n    PARRot1\n}",
-            value: SourceSpan {
-                offset: SourceOffset(
-                    51,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0020_enum_values_with_uncapitalised_values.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    11,
-                ),
+                offset: 51,
+                length: 11,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 51,
+                        length: 11,
+                    },
+                    text: "consider capitalizing DOG_gO",
+                },
+            ],
+            help: None,
+            data: CapitalizedValue {
+                value: "DOG_gO",
             },
         },
     ),
-    CapitalizedValue(
-        CapitalizedValue {
-            ty: "_fox",
-            src: "type Query {\n  pet: Pet,\n}\n\nenum Pet {\n    CAt\n    DOG_gO\n    FOX\n    _fox\n    squirrel\n    PARRot1\n}",
-            value: SourceSpan {
-                offset: SourceOffset(
-                    70,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0020_enum_values_with_uncapitalised_values.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    9,
-                ),
+                offset: 70,
+                length: 9,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 70,
+                        length: 9,
+                    },
+                    text: "consider capitalizing _fox",
+                },
+            ],
+            help: None,
+            data: CapitalizedValue {
+                value: "_fox",
             },
         },
     ),
-    CapitalizedValue(
-        CapitalizedValue {
-            ty: "squirrel",
-            src: "type Query {\n  pet: Pet,\n}\n\nenum Pet {\n    CAt\n    DOG_gO\n    FOX\n    _fox\n    squirrel\n    PARRot1\n}",
-            value: SourceSpan {
-                offset: SourceOffset(
-                    79,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0020_enum_values_with_uncapitalised_values.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    13,
-                ),
+                offset: 79,
+                length: 13,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 79,
+                        length: 13,
+                    },
+                    text: "consider capitalizing squirrel",
+                },
+            ],
+            help: None,
+            data: CapitalizedValue {
+                value: "squirrel",
             },
         },
     ),
-    CapitalizedValue(
-        CapitalizedValue {
-            ty: "PARRot1",
-            src: "type Query {\n  pet: Pet,\n}\n\nenum Pet {\n    CAt\n    DOG_gO\n    FOX\n    _fox\n    squirrel\n    PARRot1\n}",
-            value: SourceSpan {
-                offset: SourceOffset(
-                    92,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0020_enum_values_with_uncapitalised_values.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    8,
-                ),
+                offset: 92,
+                length: 8,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 92,
+                        length: 8,
+                    },
+                    text: "consider capitalizing PARRot1",
+                },
+            ],
+            help: None,
+            data: CapitalizedValue {
+                value: "PARRot1",
             },
         },
     ),

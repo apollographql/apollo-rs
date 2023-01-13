@@ -1,17 +1,32 @@
 [
-    RecursiveDefinition(
-        RecursiveDefinition {
-            src: "type Query implements NamedEntity {\n  name: String\n}\n\ninterface NamedEntity implements NamedEntity {\n  name: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    87,
-                ),
-                length: SourceOffset(
-                    12,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0023_interface_definition_with_cyclic_implements_interfaces.graphql",
             },
-            definition_label: "recursive implements interfaces",
-            message: "NamedEntity interface cannot implement itself",
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 87,
+                length: 12,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 87,
+                        length: 12,
+                    },
+                    text: "interface NamedEntity cannot implement itself",
+                },
+            ],
+            help: None,
+            data: RecursiveInterfaceDefinition {
+                name: "NamedEntity",
+            },
         },
     ),
 ]

@@ -29,21 +29,24 @@
     ),
     Diagnostic2(
         Diagnostic2 {
-            location: HirNodeLocation {
-                offset: 31,
-                node_len: 23,
+            cache: {
+                0: "0042_mutation_operation_with_undefined_fields.graphql",
+            },
+            location: DiagnosticLocation {
                 file_id: FileId(
                     0,
                 ),
+                offset: 31,
+                length: 23,
             },
             labels: [
                 Label {
-                    location: HirNodeLocation {
-                        offset: 31,
-                        node_len: 23,
+                    location: DiagnosticLocation {
                         file_id: FileId(
                             0,
                         ),
+                        offset: 31,
+                        length: 23,
                     },
                     text: "`undefinedMutationField field is not in scope",
                 },

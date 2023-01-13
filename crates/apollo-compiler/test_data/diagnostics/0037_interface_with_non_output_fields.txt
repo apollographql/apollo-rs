@@ -13,46 +13,96 @@
             },
         },
     ),
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Auth",
-            src: "query mainPage {\n  name\n}\n\ntype Query {\n  name: mainInterface\n}\n\ninterface mainInterface {\n  width: Int\n  img: Url\n  relationship: Person\n  entity: NamedEntity\n  depth: Number\n  result: SearchResult\n  permissions: Auth\n  coordinates: Point2D\n  main: mainPage\n}\n\ntype Person {\n  name: String\n  age: Int\n}\n\ninterface NamedEntity {\n  name: String\n}\n\nenum Number {\n  INT\n  FLOAT\n}\n\nunion SearchResult = Photo | Person\n\ndirective @Auth(username: String!) repeatable on OBJECT | INTERFACE\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\nscalar Url @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    214,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0037_interface_with_non_output_fields.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    4,
-                ),
+                offset: 214,
+                length: 4,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 214,
+                        length: 4,
+                    },
+                    text: "not found in this scope",
+                },
+            ],
+            help: None,
+            data: UndefinedDefinition {
+                name: "permissions",
             },
         },
     ),
-    OutputType(
-        OutputType {
-            name: "coordinates",
-            ty: "InputObjectTypeDefinition",
-            src: "query mainPage {\n  name\n}\n\ntype Query {\n  name: mainInterface\n}\n\ninterface mainInterface {\n  width: Int\n  img: Url\n  relationship: Person\n  entity: NamedEntity\n  depth: Number\n  result: SearchResult\n  permissions: Auth\n  coordinates: Point2D\n  main: mainPage\n}\n\ntype Person {\n  name: String\n  age: Int\n}\n\ninterface NamedEntity {\n  name: String\n}\n\nenum Number {\n  INT\n  FLOAT\n}\n\nunion SearchResult = Photo | Person\n\ndirective @Auth(username: String!) repeatable on OBJECT | INTERFACE\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\nscalar Url @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    221,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0037_interface_with_non_output_fields.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    23,
-                ),
+                offset: 221,
+                length: 23,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 221,
+                        length: 23,
+                    },
+                    text: "this is of `InputObjectTypeDefinition` type",
+                },
+            ],
+            help: Some(
+                "Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.",
+            ),
+            data: OutputType {
+                name: "coordinates",
+                ty: "InputObjectTypeDefinition",
             },
         },
     ),
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "mainPage",
-            src: "query mainPage {\n  name\n}\n\ntype Query {\n  name: mainInterface\n}\n\ninterface mainInterface {\n  width: Int\n  img: Url\n  relationship: Person\n  entity: NamedEntity\n  depth: Number\n  result: SearchResult\n  permissions: Auth\n  coordinates: Point2D\n  main: mainPage\n}\n\ntype Person {\n  name: String\n  age: Int\n}\n\ninterface NamedEntity {\n  name: String\n}\n\nenum Number {\n  INT\n  FLOAT\n}\n\nunion SearchResult = Photo | Person\n\ndirective @Auth(username: String!) repeatable on OBJECT | INTERFACE\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\nscalar Url @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    250,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0037_interface_with_non_output_fields.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    8,
-                ),
+                offset: 250,
+                length: 8,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 250,
+                        length: 8,
+                    },
+                    text: "not found in this scope",
+                },
+            ],
+            help: None,
+            data: UndefinedDefinition {
+                name: "main",
             },
         },
     ),

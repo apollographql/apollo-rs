@@ -1,28 +1,59 @@
 [
-    UniqueDefinition(
-        UniqueDefinition {
-            name: "foo",
-            ty: "directive",
-            src: "schema @foo {\n    query: Query\n}\n\ntype Query {\n    id: ID!\n    field: String\n}\n\ndirective @foo on SCHEMA\ndirective @foo on SCHEMA",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    80,
-                ),
-                length: SourceOffset(
-                    25,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0029_directive_definitions_with_duplicate_names.graphql",
             },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    105,
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    24,
-                ),
+                offset: 80,
+                length: 25,
             },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 80,
+                        length: 25,
+                    },
+                    text: "previous definition of `foo` here",
+                },
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 105,
+                        length: 24,
+                    },
+                    text: "`foo` redefined here",
+                },
+            ],
             help: Some(
                 "`foo` must only be defined once in this document.",
             ),
+            data: UniqueDefinition {
+                ty: "directive",
+                name: "foo",
+                original_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 80,
+                    length: 25,
+                },
+                redefined_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 105,
+                    length: 24,
+                },
+            },
         },
     ),
 ]

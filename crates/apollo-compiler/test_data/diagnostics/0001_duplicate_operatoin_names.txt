@@ -1,31 +1,34 @@
 [
     Diagnostic2(
         Diagnostic2 {
-            location: HirNodeLocation {
-                offset: 40,
-                node_len: 60,
+            cache: {
+                0: "0001_duplicate_operatoin_names.graphql",
+            },
+            location: DiagnosticLocation {
                 file_id: FileId(
                     0,
                 ),
+                offset: 46,
+                length: 8,
             },
             labels: [
                 Label {
-                    location: HirNodeLocation {
-                        offset: 0,
-                        node_len: 40,
+                    location: DiagnosticLocation {
                         file_id: FileId(
                             0,
                         ),
+                        offset: 6,
+                        length: 8,
                     },
                     text: "previous definition of `getName` here",
                 },
                 Label {
-                    location: HirNodeLocation {
-                        offset: 40,
-                        node_len: 60,
+                    location: DiagnosticLocation {
                         file_id: FileId(
                             0,
                         ),
+                        offset: 46,
+                        length: 8,
                     },
                     text: "`getName` redefined here",
                 },
@@ -36,19 +39,19 @@
             data: UniqueDefinition {
                 ty: "operation",
                 name: "getName",
-                original_definition: HirNodeLocation {
-                    offset: 0,
-                    node_len: 40,
+                original_definition: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
+                    offset: 6,
+                    length: 8,
                 },
-                redefined_definition: HirNodeLocation {
-                    offset: 40,
-                    node_len: 60,
+                redefined_definition: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
+                    offset: 46,
+                    length: 8,
                 },
             },
         },
