@@ -8,7 +8,6 @@ use thiserror::Error;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
-    MissingField(MissingField),
     SingleRootField(SingleRootField),
     UnsupportedOperation(UnsupportedOperation),
     SyntaxError(SyntaxError),
@@ -32,8 +31,7 @@ impl ApolloDiagnostic {
     pub fn is_error(&self) -> bool {
         matches!(
             self,
-            ApolloDiagnostic::MissingField(_)
-                | ApolloDiagnostic::SingleRootField(_)
+            ApolloDiagnostic::SingleRootField(_)
                 | ApolloDiagnostic::UnsupportedOperation(_)
                 | ApolloDiagnostic::SyntaxError(_)
                 | ApolloDiagnostic::UniqueField(_)
@@ -79,7 +77,6 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::ScalarSpecificationURL(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::CapitalizedValue(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
-            ApolloDiagnostic::MissingField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
@@ -321,26 +318,6 @@ impl Diagnostic2 {
         }
         builder.finish()
     }
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("missing `{}` field", self.ty)]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct MissingField {
-    // current field that should be defined
-    pub ty: String,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("`{}` was originally defined here", self.ty)]
-    pub super_definition: SourceSpan,
-
-    #[label("add `{}` field to this interface", self.ty)]
-    pub current_definition: SourceSpan,
-
-    #[help]
-    pub help: Option<String>,
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]

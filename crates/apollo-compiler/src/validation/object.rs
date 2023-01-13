@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::{
     diagnostics::{
-        Diagnostic2, DiagnosticData, Label, MissingField, OutputType,
+        Diagnostic2, DiagnosticData, Label, OutputType,
         TransitiveImplementedInterfaces, UndefinedDefinition, UniqueField,
     },
     hir::FieldDefinition,
@@ -206,22 +206,27 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 let field_diff = implements_interface_fields.difference(&fields);
 
                 for missing_field in field_diff {
-                    let current_offset = object.loc().offset();
-                    let current_len = object.loc().node_len();
-
-                    let super_offset = interface.loc().offset();
-                    let super_len = interface.loc().node_len();
-
-                    diagnostics.push(ApolloDiagnostic::MissingField(MissingField {
-                        ty: missing_field.name.clone(),
-                        src: db.source_code(object.loc().file_id()),
-                        current_definition: (current_offset, current_len).into(),
-                        super_definition: (super_offset, super_len).into(),
-                        help: Some(
-                            "An interface must be a super-set of all interfaces it implement"
-                                .into(),
-                        ),
-                    }))
+                    let name = &missing_field.name;
+                    diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                        Diagnostic2::new(
+                            db,
+                            object.loc().into(),
+                            DiagnosticData::MissingField {
+                                field: missing_field.name.to_string(),
+                            },
+                        )
+                        .labels([
+                            Label::new(
+                                missing_field.loc,
+                                format!("`{name}` was originally defined here"),
+                            ),
+                            Label::new(
+                                object.loc(),
+                                format!("add `{name}` field to this object"),
+                            ),
+                        ])
+                        .help("An object must provide all fields required by the interfaces it implements"),
+                    ));
                 }
             }
         }

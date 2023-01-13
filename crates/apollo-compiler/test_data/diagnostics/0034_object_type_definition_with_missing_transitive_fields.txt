@@ -1,52 +1,86 @@
 [
-    MissingField(
-        MissingField {
-            ty: "id",
-            src: "type Query implements Node & Resource {\n  name: String\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource {\n  width: Int\n}",
-            super_definition: SourceSpan {
-                offset: SourceOffset(
-                    58,
-                ),
-                length: SourceOffset(
-                    30,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0034_object_type_definition_with_missing_transitive_fields.graphql",
             },
-            current_definition: SourceSpan {
-                offset: SourceOffset(
+            location: DiagnosticLocation {
+                file_id: FileId(
                     0,
                 ),
-                length: SourceOffset(
-                    58,
-                ),
+                offset: 0,
+                length: 58,
             },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 77,
+                        length: 8,
+                    },
+                    text: "`id` was originally defined here",
+                },
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 0,
+                        length: 58,
+                    },
+                    text: "add `id` field to this object",
+                },
+            ],
             help: Some(
-                "An interface must be a super-set of all interfaces it implement",
+                "An object must provide all fields required by the interfaces it implements",
             ),
+            data: MissingField {
+                field: "id",
+            },
         },
     ),
-    MissingField(
-        MissingField {
-            ty: "width",
-            src: "type Query implements Node & Resource {\n  name: String\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource {\n  width: Int\n}",
-            super_definition: SourceSpan {
-                offset: SourceOffset(
-                    88,
-                ),
-                length: SourceOffset(
-                    35,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0034_object_type_definition_with_missing_transitive_fields.graphql",
             },
-            current_definition: SourceSpan {
-                offset: SourceOffset(
+            location: DiagnosticLocation {
+                file_id: FileId(
                     0,
                 ),
-                length: SourceOffset(
-                    58,
-                ),
+                offset: 0,
+                length: 58,
             },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 111,
+                        length: 11,
+                    },
+                    text: "`width` was originally defined here",
+                },
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 0,
+                        length: 58,
+                    },
+                    text: "add `width` field to this object",
+                },
+            ],
             help: Some(
-                "An interface must be a super-set of all interfaces it implement",
+                "An object must provide all fields required by the interfaces it implements",
             ),
+            data: MissingField {
+                field: "width",
+            },
         },
     ),
 ]
