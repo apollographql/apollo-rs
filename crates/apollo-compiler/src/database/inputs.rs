@@ -12,7 +12,7 @@ struct UnknownFileError;
 /// A Cache implementation for `ariadne` diagnostics.
 ///
 /// Use [`InputDatabase::source_cache`] to construct one.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct SourceCache {
     sources: Arc<HashMap<FileId, Arc<AriadneSource>>>,
     paths: HashMap<FileId, PathBuf>,
@@ -37,6 +37,16 @@ impl AriadneCache<FileId> for &SourceCache {
             .map(ToOwned::to_owned)
             .map(Box::new)
             .map(|bx| bx as Box<dyn std::fmt::Display + 'static>)
+    }
+}
+
+// The default Debug impl is very verbose. The important part is that all
+// files are in it, so just print those.
+impl std::fmt::Debug for SourceCache {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_map()
+            .entries(self.paths.iter().map(|(id, path)| (id.0, path)))
+            .finish()
     }
 }
 
