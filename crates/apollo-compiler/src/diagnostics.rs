@@ -305,7 +305,7 @@ impl Diagnostic2 {
 
         let mut colors = ColorGenerator::new();
         let mut builder =
-            Report::build(ReportKind::Error, self.location.clone(), 0).with_message(self);
+            Report::build(ReportKind::Error, self.location.clone(), self.location.offset()).with_message(self);
         builder.add_labels(
             self.labels
                 .iter()
