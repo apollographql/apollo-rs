@@ -14,7 +14,6 @@ pub enum ApolloDiagnostic {
     QueryRootOperationType(QueryRootOperationType),
     BuiltInScalarDefinition(BuiltInScalarDefinition),
     UnusedVariable(UnusedVariable),
-    OutputType(OutputType),
     ObjectType(ObjectType),
     Diagnostic2(Diagnostic2),
 }
@@ -28,7 +27,6 @@ impl ApolloDiagnostic {
                 | ApolloDiagnostic::QueryRootOperationType(_)
                 | ApolloDiagnostic::UniqueArgument(_)
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
-                | ApolloDiagnostic::OutputType(_)
                 | ApolloDiagnostic::ObjectType(_)
                 | ApolloDiagnostic::Diagnostic2(_)
         )
@@ -53,7 +51,6 @@ impl ApolloDiagnostic {
                 Report::new(diagnostic.clone())
             }
             ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
-            ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::Diagnostic2(_) => unimplemented!("Diagnostic2 can only be Displayed"),
@@ -358,25 +355,6 @@ pub struct UnusedVariable {
     pub src: Arc<str>,
 
     #[label("unused variable")]
-    pub definition: SourceSpan,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("`{}` field must return an output type", self.name)]
-#[diagnostic(
-    code("apollo-compiler validation error"),
-    help("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", self.name)
-)]
-pub struct OutputType {
-    // field name
-    pub name: String,
-    // field type
-    pub ty: &'static str,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("this is of `{}` type", self.ty)]
     pub definition: SourceSpan,
 }
 

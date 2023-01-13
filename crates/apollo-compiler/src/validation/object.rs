@@ -1,9 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    diagnostics::{
-        Diagnostic2, DiagnosticData, Label, OutputType, TransitiveImplementedInterfaces,
-    },
+    diagnostics::{Diagnostic2, DiagnosticData, Label, TransitiveImplementedInterfaces},
     hir::FieldDefinition,
     validation::{ast_type_definitions, ValidationSet},
     ApolloDiagnostic, ValidationDatabase,
@@ -62,8 +60,6 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             // Returns Unique Value error.
             let field_name = field.name();
             let redefined_definition = field.loc();
-            let offset = field.loc().offset();
-            let len = field.loc().node_len();
 
             if let Some(prev_field) = seen.get(&field_name) {
                 let original_definition = prev_field.loc();
@@ -89,12 +85,14 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             // Field types in Object Types must be of output type
             if let Some(field_ty) = field.ty().type_def(db.upcast()) {
                 if !field.ty().is_output_type(db.upcast()) {
-                    diagnostics.push(ApolloDiagnostic::OutputType(OutputType {
-                        name: field.name().into(),
-                        ty: field_ty.kind(),
-                        src: db.source_code(field.loc().file_id()),
-                        definition: (offset, len).into(),
-                    }))
+                    diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                        Diagnostic2::new(db, field.loc().into(), DiagnosticData::OutputType {
+                            name: field.name().into(),
+                            ty: field_ty.kind(),
+                        })
+                        .label(Label::new(field.loc(), format!("this is of `{}` type", field_ty.kind())))
+                        .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
+                    ));
                 }
             } else if let Some(field_ty_loc) = field.ty().loc() {
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
