@@ -1,7 +1,8 @@
 use std::collections::HashSet;
 
 use crate::{
-    diagnostics::{ApolloDiagnostic, UndefinedDefinition, UnusedVariable},
+    diagnostics::{ApolloDiagnostic, UnusedVariable},
+    diagnostics::{Diagnostic2, DiagnosticData, Label},
     validation::ValidationSet,
     FileId, ValidationDatabase,
 };
@@ -41,13 +42,16 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
             let undefined_vars = used_vars.difference(&defined_vars);
             let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
                 .map(|undefined_var| {
-                    let offset = undefined_var.loc.offset();
-                    let len = undefined_var.loc.node_len();
-                    ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                        ty: undefined_var.name.clone(),
-                        src: db.source_code(undefined_var.loc.file_id()),
-                        definition: (offset, len).into(),
-                    })
+                    ApolloDiagnostic::Diagnostic2(
+                        Diagnostic2::new(
+                            db,
+                            undefined_var.loc.into(),
+                            DiagnosticData::UndefinedDefinition {
+                                name: undefined_var.name.clone(),
+                            },
+                        )
+                        .label(Label::new(undefined_var.loc, "not found in this scope")),
+                    )
                 })
                 .collect();
 

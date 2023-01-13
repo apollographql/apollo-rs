@@ -9,7 +9,6 @@ use thiserror::Error;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
     SyntaxError(SyntaxError),
-    UndefinedDefinition(UndefinedDefinition),
     UndefinedField(UndefinedField),
     UniqueArgument(UniqueArgument),
     RecursiveDefinition(RecursiveDefinition),
@@ -29,7 +28,6 @@ impl ApolloDiagnostic {
         matches!(
             self,
             ApolloDiagnostic::SyntaxError(_)
-                | ApolloDiagnostic::UndefinedDefinition(_)
                 | ApolloDiagnostic::RecursiveDefinition(_)
                 | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
                 | ApolloDiagnostic::QueryRootOperationType(_)
@@ -57,7 +55,6 @@ impl ApolloDiagnostic {
         match self {
             ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::RecursiveDefinition(diagnostic) => Report::new(diagnostic.clone()),
-            ApolloDiagnostic::UndefinedDefinition(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::TransitiveImplementedInterfaces(diagnostic) => {
                 Report::new(diagnostic.clone())
             }
@@ -337,20 +334,6 @@ pub struct RecursiveDefinition {
     pub definition_label: String,
 
     pub message: String,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("cannot find type `{}` in this document", self.ty)]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct UndefinedDefinition {
-    // current type not in scope
-    pub ty: String,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("not found in this scope")]
-    pub definition: SourceSpan,
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]

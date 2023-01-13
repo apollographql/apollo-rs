@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    diagnostics::{Diagnostic2, DiagnosticData, Label, ObjectType, UndefinedDefinition},
+    diagnostics::{Diagnostic2, DiagnosticData, Label, ObjectType},
     hir::{TypeDefinition, UnionMember},
     ApolloDiagnostic, ValidationDatabase,
 };
@@ -52,11 +52,14 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             match db.upcast().find_type_definition_by_name(name.to_string()) {
                 None => {
                     // Union member must be defined.
-                    diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                        ty: name.into(),
-                        src: db.source_code(union_member.loc().file_id()),
-                        definition: (offset, len).into(),
-                    }))
+                    diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                        Diagnostic2::new(
+                            db,
+                            union_member.loc().into(),
+                            DiagnosticData::UndefinedDefinition { name: name.into() },
+                        )
+                        .label(Label::new(union_member.loc(), "not found in this scope")),
+                    ));
                 }
                 Some(TypeDefinition::ObjectTypeDefinition { .. }) => {} // good
                 Some(ty) => {

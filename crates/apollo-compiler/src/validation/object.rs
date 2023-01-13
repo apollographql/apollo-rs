@@ -3,7 +3,6 @@ use std::collections::{HashMap, HashSet};
 use crate::{
     diagnostics::{
         Diagnostic2, DiagnosticData, Label, OutputType, TransitiveImplementedInterfaces,
-        UndefinedDefinition,
     },
     hir::FieldDefinition,
     validation::{ast_type_definitions, ValidationSet},
@@ -97,20 +96,28 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         definition: (offset, len).into(),
                     }))
                 }
-            } else if let Some(loc) = field.ty().loc() {
-                let field_ty_offset = loc.offset();
-                let field_ty_len = loc.node_len();
-                diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                    ty: field.ty().name(),
-                    src: db.source_code(field.loc().file_id()),
-                    definition: (field_ty_offset, field_ty_len).into(),
-                }))
+            } else if let Some(field_ty_loc) = field.ty().loc() {
+                diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                    Diagnostic2::new(
+                        db,
+                        field_ty_loc.into(),
+                        DiagnosticData::UndefinedDefinition {
+                            name: field.name().into(),
+                        },
+                    )
+                    .label(Label::new(field_ty_loc, "not found in this scope")),
+                ));
             } else {
-                diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                    ty: field.ty().name(),
-                    src: db.source_code(field.loc().file_id()),
-                    definition: (offset, len).into(),
-                }))
+                diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                    Diagnostic2::new(
+                        db,
+                        field.loc().into(),
+                        DiagnosticData::UndefinedDefinition {
+                            name: field.ty().name().into(),
+                        },
+                    )
+                    .label(Label::new(field.loc(), "not found in this scope")),
+                ));
             }
         }
     }
@@ -138,13 +145,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .collect();
         let diff = implements_interfaces.difference(&defined_interfaces);
         for undefined in diff {
-            let offset = undefined.loc.offset();
-            let len: usize = undefined.loc.node_len();
-            diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                ty: undefined.name.clone(),
-                src: db.source_code(undefined.loc.file_id()),
-                definition: (offset, len).into(),
-            }))
+            diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                Diagnostic2::new(
+                    db,
+                    undefined.loc.into(),
+                    DiagnosticData::UndefinedDefinition {
+                        name: undefined.name.clone(),
+                    },
+                )
+                .label(Label::new(undefined.loc, "not found in this scope")),
+            ));
         }
 
         // Transitively implemented interfaces must be defined on an implementing

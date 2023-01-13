@@ -1,29 +1,61 @@
 [
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Url",
-            src: "type Query {\n  width: Int\n  img: Url\n  relationship: Person\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    33,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0038_object_type_with_undefined_field_type.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    3,
-                ),
+                offset: 33,
+                length: 3,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 33,
+                        length: 3,
+                    },
+                    text: "not found in this scope",
+                },
+            ],
+            help: None,
+            data: UndefinedDefinition {
+                name: "img",
             },
         },
     ),
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Person",
-            src: "type Query {\n  width: Int\n  img: Url\n  relationship: Person\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    53,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0038_object_type_with_undefined_field_type.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    6,
-                ),
+                offset: 53,
+                length: 6,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 53,
+                        length: 6,
+                    },
+                    text: "not found in this scope",
+                },
+            ],
+            help: None,
+            data: UndefinedDefinition {
+                name: "relationship",
             },
         },
     ),

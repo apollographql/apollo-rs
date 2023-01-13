@@ -1,15 +1,31 @@
 [
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "value",
-            src: "query ExampleQuery($variable: Int) {\n  topProducts {\n    name\n  }\n  ... multipleSubscriptions\n}\n\nfragment multipleSubscriptions on Subscription {\n  newMessage {\n    body\n    sender(attribute: $value)\n  }\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    192,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0045_operation_with_unused_variable_in_fragment.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    6,
-                ),
+                offset: 192,
+                length: 6,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 192,
+                        length: 6,
+                    },
+                    text: "not found in this scope",
+                },
+            ],
+            help: None,
+            data: UndefinedDefinition {
+                name: "value",
             },
         },
     ),

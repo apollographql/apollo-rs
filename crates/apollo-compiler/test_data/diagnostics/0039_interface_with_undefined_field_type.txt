@@ -29,17 +29,33 @@
             },
         },
     ),
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Url",
-            src: "type Query {\n  width: Int\n  img: Url\n}\n\ninterface Connection {\n  relationship: Person\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    33,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0039_interface_with_undefined_field_type.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    3,
-                ),
+                offset: 33,
+                length: 3,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 33,
+                        length: 3,
+                    },
+                    text: "not found in this scope",
+                },
+            ],
+            help: None,
+            data: UndefinedDefinition {
+                name: "img",
             },
         },
     ),
