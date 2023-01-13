@@ -188,7 +188,7 @@ pub struct OperationDefinition {
 }
 
 impl OperationDefinition {
-    /// Get the type of the operation: Query, Mutation, or Subscription
+    /// Get the kind of the operation: `query`, `mutation`, or `subscription`
     pub fn operation_ty(&self) -> OperationType {
         self.operation_ty
     }
@@ -1185,7 +1185,7 @@ impl RootOperationTypeDefinition {
         &self.named_type
     }
 
-    /// Get the root operation type definition's operation type.
+    /// Get the kind of the root operation type definition: `query`, `mutation`, or `subscription`
     pub fn operation_ty(&self) -> OperationType {
         self.operation_ty
     }
