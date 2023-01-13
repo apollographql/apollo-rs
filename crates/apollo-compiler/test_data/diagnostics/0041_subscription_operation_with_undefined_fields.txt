@@ -19,7 +19,17 @@
                     offset: 21,
                     length: 27,
                 },
-                text: "`undefinedSubscriptionField` field is not in scope",
+                text: "`undefinedSubscriptionField` field is not defined",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 51,
+                    length: 44,
+                },
+                text: "`Subscription` declared here",
             },
         ],
         help: Some(

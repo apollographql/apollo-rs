@@ -56,7 +56,17 @@
                     offset: 60,
                     length: 26,
                 },
-                text: "`disallowedSecondRootField` field is not in scope",
+                text: "`disallowedSecondRootField` field is not defined",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 89,
+                    length: 44,
+                },
+                text: "`Subscription` declared here",
             },
         ],
         help: Some(

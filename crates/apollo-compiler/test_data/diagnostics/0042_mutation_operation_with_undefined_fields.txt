@@ -75,7 +75,17 @@
                     offset: 31,
                     length: 23,
                 },
-                text: "`undefinedMutationField` field is not in scope",
+                text: "`undefinedMutationField` field is not defined",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 100,
+                    length: 71,
+                },
+                text: "`Mutation` declared here",
             },
         ],
         help: Some(

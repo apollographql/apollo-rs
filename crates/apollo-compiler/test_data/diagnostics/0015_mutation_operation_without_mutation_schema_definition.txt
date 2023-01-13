@@ -49,7 +49,7 @@
                     offset: 31,
                     length: 42,
                 },
-                text: "`addPet` field is not in scope",
+                text: "`addPet` field is not defined",
             },
         ],
         help: Some(

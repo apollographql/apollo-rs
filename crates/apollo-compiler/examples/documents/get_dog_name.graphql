@@ -11,4 +11,5 @@ query getDogName {
       name
     }
   }
+  doesNotExist
 }

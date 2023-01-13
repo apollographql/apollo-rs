@@ -185,7 +185,8 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
     // Fields must exist on the type being queried.
     for op in operations.iter() {
         for selection in op.selection_set().selection() {
-            let obj_name = op.object_type(db.upcast()).map(|obj| obj.name().to_owned());
+            let obj_type = op.object_type(db.upcast());
+            let obj_name = obj_type.as_ref().map(|obj| obj.name().to_owned());
             if let Selection::Field(field) = selection {
                 if field.ty(db.upcast()).is_none() {
                     let field_name = field.name();
@@ -198,20 +199,29 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                             op.operation_ty()
                         )
                     };
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            field.loc().into(),
-                            DiagnosticData::UndefinedField {
-                                field: field_name.into(),
-                            },
-                        )
-                        .label(Label::new(
-                            field.loc(),
-                            format!("`{field_name}` field is not in scope"),
-                        ))
-                        .help(help),
+                    let diagnostic = ApolloDiagnostic::new(
+                        db,
+                        field.loc().into(),
+                        DiagnosticData::UndefinedField {
+                            field: field_name.into(),
+                        },
                     )
+                    .label(Label::new(
+                        field.loc(),
+                        format!("`{field_name}` field is not defined"),
+                    ))
+                    .help(help);
+
+                    let diagnostic = if let Some(ty) = obj_type {
+                        diagnostic.label(Label::new(
+                            ty.loc(),
+                            format!("`{}` declared here", ty.name()),
+                        ))
+                    } else {
+                        diagnostic
+                    };
+
+                    diagnostics.push(diagnostic)
                 }
             }
         }
