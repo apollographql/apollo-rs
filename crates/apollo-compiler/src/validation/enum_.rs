@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use crate::{
-    diagnostics::{Diagnostic2, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::EnumValueDefinition,
-    ApolloDiagnostic, ValidationDatabase,
+    ValidationDatabase,
 };
 
 pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
@@ -19,8 +19,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if let Some(prev_def) = seen.get(&value) {
                 let original_definition = prev_def.loc();
                 let redefined_definition = enum_value.loc();
-                diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
                         db,
                         redefined_definition.into(),
                         DiagnosticData::UniqueDefinition {
@@ -38,7 +38,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         Label::new(redefined_definition, format!("`{value}` redefined here")),
                     ])
                     .help(format!("{value} must only be defined once in this enum.")),
-                ));
+                );
             } else {
                 seen.insert(value, enum_value);
             }
@@ -52,8 +52,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         for enum_value in enum_def.enum_values_definition().iter() {
             let value = enum_value.enum_value();
             if value.to_uppercase() != value {
-                diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
                         db,
                         enum_value.loc().into(),
                         DiagnosticData::CapitalizedValue {
@@ -64,7 +64,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         enum_value.loc(),
                         format!("consider capitalizing {value}"),
                     )),
-                ));
+                );
             }
         }
     }

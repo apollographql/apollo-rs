@@ -1,32 +1,30 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0011_syntactic_errors_from_parser.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 15,
-                length: 1,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 15,
-                        length: 1,
-                    },
-                    text: "expected at least one Selection in Selection Set",
-                },
-            ],
-            help: None,
-            data: SyntaxError {
-                message: "expected at least one Selection in Selection Set",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0011_syntactic_errors_from_parser.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 15,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 15,
+                    length: 1,
+                },
+                text: "expected at least one Selection in Selection Set",
+            },
+        ],
+        help: None,
+        data: SyntaxError {
+            message: "expected at least one Selection in Selection Set",
+        },
+    },
 ]

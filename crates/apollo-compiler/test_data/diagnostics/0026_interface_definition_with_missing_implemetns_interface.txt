@@ -1,32 +1,30 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0026_interface_definition_with_missing_implemetns_interface.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 176,
-                length: 9,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 176,
-                        length: 9,
-                    },
-                    text: "Node must also be implemented here",
-                },
-            ],
-            help: None,
-            data: TransitiveImplementedInterfaces {
-                missing_interface: "Node",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0026_interface_definition_with_missing_implemetns_interface.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 176,
+            length: 9,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 176,
+                    length: 9,
+                },
+                text: "Node must also be implemented here",
+            },
+        ],
+        help: None,
+        data: TransitiveImplementedInterfaces {
+            missing_interface: "Node",
+        },
+    },
 ]

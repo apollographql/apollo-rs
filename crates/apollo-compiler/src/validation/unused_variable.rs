@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::{
-    diagnostics::{ApolloDiagnostic, Diagnostic2, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     validation::ValidationSet,
     FileId, ValidationDatabase,
 };
@@ -41,31 +41,27 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
             let undefined_vars = used_vars.difference(&defined_vars);
             let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
                 .map(|undefined_var| {
-                    ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(
-                            db,
-                            undefined_var.loc.into(),
-                            DiagnosticData::UndefinedDefinition {
-                                name: undefined_var.name.clone(),
-                            },
-                        )
-                        .label(Label::new(undefined_var.loc, "not found in this scope")),
+                    ApolloDiagnostic::new(
+                        db,
+                        undefined_var.loc.into(),
+                        DiagnosticData::UndefinedDefinition {
+                            name: undefined_var.name.clone(),
+                        },
                     )
+                    .label(Label::new(undefined_var.loc, "not found in this scope"))
                 })
                 .collect();
 
             let unused_vars = defined_vars.difference(&used_vars);
             let warnings = unused_vars.map(|unused_var| {
-                ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
-                        db,
-                        unused_var.loc.into(),
-                        DiagnosticData::UnusedVariable {
-                            name: unused_var.name.clone(),
-                        },
-                    )
-                    .label(Label::new(unused_var.loc, "this variable is never used")),
+                ApolloDiagnostic::new(
+                    db,
+                    unused_var.loc.into(),
+                    DiagnosticData::UnusedVariable {
+                        name: unused_var.name.clone(),
+                    },
                 )
+                .label(Label::new(unused_var.loc, "this variable is never used"))
             });
 
             diagnostics.extend(warnings);

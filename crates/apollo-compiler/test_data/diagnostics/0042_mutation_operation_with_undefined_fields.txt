@@ -1,94 +1,88 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0042_mutation_operation_with_undefined_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 217,
-                length: 4,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 217,
-                        length: 4,
-                    },
-                    text: "not found in this scope",
-                },
-            ],
-            help: None,
-            data: UndefinedDefinition {
-                name: "Cat",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0042_mutation_operation_with_undefined_fields.graphql",
         },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0042_mutation_operation_with_undefined_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 223,
-                length: 4,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 223,
-                        length: 4,
-                    },
-                    text: "not found in this scope",
-                },
-            ],
-            help: None,
-            data: UndefinedDefinition {
-                name: "Dog",
-            },
-        },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0042_mutation_operation_with_undefined_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 31,
-                length: 23,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 31,
-                        length: 23,
-                    },
-                    text: "`undefinedMutationField` field is not in scope",
-                },
-            ],
-            help: Some(
-                "`undefinedMutationField` is not defined on `Mutation` type",
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UndefinedField {
-                field: "undefinedMutationField",
-            },
+            offset: 217,
+            length: 4,
         },
-    ),
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 217,
+                    length: 4,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "Cat",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0042_mutation_operation_with_undefined_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 223,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 223,
+                    length: 4,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "Dog",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0042_mutation_operation_with_undefined_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 31,
+            length: 23,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 31,
+                    length: 23,
+                },
+                text: "`undefinedMutationField` field is not in scope",
+            },
+        ],
+        help: Some(
+            "`undefinedMutationField` is not defined on `Mutation` type",
+        ),
+        data: UndefinedField {
+            field: "undefinedMutationField",
+        },
+    },
 ]

@@ -1,104 +1,98 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 173,
-                length: 3,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 173,
-                        length: 3,
-                    },
-                    text: "not found in this scope",
-                },
-            ],
-            help: None,
-            data: UndefinedDefinition {
-                name: "Url",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 162,
-                length: 9,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 162,
-                        length: 9,
-                    },
-                    text: "Node must also be implemented here",
-                },
-            ],
-            help: None,
-            data: TransitiveImplementedInterfaces {
-                missing_interface: "Node",
-            },
-        },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 135,
-                length: 74,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 72,
-                        length: 63,
-                    },
-                    text: "`width` was originally defined here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 135,
-                        length: 74,
-                    },
-                    text: "add `width` field to this interface",
-                },
-            ],
-            help: Some(
-                "An interface must be a super-set of all interfaces it implements",
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: MissingField {
-                field: "width",
-            },
+            offset: 173,
+            length: 3,
         },
-    ),
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 173,
+                    length: 3,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "Url",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 162,
+            length: 9,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 162,
+                    length: 9,
+                },
+                text: "Node must also be implemented here",
+            },
+        ],
+        help: None,
+        data: TransitiveImplementedInterfaces {
+            missing_interface: "Node",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 135,
+            length: 74,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 72,
+                    length: 63,
+                },
+                text: "`width` was originally defined here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 135,
+                    length: 74,
+                },
+                text: "add `width` field to this interface",
+            },
+        ],
+        help: Some(
+            "An interface must be a super-set of all interfaces it implements",
+        ),
+        data: MissingField {
+            field: "width",
+        },
+    },
 ]

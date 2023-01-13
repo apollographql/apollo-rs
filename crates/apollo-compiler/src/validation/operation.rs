@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use crate::{
-    diagnostics::{Diagnostic2, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{OperationDefinition, Selection},
-    ApolloDiagnostic, FileId, ValidationDatabase,
+    FileId, ValidationDatabase,
 };
 
 pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
@@ -24,11 +24,11 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
             .iter()
             .filter_map(|op| {
                 if op.name().is_none() {
-                    return Some(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(db, op.loc().into(), DiagnosticData::MissingIdent)
+                    return Some(
+                        ApolloDiagnostic::new(db, op.loc().into(), DiagnosticData::MissingIdent)
                             .label(Label::new(op.loc(), "provide a name for this definition"))
                             .help(format!("GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are {op_len} operations in this document.")),
-                    ));
+                    );
                 }
                 None
             })
@@ -51,8 +51,8 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                     .name_src()
                     .and_then(|name| name.loc())
                     .unwrap_or_else(|| op.loc());
-                diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
                         db,
                         redefined_definition.into(),
                         DiagnosticData::UniqueDefinition {
@@ -72,7 +72,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                     .help(format!(
                         "`{name}` must only be defined once in this document."
                     )),
-                ));
+                );
             } else {
                 seen.insert(name, op);
             }
@@ -90,8 +90,8 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                 fields.extend(op.fields_in_fragment_spread(db.upcast()).as_ref().clone());
                 if fields.len() > 1 {
                     let field_names: Vec<&str> = fields.iter().map(|f| f.name()).collect();
-                    Some(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(
+                    Some(
+                        ApolloDiagnostic::new(
                             db,
                             op.loc().into(),
                             DiagnosticData::SingleRootField {
@@ -108,7 +108,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                             fields.len(),
                             field_names.join(", ")
                         )),
-                    ))
+                    )
                 } else {
                     None
                 }
@@ -125,14 +125,13 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
         let unsupported_ops: Vec<ApolloDiagnostic> = subscription_operations
             .iter()
             .map(|op| {
-                let diagnostic = Diagnostic2::new(db, op.loc().into(), DiagnosticData::UnsupportedOperation { ty: "subscription" })
+                let diagnostic = ApolloDiagnostic::new(db, op.loc().into(), DiagnosticData::UnsupportedOperation { ty: "subscription" })
                     .label(Label::new(op.loc(), "Subscription operation is not defined in the schema and is therefore not supported"));
-                let diagnostic = if let Some(schema_loc) = db.schema().loc() {
+                if let Some(schema_loc) = db.schema().loc() {
                     diagnostic.label(Label::new(schema_loc, "Consider defining a `subscription` root operation type here"))
                 } else {
                     diagnostic.help("consider defining a `subscription` root operation type in your schema")
-                };
-                ApolloDiagnostic::Diagnostic2(diagnostic)
+                }
             })
             .collect();
         diagnostics.extend(unsupported_ops)
@@ -143,7 +142,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
         let unsupported_ops: Vec<ApolloDiagnostic> = query_operations
             .iter()
             .map(|op| {
-                let diagnostic = Diagnostic2::new(
+                let diagnostic = ApolloDiagnostic::new(
                     db,
                     op.loc().into(),
                     DiagnosticData::UnsupportedOperation { ty: "query" },
@@ -152,7 +151,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                     op.loc(),
                     "Query operation is not defined in the schema and is therefore not supported",
                 ));
-                let diagnostic = if let Some(schema_loc) = db.schema().loc() {
+                if let Some(schema_loc) = db.schema().loc() {
                     diagnostic.label(Label::new(
                         schema_loc,
                         "Consider defining a `query` root operation type here",
@@ -160,8 +159,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                 } else {
                     diagnostic
                         .help("consider defining a `query` root operation type in your schema")
-                };
-                ApolloDiagnostic::Diagnostic2(diagnostic)
+                }
             })
             .collect();
         diagnostics.extend(unsupported_ops)
@@ -172,14 +170,13 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
         let unsupported_ops: Vec<ApolloDiagnostic> = mutation_operations
             .iter()
             .map(|op| {
-                let diagnostic = Diagnostic2::new(db, op.loc().into(), DiagnosticData::UnsupportedOperation { ty: "mutation" })
+                let diagnostic = ApolloDiagnostic::new(db, op.loc().into(), DiagnosticData::UnsupportedOperation { ty: "mutation" })
                     .label(Label::new(op.loc(), "Mutation operation is not defined in the schema and is therefore not supported"));
-                let diagnostic = if let Some(schema_loc) = db.schema().loc() {
+                if let Some(schema_loc) = db.schema().loc() {
                     diagnostic.label(Label::new(schema_loc, "Consider defining a `mutation` root operation type here"))
                 } else {
                     diagnostic.help("consider defining a `mutation` root operation type in your schema")
-                };
-                ApolloDiagnostic::Diagnostic2(diagnostic)
+                }
             })
             .collect();
         diagnostics.extend(unsupported_ops)
@@ -201,8 +198,8 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                             op.operation_ty()
                         )
                     };
-                    diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
                             db,
                             field.loc().into(),
                             DiagnosticData::UndefinedField {
@@ -214,7 +211,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                             format!("`{field_name}` field is not in scope"),
                         ))
                         .help(help),
-                    ))
+                    )
                 }
             }
         }

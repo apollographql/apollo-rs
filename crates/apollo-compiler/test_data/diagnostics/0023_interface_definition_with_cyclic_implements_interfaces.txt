@@ -1,32 +1,30 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0023_interface_definition_with_cyclic_implements_interfaces.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 87,
-                length: 12,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 87,
-                        length: 12,
-                    },
-                    text: "interface NamedEntity cannot implement itself",
-                },
-            ],
-            help: None,
-            data: RecursiveInterfaceDefinition {
-                name: "NamedEntity",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0023_interface_definition_with_cyclic_implements_interfaces.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 87,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 87,
+                    length: 12,
+                },
+                text: "interface NamedEntity cannot implement itself",
+            },
+        ],
+        help: None,
+        data: RecursiveInterfaceDefinition {
+            name: "NamedEntity",
+        },
+    },
 ]

@@ -1,10 +1,10 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    diagnostics::{Diagnostic2, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::FieldDefinition,
     validation::{ast_type_definitions, ValidationSet},
-    ApolloDiagnostic, ValidationDatabase,
+    ValidationDatabase,
 };
 use apollo_parser::ast;
 
@@ -23,8 +23,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if original_definition == redefined_definition {
                 // The HIR node was built from this AST node. This is fine.
             } else {
-                diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
                         db,
                         redefined_definition.into(),
                         DiagnosticData::UniqueDefinition {
@@ -44,7 +44,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     .help(format!(
                         "`{name}` must only be defined once in this document."
                     )),
-                ));
+                );
             }
         }
     }
@@ -63,8 +63,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 
             if let Some(prev_field) = seen.get(&field_name) {
                 let original_definition = prev_field.loc();
-                diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
                         db, original_definition.into(),
                         DiagnosticData::UniqueField {
                             field: field_name.into(),
@@ -77,7 +77,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         Label::new(redefined_definition, format!("`{field_name}` redefined here")),
                     ])
                     .help(format!("`{field_name}` field must only be defined once in this object type definition."))
-                ));
+                );
             } else {
                 seen.insert(field_name, field);
             }
@@ -85,18 +85,18 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             // Field types in Object Types must be of output type
             if let Some(field_ty) = field.ty().type_def(db.upcast()) {
                 if !field.ty().is_output_type(db.upcast()) {
-                    diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(db, field.loc().into(), DiagnosticData::OutputType {
+                    diagnostics.push(
+                        ApolloDiagnostic::new(db, field.loc().into(), DiagnosticData::OutputType {
                             name: field.name().into(),
                             ty: field_ty.kind(),
                         })
                         .label(Label::new(field.loc(), format!("this is of `{}` type", field_ty.kind())))
                         .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
-                    ));
+                    );
                 }
             } else if let Some(field_ty_loc) = field.ty().loc() {
-                diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
                         db,
                         field_ty_loc.into(),
                         DiagnosticData::UndefinedDefinition {
@@ -104,10 +104,10 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         },
                     )
                     .label(Label::new(field_ty_loc, "not found in this scope")),
-                ));
+                );
             } else {
-                diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
                         db,
                         field.loc().into(),
                         DiagnosticData::UndefinedDefinition {
@@ -115,7 +115,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         },
                     )
                     .label(Label::new(field.loc(), "not found in this scope")),
-                ));
+                );
             }
         }
     }
@@ -143,8 +143,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .collect();
         let diff = implements_interfaces.difference(&defined_interfaces);
         for undefined in diff {
-            diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                Diagnostic2::new(
+            diagnostics.push(
+                ApolloDiagnostic::new(
                     db,
                     undefined.loc.into(),
                     DiagnosticData::UndefinedDefinition {
@@ -152,7 +152,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     },
                 )
                 .label(Label::new(undefined.loc, "not found in this scope")),
-            ));
+            );
         }
 
         // Transitively implemented interfaces must be defined on an implementing
@@ -181,8 +181,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .collect();
         let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
         for undefined in transitive_diff {
-            diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                Diagnostic2::new(
+            diagnostics.push(
+                ApolloDiagnostic::new(
                     db,
                     undefined.loc.into(),
                     DiagnosticData::TransitiveImplementedInterfaces {
@@ -193,7 +193,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     undefined.loc,
                     format!("{} must also be implemented here", undefined.name),
                 )),
-            ));
+            );
         }
 
         // When defining an interface that implements another interface, the
@@ -224,8 +224,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 
                 for missing_field in field_diff {
                     let name = &missing_field.name;
-                    diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
                             db,
                             object.loc().into(),
                             DiagnosticData::MissingField {
@@ -243,7 +243,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                             ),
                         ])
                         .help("An object must provide all fields required by the interfaces it implements"),
-                    ));
+                    );
                 }
             }
         }

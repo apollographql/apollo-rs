@@ -1,32 +1,30 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0008_operation_with_undefined_variables_in_inline_fragment.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 91,
-                length: 6,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 91,
-                        length: 6,
-                    },
-                    text: "not found in this scope",
-                },
-            ],
-            help: None,
-            data: UndefinedDefinition {
-                name: "value",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0008_operation_with_undefined_variables_in_inline_fragment.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 91,
+            length: 6,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 91,
+                    length: 6,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "value",
+        },
+    },
 ]

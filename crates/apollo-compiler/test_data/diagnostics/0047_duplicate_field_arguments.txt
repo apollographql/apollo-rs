@@ -1,58 +1,56 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0047_duplicate_field_arguments.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 84,
-                length: 10,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 73,
-                        length: 11,
-                    },
-                    text: "previously provided `arg` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 84,
-                        length: 10,
-                    },
-                    text: "`arg` provided again here",
-                },
-            ],
-            help: Some(
-                "`arg` argument must only be provided once.",
+    ApolloDiagnostic {
+        cache: {
+            0: "0047_duplicate_field_arguments.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueArgument {
-                name: "arg",
-                original_definition: DiagnosticLocation {
+            offset: 84,
+            length: 10,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 73,
                     length: 11,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previously provided `arg` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 84,
                     length: 10,
                 },
+                text: "`arg` provided again here",
+            },
+        ],
+        help: Some(
+            "`arg` argument must only be provided once.",
+        ),
+        data: UniqueArgument {
+            name: "arg",
+            original_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 73,
+                length: 11,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 84,
+                length: 10,
             },
         },
-    ),
+    },
 ]

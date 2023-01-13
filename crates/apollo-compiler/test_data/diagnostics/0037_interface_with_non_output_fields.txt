@@ -1,125 +1,117 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0037_interface_with_non_output_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 399,
-                length: 6,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 399,
-                        length: 6,
-                    },
-                    text: "not found in this scope",
-                },
-            ],
-            help: None,
-            data: UndefinedDefinition {
-                name: "Photo",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0037_interface_with_non_output_fields.graphql",
         },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0037_interface_with_non_output_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 214,
-                length: 4,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 214,
-                        length: 4,
-                    },
-                    text: "not found in this scope",
-                },
-            ],
-            help: None,
-            data: UndefinedDefinition {
-                name: "permissions",
-            },
-        },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0037_interface_with_non_output_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 221,
-                length: 23,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 221,
-                        length: 23,
-                    },
-                    text: "this is of `InputObjectTypeDefinition` type",
-                },
-            ],
-            help: Some(
-                "Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.",
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: OutputType {
-                name: "coordinates",
-                ty: "InputObjectTypeDefinition",
-            },
+            offset: 399,
+            length: 6,
         },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0037_interface_with_non_output_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 250,
-                length: 8,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 250,
-                        length: 8,
-                    },
-                    text: "not found in this scope",
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 399,
+                    length: 6,
                 },
-            ],
-            help: None,
-            data: UndefinedDefinition {
-                name: "main",
+                text: "not found in this scope",
             },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "Photo",
         },
-    ),
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0037_interface_with_non_output_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 214,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 214,
+                    length: 4,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "permissions",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0037_interface_with_non_output_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 221,
+            length: 23,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 221,
+                    length: 23,
+                },
+                text: "this is of `InputObjectTypeDefinition` type",
+            },
+        ],
+        help: Some(
+            "Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.",
+        ),
+        data: OutputType {
+            name: "coordinates",
+            ty: "InputObjectTypeDefinition",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0037_interface_with_non_output_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 250,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 250,
+                    length: 8,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "main",
+        },
+    },
 ]

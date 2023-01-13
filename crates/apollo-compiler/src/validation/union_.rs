@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use crate::{
-    diagnostics::{Diagnostic2, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{TypeDefinition, UnionMember},
-    ApolloDiagnostic, ValidationDatabase,
+    ValidationDatabase,
 };
 
 pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
@@ -21,8 +21,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if let Some(prev_def) = seen.get(&name) {
                 let original_definition = prev_def.loc();
 
-                diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
                         db,
                         union_member.loc().into(),
                         DiagnosticData::UniqueDefinition {
@@ -42,7 +42,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     .help(format!(
                         "`{name}` must only be defined once in this document."
                     )),
-                ));
+                );
             } else {
                 seen.insert(name, union_member);
             }
@@ -50,21 +50,21 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             match db.upcast().find_type_definition_by_name(name.to_string()) {
                 None => {
                     // Union member must be defined.
-                    diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
                             db,
                             union_member.loc().into(),
                             DiagnosticData::UndefinedDefinition { name: name.into() },
                         )
                         .label(Label::new(union_member.loc(), "not found in this scope")),
-                    ));
+                    );
                 }
                 Some(TypeDefinition::ObjectTypeDefinition { .. }) => {} // good
                 Some(ty) => {
                     // Union member must be of object type.
                     let kind = ty.kind();
-                    diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
                             db,
                             union_member.loc().into(),
                             DiagnosticData::ObjectType {
@@ -77,7 +77,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                             format!("This is of `{kind}` type"),
                         ))
                         .help("Union members must be of base Object Type."),
-                    ));
+                    );
                 }
             }
         }

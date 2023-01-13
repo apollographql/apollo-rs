@@ -2,13 +2,13 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     database::db::Upcast,
-    diagnostics::{Diagnostic2, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::{
         directive, enum_, input_object, interface, object, operation, scalar, schema, union_,
         unused_variable,
     },
-    ApolloDiagnostic, AstDatabase, FileId, HirDatabase, InputDatabase,
+    AstDatabase, FileId, HirDatabase, InputDatabase,
 };
 
 #[salsa::query_group(ValidationStorage)]
@@ -224,8 +224,8 @@ pub fn check_input_values(
             if let (Some(original_definition), Some(redefined_definition)) =
                 (prev_arg.loc(), input_value.loc())
             {
-                diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
                         db,
                         redefined_definition.into(),
                         DiagnosticData::UniqueArgument {
@@ -242,7 +242,7 @@ pub fn check_input_values(
                         Label::new(redefined_definition, format!("`{name}` redefined here")),
                     ])
                     .help(format!("`{name}` argument must only be defined once.")),
-                ));
+                );
             }
         } else {
             seen.insert(name, input_value);
@@ -352,8 +352,8 @@ pub fn check_arguments(
         if let Some(prev_arg) = seen.get(name) {
             let original_definition = prev_arg.loc();
             let redefined_definition = argument.loc();
-            diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                Diagnostic2::new(
+            diagnostics.push(
+                ApolloDiagnostic::new(
                     db,
                     redefined_definition.into(),
                     DiagnosticData::UniqueArgument {
@@ -373,7 +373,7 @@ pub fn check_arguments(
                     ),
                 ])
                 .help(format!("`{name}` argument must only be provided once.")),
-            ));
+            );
         } else {
             seen.insert(name, argument);
         }

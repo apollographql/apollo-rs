@@ -1,74 +1,70 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 0,
-                length: 77,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 0,
-                        length: 77,
-                    },
-                    text: "Subscription operation is not defined in the schema and is therefore not supported",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 77,
-                        length: 37,
-                    },
-                    text: "Consider defining a `subscription` root operation type here",
-                },
-            ],
-            help: None,
-            data: UnsupportedOperation {
-                ty: "subscription",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
         },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 37,
-                length: 37,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 37,
-                        length: 37,
-                    },
-                    text: "`newMessage` field is not in scope",
-                },
-            ],
-            help: Some(
-                "`newMessage` is not defined on the current Subscription root operation type.",
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UndefinedField {
-                field: "newMessage",
-            },
+            offset: 0,
+            length: 77,
         },
-    ),
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 0,
+                    length: 77,
+                },
+                text: "Subscription operation is not defined in the schema and is therefore not supported",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 77,
+                    length: 37,
+                },
+                text: "Consider defining a `subscription` root operation type here",
+            },
+        ],
+        help: None,
+        data: UnsupportedOperation {
+            ty: "subscription",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 37,
+            length: 37,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 37,
+                    length: 37,
+                },
+                text: "`newMessage` field is not in scope",
+            },
+        ],
+        help: Some(
+            "`newMessage` is not defined on the current Subscription root operation type.",
+        ),
+        data: UndefinedField {
+            field: "newMessage",
+        },
+    },
 ]

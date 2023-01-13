@@ -1,32 +1,30 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0043_undefined_union_member.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 132,
-                length: 4,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 132,
-                        length: 4,
-                    },
-                    text: "not found in this scope",
-                },
-            ],
-            help: None,
-            data: UndefinedDefinition {
-                name: "Cat",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0043_undefined_union_member.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 132,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 132,
+                    length: 4,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "Cat",
+        },
+    },
 ]

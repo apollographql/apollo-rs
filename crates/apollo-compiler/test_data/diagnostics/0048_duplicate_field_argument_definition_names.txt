@@ -1,114 +1,110 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0048_duplicate_field_argument_definition_names.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 158,
-                length: 12,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 144,
-                        length: 14,
-                    },
-                    text: "previous definition of `arg` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 158,
-                        length: 12,
-                    },
-                    text: "`arg` redefined here",
-                },
-            ],
-            help: Some(
-                "`arg` argument must only be defined once.",
+    ApolloDiagnostic {
+        cache: {
+            0: "0048_duplicate_field_argument_definition_names.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueArgument {
-                name: "arg",
-                original_definition: DiagnosticLocation {
+            offset: 158,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 144,
                     length: 14,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previous definition of `arg` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 158,
                     length: 12,
                 },
+                text: "`arg` redefined here",
             },
-        },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0048_duplicate_field_argument_definition_names.graphql",
-            },
-            location: DiagnosticLocation {
+        ],
+        help: Some(
+            "`arg` argument must only be defined once.",
+        ),
+        data: UniqueArgument {
+            name: "arg",
+            original_definition: DiagnosticLocation {
                 file_id: FileId(
                     0,
                 ),
-                offset: 48,
+                offset: 144,
+                length: 14,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 158,
                 length: 12,
             },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 34,
-                        length: 14,
-                    },
-                    text: "previous definition of `arg` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 48,
-                        length: 12,
-                    },
-                    text: "`arg` redefined here",
-                },
-            ],
-            help: Some(
-                "`arg` argument must only be defined once.",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0048_duplicate_field_argument_definition_names.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueArgument {
-                name: "arg",
-                original_definition: DiagnosticLocation {
+            offset: 48,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 34,
                     length: 14,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previous definition of `arg` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 48,
                     length: 12,
                 },
+                text: "`arg` redefined here",
+            },
+        ],
+        help: Some(
+            "`arg` argument must only be defined once.",
+        ),
+        data: UniqueArgument {
+            name: "arg",
+            original_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 34,
+                length: 14,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 48,
+                length: 12,
             },
         },
-    ),
+    },
 ]

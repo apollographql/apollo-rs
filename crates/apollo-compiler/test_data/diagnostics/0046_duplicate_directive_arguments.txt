@@ -1,114 +1,110 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0046_duplicate_directive_arguments.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 40,
-                length: 22,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 19,
-                        length: 21,
-                    },
-                    text: "previously provided `reason` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 40,
-                        length: 22,
-                    },
-                    text: "`reason` provided again here",
-                },
-            ],
-            help: Some(
-                "`reason` argument must only be provided once.",
+    ApolloDiagnostic {
+        cache: {
+            0: "0046_duplicate_directive_arguments.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueArgument {
-                name: "reason",
-                original_definition: DiagnosticLocation {
+            offset: 40,
+            length: 22,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 19,
                     length: 21,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previously provided `reason` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 40,
                     length: 22,
                 },
+                text: "`reason` provided again here",
             },
-        },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0046_duplicate_directive_arguments.graphql",
-            },
-            location: DiagnosticLocation {
+        ],
+        help: Some(
+            "`reason` argument must only be provided once.",
+        ),
+        data: UniqueArgument {
+            name: "reason",
+            original_definition: DiagnosticLocation {
                 file_id: FileId(
                     0,
                 ),
-                offset: 112,
-                length: 8,
+                offset: 19,
+                length: 21,
             },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 101,
-                        length: 11,
-                    },
-                    text: "previously provided `if` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 112,
-                        length: 8,
-                    },
-                    text: "`if` provided again here",
-                },
-            ],
-            help: Some(
-                "`if` argument must only be provided once.",
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 40,
+                length: 22,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0046_duplicate_directive_arguments.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueArgument {
-                name: "if",
-                original_definition: DiagnosticLocation {
+            offset: 112,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 101,
                     length: 11,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previously provided `if` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 112,
                     length: 8,
                 },
+                text: "`if` provided again here",
+            },
+        ],
+        help: Some(
+            "`if` argument must only be provided once.",
+        ),
+        data: UniqueArgument {
+            name: "if",
+            original_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 101,
+                length: 11,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 112,
+                length: 8,
             },
         },
-    ),
+    },
 ]

@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
 use crate::{
-    diagnostics::{Diagnostic2, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::InputValueDefinition,
     validation::ast_type_definitions,
-    ApolloDiagnostic, ValidationDatabase,
+    ValidationDatabase,
 };
 use apollo_parser::ast;
 
@@ -24,8 +24,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if original_definition == redefined_definition {
                 // The HIR node was built from this AST node. This is fine.
             } else {
-                diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
                         db,
                         original_definition.into(),
                         DiagnosticData::UniqueDefinition {
@@ -45,7 +45,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         ),
                         Label::new(redefined_definition, format!("`{name}` redefined here")),
                     ]),
-                ));
+                );
             }
         }
     }
@@ -64,8 +64,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 if let (Some(original_definition), Some(redefined_definition)) =
                     (prev_field.loc(), field.loc())
                 {
-                    diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
                             db, original_definition.into(),
                             DiagnosticData::UniqueField {
                                 field: field_name.into(),
@@ -78,7 +78,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                             Label::new(redefined_definition, format!("`{field_name}` redefined here")),
                         ])
                         .help(format!("`{field_name}` field must only be defined once in this input object definition."))
-                    ));
+                    );
                 }
             } else {
                 seen.insert(field_name, field);

@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use crate::{
-    diagnostics::{Diagnostic2, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::RootOperationTypeDefinition,
-    ApolloDiagnostic, ValidationDatabase,
+    ValidationDatabase,
 };
 
 pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
@@ -12,11 +12,13 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     // A GraphQL schema must have a Query root operation.
     if db.schema().query(db.upcast()).is_none() {
         if let Some(loc) = db.schema().loc() {
-            diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                Diagnostic2::new(db, loc.into(), DiagnosticData::QueryRootOperationType).label(
-                    Label::new(loc, "`query` root operation type must be defined here"),
-                ),
-            ));
+            diagnostics.push(
+                ApolloDiagnostic::new(db, loc.into(), DiagnosticData::QueryRootOperationType)
+                    .label(Label::new(
+                        loc,
+                        "`query` root operation type must be defined here",
+                    )),
+            );
         }
     }
 
@@ -30,8 +32,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             if let (Some(original_definition), Some(redefined_definition)) =
                 (prev_def.loc(), op_type.loc())
             {
-                diagnostics.push(ApolloDiagnostic::Diagnostic2(
-                    Diagnostic2::new(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
                         db,
                         redefined_definition.into(),
                         DiagnosticData::UniqueDefinition {
@@ -51,7 +53,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     .help(format!(
                         "`{name}` must only be defined once in this document."
                     )),
-                ));
+                );
             }
         } else {
             seen.insert(name, op_type);

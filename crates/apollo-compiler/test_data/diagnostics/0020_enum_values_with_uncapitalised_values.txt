@@ -1,152 +1,142 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0020_enum_values_with_uncapitalised_values.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 43,
-                length: 8,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 43,
-                        length: 8,
-                    },
-                    text: "consider capitalizing CAt",
-                },
-            ],
-            help: None,
-            data: CapitalizedValue {
-                value: "CAt",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0020_enum_values_with_uncapitalised_values.graphql",
         },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0020_enum_values_with_uncapitalised_values.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 51,
-                length: 11,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 51,
-                        length: 11,
-                    },
-                    text: "consider capitalizing DOG_gO",
-                },
-            ],
-            help: None,
-            data: CapitalizedValue {
-                value: "DOG_gO",
-            },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 43,
+            length: 8,
         },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0020_enum_values_with_uncapitalised_values.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 70,
-                length: 9,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 70,
-                        length: 9,
-                    },
-                    text: "consider capitalizing _fox",
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 43,
+                    length: 8,
                 },
-            ],
-            help: None,
-            data: CapitalizedValue {
-                value: "_fox",
+                text: "consider capitalizing CAt",
             },
+        ],
+        help: None,
+        data: CapitalizedValue {
+            value: "CAt",
         },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0020_enum_values_with_uncapitalised_values.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 79,
-                length: 13,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 79,
-                        length: 13,
-                    },
-                    text: "consider capitalizing squirrel",
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0020_enum_values_with_uncapitalised_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 51,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 51,
+                    length: 11,
                 },
-            ],
-            help: None,
-            data: CapitalizedValue {
-                value: "squirrel",
+                text: "consider capitalizing DOG_gO",
             },
+        ],
+        help: None,
+        data: CapitalizedValue {
+            value: "DOG_gO",
         },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0020_enum_values_with_uncapitalised_values.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 92,
-                length: 8,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 92,
-                        length: 8,
-                    },
-                    text: "consider capitalizing PARRot1",
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0020_enum_values_with_uncapitalised_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 70,
+            length: 9,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 70,
+                    length: 9,
                 },
-            ],
-            help: None,
-            data: CapitalizedValue {
-                value: "PARRot1",
+                text: "consider capitalizing _fox",
             },
+        ],
+        help: None,
+        data: CapitalizedValue {
+            value: "_fox",
         },
-    ),
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0020_enum_values_with_uncapitalised_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 79,
+            length: 13,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 79,
+                    length: 13,
+                },
+                text: "consider capitalizing squirrel",
+            },
+        ],
+        help: None,
+        data: CapitalizedValue {
+            value: "squirrel",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0020_enum_values_with_uncapitalised_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 92,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 92,
+                    length: 8,
+                },
+                text: "consider capitalizing PARRot1",
+            },
+        ],
+        help: None,
+        data: CapitalizedValue {
+            value: "PARRot1",
+        },
+    },
 ]

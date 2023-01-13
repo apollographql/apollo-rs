@@ -1,30 +1,28 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0018_schema_with_specified_scalar_missing_values.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 46,
-                length: 10,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 46,
-                        length: 10,
-                    },
-                    text: "consider adding a @specifiedBy directive to this scalar definition",
-                },
-            ],
-            help: None,
-            data: ScalarSpecificationURL,
+    ApolloDiagnostic {
+        cache: {
+            0: "0018_schema_with_specified_scalar_missing_values.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 46,
+            length: 10,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 46,
+                    length: 10,
+                },
+                text: "consider adding a @specifiedBy directive to this scalar definition",
+            },
+        ],
+        help: None,
+        data: ScalarSpecificationURL,
+    },
 ]

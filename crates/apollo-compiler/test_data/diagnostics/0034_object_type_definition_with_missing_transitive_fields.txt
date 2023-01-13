@@ -1,86 +1,82 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0034_object_type_definition_with_missing_transitive_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 0,
-                length: 58,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 77,
-                        length: 8,
-                    },
-                    text: "`id` was originally defined here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 0,
-                        length: 58,
-                    },
-                    text: "add `id` field to this object",
-                },
-            ],
-            help: Some(
-                "An object must provide all fields required by the interfaces it implements",
-            ),
-            data: MissingField {
-                field: "id",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0034_object_type_definition_with_missing_transitive_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 0,
-                length: 58,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 111,
-                        length: 11,
-                    },
-                    text: "`width` was originally defined here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 0,
-                        length: 58,
-                    },
-                    text: "add `width` field to this object",
-                },
-            ],
-            help: Some(
-                "An object must provide all fields required by the interfaces it implements",
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: MissingField {
-                field: "width",
-            },
+            offset: 0,
+            length: 58,
         },
-    ),
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 77,
+                    length: 8,
+                },
+                text: "`id` was originally defined here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 0,
+                    length: 58,
+                },
+                text: "add `id` field to this object",
+            },
+        ],
+        help: Some(
+            "An object must provide all fields required by the interfaces it implements",
+        ),
+        data: MissingField {
+            field: "id",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0034_object_type_definition_with_missing_transitive_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 0,
+            length: 58,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 111,
+                    length: 11,
+                },
+                text: "`width` was originally defined here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 0,
+                    length: 58,
+                },
+                text: "add `width` field to this object",
+            },
+        ],
+        help: Some(
+            "An object must provide all fields required by the interfaces it implements",
+        ),
+        data: MissingField {
+            field: "width",
+        },
+    },
 ]

@@ -1,58 +1,56 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0024_interface_definition_with_duplicate_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 95,
-                length: 13,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 80,
-                        length: 15,
-                    },
-                    text: "previous definition of `name` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 95,
-                        length: 13,
-                    },
-                    text: "`name` redefined here",
-                },
-            ],
-            help: Some(
-                "`name` field must only be defined once in this interface definition.",
+    ApolloDiagnostic {
+        cache: {
+            0: "0024_interface_definition_with_duplicate_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueField {
-                field: "name",
-                original_definition: DiagnosticLocation {
+            offset: 95,
+            length: 13,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 80,
                     length: 15,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previous definition of `name` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 95,
                     length: 13,
                 },
+                text: "`name` redefined here",
+            },
+        ],
+        help: Some(
+            "`name` field must only be defined once in this interface definition.",
+        ),
+        data: UniqueField {
+            field: "name",
+            original_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 80,
+                length: 15,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 95,
+                length: 13,
             },
         },
-    ),
+    },
 ]

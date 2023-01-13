@@ -1,62 +1,58 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0002_multiple_anonymous_operations.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 0,
-                length: 32,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 0,
-                        length: 32,
-                    },
-                    text: "provide a name for this definition",
-                },
-            ],
-            help: Some(
-                "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
-            ),
-            data: MissingIdent,
+    ApolloDiagnostic {
+        cache: {
+            0: "0002_multiple_anonymous_operations.graphql",
         },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0002_multiple_anonymous_operations.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 32,
-                length: 58,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 32,
-                        length: 58,
-                    },
-                    text: "provide a name for this definition",
-                },
-            ],
-            help: Some(
-                "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: MissingIdent,
+            offset: 0,
+            length: 32,
         },
-    ),
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 0,
+                    length: 32,
+                },
+                text: "provide a name for this definition",
+            },
+        ],
+        help: Some(
+            "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
+        ),
+        data: MissingIdent,
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0002_multiple_anonymous_operations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 32,
+            length: 58,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 32,
+                    length: 58,
+                },
+                text: "provide a name for this definition",
+            },
+        ],
+        help: Some(
+            "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
+        ),
+        data: MissingIdent,
+    },
 ]

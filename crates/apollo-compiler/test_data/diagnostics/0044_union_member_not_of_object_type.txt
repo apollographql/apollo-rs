@@ -1,35 +1,33 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0044_union_member_not_of_object_type.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 219,
-                length: 5,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 219,
-                        length: 5,
-                    },
-                    text: "This is of `InterfaceTypeDefinition` type",
-                },
-            ],
-            help: Some(
-                "Union members must be of base Object Type.",
-            ),
-            data: ObjectType {
-                name: "Pet",
-                ty: "InterfaceTypeDefinition",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0044_union_member_not_of_object_type.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 219,
+            length: 5,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 219,
+                    length: 5,
+                },
+                text: "This is of `InterfaceTypeDefinition` type",
+            },
+        ],
+        help: Some(
+            "Union members must be of base Object Type.",
+        ),
+        data: ObjectType {
+            name: "Pet",
+            ty: "InterfaceTypeDefinition",
+        },
+    },
 ]

@@ -1,59 +1,57 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0013_schema_definition_with_duplicate_root_type_operations.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 36,
-                length: 29,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 11,
-                        length: 25,
-                    },
-                    text: "previous definition of `customPetQuery` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 36,
-                        length: 29,
-                    },
-                    text: "`customPetQuery` redefined here",
-                },
-            ],
-            help: Some(
-                "`customPetQuery` must only be defined once in this document.",
+    ApolloDiagnostic {
+        cache: {
+            0: "0013_schema_definition_with_duplicate_root_type_operations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueDefinition {
-                ty: "root operation type definition",
-                name: "customPetQuery",
-                original_definition: DiagnosticLocation {
+            offset: 36,
+            length: 29,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 11,
                     length: 25,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previous definition of `customPetQuery` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 36,
                     length: 29,
                 },
+                text: "`customPetQuery` redefined here",
+            },
+        ],
+        help: Some(
+            "`customPetQuery` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "root operation type definition",
+            name: "customPetQuery",
+            original_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 11,
+                length: 25,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 36,
+                length: 29,
             },
         },
-    ),
+    },
 ]

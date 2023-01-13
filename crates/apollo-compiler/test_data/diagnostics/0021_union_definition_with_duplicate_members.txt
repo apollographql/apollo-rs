@@ -1,59 +1,57 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0021_union_definition_with_duplicate_members.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 62,
-                length: 7,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 54,
-                        length: 6,
-                    },
-                    text: "previous definition of `Photo` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 62,
-                        length: 7,
-                    },
-                    text: "`Photo` redefined here",
-                },
-            ],
-            help: Some(
-                "`Photo` must only be defined once in this document.",
+    ApolloDiagnostic {
+        cache: {
+            0: "0021_union_definition_with_duplicate_members.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueDefinition {
-                ty: "union member",
-                name: "Photo",
-                original_definition: DiagnosticLocation {
+            offset: 62,
+            length: 7,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 54,
                     length: 6,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previous definition of `Photo` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 62,
                     length: 7,
                 },
+                text: "`Photo` redefined here",
+            },
+        ],
+        help: Some(
+            "`Photo` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "union member",
+            name: "Photo",
+            original_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 54,
+                length: 6,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 62,
+                length: 7,
             },
         },
-    ),
+    },
 ]

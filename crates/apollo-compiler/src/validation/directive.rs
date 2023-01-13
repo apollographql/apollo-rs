@@ -1,7 +1,7 @@
 use crate::{
-    diagnostics::{Diagnostic2, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     validation::ast_type_definitions,
-    ApolloDiagnostic, ValidationDatabase,
+    ValidationDatabase,
 };
 use apollo_parser::ast;
 
@@ -21,8 +21,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 if original_definition == redefined_definition {
                     // The HIR node was built from this AST node. This is fine.
                 } else {
-                    errors.push(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(
+                    errors.push(
+                        ApolloDiagnostic::new(
                             db,
                             original_definition.into(),
                             DiagnosticData::UniqueDefinition {
@@ -42,7 +42,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                             ),
                             Label::new(redefined_definition, format!("`{name}` redefined here")),
                         ]),
-                    ));
+                    );
                 }
             }
         }
@@ -57,8 +57,8 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             for directive in input_values.directives().iter() {
                 let directive_name = directive.name();
                 if name == directive_name {
-                    errors.push(ApolloDiagnostic::Diagnostic2(
-                        Diagnostic2::new(
+                    errors.push(
+                        ApolloDiagnostic::new(
                             db,
                             directive.loc().into(),
                             DiagnosticData::RecursiveDefinition { name: name.clone() },
@@ -67,7 +67,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                             directive.loc(),
                             "recursive directive definition",
                         )),
-                    ));
+                    );
                 }
             }
         }

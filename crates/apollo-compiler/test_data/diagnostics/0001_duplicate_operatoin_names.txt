@@ -1,59 +1,57 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0001_duplicate_operatoin_names.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 46,
-                length: 8,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 6,
-                        length: 8,
-                    },
-                    text: "previous definition of `getName` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 46,
-                        length: 8,
-                    },
-                    text: "`getName` redefined here",
-                },
-            ],
-            help: Some(
-                "`getName` must only be defined once in this document.",
+    ApolloDiagnostic {
+        cache: {
+            0: "0001_duplicate_operatoin_names.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueDefinition {
-                ty: "operation",
-                name: "getName",
-                original_definition: DiagnosticLocation {
+            offset: 46,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 6,
                     length: 8,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previous definition of `getName` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 46,
                     length: 8,
                 },
+                text: "`getName` redefined here",
+            },
+        ],
+        help: Some(
+            "`getName` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "operation",
+            name: "getName",
+            original_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 6,
+                length: 8,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 46,
+                length: 8,
             },
         },
-    ),
+    },
 ]

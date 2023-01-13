@@ -1,44 +1,42 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0025_interface_definition_with_missing_transitive_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 135,
-                length: 76,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 72,
-                        length: 63,
-                    },
-                    text: "`width` was originally defined here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 135,
-                        length: 76,
-                    },
-                    text: "add `width` field to this interface",
-                },
-            ],
-            help: Some(
-                "An interface must be a super-set of all interfaces it implements",
-            ),
-            data: MissingField {
-                field: "width",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0025_interface_definition_with_missing_transitive_fields.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 135,
+            length: 76,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 72,
+                    length: 63,
+                },
+                text: "`width` was originally defined here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 135,
+                    length: 76,
+                },
+                text: "add `width` field to this interface",
+            },
+        ],
+        help: Some(
+            "An interface must be a super-set of all interfaces it implements",
+        ),
+        data: MissingField {
+            field: "width",
+        },
+    },
 ]

@@ -1,32 +1,30 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0010_operation_with_unused_variable.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 19,
-                length: 20,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 19,
-                        length: 20,
-                    },
-                    text: "this variable is never used",
-                },
-            ],
-            help: None,
-            data: UnusedVariable {
-                name: "unusedVariable",
-            },
+    ApolloDiagnostic {
+        cache: {
+            0: "0010_operation_with_unused_variable.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 19,
+            length: 20,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 19,
+                    length: 20,
+                },
+                text: "this variable is never used",
+            },
+        ],
+        help: None,
+        data: UnusedVariable {
+            name: "unusedVariable",
+        },
+    },
 ]

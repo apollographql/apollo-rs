@@ -1,73 +1,69 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0004_subscription_with_multiple_root_fields.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 0,
-                length: 89,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 0,
-                        length: 89,
-                    },
-                    text: "subscription with 2 root fields",
-                },
-            ],
-            help: Some(
-                "There are 2 root fields: newMessage, disallowedSecondRootField. This is not allowed.",
+    ApolloDiagnostic {
+        cache: {
+            0: "0004_subscription_with_multiple_root_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: SingleRootField {
-                fields: 2,
-                subscription: DiagnosticLocation {
+            offset: 0,
+            length: 89,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 0,
                     length: 89,
                 },
+                text: "subscription with 2 root fields",
             },
-        },
-    ),
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0004_subscription_with_multiple_root_fields.graphql",
-            },
-            location: DiagnosticLocation {
+        ],
+        help: Some(
+            "There are 2 root fields: newMessage, disallowedSecondRootField. This is not allowed.",
+        ),
+        data: SingleRootField {
+            fields: 2,
+            subscription: DiagnosticLocation {
                 file_id: FileId(
                     0,
                 ),
-                offset: 60,
-                length: 26,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 60,
-                        length: 26,
-                    },
-                    text: "`disallowedSecondRootField` field is not in scope",
-                },
-            ],
-            help: Some(
-                "`disallowedSecondRootField` is not defined on `Subscription` type",
-            ),
-            data: UndefinedField {
-                field: "disallowedSecondRootField",
+                offset: 0,
+                length: 89,
             },
         },
-    ),
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "0004_subscription_with_multiple_root_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
+            ),
+            offset: 60,
+            length: 26,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 60,
+                    length: 26,
+                },
+                text: "`disallowedSecondRootField` field is not in scope",
+            },
+        ],
+        help: Some(
+            "`disallowedSecondRootField` is not defined on `Subscription` type",
+        ),
+        data: UndefinedField {
+            field: "disallowedSecondRootField",
+        },
+    },
 ]

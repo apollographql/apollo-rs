@@ -1,59 +1,57 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0029_directive_definitions_with_duplicate_names.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 80,
-                length: 25,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 80,
-                        length: 25,
-                    },
-                    text: "previous definition of `foo` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 105,
-                        length: 24,
-                    },
-                    text: "`foo` redefined here",
-                },
-            ],
-            help: Some(
-                "`foo` must only be defined once in this document.",
+    ApolloDiagnostic {
+        cache: {
+            0: "0029_directive_definitions_with_duplicate_names.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueDefinition {
-                ty: "directive",
-                name: "foo",
-                original_definition: DiagnosticLocation {
+            offset: 80,
+            length: 25,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 80,
                     length: 25,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previous definition of `foo` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 105,
                     length: 24,
                 },
+                text: "`foo` redefined here",
+            },
+        ],
+        help: Some(
+            "`foo` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "directive",
+            name: "foo",
+            original_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 80,
+                length: 25,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 105,
+                length: 24,
             },
         },
-    ),
+    },
 ]

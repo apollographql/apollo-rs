@@ -1,59 +1,57 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0022_duplicate_interface_definitions.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 106,
-                length: 12,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 64,
-                        length: 12,
-                    },
-                    text: "previous definition of `NamedEntity` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 106,
-                        length: 12,
-                    },
-                    text: "`NamedEntity` redefined here",
-                },
-            ],
-            help: Some(
-                "`NamedEntity` must only be defined once in this document.",
+    ApolloDiagnostic {
+        cache: {
+            0: "0022_duplicate_interface_definitions.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueDefinition {
-                ty: "interface",
-                name: "NamedEntity",
-                original_definition: DiagnosticLocation {
+            offset: 106,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 64,
                     length: 12,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previous definition of `NamedEntity` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 106,
                     length: 12,
                 },
+                text: "`NamedEntity` redefined here",
+            },
+        ],
+        help: Some(
+            "`NamedEntity` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "interface",
+            name: "NamedEntity",
+            original_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 64,
+                length: 12,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 106,
+                length: 12,
             },
         },
-    ),
+    },
 ]

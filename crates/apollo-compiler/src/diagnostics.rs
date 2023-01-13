@@ -1,50 +1,9 @@
-use std::{fmt, sync::Arc};
+use std::fmt;
 
 use crate::database::hir::HirNodeLocation;
 use crate::database::{InputDatabase, SourceCache};
 use crate::FileId;
-use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ApolloDiagnostic {
-    Diagnostic2(Diagnostic2),
-}
-
-impl ApolloDiagnostic {
-    pub fn is_error(&self) -> bool {
-        matches!(self, ApolloDiagnostic::Diagnostic2(_))
-    }
-
-    pub fn is_warning(&self) -> bool {
-        false
-    }
-
-    pub fn is_advice(&self) -> bool {
-        false
-    }
-
-    pub fn report(&self) -> Report {
-        match self {
-            ApolloDiagnostic::Diagnostic2(_) => unimplemented!("Diagnostic2 can only be Displayed"),
-        }
-    }
-}
-
-impl fmt::Display for ApolloDiagnostic {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if let Self::Diagnostic2(diagnostic) = self {
-            let mut buf = std::io::Cursor::new(Vec::<u8>::new());
-            diagnostic
-                .to_report()
-                .write(&diagnostic.cache, &mut buf)
-                .unwrap();
-            writeln!(f, "{}", std::str::from_utf8(&buf.into_inner()).unwrap())
-        } else {
-            writeln!(f, "{:?}", self.report())
-        }
-    }
-}
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct DiagnosticLocation {
@@ -119,15 +78,15 @@ impl Label {
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
-#[error("{data}")]
-pub struct Diagnostic2 {
+pub struct ApolloDiagnostic {
     cache: SourceCache,
     pub location: DiagnosticLocation,
     pub labels: Vec<Label>,
     pub help: Option<String>,
     pub data: DiagnosticData,
 }
-impl Diagnostic2 {
+
+impl ApolloDiagnostic {
     pub fn new<DB: InputDatabase + ?Sized>(
         db: &DB,
         location: DiagnosticLocation,
@@ -159,6 +118,14 @@ impl Diagnostic2 {
     pub fn label(mut self, label: Label) -> Self {
         self.labels.push(label);
         self
+    }
+}
+
+impl fmt::Display for ApolloDiagnostic {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut buf = std::io::Cursor::new(Vec::<u8>::new());
+        self.to_report().write(&self.cache, &mut buf).unwrap();
+        writeln!(f, "{}", std::str::from_utf8(&buf.into_inner()).unwrap())
     }
 }
 
@@ -277,7 +244,7 @@ impl From<Label> for ariadne::Label<DiagnosticLocation> {
     }
 }
 
-impl Diagnostic2 {
+impl ApolloDiagnostic {
     pub fn to_report(&self) -> ariadne::Report<'static, DiagnosticLocation> {
         use ariadne::{ColorGenerator, Report, ReportKind};
 
@@ -290,7 +257,7 @@ impl Diagnostic2 {
         };
         let mut colors = ColorGenerator::new();
         let mut builder = Report::build(severity, self.location.file_id(), self.location.offset())
-            .with_message(self);
+            .with_message(&self.data);
         builder.add_labels(
             self.labels
                 .iter()

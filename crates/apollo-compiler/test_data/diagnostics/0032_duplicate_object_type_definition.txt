@@ -1,59 +1,57 @@
 [
-    Diagnostic2(
-        Diagnostic2 {
-            cache: {
-                0: "0032_duplicate_object_type_definition.graphql",
-            },
-            location: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
-                offset: 31,
-                length: 29,
-            },
-            labels: [
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 0,
-                        length: 31,
-                    },
-                    text: "previous definition of `Query` here",
-                },
-                Label {
-                    location: DiagnosticLocation {
-                        file_id: FileId(
-                            0,
-                        ),
-                        offset: 31,
-                        length: 29,
-                    },
-                    text: "`Query` redefined here",
-                },
-            ],
-            help: Some(
-                "`Query` must only be defined once in this document.",
+    ApolloDiagnostic {
+        cache: {
+            0: "0032_duplicate_object_type_definition.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId(
+                0,
             ),
-            data: UniqueDefinition {
-                ty: "root operation type definition",
-                name: "Query",
-                original_definition: DiagnosticLocation {
+            offset: 31,
+            length: 29,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 0,
                     length: 31,
                 },
-                redefined_definition: DiagnosticLocation {
+                text: "previous definition of `Query` here",
+            },
+            Label {
+                location: DiagnosticLocation {
                     file_id: FileId(
                         0,
                     ),
                     offset: 31,
                     length: 29,
                 },
+                text: "`Query` redefined here",
+            },
+        ],
+        help: Some(
+            "`Query` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "root operation type definition",
+            name: "Query",
+            original_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 0,
+                length: 31,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 31,
+                length: 29,
             },
         },
-    ),
+    },
 ]
