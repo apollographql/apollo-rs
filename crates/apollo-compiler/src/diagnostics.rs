@@ -8,8 +8,6 @@ use thiserror::Error;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
-    SingleRootField(SingleRootField),
-    UnsupportedOperation(UnsupportedOperation),
     SyntaxError(SyntaxError),
     UniqueField(UniqueField),
     UndefinedDefinition(UndefinedDefinition),
@@ -31,9 +29,7 @@ impl ApolloDiagnostic {
     pub fn is_error(&self) -> bool {
         matches!(
             self,
-            ApolloDiagnostic::SingleRootField(_)
-                | ApolloDiagnostic::UnsupportedOperation(_)
-                | ApolloDiagnostic::SyntaxError(_)
+            ApolloDiagnostic::SyntaxError(_)
                 | ApolloDiagnostic::UniqueField(_)
                 | ApolloDiagnostic::UndefinedDefinition(_)
                 | ApolloDiagnostic::RecursiveDefinition(_)
@@ -61,8 +57,6 @@ impl ApolloDiagnostic {
 
     pub fn report(&self) -> Report {
         match self {
-            ApolloDiagnostic::SingleRootField(diagnostic) => Report::new(diagnostic.clone()),
-            ApolloDiagnostic::UnsupportedOperation(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::RecursiveDefinition(diagnostic) => Report::new(diagnostic.clone()),
@@ -318,42 +312,6 @@ impl Diagnostic2 {
         }
         builder.finish()
     }
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("Subscriptions operations can only have one root field")]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct SingleRootField {
-    #[source_code]
-    pub src: Arc<str>,
-
-    pub fields: usize,
-
-    #[label("subscription with {} root fields", self.fields)]
-    pub subscription: SourceSpan,
-
-    #[help]
-    pub help: Option<String>,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("{} root operation type is not defined", self.ty)]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct UnsupportedOperation {
-    // current operation type: subscription, mutation, query
-    pub ty: String,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("{} operation is not defined in the schema and is therefore not supported", self.ty)]
-    pub operation: SourceSpan,
-
-    #[label("consider defining a {} root operation type here", self.ty)]
-    pub schema: Option<SourceSpan>,
-
-    #[help]
-    pub help: Option<String>,
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
