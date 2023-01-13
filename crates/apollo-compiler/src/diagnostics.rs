@@ -279,6 +279,18 @@ pub enum DiagnosticData {
     },
 }
 
+impl DiagnosticData {
+    pub fn is_error(&self) -> bool {
+        !self.is_warning() && !self.is_advice()
+    }
+    pub fn is_warning(&self) -> bool {
+        matches!(self, Self::CapitalizedValue { .. })
+    }
+    pub fn is_advice(&self) -> bool {
+        false
+    }
+}
+
 impl From<Label> for ariadne::Label<DiagnosticLocation> {
     fn from(label: Label) -> Self {
         Self::new(label.location).with_message(label.text)
@@ -289,13 +301,16 @@ impl Diagnostic2 {
     pub fn to_report(&self) -> ariadne::Report<'static, DiagnosticLocation> {
         use ariadne::{ColorGenerator, Report, ReportKind};
 
+        let severity = if self.data.is_advice() {
+            ReportKind::Advice
+        } else if self.data.is_warning() {
+            ReportKind::Warning
+        } else {
+            ReportKind::Error
+        };
         let mut colors = ColorGenerator::new();
-        let mut builder = Report::build(
-            ReportKind::Error,
-            self.location.file_id(),
-            self.location.offset(),
-        )
-        .with_message(self);
+        let mut builder = Report::build(severity, self.location.file_id(), self.location.offset())
+            .with_message(self);
         builder.add_labels(
             self.labels
                 .iter()
