@@ -11,7 +11,6 @@ pub enum ApolloDiagnostic {
     SyntaxError(SyntaxError),
     UniqueArgument(UniqueArgument),
     TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
-    QueryRootOperationType(QueryRootOperationType),
     BuiltInScalarDefinition(BuiltInScalarDefinition),
     UnusedVariable(UnusedVariable),
     ObjectType(ObjectType),
@@ -24,7 +23,6 @@ impl ApolloDiagnostic {
             self,
             ApolloDiagnostic::SyntaxError(_)
                 | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
-                | ApolloDiagnostic::QueryRootOperationType(_)
                 | ApolloDiagnostic::UniqueArgument(_)
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::ObjectType(_)
@@ -46,7 +44,6 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::TransitiveImplementedInterfaces(diagnostic) => {
                 Report::new(diagnostic.clone())
             }
-            ApolloDiagnostic::QueryRootOperationType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::BuiltInScalarDefinition(diagnostic) => {
                 Report::new(diagnostic.clone())
             }
@@ -250,6 +247,8 @@ pub enum DiagnosticData {
         "Custom scalars should provide a scalar specification URL via the @specifiedBy directive"
     )]
     ScalarSpecificationURL,
+    #[error("Missing query root operation type in schema definition")]
+    QueryRootOperationType,
 }
 
 impl DiagnosticData {
@@ -321,17 +320,6 @@ pub struct TransitiveImplementedInterfaces {
 
     #[label("{} must also be implemented here", self.missing_interface)]
     pub definition: SourceSpan,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("Missing query root operation type in schema definition")]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct QueryRootOperationType {
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("`query` root operation type must be defined here")]
-    pub schema: SourceSpan,
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]

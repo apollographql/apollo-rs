@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    diagnostics::{Diagnostic2, DiagnosticData, Label, QueryRootOperationType},
+    diagnostics::{Diagnostic2, DiagnosticData, Label},
     hir::RootOperationTypeDefinition,
     ApolloDiagnostic, ValidationDatabase,
 };
@@ -14,11 +14,10 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         if let Some(loc) = db.schema().loc() {
             let offset = loc.offset();
             let len = loc.node_len();
-            diagnostics.push(ApolloDiagnostic::QueryRootOperationType(
-                QueryRootOperationType {
-                    src: db.source_code(loc.file_id()),
-                    schema: (offset, len).into(),
-                },
+            diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                Diagnostic2::new(db, loc.into(), DiagnosticData::QueryRootOperationType).label(
+                    Label::new(loc, "`query` root operation type must be defined here"),
+                ),
             ));
         }
     }
