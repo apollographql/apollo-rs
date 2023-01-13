@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
+            94: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 94,
+            },
             offset: 173,
             length: 3,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 94,
+                    },
                     offset: 173,
                     length: 3,
                 },
@@ -29,21 +29,21 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
+            94: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 94,
+            },
             offset: 162,
             length: 9,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 94,
+                    },
                     offset: 162,
                     length: 9,
                 },
@@ -57,21 +57,21 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
+            94: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 94,
+            },
             offset: 135,
             length: 74,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 94,
+                    },
                     offset: 72,
                     length: 63,
                 },
@@ -79,9 +79,9 @@
             },
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 94,
+                    },
                     offset: 135,
                     length: 74,
                 },

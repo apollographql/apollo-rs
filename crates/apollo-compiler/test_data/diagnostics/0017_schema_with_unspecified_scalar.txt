@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0017_schema_with_unspecified_scalar.graphql",
+            83: "0017_schema_with_unspecified_scalar.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 83,
+            },
             offset: 31,
             length: 10,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 83,
+                    },
                     offset: 31,
                     length: 10,
                 },

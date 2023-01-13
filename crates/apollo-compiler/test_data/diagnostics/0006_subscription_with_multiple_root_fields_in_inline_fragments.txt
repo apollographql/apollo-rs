@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0006_subscription_with_multiple_root_fields_in_inline_fragments.graphql",
+            72: "0006_subscription_with_multiple_root_fields_in_inline_fragments.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 72,
+            },
             offset: 0,
             length: 151,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 72,
+                    },
                     offset: 0,
                     length: 151,
                 },
@@ -28,9 +28,9 @@
         data: SingleRootField {
             fields: 2,
             subscription: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
+                file_id: FileId {
+                    id: 72,
+                },
                 offset: 0,
                 length: 151,
             },

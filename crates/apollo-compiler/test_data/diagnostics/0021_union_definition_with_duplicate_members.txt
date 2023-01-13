@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0021_union_definition_with_duplicate_members.graphql",
+            87: "0021_union_definition_with_duplicate_members.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 87,
+            },
             offset: 62,
             length: 7,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 87,
+                    },
                     offset: 54,
                     length: 6,
                 },
@@ -23,9 +23,9 @@
             },
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 87,
+                    },
                     offset: 62,
                     length: 7,
                 },
@@ -39,16 +39,16 @@
             ty: "union member",
             name: "Photo",
             original_definition: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
+                file_id: FileId {
+                    id: 87,
+                },
                 offset: 54,
                 length: 6,
             },
             redefined_definition: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
+                file_id: FileId {
+                    id: 87,
+                },
                 offset: 62,
                 length: 7,
             },

@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0013_schema_definition_with_duplicate_root_type_operations.graphql",
+            79: "0013_schema_definition_with_duplicate_root_type_operations.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 79,
+            },
             offset: 36,
             length: 29,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 79,
+                    },
                     offset: 11,
                     length: 25,
                 },
@@ -23,9 +23,9 @@
             },
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 79,
+                    },
                     offset: 36,
                     length: 29,
                 },
@@ -39,16 +39,16 @@
             ty: "root operation type definition",
             name: "customPetQuery",
             original_definition: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
+                file_id: FileId {
+                    id: 79,
+                },
                 offset: 11,
                 length: 25,
             },
             redefined_definition: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
+                file_id: FileId {
+                    id: 79,
+                },
                 offset: 36,
                 length: 29,
             },

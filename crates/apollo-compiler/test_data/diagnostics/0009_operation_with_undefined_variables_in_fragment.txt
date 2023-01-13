@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0009_operation_with_undefined_variables_in_fragment.graphql",
+            75: "0009_operation_with_undefined_variables_in_fragment.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 75,
+            },
             offset: 192,
             length: 6,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 75,
+                    },
                     offset: 192,
                     length: 6,
                 },
@@ -29,21 +29,21 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "0009_operation_with_undefined_variables_in_fragment.graphql",
+            75: "0009_operation_with_undefined_variables_in_fragment.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 75,
+            },
             offset: 19,
             length: 14,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 75,
+                    },
                     offset: 19,
                     length: 14,
                 },

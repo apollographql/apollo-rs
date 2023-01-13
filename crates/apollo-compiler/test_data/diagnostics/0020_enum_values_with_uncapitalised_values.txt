@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0020_enum_values_with_uncapitalised_values.graphql",
+            86: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 86,
+            },
             offset: 43,
             length: 8,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 86,
+                    },
                     offset: 43,
                     length: 8,
                 },
@@ -29,21 +29,21 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "0020_enum_values_with_uncapitalised_values.graphql",
+            86: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 86,
+            },
             offset: 51,
             length: 11,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 86,
+                    },
                     offset: 51,
                     length: 11,
                 },
@@ -57,21 +57,21 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "0020_enum_values_with_uncapitalised_values.graphql",
+            86: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 86,
+            },
             offset: 70,
             length: 9,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 86,
+                    },
                     offset: 70,
                     length: 9,
                 },
@@ -85,21 +85,21 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "0020_enum_values_with_uncapitalised_values.graphql",
+            86: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 86,
+            },
             offset: 79,
             length: 13,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 86,
+                    },
                     offset: 79,
                     length: 13,
                 },
@@ -113,21 +113,21 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "0020_enum_values_with_uncapitalised_values.graphql",
+            86: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 86,
+            },
             offset: 92,
             length: 8,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 86,
+                    },
                     offset: 92,
                     length: 8,
                 },

@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0034_object_type_definition_with_missing_transitive_fields.graphql",
+            101: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 101,
+            },
             offset: 0,
             length: 58,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 101,
+                    },
                     offset: 77,
                     length: 8,
                 },
@@ -23,9 +23,9 @@
             },
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 101,
+                    },
                     offset: 0,
                     length: 58,
                 },
@@ -41,21 +41,21 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "0034_object_type_definition_with_missing_transitive_fields.graphql",
+            101: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 101,
+            },
             offset: 0,
             length: 58,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 101,
+                    },
                     offset: 111,
                     length: 11,
                 },
@@ -63,9 +63,9 @@
             },
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 101,
+                    },
                     offset: 0,
                     length: 58,
                 },

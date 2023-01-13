@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
+            80: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 80,
+            },
             offset: 0,
             length: 77,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 80,
+                    },
                     offset: 0,
                     length: 77,
                 },
@@ -23,9 +23,9 @@
             },
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 80,
+                    },
                     offset: 77,
                     length: 37,
                 },
@@ -39,21 +39,21 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
+            80: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 80,
+            },
             offset: 37,
             length: 37,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 80,
+                    },
                     offset: 37,
                     length: 37,
                 },

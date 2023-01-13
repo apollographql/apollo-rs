@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0048_duplicate_field_argument_definition_names.graphql",
+            115: "0048_duplicate_field_argument_definition_names.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 115,
+            },
             offset: 158,
             length: 12,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 115,
+                    },
                     offset: 144,
                     length: 14,
                 },
@@ -23,9 +23,9 @@
             },
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 115,
+                    },
                     offset: 158,
                     length: 12,
                 },
@@ -38,16 +38,16 @@
         data: UniqueArgument {
             name: "arg",
             original_definition: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
+                file_id: FileId {
+                    id: 115,
+                },
                 offset: 144,
                 length: 14,
             },
             redefined_definition: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
+                file_id: FileId {
+                    id: 115,
+                },
                 offset: 158,
                 length: 12,
             },
@@ -55,21 +55,21 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "0048_duplicate_field_argument_definition_names.graphql",
+            115: "0048_duplicate_field_argument_definition_names.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 115,
+            },
             offset: 48,
             length: 12,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 115,
+                    },
                     offset: 34,
                     length: 14,
                 },
@@ -77,9 +77,9 @@
             },
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 115,
+                    },
                     offset: 48,
                     length: 12,
                 },
@@ -92,16 +92,16 @@
         data: UniqueArgument {
             name: "arg",
             original_definition: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
+                file_id: FileId {
+                    id: 115,
+                },
                 offset: 34,
                 length: 14,
             },
             redefined_definition: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
+                file_id: FileId {
+                    id: 115,
+                },
                 offset: 48,
                 length: 12,
             },

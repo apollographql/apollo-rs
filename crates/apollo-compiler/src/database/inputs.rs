@@ -45,7 +45,7 @@ impl AriadneCache<FileId> for &SourceCache {
 impl std::fmt::Debug for SourceCache {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_map()
-            .entries(self.paths.iter().map(|(id, path)| (id.0, path)))
+            .entries(self.paths.iter().map(|(id, path)| (id.as_u64(), path)))
             .finish()
     }
 }

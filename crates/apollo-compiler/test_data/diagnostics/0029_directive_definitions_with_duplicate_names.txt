@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0029_directive_definitions_with_duplicate_names.graphql",
+            96: "0029_directive_definitions_with_duplicate_names.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 96,
+            },
             offset: 80,
             length: 25,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 96,
+                    },
                     offset: 80,
                     length: 25,
                 },
@@ -23,9 +23,9 @@
             },
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 96,
+                    },
                     offset: 105,
                     length: 24,
                 },
@@ -39,16 +39,16 @@
             ty: "directive",
             name: "foo",
             original_definition: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
+                file_id: FileId {
+                    id: 96,
+                },
                 offset: 80,
                 length: 25,
             },
             redefined_definition: DiagnosticLocation {
-                file_id: FileId(
-                    0,
-                ),
+                file_id: FileId {
+                    id: 96,
+                },
                 offset: 105,
                 length: 24,
             },

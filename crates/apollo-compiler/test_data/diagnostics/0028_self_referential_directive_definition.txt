@@ -1,21 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "0028_self_referential_directive_definition.graphql",
+            95: "0028_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
-            file_id: FileId(
-                0,
-            ),
+            file_id: FileId {
+                id: 95,
+            },
             offset: 106,
             length: 15,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
-                    file_id: FileId(
-                        0,
-                    ),
+                    file_id: FileId {
+                        id: 95,
+                    },
                     offset: 106,
                     length: 15,
                 },
