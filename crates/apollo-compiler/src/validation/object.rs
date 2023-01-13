@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    diagnostics::{Diagnostic2, DiagnosticData, Label, TransitiveImplementedInterfaces},
+    diagnostics::{Diagnostic2, DiagnosticData, Label},
     hir::FieldDefinition,
     validation::{ast_type_definitions, ValidationSet},
     ApolloDiagnostic, ValidationDatabase,
@@ -181,15 +181,19 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             .collect();
         let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
         for undefined in transitive_diff {
-            let offset = undefined.loc.offset();
-            let len = undefined.loc.node_len();
-            diagnostics.push(ApolloDiagnostic::TransitiveImplementedInterfaces(
-                TransitiveImplementedInterfaces {
-                    missing_interface: undefined.name.clone(),
-                    src: db.source_code(undefined.loc.file_id()),
-                    definition: (offset, len).into(),
-                },
-            ))
+            diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                Diagnostic2::new(
+                    db,
+                    undefined.loc.into(),
+                    DiagnosticData::TransitiveImplementedInterfaces {
+                        missing_interface: undefined.name.clone(),
+                    },
+                )
+                .label(Label::new(
+                    undefined.loc,
+                    format!("{} must also be implemented here", undefined.name),
+                )),
+            ));
         }
 
         // When defining an interface that implements another interface, the

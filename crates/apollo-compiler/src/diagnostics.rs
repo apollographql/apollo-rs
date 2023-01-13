@@ -10,7 +10,6 @@ use thiserror::Error;
 pub enum ApolloDiagnostic {
     SyntaxError(SyntaxError),
     UniqueArgument(UniqueArgument),
-    TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
     Diagnostic2(Diagnostic2),
 }
 
@@ -19,7 +18,6 @@ impl ApolloDiagnostic {
         matches!(
             self,
             ApolloDiagnostic::SyntaxError(_)
-                | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
                 | ApolloDiagnostic::UniqueArgument(_)
                 | ApolloDiagnostic::Diagnostic2(_)
         )
@@ -36,9 +34,6 @@ impl ApolloDiagnostic {
     pub fn report(&self) -> Report {
         match self {
             ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
-            ApolloDiagnostic::TransitiveImplementedInterfaces(diagnostic) => {
-                Report::new(diagnostic.clone())
-            }
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::Diagnostic2(_) => unimplemented!("Diagnostic2 can only be Displayed"),
         }
@@ -220,7 +215,7 @@ pub enum DiagnosticData {
         field: String,
     },
     #[error(
-        "Transitively implemented interfaces must also be defined on an implementing interface"
+        "Transitively implemented interfaces must also be defined on an implementing interface or object"
     )]
     TransitiveImplementedInterfaces {
         // interface that should be defined
@@ -310,20 +305,6 @@ pub struct SyntaxError {
 
     #[label("{}", self.message)]
     pub span: SourceSpan,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("Transitively implemented interfaces must also be defined on an implementing interface")]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct TransitiveImplementedInterfaces {
-    // interface that should be defined
-    pub missing_interface: String,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("{} must also be implemented here", self.missing_interface)]
-    pub definition: SourceSpan,
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
