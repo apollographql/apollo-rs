@@ -1,15 +1,30 @@
 [
-    BuiltInScalarDefinition(
-        BuiltInScalarDefinition {
-            src: "type Query {\n  amount: Int\n}\n\nscalar Int",
-            scalar: SourceSpan {
-                offset: SourceOffset(
-                    30,
-                ),
-                length: SourceOffset(
-                    10,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0016_schema_with_built_in_scalar_definition.graphql",
             },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
+                ),
+                offset: 30,
+                length: 10,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 30,
+                        length: 10,
+                    },
+                    text: "remove this scalar definition",
+                },
+            ],
+            help: None,
+            data: BuiltInScalarDefinition,
         },
     ),
 ]

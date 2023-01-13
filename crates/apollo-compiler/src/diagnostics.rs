@@ -11,7 +11,6 @@ pub enum ApolloDiagnostic {
     SyntaxError(SyntaxError),
     UniqueArgument(UniqueArgument),
     TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
-    BuiltInScalarDefinition(BuiltInScalarDefinition),
     UnusedVariable(UnusedVariable),
     ObjectType(ObjectType),
     Diagnostic2(Diagnostic2),
@@ -24,7 +23,6 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::SyntaxError(_)
                 | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
                 | ApolloDiagnostic::UniqueArgument(_)
-                | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::ObjectType(_)
                 | ApolloDiagnostic::Diagnostic2(_)
         )
@@ -42,9 +40,6 @@ impl ApolloDiagnostic {
         match self {
             ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::TransitiveImplementedInterfaces(diagnostic) => {
-                Report::new(diagnostic.clone())
-            }
-            ApolloDiagnostic::BuiltInScalarDefinition(diagnostic) => {
                 Report::new(diagnostic.clone())
             }
             ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
@@ -249,6 +244,8 @@ pub enum DiagnosticData {
     ScalarSpecificationURL,
     #[error("Missing query root operation type in schema definition")]
     QueryRootOperationType,
+    #[error("Built-in scalars must be omitted for brevity")]
+    BuiltInScalarDefinition,
 }
 
 impl DiagnosticData {
@@ -320,17 +317,6 @@ pub struct TransitiveImplementedInterfaces {
 
     #[label("{} must also be implemented here", self.missing_interface)]
     pub definition: SourceSpan,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("Built-in scalars must be omitted for brevity")]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct BuiltInScalarDefinition {
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("remove this scalar definition")]
-    pub scalar: SourceSpan,
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]

@@ -12,8 +12,6 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     // A GraphQL schema must have a Query root operation.
     if db.schema().query(db.upcast()).is_none() {
         if let Some(loc) = db.schema().loc() {
-            let offset = loc.offset();
-            let len = loc.node_len();
             diagnostics.push(ApolloDiagnostic::Diagnostic2(
                 Diagnostic2::new(db, loc.into(), DiagnosticData::QueryRootOperationType).label(
                     Label::new(loc, "`query` root operation type must be defined here"),
