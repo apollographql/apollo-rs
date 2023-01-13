@@ -1,8 +1,42 @@
 use super::sources::{FileId, Source, SourceType};
 use crate::hir::TypeSystem;
-use ariadne::Source as AriadneSource;
+use ariadne::{Cache as AriadneCache, Source as AriadneSource};
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::Arc;
+
+#[derive(Debug, thiserror::Error)]
+#[error("Unknown file ID")]
+struct UnknownFileError;
+
+/// A Cache implementation for `ariadne` diagnostics.
+///
+/// Use [`InputDatabase::source_cache`] to construct one.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SourceCache {
+    sources: Arc<HashMap<FileId, Arc<AriadneSource>>>,
+    paths: HashMap<FileId, PathBuf>,
+}
+impl AriadneCache<FileId> for &SourceCache {
+    fn fetch(&mut self, id: &FileId) -> Result<&AriadneSource, Box<dyn std::fmt::Debug>> {
+        let source = self.sources.get(id);
+        source.map(|arc| &**arc).ok_or_else(|| unreachable!()) //Box::new(UnknownFileError as dyn std::fmt::Debug))
+    }
+    fn display<'a>(&self, id: &'a FileId) -> Option<Box<dyn std::fmt::Display + 'a>> {
+        // Kinda unfortunate API limitation: we have to use a `Box<String>`
+        // as `Box<str>` doesn't support casting to `dyn Display`. We have to allocate
+        // because the lifetimes on this trait reference the file ID, not `self`.
+        // Ref https://github.com/zesterer/ariadne/issues/10
+        // Ariadne assumes the `id` is meaningful to users, but in apollo-rs it's
+        // an incrementing integer, and file paths are stored separately.
+        self.paths
+            .get(id)
+            .and_then(|path| path.to_str())
+            .map(ToOwned::to_owned)
+            .map(Box::new)
+            .map(|bx| bx as Box<dyn std::fmt::Display + 'static>)
+    }
+}
 
 #[salsa::query_group(InputStorage)]
 pub trait InputDatabase {
@@ -27,8 +61,12 @@ pub trait InputDatabase {
     #[salsa::input]
     fn source_files(&self) -> Vec<FileId>;
 
+    /// Get the GraphQL source text for a file, split up into lines for
+    /// printing diagnostics.
     fn source_with_lines(&self, file_id: FileId) -> Arc<AriadneSource>;
-    fn source_cache(&self) -> Arc<HashMap<FileId, Arc<AriadneSource>>>;
+    /// Get all GraphQL sources known to the compiler, split up into lines
+    /// for printing diagnostics.
+    fn source_cache(&self) -> SourceCache;
 
     /// Get all type system definition (GraphQL schema) files.
     fn type_definition_files(&self) -> Vec<FileId>;
@@ -56,13 +94,20 @@ fn source_with_lines(db: &dyn InputDatabase, file_id: FileId) -> Arc<AriadneSour
     Arc::new(AriadneSource::from(code))
 }
 
-fn source_cache(db: &dyn InputDatabase) -> Arc<HashMap<FileId, Arc<AriadneSource>>> {
-    let map = db
-        .source_files()
-        .into_iter()
-        .map(|id| (id, db.source_with_lines(id)))
+fn source_cache(db: &dyn InputDatabase) -> SourceCache {
+    let file_ids = db.source_files();
+    let sources = file_ids
+        .iter()
+        .map(|&id| (id, db.source_with_lines(id)))
         .collect();
-    Arc::new(map)
+    let paths = file_ids
+        .iter()
+        .map(|&id| (id, db.input(id).filename().to_owned()))
+        .collect();
+    SourceCache {
+        sources: Arc::new(sources),
+        paths,
+    }
 }
 
 fn type_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {

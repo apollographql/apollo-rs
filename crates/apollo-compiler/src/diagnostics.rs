@@ -1,13 +1,12 @@
-use std::collections::HashMap;
 use std::{fmt, sync::Arc};
 
 use crate::database::hir::HirNodeLocation;
-use crate::database::InputDatabase;
-use crate::{FileId, Source};
+use crate::database::{InputDatabase, SourceCache};
+use crate::FileId;
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
     MissingField(MissingField),
     UniqueDefinition(UniqueDefinition),
@@ -99,7 +98,7 @@ impl fmt::Display for ApolloDiagnostic {
             let mut buf = std::io::Cursor::new(Vec::<u8>::new());
             diagnostic
                 .to_report()
-                .write(AriadneCache::default(), &mut buf)
+                .write(&diagnostic.cache, &mut buf)
                 .unwrap();
             writeln!(f, "{}", std::str::from_utf8(&buf.into_inner()).unwrap())
         } else {
@@ -111,15 +110,14 @@ impl fmt::Display for ApolloDiagnostic {
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct DiagnosticLocation {
     file_id: FileId,
-    pub source: Source,
     offset: usize,
     length: usize,
 }
 
 impl ariadne::Span for DiagnosticLocation {
-    type SourceId = DiagnosticLocation;
-    fn source(&self) -> &DiagnosticLocation {
-        &self
+    type SourceId = FileId;
+    fn source(&self) -> &FileId {
+        &self.file_id
     }
     fn start(&self) -> usize {
         self.offset
@@ -141,34 +139,19 @@ impl DiagnosticLocation {
     }
 }
 
-#[derive(Debug, Clone, Default)]
-struct AriadneCache {
-    inner: HashMap<FileId, ariadne::Source>,
-}
-impl ariadne::Cache<DiagnosticLocation> for AriadneCache {
-    fn fetch(
-        &mut self,
-        id: &DiagnosticLocation,
-    ) -> Result<&ariadne::Source, Box<dyn std::fmt::Debug>> {
-        let source = self
-            .inner
-            .entry(id.file_id())
-            .or_insert_with(|| ariadne::Source::from(id.source.text()));
-        Ok(source)
-    }
-    fn display<'a>(&self, id: &'a DiagnosticLocation) -> Option<Box<dyn std::fmt::Display + 'a>> {
-        Some(Box::new(id.source.filename().display()))
+impl From<HirNodeLocation> for DiagnosticLocation {
+    fn from(location: HirNodeLocation) -> Self {
+        Self {
+            file_id: location.file_id(),
+            offset: location.offset(),
+            length: location.node_len(),
+        }
     }
 }
 
 impl<DB: InputDatabase + ?Sized> From<(&DB, HirNodeLocation)> for DiagnosticLocation {
-    fn from((db, location): (&DB, HirNodeLocation)) -> Self {
-        Self {
-            file_id: location.file_id(),
-            source: db.input(location.file_id()),
-            offset: location.offset(),
-            length: location.node_len(),
-        }
+    fn from((_db, location): (&DB, HirNodeLocation)) -> Self {
+        location.into()
     }
 }
 
@@ -186,17 +169,23 @@ impl Label {
     }
 }
 
-#[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
 #[error("{data}")]
 pub struct Diagnostic2 {
+    cache: SourceCache,
     pub location: DiagnosticLocation,
     pub labels: Vec<Label>,
     pub help: Option<String>,
     pub data: DiagnosticData,
 }
 impl Diagnostic2 {
-    pub fn new(location: DiagnosticLocation, data: DiagnosticData) -> Self {
+    pub fn new<DB: InputDatabase + ?Sized>(
+        db: &DB,
+        location: DiagnosticLocation,
+        data: DiagnosticData,
+    ) -> Self {
         Self {
+            cache: db.source_cache(),
             location,
             labels: vec![],
             help: None,
@@ -304,8 +293,12 @@ impl Diagnostic2 {
         use ariadne::{ColorGenerator, Report, ReportKind};
 
         let mut colors = ColorGenerator::new();
-        let mut builder =
-            Report::build(ReportKind::Error, self.location.clone(), self.location.offset()).with_message(self);
+        let mut builder = Report::build(
+            ReportKind::Error,
+            self.location.file_id(),
+            self.location.offset(),
+        )
+        .with_message(self);
         builder.add_labels(
             self.labels
                 .iter()

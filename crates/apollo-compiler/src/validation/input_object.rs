@@ -26,12 +26,13 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             } else {
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
-                        (db, original_definition).into(),
+                        db,
+                        original_definition.into(),
                         DiagnosticData::UniqueDefinition {
                             ty: "input object",
                             name: name.to_owned(),
-                            original_definition: (db, original_definition).into(),
-                            redefined_definition: (db, redefined_definition).into(),
+                            original_definition: original_definition.into(),
+                            redefined_definition: redefined_definition.into(),
                         },
                     )
                     .help(format!(
@@ -39,13 +40,10 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     ))
                     .labels([
                         Label::new(
-                            (db, original_definition),
+                            original_definition,
                             format!("previous definition of `{name}` here"),
                         ),
-                        Label::new(
-                            (db, redefined_definition),
-                            format!("`{name}` redefined here"),
-                        ),
+                        Label::new(redefined_definition, format!("`{name}` redefined here")),
                     ]),
                 ));
             }
@@ -68,16 +66,16 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 {
                     diagnostics.push(ApolloDiagnostic::Diagnostic2(
                         Diagnostic2::new(
-                            (db, original_definition).into(),
+                            db, original_definition.into(),
                             DiagnosticData::UniqueField {
                                 field: field_name.into(),
-                                original_definition: (db, original_definition).into(),
-                                redefined_definition: (db, redefined_definition).into(),
+                                original_definition: original_definition.into(),
+                                redefined_definition: redefined_definition.into(),
                             }
                         )
                         .labels([
-                            Label::new((db, original_definition), format!("previous definition of `{field_name}` here")),
-                            Label::new((db, redefined_definition), format!("`{field_name}` redefined here")),
+                            Label::new(original_definition, format!("previous definition of `{field_name}` here")),
+                            Label::new(redefined_definition, format!("`{field_name}` redefined here")),
                         ])
                         .help(format!("{field_name} field must only be defined once in this input object definition."))
                     ));
