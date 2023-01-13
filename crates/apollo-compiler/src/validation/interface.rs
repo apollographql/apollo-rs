@@ -105,11 +105,11 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             }
 
             // Field types in interface types must be of output type
-            if let Some(field_ty) = field.ty().ty(db.upcast()) {
+            if let Some(field_ty) = field.ty().type_def(db.upcast()) {
                 if !field.ty().is_output_type(db.upcast()) {
                     diagnostics.push(ApolloDiagnostic::OutputType(OutputType {
                         name: field.name().into(),
-                        ty: field_ty.ty(),
+                        ty: field_ty.kind(),
                         src: db.source_code(field.loc().file_id()),
                         definition: (offset, len).into(),
                     }))

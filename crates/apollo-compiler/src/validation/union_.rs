@@ -50,7 +50,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     // Union member must be of object type.
                     diagnostics.push(ApolloDiagnostic::ObjectType(ObjectType {
                         name: name.into(),
-                        ty: ty.ty(),
+                        ty: ty.kind(),
                         src: db.source_code(union_member.loc().file_id()),
                         definition: (offset, len).into(),
                     }))
