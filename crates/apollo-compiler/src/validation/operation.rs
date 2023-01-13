@@ -46,11 +46,11 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                 let original_definition = prev_def
                     .name_src()
                     .and_then(|name| name.loc())
-                    .unwrap_or(prev_def.loc());
+                    .unwrap_or_else(|| prev_def.loc());
                 let redefined_definition = op
                     .name_src()
                     .and_then(|name| name.loc())
-                    .unwrap_or(op.loc());
+                    .unwrap_or_else(|| op.loc());
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
                         db,

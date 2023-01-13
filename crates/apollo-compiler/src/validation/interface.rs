@@ -19,11 +19,11 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         if let Some(name) = ast_def.name() {
             let name = &*name.text();
             let hir_def = &hir[name];
-            let original_definition = hir_def.name_src().loc().unwrap_or(hir_def.loc());
+            let original_definition = hir_def.name_src().loc().unwrap_or_else(|| hir_def.loc());
             let redefined_definition = ast_def
                 .name()
                 .map(|name| (file_id, &name).into())
-                .unwrap_or((file_id, &ast_def).into());
+                .unwrap_or_else(|| (file_id, &ast_def).into());
             if original_definition == redefined_definition {
                 // The HIR node was built from this AST node. This is fine.
             } else {
@@ -153,7 +153,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         db,
                         field.loc().into(),
                         DiagnosticData::UndefinedDefinition {
-                            name: field.ty().name().into(),
+                            name: field.ty().name(),
                         },
                     )
                     .label(Label::new(field.loc(), "not found in this scope")),

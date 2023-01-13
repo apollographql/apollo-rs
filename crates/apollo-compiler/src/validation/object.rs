@@ -111,7 +111,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         db,
                         field.loc().into(),
                         DiagnosticData::UndefinedDefinition {
-                            name: field.ty().name().into(),
+                            name: field.ty().name(),
                         },
                     )
                     .label(Label::new(field.loc(), "not found in this scope")),
