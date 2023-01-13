@@ -29,8 +29,9 @@ thiserror = "1.0.31"
 uuid = { version = "1.1", features = ["serde", "v4", "js"] }
 
 [dev-dependencies]
-expect-test = "1.1"
 anyhow = "1.0"
+expect-test = "1.1"
+miette = "5.0"
 notify = "4.0.0"
 criterion = "0.3.0"
 
