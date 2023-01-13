@@ -57,12 +57,6 @@ impl From<HirNodeLocation> for DiagnosticLocation {
     }
 }
 
-impl<DB: InputDatabase + ?Sized> From<(&DB, HirNodeLocation)> for DiagnosticLocation {
-    fn from((_db, location): (&DB, HirNodeLocation)) -> Self {
-        location.into()
-    }
-}
-
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Label {
     pub location: DiagnosticLocation,
