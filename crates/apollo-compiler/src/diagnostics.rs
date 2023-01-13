@@ -9,7 +9,6 @@ use thiserror::Error;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
     MissingField(MissingField),
-    UniqueDefinition(UniqueDefinition),
     SingleRootField(SingleRootField),
     UnsupportedOperation(UnsupportedOperation),
     SyntaxError(SyntaxError),
@@ -34,7 +33,6 @@ impl ApolloDiagnostic {
         matches!(
             self,
             ApolloDiagnostic::MissingField(_)
-                | ApolloDiagnostic::UniqueDefinition(_)
                 | ApolloDiagnostic::SingleRootField(_)
                 | ApolloDiagnostic::UnsupportedOperation(_)
                 | ApolloDiagnostic::SyntaxError(_)
@@ -65,7 +63,6 @@ impl ApolloDiagnostic {
 
     pub fn report(&self) -> Report {
         match self {
-            ApolloDiagnostic::UniqueDefinition(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::SingleRootField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UnsupportedOperation(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
@@ -326,29 +323,6 @@ pub struct MissingField {
 
     #[label("add `{}` field to this interface", self.ty)]
     pub current_definition: SourceSpan,
-
-    #[help]
-    pub help: Option<String>,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("the {} `{}` is defined multiple times in the document", self.ty, self.name)]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct UniqueDefinition {
-    // current definition
-    pub name: String,
-
-    // current definition type
-    pub ty: String,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("previous definition of `{}` here", self.name)]
-    pub original_definition: SourceSpan,
-
-    #[label("`{}` is redefined here", self.name)]
-    pub redefined_definition: SourceSpan,
 
     #[help]
     pub help: Option<String>,

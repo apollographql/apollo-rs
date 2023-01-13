@@ -2,8 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use crate::{
     diagnostics::{
-        MissingField, OutputType, TransitiveImplementedInterfaces, UndefinedDefinition,
-        UniqueDefinition, UniqueField,
+        Diagnostic2, DiagnosticData, Label, MissingField, OutputType,
+        TransitiveImplementedInterfaces, UndefinedDefinition, UniqueField,
     },
     hir::FieldDefinition,
     validation::{ast_type_definitions, ValidationSet},
@@ -21,21 +21,33 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     for (file_id, ast_def) in ast_type_definitions::<ast::ObjectTypeDefinition>(db) {
         if let Some(name) = ast_def.name() {
             let name = &*name.text();
-            let hir_def = &hir[name];
-            let ast_loc = (file_id, &ast_def).into();
-            if hir_def.loc() == ast_loc {
+            let original_definition = hir[name].loc();
+            let redefined_definition = (file_id, &ast_def).into();
+            if original_definition == redefined_definition {
                 // The HIR node was built from this AST node. This is fine.
             } else {
-                diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                    ty: "object type".into(),
-                    name: name.to_owned(),
-                    src: db.source_code(hir_def.loc().file_id()),
-                    original_definition: hir_def.loc().into(),
-                    redefined_definition: ast_loc.into(),
-                    help: Some(format!(
+                diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                    Diagnostic2::new(
+                        db,
+                        redefined_definition.into(),
+                        DiagnosticData::UniqueDefinition {
+                            ty: "root operation type definition",
+                            name: name.to_string(),
+                            original_definition: original_definition.into(),
+                            redefined_definition: redefined_definition.into(),
+                        },
+                    )
+                    .labels([
+                        Label::new(
+                            original_definition,
+                            format!("previous definition of `{name}` here"),
+                        ),
+                        Label::new(redefined_definition, format!("`{name}` redefined here")),
+                    ])
+                    .help(format!(
                         "`{name}` must only be defined once in this document."
                     )),
-                }));
+                ));
             }
         }
     }
