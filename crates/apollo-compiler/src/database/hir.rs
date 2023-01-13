@@ -2032,18 +2032,6 @@ impl<Ast: ast::AstNode> From<(FileId, &'_ Ast)> for HirNodeLocation {
     }
 }
 
-impl From<&'_ HirNodeLocation> for miette::SourceSpan {
-    fn from(loc: &'_ HirNodeLocation) -> Self {
-        (loc.offset, loc.node_len).into()
-    }
-}
-
-impl From<HirNodeLocation> for miette::SourceSpan {
-    fn from(loc: HirNodeLocation) -> Self {
-        (loc.offset, loc.node_len).into()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::ApolloCompiler;
