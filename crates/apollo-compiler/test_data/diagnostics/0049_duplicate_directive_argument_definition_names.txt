@@ -1,27 +1,58 @@
 [
-    UniqueArgument(
-        UniqueArgument {
-            name: "arg",
-            src: "directive @example(arg: Boolean, arg: Boolean) on FIELD\n",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    19,
-                ),
-                length: SourceOffset(
-                    14,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0049_duplicate_directive_argument_definition_names.graphql",
             },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    33,
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    12,
-                ),
+                offset: 33,
+                length: 12,
             },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 19,
+                        length: 14,
+                    },
+                    text: "previous definition of `arg` here",
+                },
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 33,
+                        length: 12,
+                    },
+                    text: "`arg` redefined here",
+                },
+            ],
             help: Some(
                 "`arg` argument must only be defined once.",
             ),
+            data: UniqueArgument {
+                name: "arg",
+                original_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 19,
+                    length: 14,
+                },
+                redefined_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 33,
+                    length: 12,
+                },
+            },
         },
     ),
 ]

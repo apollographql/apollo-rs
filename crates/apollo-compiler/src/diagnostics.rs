@@ -9,7 +9,6 @@ use thiserror::Error;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
     SyntaxError(SyntaxError),
-    UniqueArgument(UniqueArgument),
     Diagnostic2(Diagnostic2),
 }
 
@@ -18,7 +17,6 @@ impl ApolloDiagnostic {
         matches!(
             self,
             ApolloDiagnostic::SyntaxError(_)
-                | ApolloDiagnostic::UniqueArgument(_)
                 | ApolloDiagnostic::Diagnostic2(_)
         )
     }
@@ -34,7 +32,6 @@ impl ApolloDiagnostic {
     pub fn report(&self) -> Report {
         match self {
             ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
-            ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::Diagnostic2(_) => unimplemented!("Diagnostic2 can only be Displayed"),
         }
     }
@@ -174,6 +171,12 @@ pub enum DiagnosticData {
         original_definition: DiagnosticLocation,
         redefined_definition: DiagnosticLocation,
     },
+    #[error("the argument `{name}` is defined multiple times")]
+    UniqueArgument {
+        name: String,
+        original_definition: DiagnosticLocation,
+        redefined_definition: DiagnosticLocation,
+    },
     #[error("Subscriptions operations can only have one root field")]
     SingleRootField {
         // TODO(goto-bus-stop) if we keep this it should be a vec of the field names or nodes i think.
@@ -305,24 +308,4 @@ pub struct SyntaxError {
 
     #[label("{}", self.message)]
     pub span: SourceSpan,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("the argument `{}` is defined multiple times", self.name)]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct UniqueArgument {
-    // current definition
-    pub name: String,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("previous definition of `{}` here", self.name)]
-    pub original_definition: SourceSpan,
-
-    #[label("`{}` is redefined here", self.name)]
-    pub redefined_definition: SourceSpan,
-
-    #[help]
-    pub help: Option<String>,
 }

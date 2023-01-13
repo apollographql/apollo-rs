@@ -1,52 +1,114 @@
 [
-    UniqueArgument(
-        UniqueArgument {
-            name: "arg",
-            src: "interface Duplicate {\n  duplicate(arg: Boolean, arg: Boolean): Int\n}\n\ntype Query implements Duplicate {\n  single(arg: Boolean): Int\n  duplicate(arg: Boolean, arg: Boolean): Int\n}\n",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    144,
-                ),
-                length: SourceOffset(
-                    14,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0048_duplicate_field_argument_definition_names.graphql",
             },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    158,
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    12,
-                ),
+                offset: 158,
+                length: 12,
             },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 144,
+                        length: 14,
+                    },
+                    text: "previous definition of `arg` here",
+                },
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 158,
+                        length: 12,
+                    },
+                    text: "`arg` redefined here",
+                },
+            ],
             help: Some(
                 "`arg` argument must only be defined once.",
             ),
+            data: UniqueArgument {
+                name: "arg",
+                original_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 144,
+                    length: 14,
+                },
+                redefined_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 158,
+                    length: 12,
+                },
+            },
         },
     ),
-    UniqueArgument(
-        UniqueArgument {
-            name: "arg",
-            src: "interface Duplicate {\n  duplicate(arg: Boolean, arg: Boolean): Int\n}\n\ntype Query implements Duplicate {\n  single(arg: Boolean): Int\n  duplicate(arg: Boolean, arg: Boolean): Int\n}\n",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    34,
-                ),
-                length: SourceOffset(
-                    14,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0048_duplicate_field_argument_definition_names.graphql",
             },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    48,
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    12,
-                ),
+                offset: 48,
+                length: 12,
             },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 34,
+                        length: 14,
+                    },
+                    text: "previous definition of `arg` here",
+                },
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 48,
+                        length: 12,
+                    },
+                    text: "`arg` redefined here",
+                },
+            ],
             help: Some(
                 "`arg` argument must only be defined once.",
             ),
+            data: UniqueArgument {
+                name: "arg",
+                original_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 34,
+                    length: 14,
+                },
+                redefined_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 48,
+                    length: 12,
+                },
+            },
         },
     ),
 ]
