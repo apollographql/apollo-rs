@@ -77,7 +77,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                             Label::new(original_definition, format!("previous definition of `{field_name}` here")),
                             Label::new(redefined_definition, format!("`{field_name}` redefined here")),
                         ])
-                        .help(format!("{field_name} field must only be defined once in this input object definition."))
+                        .help(format!("`{field_name}` field must only be defined once in this input object definition."))
                     ));
                 }
             } else {

@@ -9,7 +9,6 @@ use thiserror::Error;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
     SyntaxError(SyntaxError),
-    UniqueField(UniqueField),
     UndefinedDefinition(UndefinedDefinition),
     UndefinedField(UndefinedField),
     UniqueArgument(UniqueArgument),
@@ -30,7 +29,6 @@ impl ApolloDiagnostic {
         matches!(
             self,
             ApolloDiagnostic::SyntaxError(_)
-                | ApolloDiagnostic::UniqueField(_)
                 | ApolloDiagnostic::UndefinedDefinition(_)
                 | ApolloDiagnostic::RecursiveDefinition(_)
                 | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
@@ -58,7 +56,6 @@ impl ApolloDiagnostic {
     pub fn report(&self) -> Report {
         match self {
             ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
-            ApolloDiagnostic::UniqueField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::RecursiveDefinition(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedDefinition(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::TransitiveImplementedInterfaces(diagnostic) => {
@@ -325,26 +322,6 @@ pub struct SyntaxError {
 
     #[label("{}", self.message)]
     pub span: SourceSpan,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("Fields must be unique in a definition")]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct UniqueField {
-    // current operation type: subscription, mutation, query
-    pub field: String,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("previous definition of `{}` field here", self.field)]
-    pub original_field: SourceSpan,
-
-    #[label("`{}` is redefined here", self.field)]
-    pub redefined_field: SourceSpan,
-
-    #[help]
-    pub help: Option<String>,
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]

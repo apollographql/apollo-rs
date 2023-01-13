@@ -2,8 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use crate::{
     diagnostics::{
-        Diagnostic2, DiagnosticData, Label, OutputType,
-        TransitiveImplementedInterfaces, UndefinedDefinition, UniqueField,
+        Diagnostic2, DiagnosticData, Label, OutputType, TransitiveImplementedInterfaces,
+        UndefinedDefinition,
     },
     hir::FieldDefinition,
     validation::{ast_type_definitions, ValidationSet},
@@ -62,22 +62,27 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             //
             // Returns Unique Value error.
             let field_name = field.name();
+            let redefined_definition = field.loc();
             let offset = field.loc().offset();
             let len = field.loc().node_len();
 
             if let Some(prev_field) = seen.get(&field_name) {
-                let prev_offset = prev_field.loc().offset();
-                let prev_node_len = prev_field.loc().node_len();
-
-                diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
-                    field: field_name.into(),
-                    src: db.source_code(prev_field.loc().file_id()),
-                    original_field: (prev_offset, prev_node_len).into(),
-                    redefined_field: (offset, len).into(),
-                    help: Some(format!(
-                        "`{field_name}` field must only be defined once in this object type definition."
-                    )),
-                }));
+                let original_definition = prev_field.loc();
+                diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                    Diagnostic2::new(
+                        db, original_definition.into(),
+                        DiagnosticData::UniqueField {
+                            field: field_name.into(),
+                            original_definition: original_definition.into(),
+                            redefined_definition: redefined_definition.into(),
+                        }
+                    )
+                    .labels([
+                        Label::new(original_definition, format!("previous definition of `{field_name}` here")),
+                        Label::new(redefined_definition, format!("`{field_name}` redefined here")),
+                    ])
+                    .help(format!("`{field_name}` field must only be defined once in this object type definition."))
+                ));
             } else {
                 seen.insert(field_name, field);
             }

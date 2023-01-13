@@ -1,27 +1,58 @@
 [
-    UniqueField(
-        UniqueField {
-            field: "name",
-            src: "type Query {\n  name: String\n  name: String\n}\n",
-            original_field: SourceSpan {
-                offset: SourceOffset(
-                    15,
-                ),
-                length: SourceOffset(
-                    15,
-                ),
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0033_object_type_definition_with_duplicate_fields.graphql",
             },
-            redefined_field: SourceSpan {
-                offset: SourceOffset(
-                    30,
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    13,
-                ),
+                offset: 15,
+                length: 15,
             },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 15,
+                        length: 15,
+                    },
+                    text: "previous definition of `name` here",
+                },
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 30,
+                        length: 13,
+                    },
+                    text: "`name` redefined here",
+                },
+            ],
             help: Some(
                 "`name` field must only be defined once in this object type definition.",
             ),
+            data: UniqueField {
+                field: "name",
+                original_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 15,
+                    length: 15,
+                },
+                redefined_definition: DiagnosticLocation {
+                    file_id: FileId(
+                        0,
+                    ),
+                    offset: 30,
+                    length: 13,
+                },
+            },
         },
     ),
 ]
