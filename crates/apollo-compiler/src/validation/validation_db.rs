@@ -221,7 +221,9 @@ pub fn check_input_values(
     for input_value in input_values.iter() {
         let name = input_value.name();
         if let Some(prev_arg) = seen.get(name) {
-            if let (Some(original_definition), Some(redefined_definition)) = (prev_arg.loc(), input_value.loc()) {
+            if let (Some(original_definition), Some(redefined_definition)) =
+                (prev_arg.loc(), input_value.loc())
+            {
                 diagnostics.push(ApolloDiagnostic::Diagnostic2(
                     Diagnostic2::new(
                         db,
@@ -233,7 +235,10 @@ pub fn check_input_values(
                         },
                     )
                     .labels([
-                        Label::new(original_definition, format!("previous definition of `{name}` here")),
+                        Label::new(
+                            original_definition,
+                            format!("previous definition of `{name}` here"),
+                        ),
                         Label::new(redefined_definition, format!("`{name}` redefined here")),
                     ])
                     .help(format!("`{name}` argument must only be defined once.")),
@@ -358,8 +363,14 @@ pub fn check_arguments(
                     },
                 )
                 .labels([
-                    Label::new(original_definition, format!("previously provided `{name}` here")),
-                    Label::new(redefined_definition, format!("`{name}` provided again here")),
+                    Label::new(
+                        original_definition,
+                        format!("previously provided `{name}` here"),
+                    ),
+                    Label::new(
+                        redefined_definition,
+                        format!("`{name}` provided again here"),
+                    ),
                 ])
                 .help(format!("`{name}` argument must only be provided once.")),
             ));

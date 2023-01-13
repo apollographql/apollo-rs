@@ -8,17 +8,12 @@ use thiserror::Error;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
-    SyntaxError(SyntaxError),
     Diagnostic2(Diagnostic2),
 }
 
 impl ApolloDiagnostic {
     pub fn is_error(&self) -> bool {
-        matches!(
-            self,
-            ApolloDiagnostic::SyntaxError(_)
-                | ApolloDiagnostic::Diagnostic2(_)
-        )
+        matches!(self, ApolloDiagnostic::Diagnostic2(_))
     }
 
     pub fn is_warning(&self) -> bool {
@@ -31,7 +26,6 @@ impl ApolloDiagnostic {
 
     pub fn report(&self) -> Report {
         match self {
-            ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::Diagnostic2(_) => unimplemented!("Diagnostic2 can only be Displayed"),
         }
     }
@@ -81,6 +75,16 @@ impl DiagnosticLocation {
     }
     pub fn node_len(&self) -> usize {
         self.length
+    }
+}
+
+impl From<(FileId, usize, usize)> for DiagnosticLocation {
+    fn from((file_id, offset, length): (FileId, usize, usize)) -> Self {
+        Self {
+            file_id,
+            offset,
+            length,
+        }
     }
 }
 
@@ -162,6 +166,8 @@ impl Diagnostic2 {
 #[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum DiagnosticData {
+    #[error("Syntax error")]
+    SyntaxError { message: String },
     #[error("expected identifier")]
     MissingIdent,
     #[error("the {ty} `{name}` is defined multiple times in the document")]
@@ -295,17 +301,4 @@ impl Diagnostic2 {
         }
         builder.finish()
     }
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("root operation type is not defined")]
-#[diagnostic(code("apollo-compiler syntax error"))]
-pub struct SyntaxError {
-    pub message: String,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("{}", self.message)]
-    pub span: SourceSpan,
 }
