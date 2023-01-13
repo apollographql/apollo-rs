@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    diagnostics::{Diagnostic2, DiagnosticData, Label, ObjectType},
+    diagnostics::{Diagnostic2, DiagnosticData, Label},
     hir::{TypeDefinition, UnionMember},
     ApolloDiagnostic, ValidationDatabase,
 };
@@ -14,8 +14,6 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         for union_member in union_def.union_members().iter() {
             let name = union_member.name();
             let redefined_definition = union_member.loc();
-            let offset = redefined_definition.offset();
-            let len = redefined_definition.node_len();
 
             // A Union type must include one or more unique member types.
             //
@@ -64,12 +62,22 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 Some(TypeDefinition::ObjectTypeDefinition { .. }) => {} // good
                 Some(ty) => {
                     // Union member must be of object type.
-                    diagnostics.push(ApolloDiagnostic::ObjectType(ObjectType {
-                        name: name.into(),
-                        ty: ty.kind(),
-                        src: db.source_code(union_member.loc().file_id()),
-                        definition: (offset, len).into(),
-                    }))
+                    let kind = ty.kind();
+                    diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                        Diagnostic2::new(
+                            db,
+                            union_member.loc().into(),
+                            DiagnosticData::ObjectType {
+                                name: name.into(),
+                                ty: kind,
+                            },
+                        )
+                        .label(Label::new(
+                            union_member.loc(),
+                            format!("This is of `{kind}` type"),
+                        ))
+                        .help("Union members must be of base Object Type."),
+                    ));
                 }
             }
         }

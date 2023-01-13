@@ -11,7 +11,6 @@ pub enum ApolloDiagnostic {
     SyntaxError(SyntaxError),
     UniqueArgument(UniqueArgument),
     TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
-    ObjectType(ObjectType),
     Diagnostic2(Diagnostic2),
 }
 
@@ -22,7 +21,6 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::SyntaxError(_)
                 | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
                 | ApolloDiagnostic::UniqueArgument(_)
-                | ApolloDiagnostic::ObjectType(_)
                 | ApolloDiagnostic::Diagnostic2(_)
         )
     }
@@ -41,7 +39,6 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::TransitiveImplementedInterfaces(diagnostic) => {
                 Report::new(diagnostic.clone())
             }
-            ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::Diagnostic2(_) => unimplemented!("Diagnostic2 can only be Displayed"),
         }
@@ -246,6 +243,13 @@ pub enum DiagnosticData {
     BuiltInScalarDefinition,
     #[error("unused variable: `{name}`")]
     UnusedVariable { name: String },
+    #[error("`{name}` field must return an output type")]
+    ObjectType {
+        // union member
+        name: String,
+        // actual type
+        ty: &'static str,
+    },
 }
 
 impl DiagnosticData {
@@ -319,25 +323,6 @@ pub struct TransitiveImplementedInterfaces {
     pub src: Arc<str>,
 
     #[label("{} must also be implemented here", self.missing_interface)]
-    pub definition: SourceSpan,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("`{}` field must return an output type", self.name)]
-#[diagnostic(
-    code("apollo-compiler validation error"),
-    help("Union members must be of base Object Type. `{}` is of `{}` type", self.name, self.ty)
-)]
-pub struct ObjectType {
-    // union member
-    pub name: String,
-    // actual type
-    pub ty: &'static str,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("this is of `{}` type", self.ty)]
     pub definition: SourceSpan,
 }
 
