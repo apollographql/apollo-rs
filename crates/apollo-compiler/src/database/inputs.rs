@@ -20,7 +20,9 @@ pub struct SourceCache {
 impl AriadneCache<FileId> for &SourceCache {
     fn fetch(&mut self, id: &FileId) -> Result<&AriadneSource, Box<dyn std::fmt::Debug>> {
         let source = self.sources.get(id);
-        source.map(|arc| &**arc).ok_or_else(|| unreachable!()) //Box::new(UnknownFileError as dyn std::fmt::Debug))
+        source
+            .map(|arc| &**arc)
+            .ok_or_else(|| Box::new(UnknownFileError) as Box<dyn std::fmt::Debug>)
     }
     fn display<'a>(&self, id: &'a FileId) -> Option<Box<dyn std::fmt::Display + 'a>> {
         // Kinda unfortunate API limitation: we have to use a `Box<String>`
