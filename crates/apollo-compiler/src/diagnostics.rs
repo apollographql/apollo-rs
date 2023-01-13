@@ -9,13 +9,10 @@ use thiserror::Error;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ApolloDiagnostic {
     SyntaxError(SyntaxError),
-    UndefinedField(UndefinedField),
     UniqueArgument(UniqueArgument),
-    RecursiveDefinition(RecursiveDefinition),
     TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
     QueryRootOperationType(QueryRootOperationType),
     BuiltInScalarDefinition(BuiltInScalarDefinition),
-    CapitalizedValue(CapitalizedValue),
     UnusedVariable(UnusedVariable),
     OutputType(OutputType),
     ObjectType(ObjectType),
@@ -27,10 +24,8 @@ impl ApolloDiagnostic {
         matches!(
             self,
             ApolloDiagnostic::SyntaxError(_)
-                | ApolloDiagnostic::RecursiveDefinition(_)
                 | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
                 | ApolloDiagnostic::QueryRootOperationType(_)
-                | ApolloDiagnostic::UndefinedField(_)
                 | ApolloDiagnostic::UniqueArgument(_)
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::OutputType(_)
@@ -40,10 +35,7 @@ impl ApolloDiagnostic {
     }
 
     pub fn is_warning(&self) -> bool {
-        matches!(
-            self,
-            ApolloDiagnostic::CapitalizedValue(_) | ApolloDiagnostic::UnusedVariable(_)
-        )
+        matches!(self, ApolloDiagnostic::UnusedVariable(_))
     }
 
     pub fn is_advice(&self) -> bool {
@@ -53,7 +45,6 @@ impl ApolloDiagnostic {
     pub fn report(&self) -> Report {
         match self {
             ApolloDiagnostic::SyntaxError(diagnostic) => Report::new(diagnostic.clone()),
-            ApolloDiagnostic::RecursiveDefinition(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::TransitiveImplementedInterfaces(diagnostic) => {
                 Report::new(diagnostic.clone())
             }
@@ -61,11 +52,9 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::BuiltInScalarDefinition(diagnostic) => {
                 Report::new(diagnostic.clone())
             }
-            ApolloDiagnostic::CapitalizedValue(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
-            ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::Diagnostic2(_) => unimplemented!("Diagnostic2 can only be Displayed"),
         }
@@ -324,21 +313,6 @@ pub struct SyntaxError {
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("{}", self.message)]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct RecursiveDefinition {
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("{}", self.definition_label)]
-    pub definition: SourceSpan,
-
-    pub definition_label: String,
-
-    pub message: String,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("Transitively implemented interfaces must also be defined on an implementing interface")]
 #[diagnostic(code("apollo-compiler validation error"))]
 pub struct TransitiveImplementedInterfaces {
@@ -372,19 +346,6 @@ pub struct BuiltInScalarDefinition {
 
     #[label("remove this scalar definition")]
     pub scalar: SourceSpan,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("values in an Enum Definition should be capitalized")]
-#[diagnostic(code("apollo-compiler validation warning"), severity(warning))]
-pub struct CapitalizedValue {
-    pub ty: String,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("consider capitalizing {}", self.ty)]
-    pub value: SourceSpan,
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
@@ -436,23 +397,6 @@ pub struct ObjectType {
 
     #[label("this is of `{}` type", self.ty)]
     pub definition: SourceSpan,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("Cannot query `{}` field", self.field)]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct UndefinedField {
-    // field name
-    pub field: String,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("`{}` field is not in scope", self.field)]
-    pub definition: SourceSpan,
-
-    #[help]
-    pub help: String,
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]

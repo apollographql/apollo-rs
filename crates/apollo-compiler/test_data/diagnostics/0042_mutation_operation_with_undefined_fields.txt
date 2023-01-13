@@ -80,7 +80,7 @@
                         offset: 31,
                         length: 23,
                     },
-                    text: "`undefinedMutationField field is not in scope",
+                    text: "`undefinedMutationField` field is not in scope",
                 },
             ],
             help: Some(

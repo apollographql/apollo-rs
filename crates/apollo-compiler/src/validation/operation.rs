@@ -211,7 +211,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                         )
                         .label(Label::new(
                             field.loc(),
-                            format!("`{field_name} field is not in scope"),
+                            format!("`{field_name}` field is not in scope"),
                         ))
                         .help(help),
                     ))

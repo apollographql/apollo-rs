@@ -20,7 +20,7 @@
                         offset: 21,
                         length: 7,
                     },
-                    text: "`size field is not in scope",
+                    text: "`size` field is not in scope",
                 },
             ],
             help: Some(
@@ -52,7 +52,7 @@
                         offset: 28,
                         length: 7,
                     },
-                    text: "`weight field is not in scope",
+                    text: "`weight` field is not in scope",
                 },
             ],
             help: Some(

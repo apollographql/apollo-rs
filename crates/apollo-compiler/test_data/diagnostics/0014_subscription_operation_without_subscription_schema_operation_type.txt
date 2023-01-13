@@ -60,7 +60,7 @@
                         offset: 37,
                         length: 37,
                     },
-                    text: "`newMessage field is not in scope",
+                    text: "`newMessage` field is not in scope",
                 },
             ],
             help: Some(

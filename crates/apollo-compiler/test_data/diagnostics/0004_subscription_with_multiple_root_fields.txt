@@ -59,7 +59,7 @@
                         offset: 60,
                         length: 26,
                     },
-                    text: "`disallowedSecondRootField field is not in scope",
+                    text: "`disallowedSecondRootField` field is not in scope",
                 },
             ],
             help: Some(

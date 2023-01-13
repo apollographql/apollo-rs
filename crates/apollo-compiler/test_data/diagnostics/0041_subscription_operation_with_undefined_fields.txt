@@ -20,7 +20,7 @@
                         offset: 21,
                         length: 27,
                     },
-                    text: "`undefinedSubscriptionField field is not in scope",
+                    text: "`undefinedSubscriptionField` field is not in scope",
                 },
             ],
             help: Some(
