@@ -1,15 +1,31 @@
 [
-    UnusedVariable(
-        UnusedVariable {
-            ty: "unusedVariable",
-            src: "query ExampleQuery($unusedVariable: Int) {\n  topProducts {\n    name\n  }\n  ... multipleSubscriptions\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    19,
+    Diagnostic2(
+        Diagnostic2 {
+            cache: {
+                0: "0010_operation_with_unused_variable.graphql",
+            },
+            location: DiagnosticLocation {
+                file_id: FileId(
+                    0,
                 ),
-                length: SourceOffset(
-                    20,
-                ),
+                offset: 19,
+                length: 20,
+            },
+            labels: [
+                Label {
+                    location: DiagnosticLocation {
+                        file_id: FileId(
+                            0,
+                        ),
+                        offset: 19,
+                        length: 20,
+                    },
+                    text: "this variable is never used",
+                },
+            ],
+            help: None,
+            data: UnusedVariable {
+                name: "unusedVariable",
             },
         },
     ),

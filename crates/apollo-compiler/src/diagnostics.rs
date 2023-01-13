@@ -11,7 +11,6 @@ pub enum ApolloDiagnostic {
     SyntaxError(SyntaxError),
     UniqueArgument(UniqueArgument),
     TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
-    UnusedVariable(UnusedVariable),
     ObjectType(ObjectType),
     Diagnostic2(Diagnostic2),
 }
@@ -29,7 +28,7 @@ impl ApolloDiagnostic {
     }
 
     pub fn is_warning(&self) -> bool {
-        matches!(self, ApolloDiagnostic::UnusedVariable(_))
+        false
     }
 
     pub fn is_advice(&self) -> bool {
@@ -42,7 +41,6 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::TransitiveImplementedInterfaces(diagnostic) => {
                 Report::new(diagnostic.clone())
             }
-            ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::Diagnostic2(_) => unimplemented!("Diagnostic2 can only be Displayed"),
@@ -231,7 +229,7 @@ pub enum DiagnosticData {
         // interface that should be defined
         missing_interface: String,
     },
-    #[error("`{}` field must return an output type", name)]
+    #[error("`{name}` field must return an output type")]
     OutputType {
         // field name
         name: String,
@@ -246,6 +244,8 @@ pub enum DiagnosticData {
     QueryRootOperationType,
     #[error("Built-in scalars must be omitted for brevity")]
     BuiltInScalarDefinition,
+    #[error("unused variable: `{name}`")]
+    UnusedVariable { name: String },
 }
 
 impl DiagnosticData {
@@ -253,7 +253,10 @@ impl DiagnosticData {
         !self.is_warning() && !self.is_advice()
     }
     pub fn is_warning(&self) -> bool {
-        matches!(self, Self::CapitalizedValue { .. })
+        matches!(
+            self,
+            Self::CapitalizedValue { .. } | Self::UnusedVariable { .. }
+        )
     }
     pub fn is_advice(&self) -> bool {
         matches!(self, Self::ScalarSpecificationURL)
@@ -316,19 +319,6 @@ pub struct TransitiveImplementedInterfaces {
     pub src: Arc<str>,
 
     #[label("{} must also be implemented here", self.missing_interface)]
-    pub definition: SourceSpan,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("unused variable: `{}`", self.ty)]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct UnusedVariable {
-    pub ty: String,
-
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("unused variable")]
     pub definition: SourceSpan,
 }
 

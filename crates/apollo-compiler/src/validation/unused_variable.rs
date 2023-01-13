@@ -1,8 +1,7 @@
 use std::collections::HashSet;
 
 use crate::{
-    diagnostics::{ApolloDiagnostic, UnusedVariable},
-    diagnostics::{Diagnostic2, DiagnosticData, Label},
+    diagnostics::{ApolloDiagnostic, Diagnostic2, DiagnosticData, Label},
     validation::ValidationSet,
     FileId, ValidationDatabase,
 };
@@ -57,13 +56,16 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
 
             let unused_vars = defined_vars.difference(&used_vars);
             let warnings = unused_vars.map(|unused_var| {
-                let offset = unused_var.loc.offset();
-                let len = unused_var.loc.node_len();
-                ApolloDiagnostic::UnusedVariable(UnusedVariable {
-                    ty: unused_var.name.clone(),
-                    src: db.source_code(unused_var.loc.file_id()),
-                    definition: (offset, len).into(),
-                })
+                ApolloDiagnostic::Diagnostic2(
+                    Diagnostic2::new(
+                        db,
+                        unused_var.loc.into(),
+                        DiagnosticData::UnusedVariable {
+                            name: unused_var.name.clone(),
+                        },
+                    )
+                    .label(Label::new(unused_var.loc, "this variable is never used")),
+                )
             });
 
             diagnostics.extend(warnings);
