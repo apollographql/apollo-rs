@@ -15,7 +15,6 @@ pub enum ApolloDiagnostic {
     TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
     QueryRootOperationType(QueryRootOperationType),
     BuiltInScalarDefinition(BuiltInScalarDefinition),
-    ScalarSpecificationURL(ScalarSpecificationURL),
     CapitalizedValue(CapitalizedValue),
     UnusedVariable(UnusedVariable),
     OutputType(OutputType),
@@ -48,7 +47,7 @@ impl ApolloDiagnostic {
     }
 
     pub fn is_advice(&self) -> bool {
-        matches!(self, ApolloDiagnostic::ScalarSpecificationURL(_))
+        false
     }
 
     pub fn report(&self) -> Report {
@@ -62,7 +61,6 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::BuiltInScalarDefinition(diagnostic) => {
                 Report::new(diagnostic.clone())
             }
-            ApolloDiagnostic::ScalarSpecificationURL(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::CapitalizedValue(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UnusedVariable(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::OutputType(diagnostic) => Report::new(diagnostic.clone()),
@@ -262,6 +260,10 @@ pub enum DiagnosticData {
         // field type
         ty: &'static str,
     },
+    #[error(
+        "Custom scalars should provide a scalar specification URL via the @specifiedBy directive"
+    )]
+    ScalarSpecificationURL,
 }
 
 impl DiagnosticData {
@@ -272,7 +274,7 @@ impl DiagnosticData {
         matches!(self, Self::CapitalizedValue { .. })
     }
     pub fn is_advice(&self) -> bool {
-        false
+        matches!(self, Self::ScalarSpecificationURL)
     }
 }
 
@@ -369,17 +371,6 @@ pub struct BuiltInScalarDefinition {
     pub src: Arc<str>,
 
     #[label("remove this scalar definition")]
-    pub scalar: SourceSpan,
-}
-
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("Custom scalars should provide a scalar specification URL via the @specifiedBy directive")]
-#[diagnostic(code("apollo-compiler validation advice"), severity(advice))]
-pub struct ScalarSpecificationURL {
-    #[source_code]
-    pub src: Arc<str>,
-
-    #[label("consider adding a @specifiedBy directive to this scalar definition")]
     pub scalar: SourceSpan,
 }
 

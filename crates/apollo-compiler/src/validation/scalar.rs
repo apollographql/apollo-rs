@@ -1,5 +1,5 @@
 use crate::{
-    diagnostics::{BuiltInScalarDefinition, ScalarSpecificationURL},
+    diagnostics::{BuiltInScalarDefinition, Diagnostic2, DiagnosticData, Label},
     ApolloDiagnostic, ValidationDatabase,
 };
 
@@ -29,11 +29,12 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     .iter()
                     .any(|directive| directive.name() == "specifiedBy")
                 {
-                    diagnostics.push(ApolloDiagnostic::ScalarSpecificationURL(
-                        ScalarSpecificationURL {
-                            scalar: (offset, len).into(),
-                            src: db.source_code(loc.file_id()),
-                        },
+                    diagnostics.push(ApolloDiagnostic::Diagnostic2(
+                        Diagnostic2::new(db, loc.into(), DiagnosticData::ScalarSpecificationURL)
+                            .label(Label::new(
+                            loc,
+                            "consider adding a @specifiedBy directive to this scalar definition",
+                        )),
                     ))
                 }
             }
