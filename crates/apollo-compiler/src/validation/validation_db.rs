@@ -34,6 +34,7 @@ pub trait ValidationDatabase:
     fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
     fn validate_unused_variable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
+    fn check_operation(&self, def: Arc<hir::OperationDefinition>) -> Vec<ApolloDiagnostic>;
     fn check_directive_definition(
         &self,
         def: Arc<hir::DirectiveDefinition>,
@@ -77,6 +78,19 @@ pub trait ValidationDatabase:
     fn check_directive(&self, schema: hir::Directive) -> Vec<ApolloDiagnostic>;
     fn check_arguments(&self, schema: Vec<hir::Argument>) -> Vec<ApolloDiagnostic>;
     fn check_field(&self, field: Arc<hir::Field>) -> Vec<ApolloDiagnostic>;
+    fn check_variables(&self, variables: Vec<hir::VariableDefinition>) -> Vec<ApolloDiagnostic>;
+}
+
+pub fn check_operation(
+    db: &dyn ValidationDatabase,
+    def: Arc<hir::OperationDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
+    diagnostics.extend(db.check_variables(def.variables().to_vec()));
+
+    diagnostics
 }
 
 pub fn check_directive_definition(
@@ -276,7 +290,7 @@ pub fn check_db_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
 
     for def in db.all_operations().iter() {
         check_directives!(def);
-        diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
+        diagnostics.extend(db.check_operation(def.clone()));
     }
     for def in db.all_fragments().values() {
         check_directives!(def);
@@ -376,6 +390,48 @@ pub fn check_arguments(
             );
         } else {
             seen.insert(name, argument);
+        }
+    }
+
+    diagnostics
+}
+
+fn check_variables(
+    db: &dyn ValidationDatabase,
+    variables: Vec<hir::VariableDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+    let mut seen: HashMap<&str, &hir::VariableDefinition> = HashMap::new();
+
+    for var in &variables {
+        let name = var.name();
+        if let Some(prev_var) = seen.get(name) {
+            let original_definition = prev_var.loc();
+            let redefined_definition = var.loc();
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    redefined_definition.into(),
+                    DiagnosticData::UniqueDefinition {
+                        ty: "variable",
+                        name: name.into(),
+                        original_definition: original_definition.into(),
+                        redefined_definition: redefined_definition.into(),
+                    },
+                )
+                .labels([
+                    Label::new(
+                        original_definition,
+                        format!("previous definition of `{name}` variable here"),
+                    ),
+                    Label::new(redefined_definition, format!("`{name}` redefined here")),
+                ])
+                .help(format!(
+                    "`{name}` must only be defined once in this operation."
+                )),
+            );
+        } else {
+            seen.insert(name, var);
         }
     }
 

@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            80: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
+            81: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 80,
+                id: 81,
             },
             offset: 0,
             length: 77,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 80,
+                        id: 81,
                     },
                     offset: 0,
                     length: 77,
@@ -24,7 +24,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 80,
+                        id: 81,
                     },
                     offset: 77,
                     length: 37,
@@ -39,11 +39,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            80: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
+            81: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 80,
+                id: 81,
             },
             offset: 37,
             length: 37,
@@ -52,7 +52,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 80,
+                        id: 81,
                     },
                     offset: 37,
                     length: 37,

@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            70: "0004_subscription_with_multiple_root_fields.graphql",
+            71: "0004_subscription_with_multiple_root_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 70,
+                id: 71,
             },
             offset: 0,
             length: 89,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 0,
                     length: 89,
@@ -29,7 +29,7 @@
             fields: 2,
             subscription: DiagnosticLocation {
                 file_id: FileId {
-                    id: 70,
+                    id: 71,
                 },
                 offset: 0,
                 length: 89,
@@ -38,11 +38,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            70: "0004_subscription_with_multiple_root_fields.graphql",
+            71: "0004_subscription_with_multiple_root_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 70,
+                id: 71,
             },
             offset: 60,
             length: 26,
@@ -51,7 +51,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 60,
                     length: 26,
@@ -61,7 +61,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 89,
                     length: 44,
