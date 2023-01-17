@@ -2175,7 +2175,7 @@ mod tests {
             .find_operation_by_name(query_id, String::from("TypeIntrospect"))
             .expect("TypeIntrospect operation does not exist");
 
-        assert_eq!(type_introspect.is_introspection(&db), true);
+        assert!(type_introspect.is_introspection(&db));
     }
 
     #[test]
@@ -2215,8 +2215,8 @@ mod tests {
             .find_operation_by_name(mutation_id, String::from("PurchaseBasket"))
             .expect("CheckStock operation does not exist");
 
-        assert_eq!(check_stock.is_introspection(&db), false);
-        assert_eq!(purchase_operation.is_introspection(&db), false);
+        assert!(!check_stock.is_introspection(&db));
+        assert!(!purchase_operation.is_introspection(&db));
     }
 
     #[test]
@@ -2288,7 +2288,7 @@ mod tests {
             .find_operation_by_name(query_id, String::from("IntrospectDeepFragments"))
             .expect("IntrospectDeepFragments operation does not exist");
 
-        assert_eq!(deep_introspect.is_introspection(&db), true);
+        assert!(deep_introspect.is_introspection(&db));
 
         let deep_introspect: Arc<OperationDefinition> = db
             .find_operation_by_name(
@@ -2296,6 +2296,6 @@ mod tests {
                 String::from("IntrospectDeepFragments"),
             )
             .expect("IntrospectDeepFragments operation does not exist");
-        assert_eq!(deep_introspect.is_introspection(&db), false);
+        assert!(!deep_introspect.is_introspection(&db));
     }
 }
