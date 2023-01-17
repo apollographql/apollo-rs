@@ -13,7 +13,7 @@ use crate::{
 ///     Selection*
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Selection-Sets).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SelectionSet {
     selections: Vec<Selection>,
 }
@@ -49,7 +49,7 @@ impl TryFrom<apollo_parser::ast::SelectionSet> for SelectionSet {
 ///     Field | FragmentSpread | InlineFragment
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#Selection).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Selection {
     /// Represents a field
     Field(Field),

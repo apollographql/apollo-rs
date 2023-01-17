@@ -16,7 +16,7 @@ use crate::{
 ///     Description? **scalar** Name Directives?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Scalar).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ScalarTypeDef {
     pub(crate) name: Name,
     pub(crate) description: Option<Description>,
