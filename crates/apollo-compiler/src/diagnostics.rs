@@ -127,7 +127,7 @@ impl fmt::Display for ApolloDiagnostic {
 #[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum DiagnosticData {
-    #[error("Syntax error")]
+    #[error("syntax error")]
     SyntaxError { message: String },
     #[error("expected identifier")]
     MissingIdent,
@@ -144,7 +144,7 @@ pub enum DiagnosticData {
         original_definition: DiagnosticLocation,
         redefined_definition: DiagnosticLocation,
     },
-    #[error("Subscriptions operations can only have one root field")]
+    #[error("subscription operations can only have one root field")]
     SingleRootField {
         // TODO(goto-bus-stop) if we keep this it should be a vec of the field names or nodes i think.
         // Else just remove as the labeling is done separately.
@@ -156,7 +156,7 @@ pub enum DiagnosticData {
         // current operation type: subscription, mutation, query
         ty: &'static str,
     },
-    #[error("Cannot query `{field}` field")]
+    #[error("cannot query `{field}` field")]
     UndefinedField {
         /// Field name
         field: String,
@@ -199,12 +199,12 @@ pub enum DiagnosticData {
         ty: &'static str,
     },
     #[error(
-        "Custom scalars should provide a scalar specification URL via the @specifiedBy directive"
+        "custom scalars should provide a scalar specification URL via the @specifiedBy directive"
     )]
     ScalarSpecificationURL,
-    #[error("Missing query root operation type in schema definition")]
+    #[error("missing query root operation type in schema definition")]
     QueryRootOperationType,
-    #[error("Built-in scalars must be omitted for brevity")]
+    #[error("built-in scalars must be omitted for brevity")]
     BuiltInScalarDefinition,
     #[error("unused variable: `{name}`")]
     UnusedVariable { name: String },
