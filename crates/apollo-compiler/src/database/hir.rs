@@ -206,35 +206,6 @@ pub struct OperationDefinition {
 }
 
 impl OperationDefinition {
-
-    pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
-
-        fn is_introspection_selection_set(selection_set: &SelectionSet, db: &dyn HirDatabase) -> bool {
-            selection_set.selection()
-                .iter()
-                .all(|selection| match selection {
-                    Selection::Field(field) => {
-                        let field_name = field.name();
-                        field_name == "__type" || field_name == "__schema"
-                    }
-                    Selection::FragmentSpread(spread) => {
-                        let fragment = spread.fragment(db);
-                        fragment.map_or(false, |fragment| {
-                            let selection_set = fragment.selection_set();
-                            is_introspection_selection_set(selection_set, db)
-                        })
-                    }
-                    Selection::InlineFragment(inline) => {
-                        let selection_set = inline.selection_set();
-                        is_introspection_selection_set(selection_set, db)
-                    }
-                })
-        }
-
-        self.operation_ty().is_query() &&
-            is_introspection_selection_set(self.selection_set(), db)
-    }
-
     /// Get the kind of the operation: `query`, `mutation`, or `subscription`
     pub fn operation_ty(&self) -> OperationType {
         self.operation_ty
@@ -300,6 +271,11 @@ impl OperationDefinition {
     /// Get operation definition's hir node location.
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
+    }
+
+    /// Returns true if this is a query operation and its [`SelectionSet`] is an introspection.
+    pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
+        self.operation_ty().is_query() && self.selection_set().is_introspection(db)
     }
 }
 
@@ -900,6 +876,15 @@ impl SelectionSet {
             }
         })
     }
+
+    /// Returns true if all the [`Selection`]s in this selection set are themselves introspections.
+    pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
+        self.selection().iter().all(|selection| match selection {
+            Selection::Field(field) => field.is_introspection(),
+            Selection::FragmentSpread(spread) => spread.is_introspection(db),
+            Selection::InlineFragment(inline) => inline.is_introspection(db),
+        })
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1025,6 +1010,12 @@ impl Field {
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
     }
+
+    /// returns true if this is an introspection field (i.e. it's [`Self::name()`] is one of __type, or __schema).
+    pub fn is_introspection(&self) -> bool {
+        let field_name = self.name();
+        field_name == "__type" || field_name == "__schema"
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1066,6 +1057,11 @@ impl InlineFragment {
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
     }
+
+    /// Returns true if the inline fragment's [`SelectionSet`] is an introspection.
+    pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
+        self.selection_set().is_introspection(db)
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1076,7 +1072,7 @@ pub struct FragmentSpread {
 }
 
 impl FragmentSpread {
-    /// Get a reference to the fragmen spread's name.
+    /// Get a reference to the fragment spread's name.
     pub fn name(&self) -> &str {
         self.name.src()
     }
@@ -1086,7 +1082,7 @@ impl FragmentSpread {
         db.find_fragment_by_name(self.loc.file_id(), self.name().to_string())
     }
 
-    /// Get framgent spread's defined variables.
+    /// Get fragment spread's defined variables.
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         let vars = match self.fragment(db) {
             Some(fragment) => fragment
@@ -1108,6 +1104,14 @@ impl FragmentSpread {
     /// Get fragment spread's hir node location.
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
+    }
+
+    /// Returns true if the fragment referenced by this spread exists and its [`SelectionSet`] is an introspection.
+    pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
+        let maybe_fragment = self.fragment(db);
+        maybe_fragment.map_or(false, |fragment| {
+            fragment.selection_set.is_introspection(db)
+        })
     }
 }
 
@@ -2077,10 +2081,10 @@ impl From<HirNodeLocation> for miette::SourceSpan {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-    use crate::ApolloCompiler;
     use crate::hir::OperationDefinition;
+    use crate::ApolloCompiler;
     use crate::HirDatabase;
+    use std::sync::Arc;
 
     #[test]
     fn huge_floats() {
@@ -2271,11 +2275,13 @@ mod tests {
          }
         "#;
 
-        let query_input_not_introspect = query_input.replace("...onRooten2","...onRooten2_not_intro");
+        let query_input_not_introspect =
+            query_input.replace("...onRooten2", "...onRooten2_not_intro");
 
         let mut compiler = ApolloCompiler::new();
         let query_id = compiler.add_executable(query_input, "query.graphql");
-        let query_id_not_introspect = compiler.add_executable(query_input_not_introspect.as_str(), "query2.graphql");
+        let query_id_not_introspect =
+            compiler.add_executable(query_input_not_introspect.as_str(), "query2.graphql");
 
         let db = compiler.db;
         let deep_introspect: Arc<OperationDefinition> = db
@@ -2285,7 +2291,10 @@ mod tests {
         assert_eq!(deep_introspect.is_introspection(&db), true);
 
         let deep_introspect: Arc<OperationDefinition> = db
-            .find_operation_by_name(query_id_not_introspect, String::from("IntrospectDeepFragments"))
+            .find_operation_by_name(
+                query_id_not_introspect,
+                String::from("IntrospectDeepFragments"),
+            )
             .expect("IntrospectDeepFragments operation does not exist");
         assert_eq!(deep_introspect.is_introspection(&db), false);
     }
