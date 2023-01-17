@@ -90,7 +90,7 @@ jobs:
           platform: << parameters.platform >>
       - run:
           name: Run cargo test
-          command: cargo test
+          command: cargo test --all-features
 
 # The folowing are reusable command snippets can be referred to in any `steps`.
 # Commands we currently have: install_system_deps, install_rust_toolchain.

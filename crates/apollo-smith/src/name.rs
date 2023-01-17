@@ -90,7 +90,7 @@ impl<'a> DocumentBuilder<'a> {
     // Mirror what happens in `Arbitrary for String`, but do so with a clamped size.
     pub(crate) fn limited_string(&mut self, max_size: usize) -> ArbitraryResult<String> {
         loop {
-            let size = self.u.int_in_range(0..=max_size)?;
+            let size = self.u.int_in_range(1..=max_size)?;
 
             let gen_str = String::from_utf8(
                 (0..size)
