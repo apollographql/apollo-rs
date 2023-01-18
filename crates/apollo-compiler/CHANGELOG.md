@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
-# [0.6.0](https://crates.io/crates/apollo-compiler/0.6.0) - 2023-01-17
+# [0.6.0](https://crates.io/crates/apollo-compiler/0.6.0) - 2023-01-18
 
 This release has a few breaking changes as we try to standardise APIs across the
 compiler. We appreciate your patience with these changes. If you run into trouble, please [open an issue].
