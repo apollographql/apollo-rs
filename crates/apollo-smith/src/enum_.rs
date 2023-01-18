@@ -54,7 +54,9 @@ impl From<EnumTypeDef> for EnumDefinition {
 impl TryFrom<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(enum_def: apollo_parser::ast::EnumTypeDefinition) -> Result<Self, Self::Error> {
+    fn try_from(
+        enum_def: apollo_parser::ast::EnumTypeDefinition,
+    ) -> std::result::Result<Self, Self::Error> {
         Ok(Self {
             description: enum_def
                 .description()
@@ -71,7 +73,7 @@ impl TryFrom<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
                 .expect("must have enum values definition")
                 .enum_value_definitions()
                 .map(EnumValueDefinition::try_from)
-                .collect::<Result<_, _>>()?,
+                .collect::<std::result::Result<_, _>>()?,
             extend: false,
         })
     }
@@ -81,7 +83,9 @@ impl TryFrom<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
 impl TryFrom<apollo_parser::ast::EnumTypeExtension> for EnumTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(enum_def: apollo_parser::ast::EnumTypeExtension) -> Result<Self, Self::Error> {
+    fn try_from(
+        enum_def: apollo_parser::ast::EnumTypeExtension,
+    ) -> std::result::Result<Self, Self::Error> {
         Ok(Self {
             description: None,
             name: enum_def.name().unwrap().into(),
@@ -95,7 +99,7 @@ impl TryFrom<apollo_parser::ast::EnumTypeExtension> for EnumTypeDef {
                 .expect("must have enum values definition")
                 .enum_value_definitions()
                 .map(EnumValueDefinition::try_from)
-                .collect::<Result<_, _>>()?,
+                .collect::<std::result::Result<_, _>>()?,
             extend: true,
         })
     }
@@ -135,7 +139,7 @@ impl TryFrom<apollo_parser::ast::EnumValueDefinition> for EnumValueDefinition {
 
     fn try_from(
         enum_value_def: apollo_parser::ast::EnumValueDefinition,
-    ) -> Result<Self, Self::Error> {
+    ) -> std::result::Result<Self, Self::Error> {
         Ok(Self {
             description: enum_value_def.description().map(Description::from),
             value: enum_value_def
