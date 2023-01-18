@@ -19,30 +19,37 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Documentation -->
 # [0.6.0](https://crates.io/crates/apollo-compiler/0.6.0) - 2023-01-17
 
-This release has a few breaking changes as we try to standardise APIs across the compiler. We appreciate your patience with these changes.
+This release has a few breaking changes as we try to standardise APIs across the
+compiler. We appreciate your patience with these changes. If you run into trouble, please [open an issue].
 
 ## BREAKING
 - Rename `compiler.create_*` methods to `compiler.add_*`, [SimonSapin] in [412]
-- Rename `schema` to `type_system` for `compiler.add_` and `compiler.update_` methods, [SimonSapin] in [413]
+- Rename `schema` to `type_system` for `compiler.add_` and `compiler.update_`
+methods, [SimonSapin] in [413]
 - Unify `ty`, `type_def` and `kind` namings in HIR, [lrlna] in [415]
   - in `Type` struct impl: `ty()` --> `type_def()`
   - in `TypeDefinition` struct impl: `ty()` --> `kind()`
   - in `FragmentDefinition` struct impl: `ty()` --> `type_def()`
-  - in `RootOperationTypeDefinition` struct: `operation_type` field --> `operation_ty`
+  - in `RootOperationTypeDefinition` struct: `operation_type` field -->
+  `operation_ty`
 
 ## Features
 - `FileId`s are unique per process, [SimonSapin] in [405]
-- Type alias `compiler.snapshot()` return type to `Snapshot`, [SimonSapin] in [410]
-- Introduce a type system high-level intermediate representation (HIR) as input to the compiler, [SimonSapin] in [407]
+- Type alias `compiler.snapshot()` return type to `Snapshot`, [SimonSapin] in
+[410]
+- Introduce a type system high-level intermediate representation (HIR) as input
+to the compiler, [SimonSapin] in [407]
 
 ## Fixes
 - Use `#[salsa::transparent]` for `find_*` queries, i.e. not caching query results, [lrlna] in [403]
 
 ## Maintenance
 - Add compiler benchmarks, [lrlna] in [404]
+
 ## Documentation
 - Document `apollo-rs` runs on stable, [SimonSapin] in [402]
 
+[open an issue]: https://github.com/apollographql/apollo-rs/issues/new/choose
 [lrlna]: https://github.com/lrlna
 [SimonSapin]: https://github.com/SimonSapin
 [pull/402]: https://github.com/apollographql/apollo-rs/pull/402
