@@ -1014,7 +1014,7 @@ impl Field {
     /// returns true if this is an introspection field (i.e. it's [`Self::name()`] is one of __type, or __schema).
     pub fn is_introspection(&self) -> bool {
         let field_name = self.name();
-        field_name == "__type" || field_name == "__schema"
+        field_name == "__type" || field_name == "__schema" || field_name == "__typename"
     }
 }
 
