@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            108: "0041_subscription_operation_with_undefined_fields.graphql",
+            109: "0041_subscription_operation_with_undefined_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 108,
+                id: 109,
             },
             offset: 21,
             length: 27,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 108,
+                        id: 109,
                     },
                     offset: 21,
                     length: 27,
@@ -24,7 +24,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 108,
+                        id: 109,
                     },
                     offset: 51,
                     length: 44,

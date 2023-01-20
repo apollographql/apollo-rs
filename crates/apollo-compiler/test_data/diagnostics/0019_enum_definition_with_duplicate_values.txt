@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            85: "0019_enum_definition_with_duplicate_values.graphql",
+            86: "0019_enum_definition_with_duplicate_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 85,
+                id: 86,
             },
             offset: 84,
             length: 4,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 85,
+                        id: 86,
                     },
                     offset: 60,
                     length: 8,
@@ -24,7 +24,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 85,
+                        id: 86,
                     },
                     offset: 84,
                     length: 4,
@@ -40,14 +40,14 @@
             name: "CAT",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 85,
+                    id: 86,
                 },
                 offset: 60,
                 length: 8,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 85,
+                    id: 86,
                 },
                 offset: 84,
                 length: 4,
@@ -56,11 +56,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            85: "0019_enum_definition_with_duplicate_values.graphql",
+            86: "0019_enum_definition_with_duplicate_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 85,
+                id: 86,
             },
             offset: 157,
             length: 17,
@@ -69,7 +69,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 85,
+                        id: 86,
                     },
                     offset: 108,
                     length: 21,
@@ -79,7 +79,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 85,
+                        id: 86,
                     },
                     offset: 157,
                     length: 17,
@@ -95,14 +95,14 @@
             name: "THRIVE_PET_FOODS",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 85,
+                    id: 86,
                 },
                 offset: 108,
                 length: 21,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 85,
+                    id: 86,
                 },
                 offset: 157,
                 length: 17,

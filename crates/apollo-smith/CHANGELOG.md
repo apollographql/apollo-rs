@@ -5,7 +5,7 @@ All notable changes to `apollo-smith` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- # [x.x.x] (unreleased) - 2022-mm-dd
+<!-- # [x.x.x] (unreleased) - 2023-mm-dd
 
 > Important: X breaking changes below, indicated by **BREAKING**
 
@@ -18,6 +18,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.3.2](https://crates.io/crates/apollo-smith/0.3.2) - 2023-01-18
+## Features
+- Derive `Clone` on `apollo-smith` types, [SimonSapin] in [429]
+- Add `DocumentBuilder::input_exhausted`, [SimonSapin] in [430]
+## Fixes
+- TryFrom for enums to use std::Result, continuation of [390], [bnjjj] in [428]
+- Break infinite loop in input string generation, [SimonSapin] in [427]
+
+[SimonSapin]: https://github.com/SimonSapin
+[bnjjj]: https://github.com/bnjjj
+[427]: https://github.com/apollographql/apollo-rs/pull/427
+[428]: https://github.com/apollographql/apollo-rs/pull/428
+[429]: https://github.com/apollographql/apollo-rs/pull/429
+[430]: https://github.com/apollographql/apollo-rs/pull/430
+
 # [0.3.1](https://crates.io/crates/apollo-smith/0.3.1) - 2022-11-29
 This is a re-publish of 0.3.0 with fixed dependency versions.
 

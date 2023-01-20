@@ -77,7 +77,7 @@ impl TryFrom<apollo_parser::ast::FieldDefinition> for FieldDef {
 ///     Alias? Name Arguments? Directives? SelectionSet?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Fields).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Field {
     pub(crate) alias: Option<Name>,
     pub(crate) name: Name,

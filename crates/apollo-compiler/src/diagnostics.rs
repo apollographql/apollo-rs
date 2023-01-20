@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::database::hir::HirNodeLocation;
+use crate::database::hir::{DirectiveLocation, HirNodeLocation};
 use crate::database::{InputDatabase, SourceCache};
 use crate::FileId;
 use thiserror::Error;
@@ -214,6 +214,15 @@ pub enum DiagnosticData {
         name: String,
         // actual type
         ty: &'static str,
+    },
+    #[error("{} directive is not supported for {} location", .name, String::from(.dir_loc.clone()))]
+    UnsupportedLocation {
+        /// current directive definition
+        name: String,
+        /// current location where the directive is used
+        dir_loc: DirectiveLocation,
+        /// The source location where the directive that's being used was defined.
+        directive_def: Option<DiagnosticLocation>,
     },
 }
 

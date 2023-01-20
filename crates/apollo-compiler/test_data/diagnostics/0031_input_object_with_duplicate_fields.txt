@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            98: "0031_input_object_with_duplicate_fields.graphql",
+            99: "0031_input_object_with_duplicate_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 98,
+                id: 99,
             },
             offset: 133,
             length: 11,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 98,
+                        id: 99,
                     },
                     offset: 133,
                     length: 11,
@@ -24,7 +24,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 98,
+                        id: 99,
                     },
                     offset: 144,
                     length: 9,
@@ -39,14 +39,68 @@
             field: "x",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 98,
+                    id: 99,
                 },
                 offset: 133,
                 length: 11,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 98,
+                    id: 99,
+                },
+                offset: 144,
+                length: 9,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            99: "0031_input_object_with_duplicate_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 144,
+            length: 9,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 133,
+                    length: 11,
+                },
+                text: "previous definition of `x` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 144,
+                    length: 9,
+                },
+                text: "`x` redefined here",
+            },
+        ],
+        help: Some(
+            "`x` argument must only be defined once.",
+        ),
+        data: UniqueArgument {
+            name: "x",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 99,
+                },
+                offset: 133,
+                length: 11,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 99,
                 },
                 offset: 144,
                 length: 9,

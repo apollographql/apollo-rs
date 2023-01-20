@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            116: "0049_duplicate_directive_argument_definition_names.graphql",
+            117: "0049_duplicate_directive_argument_definition_names.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 116,
+                id: 117,
             },
             offset: 33,
             length: 12,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 116,
+                        id: 117,
                     },
                     offset: 19,
                     length: 14,
@@ -24,7 +24,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 116,
+                        id: 117,
                     },
                     offset: 33,
                     length: 12,
@@ -39,14 +39,14 @@
             name: "arg",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 116,
+                    id: 117,
                 },
                 offset: 19,
                 length: 14,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 116,
+                    id: 117,
                 },
                 offset: 33,
                 length: 12,

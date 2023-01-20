@@ -16,7 +16,7 @@ use crate::{
 ///     OperationType Name? VariableDefinitions? Directives? SelectionSet
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Operations).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct OperationDef {
     pub(crate) operation_type: OperationType,
     pub(crate) name: Option<Name>,

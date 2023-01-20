@@ -1,76 +1,76 @@
 [
     ApolloDiagnostic {
         cache: {
-            113: "0046_duplicate_directive_arguments.graphql",
+            114: "0046_duplicate_directive_arguments.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 113,
+                id: 114,
             },
-            offset: 40,
-            length: 22,
+            offset: 74,
+            length: 42,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 113,
+                        id: 114,
                     },
-                    offset: 19,
-                    length: 21,
+                    offset: 30,
+                    length: 44,
                 },
-                text: "previously provided `reason` here",
+                text: "previously provided `url` here",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 113,
+                        id: 114,
                     },
-                    offset: 40,
-                    length: 22,
+                    offset: 74,
+                    length: 42,
                 },
-                text: "`reason` provided again here",
+                text: "`url` provided again here",
             },
         ],
         help: Some(
-            "`reason` argument must only be provided once.",
+            "`url` argument must only be provided once.",
         ),
         data: UniqueArgument {
-            name: "reason",
+            name: "url",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 113,
+                    id: 114,
                 },
-                offset: 19,
-                length: 21,
+                offset: 30,
+                length: 44,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 113,
+                    id: 114,
                 },
-                offset: 40,
-                length: 22,
+                offset: 74,
+                length: 42,
             },
         },
     },
     ApolloDiagnostic {
         cache: {
-            113: "0046_duplicate_directive_arguments.graphql",
+            114: "0046_duplicate_directive_arguments.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 113,
+                id: 114,
             },
-            offset: 112,
+            offset: 189,
             length: 8,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 113,
+                        id: 114,
                     },
-                    offset: 101,
+                    offset: 178,
                     length: 11,
                 },
                 text: "previously provided `if` here",
@@ -78,9 +78,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 113,
+                        id: 114,
                     },
-                    offset: 112,
+                    offset: 189,
                     length: 8,
                 },
                 text: "`if` provided again here",
@@ -93,16 +93,16 @@
             name: "if",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 113,
+                    id: 114,
                 },
-                offset: 101,
+                offset: 178,
                 length: 11,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 113,
+                    id: 114,
                 },
-                offset: 112,
+                offset: 189,
                 length: 8,
             },
         },

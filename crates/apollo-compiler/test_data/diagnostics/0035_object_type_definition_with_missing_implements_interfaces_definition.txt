@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            102: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
+            103: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 102,
+                id: 103,
             },
             offset: 239,
             length: 9,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 102,
+                        id: 103,
                     },
                     offset: 239,
                     length: 9,
@@ -29,11 +29,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            102: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
+            103: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 102,
+                id: 103,
             },
             offset: 22,
             length: 6,
@@ -42,7 +42,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 102,
+                        id: 103,
                     },
                     offset: 22,
                     length: 6,

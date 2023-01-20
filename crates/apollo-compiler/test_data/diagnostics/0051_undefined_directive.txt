@@ -1,30 +1,30 @@
 [
     ApolloDiagnostic {
         cache: {
-            74: "0007_operation_with_undefined_variables.graphql",
+            119: "0051_undefined_directive.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 74,
+                id: 119,
             },
-            offset: 42,
-            length: 18,
+            offset: 46,
+            length: 12,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 74,
+                        id: 119,
                     },
-                    offset: 42,
-                    length: 18,
+                    offset: 46,
+                    length: 12,
                 },
                 text: "not found in this scope",
             },
         ],
         help: None,
         data: UndefinedDefinition {
-            name: "undefinedVariable",
+            name: "directiveA",
         },
     },
 ]
