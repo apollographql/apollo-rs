@@ -6,6 +6,8 @@ use crate::{
     ApolloDiagnostic, ValidationDatabase,
 };
 
+use super::input_object;
+
 pub fn validate(
     db: &dyn ValidationDatabase,
     args_def: hir::ArgumentsDefinition,
@@ -13,7 +15,11 @@ pub fn validate(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(db.check_input_values(args_def.input_values, dir_loc));
+    diagnostics.extend(input_object::validate_input_values(
+        db,
+        args_def.input_values,
+        dir_loc,
+    ));
 
     diagnostics
 }

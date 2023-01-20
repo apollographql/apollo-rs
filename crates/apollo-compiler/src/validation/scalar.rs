@@ -1,11 +1,14 @@
 use crate::{
     diagnostics::{BuiltInScalarDefinition, ScalarSpecificationURL},
+    hir::DirectiveLocation,
     ApolloDiagnostic, ValidationDatabase,
 };
 
+use super::directive;
+
 const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 
-pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for (name, scalar) in db.scalars().iter() {
@@ -36,6 +39,12 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         },
                     ))
                 }
+
+                diagnostics.extend(directive::validate_usage(
+                    db,
+                    scalar.directives().to_vec(),
+                    DirectiveLocation::Scalar,
+                ));
             }
         }
     }
