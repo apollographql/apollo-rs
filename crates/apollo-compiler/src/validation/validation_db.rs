@@ -185,7 +185,7 @@ pub fn check_input_object_type_definition(
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(db.check_input_values(
-        (*input_obj).clone().input_fields_definition,
+        input_obj.input_fields_definition.clone(),
         hir::DirectiveLocation::InputFieldDefinition,
     ));
 
