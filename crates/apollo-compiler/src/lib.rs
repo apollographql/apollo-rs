@@ -840,7 +840,7 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
         let locations: Vec<_> = directives["delegateField"]
             .directive_locations()
             .iter()
-            .map(|loc| loc.clone().name())
+            .map(|loc| loc.name())
             .collect();
 
         assert_eq!(locations, ["OBJECT", "INTERFACE"]);
