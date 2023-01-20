@@ -334,7 +334,7 @@ pub fn check_db_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
 
     for def in db.all_operations().iter() {
         diagnostics
-            .extend(db.check_directives(def.directives().to_vec(), (*def.operation_ty()).into()));
+            .extend(db.check_directives(def.directives().to_vec(), def.operation_ty().into()));
         diagnostics.extend(db.check_variable_definitions(def.variables.clone()));
         diagnostics.extend(db.check_selection_set(def.selection_set().clone()));
     }
