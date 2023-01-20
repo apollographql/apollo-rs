@@ -1,0 +1,16 @@
+[
+    UndefinedDefinition(
+        UndefinedDefinition {
+            ty: "directiveA",
+            src: "type Query {\n    name: String\n    status: Int @directiveA\n}\n\ndirective @directiveB on FIELD_DEFINITION\n",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    46,
+                ),
+                length: SourceOffset(
+                    12,
+                ),
+            },
+        },
+    ),
+]

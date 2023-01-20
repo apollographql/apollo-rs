@@ -1,36 +1,36 @@
 [
     UniqueArgument(
         UniqueArgument {
-            name: "reason",
-            src: "type X @deprecated(reason: \"as a test\", reason: \"just for fun\") {}\ntype Query {\n  something: X @skip(if: false, if: true)\n}\n",
+            name: "url",
+            src: "scalar newScalar @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\", url: \"https://tools.ietf.org/html/rfc4125\")\n\ntype Query {\n  status: String,\n  response: String @example(if: false, if: true)\n}\n\ndirective @example(if: Boolean) on FIELD_DEFINITION",
             original_definition: SourceSpan {
                 offset: SourceOffset(
-                    19,
+                    30,
                 ),
                 length: SourceOffset(
-                    21,
+                    44,
                 ),
             },
             redefined_definition: SourceSpan {
                 offset: SourceOffset(
-                    40,
+                    74,
                 ),
                 length: SourceOffset(
-                    22,
+                    42,
                 ),
             },
             help: Some(
-                "`reason` argument must only be provided once.",
+                "`url` argument must only be provided once.",
             ),
         },
     ),
     UniqueArgument(
         UniqueArgument {
             name: "if",
-            src: "type X @deprecated(reason: \"as a test\", reason: \"just for fun\") {}\ntype Query {\n  something: X @skip(if: false, if: true)\n}\n",
+            src: "scalar newScalar @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\", url: \"https://tools.ietf.org/html/rfc4125\")\n\ntype Query {\n  status: String,\n  response: String @example(if: false, if: true)\n}\n\ndirective @example(if: Boolean) on FIELD_DEFINITION",
             original_definition: SourceSpan {
                 offset: SourceOffset(
-                    101,
+                    178,
                 ),
                 length: SourceOffset(
                     11,
@@ -38,7 +38,7 @@
             },
             redefined_definition: SourceSpan {
                 offset: SourceOffset(
-                    112,
+                    189,
                 ),
                 length: SourceOffset(
                     8,
