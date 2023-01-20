@@ -1,5 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
+    fmt,
     sync::Arc,
 };
 
@@ -307,24 +308,12 @@ impl OperationType {
     }
 }
 
-impl std::fmt::Display for OperationType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for OperationType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             OperationType::Query => write!(f, "Query"),
             OperationType::Mutation => write!(f, "Mutation"),
             OperationType::Subscription => write!(f, "Subscription"),
-        }
-    }
-}
-
-impl From<OperationType> for String {
-    fn from(op_type: OperationType) -> Self {
-        if op_type.is_subscription() {
-            "Subscription".to_string()
-        } else if op_type.is_mutation() {
-            "Mutation".to_string()
-        } else {
-            "Query".to_string()
         }
     }
 }
@@ -572,7 +561,7 @@ impl DirectiveDefinition {
     }
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub enum DirectiveLocation {
     Query,
     Mutation,
@@ -593,6 +582,39 @@ pub enum DirectiveLocation {
     EnumValue,
     InputObject,
     InputFieldDefinition,
+}
+
+impl DirectiveLocation {
+    /// Get the name of this directive location as it would appear in GraphQL source code.
+    pub fn name(self) -> &'static str {
+        match self {
+            DirectiveLocation::Query => "QUERY",
+            DirectiveLocation::Mutation => "MUTATION",
+            DirectiveLocation::Subscription => "SUBSCRIPTION",
+            DirectiveLocation::Field => "FIELD",
+            DirectiveLocation::FragmentDefinition => "FRAGMENT_DEFINITION",
+            DirectiveLocation::FragmentSpread => "FRAGMENT_SPREAD",
+            DirectiveLocation::InlineFragment => "INLINE_FRAGMENT",
+            DirectiveLocation::VariableDefinition => "VARIABLE_DEFINITION",
+            DirectiveLocation::Schema => "SCHEMA",
+            DirectiveLocation::Scalar => "SCALAR",
+            DirectiveLocation::Object => "OBJECT",
+            DirectiveLocation::FieldDefinition => "FIELD_DEFINITION",
+            DirectiveLocation::ArgumentDefinition => "ARGUMENT_DEFINITION",
+            DirectiveLocation::Interface => "INTERFACE",
+            DirectiveLocation::Union => "UNION",
+            DirectiveLocation::Enum => "ENUM",
+            DirectiveLocation::EnumValue => "ENUM_VALUE",
+            DirectiveLocation::InputObject => "INPUT_OBJECT",
+            DirectiveLocation::InputFieldDefinition => "INPUT_FIELD_DEFINITION",
+        }
+    }
+}
+
+impl fmt::Display for DirectiveLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name())
+    }
 }
 
 impl From<ast::DirectiveLocation> for DirectiveLocation {
@@ -635,32 +657,6 @@ impl From<ast::DirectiveLocation> for DirectiveLocation {
             DirectiveLocation::InputObject
         } else {
             DirectiveLocation::InputFieldDefinition
-        }
-    }
-}
-
-impl From<DirectiveLocation> for String {
-    fn from(dir_loc: DirectiveLocation) -> Self {
-        match dir_loc {
-            DirectiveLocation::Query => "QUERY".to_string(),
-            DirectiveLocation::Mutation => "MUTATION".to_string(),
-            DirectiveLocation::Subscription => "SUBSCRIPTION".to_string(),
-            DirectiveLocation::Field => "FIELD".to_string(),
-            DirectiveLocation::FragmentDefinition => "FRAGMENT_DEFINITION".to_string(),
-            DirectiveLocation::FragmentSpread => "FRAGMENT_SPREAD".to_string(),
-            DirectiveLocation::InlineFragment => "INLINE_FRAGMENT".to_string(),
-            DirectiveLocation::VariableDefinition => "VARIABLE_DEFINITION".to_string(),
-            DirectiveLocation::Schema => "SCHEMA".to_string(),
-            DirectiveLocation::Scalar => "SCALAR".to_string(),
-            DirectiveLocation::Object => "OBJECT".to_string(),
-            DirectiveLocation::FieldDefinition => "FIELD_DEFINITION".to_string(),
-            DirectiveLocation::ArgumentDefinition => "ARGUMENT_DEFINITION".to_string(),
-            DirectiveLocation::Interface => "INTERFACE".to_string(),
-            DirectiveLocation::Union => "UNION".to_string(),
-            DirectiveLocation::Enum => "ENUM".to_string(),
-            DirectiveLocation::EnumValue => "ENUM_VALUE".to_string(),
-            DirectiveLocation::InputObject => "INPUT_OBJECT".to_string(),
-            DirectiveLocation::InputFieldDefinition => "INPUT_FIELD_DEFINITION".to_string(),
         }
     }
 }

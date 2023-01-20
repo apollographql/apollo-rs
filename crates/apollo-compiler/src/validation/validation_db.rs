@@ -435,7 +435,7 @@ pub fn check_directive(
         if !allowed_loc.contains(&dir_loc) {
             diagnostics.push(ApolloDiagnostic::UnsupportedLocation(UnsupportedLocation {
                 ty: name.into(),
-                dir_loc: dir_loc.into(),
+                dir_loc,
                 src: db.source_code(loc.file_id()),
                 directive: (offset, len).into(),
                 directive_def: directive_def_loc,

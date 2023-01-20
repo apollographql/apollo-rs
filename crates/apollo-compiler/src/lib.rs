@@ -837,10 +837,10 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
         assert!(diagnostics.is_empty());
 
         let directives = compiler.db.directive_definitions();
-        let locations: Vec<String> = directives["delegateField"]
+        let locations: Vec<_> = directives["delegateField"]
             .directive_locations()
             .iter()
-            .map(|loc| loc.clone().into())
+            .map(|loc| loc.clone().name())
             .collect();
 
         assert_eq!(locations, ["OBJECT", "INTERFACE"]);

@@ -1,5 +1,6 @@
 use std::{fmt, sync::Arc};
 
+use crate::database::hir::DirectiveLocation;
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
 
@@ -410,12 +411,12 @@ pub struct UnsupportedLocation {
     pub ty: String,
 
     // current location where the directive is used
-    pub dir_loc: String,
+    pub dir_loc: DirectiveLocation,
 
     #[source_code]
     pub src: Arc<str>,
 
-    #[label("{} is not a valid location", self.dir_loc)]
+    #[label("{} is not a valid location for this directive", self.dir_loc)]
     pub directive: SourceSpan,
 
     #[label("consider adding {} directive location here", self.dir_loc)]
