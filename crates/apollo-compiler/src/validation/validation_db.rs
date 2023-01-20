@@ -10,8 +10,8 @@ use crate::{
     diagnostics::{UndefinedDefinition, UniqueArgument, UnsupportedLocation},
     hir,
     validation::{
-        directive, enum_, input_object, interface, object, operation, scalar, schema, subscription,
-        union_, unused_variable,
+        arguments, directive, enum_, input_object, interface, object, operation, scalar, schema,
+        subscription, union_, unused_variable,
     },
     ApolloDiagnostic, AstDatabase, FileId, HirDatabase, InputDatabase,
 };
@@ -72,10 +72,11 @@ pub trait ValidationDatabase:
     fn check_schema_definition(&self, def: Arc<hir::SchemaDefinition>) -> Vec<ApolloDiagnostic>;
     fn check_selection_set(&self, selection_set: hir::SelectionSet) -> Vec<ApolloDiagnostic>;
     fn check_selection(&self, selection: Vec<hir::Selection>) -> Vec<ApolloDiagnostic>;
-    fn check_arguments_definition(
+    fn validate_arguments_definition(
         &self,
         arguments_def: hir::ArgumentsDefinition,
     ) -> Vec<ApolloDiagnostic>;
+    fn validate_arguments(&self, schema: Vec<hir::Argument>) -> Vec<ApolloDiagnostic>;
     fn check_field_definition(&self, field: hir::FieldDefinition) -> Vec<ApolloDiagnostic>;
     fn check_input_values(
         &self,
@@ -93,7 +94,6 @@ pub trait ValidationDatabase:
         schema: hir::Directive,
         dir_loc: hir::DirectiveLocation,
     ) -> Vec<ApolloDiagnostic>;
-    fn check_arguments(&self, schema: Vec<hir::Argument>) -> Vec<ApolloDiagnostic>;
     fn check_field(&self, field: Arc<hir::Field>) -> Vec<ApolloDiagnostic>;
     fn check_variable_definitions(
         &self,
@@ -107,7 +107,7 @@ pub fn check_directive_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(db.check_arguments_definition(directive.arguments.clone()));
+    diagnostics.extend(db.validate_arguments_definition(directive.arguments.clone()));
 
     diagnostics
 }
@@ -239,18 +239,11 @@ pub fn check_selection(
     diagnostics
 }
 
-pub fn check_arguments_definition(
+pub fn validate_arguments_definition(
     db: &dyn ValidationDatabase,
-    arguments_def: hir::ArgumentsDefinition,
+    args_def: hir::ArgumentsDefinition,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    diagnostics.extend(db.check_input_values(
-        arguments_def.input_values,
-        hir::DirectiveLocation::ArgumentDefinition,
-    ));
-
-    diagnostics
+    arguments::validate(db, args_def, hir::DirectiveLocation::ArgumentDefinition)
 }
 
 pub fn check_field_definition(
@@ -264,7 +257,7 @@ pub fn check_field_definition(
         hir::DirectiveLocation::FieldDefinition,
     ));
 
-    diagnostics.extend(db.check_arguments_definition(field.arguments));
+    diagnostics.extend(db.validate_arguments_definition(field.arguments));
 
     diagnostics
 }
@@ -396,7 +389,7 @@ pub fn check_field(db: &dyn ValidationDatabase, field: Arc<hir::Field>) -> Vec<A
 
     diagnostics
         .extend(db.check_directives(field.directives().to_vec(), hir::DirectiveLocation::Field));
-    diagnostics.extend(db.check_arguments(field.arguments().to_vec()));
+    diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
 
     diagnostics
 }
@@ -420,7 +413,7 @@ pub fn check_directive(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(db.check_arguments(directive.arguments().to_vec()));
+    diagnostics.extend(db.validate_arguments(directive.arguments().to_vec()));
 
     let name = directive.name();
     let loc = directive.loc();
@@ -454,35 +447,11 @@ pub fn check_directive(
     diagnostics
 }
 
-pub fn check_arguments(
+pub fn validate_arguments(
     db: &dyn ValidationDatabase,
-    arguments: Vec<hir::Argument>,
+    args: Vec<hir::Argument>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-    let mut seen: HashMap<&str, &hir::Argument> = HashMap::new();
-
-    for argument in &arguments {
-        let name = argument.name();
-        if let Some(prev_arg) = seen.get(name) {
-            let prev_offset = prev_arg.loc().offset();
-            let prev_node_len = prev_arg.loc().node_len();
-
-            let current_offset = argument.loc().offset();
-            let current_node_len = argument.loc().node_len();
-
-            diagnostics.push(ApolloDiagnostic::UniqueArgument(UniqueArgument {
-                name: name.into(),
-                src: db.source_code(prev_arg.loc().file_id()),
-                original_definition: (prev_offset, prev_node_len).into(),
-                redefined_definition: (current_offset, current_node_len).into(),
-                help: Some(format!("`{name}` argument must only be provided once.")),
-            }));
-        } else {
-            seen.insert(name, argument);
-        }
-    }
-
-    diagnostics
+    arguments::validate_usage(db, args)
 }
 
 pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
