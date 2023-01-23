@@ -278,7 +278,7 @@ pub fn check_input_values(
     let mut seen: HashMap<&str, &hir::InputValueDefinition> = HashMap::new();
 
     for input_value in input_values.iter() {
-        diagnostics.extend(db.check_directives(input_value.directives().to_vec(), dir_loc.clone()));
+        diagnostics.extend(db.check_directives(input_value.directives().to_vec(), dir_loc));
         let name = input_value.name();
         if let Some(prev_arg) = seen.get(name) {
             let prev_offset = prev_arg.loc().unwrap().offset();
@@ -407,7 +407,7 @@ pub fn check_directives(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     for dir in dirs {
-        diagnostics.extend(db.check_directive(dir.clone(), dir_loc.clone()));
+        diagnostics.extend(db.check_directive(dir.clone(), dir_loc));
     }
     diagnostics
 }
@@ -435,7 +435,7 @@ pub fn check_directive(
         if !allowed_loc.contains(&dir_loc) {
             diagnostics.push(ApolloDiagnostic::UnsupportedLocation(UnsupportedLocation {
                 ty: name.into(),
-                dir_loc: dir_loc.into(),
+                dir_loc,
                 src: db.source_code(loc.file_id()),
                 directive: (offset, len).into(),
                 directive_def: directive_def_loc,
