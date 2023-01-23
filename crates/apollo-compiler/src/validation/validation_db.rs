@@ -276,7 +276,7 @@ pub fn check_input_values(
     let mut seen: HashMap<&str, &hir::InputValueDefinition> = HashMap::new();
 
     for input_value in input_values.iter() {
-        diagnostics.extend(db.check_directives(input_value.directives().to_vec(), dir_loc.clone()));
+        diagnostics.extend(db.check_directives(input_value.directives().to_vec(), dir_loc));
         let name = input_value.name();
         if let Some(prev_arg) = seen.get(name) {
             if let (Some(original_definition), Some(redefined_definition)) =
@@ -415,7 +415,7 @@ pub fn check_directives(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     for dir in dirs {
-        diagnostics.extend(db.check_directive(dir.clone(), dir_loc.clone()));
+        diagnostics.extend(db.check_directive(dir.clone(), dir_loc));
     }
     diagnostics
 }
@@ -441,19 +441,16 @@ pub fn check_directive(
                     loc.into(),
                     DiagnosticData::UnsupportedLocation {
                         name: name.into(),
-                        dir_loc: dir_loc.clone(),
+                        dir_loc,
                         directive_def: directive.loc.map(|loc| loc.into()),
                     },
             )
-                .label(Label::new(loc, format!("{} is not a valid location", String::from(dir_loc.clone()))))
+                .label(Label::new(loc, format!("{dir_loc} is not a valid location")))
                 .help("the directive must be used in a location that the service has declared support for");
             if let Some(directive_def_loc) = directive.loc {
                 diag = diag.label(Label::new(
                     directive_def_loc,
-                    format!(
-                        "consider adding {} directive location here",
-                        String::from(dir_loc.clone())
-                    ),
+                    format!("consider adding {dir_loc} directive location here"),
                 ));
             }
             diagnostics.push(diag)

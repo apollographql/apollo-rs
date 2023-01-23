@@ -215,7 +215,7 @@ pub enum DiagnosticData {
         // actual type
         ty: &'static str,
     },
-    #[error("{} directive is not supported for {} location", .name, String::from(.dir_loc.clone()))]
+    #[error("{name} directive is not supported for {dir_loc} location")]
     UnsupportedLocation {
         /// current directive definition
         name: String,
