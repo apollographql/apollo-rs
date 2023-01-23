@@ -12,7 +12,7 @@ use std::{
 
 use expect_test::expect_file;
 
-use crate::{ApolloCompiler, ApolloDiagnostic, AstDatabase};
+use crate::{ApolloCompiler, ApolloDiagnostic, AstDatabase, FileId};
 
 // To run these tests and update files:
 // ```bash
@@ -74,6 +74,8 @@ fn dir_tests<F>(test_data_dir: &Path, paths: &[&str], outfile_extension: &str, f
 where
     F: Fn(&str, &Path) -> String,
 {
+    FileId::reset();
+
     for (path, input_code) in collect_graphql_files(test_data_dir, paths) {
         let mut actual = f(&input_code, &path);
         actual.push('\n');
