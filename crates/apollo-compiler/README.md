@@ -27,7 +27,7 @@ Add this to your `Cargo.toml` to start using `apollo-compiler`:
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-compiler = "0.5.0"
+apollo-compiler = "0.6.0"
 ```
 
 Or using [cargo-edit]:
@@ -182,6 +182,8 @@ fn main() -> Result<()> {
       upc: String!
       weight: Int
     }
+
+    directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
     "#;
     let query_input = r#"
     query getProduct {

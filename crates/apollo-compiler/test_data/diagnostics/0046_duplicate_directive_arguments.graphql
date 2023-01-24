@@ -1,4 +1,8 @@
-type X @deprecated(reason: "as a test", reason: "just for fun") {}
+scalar newScalar @specifiedBy(url: "https://tools.ietf.org/html/rfc4122", url: "https://tools.ietf.org/html/rfc4125")
+
 type Query {
-  something: X @skip(if: false, if: true)
+  status: String,
+  response: String @example(if: false, if: true)
 }
+
+directive @example(if: Boolean) on FIELD_DEFINITION

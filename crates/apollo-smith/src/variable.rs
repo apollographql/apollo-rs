@@ -16,7 +16,7 @@ use crate::{
 ///     VariableName : Type DefaultValue? Directives?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Language.Variables).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VariableDef {
     name: Name,
     ty: Ty,

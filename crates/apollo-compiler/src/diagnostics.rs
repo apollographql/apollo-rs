@@ -1,5 +1,6 @@
 use std::{fmt, sync::Arc};
 
+use crate::database::hir::DirectiveLocation;
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
 
@@ -24,7 +25,11 @@ pub enum ApolloDiagnostic {
     UnusedVariable(UnusedVariable),
     OutputType(OutputType),
     ObjectType(ObjectType),
+<<<<<<< HEAD
     IntrospectionField(IntrospectionField),
+=======
+    UnsupportedLocation(UnsupportedLocation),
+>>>>>>> 631896e22672dbc4f7b96525ddd01affeb9c1155
 }
 
 impl ApolloDiagnostic {
@@ -47,7 +52,11 @@ impl ApolloDiagnostic {
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::OutputType(_)
                 | ApolloDiagnostic::ObjectType(_)
+<<<<<<< HEAD
                 | ApolloDiagnostic::IntrospectionField(_)
+=======
+                | ApolloDiagnostic::UnsupportedLocation(_)
+>>>>>>> 631896e22672dbc4f7b96525ddd01affeb9c1155
         )
     }
 
@@ -87,7 +96,11 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
+<<<<<<< HEAD
             ApolloDiagnostic::IntrospectionField(diagnostic) => Report::new(diagnostic.clone()),
+=======
+            ApolloDiagnostic::UnsupportedLocation(diagnostic) => Report::new(diagnostic.clone()),
+>>>>>>> 631896e22672dbc4f7b96525ddd01affeb9c1155
         }
     }
 }
@@ -403,18 +416,41 @@ pub struct UniqueArgument {
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("{} directive is not supported for {} location", self.ty, self.dir_loc)]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct UnsupportedLocation {
+    // current directive definition
+    pub ty: String,
+
+    // current location where the directive is used
+    pub dir_loc: DirectiveLocation,
+
+    #[source_code]
+    pub src: Arc<str>,
+
+    #[label("{} is not a valid location for this directive", self.dir_loc)]
+    pub directive: SourceSpan,
+
+    #[label("consider adding {} directive location here", self.dir_loc)]
+    pub directive_def: Option<SourceSpan>,
+
+    #[help]
+    pub help: Option<String>,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[error("Subscription operations can not have an introspection field as a root field")]
 #[diagnostic(code("apollo-compiler validation error"))]
 pub struct IntrospectionField {
     // current definition
     pub field: String,
 
-    #[source_code]
-    pub src: Arc<str>,
-
     #[help]
     pub help: Option<String>,
 
     #[label("{} is an introspection field", self.field)]
     pub definition: SourceSpan,
+
+    #[source_code]
+    pub src: Arc<str>,
 }

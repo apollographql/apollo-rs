@@ -16,7 +16,7 @@ use crate::{
 ///     fragment FragmentName TypeCondition Directives? SelectionSet
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#FragmentDefinition).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FragmentDef {
     pub(crate) name: Name,
     pub(crate) type_condition: TypeCondition,
@@ -64,7 +64,7 @@ impl TryFrom<apollo_parser::ast::FragmentDefinition> for FragmentDef {
 ///     ... FragmentName Directives?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#FragmentSpread).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FragmentSpread {
     pub(crate) name: Name,
     pub(crate) directives: HashMap<Name, Directive>,
@@ -109,7 +109,7 @@ impl TryFrom<apollo_parser::ast::FragmentSpread> for FragmentSpread {
 ///     ... TypeCondition? Directives? SelectionSet
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Inline-Fragments).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InlineFragment {
     pub(crate) type_condition: Option<TypeCondition>,
     pub(crate) directives: HashMap<Name, Directive>,
@@ -152,7 +152,7 @@ impl TryFrom<apollo_parser::ast::InlineFragment> for InlineFragment {
 ///     on NamedType
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#TypeCondition).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TypeCondition {
     name: Name,
 }

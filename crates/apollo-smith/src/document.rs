@@ -20,7 +20,7 @@ use crate::{
 ///     DirectiveDefinition*
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-Document).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Document {
     pub(crate) operation_definitions: Vec<OperationDef>,
     pub(crate) fragment_definitions: Vec<FragmentDef>,

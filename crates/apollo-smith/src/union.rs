@@ -17,7 +17,7 @@ use crate::{
 ///     Description? **union** Name Directives? UnionDefMemberTypes?
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#sec-UnionDef).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnionTypeDef {
     pub(crate) name: Name,
     pub(crate) description: Option<Description>,

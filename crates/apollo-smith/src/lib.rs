@@ -207,6 +207,11 @@ impl<'a> DocumentBuilder<'a> {
         Ok(builder)
     }
 
+    /// Returns whether the provided `Unstructured` is now empty
+    pub fn input_exhausted(&self) -> bool {
+        self.u.is_empty()
+    }
+
     /// Convert a `DocumentBuilder` into a GraphQL `Document`
     pub fn finish(self) -> Document {
         Document {

@@ -491,6 +491,8 @@ type Product {
   upc: String!
   weight: Int
 }
+
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
 "#;
 
         let mut compiler = ApolloCompiler::new();
@@ -835,10 +837,10 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
         assert!(diagnostics.is_empty());
 
         let directives = compiler.db.directive_definitions();
-        let locations: Vec<String> = directives["delegateField"]
+        let locations: Vec<_> = directives["delegateField"]
             .directive_locations()
             .iter()
-            .map(|loc| loc.clone().into())
+            .map(|loc| loc.name())
             .collect();
 
         assert_eq!(locations, ["OBJECT", "INTERFACE"]);
@@ -886,6 +888,9 @@ input Point2D {
 type Book @directiveA(name: "pageCount") @directiveB(name: "author") {
   id: ID!
 }
+
+directive @directiveA(name: String) on OBJECT | INTERFACE
+directive @directiveB(name: String) on OBJECT | INTERFACE
 "#;
 
         let mut compiler = ApolloCompiler::new();

@@ -2,7 +2,7 @@
     UndefinedField(
         UndefinedField {
             field: "size",
-            src: "query getProduct {\n  size\n  weight\n}\n\ntype Query {\n  name: String\n  topProducts: Product\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n}",
+            src: "query getProduct {\n  size\n  weight\n}\n\ntype Query {\n  name: String\n  topProducts: Product\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n}\n\ndirective @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION",
             definition: SourceSpan {
                 offset: SourceOffset(
                     21,
@@ -17,7 +17,7 @@
     UndefinedField(
         UndefinedField {
             field: "weight",
-            src: "query getProduct {\n  size\n  weight\n}\n\ntype Query {\n  name: String\n  topProducts: Product\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n}",
+            src: "query getProduct {\n  size\n  weight\n}\n\ntype Query {\n  name: String\n  topProducts: Product\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n}\n\ndirective @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION",
             definition: SourceSpan {
                 offset: SourceOffset(
                     28,
