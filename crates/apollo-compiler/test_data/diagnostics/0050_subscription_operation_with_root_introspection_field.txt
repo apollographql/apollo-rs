@@ -1,0 +1,52 @@
+[
+    UnsupportedOperation(
+        UnsupportedOperation {
+            ty: "Subscription",
+            src: "subscription sub {\n  __typename\n}",
+            operation: SourceSpan {
+                offset: SourceOffset(
+                    0,
+                ),
+                length: SourceOffset(
+                    33,
+                ),
+            },
+            schema: None,
+            help: Some(
+                "consider defining a `subscription` root operation type in your schema",
+            ),
+        },
+    ),
+    UndefinedField(
+        UndefinedField {
+            field: "__typename",
+            src: "subscription sub {\n  __typename\n}",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    21,
+                ),
+                length: SourceOffset(
+                    11,
+                ),
+            },
+            help: "`__typename` is not defined on the current Subscription root operation type.",
+        },
+    ),
+    IntrospectionField(
+        IntrospectionField {
+            field: "__typename",
+            src: "subscription sub {\n  __typename\n}",
+            help: Some(
+                "`__typename` is an introspection field. This is not allowed as the root field for Subscription operations.",
+            ),
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    21,
+                ),
+                length: SourceOffset(
+                    11,
+                ),
+            },
+        },
+    ),
+]

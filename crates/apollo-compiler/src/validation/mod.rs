@@ -8,6 +8,7 @@ mod object;
 mod operation;
 mod scalar;
 mod schema;
+mod subscription;
 mod union_;
 mod unused_variable;
 
