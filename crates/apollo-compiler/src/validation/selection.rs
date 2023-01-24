@@ -1,8 +1,4 @@
-use crate::{
-    hir,
-    validation::{directive, field, ValidationDatabase},
-    ApolloDiagnostic,
-};
+use crate::{hir, validation::ValidationDatabase, ApolloDiagnostic};
 
 pub fn validate(
     db: &dyn ValidationDatabase,
@@ -16,20 +12,16 @@ pub fn validate(
                 if !field.selection_set().selection().is_empty() {
                     diagnostics.extend(validate(db, (*field.selection_set().selection).clone()))
                 }
-                diagnostics.extend(field::validate(db, field));
+                diagnostics.extend(db.validate_field(field.as_ref().clone()));
             }
-            hir::Selection::FragmentSpread(frag) => diagnostics.extend(directive::validate_usage(
-                db,
+            hir::Selection::FragmentSpread(frag) => diagnostics.extend(db.validate_directives(
                 frag.directives().to_vec(),
                 hir::DirectiveLocation::FragmentSpread,
             )),
-            hir::Selection::InlineFragment(inline) => {
-                diagnostics.extend(directive::validate_usage(
-                    db,
-                    inline.directives().to_vec(),
-                    hir::DirectiveLocation::InlineFragment,
-                ))
-            }
+            hir::Selection::InlineFragment(inline) => diagnostics.extend(db.validate_directives(
+                inline.directives().to_vec(),
+                hir::DirectiveLocation::InlineFragment,
+            )),
         }
     }
 

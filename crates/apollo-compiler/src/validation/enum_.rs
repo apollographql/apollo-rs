@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
 use crate::{
     diagnostics::{CapitalizedValue, UniqueDefinition},
@@ -6,22 +6,16 @@ use crate::{
     ApolloDiagnostic, ValidationDatabase,
 };
 
-use super::directive;
-
-pub fn validate(
+pub fn validate_enum_definition(
     db: &dyn ValidationDatabase,
-    enum_def: Arc<hir::EnumTypeDefinition>,
+    enum_def: hir::EnumTypeDefinition,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-    diagnostics.extend(directive::validate_usage(
-        db,
-        enum_def.directives().to_vec(),
-        hir::DirectiveLocation::Enum,
-    ));
+    let mut diagnostics =
+        db.validate_directives(enum_def.directives().to_vec(), hir::DirectiveLocation::Enum);
 
     let mut seen: HashMap<&str, &EnumValueDefinition> = HashMap::new();
     for enum_val in enum_def.enum_values_definition() {
-        diagnostics.extend(validate_enum_value(db, enum_val.clone()));
+        diagnostics.extend(db.validate_enum_value(enum_val.clone()));
 
         // An Enum type must define one or more unique enum values.
         //
@@ -53,8 +47,7 @@ pub(crate) fn validate_enum_value(
     db: &dyn ValidationDatabase,
     enum_val: hir::EnumValueDefinition,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = directive::validate_usage(
-        db,
+    let mut diagnostics = db.validate_directives(
         enum_val.directives().to_vec(),
         hir::DirectiveLocation::EnumValue,
     );

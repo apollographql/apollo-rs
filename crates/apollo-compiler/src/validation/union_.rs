@@ -1,23 +1,19 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
 use crate::{
     diagnostics::{ObjectType, UndefinedDefinition, UniqueDefinition},
     hir::{self, TypeDefinition, UnionMember},
-    validation::directive,
     ApolloDiagnostic, ValidationDatabase,
 };
 
-pub fn validate(
+pub fn validate_union_definition(
     db: &dyn ValidationDatabase,
-    union_def: Arc<hir::UnionTypeDefinition>,
+    union_def: hir::UnionTypeDefinition,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    diagnostics.extend(directive::validate_usage(
-        db,
+    let mut diagnostics = db.validate_directives(
         union_def.directives().to_vec(),
         hir::DirectiveLocation::Union,
-    ));
+    );
 
     let mut seen: HashMap<&str, &UnionMember> = HashMap::new();
     for union_member in union_def.union_members().iter() {

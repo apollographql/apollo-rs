@@ -3,28 +3,11 @@ use std::collections::HashMap;
 use crate::{
     diagnostics::UniqueArgument,
     hir::{self, DirectiveLocation},
-    ApolloDiagnostic, ValidationDatabase,
+    validation::{input_object, ValidationDatabase},
+    ApolloDiagnostic,
 };
 
-use super::input_object;
-
-pub fn validate(
-    db: &dyn ValidationDatabase,
-    args_def: hir::ArgumentsDefinition,
-    dir_loc: DirectiveLocation,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    diagnostics.extend(input_object::validate_input_values(
-        db,
-        args_def.input_values,
-        dir_loc,
-    ));
-
-    diagnostics
-}
-
-pub fn validate_usage(
+pub fn validate_arguments(
     db: &dyn ValidationDatabase,
     args: Vec<hir::Argument>,
 ) -> Vec<ApolloDiagnostic> {
@@ -53,4 +36,12 @@ pub fn validate_usage(
     }
 
     diagnostics
+}
+
+pub fn validate_arguments_definition(
+    db: &dyn ValidationDatabase,
+    args_def: hir::ArgumentsDefinition,
+    dir_loc: DirectiveLocation,
+) -> Vec<ApolloDiagnostic> {
+    input_object::validate_input_values(db, args_def.input_values, dir_loc)
 }

@@ -12,7 +12,7 @@ use apollo_parser::ast;
 use miette::SourceSpan;
 
 pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    let mut errors = Vec::new();
+    let mut diagnostics = Vec::new();
 
     // Directive definitions must have unique names.
     //
@@ -27,7 +27,7 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 if *hir_loc == ast_loc {
                     // The HIR node was built from this AST node. This is fine.
                 } else {
-                    errors.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
+                    diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
                         ty: "directive".into(),
                         name: name.to_owned(),
                         src: db.source_code(hir_loc.file_id()),
@@ -51,7 +51,7 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             for directive in input_values.directives().iter() {
                 let directive_name = directive.name();
                 if name == directive_name {
-                    errors.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
+                    diagnostics.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
                         message: format!("{} directive definition cannot reference itself", name),
                         definition: directive.loc().into(),
                         src: db.source_code(directive.loc().file_id()),
@@ -62,10 +62,10 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         }
     }
 
-    errors
+    diagnostics
 }
 
-pub fn validate_usage(
+pub fn validate_directives(
     db: &dyn ValidationDatabase,
     dirs: Vec<hir::Directive>,
     dir_loc: hir::DirectiveLocation,

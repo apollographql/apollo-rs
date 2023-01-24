@@ -4,7 +4,6 @@ mod argument;
 mod directive;
 mod enum_;
 mod field;
-mod field_def;
 mod input_object;
 mod interface;
 mod object;

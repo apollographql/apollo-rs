@@ -9,7 +9,7 @@ use crate::{
         UniqueDefinition, UniqueField,
     },
     hir::{self, FieldDefinition},
-    validation::{ast_type_definitions, directive, field_def, ValidationSet},
+    validation::{ast_type_definitions, ValidationSet},
     ApolloDiagnostic, ValidationDatabase,
 };
 use apollo_parser::ast;
@@ -20,14 +20,12 @@ pub fn validate(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(directive::validate_usage(
-        db,
-        object.directives().to_vec(),
-        hir::DirectiveLocation::Object,
-    ));
+    diagnostics.extend(
+        db.validate_directives(object.directives().to_vec(), hir::DirectiveLocation::Object),
+    );
 
     for field in object.fields_definition() {
-        diagnostics.extend(field_def::validate(db, field.clone()));
+        diagnostics.extend(db.validate_field_definition(field.clone()));
     }
 
     // Object Type definitions must have unique names.

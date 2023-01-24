@@ -4,8 +4,6 @@ use crate::{
     ApolloDiagnostic, ValidationDatabase,
 };
 
-use super::directive;
-
 const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 
 pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
@@ -40,11 +38,9 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                     ))
                 }
 
-                diagnostics.extend(directive::validate_usage(
-                    db,
-                    scalar.directives().to_vec(),
-                    DirectiveLocation::Scalar,
-                ));
+                diagnostics.extend(
+                    db.validate_directives(scalar.directives().to_vec(), DirectiveLocation::Scalar),
+                );
             }
         }
     }

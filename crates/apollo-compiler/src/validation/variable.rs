@@ -1,21 +1,20 @@
-use std::{collections::HashSet, sync::Arc};
+use std::collections::HashSet;
 
 use crate::{
     diagnostics::{ApolloDiagnostic, UndefinedDefinition, UnusedVariable},
     hir,
-    validation::{directive, ValidationSet},
+    validation::ValidationSet,
     FileId, ValidationDatabase,
 };
 
-pub fn validate(
+pub fn validate_variable_definitions(
     db: &dyn ValidationDatabase,
-    variables: Arc<Vec<hir::VariableDefinition>>,
+    variables: Vec<hir::VariableDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for variable in variables.iter() {
-        diagnostics.extend(directive::validate_usage(
-            db,
+        diagnostics.extend(db.validate_directives(
             variable.directives().to_vec(),
             hir::DirectiveLocation::VariableDefinition,
         ));
@@ -27,7 +26,10 @@ pub fn validate(
 // check in scope
 // check in use
 // compare the two
-pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
+pub fn validate_unused_variables(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
     db.operations(file_id)
         .iter()
         .flat_map(|op| {

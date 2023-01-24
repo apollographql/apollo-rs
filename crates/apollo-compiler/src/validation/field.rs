@@ -1,20 +1,26 @@
-use std::sync::Arc;
+use crate::{hir, validation::ValidationDatabase, ApolloDiagnostic};
 
-use crate::{
-    hir,
-    validation::{directive, ValidationDatabase},
-    ApolloDiagnostic,
-};
-
-pub fn validate(db: &dyn ValidationDatabase, field: Arc<hir::Field>) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    diagnostics.extend(directive::validate_usage(
-        db,
-        field.directives().to_vec(),
-        hir::DirectiveLocation::Field,
-    ));
+pub fn validate_field(db: &dyn ValidationDatabase, field: hir::Field) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics =
+        db.validate_directives(field.directives().to_vec(), hir::DirectiveLocation::Field);
     diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
+
+    diagnostics
+}
+
+pub fn validate_field_definition(
+    db: &dyn ValidationDatabase,
+    field: hir::FieldDefinition,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = db.validate_directives(
+        field.directives().to_vec(),
+        hir::DirectiveLocation::FieldDefinition,
+    );
+
+    diagnostics.extend(db.validate_arguments_definition(
+        field.arguments,
+        hir::DirectiveLocation::ArgumentDefinition,
+    ));
 
     diagnostics
 }

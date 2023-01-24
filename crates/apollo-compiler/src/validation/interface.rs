@@ -9,7 +9,7 @@ use crate::{
         UndefinedDefinition, UniqueDefinition, UniqueField,
     },
     hir::{self, FieldDefinition},
-    validation::{ast_type_definitions, field_def, ValidationSet},
+    validation::{ast_type_definitions, ValidationSet},
     ApolloDiagnostic, ValidationDatabase,
 };
 use apollo_parser::ast;
@@ -21,7 +21,7 @@ pub fn validate(
     let mut diagnostics = Vec::new();
 
     for field in interface_def.fields_definition() {
-        diagnostics.extend(field_def::validate(db, field.clone()));
+        diagnostics.extend(db.validate_field_definition(field.clone()));
     }
 
     // Interface definitions must have unique names.

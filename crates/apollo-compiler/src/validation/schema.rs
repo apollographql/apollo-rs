@@ -5,8 +5,6 @@ use crate::{
     hir, ApolloDiagnostic, ValidationDatabase,
 };
 
-use super::directive;
-
 pub fn validate(
     db: &dyn ValidationDatabase,
     schema_def: Arc<hir::SchemaDefinition>,
@@ -56,8 +54,7 @@ pub fn validate(
         }
     }
 
-    diagnostics.extend(directive::validate_usage(
-        db,
+    diagnostics.extend(db.validate_directives(
         schema_def.directives().to_vec(),
         hir::DirectiveLocation::Schema,
     ));

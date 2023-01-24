@@ -2,25 +2,20 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{UniqueDefinition, UniqueField},
-    hir::{self, InputValueDefinition},
+    hir,
     validation::ast_type_definitions,
     ApolloDiagnostic, ValidationDatabase,
 };
 use apollo_parser::ast;
 
-use super::directive;
-
 pub fn validate(
     db: &dyn ValidationDatabase,
     input_obj: Arc<hir::InputObjectTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    diagnostics.extend(directive::validate_usage(
-        db,
+    let mut diagnostics = db.validate_directives(
         input_obj.directives().to_vec(),
         hir::DirectiveLocation::InputObject,
-    ));
+    );
     // Input Object Definitions must have unique names.
     //
     // Return a Unique Definition error in case of a duplicate name.
@@ -50,10 +45,6 @@ pub fn validate(
     // Fields in an Input Object Definition must be unique
     //
     // Returns Unique Value error.
-    let mut seen: HashMap<&str, &InputValueDefinition> = HashMap::new();
-
-    let input_fields = input_obj.input_fields_definition();
-
     validate_input_values(
         db,
         input_obj.input_fields_definition.clone(),
@@ -73,11 +64,8 @@ pub(crate) fn validate_input_values(
     let mut seen: HashMap<&str, &hir::InputValueDefinition> = HashMap::new();
 
     for input_value in input_values.iter() {
-        diagnostics.extend(directive::validate_usage(
-            db,
-            input_value.directives().to_vec(),
-            dir_loc.clone(),
-        ));
+        diagnostics
+            .extend(db.validate_directives(input_value.directives().to_vec(), dir_loc.clone()));
 
         let name = input_value.name();
         if let Some(prev_arg) = seen.get(name) {
@@ -87,7 +75,7 @@ pub(crate) fn validate_input_values(
             let current_offset = input_value.loc().unwrap().offset();
             let current_node_len = input_value.loc().unwrap().node_len();
 
-            diagnostics.push(ApolloDiagnostic::UniqueInputValue(UniqueField {
+            diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
                 field: name.into(),
                 src: db.source_code(prev_arg.loc().unwrap().file_id()),
                 original_field: (prev_offset, prev_node_len).into(),

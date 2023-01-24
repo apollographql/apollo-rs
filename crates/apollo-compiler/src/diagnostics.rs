@@ -15,7 +15,7 @@ pub enum ApolloDiagnostic {
     UniqueField(UniqueField),
     UndefinedDefinition(UndefinedDefinition),
     UndefinedField(UndefinedField),
-    UniqueInputValue(UniqueArgument),
+    UniqueArgument(UniqueArgument),
     RecursiveDefinition(RecursiveDefinition),
     TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
     QueryRootOperationType(QueryRootOperationType),
@@ -45,7 +45,7 @@ impl ApolloDiagnostic {
                 | ApolloDiagnostic::TransitiveImplementedInterfaces(_)
                 | ApolloDiagnostic::QueryRootOperationType(_)
                 | ApolloDiagnostic::UndefinedField(_)
-                | ApolloDiagnostic::UniqueInputValue(_)
+                | ApolloDiagnostic::UniqueArgument(_)
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::OutputType(_)
                 | ApolloDiagnostic::ObjectType(_)
@@ -90,8 +90,6 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
-            ApolloDiagnostic::IntrospectionField(diagnostic) => Report::new(diagnostic.clone()),
-            ApolloDiagnostic::UniqueInputValue(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UnsupportedLocation(diagnostic) => Report::new(diagnostic.clone()),
         }
     }
