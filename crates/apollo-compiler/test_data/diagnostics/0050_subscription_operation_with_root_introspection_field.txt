@@ -35,7 +35,6 @@
     IntrospectionField(
         IntrospectionField {
             field: "__typename",
-            src: "subscription sub {\n  __typename\n}",
             help: Some(
                 "`__typename` is an introspection field. This is not allowed as the root field for Subscription operations.",
             ),
@@ -47,6 +46,7 @@
                     11,
                 ),
             },
+            src: "subscription sub {\n  __typename\n}",
         },
     ),
 ]

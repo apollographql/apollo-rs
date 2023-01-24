@@ -25,11 +25,8 @@ pub enum ApolloDiagnostic {
     UnusedVariable(UnusedVariable),
     OutputType(OutputType),
     ObjectType(ObjectType),
-<<<<<<< HEAD
     IntrospectionField(IntrospectionField),
-=======
     UnsupportedLocation(UnsupportedLocation),
->>>>>>> 631896e22672dbc4f7b96525ddd01affeb9c1155
 }
 
 impl ApolloDiagnostic {
@@ -52,11 +49,8 @@ impl ApolloDiagnostic {
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::OutputType(_)
                 | ApolloDiagnostic::ObjectType(_)
-<<<<<<< HEAD
                 | ApolloDiagnostic::IntrospectionField(_)
-=======
                 | ApolloDiagnostic::UnsupportedLocation(_)
->>>>>>> 631896e22672dbc4f7b96525ddd01affeb9c1155
         )
     }
 
@@ -96,11 +90,8 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
-<<<<<<< HEAD
             ApolloDiagnostic::IntrospectionField(diagnostic) => Report::new(diagnostic.clone()),
-=======
             ApolloDiagnostic::UnsupportedLocation(diagnostic) => Report::new(diagnostic.clone()),
->>>>>>> 631896e22672dbc4f7b96525ddd01affeb9c1155
         }
     }
 }
