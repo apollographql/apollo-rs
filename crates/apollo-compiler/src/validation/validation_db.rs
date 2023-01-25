@@ -1,9 +1,9 @@
 use crate::{
     database::db::Upcast,
-    hir::{self, DirectiveLocation},
+    hir::*,
     validation::{
-        argument, directive, enum_, input_object, interface, object, operation, scalar, schema,
-        selection_set, subscription, union_, variable,
+        argument, directive, enum_, fragment, input_object, interface, object, operation, scalar,
+        schema, selection, union_, variable, subscription,
     },
     ApolloDiagnostic, AstDatabase, FileId, HirDatabase, InputDatabase,
 };
@@ -17,66 +17,117 @@ pub trait ValidationDatabase:
     /// Validate all documents.
     fn validate(&self) -> Vec<ApolloDiagnostic>;
 
-    /// Validate the type system, combined of all type system documents known to the compiler.
+    /// Validate the type system, combined of all type system documents known to
+    /// the compiler.
     fn validate_type_system(&self) -> Vec<ApolloDiagnostic>;
-    fn validate_schema_definition(&self) -> Vec<ApolloDiagnostic>;
+
+    /// Validate the corresonding executable document.
+    fn validate_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(schema::validate_schema_definition)]
+    fn validate_schema_definition(&self, def: SchemaDefinition) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(schema::validate_root_operation_definitions)]
+    fn validate_root_operation_definitions(
+        &self,
+        defs: Vec<RootOperationTypeDefinition>,
+    ) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(scalar::validate_scalar_definitions)]
     fn validate_scalar_definitions(&self) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(scalar::validate_scalar_definition)]
+    fn validate_scalar_definition(&self, scalar_def: ScalarTypeDefinition)
+        -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(enum_::validate_enum_definitions)]
     fn validate_enum_definitions(&self) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(enum_::validate_enum_definition)]
+    fn validate_enum_definition(&self, def: EnumTypeDefinition) -> Vec<ApolloDiagnostic>;
 
-    fn validate_enum_definition(&self, def: hir::EnumTypeDefinition) -> Vec<ApolloDiagnostic>;
     #[salsa::invoke(enum_::validate_enum_value)]
-    fn validate_enum_value(&self, def: hir::EnumValueDefinition) -> Vec<ApolloDiagnostic>;
+    fn validate_enum_value(&self, def: EnumValueDefinition) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(union_::validate_union_definitions)]
     fn validate_union_definitions(&self) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(union_::validate_union_definition)]
-    fn validate_union_definition(
-        &self,
-        union_def: hir::UnionTypeDefinition,
-    ) -> Vec<ApolloDiagnostic>;
+    fn validate_union_definition(&self, def: UnionTypeDefinition) -> Vec<ApolloDiagnostic>;
 
+    #[salsa::invoke(interface::validate_interface_definitions)]
     fn validate_interface_definitions(&self) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(interface::validate_interface_definition)]
+    fn validate_interface_definition(&self, def: InterfaceTypeDefinition) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(directive::validate_directive_definitions)]
     fn validate_directive_definitions(&self) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(directive::validate_directives)]
     fn validate_directives(
         &self,
-        dirs: Vec<hir::Directive>,
-        dir_loc: hir::DirectiveLocation,
+        dirs: Vec<Directive>,
+        loc: DirectiveLocation,
     ) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(input_object::validate_input_object_definitions)]
     fn validate_input_object_definitions(&self) -> Vec<ApolloDiagnostic>;
 
+    #[salsa::invoke(input_object::validate_input_object_definition)]
+    fn validate_input_object_definition(
+        &self,
+        def: InputObjectTypeDefinition,
+    ) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(input_object::validate_input_values)]
+    fn validate_input_values(
+        &self,
+        vals: Vec<InputValueDefinition>,
+        dir_loc: DirectiveLocation,
+    ) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(object::validate_object_type_definitions)]
     fn validate_object_type_definitions(&self) -> Vec<ApolloDiagnostic>;
 
+<<<<<<< HEAD
     fn validate_subscription_operations(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+=======
+    #[salsa::invoke(object::validate_object_type_definition)]
+    fn validate_object_type_definition(&self, def: ObjectTypeDefinition) -> Vec<ApolloDiagnostic>;
+>>>>>>> 32358c33 (add all composite tree walking validation functions to validation database)
 
     #[salsa::invoke(field::validate_field_definition)]
-    fn validate_field_definition(&self, field: hir::FieldDefinition) -> Vec<ApolloDiagnostic>;
+    fn validate_field_definition(&self, field: FieldDefinition) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(field::validate_field)]
-    fn validate_field(&self, field: hir::Field) -> Vec<ApolloDiagnostic>;
+    fn validate_field(&self, field: Field) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(argument::validate_arguments_definition)]
     fn validate_arguments_definition(
         &self,
-        args_def: hir::ArgumentsDefinition,
-        dir_loc: DirectiveLocation,
+        def: ArgumentsDefinition,
+        loc: DirectiveLocation,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(argument::validate_arguments)]
-    fn validate_arguments(&self, arg: Vec<hir::Argument>) -> Vec<ApolloDiagnostic>;
+    fn validate_arguments(&self, arg: Vec<Argument>) -> Vec<ApolloDiagnostic>;
 
-    /// Validate an executable document.
-    fn validate_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+    #[salsa::invoke(operation::validate_operation_definitions)]
     fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(fragment::validate_fragment_definitions)]
     fn validate_fragment_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
+    #[salsa::invoke(selection::validate_selection_set)]
+    fn validate_selection_set(&self, sel_set: SelectionSet) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(selection::validate_selection)]
+    fn validate_selection(&self, sel: Vec<Selection>) -> Vec<ApolloDiagnostic>;
+
     #[salsa::invoke(variable::validate_variable_definitions)]
-    fn validate_variable_definitions(
-        &self,
-        variables: Vec<hir::VariableDefinition>,
-    ) -> Vec<ApolloDiagnostic>;
+    fn validate_variable_definitions(&self, defs: Vec<VariableDefinition>)
+        -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(variable::validate_unused_variables)]
     fn validate_unused_variable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
@@ -98,7 +149,9 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
 pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(db.validate_schema_definition());
+    diagnostics.extend(
+        db.validate_schema_definition(db.type_system_definitions().schema.as_ref().clone()),
+    );
 
     diagnostics.extend(db.validate_scalar_definitions());
     diagnostics.extend(db.validate_enum_definitions());
@@ -111,137 +164,13 @@ pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
 
     diagnostics
 }
-
-pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    diagnostics.extend(db.validate_operation_definitions(file_id));
-    diagnostics.extend(db.validate_unused_variable(file_id));
-    diagnostics.extend(db.validate_subscription_operations(file_id));
-
-    diagnostics
-}
-
-pub fn validate_schema_definition(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    schema::validate(db, db.type_system_definitions().schema.clone())
-}
-
-pub fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    scalar::validate(db)
-}
-
-pub fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    let defs = &db.type_system_definitions().enums;
-    for def in defs.values() {
-        diagnostics.extend(db.validate_enum_definition(def.as_ref().clone()));
-    }
-
-    diagnostics
-}
-
-pub fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    let defs = &db.type_system_definitions().unions;
-    for def in defs.values() {
-        diagnostics.extend(union_::validate_union_definition(db, def.as_ref().clone()));
-    }
-
-    diagnostics
-}
-
-pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    let defs = &db.type_system_definitions().interfaces;
-    for def in defs.values() {
-        diagnostics.extend(
-            db.validate_directives(def.directives().to_vec(), hir::DirectiveLocation::Interface),
-        );
-        interface::validate(db, def.clone());
-    }
-
-    diagnostics
-}
-
-pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    diagnostics.extend(directive::validate(db));
-
-    let defs = &db.type_system_definitions().directives;
-    for def in defs.values() {
-        diagnostics.extend(db.validate_arguments_definition(
-            def.arguments.clone(),
-            hir::DirectiveLocation::ArgumentDefinition,
-        ));
-    }
-
-    diagnostics
-}
-
-pub fn validate_input_object_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    let defs = &db.type_system_definitions().input_objects;
-    for def in defs.values() {
-        diagnostics.extend(input_object::validate(db, def.clone()));
-    }
-
-    diagnostics
-}
-
-pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    let defs = &db.type_system_definitions().objects;
-    for def in defs.values() {
-        diagnostics.extend(object::validate(db, def.clone()))
-    }
-
-    diagnostics
-}
-
 pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(db.validate_operation_definitions(file_id));
     diagnostics.extend(db.validate_fragment_definitions(file_id));
+    diagnostics.extend(db.validate_subscription_operations(file_id));
     diagnostics.extend(db.validate_unused_variable(file_id));
-
-    diagnostics
-}
-
-pub fn validate_operation_definitions(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-    for def in db.operations(file_id).iter() {
-        diagnostics
-            .extend(db.validate_directives(def.directives().to_vec(), def.operation_ty().into()));
-        diagnostics.extend(db.validate_variable_definitions(def.variables.as_ref().clone()));
-        diagnostics.extend(selection_set::validate(db, def.selection_set().clone()));
-    }
-    diagnostics.extend(operation::check(db, file_id));
-
-    diagnostics
-}
-
-pub fn validate_fragment_definitions(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-    for def in db.fragments(file_id).values() {
-        diagnostics.extend(db.validate_directives(
-            def.directives().to_vec(),
-            hir::DirectiveLocation::FragmentDefinition,
-        ));
-        diagnostics.extend(selection_set::validate(db, def.selection_set().clone()));
-    }
 
     diagnostics
 }

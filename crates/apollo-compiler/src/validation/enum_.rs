@@ -6,6 +6,17 @@ use crate::{
     ApolloDiagnostic, ValidationDatabase,
 };
 
+pub fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let defs = &db.type_system_definitions().enums;
+    for def in defs.values() {
+        diagnostics.extend(db.validate_enum_definition(def.as_ref().clone()));
+    }
+
+    diagnostics
+}
+
 pub fn validate_enum_definition(
     db: &dyn ValidationDatabase,
     enum_def: hir::EnumTypeDefinition,

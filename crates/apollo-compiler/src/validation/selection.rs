@@ -1,6 +1,6 @@
 use crate::{hir, validation::ValidationDatabase, ApolloDiagnostic};
 
-pub fn validate(
+pub fn validate_selection(
     db: &dyn ValidationDatabase,
     selection: Vec<hir::Selection>,
 ) -> Vec<ApolloDiagnostic> {
@@ -10,7 +10,8 @@ pub fn validate(
         match sel {
             hir::Selection::Field(field) => {
                 if !field.selection_set().selection().is_empty() {
-                    diagnostics.extend(validate(db, (*field.selection_set().selection).clone()))
+                    diagnostics
+                        .extend(db.validate_selection((*field.selection_set().selection).clone()))
                 }
                 diagnostics.extend(db.validate_field(field.as_ref().clone()));
             }
@@ -26,4 +27,11 @@ pub fn validate(
     }
 
     diagnostics
+}
+
+pub fn validate_selection_set(
+    db: &dyn ValidationDatabase,
+    selection_set: hir::SelectionSet,
+) -> Vec<ApolloDiagnostic> {
+    db.validate_selection((*selection_set.selection).clone())
 }

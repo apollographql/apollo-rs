@@ -11,7 +11,7 @@ use crate::{
 use apollo_parser::ast;
 use miette::SourceSpan;
 
-pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // Directive definitions must have unique names.
@@ -60,6 +60,12 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 }
             }
         }
+
+        // Validate directive definitions' arguments
+        diagnostics.extend(db.validate_arguments_definition(
+            directive_def.arguments.clone(),
+            hir::DirectiveLocation::ArgumentDefinition,
+        ));
     }
 
     diagnostics

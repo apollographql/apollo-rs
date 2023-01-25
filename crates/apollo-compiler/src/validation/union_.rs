@@ -6,6 +6,17 @@ use crate::{
     ApolloDiagnostic, ValidationDatabase,
 };
 
+pub fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let defs = &db.type_system_definitions().unions;
+    for def in defs.values() {
+        diagnostics.extend(db.validate_union_definition(def.as_ref().clone()));
+    }
+
+    diagnostics
+}
+
 pub fn validate_union_definition(
     db: &dyn ValidationDatabase,
     union_def: hir::UnionTypeDefinition,

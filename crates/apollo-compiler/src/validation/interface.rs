@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::collections::{HashMap, HashSet};
 
 use crate::{
     diagnostics::{
@@ -14,9 +11,23 @@ use crate::{
 };
 use apollo_parser::ast;
 
-pub fn validate(
+pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let defs = &db.type_system_definitions().interfaces;
+    for def in defs.values() {
+        diagnostics.extend(
+            db.validate_directives(def.directives().to_vec(), hir::DirectiveLocation::Interface),
+        );
+        db.validate_interface_definition(def.as_ref().clone());
+    }
+
+    diagnostics
+}
+
+pub fn validate_interface_definition(
     db: &dyn ValidationDatabase,
-    interface_def: Arc<hir::InterfaceTypeDefinition>,
+    interface_def: hir::InterfaceTypeDefinition,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 

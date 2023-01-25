@@ -9,9 +9,20 @@ use crate::{
 };
 // use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, Document};
 
-pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
+pub fn validate_operation_definitions(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
+
     let operations = db.operations(file_id);
+    for def in operations.iter() {
+        diagnostics
+            .extend(db.validate_directives(def.directives().to_vec(), def.operation_ty().into()));
+        diagnostics.extend(db.validate_variable_definitions(def.variables.as_ref().clone()));
+        diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
+    }
+
     let subscription_operations = db.upcast().subscription_operations(file_id);
     let query_operations = db.upcast().query_operations(file_id);
     let mutation_operations = db.upcast().mutation_operations(file_id);

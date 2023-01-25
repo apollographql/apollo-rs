@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::collections::{HashMap, HashSet};
 
 use crate::{
     diagnostics::{
@@ -14,9 +11,20 @@ use crate::{
 };
 use apollo_parser::ast;
 
-pub fn validate(
+pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let defs = &db.type_system_definitions().objects;
+    for def in defs.values() {
+        diagnostics.extend(db.validate_object_type_definition(def.as_ref().clone()))
+    }
+
+    diagnostics
+}
+
+pub fn validate_object_type_definition(
     db: &dyn ValidationDatabase,
-    object: Arc<hir::ObjectTypeDefinition>,
+    object: hir::ObjectTypeDefinition,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
