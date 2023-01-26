@@ -430,7 +430,7 @@ pub struct UnsupportedLocation {
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("Subscription operations can not have an introspection field as a root field")]
+#[error("subscription operations can not have an introspection field as a root field")]
 #[diagnostic(code("apollo-compiler validation error"))]
 pub struct IntrospectionField {
     // current definition
