@@ -273,6 +273,11 @@ impl OperationDefinition {
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
     }
+
+    /// Returns true if this is a query operation and its [`SelectionSet`] is an introspection.
+    pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
+        self.operation_ty().is_query() && self.selection_set().is_introspection(db)
+    }
 }
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
@@ -879,6 +884,15 @@ impl SelectionSet {
             }
         })
     }
+
+    /// Returns true if all the [`Selection`]s in this selection set are themselves introspections.
+    pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
+        self.selection().iter().all(|selection| match selection {
+            Selection::Field(field) => field.is_introspection(),
+            Selection::FragmentSpread(spread) => spread.is_introspection(db),
+            Selection::InlineFragment(inline) => inline.is_introspection(db),
+        })
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1004,6 +1018,12 @@ impl Field {
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
     }
+
+    /// returns true if this is an introspection field (i.e. it's [`Self::name()`] is one of __type, or __schema).
+    pub fn is_introspection(&self) -> bool {
+        let field_name = self.name();
+        field_name == "__type" || field_name == "__schema" || field_name == "__typename"
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1045,6 +1065,11 @@ impl InlineFragment {
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
     }
+
+    /// Returns true if the inline fragment's [`SelectionSet`] is an introspection.
+    pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
+        self.selection_set().is_introspection(db)
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1055,7 +1080,7 @@ pub struct FragmentSpread {
 }
 
 impl FragmentSpread {
-    /// Get a reference to the fragmen spread's name.
+    /// Get a reference to the fragment spread's name.
     pub fn name(&self) -> &str {
         self.name.src()
     }
@@ -1065,7 +1090,7 @@ impl FragmentSpread {
         db.find_fragment_by_name(self.loc.file_id(), self.name().to_string())
     }
 
-    /// Get framgent spread's defined variables.
+    /// Get fragment spread's defined variables.
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         let vars = match self.fragment(db) {
             Some(fragment) => fragment
@@ -1087,6 +1112,14 @@ impl FragmentSpread {
     /// Get fragment spread's hir node location.
     pub fn loc(&self) -> &HirNodeLocation {
         &self.loc
+    }
+
+    /// Returns true if the fragment referenced by this spread exists and its [`SelectionSet`] is an introspection.
+    pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
+        let maybe_fragment = self.fragment(db);
+        maybe_fragment.map_or(false, |fragment| {
+            fragment.selection_set.is_introspection(db)
+        })
     }
 }
 
@@ -2056,8 +2089,10 @@ impl From<HirNodeLocation> for miette::SourceSpan {
 
 #[cfg(test)]
 mod tests {
+    use crate::hir::OperationDefinition;
     use crate::ApolloCompiler;
     use crate::HirDatabase;
+    use std::sync::Arc;
 
     #[test]
     fn huge_floats() {
@@ -2115,5 +2150,160 @@ mod tests {
             .map(|field| field.name())
             .collect();
         assert_eq!(hir_field_names, ["id", "name", "appearedIn", "directed"]);
+    }
+
+    #[test]
+    fn is_introspection_operation() {
+        let query_input = r#"
+            query TypeIntrospect {
+              __type(name: "User") {
+                name
+                fields {
+                  name
+                  type {
+                    name
+                  }
+                }
+              }
+              __schema {
+                types {
+                  fields {
+                    name
+                  }
+                }
+              }
+            }
+        "#;
+
+        let mut compiler = ApolloCompiler::new();
+        let query_id = compiler.add_executable(query_input, "query.graphql");
+
+        let db = compiler.db;
+        let type_introspect: Arc<OperationDefinition> = db
+            .find_operation_by_name(query_id, String::from("TypeIntrospect"))
+            .expect("TypeIntrospect operation does not exist");
+
+        assert!(type_introspect.is_introspection(&db));
+    }
+
+    #[test]
+    fn is_not_introspection_operation() {
+        let mutation_input = r#"
+            mutation PurchaseBasket {
+              buyA5Wagyu(pounds: 15) {
+                submitted
+              }
+            }
+        "#;
+
+        let query_input = r#"
+            query CheckStock {
+              isKagoshimaWagyuInstock
+
+              __schema {
+                types {
+                  fields {
+                    name
+                  }
+                }
+              }
+            }
+        "#;
+
+        let mut compiler = ApolloCompiler::new();
+        let query_id = compiler.add_executable(query_input, "query.graphql");
+        let mutation_id = compiler.add_executable(mutation_input, "mutation.graphql");
+
+        let db = compiler.db;
+        let check_stock: Arc<OperationDefinition> = db
+            .find_operation_by_name(query_id, String::from("CheckStock"))
+            .expect("CheckStock operation does not exist");
+
+        let purchase_operation: Arc<OperationDefinition> = db
+            .find_operation_by_name(mutation_id, String::from("PurchaseBasket"))
+            .expect("CheckStock operation does not exist");
+
+        assert!(!check_stock.is_introspection(&db));
+        assert!(!purchase_operation.is_introspection(&db));
+    }
+
+    #[test]
+    fn is_introspection_deep() {
+        let query_input = r#"
+          query IntrospectDeepFragments {
+            ...onRootTrippy
+          }
+
+          fragment onRootTrippy on Root {
+             ...onRooten
+          }
+
+          fragment onRooten on Root {
+            ...onRooten2
+
+            ... on Root {
+              __schema {
+                types {
+                  name
+                }
+              }
+            }
+          }
+
+          fragment onRooten2 on Root {
+             __type(name: "Root") {
+              ...onType
+            }
+            ... on Root {
+              __schema {
+                directives {
+                  name
+                }
+              }
+            }
+          }
+          fragment onType on __Type {
+            fields {
+              name
+            }
+          }
+
+          fragment onRooten2_not_intro on Root {
+            species(id: "Ewok") {
+              name
+            }
+
+            ... on Root {
+              __schema {
+                directives {
+                  name
+                }
+              }
+            }
+         }
+        "#;
+
+        let query_input_not_introspect =
+            query_input.replace("...onRooten2", "...onRooten2_not_intro");
+
+        let mut compiler = ApolloCompiler::new();
+        let query_id = compiler.add_executable(query_input, "query.graphql");
+        let query_id_not_introspect =
+            compiler.add_executable(query_input_not_introspect.as_str(), "query2.graphql");
+
+        let db = compiler.db;
+        let deep_introspect: Arc<OperationDefinition> = db
+            .find_operation_by_name(query_id, String::from("IntrospectDeepFragments"))
+            .expect("IntrospectDeepFragments operation does not exist");
+
+        assert!(deep_introspect.is_introspection(&db));
+
+        let deep_introspect: Arc<OperationDefinition> = db
+            .find_operation_by_name(
+                query_id_not_introspect,
+                String::from("IntrospectDeepFragments"),
+            )
+            .expect("IntrospectDeepFragments operation does not exist");
+        assert!(!deep_introspect.is_introspection(&db));
     }
 }
