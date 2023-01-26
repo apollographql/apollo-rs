@@ -19,7 +19,7 @@ pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
         diagnostics.extend(
             db.validate_directives(def.directives().to_vec(), hir::DirectiveLocation::Interface),
         );
-        db.validate_interface_definition(def.as_ref().clone());
+        diagnostics.extend(db.validate_interface_definition(def.as_ref().clone()));
     }
 
     diagnostics

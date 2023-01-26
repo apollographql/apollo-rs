@@ -164,6 +164,7 @@ pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
 
     diagnostics
 }
+
 pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
