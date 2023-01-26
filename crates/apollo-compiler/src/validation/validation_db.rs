@@ -3,7 +3,7 @@ use crate::{
     hir::*,
     validation::{
         argument, directive, enum_, fragment, input_object, interface, object, operation, scalar,
-        schema, selection, union_, variable, subscription,
+        schema, selection, union_, variable,
     },
     ApolloDiagnostic, AstDatabase, FileId, HirDatabase, InputDatabase,
 };
@@ -90,12 +90,23 @@ pub trait ValidationDatabase:
     #[salsa::invoke(object::validate_object_type_definitions)]
     fn validate_object_type_definitions(&self) -> Vec<ApolloDiagnostic>;
 
-<<<<<<< HEAD
-    fn validate_subscription_operations(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
-=======
+    #[salsa::invoke(operation::validate_subscription_operations)]
+    fn validate_subscription_operations(
+        &self,
+        defs: Vec<OperationDefinition>,
+    ) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(operation::validate_query_operations)]
+    fn validate_query_operations(&self, defs: Vec<OperationDefinition>) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(operation::validate_mutation_operations)]
+    fn validate_mutation_operations(
+        &self,
+        mutations: Vec<OperationDefinition>,
+    ) -> Vec<ApolloDiagnostic>;
+
     #[salsa::invoke(object::validate_object_type_definition)]
     fn validate_object_type_definition(&self, def: ObjectTypeDefinition) -> Vec<ApolloDiagnostic>;
->>>>>>> 32358c33 (add all composite tree walking validation functions to validation database)
 
     #[salsa::invoke(field::validate_field_definition)]
     fn validate_field_definition(&self, field: FieldDefinition) -> Vec<ApolloDiagnostic>;
@@ -170,7 +181,6 @@ pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<
 
     diagnostics.extend(db.validate_operation_definitions(file_id));
     diagnostics.extend(db.validate_fragment_definitions(file_id));
-    diagnostics.extend(db.validate_subscription_operations(file_id));
     diagnostics.extend(db.validate_unused_variable(file_id));
 
     diagnostics

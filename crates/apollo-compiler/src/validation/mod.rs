@@ -12,7 +12,6 @@ mod operation;
 mod scalar;
 mod schema;
 mod selection;
-mod subscription;
 mod union_;
 mod variable;
 

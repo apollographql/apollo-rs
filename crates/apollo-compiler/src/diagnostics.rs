@@ -91,6 +91,7 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UnsupportedLocation(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::IntrospectionField(diagnostic) => Report::new(diagnostic.clone()),
         }
     }
 }
