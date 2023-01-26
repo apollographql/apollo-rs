@@ -10,8 +10,8 @@ use crate::{
     diagnostics::{UndefinedDefinition, UniqueArgument, UnsupportedLocation},
     hir,
     validation::{
-        directive, enum_, input_object, interface, object, operation, scalar, schema, union_,
-        unused_variable,
+        directive, enum_, input_object, interface, object, operation, scalar, schema, subscription,
+        union_, unused_variable,
     },
     ApolloDiagnostic, AstDatabase, FileId, HirDatabase, InputDatabase,
 };
@@ -37,6 +37,7 @@ pub trait ValidationDatabase:
     /// Validate an executable document.
     fn validate_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
     fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+    fn validate_subscription_operations(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
     fn validate_unused_variable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
     fn check_directive_definition(
@@ -520,6 +521,7 @@ pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<
 
     diagnostics.extend(db.validate_operation_definitions(file_id));
     diagnostics.extend(db.validate_unused_variable(file_id));
+    diagnostics.extend(db.validate_subscription_operations(file_id));
 
     diagnostics
 }
@@ -568,6 +570,13 @@ pub fn validate_unused_variable(
     file_id: FileId,
 ) -> Vec<ApolloDiagnostic> {
     unused_variable::check(db, file_id)
+}
+
+pub fn validate_subscription_operations(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
+    subscription::check(db, file_id)
 }
 
 // #[salsa::query_group(ValidationStorage)]

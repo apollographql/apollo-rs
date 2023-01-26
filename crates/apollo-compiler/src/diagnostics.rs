@@ -25,6 +25,7 @@ pub enum ApolloDiagnostic {
     UnusedVariable(UnusedVariable),
     OutputType(OutputType),
     ObjectType(ObjectType),
+    IntrospectionField(IntrospectionField),
     UnsupportedLocation(UnsupportedLocation),
 }
 
@@ -48,6 +49,7 @@ impl ApolloDiagnostic {
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::OutputType(_)
                 | ApolloDiagnostic::ObjectType(_)
+                | ApolloDiagnostic::IntrospectionField(_)
                 | ApolloDiagnostic::UnsupportedLocation(_)
         )
     }
@@ -88,6 +90,7 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::IntrospectionField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UnsupportedLocation(diagnostic) => Report::new(diagnostic.clone()),
         }
     }
@@ -424,4 +427,18 @@ pub struct UnsupportedLocation {
 
     #[help]
     pub help: Option<String>,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("subscription operations can not have an introspection field as a root field")]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct IntrospectionField {
+    // current definition
+    pub field: String,
+
+    #[label("{} is an introspection field", self.field)]
+    pub definition: SourceSpan,
+
+    #[source_code]
+    pub src: Arc<str>,
 }

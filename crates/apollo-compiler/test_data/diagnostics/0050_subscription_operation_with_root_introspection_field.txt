@@ -1,0 +1,16 @@
+[
+    IntrospectionField(
+        IntrospectionField {
+            field: "__typename",
+            definition: SourceSpan {
+                offset: SourceOffset(
+                    21,
+                ),
+                length: SourceOffset(
+                    11,
+                ),
+            },
+            src: "subscription sub {\n  __typename\n}\n\ntype Subscription {\n  __typename: String\n}",
+        },
+    ),
+]
