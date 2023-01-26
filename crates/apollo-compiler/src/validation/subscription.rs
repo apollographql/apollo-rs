@@ -28,30 +28,3 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
 
     diagnostics
 }
-
-#[cfg(test)]
-
-mod test {
-    use crate::ApolloCompiler;
-
-    #[test]
-    fn it_raises_an_error_for_illegal_introspection_root_field() {
-        let input = r#"
-            subscription sub {
-                __typename
-            }
-
-            type Subscription {
-                __typename: String
-            }
-        "#;
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_document(input, "schema.graphql");
-
-        let diagnostics = compiler.validate();
-        for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
-        }
-        assert_eq!(diagnostics.len(), 1)
-    }
-}
