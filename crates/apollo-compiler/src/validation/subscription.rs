@@ -12,7 +12,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
     for op in subscription_operations.iter() {
         for selection in op.selection_set().selection() {
             if let Selection::Field(field) = selection {
-                if field.name().starts_with("__") {
+                if field.is_introspection() {
                     diagnostics.push(ApolloDiagnostic::IntrospectionField(IntrospectionField {
                         field: field.name().into(),
                         src: db.source_code(op.loc().file_id()),
