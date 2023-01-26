@@ -161,7 +161,7 @@ pub fn validate_subscription_operations(
 
     // A Subscription operation definition can only have **one** root level
     // field.
-    if subscriptions.len() >= 1 {
+    if !subscriptions.is_empty() {
         let single_root_field: Vec<ApolloDiagnostic> = subscriptions
             .iter()
             .filter_map(|op| {
@@ -194,7 +194,7 @@ pub fn validate_subscription_operations(
     // defined schema root operation types.
     //
     //   * subscription operation - subscription root operation
-    if subscriptions.len() >= 1 && db.schema().subscription(db.upcast()).is_none() {
+    if !subscriptions.is_empty() && db.schema().subscription(db.upcast()).is_none() {
         let unsupported_ops: Vec<ApolloDiagnostic> = subscriptions
             .iter()
             .map(|op| {
@@ -241,7 +241,7 @@ pub fn validate_query_operations(
     // defined schema root operation types.
     //
     //   * query operation - query root operation
-    if queries.len() >= 1 && db.schema().query(db.upcast()).is_none() {
+    if !queries.is_empty() && db.schema().query(db.upcast()).is_none() {
         let unsupported_ops: Vec<ApolloDiagnostic> = queries
             .iter()
             .map(|op| {
@@ -287,7 +287,7 @@ pub fn validate_mutation_operations(
     // defined schema root operation types.
     //
     //   * mutation operation - mutation root operation
-    if mutations.len() >= 1 && db.schema().mutation(db.upcast()).is_none() {
+    if !mutations.is_empty() && db.schema().mutation(db.upcast()).is_none() {
         let unsupported_ops: Vec<ApolloDiagnostic> = mutations
             .iter()
             .map(|op| {

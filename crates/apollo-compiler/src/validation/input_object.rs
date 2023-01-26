@@ -74,8 +74,7 @@ pub fn validate_input_values(
     let mut seen: HashMap<&str, &hir::InputValueDefinition> = HashMap::new();
 
     for input_value in input_values.iter() {
-        diagnostics
-            .extend(db.validate_directives(input_value.directives().to_vec(), dir_loc.clone()));
+        diagnostics.extend(db.validate_directives(input_value.directives().to_vec(), dir_loc));
 
         let name = input_value.name();
         if let Some(prev_arg) = seen.get(name) {
