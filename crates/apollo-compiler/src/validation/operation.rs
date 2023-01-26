@@ -7,7 +7,6 @@ use crate::{
     },
     hir, ApolloDiagnostic, FileId, ValidationDatabase,
 };
-// use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, Document};
 
 pub fn validate_operation_definitions(
     db: &dyn ValidationDatabase,
@@ -48,9 +47,9 @@ pub fn validate_operation_definitions(
         .map(|s| s.as_ref().clone())
         .collect();
 
-    db.validate_subscription_operations(subscription_operations);
-    db.validate_query_operations(query_operations);
-    db.validate_mutation_operations(mutation_operations);
+    diagnostics.extend(db.validate_subscription_operations(subscription_operations));
+    diagnostics.extend(db.validate_query_operations(query_operations));
+    diagnostics.extend(db.validate_mutation_operations(mutation_operations));
 
     // It is possible to have an unnamed (anonymous) operation definition only
     // if there is **one** operation definition.
@@ -324,6 +323,7 @@ pub fn validate_mutation_operations(
 
     diagnostics
 }
+
 #[cfg(test)]
 mod test {
     use crate::ApolloCompiler;

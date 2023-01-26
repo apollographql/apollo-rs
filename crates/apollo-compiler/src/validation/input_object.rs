@@ -56,10 +56,10 @@ pub fn validate_input_object_definition(
     // Fields in an Input Object Definition must be unique
     //
     // Returns Unique Value error.
-    db.validate_input_values(
+    diagnostics.extend(db.validate_input_values(
         input_obj.input_fields_definition.to_vec(),
         hir::DirectiveLocation::InputFieldDefinition,
-    );
+    ));
 
     diagnostics
 }
