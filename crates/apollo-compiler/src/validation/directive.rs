@@ -111,3 +111,111 @@ pub fn validate_directives(
     }
     diagnostics
 }
+
+#[cfg(test)]
+mod test {
+    use crate::ApolloCompiler;
+
+    #[test]
+    fn directive_locations() {
+        let input = r#"
+        query queryA($status: String @skip) @skip(if: $foo){
+            field
+            response(status: $status) @deprecated
+            human {
+              ... pet @directiveB
+            }
+          }
+          
+          fragment pet on Cat @directiveB{
+            meowVolume
+            ... on Pet @directiveA {
+              name
+            }
+          }
+          
+          subscription subscriptionA @directiveA {
+            newMessage {
+              body
+              sender
+            }
+          }
+          
+          mutation myMutation @skip(if: true) {
+            setMessage (message: "Hello, World! Yours, GraphQL.")
+          }
+          
+          interface Pet @skip {
+            name: String
+          }
+          
+          type Dog implements Pet {
+            name: String @directiveB
+            nickname: String
+            barkVolume: Int
+          }
+          
+          type Cat implements Pet {
+            name: String
+            nickname: String
+            meowVolume: Int
+          }
+          
+          input Example @include {
+            self: Example @include
+            value: String
+          }
+          
+          union CatOrDog @directiveB = Cat | Dog
+          
+          type Human {
+            name: String
+            pets: [Pet]
+          }
+          
+          enum Status @directiveA {
+            GREEN @directiveA,
+            RED,
+            YELLOW
+          }
+          
+          type Query @deprecated {
+            human: Human
+            field: String,
+            response(status: String @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")): Status
+          }
+          
+          type Subscription {
+            newMessage: Result
+          }
+          
+          type Mutation {
+            setMessage(message: String): String
+          }
+          
+          schema @include {
+            query: Query
+            subscription: Subscription
+            mutation: Mutation
+          }
+          
+          type Result {
+            body: String,
+            sender: String
+          }
+          
+          scalar spec @directiveB @specifiedBy(url: "https://spec.graphql.org/")
+          
+          directive @directiveA on UNION
+          directive @directiveB on ENUM
+        "#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{}", diagnostic)
+        }
+    }
+}

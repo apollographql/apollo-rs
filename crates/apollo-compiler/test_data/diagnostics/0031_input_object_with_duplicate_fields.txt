@@ -1,9 +1,9 @@
 [
-    UniqueField(
-        UniqueField {
-            field: "x",
+    UniqueInputValue(
+        UniqueInputValue {
+            value: "x",
             src: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")\n\ninput Point2D {\n  x: Float\n  x: Float\n}",
-            original_field: SourceSpan {
+            original_value: SourceSpan {
                 offset: SourceOffset(
                     133,
                 ),
@@ -11,7 +11,7 @@
                     11,
                 ),
             },
-            redefined_field: SourceSpan {
+            redefined_value: SourceSpan {
                 offset: SourceOffset(
                     144,
                 ),
@@ -19,34 +19,6 @@
                     9,
                 ),
             },
-            help: Some(
-                "x field must only be defined once in this input object definition.",
-            ),
-        },
-    ),
-    UniqueArgument(
-        UniqueArgument {
-            name: "x",
-            src: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")\n\ninput Point2D {\n  x: Float\n  x: Float\n}",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    133,
-                ),
-                length: SourceOffset(
-                    11,
-                ),
-            },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    144,
-                ),
-                length: SourceOffset(
-                    9,
-                ),
-            },
-            help: Some(
-                "`x` argument must only be defined once.",
-            ),
         },
     ),
 ]

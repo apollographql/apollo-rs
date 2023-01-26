@@ -16,6 +16,7 @@ pub enum ApolloDiagnostic {
     UndefinedDefinition(UndefinedDefinition),
     UndefinedField(UndefinedField),
     UniqueArgument(UniqueArgument),
+    UniqueInputValue(UniqueInputValue),
     RecursiveDefinition(RecursiveDefinition),
     TransitiveImplementedInterfaces(TransitiveImplementedInterfaces),
     QueryRootOperationType(QueryRootOperationType),
@@ -46,6 +47,7 @@ impl ApolloDiagnostic {
                 | ApolloDiagnostic::QueryRootOperationType(_)
                 | ApolloDiagnostic::UndefinedField(_)
                 | ApolloDiagnostic::UniqueArgument(_)
+                | ApolloDiagnostic::UniqueInputValue(_)
                 | ApolloDiagnostic::BuiltInScalarDefinition(_)
                 | ApolloDiagnostic::OutputType(_)
                 | ApolloDiagnostic::ObjectType(_)
@@ -90,6 +92,7 @@ impl ApolloDiagnostic {
             ApolloDiagnostic::ObjectType(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UndefinedField(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UniqueArgument(diagnostic) => Report::new(diagnostic.clone()),
+            ApolloDiagnostic::UniqueInputValue(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::UnsupportedLocation(diagnostic) => Report::new(diagnostic.clone()),
             ApolloDiagnostic::IntrospectionField(diagnostic) => Report::new(diagnostic.clone()),
         }
@@ -384,6 +387,23 @@ pub struct UndefinedField {
 
     #[help]
     pub help: String,
+}
+
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("input values must be unique")]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct UniqueInputValue {
+    // current operation type: subscription, mutation, query
+    pub value: String,
+
+    #[source_code]
+    pub src: Arc<str>,
+
+    #[label("previous definition of `{}` input value here", self.value)]
+    pub original_value: SourceSpan,
+
+    #[label("`{}` is redefined here", self.value)]
+    pub redefined_value: SourceSpan,
 }
 
 #[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]

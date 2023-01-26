@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    diagnostics::{UniqueDefinition, UniqueField},
+    diagnostics::{UniqueDefinition, UniqueInputValue},
     hir,
     validation::ast_type_definitions,
     ApolloDiagnostic, ValidationDatabase,
@@ -85,14 +85,11 @@ pub fn validate_input_values(
             let current_offset = input_value.loc().unwrap().offset();
             let current_node_len = input_value.loc().unwrap().node_len();
 
-            diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
-                field: name.into(),
+            diagnostics.push(ApolloDiagnostic::UniqueInputValue(UniqueInputValue {
+                value: name.into(),
                 src: db.source_code(prev_arg.loc().unwrap().file_id()),
-                original_field: (prev_offset, prev_node_len).into(),
-                redefined_field: (current_offset, current_node_len).into(),
-                help: Some(format!(
-                    "`{name}` must only be defined once in input value definition."
-                )),
+                original_value: (prev_offset, prev_node_len).into(),
+                redefined_value: (current_offset, current_node_len).into(),
             }));
         } else {
             seen.insert(name, input_value);

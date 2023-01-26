@@ -1,9 +1,9 @@
 [
-    UniqueArgument(
-        UniqueArgument {
-            name: "arg",
+    UniqueInputValue(
+        UniqueInputValue {
+            value: "arg",
             src: "directive @example(arg: Boolean, arg: Boolean) on FIELD\n",
-            original_definition: SourceSpan {
+            original_value: SourceSpan {
                 offset: SourceOffset(
                     19,
                 ),
@@ -11,7 +11,7 @@
                     14,
                 ),
             },
-            redefined_definition: SourceSpan {
+            redefined_value: SourceSpan {
                 offset: SourceOffset(
                     33,
                 ),
@@ -19,9 +19,6 @@
                     12,
                 ),
             },
-            help: Some(
-                "`arg` argument must only be defined once.",
-            ),
         },
     ),
 ]
