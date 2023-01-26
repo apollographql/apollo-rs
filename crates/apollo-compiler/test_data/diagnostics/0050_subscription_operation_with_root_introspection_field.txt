@@ -2,9 +2,6 @@
     IntrospectionField(
         IntrospectionField {
             field: "__typename",
-            help: Some(
-                "`__typename` is an introspection field. This is not allowed as the root field for Subscription operations.",
-            ),
             definition: SourceSpan {
                 offset: SourceOffset(
                     21,

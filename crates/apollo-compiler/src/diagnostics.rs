@@ -436,9 +436,6 @@ pub struct IntrospectionField {
     // current definition
     pub field: String,
 
-    #[help]
-    pub help: Option<String>,
-
     #[label("{} is an introspection field", self.field)]
     pub definition: SourceSpan,
 

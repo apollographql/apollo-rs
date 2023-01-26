@@ -17,9 +17,6 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
                         field: field.name().into(),
                         src: db.source_code(op.loc().file_id()),
                         definition: (field.loc.offset(), field.loc.node_len()).into(),
-                        help: Some(format!(
-                            "`{}` is an introspection field. This is not allowed as the root field for Subscription operations.", field.name()
-                        )),
                     }));
                 }
             }
