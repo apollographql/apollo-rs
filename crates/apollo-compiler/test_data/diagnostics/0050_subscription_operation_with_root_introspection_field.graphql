@@ -1,3 +1,7 @@
 subscription sub {
   __typename
 }
+
+type Subscription {
+  __typename: String
+}
