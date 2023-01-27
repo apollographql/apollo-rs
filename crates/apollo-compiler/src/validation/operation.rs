@@ -114,7 +114,7 @@ pub fn validate_operation_definitions(
                     let len = field.loc().node_len();
                     let field_name = field.name().into();
                     let help = if let Some(obj_type) = obj_name {
-                        format!("`{}` is not defined on `{}` type", field_name, obj_type)
+                        format!("`{field_name}` is not defined on `{obj_type}` type")
                     } else {
                         format!(
                             "`{}` is not defined on the current {} root operation type.",
@@ -390,7 +390,7 @@ union CatOrDog = Cat | Dog
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 5)
     }
@@ -439,7 +439,7 @@ type Cat implements Pet {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1)
     }
@@ -527,7 +527,7 @@ type Cat implements Pet {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
 
         assert_eq!(diagnostics.len(), 2)
@@ -559,7 +559,7 @@ directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: j
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
 
         assert_eq!(diagnostics.len(), 2)

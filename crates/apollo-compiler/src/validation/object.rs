@@ -294,7 +294,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 3);
     }

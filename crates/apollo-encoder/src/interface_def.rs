@@ -133,25 +133,25 @@ impl fmt::Display for InterfaceDefinition {
         } else {
             // No description when it's a extension
             if let Some(description) = &self.description {
-                write!(f, "{}", description)?;
+                write!(f, "{description}")?;
             }
         }
 
         write!(f, "interface {}", &self.name)?;
         for (i, interface) in self.interfaces.iter().enumerate() {
             match i {
-                0 => write!(f, " implements {}", interface)?,
-                _ => write!(f, "& {}", interface)?,
+                0 => write!(f, " implements {interface}")?,
+                _ => write!(f, "& {interface}")?,
             }
         }
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
 
         write!(f, " {{")?;
 
         for field in &self.fields {
-            write!(f, "\n{}", field)?;
+            write!(f, "\n{field}")?;
         }
         writeln!(f, "\n}}")
     }

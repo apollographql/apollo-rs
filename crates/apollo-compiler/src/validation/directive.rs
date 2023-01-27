@@ -52,7 +52,7 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
                 let directive_name = directive.name();
                 if name == directive_name {
                     diagnostics.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
-                        message: format!("{} directive definition cannot reference itself", name),
+                        message: format!("{name} directive definition cannot reference itself"),
                         definition: directive.loc().into(),
                         src: db.source_code(directive.loc().file_id()),
                         definition_label: "recursive directive definition".into(),

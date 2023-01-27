@@ -69,16 +69,16 @@ impl fmt::Display for ArgumentsDefinition {
             //   ): Type
             if input_val_def.description.is_some() {
                 if i != self.input_values.len() - 1 {
-                    write!(f, "{},", input_val_def)?;
+                    write!(f, "{input_val_def},")?;
                 } else {
-                    writeln!(f, "{}", input_val_def)?;
+                    writeln!(f, "{input_val_def}")?;
                 }
             // with no descriptions we single line input value definitions:
             //   two(argument: InputType!): Type
             } else if i != self.input_values.len() - 1 {
-                write!(f, "{}, ", input_val_def)?;
+                write!(f, "{input_val_def}, ")?;
             } else {
-                write!(f, "{}", input_val_def)?;
+                write!(f, "{input_val_def}")?;
             }
         }
 

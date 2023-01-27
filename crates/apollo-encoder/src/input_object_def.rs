@@ -98,18 +98,18 @@ impl fmt::Display for InputObjectDefinition {
             write!(f, "extend ")?;
         // No description when it's a extension
         } else if let Some(description) = &self.description {
-            write!(f, "{}", description)?;
+            write!(f, "{description}")?;
         }
 
         write!(f, "input {}", &self.name)?;
 
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
         write!(f, " {{")?;
 
         for field in &self.fields {
-            write!(f, "\n{}", field)?;
+            write!(f, "\n{field}")?;
         }
         writeln!(f, "\n}}")
     }

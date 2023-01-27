@@ -145,34 +145,34 @@ impl Document {
 impl fmt::Display for Document {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for operation_def in &self.operation_definitions {
-            write!(f, "{}", operation_def)?;
+            write!(f, "{operation_def}")?;
         }
         for fragment_def in &self.fragment_definitions {
-            write!(f, "{}", fragment_def)?;
+            write!(f, "{fragment_def}")?;
         }
         for schema_def in &self.schema_definitions {
-            write!(f, "{}", schema_def)?;
+            write!(f, "{schema_def}")?;
         }
         for scalar_type_def in &self.scalar_type_definitions {
-            write!(f, "{}", scalar_type_def)?;
+            write!(f, "{scalar_type_def}")?;
         }
         for object_type_def in &self.object_type_definitions {
-            write!(f, "{}", object_type_def)?;
+            write!(f, "{object_type_def}")?;
         }
         for interface_type_def in &self.interface_type_definitions {
-            write!(f, "{}", interface_type_def)?;
+            write!(f, "{interface_type_def}")?;
         }
         for union_type_def in &self.union_type_definitions {
-            write!(f, "{}", union_type_def)?;
+            write!(f, "{union_type_def}")?;
         }
         for enum_type_def in &self.enum_type_definitions {
-            write!(f, "{}", enum_type_def)?;
+            write!(f, "{enum_type_def}")?;
         }
         for input_object_type_def in &self.input_object_type_definitions {
-            write!(f, "{}", input_object_type_def)?;
+            write!(f, "{input_object_type_def}")?;
         }
         for directive_def in &self.directive_definitions {
-            write!(f, "{}", directive_def)?;
+            write!(f, "{directive_def}")?;
         }
 
         Ok(())

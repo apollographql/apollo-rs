@@ -44,12 +44,12 @@ impl Display for Type_ {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Type_::List { ty } => {
-                write!(f, "[{}]", ty)
+                write!(f, "[{ty}]")
             }
             Type_::NonNull { ty } => {
-                write!(f, "{}!", ty)
+                write!(f, "{ty}!")
             }
-            Type_::NamedType { name } => write!(f, "{}", name),
+            Type_::NamedType { name } => write!(f, "{name}"),
         }
     }
 }

@@ -79,7 +79,7 @@ impl fmt::Display for InputValueDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.description {
             Some(description) => {
-                writeln!(f, "\n    {}", description)?;
+                writeln!(f, "\n    {description}")?;
 
                 write!(f, "    {}: {}", self.name, self.type_)?;
             }
@@ -89,11 +89,11 @@ impl fmt::Display for InputValueDefinition {
         }
 
         if let Some(default) = &self.default_value {
-            write!(f, " = {}", default)?;
+            write!(f, " = {default}")?;
         }
 
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
 
         Ok(())

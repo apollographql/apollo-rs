@@ -46,7 +46,7 @@ fn parse_schema() -> ast::Document {
             span: (err.index(), err.data().len()).into(), // (offset, length of error token)
             ty: err.message().into(),
         });
-        println!("{:?}", err);
+        println!("{err:?}");
     }
 
     ast.document()

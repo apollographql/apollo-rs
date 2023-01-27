@@ -64,11 +64,11 @@ impl fmt::Display for VariableDefinition {
         write!(f, "${}: {}", self.variable, self.ty)?;
 
         if let Some(default_value) = &self.default_value {
-            write!(f, " = {}", default_value)?;
+            write!(f, " = {default_value}")?;
         }
 
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
 
         Ok(())

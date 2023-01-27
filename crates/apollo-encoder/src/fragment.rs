@@ -64,7 +64,7 @@ impl fmt::Display for FragmentDefinition {
         let indent_level = 0;
         write!(f, "fragment {} {}", self.name, self.type_condition)?;
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
         write!(
             f,
@@ -115,7 +115,7 @@ impl fmt::Display for FragmentSpread {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "...{}", self.name)?;
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
 
         Ok(())
@@ -187,10 +187,10 @@ impl InlineFragment {
         let mut text = String::from("...");
 
         if let Some(type_condition) = &self.type_condition {
-            let _ = write!(text, " {}", type_condition);
+            let _ = write!(text, " {type_condition}");
         }
         for directive in &self.directives {
-            let _ = write!(text, " {}", directive);
+            let _ = write!(text, " {directive}");
         }
 
         let _ = write!(

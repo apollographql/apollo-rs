@@ -84,7 +84,7 @@ pub fn validate_interface_definition(
                     let offset = implements_interface.loc().offset();
                     let len = implements_interface.loc().node_len();
                     diagnostics.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
-                        message: format!("{} interface cannot implement itself", i_name),
+                        message: format!("{i_name} interface cannot implement itself"),
                         definition: (offset, len).into(),
                         src: db.source_code(implements_interface.loc().file_id()),
                         definition_label: "recursive implements interfaces".into(),
@@ -295,7 +295,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1);
     }
@@ -329,7 +329,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1);
     }
@@ -357,7 +357,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1);
     }
@@ -378,7 +378,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1);
     }
@@ -409,7 +409,7 @@ interface Image implements Resource & Node {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1);
     }
@@ -472,7 +472,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 3);
     }

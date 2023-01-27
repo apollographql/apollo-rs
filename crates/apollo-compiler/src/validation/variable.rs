@@ -126,7 +126,7 @@ type Products {
         let diagnostics = compiler.validate();
 
         for error in &diagnostics {
-            println!("{}", error)
+            println!("{error}")
         }
 
         assert_eq!(diagnostics.len(), 2);
@@ -158,7 +158,7 @@ type Product {
         let diagnostics = compiler.validate();
 
         for error in diagnostics {
-            println!("{}", error)
+            println!("{error}")
         }
     }
 
@@ -199,7 +199,7 @@ type Product {
         let diagnostics = compiler.validate();
 
         for error in &diagnostics {
-            println!("{}", error)
+            println!("{error}")
         }
 
         assert_eq!(diagnostics.len(), 2);
