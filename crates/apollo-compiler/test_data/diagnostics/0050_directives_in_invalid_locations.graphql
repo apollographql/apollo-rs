@@ -20,7 +20,7 @@ subscription subscriptionA @directiveA {
   }
 }
 
-mutation @skip(if: true) {
+mutation myMutation @skip(if: true) {
   setMessage (message: "Hello, World! Yours, GraphQL.")
 }
 

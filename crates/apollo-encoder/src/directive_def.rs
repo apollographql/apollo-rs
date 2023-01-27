@@ -84,7 +84,7 @@ impl DirectiveDefinition {
 impl fmt::Display for DirectiveDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
-            write!(f, "{}", description)?;
+            write!(f, "{description}")?;
         }
         write!(f, "directive @{}", self.name)?;
 
@@ -98,8 +98,8 @@ impl fmt::Display for DirectiveDefinition {
 
         for (i, location) in self.locations.iter().enumerate() {
             match i {
-                0 => write!(f, " on {}", location)?,
-                _ => write!(f, " | {}", location)?,
+                0 => write!(f, " on {location}")?,
+                _ => write!(f, " | {location}")?,
             }
         }
 

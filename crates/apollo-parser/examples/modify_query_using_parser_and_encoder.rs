@@ -111,10 +111,10 @@ fn omitted_fields() -> Result<apollo_encoder::Document> {
 
 fn main() -> Result<()> {
     let merged = merge_queries()?;
-    println!("{}", merged);
+    println!("{merged}");
 
     let omitted_fields = omitted_fields()?;
-    println!("{}", omitted_fields);
+    println!("{omitted_fields}");
 
     Ok(())
 }

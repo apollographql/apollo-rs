@@ -31,7 +31,7 @@ impl fmt::Display for StringValue {
                 if is_block_string_character(source) {
                     writeln!(f, "\"\"\"\n{}\n\"\"\"", trim_double_quotes(source))?
                 } else {
-                    writeln!(f, "\"{}\"", source)?
+                    writeln!(f, "\"{source}\"")?
                 }
             }
             StringValue::Field { source } => {
@@ -39,11 +39,11 @@ impl fmt::Display for StringValue {
                     write!(f, "  \"\"\"")?;
                     let desc = trim_double_quotes(source);
                     for line in desc.lines() {
-                        write!(f, "\n  {}", line)?;
+                        write!(f, "\n  {line}")?;
                     }
                     writeln!(f, "\n  \"\"\"")?;
                 } else {
-                    writeln!(f, "  \"{}\"", source)?
+                    writeln!(f, "  \"{source}\"")?
                 }
             }
             StringValue::Input { source } => {
@@ -51,11 +51,11 @@ impl fmt::Display for StringValue {
                     write!(f, "\"\"\"")?;
                     let desc = trim_double_quotes(source);
                     for line in desc.lines() {
-                        write!(f, "\n    {}", line)?;
+                        write!(f, "\n    {line}")?;
                     }
                     write!(f, "\n    \"\"\"")?
                 } else {
-                    write!(f, "\"{}\"", source)?
+                    write!(f, "\"{source}\"")?
                 }
             }
         }

@@ -82,7 +82,7 @@ impl<'a> DocumentBuilder<'a> {
     /// Create an arbitrary `Name` with an index included in the name (to avoid name conflict)
     pub fn name_with_index(&mut self, index: usize) -> ArbitraryResult<Name> {
         let mut name = self.limited_string(30)?;
-        let _ = write!(name, "{}", index);
+        let _ = write!(name, "{index}");
 
         Ok(Name::new(name))
     }

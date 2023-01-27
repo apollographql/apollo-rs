@@ -1,20 +1,34 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{
-        MissingIdent, SingleRootField, UndefinedField, UniqueDefinition, UnsupportedOperation,
+        IntrospectionField, MissingIdent, SingleRootField, UndefinedField, UniqueDefinition,
+        UnsupportedOperation,
     },
-    hir::{OperationDefinition, Selection},
-    ApolloDiagnostic, FileId, ValidationDatabase,
+    hir, ApolloDiagnostic, FileId, ValidationDatabase,
 };
-// use crate::{diagnostics::ErrorDiagnostic, ApolloDiagnostic, Document};
 
-pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
+pub fn validate_operation_definitions(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
+
     let operations = db.operations(file_id);
+    for def in operations.iter() {
+        diagnostics
+            .extend(db.validate_directives(def.directives().to_vec(), def.operation_ty().into()));
+        diagnostics.extend(db.validate_variable_definitions(def.variables.as_ref().clone()));
+        diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
+    }
+
     let subscription_operations = db.upcast().subscription_operations(file_id);
     let query_operations = db.upcast().query_operations(file_id);
     let mutation_operations = db.upcast().mutation_operations(file_id);
+
+    diagnostics.extend(db.validate_subscription_operations(subscription_operations));
+    diagnostics.extend(db.validate_query_operations(query_operations));
+    diagnostics.extend(db.validate_mutation_operations(mutation_operations));
 
     // It is possible to have an unnamed (anonymous) operation definition only
     // if there is **one** operation definition.
@@ -44,7 +58,7 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
     // Operation definitions must have unique names.
     //
     // Return a Unique Operation Definition error in case of a duplicate name.
-    let mut seen: HashMap<&str, &OperationDefinition> = HashMap::new();
+    let mut seen: HashMap<&str, &hir::OperationDefinition> = HashMap::new();
     for op in operations.iter() {
         if let Some(name) = op.name() {
             if let Some(prev_def) = seen.get(&name) {
@@ -69,10 +83,65 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
         }
     }
 
+    // Fields must exist on the type being queried.
+    for op in operations.iter() {
+        for selection in op.selection_set().selection() {
+            let obj_name = op.object_type(db.upcast()).map(|obj| obj.name().to_owned());
+            if let hir::Selection::Field(field) = selection {
+                if field.ty(db.upcast()).is_none() {
+                    let offset = field.loc().offset();
+                    let len = field.loc().node_len();
+                    let field_name = field.name().into();
+                    let help = if let Some(obj_type) = obj_name {
+                        format!("`{field_name}` is not defined on `{obj_type}` type")
+                    } else {
+                        format!(
+                            "`{}` is not defined on the current {} root operation type.",
+                            field_name,
+                            op.operation_ty()
+                        )
+                    };
+                    diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
+                        field: field_name,
+                        src: db.source_code(field.loc().file_id()),
+                        definition: (offset, len).into(),
+                        help,
+                    }))
+                }
+            }
+        }
+    }
+
+    diagnostics
+}
+
+pub fn validate_subscription_operations(
+    db: &dyn ValidationDatabase,
+    subscriptions: Arc<Vec<Arc<hir::OperationDefinition>>>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    // Subscription fields must not have an introspection field in the selection set.
+    //
+    // Return an Introspection Field error in case of an introspection field existing as the root field in the set.
+    for op in subscriptions.iter() {
+        for selection in op.selection_set().selection() {
+            if let hir::Selection::Field(field) = selection {
+                if field.is_introspection() {
+                    diagnostics.push(ApolloDiagnostic::IntrospectionField(IntrospectionField {
+                        field: field.name().into(),
+                        src: db.source_code(op.loc().file_id()),
+                        definition: (field.loc.offset(), field.loc.node_len()).into(),
+                    }));
+                }
+            }
+        }
+    }
+
     // A Subscription operation definition can only have **one** root level
     // field.
-    if subscription_operations.len() >= 1 {
-        let single_root_field: Vec<ApolloDiagnostic> = subscription_operations
+    if !subscriptions.is_empty() {
+        let single_root_field: Vec<ApolloDiagnostic> = subscriptions
             .iter()
             .filter_map(|op| {
                 let mut fields = op.fields(db.upcast()).as_ref().clone();
@@ -104,8 +173,8 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
     // defined schema root operation types.
     //
     //   * subscription operation - subscription root operation
-    if subscription_operations.len() >= 1 && db.schema().subscription(db.upcast()).is_none() {
-        let unsupported_ops: Vec<ApolloDiagnostic> = subscription_operations
+    if !subscriptions.is_empty() && db.schema().subscription(db.upcast()).is_none() {
+        let unsupported_ops: Vec<ApolloDiagnostic> = subscriptions
             .iter()
             .map(|op| {
                 let op_offset = op.loc().offset();
@@ -138,9 +207,21 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
         diagnostics.extend(unsupported_ops)
     }
 
+    diagnostics
+}
+
+pub fn validate_query_operations(
+    db: &dyn ValidationDatabase,
+    queries: Arc<Vec<Arc<hir::OperationDefinition>>>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    // All query, subscription and mutation operations must be against legally
+    // defined schema root operation types.
+    //
     //   * query operation - query root operation
-    if query_operations.len() >= 1 && db.schema().query(db.upcast()).is_none() {
-        let unsupported_ops: Vec<ApolloDiagnostic> = query_operations
+    if !queries.is_empty() && db.schema().query(db.upcast()).is_none() {
+        let unsupported_ops: Vec<ApolloDiagnostic> = queries
             .iter()
             .map(|op| {
                 let op_offset = op.loc().offset();
@@ -172,9 +253,21 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
         diagnostics.extend(unsupported_ops)
     }
 
+    diagnostics
+}
+
+pub fn validate_mutation_operations(
+    db: &dyn ValidationDatabase,
+    mutations: Arc<Vec<Arc<hir::OperationDefinition>>>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    // All query, subscription and mutation operations must be against legally
+    // defined schema root operation types.
+    //
     //   * mutation operation - mutation root operation
-    if mutation_operations.len() >= 1 && db.schema().mutation(db.upcast()).is_none() {
-        let unsupported_ops: Vec<ApolloDiagnostic> = mutation_operations
+    if !mutations.is_empty() && db.schema().mutation(db.upcast()).is_none() {
+        let unsupported_ops: Vec<ApolloDiagnostic> = mutations
             .iter()
             .map(|op| {
                 let op_offset = op.loc().offset();
@@ -205,35 +298,6 @@ pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnost
             })
             .collect();
         diagnostics.extend(unsupported_ops)
-    }
-
-    // Fields must exist on the type being queried.
-    for op in operations.iter() {
-        for selection in op.selection_set().selection() {
-            let obj_name = op.object_type(db.upcast()).map(|obj| obj.name().to_owned());
-            if let Selection::Field(field) = selection {
-                if field.ty(db.upcast()).is_none() {
-                    let offset = field.loc().offset();
-                    let len = field.loc().node_len();
-                    let field_name = field.name().into();
-                    let help = if let Some(obj_type) = obj_name {
-                        format!("`{}` is not defined on `{}` type", field_name, obj_type)
-                    } else {
-                        format!(
-                            "`{}` is not defined on the current {} root operation type.",
-                            field_name,
-                            op.operation_ty()
-                        )
-                    };
-                    diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
-                        field: field_name,
-                        src: db.source_code(field.loc().file_id()),
-                        definition: (offset, len).into(),
-                        help,
-                    }))
-                }
-            }
-        }
     }
 
     diagnostics
@@ -305,7 +369,7 @@ union CatOrDog = Cat | Dog
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 5)
     }
@@ -354,7 +418,7 @@ type Cat implements Pet {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1)
     }
@@ -442,7 +506,7 @@ type Cat implements Pet {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
 
         assert_eq!(diagnostics.len(), 2)
@@ -474,7 +538,7 @@ directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: j
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
 
         assert_eq!(diagnostics.len(), 2)

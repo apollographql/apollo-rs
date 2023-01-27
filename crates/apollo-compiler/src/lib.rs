@@ -295,7 +295,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -349,7 +349,7 @@ type Query {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -500,7 +500,7 @@ directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: j
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -628,7 +628,7 @@ fragment vipCustomer on User {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -688,7 +688,7 @@ type Result {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
     }
@@ -709,7 +709,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -742,7 +742,7 @@ enum Pet {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -784,7 +784,7 @@ type SearchQuery {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -832,7 +832,7 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -867,7 +867,7 @@ input Point2D {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -898,7 +898,7 @@ directive @directiveB(name: String) on OBJECT | INTERFACE
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -932,7 +932,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -1014,7 +1014,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         assert!(diagnostics.is_empty());
 
@@ -1129,7 +1129,7 @@ type User
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
         // the scalar warning diagnostic
         assert_eq!(diagnostics.len(), 1);
@@ -1158,7 +1158,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic);
+            println!("{diagnostic}");
         }
 
         assert!(diagnostics.is_empty());

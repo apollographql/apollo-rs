@@ -1,16 +1,18 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{QueryRootOperationType, UniqueDefinition},
-    hir::RootOperationTypeDefinition,
-    ApolloDiagnostic, ValidationDatabase,
+    hir, ApolloDiagnostic, ValidationDatabase,
 };
 
-pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_schema_definition(
+    db: &dyn ValidationDatabase,
+    schema_def: Arc<hir::SchemaDefinition>,
+) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // A GraphQL schema must have a Query root operation.
-    if db.schema().query(db.upcast()).is_none() {
+    if schema_def.query(db.upcast()).is_none() {
         if let Some(loc) = db.schema().loc() {
             let offset = loc.offset();
             let len = loc.node_len();
@@ -22,12 +24,32 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             ));
         }
     }
+    diagnostics.extend(
+        db.validate_root_operation_definitions(
+            schema_def.root_operation_type_definition().to_vec(),
+        ),
+    );
 
-    // All root operations in a schema definition must be unique.
-    //
-    // Return a Unique Operation Definition error in case of a duplicate name.
-    let mut seen: HashMap<String, &RootOperationTypeDefinition> = HashMap::new();
-    for op_type in db.schema().root_operation_type_definition().iter() {
+    diagnostics.extend(db.validate_directives(
+        schema_def.directives().to_vec(),
+        hir::DirectiveLocation::Schema,
+    ));
+
+    diagnostics
+}
+
+// All root operations in a schema definition must be unique.
+//
+// Return a Unique Operation Definition error in case of a duplicate name.
+pub fn validate_root_operation_definitions(
+    db: &dyn ValidationDatabase,
+    root_op_defs: Vec<hir::RootOperationTypeDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let mut seen: HashMap<String, &hir::RootOperationTypeDefinition> = HashMap::new();
+
+    for op_type in root_op_defs.iter() {
         let name = op_type.named_type().name();
         if let Some(prev_def) = seen.get(&name) {
             if prev_def.loc().is_some() && op_type.loc().is_some() {

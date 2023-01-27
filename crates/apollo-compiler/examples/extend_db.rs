@@ -194,6 +194,6 @@ scalar url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
     // Display lints.
     for lint in &lints {
-        println!("{}", lint)
+        println!("{lint}")
     }
 }

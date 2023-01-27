@@ -222,7 +222,7 @@ fn to_pascal_case(s: &str) -> String {
 
 fn write_doc_comment(contents: &[String], dest: &mut String) {
     for line in contents {
-        writeln!(dest, "///{}", line).unwrap();
+        writeln!(dest, "///{line}").unwrap();
     }
 }
 

@@ -1,16 +1,32 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
-    diagnostics::{UniqueDefinition, UniqueField},
-    hir::InputValueDefinition,
+    diagnostics::{UniqueDefinition, UniqueInputValue},
+    hir,
     validation::ast_type_definitions,
     ApolloDiagnostic, ValidationDatabase,
 };
 use apollo_parser::ast;
 
-pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_input_object_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    let defs = &db.type_system_definitions().input_objects;
+    for def in defs.values() {
+        diagnostics.extend(db.validate_input_object_definition(def.clone()));
+    }
+
+    diagnostics
+}
+
+pub fn validate_input_object_definition(
+    db: &dyn ValidationDatabase,
+    input_obj: Arc<hir::InputObjectTypeDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = db.validate_directives(
+        input_obj.directives().to_vec(),
+        hir::DirectiveLocation::InputObject,
+    );
     // Input Object Definitions must have unique names.
     //
     // Return a Unique Definition error in case of a duplicate name.
@@ -40,34 +56,42 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     // Fields in an Input Object Definition must be unique
     //
     // Returns Unique Value error.
-    for input_objects in db.input_objects().values() {
-        let mut seen: HashMap<&str, &InputValueDefinition> = HashMap::new();
+    diagnostics.extend(db.validate_input_values(
+        input_obj.input_fields_definition.clone(),
+        hir::DirectiveLocation::InputFieldDefinition,
+    ));
 
-        let input_fields = input_objects.input_fields_definition();
+    diagnostics
+}
 
-        for field in input_fields {
-            let field_name = field.name();
-            if let Some(prev_field) = seen.get(&field_name) {
-                if prev_field.loc().is_some() && field.loc().is_some() {
-                    let prev_offset = prev_field.loc().unwrap().offset();
-                    let prev_node_len = prev_field.loc().unwrap().node_len();
+pub fn validate_input_values(
+    db: &dyn ValidationDatabase,
+    input_values: Arc<Vec<hir::InputValueDefinition>>,
+    // directive location depends on parent node location, so we pass this down from parent
+    dir_loc: hir::DirectiveLocation,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+    let mut seen: HashMap<&str, &hir::InputValueDefinition> = HashMap::new();
 
-                    let current_offset = field.loc().unwrap().offset();
-                    let current_node_len = field.loc().unwrap().node_len();
+    for input_value in input_values.iter() {
+        diagnostics.extend(db.validate_directives(input_value.directives().to_vec(), dir_loc));
 
-                    diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
-                        field: field_name.into(),
-                        src: db.source_code(prev_field.loc().unwrap().file_id()),
-                        original_field: (prev_offset, prev_node_len).into(),
-                        redefined_field: (current_offset, current_node_len).into(),
-                        help: Some(format!(
-                            "{field_name} field must only be defined once in this input object definition."
-                        )),
-                    }));
-                }
-            } else {
-                seen.insert(field_name, field);
-            }
+        let name = input_value.name();
+        if let Some(prev_arg) = seen.get(name) {
+            let prev_offset = prev_arg.loc().unwrap().offset();
+            let prev_node_len = prev_arg.loc().unwrap().node_len();
+
+            let current_offset = input_value.loc().unwrap().offset();
+            let current_node_len = input_value.loc().unwrap().node_len();
+
+            diagnostics.push(ApolloDiagnostic::UniqueInputValue(UniqueInputValue {
+                value: name.into(),
+                src: db.source_code(prev_arg.loc().unwrap().file_id()),
+                original_value: (prev_offset, prev_node_len).into(),
+                redefined_value: (current_offset, current_node_len).into(),
+            }));
+        } else {
+            seen.insert(name, input_value);
         }
     }
 

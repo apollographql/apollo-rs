@@ -2,14 +2,34 @@ use std::collections::HashSet;
 
 use crate::{
     diagnostics::{ApolloDiagnostic, UndefinedDefinition, UnusedVariable},
+    hir,
     validation::ValidationSet,
     FileId, ValidationDatabase,
 };
 
+pub fn validate_variable_definitions(
+    db: &dyn ValidationDatabase,
+    variables: Vec<hir::VariableDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    for variable in variables.iter() {
+        diagnostics.extend(db.validate_directives(
+            variable.directives().to_vec(),
+            hir::DirectiveLocation::VariableDefinition,
+        ));
+    }
+
+    diagnostics
+}
+
 // check in scope
 // check in use
 // compare the two
-pub fn check(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
+pub fn validate_unused_variables(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
     db.operations(file_id)
         .iter()
         .flat_map(|op| {
@@ -106,7 +126,7 @@ type Products {
         let diagnostics = compiler.validate();
 
         for error in &diagnostics {
-            println!("{}", error)
+            println!("{error}")
         }
 
         assert_eq!(diagnostics.len(), 2);
@@ -138,7 +158,7 @@ type Product {
         let diagnostics = compiler.validate();
 
         for error in diagnostics {
-            println!("{}", error)
+            println!("{error}")
         }
     }
 
@@ -179,7 +199,7 @@ type Product {
         let diagnostics = compiler.validate();
 
         for error in &diagnostics {
-            println!("{}", error)
+            println!("{error}")
         }
 
         assert_eq!(diagnostics.len(), 2);

@@ -255,7 +255,7 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let message = format!("expected {:?}, got {}", kind, data);
+        let message = format!("expected {kind:?}, got {data}");
         let err = if is_eof {
             Error::eof(message, index)
         } else {

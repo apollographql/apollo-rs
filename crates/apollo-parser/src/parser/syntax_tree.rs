@@ -100,7 +100,7 @@ impl fmt::Debug for SyntaxTree {
 
         fn print_err(f: &mut fmt::Formatter<'_>, errors: Vec<Error>) -> fmt::Result {
             for err in errors {
-                writeln!(f, "- {:?}", err)?;
+                writeln!(f, "- {err:?}")?;
             }
 
             write!(f, "")
@@ -110,7 +110,7 @@ impl fmt::Debug for SyntaxTree {
             f: &mut fmt::Formatter<'_>,
             recursion_limit: LimitTracker,
         ) -> fmt::Result {
-            write!(f, "{:?}", recursion_limit)
+            write!(f, "{recursion_limit:?}")
         }
 
         print(f, 0, self.syntax_node().into())?;

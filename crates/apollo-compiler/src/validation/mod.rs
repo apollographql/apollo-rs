@@ -1,16 +1,19 @@
 mod validation_db;
 
+mod argument;
 mod directive;
 mod enum_;
+mod field;
+mod fragment;
 mod input_object;
 mod interface;
 mod object;
 mod operation;
 mod scalar;
 mod schema;
-mod subscription;
+mod selection;
 mod union_;
-mod unused_variable;
+mod variable;
 
 pub use validation_db::{ValidationDatabase, ValidationStorage};
 

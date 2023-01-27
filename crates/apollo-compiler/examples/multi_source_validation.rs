@@ -24,7 +24,7 @@ fn compile_from_dir() -> io::Result<()> {
 
     let diagnostics = compiler.validate();
     for diagnostic in &diagnostics {
-        println!("{}", diagnostic);
+        println!("{diagnostic}");
     }
     assert_eq!(diagnostics.len(), 1);
 
@@ -52,7 +52,7 @@ fn compile_schema_and_query_files() -> io::Result<()> {
 
     let diagnostics = compiler.validate();
     for diagnostic in &diagnostics {
-        println!("{}", diagnostic);
+        println!("{diagnostic}");
     }
     assert_eq!(diagnostics.len(), 1);
 
@@ -137,7 +137,7 @@ query getDogName {
 
     let diagnostics = compiler.validate();
     for diagnostic in &diagnostics {
-        println!("{}", diagnostic);
+        println!("{diagnostic}");
     }
     assert_eq!(diagnostics.len(), 1);
 

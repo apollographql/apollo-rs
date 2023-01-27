@@ -94,17 +94,17 @@ impl fmt::Display for EnumDefinition {
             write!(f, "extend ")?;
         // No description when it's a extension
         } else if let Some(description) = &self.description {
-            write!(f, "{}", description)?;
+            write!(f, "{description}")?;
         }
 
         write!(f, "enum {}", self.name)?;
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
 
         write!(f, " {{")?;
         for value in &self.values {
-            write!(f, "\n{}", value)?;
+            write!(f, "\n{value}")?;
         }
         writeln!(f, "\n}}")
     }

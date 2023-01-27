@@ -1,34 +1,9 @@
 [
-    UniqueArgument(
-        UniqueArgument {
-            name: "arg",
+    UniqueInputValue(
+        UniqueInputValue {
+            value: "arg",
             src: "interface Duplicate {\n  duplicate(arg: Boolean, arg: Boolean): Int\n}\n\ntype Query implements Duplicate {\n  single(arg: Boolean): Int\n  duplicate(arg: Boolean, arg: Boolean): Int\n}\n",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    144,
-                ),
-                length: SourceOffset(
-                    14,
-                ),
-            },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    158,
-                ),
-                length: SourceOffset(
-                    12,
-                ),
-            },
-            help: Some(
-                "`arg` argument must only be defined once.",
-            ),
-        },
-    ),
-    UniqueArgument(
-        UniqueArgument {
-            name: "arg",
-            src: "interface Duplicate {\n  duplicate(arg: Boolean, arg: Boolean): Int\n}\n\ntype Query implements Duplicate {\n  single(arg: Boolean): Int\n  duplicate(arg: Boolean, arg: Boolean): Int\n}\n",
-            original_definition: SourceSpan {
+            original_value: SourceSpan {
                 offset: SourceOffset(
                     34,
                 ),
@@ -36,7 +11,7 @@
                     14,
                 ),
             },
-            redefined_definition: SourceSpan {
+            redefined_value: SourceSpan {
                 offset: SourceOffset(
                     48,
                 ),
@@ -44,9 +19,28 @@
                     12,
                 ),
             },
-            help: Some(
-                "`arg` argument must only be defined once.",
-            ),
+        },
+    ),
+    UniqueInputValue(
+        UniqueInputValue {
+            value: "arg",
+            src: "interface Duplicate {\n  duplicate(arg: Boolean, arg: Boolean): Int\n}\n\ntype Query implements Duplicate {\n  single(arg: Boolean): Int\n  duplicate(arg: Boolean, arg: Boolean): Int\n}\n",
+            original_value: SourceSpan {
+                offset: SourceOffset(
+                    144,
+                ),
+                length: SourceOffset(
+                    14,
+                ),
+            },
+            redefined_value: SourceSpan {
+                offset: SourceOffset(
+                    158,
+                ),
+                length: SourceOffset(
+                    12,
+                ),
+            },
         },
     ),
 ]

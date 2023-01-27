@@ -289,14 +289,11 @@ impl Cursor<'_> {
                 self.bump();
                 buf.push('.');
 
-                self.add_err(Error::new(
-                    "Unterminated spread operator",
-                    format!("..{}", b),
-                ));
+                self.add_err(Error::new("Unterminated spread operator", format!("..{b}")));
             }
             (a, b) => self.add_err(Error::new(
                 "Unterminated spread operator",
-                format!(".{}{}", a, b),
+                format!(".{a}{b}"),
             )),
         }
 
@@ -357,13 +354,13 @@ impl Cursor<'_> {
                     self.bump();
                     if !has_digit {
                         self.add_err(Error::new(
-                            format!("Unexpected character `{}` in exponent", first),
+                            format!("Unexpected character `{first}` in exponent"),
                             first.to_string(),
                         ));
                     }
                     if has_exponent {
                         self.add_err(Error::new(
-                            format!("Unexpected character `{}`", first),
+                            format!("Unexpected character `{first}`"),
                             first.to_string(),
                         ));
                     }
@@ -379,21 +376,21 @@ impl Cursor<'_> {
 
                     if !has_digit {
                         self.add_err(Error::new(
-                            format!("Unexpected character `{}` before a digit", first),
+                            format!("Unexpected character `{first}` before a digit"),
                             first.to_string(),
                         ));
                     }
 
                     if has_fractional {
                         self.add_err(Error::new(
-                            format!("Unexpected character `{}`", first),
+                            format!("Unexpected character `{first}`"),
                             first.to_string(),
                         ));
                     }
 
                     if has_exponent {
                         self.add_err(Error::new(
-                            format!("Unexpected character `{}`", first),
+                            format!("Unexpected character `{first}`"),
                             first.to_string(),
                         ));
                     }
@@ -459,7 +456,7 @@ fn is_line_terminator(c: char) -> bool {
 }
 
 fn is_digit_char(c: char) -> bool {
-    matches!(c, '0'..='9')
+    c.is_ascii_digit()
 }
 
 // EscapedCharacter

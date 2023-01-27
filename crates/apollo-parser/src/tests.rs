@@ -41,14 +41,14 @@ fn parser_tests() {
         let parser = Parser::new(text);
         let ast = parser.parse();
         assert_errors_are_absent(&ast.errors().cloned().collect::<Vec<_>>(), path);
-        format!("{:?}", ast)
+        format!("{ast:?}")
     });
 
     dir_tests(&test_data_dir(), &["parser/err"], "txt", |text, path| {
         let parser = Parser::new(text);
         let ast = parser.parse();
         assert_errors_are_present(&ast.errors().cloned().collect::<Vec<_>>(), path);
-        format!("{:?}", ast)
+        format!("{ast:?}")
     });
 }
 
@@ -78,10 +78,10 @@ fn assert_errors_are_absent(errors: &[Error], path: &Path) {
 fn dump_tokens_and_errors(tokens: &[Token], errors: &[Error]) -> String {
     let mut acc = String::new();
     for token in tokens {
-        writeln!(acc, "{:?}", token).unwrap();
+        writeln!(acc, "{token:?}").unwrap();
     }
     for err in errors {
-        writeln!(acc, "{:?}", err).unwrap();
+        writeln!(acc, "{err:?}").unwrap();
     }
     acc
 }
@@ -114,7 +114,7 @@ fn collect_graphql_files(root_dir: &Path, paths: &[&str]) -> Vec<(PathBuf, Strin
         })
         .map(|path| {
             let text = fs::read_to_string(&path)
-                .unwrap_or_else(|_| panic!("File at {:?} should be valid", path));
+                .unwrap_or_else(|_| panic!("File at {path:?} should be valid"));
             (path, text)
         })
         .collect()
