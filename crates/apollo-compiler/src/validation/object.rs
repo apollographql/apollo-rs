@@ -1,11 +1,10 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 use crate::{
     diagnostics::{
-        MissingField, OutputType, TransitiveImplementedInterfaces, UndefinedDefinition,
-        UniqueDefinition, UniqueField,
+        MissingField, TransitiveImplementedInterfaces, UndefinedDefinition, UniqueDefinition,
     },
-    hir::{self, FieldDefinition},
+    hir,
     validation::{ast_type_definitions, ValidationSet},
     ApolloDiagnostic, ValidationDatabase,
 };
@@ -31,10 +30,6 @@ pub fn validate_object_type_definition(
     diagnostics.extend(
         db.validate_directives(object.directives().to_vec(), hir::DirectiveLocation::Object),
     );
-
-    for field in object.fields_definition() {
-        diagnostics.extend(db.validate_field_definition(field.clone()));
-    }
 
     // Object Type definitions must have unique names.
     //
@@ -63,60 +58,7 @@ pub fn validate_object_type_definition(
     }
 
     // Object Type field validations.
-    let mut seen: HashMap<&str, &FieldDefinition> = HashMap::new();
-
-    let fields = object.fields_definition();
-    for field in fields {
-        // Fields in an Object Type definition must be unique
-        //
-        // Returns Unique Value error.
-        let field_name = field.name();
-        let offset = field.loc().offset();
-        let len = field.loc().node_len();
-
-        if let Some(prev_field) = seen.get(&field_name) {
-            let prev_offset = prev_field.loc().offset();
-            let prev_node_len = prev_field.loc().node_len();
-
-            diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
-                    field: field_name.into(),
-                    src: db.source_code(prev_field.loc().file_id()),
-                    original_field: (prev_offset, prev_node_len).into(),
-                    redefined_field: (offset, len).into(),
-                    help: Some(format!(
-                        "`{field_name}` field must only be defined once in this object type definition."
-                    )),
-                }));
-        } else {
-            seen.insert(field_name, field);
-        }
-
-        // Field types in Object Types must be of output type
-        if let Some(field_ty) = field.ty().type_def(db.upcast()) {
-            if !field.ty().is_output_type(db.upcast()) {
-                diagnostics.push(ApolloDiagnostic::OutputType(OutputType {
-                    name: field.name().into(),
-                    ty: field_ty.kind(),
-                    src: db.source_code(field.loc().file_id()),
-                    definition: (offset, len).into(),
-                }))
-            }
-        } else if let Some(loc) = field.ty().loc() {
-            let field_ty_offset = loc.offset();
-            let field_ty_len = loc.node_len();
-            diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                ty: field.ty().name(),
-                src: db.source_code(field.loc().file_id()),
-                definition: (field_ty_offset, field_ty_len).into(),
-            }))
-        } else {
-            diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                ty: field.ty().name(),
-                src: db.source_code(field.loc().file_id()),
-                definition: (offset, len).into(),
-            }))
-        }
-    }
+    diagnostics.extend(db.validate_field_definitions(object.fields_definition().to_vec()));
 
     let defined_interfaces: HashSet<ValidationSet> = db
         .interfaces()

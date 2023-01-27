@@ -20,7 +20,7 @@
                 ),
             },
             help: Some(
-                "`name` field must only be defined once in this object type definition.",
+                "`name` field must only be defined once in this definition.",
             ),
         },
     ),

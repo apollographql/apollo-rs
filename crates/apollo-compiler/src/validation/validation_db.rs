@@ -108,6 +108,9 @@ pub trait ValidationDatabase:
     #[salsa::invoke(object::validate_object_type_definition)]
     fn validate_object_type_definition(&self, def: ObjectTypeDefinition) -> Vec<ApolloDiagnostic>;
 
+    #[salsa::invoke(field::validate_field_definitions)]
+    fn validate_field_definitions(&self, fields: Vec<FieldDefinition>) -> Vec<ApolloDiagnostic>;
+
     #[salsa::invoke(field::validate_field_definition)]
     fn validate_field_definition(&self, field: FieldDefinition) -> Vec<ApolloDiagnostic>;
 
