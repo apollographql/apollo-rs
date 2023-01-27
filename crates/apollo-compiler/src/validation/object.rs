@@ -1,9 +1,7 @@
 use std::collections::HashSet;
 
 use crate::{
-    diagnostics::{
-        MissingField, TransitiveImplementedInterfaces, UndefinedDefinition, UniqueDefinition,
-    },
+    diagnostics::{MissingField, UniqueDefinition},
     hir,
     validation::{ast_type_definitions, ValidationSet},
     ApolloDiagnostic, ValidationDatabase,
@@ -60,72 +58,8 @@ pub fn validate_object_type_definition(
     // Object Type field validations.
     diagnostics.extend(db.validate_field_definitions(object.fields_definition().to_vec()));
 
-    let defined_interfaces: HashSet<ValidationSet> = db
-        .interfaces()
-        .iter()
-        .map(|(name, interface)| ValidationSet {
-            name: name.to_owned(),
-            loc: *interface.loc(),
-        })
-        .collect();
-    // Implements Interfaces must be defined.
-    //
-    // Returns Undefined Definition error.
-    let implements_interfaces: HashSet<ValidationSet> = object
-        .implements_interfaces()
-        .iter()
-        .map(|interface| ValidationSet {
-            name: interface.interface().to_owned(),
-            loc: *interface.loc(),
-        })
-        .collect();
-    let diff = implements_interfaces.difference(&defined_interfaces);
-    for undefined in diff {
-        let offset = undefined.loc.offset();
-        let len: usize = undefined.loc.node_len();
-        diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-            ty: undefined.name.clone(),
-            src: db.source_code(undefined.loc.file_id()),
-            definition: (offset, len).into(),
-        }))
-    }
-
-    // Transitively implemented interfaces must be defined on an implementing
-    // type or interface.
-    //
-    // Returns Transitive Implemented Interfaces error.
-    let transitive_interfaces: HashSet<ValidationSet> = object
-        .implements_interfaces()
-        .iter()
-        .filter_map(|implements_interface| {
-            if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
-                let child_interfaces: HashSet<ValidationSet> = interface
-                    .implements_interfaces()
-                    .iter()
-                    .map(|interface| ValidationSet {
-                        name: interface.interface().to_owned(),
-                        loc: *implements_interface.loc(),
-                    })
-                    .collect();
-                Some(child_interfaces)
-            } else {
-                None
-            }
-        })
-        .flatten()
-        .collect();
-    let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
-    for undefined in transitive_diff {
-        let offset = undefined.loc.offset();
-        let len = undefined.loc.node_len();
-        diagnostics.push(ApolloDiagnostic::TransitiveImplementedInterfaces(
-            TransitiveImplementedInterfaces {
-                missing_interface: undefined.name.clone(),
-                src: db.source_code(undefined.loc.file_id()),
-                definition: (offset, len).into(),
-            },
-        ))
-    }
+    // Implements Interfaceds validation.
+    diagnostics.extend(db.validate_implements_interfaces(object.implements_interfaces().to_vec()));
 
     // When defining an interface that implements another interface, the
     // implementing interface must define each field that is specified by

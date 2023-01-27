@@ -61,6 +61,12 @@ pub trait ValidationDatabase:
     #[salsa::invoke(interface::validate_interface_definition)]
     fn validate_interface_definition(&self, def: InterfaceTypeDefinition) -> Vec<ApolloDiagnostic>;
 
+    #[salsa::invoke(interface::validate_implements_interfaces)]
+    fn validate_implements_interfaces(
+        &self,
+        impl_interfaces: Vec<ImplementsInterface>,
+    ) -> Vec<ApolloDiagnostic>;
+
     #[salsa::invoke(directive::validate_directive_definitions)]
     fn validate_directive_definitions(&self) -> Vec<ApolloDiagnostic>;
 

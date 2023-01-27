@@ -5,7 +5,7 @@ use crate::{
         MissingField, RecursiveDefinition, TransitiveImplementedInterfaces, UndefinedDefinition,
         UniqueDefinition,
     },
-    hir,
+    hir::{self, ImplementsInterface},
     validation::{ast_type_definitions, ValidationSet},
     ApolloDiagnostic, ValidationDatabase,
 };
@@ -90,75 +90,12 @@ pub fn validate_interface_definition(
         }
     }
 
-    // Interface Type field validations.
+    // Interface Type field validation.
     diagnostics.extend(db.validate_field_definitions(interface_def.fields_definition().to_vec()));
 
-    let interfaces = db.interfaces();
-    let defined_interfaces: HashSet<ValidationSet> = interfaces
-        .iter()
-        .map(|(name, interface)| ValidationSet {
-            name: name.to_owned(),
-            loc: *interface.loc(),
-        })
-        .collect();
-    // Implements Interfaces must be defined.
-    //
-    // Returns Undefined Definition error.
-    let implements_interfaces: HashSet<ValidationSet> = interface_def
-        .implements_interfaces()
-        .iter()
-        .map(|interface| ValidationSet {
-            name: interface.interface().to_owned(),
-            loc: *interface.loc(),
-        })
-        .collect();
-    let diff = implements_interfaces.difference(&defined_interfaces);
-    for undefined in diff {
-        let offset = undefined.loc.offset();
-        let len: usize = undefined.loc.node_len();
-        diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-            ty: undefined.name.clone(),
-            src: db.source_code(undefined.loc.file_id()),
-            definition: (offset, len).into(),
-        }))
-    }
-
-    // Transitively implemented interfaces must be defined on an implementing
-    // type or interface.
-    //
-    // Returns Transitive Implemented Interfaces error.
-    let transitive_interfaces: HashSet<ValidationSet> = interface_def
-        .implements_interfaces()
-        .iter()
-        .filter_map(|implements_interface| {
-            if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
-                let child_interfaces: HashSet<ValidationSet> = interface
-                    .implements_interfaces()
-                    .iter()
-                    .map(|interface| ValidationSet {
-                        name: interface.interface().to_owned(),
-                        loc: *implements_interface.loc(),
-                    })
-                    .collect();
-                Some(child_interfaces)
-            } else {
-                None
-            }
-        })
-        .flatten()
-        .collect();
-    let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
-    for undefined in transitive_diff {
-        let offset = undefined.loc.offset();
-        let len = undefined.loc.node_len();
-        diagnostics.push(ApolloDiagnostic::TransitiveImplementedInterfaces(
-            TransitiveImplementedInterfaces {
-                missing_interface: undefined.name.clone(),
-                src: db.source_code(undefined.loc.file_id()),
-                definition: (offset, len).into(),
-            },
-        ))
-    }
+    // Implements Interfaceds validation.
+    diagnostics
+        .extend(db.validate_implements_interfaces(interface_def.implements_interfaces().to_vec()));
 
     // When defining an interface that implements another interface, the
     // implementing interface must define each field that is specified by
@@ -204,6 +141,81 @@ pub fn validate_interface_definition(
                 }))
             }
         }
+    }
+
+    diagnostics
+}
+
+pub fn validate_implements_interfaces(
+    db: &dyn ValidationDatabase,
+    impl_interfaces: Vec<ImplementsInterface>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let interfaces = db.interfaces();
+    let defined_interfaces: HashSet<ValidationSet> = interfaces
+        .iter()
+        .map(|(name, interface)| ValidationSet {
+            name: name.to_owned(),
+            loc: *interface.loc(),
+        })
+        .collect();
+
+    // Implements Interfaces must be defined.
+    //
+    // Returns Undefined Definition error.
+    let implements_interfaces: HashSet<ValidationSet> = impl_interfaces
+        .iter()
+        .map(|interface| ValidationSet {
+            name: interface.interface().to_owned(),
+            loc: *interface.loc(),
+        })
+        .collect();
+    let diff = implements_interfaces.difference(&defined_interfaces);
+    for undefined in diff {
+        let offset = undefined.loc.offset();
+        let len: usize = undefined.loc.node_len();
+        diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
+            ty: undefined.name.clone(),
+            src: db.source_code(undefined.loc.file_id()),
+            definition: (offset, len).into(),
+        }))
+    }
+
+    // Transitively implemented interfaces must be defined on an implementing
+    // type or interface.
+    //
+    // Returns Transitive Implemented Interfaces error.
+    let transitive_interfaces: HashSet<ValidationSet> = impl_interfaces
+        .iter()
+        .filter_map(|implements_interface| {
+            if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
+                let child_interfaces: HashSet<ValidationSet> = interface
+                    .implements_interfaces()
+                    .iter()
+                    .map(|interface| ValidationSet {
+                        name: interface.interface().to_owned(),
+                        loc: *implements_interface.loc(),
+                    })
+                    .collect();
+                Some(child_interfaces)
+            } else {
+                None
+            }
+        })
+        .flatten()
+        .collect();
+    let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
+    for undefined in transitive_diff {
+        let offset = undefined.loc.offset();
+        let len = undefined.loc.node_len();
+        diagnostics.push(ApolloDiagnostic::TransitiveImplementedInterfaces(
+            TransitiveImplementedInterfaces {
+                missing_interface: undefined.name.clone(),
+                src: db.source_code(undefined.loc.file_id()),
+                definition: (offset, len).into(),
+            },
+        ))
     }
 
     diagnostics
