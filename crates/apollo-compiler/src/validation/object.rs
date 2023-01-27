@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 use crate::{
     diagnostics::{MissingField, UniqueDefinition},
@@ -13,7 +13,7 @@ pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<Apol
 
     let defs = &db.type_system_definitions().objects;
     for def in defs.values() {
-        diagnostics.extend(db.validate_object_type_definition(def.as_ref().clone()))
+        diagnostics.extend(db.validate_object_type_definition(def.clone()))
     }
 
     diagnostics
@@ -21,7 +21,7 @@ pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<Apol
 
 pub fn validate_object_type_definition(
     db: &dyn ValidationDatabase,
-    object: hir::ObjectTypeDefinition,
+    object: Arc<hir::ObjectTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 

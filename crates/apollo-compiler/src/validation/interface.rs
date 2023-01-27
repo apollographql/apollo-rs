@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 use crate::{
     diagnostics::{
@@ -19,7 +19,7 @@ pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
         diagnostics.extend(
             db.validate_directives(def.directives().to_vec(), hir::DirectiveLocation::Interface),
         );
-        diagnostics.extend(db.validate_interface_definition(def.as_ref().clone()));
+        diagnostics.extend(db.validate_interface_definition(def.clone()));
     }
 
     diagnostics
@@ -27,7 +27,7 @@ pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
 
 pub fn validate_interface_definition(
     db: &dyn ValidationDatabase,
-    interface_def: hir::InterfaceTypeDefinition,
+    interface_def: Arc<hir::InterfaceTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 

@@ -43,5 +43,5 @@ pub fn validate_arguments_definition(
     args_def: hir::ArgumentsDefinition,
     dir_loc: DirectiveLocation,
 ) -> Vec<ApolloDiagnostic> {
-    db.validate_input_values(args_def.input_values.to_vec(), dir_loc)
+    db.validate_input_values(args_def.input_values, dir_loc)
 }

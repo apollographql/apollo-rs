@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{QueryRootOperationType, UniqueDefinition},
@@ -7,7 +7,7 @@ use crate::{
 
 pub fn validate_schema_definition(
     db: &dyn ValidationDatabase,
-    schema_def: hir::SchemaDefinition,
+    schema_def: Arc<hir::SchemaDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 

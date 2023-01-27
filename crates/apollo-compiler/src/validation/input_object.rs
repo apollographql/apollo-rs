@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{UniqueDefinition, UniqueInputValue},
@@ -13,7 +13,7 @@ pub fn validate_input_object_definitions(db: &dyn ValidationDatabase) -> Vec<Apo
 
     let defs = &db.type_system_definitions().input_objects;
     for def in defs.values() {
-        diagnostics.extend(db.validate_input_object_definition(def.as_ref().clone()));
+        diagnostics.extend(db.validate_input_object_definition(def.clone()));
     }
 
     diagnostics
@@ -21,7 +21,7 @@ pub fn validate_input_object_definitions(db: &dyn ValidationDatabase) -> Vec<Apo
 
 pub fn validate_input_object_definition(
     db: &dyn ValidationDatabase,
-    input_obj: hir::InputObjectTypeDefinition,
+    input_obj: Arc<hir::InputObjectTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = db.validate_directives(
         input_obj.directives().to_vec(),
@@ -57,7 +57,7 @@ pub fn validate_input_object_definition(
     //
     // Returns Unique Value error.
     diagnostics.extend(db.validate_input_values(
-        input_obj.input_fields_definition.to_vec(),
+        input_obj.input_fields_definition.clone(),
         hir::DirectiveLocation::InputFieldDefinition,
     ));
 
@@ -66,7 +66,7 @@ pub fn validate_input_object_definition(
 
 pub fn validate_input_values(
     db: &dyn ValidationDatabase,
-    input_values: Vec<hir::InputValueDefinition>,
+    input_values: Arc<Vec<hir::InputValueDefinition>>,
     // directive location depends on parent node location, so we pass this down from parent
     dir_loc: hir::DirectiveLocation,
 ) -> Vec<ApolloDiagnostic> {

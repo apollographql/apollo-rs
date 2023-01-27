@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{ObjectType, UndefinedDefinition, UniqueDefinition},
@@ -11,7 +11,7 @@ pub fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiag
 
     let defs = &db.type_system_definitions().unions;
     for def in defs.values() {
-        diagnostics.extend(db.validate_union_definition(def.as_ref().clone()));
+        diagnostics.extend(db.validate_union_definition(def.clone()));
     }
 
     diagnostics
@@ -19,7 +19,7 @@ pub fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiag
 
 pub fn validate_union_definition(
     db: &dyn ValidationDatabase,
-    union_def: hir::UnionTypeDefinition,
+    union_def: Arc<hir::UnionTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = db.validate_directives(
         union_def.directives().to_vec(),

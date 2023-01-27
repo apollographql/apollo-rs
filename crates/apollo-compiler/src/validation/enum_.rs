@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{CapitalizedValue, UniqueDefinition},
@@ -11,7 +11,7 @@ pub fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagn
 
     let defs = &db.type_system_definitions().enums;
     for def in defs.values() {
-        diagnostics.extend(db.validate_enum_definition(def.as_ref().clone()));
+        diagnostics.extend(db.validate_enum_definition(def.clone()));
     }
 
     diagnostics
@@ -19,7 +19,7 @@ pub fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagn
 
 pub fn validate_enum_definition(
     db: &dyn ValidationDatabase,
-    enum_def: hir::EnumTypeDefinition,
+    enum_def: Arc<hir::EnumTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics =
         db.validate_directives(enum_def.directives().to_vec(), hir::DirectiveLocation::Enum);

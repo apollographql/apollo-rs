@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{OutputType, UndefinedDefinition, UniqueField},
@@ -7,7 +7,10 @@ use crate::{
     ApolloDiagnostic,
 };
 
-pub fn validate_field(db: &dyn ValidationDatabase, field: hir::Field) -> Vec<ApolloDiagnostic> {
+pub fn validate_field(
+    db: &dyn ValidationDatabase,
+    field: Arc<hir::Field>,
+) -> Vec<ApolloDiagnostic> {
     let mut diagnostics =
         db.validate_directives(field.directives().to_vec(), hir::DirectiveLocation::Field);
     diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));

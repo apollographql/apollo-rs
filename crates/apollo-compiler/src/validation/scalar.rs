@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{
     diagnostics::{BuiltInScalarDefinition, ScalarSpecificationURL},
     hir::{self, DirectiveLocation},
@@ -11,7 +13,7 @@ pub fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDia
 
     let defs = &db.type_system_definitions().scalars;
     for def in defs.values() {
-        diagnostics.extend(db.validate_scalar_definition(def.as_ref().clone()));
+        diagnostics.extend(db.validate_scalar_definition(def.clone()));
     }
 
     diagnostics
@@ -19,7 +21,7 @@ pub fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDia
 
 pub fn validate_scalar_definition(
     db: &dyn ValidationDatabase,
-    scalar_def: hir::ScalarTypeDefinition,
+    scalar_def: Arc<hir::ScalarTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     let name = scalar_def.name();

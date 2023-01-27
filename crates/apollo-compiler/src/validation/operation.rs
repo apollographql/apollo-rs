@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{
@@ -22,30 +22,9 @@ pub fn validate_operation_definitions(
         diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
     }
 
-    let subscription_operations = db
-        .upcast()
-        .subscription_operations(file_id)
-        .as_ref()
-        .clone()
-        .into_iter()
-        .map(|s| s.as_ref().clone())
-        .collect();
-    let query_operations = db
-        .upcast()
-        .query_operations(file_id)
-        .as_ref()
-        .clone()
-        .into_iter()
-        .map(|s| s.as_ref().clone())
-        .collect();
-    let mutation_operations = db
-        .upcast()
-        .mutation_operations(file_id)
-        .as_ref()
-        .clone()
-        .into_iter()
-        .map(|s| s.as_ref().clone())
-        .collect();
+    let subscription_operations = db.upcast().subscription_operations(file_id);
+    let query_operations = db.upcast().query_operations(file_id);
+    let mutation_operations = db.upcast().mutation_operations(file_id);
 
     diagnostics.extend(db.validate_subscription_operations(subscription_operations));
     diagnostics.extend(db.validate_query_operations(query_operations));
@@ -138,7 +117,7 @@ pub fn validate_operation_definitions(
 
 pub fn validate_subscription_operations(
     db: &dyn ValidationDatabase,
-    subscriptions: Vec<hir::OperationDefinition>,
+    subscriptions: Arc<Vec<Arc<hir::OperationDefinition>>>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -233,7 +212,7 @@ pub fn validate_subscription_operations(
 
 pub fn validate_query_operations(
     db: &dyn ValidationDatabase,
-    queries: Vec<hir::OperationDefinition>,
+    queries: Arc<Vec<Arc<hir::OperationDefinition>>>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -279,7 +258,7 @@ pub fn validate_query_operations(
 
 pub fn validate_mutation_operations(
     db: &dyn ValidationDatabase,
-    mutations: Vec<hir::OperationDefinition>,
+    mutations: Arc<Vec<Arc<hir::OperationDefinition>>>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
