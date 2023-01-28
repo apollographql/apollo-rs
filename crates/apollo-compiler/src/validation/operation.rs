@@ -20,10 +20,10 @@ pub fn validate_operation_definitions(
         diagnostics
             .extend(db.validate_directives(def.directives().to_vec(), def.operation_ty().into()));
         diagnostics.extend(db.validate_variable_definitions(def.variables.as_ref().clone()));
-        diagnostics.extend(db.validate_selection_set(
-            def.selection_set().clone(),
-            TypeDefinition::ObjectTypeDefinition(def.object_type(db.upcast()).unwrap().clone()),
-        ));
+        // TODO move this somewhere below the root operation type check
+        if let Some(type_def) = def.object_type(db.upcast()) {
+            diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), TypeDefinition::ObjectTypeDefinition(type_def.clone())));
+        }
     }
 
     let subscription_operations = db.upcast().subscription_operations(file_id);
@@ -342,20 +342,19 @@ mod test {
 query {
   cat {
     name
+    nickname
   }
 }
 
 query getPet {
   cat {
-    owner {
-      name
-    }
+    name
   }
 }
 
 query getPet {
   cat {
-    treat
+    nickname
   }
 }
 
@@ -377,6 +376,7 @@ type Subscription {
 
 interface Pet {
   name: String
+  nickname: String
 }
 
 type Dog implements Pet {
@@ -414,9 +414,8 @@ query getName {
 
 query getName {
   cat {
-    owner {
-      name
-    }
+    name
+    nickname
   }
 }
 
@@ -428,6 +427,7 @@ union CatOrDog = Cat | Dog
 
 interface Pet {
   name: String
+  nickname: String
 }
 
 type Dog implements Pet {
@@ -461,11 +461,9 @@ query getCatName {
   }
 }
 
-query getOwnerName {
+query getPetNickname {
   cat {
-    owner {
-      name
-    }
+    nickname
   }
 }
 
@@ -477,6 +475,7 @@ union CatOrDog = Cat | Dog
 
 interface Pet {
   name: String
+  nickname: String
 }
 
 type Dog implements Pet {
@@ -495,6 +494,9 @@ type Cat implements Pet {
         compiler.add_document(input, "schema.graphql");
 
         let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{diagnostic}")
+        }
         assert!(diagnostics.is_empty());
     }
 
@@ -538,7 +540,7 @@ type Cat implements Pet {
             println!("{diagnostic}")
         }
 
-        assert_eq!(diagnostics.len(), 2)
+        assert_eq!(diagnostics.len(), 1)
     }
 
     #[test]
@@ -546,6 +548,7 @@ type Cat implements Pet {
         let input = r#"
 query getProduct {
   name
+  noName
   topProducts {
     inStock
     price
@@ -571,6 +574,6 @@ type Product {
             println!("{diagnostic}");
         }
 
-        assert_eq!(diagnostics.len(), 1)
+        assert_eq!(diagnostics.len(), 2)
     }
 }

@@ -1,13 +1,13 @@
 use std::{collections::HashMap, sync::Arc};
 
-use crate::diagnostics::UndefinedField;
-use crate::validation::field;
 use crate::{
+    ApolloDiagnostic,
     diagnostics::{OutputType, UndefinedDefinition, UniqueField},
     hir,
     validation::ValidationDatabase,
-    ApolloDiagnostic,
 };
+use crate::diagnostics::UndefinedField;
+use crate::validation::field;
 
 pub fn validate_field(
     db: &dyn ValidationDatabase,
@@ -39,13 +39,14 @@ pub fn validate_field(
         // Get the type system definition for the type of the field - is there a better way to do this?
         let field_type_def = field_type.unwrap().type_def(db.upcast());
 
-        if field_type_def.is_none() {
+        if let Some(field_type_def) = field_type_def {
+            diagnostics.extend(db.validate_selection_set(
+                field.selection_set().clone(),
+                field_type_def.clone(),
+            ));
+        } else {
             // TODO what should we do if field_type_def is None although field_type is Some? Is that a case we are expecting?
         }
-        diagnostics.extend(db.validate_selection_set(
-            field.selection_set().clone(),
-            field_type_def.unwrap().clone(),
-        ));
     }
 
     diagnostics
