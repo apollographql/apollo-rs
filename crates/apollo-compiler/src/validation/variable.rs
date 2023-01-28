@@ -185,6 +185,7 @@ fragment fragmentOne on Query {
 
 type Query {
   topProducts: Product
+  profilePic(size: Int): String
 }
 
 type Product {
