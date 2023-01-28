@@ -1,5 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
+use crate::hir::{Field, ObjectTypeDefinition, Selection, SelectionSet, TypeDefinition};
 use crate::{
     diagnostics::{
         IntrospectionField, MissingIdent, SingleRootField, UndefinedField, UniqueDefinition,
@@ -19,7 +20,10 @@ pub fn validate_operation_definitions(
         diagnostics
             .extend(db.validate_directives(def.directives().to_vec(), def.operation_ty().into()));
         diagnostics.extend(db.validate_variable_definitions(def.variables.as_ref().clone()));
-        diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
+        diagnostics.extend(db.validate_selection_set(
+            def.selection_set().clone(),
+            TypeDefinition::ObjectTypeDefinition(def.object_type(db.upcast()).unwrap().clone()),
+        ));
     }
 
     let subscription_operations = db.upcast().subscription_operations(file_id);
@@ -83,38 +87,63 @@ pub fn validate_operation_definitions(
         }
     }
 
-    // Fields must exist on the type being queried.
-    for op in operations.iter() {
-        for selection in op.selection_set().selection() {
-            let obj_name = op.object_type(db.upcast()).map(|obj| obj.name().to_owned());
-            if let hir::Selection::Field(field) = selection {
-                if field.ty(db.upcast()).is_none() {
-                    let offset = field.loc().offset();
-                    let len = field.loc().node_len();
-                    let field_name = field.name().into();
-                    let help = if let Some(obj_type) = obj_name {
-                        format!("`{field_name}` is not defined on `{obj_type}` type")
-                    } else {
-                        format!(
-                            "`{}` is not defined on the current {} root operation type.",
-                            field_name,
-                            op.operation_ty()
-                        )
-                    };
-                    diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
-                        field: field_name,
-                        src: db.source_code(field.loc().file_id()),
-                        definition: (offset, len).into(),
-                        help,
-                    }))
-                }
-            }
-        }
-    }
-
     diagnostics
 }
 
+/*
+pub fn check_selection_set(db: &dyn ValidationDatabase, selection_set: &SelectionSet, obj_type: Arc<ObjectTypeDefinition>, diagnostics: &mut Vec<ApolloDiagnostic>) {
+    for selection in selection_set.selection() {
+        if let Selection::Field(field) = selection {
+            check_field_selection(db, field, obj_type.clone(), diagnostics);
+        } /*
+        TODO How can I get the type of the selection as an ObjectTypeDefinition / InterfaceTypeDefinition ? */
+        // TODO handle fragments somewhere else
+        /*else if let Selection::FragmentSpread(fragment_spread) = selection {
+            let fragment = db.fragment(fragment_spread.fragment_name());
+            let fragment_type = fragment.type_condition().unwrap();
+            let fragment_type = db.object_type(fragment_type);
+            check_selection_set(db, fragment.selection_set(), fragment_type, diagnostics);
+        } */
+        else if let Selection::InlineFragment(inline_fragment) = selection {
+            let fragment_type = inline_fragment.type_condition().unwrap();
+            let fragment_type = db.object_type(fragment_type);
+            check_selection_set(db, inline_fragment.selection_set(), fragment_type, diagnostics);
+        }
+
+    }
+}
+
+pub fn format_invalid_field_error(db: &dyn ValidationDatabase, field: &Field, help: String, diagnostics: &mut Vec<ApolloDiagnostic>) {
+
+    let field_name = field.name().into();
+    let op_offset = field.loc().offset();
+    let op_len = field.loc().node_len();
+
+    diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
+        field: field_name,
+        src: db.source_code(field.loc().file_id()),
+        definition: (op_offset, op_len).into(),
+        help,
+    }));
+}
+
+pub fn check_field_selection(db: &dyn ValidationDatabase, field: &Field, obj_type: Arc<ObjectTypeDefinition>, diagnostics: &mut Vec<ApolloDiagnostic>) {
+    // Field type is none -> not defined on object type
+    let field_type = field.ty(db.upcast());
+    if field_type.is_none() {
+        let help = format!("`{}` is not defined on `{}` type", field.name(), obj_type.name());
+        format_invalid_field_error(db, field, help, diagnostics);
+    } else {
+        // Get the type system definition for the type of the field - is there a better way to do this?
+        let field_type_def = field.ty(db.upcast()).unwrap().type_def(db.upcast());
+
+        // TODO Handle Interface here - should be the same handling as object type
+        if let Some(TypeDefinition::ObjectTypeDefinition(field_type)) = field_type_def {
+            check_selection_set(db, field.selection_set(), field_type.clone(), diagnostics);
+        }
+    }
+}
+*/
 pub fn validate_subscription_operations(
     db: &dyn ValidationDatabase,
     subscriptions: Arc<Vec<Arc<hir::OperationDefinition>>>,
@@ -516,8 +545,11 @@ type Cat implements Pet {
     fn it_validates_fields_in_operations() {
         let input = r#"
 query getProduct {
-  size
-  weight
+  name
+  topProducts {
+    inStock
+    price
+  }
 }
 
 type Query {
@@ -526,11 +558,9 @@ type Query {
 }
 
 type Product {
-  inStock: Boolean @join__field(graph: INVENTORY)
-  name: String @join__field(graph: PRODUCTS)
+  inStock: Boolean
+  name: String
 }
-
-directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
 "#;
 
         let mut compiler = ApolloCompiler::new();
@@ -541,6 +571,6 @@ directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: j
             println!("{diagnostic}");
         }
 
-        assert_eq!(diagnostics.len(), 2)
+        assert_eq!(diagnostics.len(), 1)
     }
 }

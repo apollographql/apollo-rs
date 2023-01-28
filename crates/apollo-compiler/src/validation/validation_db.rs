@@ -134,7 +134,7 @@ pub trait ValidationDatabase:
     fn validate_field_definition(&self, field: FieldDefinition) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(field::validate_field)]
-    fn validate_field(&self, field: Arc<Field>) -> Vec<ApolloDiagnostic>;
+    fn validate_field(&self, field: Arc<Field>, type_def: TypeDefinition) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(argument::validate_arguments_definition)]
     fn validate_arguments_definition(
@@ -153,10 +153,18 @@ pub trait ValidationDatabase:
     fn validate_fragment_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(selection::validate_selection_set)]
-    fn validate_selection_set(&self, sel_set: SelectionSet) -> Vec<ApolloDiagnostic>;
+    fn validate_selection_set(
+        &self,
+        sel_set: SelectionSet,
+        type_def: TypeDefinition,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(selection::validate_selection)]
-    fn validate_selection(&self, sel: Arc<Vec<Selection>>) -> Vec<ApolloDiagnostic>;
+    fn validate_selection(
+        &self,
+        sel: Arc<Vec<Selection>>,
+        type_def: TypeDefinition,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(variable::validate_variable_definitions)]
     fn validate_variable_definitions(&self, defs: Vec<VariableDefinition>)

@@ -1,5 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
+use crate::diagnostics::UndefinedField;
+use crate::validation::field;
 use crate::{
     diagnostics::{OutputType, UndefinedDefinition, UniqueField},
     hir,
@@ -10,10 +12,41 @@ use crate::{
 pub fn validate_field(
     db: &dyn ValidationDatabase,
     field: Arc<hir::Field>,
+    type_def: hir::TypeDefinition,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics =
         db.validate_directives(field.directives().to_vec(), hir::DirectiveLocation::Field);
     diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
+
+    let field_type = field.ty(db.upcast());
+    if field_type.is_none() {
+        let help = format!(
+            "`{}` is not defined on `{}` type",
+            field.name(),
+            type_def.name()
+        );
+
+        let op_offset = field.loc().offset();
+        let op_len = field.loc().node_len();
+
+        diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
+            field: field.name().into(),
+            src: db.source_code(field.loc().file_id()),
+            definition: (op_offset, op_len).into(),
+            help,
+        }));
+    } else {
+        // Get the type system definition for the type of the field - is there a better way to do this?
+        let field_type_def = field_type.unwrap().type_def(db.upcast());
+
+        if field_type_def.is_none() {
+            // TODO what should we do if field_type_def is None although field_type is Some? Is that a case we are expecting?
+        }
+        diagnostics.extend(db.validate_selection_set(
+            field.selection_set().clone(),
+            field_type_def.unwrap().clone(),
+        ));
+    }
 
     diagnostics
 }

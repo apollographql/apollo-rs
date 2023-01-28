@@ -10,7 +10,17 @@ pub fn validate_fragment_definitions(
             def.directives().to_vec(),
             DirectiveLocation::FragmentDefinition,
         ));
-        diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
+
+        let fragment_type_def = db.find_type_definition_by_name(def.type_condition().to_string());
+
+        if fragment_type_def.is_none() {
+            // TODO add diagnostic for undefined fragment type
+        } else {
+            diagnostics.extend(db.validate_selection_set(
+                def.selection_set().clone(),
+                fragment_type_def.unwrap().clone(),
+            ));
+        }
     }
 
     diagnostics
