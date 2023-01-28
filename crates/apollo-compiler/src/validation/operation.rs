@@ -1,10 +1,9 @@
 use std::{collections::HashMap, sync::Arc};
 
-use crate::hir::{Field, ObjectTypeDefinition, Selection, SelectionSet, TypeDefinition};
+use crate::hir::TypeDefinition;
 use crate::{
     diagnostics::{
-        IntrospectionField, MissingIdent, SingleRootField, UndefinedField, UniqueDefinition,
-        UnsupportedOperation,
+        IntrospectionField, MissingIdent, SingleRootField, UniqueDefinition, UnsupportedOperation,
     },
     hir, ApolloDiagnostic, FileId, ValidationDatabase,
 };
@@ -22,7 +21,10 @@ pub fn validate_operation_definitions(
         diagnostics.extend(db.validate_variable_definitions(def.variables.as_ref().clone()));
         // TODO move this somewhere below the root operation type check
         if let Some(type_def) = def.object_type(db.upcast()) {
-            diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), TypeDefinition::ObjectTypeDefinition(type_def.clone())));
+            diagnostics.extend(db.validate_selection_set(
+                def.selection_set().clone(),
+                TypeDefinition::ObjectTypeDefinition(type_def.clone()),
+            ));
         }
     }
 
