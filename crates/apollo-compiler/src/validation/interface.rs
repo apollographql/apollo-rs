@@ -100,7 +100,7 @@ pub fn validate_interface_definition(
                         )
                         .label(Label::new(
                             implements_interface.loc(),
-                            format!("interface {} cannot implement itself", super_name),
+                            format!("interface {super_name} cannot implement itself"),
                         )),
                     );
                 }
