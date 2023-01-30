@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 1105,
             length: 9,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1105,
                     length: 9,
@@ -33,11 +33,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 1246,
             length: 12,
@@ -46,7 +46,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1246,
                     length: 12,
@@ -56,7 +56,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1337,
                     length: 29,
@@ -73,7 +73,7 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1337,
                     length: 29,
@@ -83,11 +83,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 791,
             length: 12,
@@ -96,7 +96,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 791,
                     length: 12,
@@ -106,7 +106,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1306,
                     length: 31,
@@ -123,7 +123,7 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1306,
                     length: 31,
@@ -133,11 +133,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 813,
             length: 15,
@@ -146,7 +146,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 813,
                     length: 15,
@@ -156,7 +156,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1306,
                     length: 31,
@@ -173,7 +173,7 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1306,
                     length: 31,
@@ -183,11 +183,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 709,
             length: 12,
@@ -196,7 +196,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 709,
                     length: 12,
@@ -206,7 +206,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1337,
                     length: 29,
@@ -223,7 +223,7 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1337,
                     length: 29,
@@ -233,11 +233,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 425,
             length: 6,
@@ -246,7 +246,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 425,
                     length: 6,
@@ -265,11 +265,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 639,
             length: 9,
@@ -278,7 +278,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 639,
                     length: 9,
@@ -297,11 +297,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 666,
             length: 11,
@@ -310,7 +310,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 666,
                     length: 11,
@@ -329,11 +329,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 492,
             length: 14,
@@ -342,7 +342,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 492,
                     length: 14,
@@ -352,7 +352,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1337,
                     length: 29,
@@ -369,7 +369,7 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1337,
                     length: 29,
@@ -379,11 +379,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 856,
             length: 12,
@@ -392,7 +392,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 856,
                     length: 12,
@@ -411,11 +411,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 928,
             length: 56,
@@ -424,7 +424,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 928,
                     length: 56,
@@ -443,11 +443,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 36,
             length: 15,
@@ -456,7 +456,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 36,
                     length: 15,
@@ -475,11 +475,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 29,
             length: 5,
@@ -488,7 +488,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 29,
                     length: 5,
@@ -507,11 +507,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 89,
             length: 14,
@@ -520,7 +520,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 89,
                     length: 14,
@@ -539,11 +539,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 123,
             length: 14,
@@ -552,7 +552,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 123,
                     length: 14,
@@ -562,7 +562,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1337,
                     length: 29,
@@ -579,7 +579,7 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1337,
                     length: 29,
@@ -589,11 +589,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 258,
             length: 12,
@@ -602,7 +602,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 258,
                     length: 12,
@@ -612,7 +612,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1306,
                     length: 31,
@@ -629,7 +629,7 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1306,
                     length: 31,
@@ -639,11 +639,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 334,
             length: 16,
@@ -652,7 +652,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 334,
                     length: 16,
@@ -671,11 +671,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 162,
             length: 11,
@@ -684,7 +684,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 162,
                     length: 11,
@@ -694,7 +694,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1337,
                     length: 29,
@@ -711,7 +711,7 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1337,
                     length: 29,
@@ -721,11 +721,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0050_directives_in_invalid_locations.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 50,
             },
             offset: 201,
             length: 12,
@@ -734,7 +734,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 201,
                     length: 12,
@@ -744,7 +744,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1306,
                     length: 31,
@@ -761,7 +761,7 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 50,
                     },
                     offset: 1306,
                     length: 31,

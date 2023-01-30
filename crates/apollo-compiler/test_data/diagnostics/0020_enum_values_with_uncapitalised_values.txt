@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            92: "0020_enum_values_with_uncapitalised_values.graphql",
+            19: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 92,
+                id: 19,
             },
             offset: 43,
             length: 8,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 92,
+                        id: 19,
                     },
                     offset: 43,
                     length: 8,
@@ -29,11 +29,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            92: "0020_enum_values_with_uncapitalised_values.graphql",
+            19: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 92,
+                id: 19,
             },
             offset: 51,
             length: 11,
@@ -42,7 +42,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 92,
+                        id: 19,
                     },
                     offset: 51,
                     length: 11,
@@ -57,11 +57,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            92: "0020_enum_values_with_uncapitalised_values.graphql",
+            19: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 92,
+                id: 19,
             },
             offset: 70,
             length: 9,
@@ -70,7 +70,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 92,
+                        id: 19,
                     },
                     offset: 70,
                     length: 9,
@@ -85,11 +85,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            92: "0020_enum_values_with_uncapitalised_values.graphql",
+            19: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 92,
+                id: 19,
             },
             offset: 79,
             length: 13,
@@ -98,7 +98,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 92,
+                        id: 19,
                     },
                     offset: 79,
                     length: 13,
@@ -113,11 +113,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            92: "0020_enum_values_with_uncapitalised_values.graphql",
+            19: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 92,
+                id: 19,
             },
             offset: 92,
             length: 8,
@@ -126,7 +126,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 92,
+                        id: 19,
                     },
                     offset: 92,
                     length: 8,

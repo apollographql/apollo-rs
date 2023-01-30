@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            93: "0021_union_definition_with_duplicate_members.graphql",
+            20: "0021_union_definition_with_duplicate_members.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 93,
+                id: 20,
             },
             offset: 62,
             length: 7,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 93,
+                        id: 20,
                     },
                     offset: 54,
                     length: 6,
@@ -24,7 +24,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 93,
+                        id: 20,
                     },
                     offset: 62,
                     length: 7,
@@ -40,14 +40,14 @@
             name: "Photo",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 93,
+                    id: 20,
                 },
                 offset: 54,
                 length: 6,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 93,
+                    id: 20,
                 },
                 offset: 62,
                 length: 7,

@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            106: "0033_object_type_definition_with_duplicate_fields.graphql",
+            33: "0033_object_type_definition_with_duplicate_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 106,
+                id: 33,
             },
             offset: 15,
             length: 15,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 106,
+                        id: 33,
                     },
                     offset: 15,
                     length: 15,
@@ -24,7 +24,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 106,
+                        id: 33,
                     },
                     offset: 30,
                     length: 13,
@@ -39,14 +39,14 @@
             field: "name",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 106,
+                    id: 33,
                 },
                 offset: 15,
                 length: 15,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 106,
+                    id: 33,
                 },
                 offset: 30,
                 length: 13,
