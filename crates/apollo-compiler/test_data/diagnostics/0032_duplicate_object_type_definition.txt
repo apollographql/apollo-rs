@@ -1,28 +1,57 @@
 [
-    UniqueDefinition(
-        UniqueDefinition {
-            name: "Query",
-            ty: "object type",
-            src: "type Query {\n  name: String\n}\n\ntype Query {\n  name: String\n}",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    0,
-                ),
-                length: SourceOffset(
-                    31,
-                ),
-            },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    31,
-                ),
-                length: SourceOffset(
-                    29,
-                ),
-            },
-            help: Some(
-                "`Query` must only be defined once in this document.",
-            ),
+    ApolloDiagnostic {
+        cache: {
+            32: "0032_duplicate_object_type_definition.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 32,
+            },
+            offset: 31,
+            length: 29,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 32,
+                    },
+                    offset: 0,
+                    length: 31,
+                },
+                text: "previous definition of `Query` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 32,
+                    },
+                    offset: 31,
+                    length: 29,
+                },
+                text: "`Query` redefined here",
+            },
+        ],
+        help: Some(
+            "`Query` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "root operation type definition",
+            name: "Query",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 32,
+                },
+                offset: 0,
+                length: 31,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 32,
+                },
+                offset: 31,
+                length: 29,
+            },
+        },
+    },
 ]

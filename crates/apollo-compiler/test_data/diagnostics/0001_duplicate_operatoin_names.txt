@@ -1,28 +1,57 @@
 [
-    UniqueDefinition(
-        UniqueDefinition {
-            name: "getName",
-            ty: "operation",
-            src: "query getName {\n  cat {\n    name\n  }\n}\n\nquery getName {\n  cat {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  cat: String\n}",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    0,
-                ),
-                length: SourceOffset(
-                    40,
-                ),
-            },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    40,
-                ),
-                length: SourceOffset(
-                    60,
-                ),
-            },
-            help: Some(
-                "`getName` must only be defined once in this document.",
-            ),
+    ApolloDiagnostic {
+        cache: {
+            0: "0001_duplicate_operatoin_names.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 0,
+            },
+            offset: 46,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 0,
+                    },
+                    offset: 6,
+                    length: 8,
+                },
+                text: "previous definition of `getName` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 0,
+                    },
+                    offset: 46,
+                    length: 8,
+                },
+                text: "`getName` redefined here",
+            },
+        ],
+        help: Some(
+            "`getName` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "operation",
+            name: "getName",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 0,
+                },
+                offset: 6,
+                length: 8,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 0,
+                },
+                offset: 46,
+                length: 8,
+            },
+        },
+    },
 ]

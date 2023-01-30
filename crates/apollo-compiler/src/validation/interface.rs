@@ -1,13 +1,10 @@
 use std::{collections::HashSet, sync::Arc};
 
 use crate::{
-    diagnostics::{
-        MissingField, RecursiveDefinition, TransitiveImplementedInterfaces, UndefinedDefinition,
-        UniqueDefinition,
-    },
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self, ImplementsInterface},
     validation::{ast_type_definitions, ValidationSet},
-    ApolloDiagnostic, ValidationDatabase,
+    ValidationDatabase,
 };
 use apollo_parser::ast;
 
@@ -39,20 +36,36 @@ pub fn validate_interface_definition(
         if let Some(name) = ast_def.name() {
             let name = &*name.text();
             let hir_def = &hir[name];
-            let ast_loc = (file_id, &ast_def).into();
-            if *hir_def.loc() == ast_loc {
+            let original_definition = hir_def.name_src().loc().unwrap_or_else(|| hir_def.loc());
+            let redefined_definition = ast_def
+                .name()
+                .map(|name| (file_id, &name).into())
+                .unwrap_or_else(|| (file_id, &ast_def).into());
+            if original_definition == redefined_definition {
                 // The HIR node was built from this AST node. This is fine.
             } else {
-                diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                    ty: "interface".into(),
-                    name: name.to_owned(),
-                    src: db.source_code(hir_def.loc().file_id()),
-                    original_definition: hir_def.loc().into(),
-                    redefined_definition: ast_loc.into(),
-                    help: Some(format!(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        redefined_definition.into(),
+                        DiagnosticData::UniqueDefinition {
+                            ty: "interface",
+                            name: name.into(),
+                            original_definition: original_definition.into(),
+                            redefined_definition: redefined_definition.into(),
+                        },
+                    )
+                    .labels([
+                        Label::new(
+                            original_definition,
+                            format!("previous definition of `{name}` here"),
+                        ),
+                        Label::new(redefined_definition, format!("`{name}` redefined here")),
+                    ])
+                    .help(format!(
                         "`{name}` must only be defined once in this document."
                     )),
-                }));
+                );
             }
         }
     }
@@ -75,16 +88,21 @@ pub fn validate_interface_definition(
     for (name, interface_def) in db.interfaces().iter() {
         for implements_interface in interface_def.implements_interfaces() {
             if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
-                let i_name = interface.name();
-                if name == i_name {
-                    let offset = implements_interface.loc().offset();
-                    let len = implements_interface.loc().node_len();
-                    diagnostics.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
-                        message: format!("{i_name} interface cannot implement itself"),
-                        definition: (offset, len).into(),
-                        src: db.source_code(implements_interface.loc().file_id()),
-                        definition_label: "recursive implements interfaces".into(),
-                    }));
+                let super_name = interface.name();
+                if name == super_name {
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            implements_interface.loc().into(),
+                            DiagnosticData::RecursiveInterfaceDefinition {
+                                name: super_name.into(),
+                            },
+                        )
+                        .label(Label::new(
+                            implements_interface.loc(),
+                            format!("interface {super_name} cannot implement itself"),
+                        )),
+                    );
                 }
             }
         }
@@ -107,38 +125,44 @@ pub fn validate_interface_definition(
         .iter()
         .map(|field| ValidationSet {
             name: field.name().into(),
-            loc: *field.loc(),
+            loc: field.loc(),
         })
         .collect();
     for implements_interface in interface_def.implements_interfaces().iter() {
-        if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
-            let implements_interface_fields: HashSet<ValidationSet> = interface
+        if let Some(super_interface) = implements_interface.interface_definition(db.upcast()) {
+            let implements_interface_fields: HashSet<ValidationSet> = super_interface
                 .fields_definition()
                 .iter()
                 .map(|field| ValidationSet {
                     name: field.name().into(),
-                    loc: *field.loc(),
+                    loc: field.loc(),
                 })
                 .collect();
 
             let field_diff = implements_interface_fields.difference(&fields);
 
             for missing_field in field_diff {
-                let current_offset = interface_def.loc().offset();
-                let current_len = interface_def.loc().node_len();
-
-                let super_offset = interface.loc().offset();
-                let super_len = interface.loc().node_len();
-
-                diagnostics.push(ApolloDiagnostic::MissingField(MissingField {
-                    ty: missing_field.name.clone(),
-                    src: db.source_code(interface_def.loc.file_id()),
-                    current_definition: (current_offset, current_len).into(),
-                    super_definition: (super_offset, super_len).into(),
-                    help: Some(
-                        "An interface must be a super-set of all interfaces it implement".into(),
-                    ),
-                }))
+                let name = &missing_field.name;
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        interface_def.loc().into(),
+                        DiagnosticData::MissingField {
+                            field: name.clone(),
+                        },
+                    )
+                    .labels([
+                        Label::new(
+                            super_interface.loc(),
+                            format!("`{name}` was originally defined here"),
+                        ),
+                        Label::new(
+                            interface_def.loc(),
+                            format!("add `{name}` field to this interface"),
+                        ),
+                    ])
+                    .help("An interface must be a super-set of all interfaces it implements"),
+                );
             }
         }
     }
@@ -157,7 +181,7 @@ pub fn validate_implements_interfaces(
         .iter()
         .map(|(name, interface)| ValidationSet {
             name: name.to_owned(),
-            loc: *interface.loc(),
+            loc: interface.loc(),
         })
         .collect();
 
@@ -168,18 +192,21 @@ pub fn validate_implements_interfaces(
         .iter()
         .map(|interface| ValidationSet {
             name: interface.interface().to_owned(),
-            loc: *interface.loc(),
+            loc: interface.loc(),
         })
         .collect();
     let diff = implements_interfaces.difference(&defined_interfaces);
     for undefined in diff {
-        let offset = undefined.loc.offset();
-        let len: usize = undefined.loc.node_len();
-        diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-            ty: undefined.name.clone(),
-            src: db.source_code(undefined.loc.file_id()),
-            definition: (offset, len).into(),
-        }))
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                undefined.loc.into(),
+                DiagnosticData::UndefinedDefinition {
+                    name: undefined.name.clone(),
+                },
+            )
+            .label(Label::new(undefined.loc, "not found in this scope")),
+        );
     }
 
     // Transitively implemented interfaces must be defined on an implementing
@@ -195,7 +222,7 @@ pub fn validate_implements_interfaces(
                     .iter()
                     .map(|interface| ValidationSet {
                         name: interface.interface().to_owned(),
-                        loc: *implements_interface.loc(),
+                        loc: implements_interface.loc(),
                     })
                     .collect();
                 Some(child_interfaces)
@@ -207,15 +234,19 @@ pub fn validate_implements_interfaces(
         .collect();
     let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
     for undefined in transitive_diff {
-        let offset = undefined.loc.offset();
-        let len = undefined.loc.node_len();
-        diagnostics.push(ApolloDiagnostic::TransitiveImplementedInterfaces(
-            TransitiveImplementedInterfaces {
-                missing_interface: undefined.name.clone(),
-                src: db.source_code(undefined.loc.file_id()),
-                definition: (offset, len).into(),
-            },
-        ))
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                undefined.loc.into(),
+                DiagnosticData::TransitiveImplementedInterfaces {
+                    missing_interface: undefined.name.clone(),
+                },
+            )
+            .label(Label::new(
+                undefined.loc,
+                format!("{} must also be implemented here", undefined.name),
+            )),
+        );
     }
 
     diagnostics

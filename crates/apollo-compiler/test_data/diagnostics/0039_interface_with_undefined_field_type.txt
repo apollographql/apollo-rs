@@ -1,30 +1,58 @@
 [
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Person",
-            src: "type Query {\n  width: Int\n  img: Url\n}\n\ninterface Connection {\n  relationship: Person\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    79,
-                ),
-                length: SourceOffset(
-                    6,
-                ),
-            },
+    ApolloDiagnostic {
+        cache: {
+            39: "0039_interface_with_undefined_field_type.graphql",
         },
-    ),
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Url",
-            src: "type Query {\n  width: Int\n  img: Url\n}\n\ninterface Connection {\n  relationship: Person\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    33,
-                ),
-                length: SourceOffset(
-                    3,
-                ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 39,
             },
+            offset: 79,
+            length: 6,
         },
-    ),
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 39,
+                    },
+                    offset: 79,
+                    length: 6,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "relationship",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            39: "0039_interface_with_undefined_field_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 39,
+            },
+            offset: 33,
+            length: 3,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 39,
+                    },
+                    offset: 33,
+                    length: 3,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "img",
+        },
+    },
 ]

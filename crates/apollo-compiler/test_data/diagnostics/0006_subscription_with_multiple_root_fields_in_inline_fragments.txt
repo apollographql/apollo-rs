@@ -1,19 +1,39 @@
 [
-    SingleRootField(
-        SingleRootField {
-            src: "subscription sub {\n    ... on Subscription {\n        newMessage {\n          body\n          sender\n        }\n        disallowedSecondRootField\n    }\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\ntype Query {\n  message: String\n}",
-            fields: 2,
-            subscription: SourceSpan {
-                offset: SourceOffset(
-                    0,
-                ),
-                length: SourceOffset(
-                    151,
-                ),
-            },
-            help: Some(
-                "There are 2 root fields: newMessage, disallowedSecondRootField. This is not allowed.",
-            ),
+    ApolloDiagnostic {
+        cache: {
+            5: "0006_subscription_with_multiple_root_fields_in_inline_fragments.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 5,
+            },
+            offset: 0,
+            length: 151,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 5,
+                    },
+                    offset: 0,
+                    length: 151,
+                },
+                text: "subscription with 2 root fields",
+            },
+        ],
+        help: Some(
+            "There are 2 root fields: newMessage, disallowedSecondRootField. This is not allowed.",
+        ),
+        data: SingleRootField {
+            fields: 2,
+            subscription: DiagnosticLocation {
+                file_id: FileId {
+                    id: 5,
+                },
+                offset: 0,
+                length: 151,
+            },
+        },
+    },
 ]

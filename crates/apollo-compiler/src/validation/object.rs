@@ -1,10 +1,10 @@
 use std::{collections::HashSet, sync::Arc};
 
 use crate::{
-    diagnostics::{MissingField, UniqueDefinition},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::{ast_type_definitions, ValidationSet},
-    ApolloDiagnostic, ValidationDatabase,
+    ValidationDatabase,
 };
 use apollo_parser::ast;
 
@@ -36,21 +36,33 @@ pub fn validate_object_type_definition(
     for (file_id, ast_def) in ast_type_definitions::<ast::ObjectTypeDefinition>(db) {
         if let Some(name) = ast_def.name() {
             let name = &*name.text();
-            let hir_def = &hir[name];
-            let ast_loc = (file_id, &ast_def).into();
-            if *hir_def.loc() == ast_loc {
+            let original_definition = hir[name].loc();
+            let redefined_definition = (file_id, &ast_def).into();
+            if original_definition == redefined_definition {
                 // The HIR node was built from this AST node. This is fine.
             } else {
-                diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                    ty: "object type".into(),
-                    name: name.to_owned(),
-                    src: db.source_code(hir_def.loc().file_id()),
-                    original_definition: hir_def.loc().into(),
-                    redefined_definition: ast_loc.into(),
-                    help: Some(format!(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        redefined_definition.into(),
+                        DiagnosticData::UniqueDefinition {
+                            ty: "root operation type definition",
+                            name: name.to_string(),
+                            original_definition: original_definition.into(),
+                            redefined_definition: redefined_definition.into(),
+                        },
+                    )
+                    .labels([
+                        Label::new(
+                            original_definition,
+                            format!("previous definition of `{name}` here"),
+                        ),
+                        Label::new(redefined_definition, format!("`{name}` redefined here")),
+                    ])
+                    .help(format!(
                         "`{name}` must only be defined once in this document."
                     )),
-                }));
+                );
             }
         }
     }
@@ -58,7 +70,7 @@ pub fn validate_object_type_definition(
     // Object Type field validations.
     diagnostics.extend(db.validate_field_definitions(object.fields_definition().to_vec()));
 
-    // Implements Interfaceds validation.
+    // Implements Interfaces validation.
     diagnostics.extend(db.validate_implements_interfaces(object.implements_interfaces().to_vec()));
 
     // When defining an interface that implements another interface, the
@@ -71,7 +83,7 @@ pub fn validate_object_type_definition(
         .iter()
         .map(|field| ValidationSet {
             name: field.name().into(),
-            loc: *field.loc(),
+            loc: field.loc(),
         })
         .collect();
     for implements_interface in object.implements_interfaces().iter() {
@@ -81,28 +93,34 @@ pub fn validate_object_type_definition(
                 .iter()
                 .map(|field| ValidationSet {
                     name: field.name().into(),
-                    loc: *field.loc(),
+                    loc: field.loc(),
                 })
                 .collect();
 
             let field_diff = implements_interface_fields.difference(&fields);
 
             for missing_field in field_diff {
-                let current_offset = object.loc().offset();
-                let current_len = object.loc().node_len();
-
-                let super_offset = interface.loc().offset();
-                let super_len = interface.loc().node_len();
-
-                diagnostics.push(ApolloDiagnostic::MissingField(MissingField {
-                    ty: missing_field.name.clone(),
-                    src: db.source_code(object.loc().file_id()),
-                    current_definition: (current_offset, current_len).into(),
-                    super_definition: (super_offset, super_len).into(),
-                    help: Some(
-                        "An interface must be a super-set of all interfaces it implement".into(),
-                    ),
-                }))
+                let name = &missing_field.name;
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        object.loc().into(),
+                        DiagnosticData::MissingField {
+                            field: name.to_string(),
+                        },
+                        )
+                    .labels([
+                            Label::new(
+                                missing_field.loc,
+                                format!("`{name}` was originally defined here"),
+                                ),
+                                Label::new(
+                                    object.loc(),
+                                    format!("add `{name}` field to this object"),
+                                    ),
+                    ])
+                    .help("An object must provide all fields required by the interfaces it implements"),
+                    )
             }
         }
     }

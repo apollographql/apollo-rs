@@ -1,15 +1,12 @@
 use std::collections::HashSet;
 
 use crate::{
-    diagnostics::{
-        RecursiveDefinition, UndefinedDefinition, UniqueDefinition, UnsupportedLocation,
-    },
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::ast_type_definitions,
-    ApolloDiagnostic, ValidationDatabase,
+    ValidationDatabase,
 };
 use apollo_parser::ast;
-use miette::SourceSpan;
 
 pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
@@ -22,21 +19,33 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
         if let Some(name) = ast_def.name() {
             let name = &*name.text();
             let hir_def = &hir[name];
-            if let Some(hir_loc) = hir_def.loc() {
-                let ast_loc = (file_id, &ast_def).into();
-                if *hir_loc == ast_loc {
+            if let Some(original_definition) = hir_def.loc() {
+                let redefined_definition = (file_id, &ast_def).into();
+                if original_definition == redefined_definition {
                     // The HIR node was built from this AST node. This is fine.
                 } else {
-                    diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                        ty: "directive".into(),
-                        name: name.to_owned(),
-                        src: db.source_code(hir_loc.file_id()),
-                        original_definition: hir_loc.into(),
-                        redefined_definition: ast_loc.into(),
-                        help: Some(format!(
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            original_definition.into(),
+                            DiagnosticData::UniqueDefinition {
+                                ty: "directive",
+                                name: name.to_owned(),
+                                original_definition: original_definition.into(),
+                                redefined_definition: redefined_definition.into(),
+                            },
+                        )
+                        .help(format!(
                             "`{name}` must only be defined once in this document."
-                        )),
-                    }));
+                        ))
+                        .labels([
+                            Label::new(
+                                original_definition,
+                                format!("previous definition of `{name}` here"),
+                            ),
+                            Label::new(redefined_definition, format!("`{name}` redefined here")),
+                        ]),
+                    );
                 }
             }
         }
@@ -51,12 +60,17 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
             for directive in input_values.directives().iter() {
                 let directive_name = directive.name();
                 if name == directive_name {
-                    diagnostics.push(ApolloDiagnostic::RecursiveDefinition(RecursiveDefinition {
-                        message: format!("{name} directive definition cannot reference itself"),
-                        definition: directive.loc().into(),
-                        src: db.source_code(directive.loc().file_id()),
-                        definition_label: "recursive directive definition".into(),
-                    }));
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            directive.loc().into(),
+                            DiagnosticData::RecursiveDefinition { name: name.clone() },
+                        )
+                        .label(Label::new(
+                            directive.loc(),
+                            "recursive directive definition",
+                        )),
+                    );
                 }
             }
         }
@@ -82,31 +96,39 @@ pub fn validate_directives(
 
         let name = dir.name();
         let loc = dir.loc();
-        let offset = loc.offset();
-        let len = loc.node_len();
 
         if let Some(directive) = db.find_directive_definition_by_name(name.into()) {
-            let directive_def_loc = directive
-                .loc
-                .map(|loc| SourceSpan::new(loc.offset().into(), loc.node_len().into()));
             let allowed_loc: HashSet<hir::DirectiveLocation> =
                 HashSet::from_iter(directive.directive_locations().iter().cloned());
             if !allowed_loc.contains(&dir_loc) {
-                diagnostics.push(ApolloDiagnostic::UnsupportedLocation(UnsupportedLocation {
-                ty: name.into(),
-                dir_loc,
-                src: db.source_code(loc.file_id()),
-                directive: (offset, len).into(),
-                directive_def: directive_def_loc,
-                help: Some("the directive must be used in a location that the service has declared support for".into()),
-            }))
+                let mut diag = ApolloDiagnostic::new(
+                        db,
+                        loc.into(),
+                        DiagnosticData::UnsupportedLocation {
+                            name: name.into(),
+                            dir_loc,
+                            directive_def: directive.loc.map(|loc| loc.into()),
+                        },
+                )
+                    .label(Label::new(loc, format!("{dir_loc} is not a valid location")))
+                    .help("the directive must be used in a location that the service has declared support for");
+                if let Some(directive_def_loc) = directive.loc {
+                    diag = diag.label(Label::new(
+                        directive_def_loc,
+                        format!("consider adding {dir_loc} directive location here"),
+                    ));
+                }
+                diagnostics.push(diag)
             }
         } else {
-            diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                ty: name.into(),
-                src: db.source_code(loc.file_id()),
-                definition: (offset, len).into(),
-            }))
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    loc.into(),
+                    DiagnosticData::UndefinedDefinition { name: name.into() },
+                )
+                .label(Label::new(loc, "not found in this scope")),
+            )
         }
     }
     diagnostics

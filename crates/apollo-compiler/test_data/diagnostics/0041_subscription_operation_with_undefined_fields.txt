@@ -1,17 +1,42 @@
 [
-    UndefinedField(
-        UndefinedField {
-            field: "undefinedSubscriptionField",
-            src: "subscription sub {\n  undefinedSubscriptionField\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\ntype Query {\n  message: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    21,
-                ),
-                length: SourceOffset(
-                    27,
-                ),
-            },
-            help: "`undefinedSubscriptionField` is not defined on `Subscription` type",
+    ApolloDiagnostic {
+        cache: {
+            41: "0041_subscription_operation_with_undefined_fields.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 41,
+            },
+            offset: 21,
+            length: 27,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 41,
+                    },
+                    offset: 21,
+                    length: 27,
+                },
+                text: "`undefinedSubscriptionField` field is not defined",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 41,
+                    },
+                    offset: 51,
+                    length: 44,
+                },
+                text: "`Subscription` declared here",
+            },
+        ],
+        help: Some(
+            "`undefinedSubscriptionField` is not defined on `Subscription` type",
+        ),
+        data: UndefinedField {
+            field: "undefinedSubscriptionField",
+        },
+    },
 ]

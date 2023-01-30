@@ -2,12 +2,13 @@ use std::sync::Arc;
 
 use crate::{
     database::db::Upcast,
+    diagnostics::ApolloDiagnostic,
     hir::*,
     validation::{
         argument, directive, enum_, fragment, input_object, interface, object, operation, scalar,
         schema, selection, union_, variable,
     },
-    ApolloDiagnostic, AstDatabase, FileId, HirDatabase, InputDatabase,
+    AstDatabase, FileId, HirDatabase, InputDatabase,
 };
 
 use super::field;

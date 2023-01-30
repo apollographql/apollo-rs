@@ -1,35 +1,62 @@
 [
-    UnsupportedOperation(
-        UnsupportedOperation {
-            ty: "Mutation",
-            src: "mutation adoptAPetMutation {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  name: String,\n  age: Int\n}",
-            operation: SourceSpan {
-                offset: SourceOffset(
-                    0,
-                ),
-                length: SourceOffset(
-                    76,
-                ),
-            },
-            schema: None,
-            help: Some(
-                "consider defining a `mutation` root operation type in your schema",
-            ),
+    ApolloDiagnostic {
+        cache: {
+            14: "0015_mutation_operation_without_mutation_schema_definition.graphql",
         },
-    ),
-    UndefinedField(
-        UndefinedField {
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 14,
+            },
+            offset: 0,
+            length: 76,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 14,
+                    },
+                    offset: 0,
+                    length: 76,
+                },
+                text: "Mutation operation is not defined in the schema and is therefore not supported",
+            },
+        ],
+        help: Some(
+            "consider defining a `mutation` root operation type in your schema",
+        ),
+        data: UnsupportedOperation {
+            ty: "mutation",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            14: "0015_mutation_operation_without_mutation_schema_definition.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 14,
+            },
+            offset: 31,
+            length: 42,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 14,
+                    },
+                    offset: 31,
+                    length: 42,
+                },
+                text: "`addPet` field is not defined",
+            },
+        ],
+        help: Some(
+            "`addPet` is not defined on the current Mutation root operation type.",
+        ),
+        data: UndefinedField {
             field: "addPet",
-            src: "mutation adoptAPetMutation {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  name: String,\n  age: Int\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    31,
-                ),
-                length: SourceOffset(
-                    42,
-                ),
-            },
-            help: "`addPet` is not defined on the current Mutation root operation type.",
         },
-    ),
+    },
 ]

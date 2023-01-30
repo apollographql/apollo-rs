@@ -1,7 +1,9 @@
 use apollo_parser::{Parser as ApolloParser, SyntaxTree};
 use rowan::GreenNode;
 
-use crate::{database::inputs::InputDatabase, diagnostics::SyntaxError, ApolloDiagnostic, FileId};
+use crate::database::inputs::InputDatabase;
+use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
+use crate::FileId;
 
 #[salsa::query_group(AstStorage)]
 pub trait AstDatabase: InputDatabase {
@@ -46,11 +48,17 @@ fn syntax_errors(db: &dyn AstDatabase) -> Vec<ApolloDiagnostic> {
                 .errors()
                 .into_iter()
                 .map(|err| {
-                    ApolloDiagnostic::SyntaxError(SyntaxError {
-                        src: db.source_code(file_id),
-                        span: (err.index(), err.data().len()).into(), // (offset, length of error token)
-                        message: err.message().into(),
-                    })
+                    ApolloDiagnostic::new(
+                        db,
+                        (file_id, err.index(), err.data().len()).into(),
+                        DiagnosticData::SyntaxError {
+                            message: err.message().into(),
+                        },
+                    )
+                    .label(Label::new(
+                        (file_id, err.index(), err.data().len()),
+                        err.message(),
+                    ))
                 })
                 .collect::<Vec<ApolloDiagnostic>>()
         })

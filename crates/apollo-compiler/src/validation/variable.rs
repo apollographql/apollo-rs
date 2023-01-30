@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::{
-    diagnostics::{ApolloDiagnostic, UndefinedDefinition, UnusedVariable},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::ValidationSet,
     FileId, ValidationDatabase,
@@ -38,7 +38,7 @@ pub fn validate_unused_variables(
                 .iter()
                 .map(|var| ValidationSet {
                     name: var.name().into(),
-                    loc: *var.loc(),
+                    loc: var.loc(),
                 })
                 .collect();
             let used_vars: HashSet<ValidationSet> = op
@@ -52,7 +52,7 @@ pub fn validate_unused_variables(
                         .iter()
                         .map(|var| ValidationSet {
                             name: var.name().into(),
-                            loc: *var.loc(),
+                            loc: var.loc(),
                         })
                         .collect();
                     vars
@@ -61,25 +61,27 @@ pub fn validate_unused_variables(
             let undefined_vars = used_vars.difference(&defined_vars);
             let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
                 .map(|undefined_var| {
-                    let offset = undefined_var.loc.offset();
-                    let len = undefined_var.loc.node_len();
-                    ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                        ty: undefined_var.name.clone(),
-                        src: db.source_code(undefined_var.loc.file_id()),
-                        definition: (offset, len).into(),
-                    })
+                    ApolloDiagnostic::new(
+                        db,
+                        undefined_var.loc.into(),
+                        DiagnosticData::UndefinedDefinition {
+                            name: undefined_var.name.clone(),
+                        },
+                    )
+                    .label(Label::new(undefined_var.loc, "not found in this scope"))
                 })
                 .collect();
 
             let unused_vars = defined_vars.difference(&used_vars);
             let warnings = unused_vars.map(|unused_var| {
-                let offset = unused_var.loc.offset();
-                let len = unused_var.loc.node_len();
-                ApolloDiagnostic::UnusedVariable(UnusedVariable {
-                    ty: unused_var.name.clone(),
-                    src: db.source_code(unused_var.loc.file_id()),
-                    definition: (offset, len).into(),
-                })
+                ApolloDiagnostic::new(
+                    db,
+                    unused_var.loc.into(),
+                    DiagnosticData::UnusedVariable {
+                        name: unused_var.name.clone(),
+                    },
+                )
+                .label(Label::new(unused_var.loc, "this variable is never used"))
             });
 
             diagnostics.extend(warnings);

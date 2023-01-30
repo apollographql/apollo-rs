@@ -1,11 +1,8 @@
 use std::{collections::HashMap, sync::Arc};
 
 use crate::{
-    diagnostics::{
-        IntrospectionField, MissingIdent, SingleRootField, UndefinedField, UniqueDefinition,
-        UnsupportedOperation,
-    },
-    hir, ApolloDiagnostic, FileId, ValidationDatabase,
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
+    hir, FileId, ValidationDatabase,
 };
 
 pub fn validate_operation_definitions(
@@ -41,13 +38,11 @@ pub fn validate_operation_definitions(
             .iter()
             .filter_map(|op| {
                 if op.name().is_none() {
-                    let offset = op.loc().offset();
-                    let len= op.loc().node_len();
-                    return Some(ApolloDiagnostic::MissingIdent(MissingIdent {
-                        src: db.source_code(op.loc().file_id()),
-                        definition: (offset, len).into(),
-                        help: Some(format!("GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are {op_len} operations in this document."))
-                    }));
+                    return Some(
+                        ApolloDiagnostic::new(db, op.loc().into(), DiagnosticData::MissingIdent)
+                            .label(Label::new(op.loc(), "provide a name for this definition"))
+                            .help(format!("GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are {op_len} operations in this document.")),
+                    );
                 }
                 None
             })
@@ -62,21 +57,36 @@ pub fn validate_operation_definitions(
     for op in operations.iter() {
         if let Some(name) = op.name() {
             if let Some(prev_def) = seen.get(&name) {
-                let prev_offset = prev_def.loc().offset();
-                let prev_node_len = prev_def.loc().node_len();
-
-                let current_offset = op.loc().offset();
-                let current_node_len = op.loc().node_len();
-                diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                    ty: "operation".into(),
-                    name: name.into(),
-                    src: db.source_code(prev_def.loc().file_id()),
-                    original_definition: (prev_offset, prev_node_len).into(),
-                    redefined_definition: (current_offset, current_node_len).into(),
-                    help: Some(format!(
+                let original_definition = prev_def
+                    .name_src()
+                    .and_then(|name| name.loc())
+                    .unwrap_or_else(|| prev_def.loc());
+                let redefined_definition = op
+                    .name_src()
+                    .and_then(|name| name.loc())
+                    .unwrap_or_else(|| op.loc());
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        redefined_definition.into(),
+                        DiagnosticData::UniqueDefinition {
+                            ty: "operation",
+                            name: name.into(),
+                            original_definition: original_definition.into(),
+                            redefined_definition: redefined_definition.into(),
+                        },
+                    )
+                    .labels([
+                        Label::new(
+                            original_definition,
+                            format!("previous definition of `{name}` here"),
+                        ),
+                        Label::new(redefined_definition, format!("`{name}` redefined here")),
+                    ])
+                    .help(format!(
                         "`{name}` must only be defined once in this document."
                     )),
-                }));
+                );
             } else {
                 seen.insert(name, op);
             }
@@ -86,14 +96,13 @@ pub fn validate_operation_definitions(
     // Fields must exist on the type being queried.
     for op in operations.iter() {
         for selection in op.selection_set().selection() {
-            let obj_name = op.object_type(db.upcast()).map(|obj| obj.name().to_owned());
+            let obj_type = op.object_type(db.upcast());
+            let obj_name = obj_type.as_ref().map(|obj| obj.name().to_owned());
             if let hir::Selection::Field(field) = selection {
                 if field.ty(db.upcast()).is_none() {
-                    let offset = field.loc().offset();
-                    let len = field.loc().node_len();
-                    let field_name = field.name().into();
-                    let help = if let Some(obj_type) = obj_name {
-                        format!("`{field_name}` is not defined on `{obj_type}` type")
+                    let field_name = field.name();
+                    let help = if let Some(actual_name) = obj_name {
+                        format!("`{field_name}` is not defined on `{actual_name}` type")
                     } else {
                         format!(
                             "`{}` is not defined on the current {} root operation type.",
@@ -101,12 +110,28 @@ pub fn validate_operation_definitions(
                             op.operation_ty()
                         )
                     };
-                    diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
-                        field: field_name,
-                        src: db.source_code(field.loc().file_id()),
-                        definition: (offset, len).into(),
-                        help,
-                    }))
+                    let diagnostic = ApolloDiagnostic::new(
+                        db,
+                        field.loc().into(),
+                        DiagnosticData::UndefinedField {
+                            field: field_name.into(),
+                        },
+                    )
+                    .label(Label::new(
+                        field.loc(),
+                        format!("`{field_name}` field is not defined"),
+                    ))
+                    .help(help);
+
+                    let diagnostic = if let Some(ty) = obj_type {
+                        diagnostic.label(Label::new(
+                            ty.loc(),
+                            format!("`{}` declared here", ty.name()),
+                        ))
+                    } else {
+                        diagnostic
+                    };
+                    diagnostics.push(diagnostic)
                 }
             }
         }
@@ -128,11 +153,20 @@ pub fn validate_subscription_operations(
         for selection in op.selection_set().selection() {
             if let hir::Selection::Field(field) = selection {
                 if field.is_introspection() {
-                    diagnostics.push(ApolloDiagnostic::IntrospectionField(IntrospectionField {
-                        field: field.name().into(),
-                        src: db.source_code(op.loc().file_id()),
-                        definition: (field.loc.offset(), field.loc.node_len()).into(),
-                    }));
+                    let field_name = field.name();
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            field.loc().into(),
+                            DiagnosticData::IntrospectionField {
+                                field: field_name.into(),
+                            },
+                        )
+                        .label(Label::new(
+                            field.loc(),
+                            format!("{field_name} is an introspection field"),
+                        )),
+                    );
                 }
             }
         }
@@ -149,18 +183,25 @@ pub fn validate_subscription_operations(
                 fields.extend(op.fields_in_fragment_spread(db.upcast()).as_ref().clone());
                 if fields.len() > 1 {
                     let field_names: Vec<&str> = fields.iter().map(|f| f.name()).collect();
-                    let offset = op.loc().offset();
-                    let len = op.loc().node_len();
-                    Some(ApolloDiagnostic::SingleRootField(SingleRootField {
-                        fields: fields.len(),
-                        src: db.source_code(op.loc().file_id()),
-                        subscription: (offset, len).into(),
-                        help: Some(format!(
+                    Some(
+                        ApolloDiagnostic::new(
+                            db,
+                            op.loc().into(),
+                            DiagnosticData::SingleRootField {
+                                fields: fields.len(),
+                                subscription: op.loc().into(),
+                            },
+                        )
+                        .label(Label::new(
+                            op.loc(),
+                            format!("subscription with {} root fields", fields.len()),
+                        ))
+                        .help(format!(
                             "There are {} root fields: {}. This is not allowed.",
                             fields.len(),
                             field_names.join(", ")
                         )),
-                    }))
+                    )
                 } else {
                     None
                 }
@@ -177,30 +218,12 @@ pub fn validate_subscription_operations(
         let unsupported_ops: Vec<ApolloDiagnostic> = subscriptions
             .iter()
             .map(|op| {
-                let op_offset = op.loc().offset();
-                let op_len = op.loc().node_len();
-
-                if let Some(loc) = db.schema().loc() {
-                    let schema_offset = loc.offset();
-                    let schema_len = loc.node_len();
-                    ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
-                        ty: "Subscription".into(),
-                        operation: (op_offset, op_len).into(),
-                        src: db.source_code(loc.file_id()),
-                        schema: Some((schema_offset, schema_len).into()),
-                        help: None,
-                    })
+                let diagnostic = ApolloDiagnostic::new(db, op.loc().into(), DiagnosticData::UnsupportedOperation { ty: "subscription" })
+                    .label(Label::new(op.loc(), "Subscription operation is not defined in the schema and is therefore not supported"));
+                if let Some(schema_loc) = db.schema().loc() {
+                    diagnostic.label(Label::new(schema_loc, "Consider defining a `subscription` root operation type here"))
                 } else {
-                    ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
-                        ty: "Subscription".into(),
-                        operation: (op_offset, op_len).into(),
-                        src: db.source_code(op.loc().file_id()),
-                        schema: None,
-                        help: Some(
-                            "consider defining a `subscription` root operation type in your schema"
-                                .into(),
-                        ),
-                    })
+                    diagnostic.help("consider defining a `subscription` root operation type in your schema")
                 }
             })
             .collect();
@@ -224,29 +247,23 @@ pub fn validate_query_operations(
         let unsupported_ops: Vec<ApolloDiagnostic> = queries
             .iter()
             .map(|op| {
-                let op_offset = op.loc().offset();
-                let op_len = op.loc().node_len();
-
-                if let Some(loc) = db.schema().loc() {
-                    let schema_offset = loc.offset();
-                    let schema_len = loc.node_len();
-                    ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
-                        ty: "Query".into(),
-                        operation: (op_offset, op_len).into(),
-                        src: db.source_code(loc.file_id()),
-                        schema: Some((schema_offset, schema_len).into()),
-                        help: None,
-                    })
+                let diagnostic = ApolloDiagnostic::new(
+                    db,
+                    op.loc().into(),
+                    DiagnosticData::UnsupportedOperation { ty: "query" },
+                )
+                .label(Label::new(
+                    op.loc(),
+                    "Query operation is not defined in the schema and is therefore not supported",
+                ));
+                if let Some(schema_loc) = db.schema().loc() {
+                    diagnostic.label(Label::new(
+                        schema_loc,
+                        "Consider defining a `query` root operation type here",
+                    ))
                 } else {
-                    ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
-                        ty: "Query".into(),
-                        operation: (op_offset, op_len).into(),
-                        src: db.source_code(op.loc().file_id()),
-                        schema: None,
-                        help: Some(
-                            "consider defining a `query` root operation type in your schema".into(),
-                        ),
-                    })
+                    diagnostic
+                        .help("consider defining a `query` root operation type in your schema")
                 }
             })
             .collect();
@@ -270,30 +287,12 @@ pub fn validate_mutation_operations(
         let unsupported_ops: Vec<ApolloDiagnostic> = mutations
             .iter()
             .map(|op| {
-                let op_offset = op.loc().offset();
-                let op_len = op.loc().node_len();
-
-                if let Some(loc) = db.schema().loc() {
-                    let schema_offset = loc.offset();
-                    let schema_len = loc.node_len();
-                    ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
-                        ty: "Mutation".into(),
-                        operation: (op_offset, op_len).into(),
-                        src: db.source_code(loc.file_id()),
-                        schema: Some((schema_offset, schema_len).into()),
-                        help: None,
-                    })
+                let diagnostic = ApolloDiagnostic::new(db, op.loc().into(), DiagnosticData::UnsupportedOperation { ty: "mutation" })
+                    .label(Label::new(op.loc(), "Mutation operation is not defined in the schema and is therefore not supported"));
+                if let Some(schema_loc) = db.schema().loc() {
+                    diagnostic.label(Label::new(schema_loc, "Consider defining a `mutation` root operation type here"))
                 } else {
-                    ApolloDiagnostic::UnsupportedOperation(UnsupportedOperation {
-                        ty: "Mutation".into(),
-                        operation: (op_offset, op_len).into(),
-                        src: db.source_code(op.loc().file_id()),
-                        schema: None,
-                        help: Some(
-                            "consider defining a `mutation` root operation type in your schema"
-                                .into(),
-                        ),
-                    })
+                    diagnostic.help("consider defining a `mutation` root operation type in your schema")
                 }
             })
             .collect();

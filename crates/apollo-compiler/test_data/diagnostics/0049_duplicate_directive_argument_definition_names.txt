@@ -1,24 +1,56 @@
 [
-    UniqueInputValue(
-        UniqueInputValue {
-            value: "arg",
-            src: "directive @example(arg: Boolean, arg: Boolean) on FIELD\n",
-            original_value: SourceSpan {
-                offset: SourceOffset(
-                    19,
-                ),
-                length: SourceOffset(
-                    14,
-                ),
+    ApolloDiagnostic {
+        cache: {
+            49: "0049_duplicate_directive_argument_definition_names.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 49,
             },
-            redefined_value: SourceSpan {
-                offset: SourceOffset(
-                    33,
-                ),
-                length: SourceOffset(
-                    12,
-                ),
+            offset: 19,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 49,
+                    },
+                    offset: 19,
+                    length: 14,
+                },
+                text: "previous definition of `arg` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 49,
+                    },
+                    offset: 33,
+                    length: 12,
+                },
+                text: "`arg` redefined here",
+            },
+        ],
+        help: Some(
+            "`arg` field must only be defined once in this input object definition.",
+        ),
+        data: UniqueInputValue {
+            name: "arg",
+            original_value: DiagnosticLocation {
+                file_id: FileId {
+                    id: 49,
+                },
+                offset: 19,
+                length: 14,
+            },
+            redefined_value: DiagnosticLocation {
+                file_id: FileId {
+                    id: 49,
+                },
+                offset: 33,
+                length: 12,
             },
         },
-    ),
+    },
 ]

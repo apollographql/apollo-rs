@@ -1,16 +1,30 @@
 [
-    TransitiveImplementedInterfaces(
-        TransitiveImplementedInterfaces {
-            missing_interface: "Node",
-            src: "type Query implements Node {\n  id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  url: String\n  width: Int\n}\n\ninterface Image implements Resource {\n  id: ID!\n  url: String\n  width: Int\n  thumbnail: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    176,
-                ),
-                length: SourceOffset(
-                    9,
-                ),
-            },
+    ApolloDiagnostic {
+        cache: {
+            25: "0026_interface_definition_with_missing_implemetns_interface.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 25,
+            },
+            offset: 176,
+            length: 9,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 25,
+                    },
+                    offset: 176,
+                    length: 9,
+                },
+                text: "Node must also be implemented here",
+            },
+        ],
+        help: None,
+        data: TransitiveImplementedInterfaces {
+            missing_interface: "Node",
+        },
+    },
 ]

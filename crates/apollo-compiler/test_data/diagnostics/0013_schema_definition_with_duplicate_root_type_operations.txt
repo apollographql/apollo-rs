@@ -1,28 +1,57 @@
 [
-    UniqueDefinition(
-        UniqueDefinition {
-            name: "customPetQuery",
-            ty: "root operation type definition",
-            src: "schema {\n  query: customPetQuery,\n  subscription: customPetQuery\n}\n\ntype customPetQuery {\n  name: String,\n  age: Int\n}",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    11,
-                ),
-                length: SourceOffset(
-                    25,
-                ),
-            },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    36,
-                ),
-                length: SourceOffset(
-                    29,
-                ),
-            },
-            help: Some(
-                "`customPetQuery` must only be defined once in this document.",
-            ),
+    ApolloDiagnostic {
+        cache: {
+            12: "0013_schema_definition_with_duplicate_root_type_operations.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 12,
+            },
+            offset: 36,
+            length: 29,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 12,
+                    },
+                    offset: 11,
+                    length: 25,
+                },
+                text: "previous definition of `customPetQuery` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 12,
+                    },
+                    offset: 36,
+                    length: 29,
+                },
+                text: "`customPetQuery` redefined here",
+            },
+        ],
+        help: Some(
+            "`customPetQuery` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "root operation type definition",
+            name: "customPetQuery",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 12,
+                },
+                offset: 11,
+                length: 25,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 12,
+                },
+                offset: 36,
+                length: 29,
+            },
+        },
+    },
 ]

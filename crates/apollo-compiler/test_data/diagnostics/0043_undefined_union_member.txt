@@ -1,16 +1,30 @@
 [
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Cat",
-            src: "interface Pet {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String\n  nickname: String\n  barkVolume: Int\n}\n\nunion CatOrDog = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\ntype Query {\n  human: Human\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    132,
-                ),
-                length: SourceOffset(
-                    4,
-                ),
-            },
+    ApolloDiagnostic {
+        cache: {
+            43: "0043_undefined_union_member.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 43,
+            },
+            offset: 132,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 43,
+                    },
+                    offset: 132,
+                    length: 4,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "Cat",
+        },
+    },
 ]

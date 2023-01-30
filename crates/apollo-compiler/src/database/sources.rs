@@ -80,6 +80,11 @@ impl FileId {
         }
     }
 
+    // Exposed for tests, but relying on the test order is probably not a good idea…
+    pub(crate) fn as_u64(self) -> u64 {
+        self.id
+    }
+
     /// Reset file ID back to 0, used to get consistent results in tests.
     #[allow(unused)]
     pub(crate) fn reset() {

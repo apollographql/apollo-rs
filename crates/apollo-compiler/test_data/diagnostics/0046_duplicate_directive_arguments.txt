@@ -1,52 +1,110 @@
 [
-    UniqueArgument(
-        UniqueArgument {
+    ApolloDiagnostic {
+        cache: {
+            46: "0046_duplicate_directive_arguments.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 46,
+            },
+            offset: 74,
+            length: 42,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 46,
+                    },
+                    offset: 30,
+                    length: 44,
+                },
+                text: "previously provided `url` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 46,
+                    },
+                    offset: 74,
+                    length: 42,
+                },
+                text: "`url` provided again here",
+            },
+        ],
+        help: Some(
+            "`url` argument must only be provided once.",
+        ),
+        data: UniqueArgument {
             name: "url",
-            src: "scalar newScalar @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\", url: \"https://tools.ietf.org/html/rfc4125\")\n\ntype Query {\n  status: String,\n  response: String @example(if: false, if: true)\n}\n\ndirective @example(if: Boolean) on FIELD_DEFINITION",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    30,
-                ),
-                length: SourceOffset(
-                    44,
-                ),
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 46,
+                },
+                offset: 30,
+                length: 44,
             },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    74,
-                ),
-                length: SourceOffset(
-                    42,
-                ),
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 46,
+                },
+                offset: 74,
+                length: 42,
             },
-            help: Some(
-                "`url` argument must only be provided once.",
-            ),
         },
-    ),
-    UniqueArgument(
-        UniqueArgument {
+    },
+    ApolloDiagnostic {
+        cache: {
+            46: "0046_duplicate_directive_arguments.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 46,
+            },
+            offset: 189,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 46,
+                    },
+                    offset: 178,
+                    length: 11,
+                },
+                text: "previously provided `if` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 46,
+                    },
+                    offset: 189,
+                    length: 8,
+                },
+                text: "`if` provided again here",
+            },
+        ],
+        help: Some(
+            "`if` argument must only be provided once.",
+        ),
+        data: UniqueArgument {
             name: "if",
-            src: "scalar newScalar @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\", url: \"https://tools.ietf.org/html/rfc4125\")\n\ntype Query {\n  status: String,\n  response: String @example(if: false, if: true)\n}\n\ndirective @example(if: Boolean) on FIELD_DEFINITION",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    178,
-                ),
-                length: SourceOffset(
-                    11,
-                ),
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 46,
+                },
+                offset: 178,
+                length: 11,
             },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    189,
-                ),
-                length: SourceOffset(
-                    8,
-                ),
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 46,
+                },
+                offset: 189,
+                length: 8,
             },
-            help: Some(
-                "`if` argument must only be provided once.",
-            ),
         },
-    ),
+    },
 ]

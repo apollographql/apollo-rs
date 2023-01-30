@@ -1,18 +1,30 @@
 [
-    MissingIdent(
-        MissingIdent {
-            src: "query {\n  cat {\n    name\n  }\n}\n\nmutation getName {\n  addPet {\n    owner {\n      name\n    }\n  }\n}\n\ntype Query {\n  cat: String\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  pageNumber: Int\n  response: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    0,
-                ),
-                length: SourceOffset(
-                    32,
-                ),
-            },
-            help: Some(
-                "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
-            ),
+    ApolloDiagnostic {
+        cache: {
+            2: "0003_anonymous_and_named_operation.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 2,
+            },
+            offset: 0,
+            length: 32,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 2,
+                    },
+                    offset: 0,
+                    length: 32,
+                },
+                text: "provide a name for this definition",
+            },
+        ],
+        help: Some(
+            "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
+        ),
+        data: MissingIdent,
+    },
 ]

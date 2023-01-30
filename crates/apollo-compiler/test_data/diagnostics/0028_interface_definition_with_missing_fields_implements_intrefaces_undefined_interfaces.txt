@@ -1,55 +1,98 @@
 [
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Url",
-            src: "type Query implements Node {\n  id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n}\n\ninterface Image implements Resource & Url{\n  id: ID!\n  thumbnail: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    173,
-                ),
-                length: SourceOffset(
-                    3,
-                ),
-            },
+    ApolloDiagnostic {
+        cache: {
+            27: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
-    ),
-    TransitiveImplementedInterfaces(
-        TransitiveImplementedInterfaces {
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 27,
+            },
+            offset: 173,
+            length: 3,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 27,
+                    },
+                    offset: 173,
+                    length: 3,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "Url",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            27: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 27,
+            },
+            offset: 162,
+            length: 9,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 27,
+                    },
+                    offset: 162,
+                    length: 9,
+                },
+                text: "Node must also be implemented here",
+            },
+        ],
+        help: None,
+        data: TransitiveImplementedInterfaces {
             missing_interface: "Node",
-            src: "type Query implements Node {\n  id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n}\n\ninterface Image implements Resource & Url{\n  id: ID!\n  thumbnail: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    162,
-                ),
-                length: SourceOffset(
-                    9,
-                ),
-            },
         },
-    ),
-    MissingField(
-        MissingField {
-            ty: "width",
-            src: "type Query implements Node {\n  id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n}\n\ninterface Image implements Resource & Url{\n  id: ID!\n  thumbnail: String\n}",
-            super_definition: SourceSpan {
-                offset: SourceOffset(
-                    72,
-                ),
-                length: SourceOffset(
-                    63,
-                ),
-            },
-            current_definition: SourceSpan {
-                offset: SourceOffset(
-                    135,
-                ),
-                length: SourceOffset(
-                    74,
-                ),
-            },
-            help: Some(
-                "An interface must be a super-set of all interfaces it implement",
-            ),
+    },
+    ApolloDiagnostic {
+        cache: {
+            27: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 27,
+            },
+            offset: 135,
+            length: 74,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 27,
+                    },
+                    offset: 72,
+                    length: 63,
+                },
+                text: "`width` was originally defined here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 27,
+                    },
+                    offset: 135,
+                    length: 74,
+                },
+                text: "add `width` field to this interface",
+            },
+        ],
+        help: Some(
+            "An interface must be a super-set of all interfaces it implements",
+        ),
+        data: MissingField {
+            field: "width",
+        },
+    },
 ]

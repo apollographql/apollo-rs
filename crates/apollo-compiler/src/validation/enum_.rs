@@ -1,9 +1,9 @@
 use std::{collections::HashMap, sync::Arc};
 
 use crate::{
-    diagnostics::{CapitalizedValue, UniqueDefinition},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self, EnumValueDefinition},
-    ApolloDiagnostic, ValidationDatabase,
+    ValidationDatabase,
 };
 
 pub fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
@@ -33,19 +33,28 @@ pub fn validate_enum_definition(
         // Return a Unique Value error in case of a duplicate value.
         let value = enum_val.enum_value();
         if let Some(prev_def) = seen.get(&value) {
-            let prev_offset = prev_def.loc().offset();
-            let prev_node_len = prev_def.loc().node_len();
-
-            let current_offset = enum_val.loc().offset();
-            let current_node_len = enum_val.loc().node_len();
-            diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                ty: "enum".into(),
-                name: value.into(),
-                src: db.source_code(prev_def.loc().file_id()),
-                original_definition: (prev_offset, prev_node_len).into(),
-                redefined_definition: (current_offset, current_node_len).into(),
-                help: Some(format!("{value} must only be defined once in this enum.")),
-            }));
+            let original_definition = prev_def.loc();
+            let redefined_definition = enum_val.loc();
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    redefined_definition.into(),
+                    DiagnosticData::UniqueDefinition {
+                        ty: "enum",
+                        name: value.into(),
+                        original_definition: original_definition.into(),
+                        redefined_definition: redefined_definition.into(),
+                    },
+                )
+                .labels([
+                    Label::new(
+                        original_definition,
+                        format!("previous definition of `{value}` here"),
+                    ),
+                    Label::new(redefined_definition, format!("`{value}` redefined here")),
+                ])
+                .help(format!("{value} must only be defined once in this enum.")),
+            );
         } else {
             seen.insert(value, enum_val);
         }
@@ -68,11 +77,19 @@ pub(crate) fn validate_enum_value(
     // Return a Capitalized Value warning if enum value is not capitalized.
     let value = enum_val.enum_value();
     if value.to_uppercase() != value {
-        diagnostics.push(ApolloDiagnostic::CapitalizedValue(CapitalizedValue {
-            ty: value.into(),
-            src: db.source_code(enum_val.loc().file_id()),
-            value: (enum_val.loc().offset(), enum_val.loc().node_len()).into(),
-        }));
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                enum_val.loc().into(),
+                DiagnosticData::CapitalizedValue {
+                    value: value.into(),
+                },
+            )
+            .label(Label::new(
+                enum_val.loc(),
+                format!("consider capitalizing {value}"),
+            )),
+        );
     }
 
     diagnostics
