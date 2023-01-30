@@ -67,13 +67,22 @@ pub struct FileId {
     id: u64,
 }
 
+/// The next file ID to use. This is global so file IDs do not conflict between different compiler
+/// instances.
+static NEXT: atomic::AtomicU64 = atomic::AtomicU64::new(0);
+
 impl FileId {
     // Returning a different value every time does not sound like good `impl Default`
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        static NEXT: atomic::AtomicU64 = atomic::AtomicU64::new(0);
         Self {
             id: NEXT.fetch_add(1, atomic::Ordering::Relaxed),
         }
+    }
+
+    /// Reset file ID back to 0, used to get consistent results in tests.
+    #[allow(unused)]
+    pub(crate) fn reset() {
+        NEXT.store(0, atomic::Ordering::SeqCst);
     }
 }
