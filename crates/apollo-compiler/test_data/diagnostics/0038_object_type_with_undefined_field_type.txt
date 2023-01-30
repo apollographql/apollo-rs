@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            106: "0038_object_type_with_undefined_field_type.graphql",
+            111: "0038_object_type_with_undefined_field_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 106,
+                id: 111,
             },
             offset: 33,
             length: 3,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 106,
+                        id: 111,
                     },
                     offset: 33,
                     length: 3,
@@ -29,11 +29,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            106: "0038_object_type_with_undefined_field_type.graphql",
+            111: "0038_object_type_with_undefined_field_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 106,
+                id: 111,
             },
             offset: 53,
             length: 6,
@@ -42,7 +42,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 106,
+                        id: 111,
                     },
                     offset: 53,
                     length: 6,

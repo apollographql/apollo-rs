@@ -17,7 +17,7 @@ fuzz_target!(|data: &[u8]| {
 
     let (_tokens, errors) = match lexer {
         Err(err) => {
-            panic!("error {:?}", err);
+            panic!("error {err:?}");
         }
         Ok(p) => p,
     };

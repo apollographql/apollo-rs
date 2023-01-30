@@ -1,16 +1,32 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::InputValueDefinition,
+    hir,
     validation::ast_type_definitions,
     ValidationDatabase,
 };
 use apollo_parser::ast;
 
-pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_input_object_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    let defs = &db.type_system_definitions().input_objects;
+    for def in defs.values() {
+        diagnostics.extend(db.validate_input_object_definition(def.clone()));
+    }
+
+    diagnostics
+}
+
+pub fn validate_input_object_definition(
+    db: &dyn ValidationDatabase,
+    input_obj: Arc<hir::InputObjectTypeDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = db.validate_directives(
+        input_obj.directives().to_vec(),
+        hir::DirectiveLocation::InputObject,
+    );
     // Input Object Definitions must have unique names.
     //
     // Return a Unique Definition error in case of a duplicate name.
@@ -53,36 +69,49 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     // Fields in an Input Object Definition must be unique
     //
     // Returns Unique Value error.
-    for input_objects in db.input_objects().values() {
-        let mut seen: HashMap<&str, &InputValueDefinition> = HashMap::new();
+    diagnostics.extend(db.validate_input_values(
+        input_obj.input_fields_definition.clone(),
+        hir::DirectiveLocation::InputFieldDefinition,
+    ));
 
-        let input_fields = input_objects.input_fields_definition();
+    diagnostics
+}
 
-        for field in input_fields {
-            let field_name = field.name();
-            if let Some(prev_field) = seen.get(&field_name) {
-                if let (Some(original_definition), Some(redefined_definition)) =
-                    (prev_field.loc(), field.loc())
-                {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db, original_definition.into(),
-                            DiagnosticData::UniqueField {
-                                field: field_name.into(),
-                                original_definition: original_definition.into(),
-                                redefined_definition: redefined_definition.into(),
-                            }
-                        )
-                        .labels([
-                            Label::new(original_definition, format!("previous definition of `{field_name}` here")),
-                            Label::new(redefined_definition, format!("`{field_name}` redefined here")),
-                        ])
-                        .help(format!("`{field_name}` field must only be defined once in this input object definition."))
-                    );
-                }
-            } else {
-                seen.insert(field_name, field);
+pub fn validate_input_values(
+    db: &dyn ValidationDatabase,
+    input_values: Arc<Vec<hir::InputValueDefinition>>,
+    // directive location depends on parent node location, so we pass this down from parent
+    dir_loc: hir::DirectiveLocation,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+    let mut seen: HashMap<&str, &hir::InputValueDefinition> = HashMap::new();
+
+    for input_value in input_values.iter() {
+        diagnostics.extend(db.validate_directives(input_value.directives().to_vec(), dir_loc));
+
+        let name = input_value.name();
+        if let Some(prev_arg) = seen.get(name) {
+            if let (Some(original_value), Some(redefined_value)) =
+                (prev_arg.loc(), input_value.loc())
+            {
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db, original_value.into(),
+                        DiagnosticData::UniqueInputValue {
+                            name: name.into(),
+                            original_value: original_value.into(),
+                            redefined_value: redefined_value.into(),
+                        }
+                    )
+                    .labels([
+                        Label::new(original_value, format!("previous definition of `{name}` here")),
+                        Label::new(redefined_value, format!("`{name}` redefined here")),
+                    ])
+                    .help(format!("`{name}` field must only be defined once in this input object definition."))
+                );
             }
+        } else {
+            seen.insert(name, input_value);
         }
     }
 

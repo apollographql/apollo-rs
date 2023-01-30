@@ -144,6 +144,12 @@ pub enum DiagnosticData {
         original_definition: DiagnosticLocation,
         redefined_definition: DiagnosticLocation,
     },
+    #[error("the value `{name}` is defined multiple times")]
+    UniqueInputValue {
+        name: String,
+        original_value: DiagnosticLocation,
+        redefined_value: DiagnosticLocation,
+    },
     #[error("subscription operations can only have one root field")]
     SingleRootField {
         // TODO(goto-bus-stop) if we keep this it should be a vec of the field names or nodes i think.
@@ -272,3 +278,19 @@ impl ApolloDiagnostic {
         builder.finish()
     }
 }
+
+/* Stash: new diagnostic
+#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
+#[error("subscription operations can not have an introspection field as a root field")]
+#[diagnostic(code("apollo-compiler validation error"))]
+pub struct IntrospectionField {
+    // current definition
+    pub field: String,
+
+    #[label("{} is an introspection field", self.field)]
+    pub definition: SourceSpan,
+
+    #[source_code]
+    pub src: Arc<str>,
+}
+*/

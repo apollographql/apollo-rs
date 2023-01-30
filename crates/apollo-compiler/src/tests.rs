@@ -31,7 +31,7 @@ fn compiler_tests() {
         let errors = compiler.validate();
         let ast = compiler.db.ast(file_id);
         assert_diagnostics_are_absent(&errors, path);
-        format!("{:?}", ast)
+        format!("{ast:?}")
     });
 
     dir_tests(&test_data_dir(), &["diagnostics"], "txt", |text, path| {
@@ -40,7 +40,7 @@ fn compiler_tests() {
 
         let diagnostics = compiler.validate();
         assert_diagnostics_are_present(&diagnostics, path);
-        format!("{:#?}", diagnostics)
+        format!("{diagnostics:#?}")
     });
 }
 
@@ -54,7 +54,7 @@ fn assert_diagnostics_are_present(errors: &[ApolloDiagnostic], path: &Path) {
 
 fn assert_diagnostics_are_absent(errors: &[ApolloDiagnostic], path: &Path) {
     if !errors.is_empty() {
-        let formatted: Vec<String> = errors.iter().map(|e| format!("{:?}", e)).collect();
+        let formatted: Vec<String> = errors.iter().map(|e| format!("{e:?}")).collect();
         println!("{:?}", formatted.join("\n"));
         panic!(
             "There should be no diagnostics in the file {:?}",
@@ -92,7 +92,7 @@ fn collect_graphql_files(root_dir: &Path, paths: &[&str]) -> Vec<(PathBuf, Strin
         })
         .map(|path| {
             let text = fs::read_to_string(&path)
-                .unwrap_or_else(|_| panic!("File at {:?} should be valid", path));
+                .unwrap_or_else(|_| panic!("File at {path:?} should be valid"));
             (path, text)
         })
         .collect()

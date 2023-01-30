@@ -107,22 +107,22 @@ impl fmt::Display for OperationDefinition {
         if !self.shorthand {
             write!(f, "{}", self.operation_type)?;
             if let Some(name) = &self.name {
-                write!(f, " {}", name)?;
+                write!(f, " {name}")?;
             }
 
             if !self.variable_definitions.is_empty() {
                 write!(f, "(")?;
                 for (i, var_def) in self.variable_definitions.iter().enumerate() {
                     if i == self.variable_definitions.len() - 1 {
-                        write!(f, "{}", var_def)?;
+                        write!(f, "{var_def}")?;
                     } else {
-                        write!(f, "{}, ", var_def)?;
+                        write!(f, "{var_def}, ")?;
                     }
                 }
                 write!(f, ")")?;
             }
             for directive in &self.directives {
-                write!(f, " {}", directive)?;
+                write!(f, " {directive}")?;
             }
             write!(f, " ")?;
         }

@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            70: "0003_anonymous_and_named_operation.graphql",
+            75: "0003_anonymous_and_named_operation.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 70,
+                id: 75,
             },
             offset: 0,
             length: 32,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 75,
                     },
                     offset: 0,
                     length: 32,

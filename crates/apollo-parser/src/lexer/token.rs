@@ -93,7 +93,7 @@ impl fmt::Debug for Token {
                 write!(f, "PIPE@{}:{} {:?}", start, end, self.data)
             }
             TokenKind::Eof => {
-                write!(f, "EOF@{}:{}", start, start)
+                write!(f, "EOF@{start}:{start}")
             }
 
             // composite nodes

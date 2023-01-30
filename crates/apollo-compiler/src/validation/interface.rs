@@ -1,14 +1,31 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::HashSet, sync::Arc};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::FieldDefinition,
+    hir::{self, ImplementsInterface},
     validation::{ast_type_definitions, ValidationSet},
     ValidationDatabase,
 };
 use apollo_parser::ast;
 
-pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let defs = &db.type_system_definitions().interfaces;
+    for def in defs.values() {
+        diagnostics.extend(
+            db.validate_directives(def.directives().to_vec(), hir::DirectiveLocation::Interface),
+        );
+        diagnostics.extend(db.validate_interface_definition(def.clone()));
+    }
+
+    diagnostics
+}
+
+pub fn validate_interface_definition(
+    db: &dyn ValidationDatabase,
+    interface_def: Arc<hir::InterfaceTypeDefinition>,
+) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // Interface definitions must have unique names.
@@ -91,179 +108,40 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
         }
     }
 
-    // Interface Type field validations.
-    for interface_def in db.interfaces().values() {
-        let mut seen: HashMap<&str, &FieldDefinition> = HashMap::new();
+    // Interface Type field validation.
+    diagnostics.extend(db.validate_field_definitions(interface_def.fields_definition().to_vec()));
 
-        let fields = interface_def.fields_definition();
+    // Implements Interfaceds validation.
+    diagnostics
+        .extend(db.validate_implements_interfaces(interface_def.implements_interfaces().to_vec()));
 
-        for field in fields {
-            // Fields in an Interface definition must be unique
-            let field_name = field.name();
-            let redefined_definition = field.loc();
-
-            if let Some(prev_field) = seen.get(&field_name) {
-                let original_definition = prev_field.loc();
-
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db, redefined_definition.into(),
-                        DiagnosticData::UniqueField {
-                            field: field_name.into(),
-                            original_definition: original_definition.into(),
-                            redefined_definition: redefined_definition.into(),
-                        }
-                    )
-                    .labels([
-                        Label::new(original_definition, format!("previous definition of `{field_name}` here")),
-                        Label::new(redefined_definition, format!("`{field_name}` redefined here")),
-                    ])
-                    .help(format!("`{field_name}` field must only be defined once in this interface definition."))
-                );
-            } else {
-                seen.insert(field_name, field);
-            }
-
-            // Field types in interface types must be of output type
-            if let Some(field_ty) = field.ty().type_def(db.upcast()) {
-                if !field.ty().is_output_type(db.upcast()) {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(db, field.loc().into(), DiagnosticData::OutputType {
-                            name: field.name().into(),
-                            ty: field_ty.kind(),
-                        })
-                        .label(Label::new(field.loc(), format!("this is of `{}` type", field_ty.kind())))
-                        .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
-                    );
-                }
-            } else if let Some(field_ty_loc) = field.ty().loc() {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        field_ty_loc.into(),
-                        DiagnosticData::UndefinedDefinition {
-                            name: field.name().into(),
-                        },
-                    )
-                    .label(Label::new(field_ty_loc, "not found in this scope")),
-                );
-            } else {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        field.loc().into(),
-                        DiagnosticData::UndefinedDefinition {
-                            name: field.ty().name(),
-                        },
-                    )
-                    .label(Label::new(field.loc(), "not found in this scope")),
-                );
-            }
-        }
-    }
-
-    let interfaces = db.interfaces();
-    let defined_interfaces: HashSet<ValidationSet> = interfaces
+    // When defining an interface that implements another interface, the
+    // implementing interface must define each field that is specified by
+    // the implemented interface.
+    //
+    // Returns a Missing Field error.
+    let fields: HashSet<ValidationSet> = interface_def
+        .fields_definition()
         .iter()
-        .map(|(name, interface)| ValidationSet {
-            name: name.to_owned(),
-            loc: interface.loc(),
+        .map(|field| ValidationSet {
+            name: field.name().into(),
+            loc: field.loc(),
         })
         .collect();
-    for interface_def in interfaces.values() {
-        // Implements Interfaces must be defined.
-        //
-        // Returns Undefined Definition error.
-        let implements_interfaces: HashSet<ValidationSet> = interface_def
-            .implements_interfaces()
-            .iter()
-            .map(|interface| ValidationSet {
-                name: interface.interface().to_owned(),
-                loc: interface.loc(),
-            })
-            .collect();
-        let diff = implements_interfaces.difference(&defined_interfaces);
-        for undefined in diff {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    undefined.loc.into(),
-                    DiagnosticData::UndefinedDefinition {
-                        name: undefined.name.clone(),
-                    },
-                )
-                .label(Label::new(undefined.loc, "not found in this scope")),
-            );
-        }
+    for implements_interface in interface_def.implements_interfaces().iter() {
+        if let Some(super_interface) = implements_interface.interface_definition(db.upcast()) {
+            let implements_interface_fields: HashSet<ValidationSet> = super_interface
+                .fields_definition()
+                .iter()
+                .map(|field| ValidationSet {
+                    name: field.name().into(),
+                    loc: field.loc(),
+                })
+                .collect();
 
-        // Transitively implemented interfaces must be defined on an implementing
-        // type or interface.
-        //
-        // Returns Transitive Implemented Interfaces error.
-        let transitive_interfaces: HashSet<ValidationSet> = interface_def
-            .implements_interfaces()
-            .iter()
-            .filter_map(|implements_interface| {
-                if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
-                    let child_interfaces: HashSet<ValidationSet> = interface
-                        .implements_interfaces()
-                        .iter()
-                        .map(|interface| ValidationSet {
-                            name: interface.interface().to_owned(),
-                            loc: implements_interface.loc(),
-                        })
-                        .collect();
-                    Some(child_interfaces)
-                } else {
-                    None
-                }
-            })
-            .flatten()
-            .collect();
-        let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
-        for undefined in transitive_diff {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    undefined.loc.into(),
-                    DiagnosticData::TransitiveImplementedInterfaces {
-                        missing_interface: undefined.name.clone(),
-                    },
-                )
-                .label(Label::new(
-                    undefined.loc,
-                    format!("{} must also be implemented here", undefined.name),
-                )),
-            );
-        }
+            let field_diff = implements_interface_fields.difference(&fields);
 
-        // When defining an interface that implements another interface, the
-        // implementing interface must define each field that is specified by
-        // the implemented interface.
-        //
-        // Returns a Missing Field error.
-        let fields: HashSet<ValidationSet> = interface_def
-            .fields_definition()
-            .iter()
-            .map(|field| ValidationSet {
-                name: field.name().into(),
-                loc: field.loc(),
-            })
-            .collect();
-        for implements_interface in interface_def.implements_interfaces().iter() {
-            if let Some(super_interface) = implements_interface.interface_definition(db.upcast()) {
-                let implements_interface_fields: HashSet<ValidationSet> = super_interface
-                    .fields_definition()
-                    .iter()
-                    .map(|field| ValidationSet {
-                        name: field.name().into(),
-                        loc: field.loc(),
-                    })
-                    .collect();
-
-                let field_diff = implements_interface_fields.difference(&fields);
-
-                for missing_field in field_diff {
+            for missing_field in field_diff {
                     let name = &missing_field.name;
                     diagnostics.push(
                         ApolloDiagnostic::new(
@@ -285,10 +163,91 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                         ])
                         .help("An interface must be a super-set of all interfaces it implements"),
                     );
-                }
             }
         }
     }
+
+    diagnostics
+}
+
+pub fn validate_implements_interfaces(
+    db: &dyn ValidationDatabase,
+    impl_interfaces: Vec<ImplementsInterface>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let interfaces = db.interfaces();
+    let defined_interfaces: HashSet<ValidationSet> = interfaces
+        .iter()
+        .map(|(name, interface)| ValidationSet {
+            name: name.to_owned(),
+            loc: interface.loc(),
+        })
+        .collect();
+
+    // Implements Interfaces must be defined.
+    //
+    // Returns Undefined Definition error.
+    let implements_interfaces: HashSet<ValidationSet> = impl_interfaces
+        .iter()
+        .map(|interface| ValidationSet {
+            name: interface.interface().to_owned(),
+            loc: interface.loc(),
+        })
+        .collect();
+    let diff = implements_interfaces.difference(&defined_interfaces);
+    for undefined in diff {
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                undefined.loc.into(),
+                DiagnosticData::UndefinedDefinition {
+                    name: undefined.name.clone(),
+                },
+            )
+            .label(Label::new(undefined.loc, "not found in this scope")),
+        );
+    }
+
+    // Transitively implemented interfaces must be defined on an implementing
+    // type or interface.
+    //
+    // Returns Transitive Implemented Interfaces error.
+    let transitive_interfaces: HashSet<ValidationSet> = impl_interfaces
+        .iter()
+        .filter_map(|implements_interface| {
+            if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
+                let child_interfaces: HashSet<ValidationSet> = interface
+                    .implements_interfaces()
+                    .iter()
+                    .map(|interface| ValidationSet {
+                        name: interface.interface().to_owned(),
+                        loc: implements_interface.loc(),
+                    })
+                    .collect();
+                Some(child_interfaces)
+            } else {
+                None
+            }
+        })
+        .flatten()
+        .collect();
+    let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
+        for undefined in transitive_diff {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    undefined.loc.into(),
+                    DiagnosticData::TransitiveImplementedInterfaces {
+                        missing_interface: undefined.name.clone(),
+                    },
+                )
+                .label(Label::new(
+                    undefined.loc,
+                    format!("{} must also be implemented here", undefined.name),
+                )),
+            );
+        }
 
     diagnostics
 }
@@ -321,7 +280,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1);
     }
@@ -355,7 +314,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1);
     }
@@ -383,7 +342,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1);
     }
@@ -404,7 +363,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1);
     }
@@ -435,7 +394,7 @@ interface Image implements Resource & Node {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 1);
     }
@@ -498,7 +457,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 3);
     }

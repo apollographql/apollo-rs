@@ -372,7 +372,7 @@ mod tests {
                 union UnionType2 = Foo | Bar
                 "#,
             );
-            let schema = format!("{}\n{}", base_schema, schema);
+            let schema = format!("{base_schema}\n{schema}");
             let mut compiler = ApolloCompiler::new();
             compiler.add_document(&schema, "schema.graphql");
             compiler
@@ -398,7 +398,7 @@ mod tests {
                 interface InterfaceType2 implements Foo & Bar { me: String }
                 "#,
             );
-            let schema = format!("{}\n{}", base_schema, schema);
+            let schema = format!("{base_schema}\n{schema}");
             let mut compiler = ApolloCompiler::new();
             compiler.add_document(&schema, "schema.graphql");
             compiler

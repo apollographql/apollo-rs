@@ -131,7 +131,7 @@ impl FileWatcher {
     fn validate(&self) {
         let diagnostics = self.compiler.validate();
         for diag in diagnostics {
-            println!("{}", diag)
+            println!("{diag}")
         }
     }
 }

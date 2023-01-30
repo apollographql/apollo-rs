@@ -120,7 +120,7 @@ fn lower_rule(acc: &mut Vec<Field>, grammar: &Grammar, label: Option<&String>, r
             let mut name = grammar[*token].name.clone();
             if name != "int_number" && name != "string" {
                 if "[]{}()".contains(&name) {
-                    name = format!("'{}'", name);
+                    name = format!("'{name}'");
                 }
                 let field = Field::Token(name);
                 acc.push(field);

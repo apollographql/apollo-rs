@@ -7,7 +7,7 @@ fn parse_schema(schema: &str) {
     let errors = tree.errors().collect::<Vec<_>>();
 
     if !errors.is_empty() {
-        panic!("error parsing query: {:?}", errors);
+        panic!("error parsing query: {errors:?}");
     }
 
     let document = tree.document();

@@ -104,27 +104,27 @@ impl fmt::Display for SchemaDefinition {
             write!(f, "extend ")?;
         // No description when it's an extension schema
         } else if let Some(description) = &self.description {
-            write!(f, "{}", description)?;
+            write!(f, "{description}")?;
         }
 
         write!(f, "schema")?;
 
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
 
         writeln!(f, " {{")?;
 
         if let Some(query) = &self.query {
-            writeln!(f, "  query: {}", query)?;
+            writeln!(f, "  query: {query}")?;
         }
 
         if let Some(mutation) = &self.mutation {
-            writeln!(f, "  mutation: {}", mutation)?;
+            writeln!(f, "  mutation: {mutation}")?;
         }
 
         if let Some(subscription) = &self.subscription {
-            writeln!(f, "  subscription: {}", subscription)?;
+            writeln!(f, "  subscription: {subscription}")?;
         }
 
         writeln!(f, "}}")

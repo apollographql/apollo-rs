@@ -82,7 +82,7 @@ impl FieldDefinition {
 impl fmt::Display for FieldDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
-            write!(f, "{}", description)?;
+            write!(f, "{description}")?;
         }
         write!(f, "  {}", self.name)?;
 
@@ -93,7 +93,7 @@ impl fmt::Display for FieldDefinition {
         write!(f, ": {}", self.type_)?;
 
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
 
         Ok(())

@@ -53,7 +53,7 @@ fn parse_schema() -> ast::Document {
         };
 
         let dl = DisplayList::from(snippet);
-        println!("{}\n\n", dl);
+        println!("{dl}\n\n");
     }
 
     ast.document()

@@ -1,12 +1,15 @@
+use std::collections::HashSet;
+
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
+    hir,
     validation::ast_type_definitions,
     ValidationDatabase,
 };
 use apollo_parser::ast;
 
-pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    let mut errors = Vec::new();
+pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
 
     // Directive definitions must have unique names.
     //
@@ -21,7 +24,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 if original_definition == redefined_definition {
                     // The HIR node was built from this AST node. This is fine.
                 } else {
-                    errors.push(
+                    diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
                             original_definition.into(),
@@ -57,7 +60,7 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
             for directive in input_values.directives().iter() {
                 let directive_name = directive.name();
                 if name == directive_name {
-                    errors.push(
+                    diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
                             directive.loc().into(),
@@ -71,7 +74,62 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
                 }
             }
         }
+
+        // Validate directive definitions' arguments
+        diagnostics.extend(db.validate_arguments_definition(
+            directive_def.arguments.clone(),
+            hir::DirectiveLocation::ArgumentDefinition,
+        ));
     }
 
-    errors
+    diagnostics
+}
+
+pub fn validate_directives(
+    db: &dyn ValidationDatabase,
+    dirs: Vec<hir::Directive>,
+    dir_loc: hir::DirectiveLocation,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+    for dir in dirs {
+        diagnostics.extend(db.validate_arguments(dir.arguments().to_vec()));
+
+        let name = dir.name();
+        let loc = dir.loc();
+
+        if let Some(directive) = db.find_directive_definition_by_name(name.into()) {
+            let allowed_loc: HashSet<hir::DirectiveLocation> =
+                HashSet::from_iter(directive.directive_locations().iter().cloned());
+            if !allowed_loc.contains(&dir_loc) {
+                let mut diag = ApolloDiagnostic::new(
+                        db,
+                        loc.into(),
+                        DiagnosticData::UnsupportedLocation {
+                            name: name.into(),
+                            dir_loc,
+                            directive_def: directive.loc.map(|loc| loc.into()),
+                        },
+                )
+                    .label(Label::new(loc, format!("{dir_loc} is not a valid location")))
+                    .help("the directive must be used in a location that the service has declared support for");
+                if let Some(directive_def_loc) = directive.loc {
+                    diag = diag.label(Label::new(
+                        directive_def_loc,
+                        format!("consider adding {dir_loc} directive location here"),
+                    ));
+                }
+                diagnostics.push(diag)
+            }
+        } else {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    loc.into(),
+                    DiagnosticData::UndefinedDefinition { name: name.into() },
+                )
+                .label(Label::new(loc, "not found in this scope")),
+            )
+        }
+    }
+    diagnostics
 }

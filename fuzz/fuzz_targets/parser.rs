@@ -17,7 +17,7 @@ fuzz_target!(|data: &[u8]| {
 
     let parser = match parser {
         Err(err) => {
-            panic!("error {:?}", err);
+            panic!("error {err:?}");
         }
         Ok(p) => p,
     };

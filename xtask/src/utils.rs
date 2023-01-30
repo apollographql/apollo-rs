@@ -4,7 +4,7 @@ use std::{
 };
 
 pub(crate) fn pluralize(s: &str) -> String {
-    format!("{}s", s)
+    format!("{s}s")
 }
 
 #[allow(unused)]

@@ -68,12 +68,12 @@ impl fmt::Display for ScalarDefinition {
         if self.extend {
             write!(f, "extend ")?;
         } else if let Some(description) = &self.description {
-            write!(f, "{}", description)?;
+            write!(f, "{description}")?;
         }
 
         write!(f, "scalar {}", self.name)?;
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
         writeln!(f)
     }

@@ -66,12 +66,12 @@ impl EnumValue {
 impl fmt::Display for EnumValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
-            write!(f, "{}", description)?;
+            write!(f, "{description}")?;
         }
         write!(f, "  {}", self.name)?;
 
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
 
         Ok(())

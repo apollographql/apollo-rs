@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            73: "0006_subscription_with_multiple_root_fields_in_inline_fragments.graphql",
+            78: "0006_subscription_with_multiple_root_fields_in_inline_fragments.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 73,
+                id: 78,
             },
             offset: 0,
             length: 151,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 73,
+                        id: 78,
                     },
                     offset: 0,
                     length: 151,
@@ -29,7 +29,7 @@
             fields: 2,
             subscription: DiagnosticLocation {
                 file_id: FileId {
-                    id: 73,
+                    id: 78,
                 },
                 offset: 0,
                 length: 151,

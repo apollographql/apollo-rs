@@ -55,7 +55,7 @@ impl fmt::Display for ErrorData {
         match self {
             Self::Eof => write!(f, "EOF"),
             Self::LimitExceeded => Ok(()),
-            Self::Text(text) => write!(f, "{}", text),
+            Self::Text(text) => write!(f, "{text}"),
         }
     }
 }

@@ -1,11 +1,453 @@
 [
     ApolloDiagnostic {
         cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
+            123: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 118,
+                id: 123,
+            },
+            offset: 1105,
+            length: 9,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1105,
+                    length: 9,
+                },
+                text: "SCHEMA is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "include",
+            dir_loc: Schema,
+            directive_def: None,
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            123: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 123,
+            },
+            offset: 1246,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1246,
+                    length: 12,
+                },
+                text: "SCALAR is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1337,
+                    length: 29,
+                },
+                text: "consider adding SCALAR directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveB",
+            dir_loc: Scalar,
+            directive_def: Some(
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1337,
+                    length: 29,
+                },
+            ),
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            123: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 123,
+            },
+            offset: 791,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 791,
+                    length: 12,
+                },
+                text: "ENUM is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1306,
+                    length: 31,
+                },
+                text: "consider adding ENUM directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveA",
+            dir_loc: Enum,
+            directive_def: Some(
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1306,
+                    length: 31,
+                },
+            ),
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            123: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 123,
+            },
+            offset: 813,
+            length: 15,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 813,
+                    length: 15,
+                },
+                text: "ENUM_VALUE is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1306,
+                    length: 31,
+                },
+                text: "consider adding ENUM_VALUE directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveA",
+            dir_loc: EnumValue,
+            directive_def: Some(
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1306,
+                    length: 31,
+                },
+            ),
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            123: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 123,
+            },
+            offset: 709,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 709,
+                    length: 12,
+                },
+                text: "UNION is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1337,
+                    length: 29,
+                },
+                text: "consider adding UNION directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveB",
+            dir_loc: Union,
+            directive_def: Some(
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1337,
+                    length: 29,
+                },
+            ),
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            123: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 123,
+            },
+            offset: 425,
+            length: 6,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 425,
+                    length: 6,
+                },
+                text: "INTERFACE is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "skip",
+            dir_loc: Interface,
+            directive_def: None,
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            123: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 123,
+            },
+            offset: 639,
+            length: 9,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 639,
+                    length: 9,
+                },
+                text: "INPUT_OBJECT is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "include",
+            dir_loc: InputObject,
+            directive_def: None,
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            123: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 123,
+            },
+            offset: 666,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 666,
+                    length: 11,
+                },
+                text: "INPUT_FIELD_DEFINITION is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "include",
+            dir_loc: InputFieldDefinition,
+            directive_def: None,
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            123: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 123,
+            },
+            offset: 492,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 492,
+                    length: 14,
+                },
+                text: "FIELD_DEFINITION is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1337,
+                    length: 29,
+                },
+                text: "consider adding FIELD_DEFINITION directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveB",
+            dir_loc: FieldDefinition,
+            directive_def: Some(
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 1337,
+                    length: 29,
+                },
+            ),
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            123: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 123,
+            },
+            offset: 856,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 856,
+                    length: 12,
+                },
+                text: "OBJECT is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "deprecated",
+            dir_loc: Object,
+            directive_def: None,
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            123: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 123,
+            },
+            offset: 928,
+            length: 56,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 123,
+                    },
+                    offset: 928,
+                    length: 56,
+                },
+                text: "ARGUMENT_DEFINITION is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "specifiedBy",
+            dir_loc: ArgumentDefinition,
+            directive_def: None,
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            123: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 123,
             },
             offset: 36,
             length: 15,
@@ -14,7 +456,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
                     offset: 36,
                     length: 15,
@@ -33,11 +475,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
+            123: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 118,
+                id: 123,
             },
             offset: 29,
             length: 5,
@@ -46,7 +488,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
                     offset: 29,
                     length: 5,
@@ -65,11 +507,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
+            123: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 118,
+                id: 123,
             },
             offset: 89,
             length: 14,
@@ -78,7 +520,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
                     offset: 89,
                     length: 14,
@@ -97,11 +539,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
+            123: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 118,
+                id: 123,
             },
             offset: 123,
             length: 14,
@@ -110,7 +552,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
                     offset: 123,
                     length: 14,
@@ -120,9 +562,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
-                    offset: 1326,
+                    offset: 1337,
                     length: 29,
                 },
                 text: "consider adding FRAGMENT_SPREAD directive location here",
@@ -137,9 +579,9 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
-                    offset: 1326,
+                    offset: 1337,
                     length: 29,
                 },
             ),
@@ -147,11 +589,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
+            123: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 118,
+                id: 123,
             },
             offset: 258,
             length: 12,
@@ -160,7 +602,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
                     offset: 258,
                     length: 12,
@@ -170,9 +612,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
-                    offset: 1295,
+                    offset: 1306,
                     length: 31,
                 },
                 text: "consider adding SUBSCRIPTION directive location here",
@@ -187,9 +629,9 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
-                    offset: 1295,
+                    offset: 1306,
                     length: 31,
                 },
             ),
@@ -197,22 +639,22 @@
     },
     ApolloDiagnostic {
         cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
+            123: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 118,
+                id: 123,
             },
-            offset: 323,
+            offset: 334,
             length: 16,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
-                    offset: 323,
+                    offset: 334,
                     length: 16,
                 },
                 text: "MUTATION is not a valid location",
@@ -229,11 +671,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
+            123: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 118,
+                id: 123,
             },
             offset: 162,
             length: 11,
@@ -242,7 +684,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
                     offset: 162,
                     length: 11,
@@ -252,9 +694,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
-                    offset: 1326,
+                    offset: 1337,
                     length: 29,
                 },
                 text: "consider adding FRAGMENT_DEFINITION directive location here",
@@ -269,9 +711,9 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
-                    offset: 1326,
+                    offset: 1337,
                     length: 29,
                 },
             ),
@@ -279,11 +721,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
+            123: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 118,
+                id: 123,
             },
             offset: 201,
             length: 12,
@@ -292,7 +734,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
                     offset: 201,
                     length: 12,
@@ -302,9 +744,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
-                    offset: 1295,
+                    offset: 1306,
                     length: 31,
                 },
                 text: "consider adding INLINE_FRAGMENT directive location here",
@@ -319,482 +761,12 @@
             directive_def: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 118,
+                        id: 123,
                     },
-                    offset: 1295,
+                    offset: 1306,
                     length: 31,
                 },
             ),
         },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 1235,
-            length: 12,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1235,
-                    length: 12,
-                },
-                text: "SCALAR is not a valid location",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1326,
-                    length: 29,
-                },
-                text: "consider adding SCALAR directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveB",
-            dir_loc: Scalar,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1326,
-                    length: 29,
-                },
-            ),
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 481,
-            length: 14,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 481,
-                    length: 14,
-                },
-                text: "FIELD_DEFINITION is not a valid location",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1326,
-                    length: 29,
-                },
-                text: "consider adding FIELD_DEFINITION directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveB",
-            dir_loc: FieldDefinition,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1326,
-                    length: 29,
-                },
-            ),
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 845,
-            length: 12,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 845,
-                    length: 12,
-                },
-                text: "OBJECT is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "deprecated",
-            dir_loc: Object,
-            directive_def: None,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 917,
-            length: 56,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 917,
-                    length: 56,
-                },
-                text: "ARGUMENT_DEFINITION is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "specifiedBy",
-            dir_loc: ArgumentDefinition,
-            directive_def: None,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 414,
-            length: 6,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 414,
-                    length: 6,
-                },
-                text: "INTERFACE is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "skip",
-            dir_loc: Interface,
-            directive_def: None,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 698,
-            length: 12,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 698,
-                    length: 12,
-                },
-                text: "UNION is not a valid location",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1326,
-                    length: 29,
-                },
-                text: "consider adding UNION directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveB",
-            dir_loc: Union,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1326,
-                    length: 29,
-                },
-            ),
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 780,
-            length: 12,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 780,
-                    length: 12,
-                },
-                text: "ENUM is not a valid location",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1295,
-                    length: 31,
-                },
-                text: "consider adding ENUM directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveA",
-            dir_loc: Enum,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1295,
-                    length: 31,
-                },
-            ),
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 802,
-            length: 15,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 802,
-                    length: 15,
-                },
-                text: "ENUM_VALUE is not a valid location",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1295,
-                    length: 31,
-                },
-                text: "consider adding ENUM_VALUE directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveA",
-            dir_loc: EnumValue,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1295,
-                    length: 31,
-                },
-            ),
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 628,
-            length: 9,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 628,
-                    length: 9,
-                },
-                text: "INPUT_OBJECT is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "include",
-            dir_loc: InputObject,
-            directive_def: None,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 655,
-            length: 11,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 655,
-                    length: 11,
-                },
-                text: "INPUT_FIELD_DEFINITION is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "include",
-            dir_loc: InputFieldDefinition,
-            directive_def: None,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 1094,
-            length: 9,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 1094,
-                    length: 9,
-                },
-                text: "SCHEMA is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "include",
-            dir_loc: Schema,
-            directive_def: None,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            118: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 118,
-            },
-            offset: 314,
-            length: 86,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 118,
-                    },
-                    offset: 314,
-                    length: 86,
-                },
-                text: "provide a name for this definition",
-            },
-        ],
-        help: Some(
-            "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 3 operations in this document.",
-        ),
-        data: MissingIdent,
     },
 ]

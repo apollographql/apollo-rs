@@ -1,15 +1,33 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::HashSet, sync::Arc};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::FieldDefinition,
+    hir,
     validation::{ast_type_definitions, ValidationSet},
     ValidationDatabase,
 };
 use apollo_parser::ast;
 
-pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
+
+    let defs = &db.type_system_definitions().objects;
+    for def in defs.values() {
+        diagnostics.extend(db.validate_object_type_definition(def.clone()))
+    }
+
+    diagnostics
+}
+
+pub fn validate_object_type_definition(
+    db: &dyn ValidationDatabase,
+    object: Arc<hir::ObjectTypeDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    diagnostics.extend(
+        db.validate_directives(object.directives().to_vec(), hir::DirectiveLocation::Object),
+    );
 
     // Object Type definitions must have unique names.
     //
@@ -50,201 +68,59 @@ pub fn check(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     }
 
     // Object Type field validations.
-    for object in db.object_types().values() {
-        let mut seen: HashMap<&str, &FieldDefinition> = HashMap::new();
+    diagnostics.extend(db.validate_field_definitions(object.fields_definition().to_vec()));
 
-        let fields = object.fields_definition();
-        for field in fields {
-            // Fields in an Object Type definition must be unique
-            //
-            // Returns Unique Value error.
-            let field_name = field.name();
-            let redefined_definition = field.loc();
+    // Implements Interfaces validation.
+    diagnostics.extend(db.validate_implements_interfaces(object.implements_interfaces().to_vec()));
 
-            if let Some(prev_field) = seen.get(&field_name) {
-                let original_definition = prev_field.loc();
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db, original_definition.into(),
-                        DiagnosticData::UniqueField {
-                            field: field_name.into(),
-                            original_definition: original_definition.into(),
-                            redefined_definition: redefined_definition.into(),
-                        }
-                    )
-                    .labels([
-                        Label::new(original_definition, format!("previous definition of `{field_name}` here")),
-                        Label::new(redefined_definition, format!("`{field_name}` redefined here")),
-                    ])
-                    .help(format!("`{field_name}` field must only be defined once in this object type definition."))
-                );
-            } else {
-                seen.insert(field_name, field);
-            }
-
-            // Field types in Object Types must be of output type
-            if let Some(field_ty) = field.ty().type_def(db.upcast()) {
-                if !field.ty().is_output_type(db.upcast()) {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(db, field.loc().into(), DiagnosticData::OutputType {
-                            name: field.name().into(),
-                            ty: field_ty.kind(),
-                        })
-                        .label(Label::new(field.loc(), format!("this is of `{}` type", field_ty.kind())))
-                        .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
-                    );
-                }
-            } else if let Some(field_ty_loc) = field.ty().loc() {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        field_ty_loc.into(),
-                        DiagnosticData::UndefinedDefinition {
-                            name: field.name().into(),
-                        },
-                    )
-                    .label(Label::new(field_ty_loc, "not found in this scope")),
-                );
-            } else {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        field.loc().into(),
-                        DiagnosticData::UndefinedDefinition {
-                            name: field.ty().name(),
-                        },
-                    )
-                    .label(Label::new(field.loc(), "not found in this scope")),
-                );
-            }
-        }
-    }
-
-    let objects = db.object_types();
-    let defined_interfaces: HashSet<ValidationSet> = db
-        .interfaces()
+    // When defining an interface that implements another interface, the
+    // implementing interface must define each field that is specified by
+    // the implemented interface.
+    //
+    // Returns a Missing Field error.
+    let fields: HashSet<ValidationSet> = object
+        .fields_definition()
         .iter()
-        .map(|(name, interface)| ValidationSet {
-            name: name.to_owned(),
-            loc: interface.loc(),
+        .map(|field| ValidationSet {
+            name: field.name().into(),
+            loc: field.loc(),
         })
         .collect();
-    for object in objects.values() {
-        // Implements Interfaces must be defined.
-        //
-        // Returns Undefined Definition error.
-        let implements_interfaces: HashSet<ValidationSet> = object
-            .implements_interfaces()
-            .iter()
-            .map(|interface| ValidationSet {
-                name: interface.interface().to_owned(),
-                loc: interface.loc(),
-            })
-            .collect();
-        let diff = implements_interfaces.difference(&defined_interfaces);
-        for undefined in diff {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    undefined.loc.into(),
-                    DiagnosticData::UndefinedDefinition {
-                        name: undefined.name.clone(),
-                    },
-                )
-                .label(Label::new(undefined.loc, "not found in this scope")),
-            );
-        }
+    for implements_interface in object.implements_interfaces().iter() {
+        if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
+            let implements_interface_fields: HashSet<ValidationSet> = interface
+                .fields_definition()
+                .iter()
+                .map(|field| ValidationSet {
+                    name: field.name().into(),
+                    loc: field.loc(),
+                })
+                .collect();
 
-        // Transitively implemented interfaces must be defined on an implementing
-        // type or interface.
-        //
-        // Returns Transitive Implemented Interfaces error.
-        let transitive_interfaces: HashSet<ValidationSet> = object
-            .implements_interfaces()
-            .iter()
-            .filter_map(|implements_interface| {
-                if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
-                    let child_interfaces: HashSet<ValidationSet> = interface
-                        .implements_interfaces()
-                        .iter()
-                        .map(|interface| ValidationSet {
-                            name: interface.interface().to_owned(),
-                            loc: implements_interface.loc(),
-                        })
-                        .collect();
-                    Some(child_interfaces)
-                } else {
-                    None
-                }
-            })
-            .flatten()
-            .collect();
-        let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
-        for undefined in transitive_diff {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    undefined.loc.into(),
-                    DiagnosticData::TransitiveImplementedInterfaces {
-                        missing_interface: undefined.name.clone(),
-                    },
-                )
-                .label(Label::new(
-                    undefined.loc,
-                    format!("{} must also be implemented here", undefined.name),
-                )),
-            );
-        }
+            let field_diff = implements_interface_fields.difference(&fields);
 
-        // When defining an interface that implements another interface, the
-        // implementing interface must define each field that is specified by
-        // the implemented interface.
-        //
-        // Returns a Missing Field error.
-        let fields: HashSet<ValidationSet> = object
-            .fields_definition()
-            .iter()
-            .map(|field| ValidationSet {
-                name: field.name().into(),
-                loc: field.loc(),
-            })
-            .collect();
-        for implements_interface in object.implements_interfaces().iter() {
-            if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
-                let implements_interface_fields: HashSet<ValidationSet> = interface
-                    .fields_definition()
-                    .iter()
-                    .map(|field| ValidationSet {
-                        name: field.name().into(),
-                        loc: field.loc(),
-                    })
-                    .collect();
-
-                let field_diff = implements_interface_fields.difference(&fields);
-
-                for missing_field in field_diff {
-                    let name = &missing_field.name;
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            object.loc().into(),
-                            DiagnosticData::MissingField {
-                                field: missing_field.name.to_string(),
-                            },
+            for missing_field in field_diff {
+                let name = &missing_field.name;
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        object.loc().into(),
+                        DiagnosticData::MissingField {
+                            field: name.to_string(),
+                        },
                         )
-                        .labels([
+                    .labels([
                             Label::new(
                                 missing_field.loc,
                                 format!("`{name}` was originally defined here"),
-                            ),
-                            Label::new(
-                                object.loc(),
-                                format!("add `{name}` field to this object"),
-                            ),
-                        ])
-                        .help("An object must provide all fields required by the interfaces it implements"),
-                    );
-                }
+                                ),
+                                Label::new(
+                                    object.loc(),
+                                    format!("add `{name}` field to this object"),
+                                    ),
+                    ])
+                    .help("An object must provide all fields required by the interfaces it implements"),
+                    )
             }
         }
     }
@@ -312,7 +188,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            println!("{}", diagnostic)
+            println!("{diagnostic}")
         }
         assert_eq!(diagnostics.len(), 3);
     }

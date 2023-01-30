@@ -77,21 +77,21 @@ impl fmt::Display for UnionDefinition {
             write!(f, "extend ")?;
         // No description when it's a extension
         } else if let Some(description) = &self.description {
-            write!(f, "{}", description)?;
+            write!(f, "{description}")?;
         }
 
         write!(f, "union {}", self.name)?;
 
         for directive in &self.directives {
-            write!(f, " {}", directive)?;
+            write!(f, " {directive}")?;
         }
 
         write!(f, " =")?;
 
         for (i, member) in self.members.iter().enumerate() {
             match i {
-                0 => write!(f, " {}", member)?,
-                _ => write!(f, " | {}", member)?,
+                0 => write!(f, " {member}")?,
+                _ => write!(f, " | {member}")?,
             }
         }
 
