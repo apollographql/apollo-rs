@@ -96,18 +96,24 @@ pub fn validate_input_values(
             {
                 diagnostics.push(
                     ApolloDiagnostic::new(
-                        db, original_value.into(),
+                        db,
+                        original_value.into(),
                         DiagnosticData::UniqueInputValue {
                             name: name.into(),
                             original_value: original_value.into(),
                             redefined_value: redefined_value.into(),
-                        }
+                        },
                     )
                     .labels([
-                        Label::new(original_value, format!("previous definition of `{name}` here")),
+                        Label::new(
+                            original_value,
+                            format!("previous definition of `{name}` here"),
+                        ),
                         Label::new(redefined_value, format!("`{name}` redefined here")),
                     ])
-                    .help(format!("`{name}` field must only be defined once in this input object definition."))
+                    .help(format!(
+                        "`{name}` field must only be defined once in this input object definition."
+                    )),
                 );
             }
         } else {

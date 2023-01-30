@@ -2,8 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
-    FileId, ValidationDatabase,
+    hir, FileId, ValidationDatabase,
 };
 
 pub fn validate_operation_definitions(
@@ -154,12 +153,20 @@ pub fn validate_subscription_operations(
         for selection in op.selection_set().selection() {
             if let hir::Selection::Field(field) = selection {
                 if field.is_introspection() {
-                    // TODO(@goto-bus-stop) Migrate to new diagnostics API
-                    // diagnostics.push(ApolloDiagnostic::IntrospectionField(IntrospectionField {
-                    //     field: field.name().into(),
-                    //     src: db.source_code(op.loc().file_id()),
-                    //     definition: (field.loc.offset(), field.loc.node_len()).into(),
-                    // }));
+                    let field_name = field.name();
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            field.loc().into(),
+                            DiagnosticData::IntrospectionField {
+                                field: field_name.into(),
+                            },
+                        )
+                        .label(Label::new(
+                            field.loc(),
+                            format!("{field_name} is an introspection field"),
+                        )),
+                    );
                 }
             }
         }

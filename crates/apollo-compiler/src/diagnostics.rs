@@ -230,6 +230,11 @@ pub enum DiagnosticData {
         /// The source location where the directive that's being used was defined.
         directive_def: Option<DiagnosticLocation>,
     },
+    #[error("subscription operations can not have an introspection field as a root field")]
+    IntrospectionField {
+        /// Name of the field
+        field: String,
+    },
 }
 
 impl DiagnosticData {
@@ -280,17 +285,4 @@ impl ApolloDiagnostic {
 }
 
 /* Stash: new diagnostic
-#[derive(Diagnostic, Debug, Error, Clone, Hash, PartialEq, Eq)]
-#[error("subscription operations can not have an introspection field as a root field")]
-#[diagnostic(code("apollo-compiler validation error"))]
-pub struct IntrospectionField {
-    // current definition
-    pub field: String,
-
-    #[label("{} is an introspection field", self.field)]
-    pub definition: SourceSpan,
-
-    #[source_code]
-    pub src: Arc<str>,
-}
 */

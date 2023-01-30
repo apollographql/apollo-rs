@@ -41,16 +41,13 @@ pub fn validate_scalar_definition(
                 .iter()
                 .any(|directive| directive.name() == "specifiedBy")
             {
-                diagnostics.push(                        ApolloDiagnostic::new(
-                            db,
-                            loc.into(),
-                            DiagnosticData::ScalarSpecificationURL,
-                        )
+                diagnostics.push(
+                    ApolloDiagnostic::new(db, loc.into(), DiagnosticData::ScalarSpecificationURL)
                         .label(Label::new(
                             loc,
                             "consider adding a @specifiedBy directive to this scalar definition",
                         )),
-)
+                )
             }
 
             diagnostics.extend(

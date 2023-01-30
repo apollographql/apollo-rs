@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use crate::{
-    diagnostics::{ApolloDiagnostic, Label, DiagnosticData},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::ValidationDatabase,
 };

@@ -142,27 +142,27 @@ pub fn validate_interface_definition(
             let field_diff = implements_interface_fields.difference(&fields);
 
             for missing_field in field_diff {
-                    let name = &missing_field.name;
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            interface_def.loc().into(),
-                            DiagnosticData::MissingField {
-                                field: name.clone(),
-                            },
-                        )
-                        .labels([
-                            Label::new(
-                                super_interface.loc(),
-                                format!("`{name}` was originally defined here"),
-                            ),
-                            Label::new(
-                                interface_def.loc(),
-                                format!("add `{name}` field to this interface"),
-                            ),
-                        ])
-                        .help("An interface must be a super-set of all interfaces it implements"),
-                    );
+                let name = &missing_field.name;
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        interface_def.loc().into(),
+                        DiagnosticData::MissingField {
+                            field: name.clone(),
+                        },
+                    )
+                    .labels([
+                        Label::new(
+                            super_interface.loc(),
+                            format!("`{name}` was originally defined here"),
+                        ),
+                        Label::new(
+                            interface_def.loc(),
+                            format!("add `{name}` field to this interface"),
+                        ),
+                    ])
+                    .help("An interface must be a super-set of all interfaces it implements"),
+                );
             }
         }
     }
@@ -233,21 +233,21 @@ pub fn validate_implements_interfaces(
         .flatten()
         .collect();
     let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
-        for undefined in transitive_diff {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    undefined.loc.into(),
-                    DiagnosticData::TransitiveImplementedInterfaces {
-                        missing_interface: undefined.name.clone(),
-                    },
-                )
-                .label(Label::new(
-                    undefined.loc,
-                    format!("{} must also be implemented here", undefined.name),
-                )),
-            );
-        }
+    for undefined in transitive_diff {
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                undefined.loc.into(),
+                DiagnosticData::TransitiveImplementedInterfaces {
+                    missing_interface: undefined.name.clone(),
+                },
+            )
+            .label(Label::new(
+                undefined.loc,
+                format!("{} must also be implemented here", undefined.name),
+            )),
+        );
+    }
 
     diagnostics
 }
