@@ -327,6 +327,11 @@ impl<'a> Parser<'a> {
         guard
     }
 
+    pub(crate) fn checkpoint_node(&self) -> Checkpoint {
+        let checkpoint = self.builder.borrow_mut().checkpoint();
+        Checkpoint::new(self.builder.clone(), checkpoint)
+    }
+
     /// Peek the next Token and return its TokenKind.
     pub(crate) fn peek(&mut self) -> Option<TokenKind> {
         self.peek_token().map(|token| token.kind())
@@ -391,6 +396,25 @@ impl NodeGuard {
 impl Drop for NodeGuard {
     fn drop(&mut self) {
         self.builder.borrow_mut().finish_node();
+    }
+}
+
+pub(crate) struct Checkpoint {
+    builder: Rc<RefCell<SyntaxTreeBuilder>>,
+    checkpoint: rowan::Checkpoint,
+}
+
+impl Checkpoint {
+    fn new(builder: Rc<RefCell<SyntaxTreeBuilder>>, checkpoint: rowan::Checkpoint) -> Self {
+        Self {
+            builder,
+            checkpoint,
+        }
+    }
+
+    pub(crate) fn wrap_node(self, kind: SyntaxKind) -> NodeGuard {
+        self.builder.borrow_mut().wrap_node(self.checkpoint, kind);
+        NodeGuard::new(self.builder)
     }
 }
 

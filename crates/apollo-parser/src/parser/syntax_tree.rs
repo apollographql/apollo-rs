@@ -132,6 +132,10 @@ impl SyntaxTreeBuilder {
         }
     }
 
+    pub(crate) fn checkpoint(&self) -> rowan::Checkpoint {
+        self.builder.checkpoint()
+    }
+
     /// Start new node and make it current.
     pub(crate) fn start_node(&mut self, kind: SyntaxKind) {
         self.builder.start_node(rowan::SyntaxKind(kind as u16));
@@ -140,6 +144,11 @@ impl SyntaxTreeBuilder {
     /// Finish current branch and restore previous branch as current.
     pub(crate) fn finish_node(&mut self) {
         self.builder.finish_node();
+    }
+
+    pub(crate) fn wrap_node(&mut self, checkpoint: rowan::Checkpoint, kind: SyntaxKind) {
+        self.builder
+            .start_node_at(checkpoint, rowan::SyntaxKind(kind as u16));
     }
 
     /// Adds new token to the current branch.

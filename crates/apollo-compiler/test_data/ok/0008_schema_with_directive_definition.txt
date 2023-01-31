@@ -97,11 +97,11 @@
                     - IDENT@190..192 "id"
                 - COLON@192..193 ":"
                 - WHITESPACE@193..194 " "
-                - NON_NULL_TYPE@194..198
+                - NON_NULL_TYPE@194..197
                     - NAMED_TYPE@194..196
                         - NAME@194..196
                             - IDENT@194..196 "ID"
                     - BANG@196..197 "!"
-                    - WHITESPACE@197..198 "\n"
+                - WHITESPACE@197..198 "\n"
             - R_CURLY@198..199 "}"
 recursion limit: 4096, high: 0

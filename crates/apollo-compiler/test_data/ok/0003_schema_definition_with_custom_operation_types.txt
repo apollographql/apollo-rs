@@ -104,13 +104,13 @@
                             - IDENT@255..259 "name"
                         - COLON@259..260 ":"
                         - WHITESPACE@260..261 " "
-                        - NON_NULL_TYPE@261..270
+                        - NON_NULL_TYPE@261..268
                             - NAMED_TYPE@261..267
                                 - NAME@261..267
                                     - IDENT@261..267 "String"
                             - BANG@267..268 "!"
-                            - COMMA@268..269 ","
-                            - WHITESPACE@269..270 " "
+                        - COMMA@268..269 ","
+                        - WHITESPACE@269..270 " "
                     - INPUT_VALUE_DEFINITION@270..286
                         - NAME@270..277
                             - IDENT@270..277 "petType"
@@ -122,12 +122,12 @@
                     - R_PAREN@286..287 ")"
                 - COLON@287..288 ":"
                 - WHITESPACE@288..289 " "
-                - NON_NULL_TYPE@289..297
+                - NON_NULL_TYPE@289..296
                     - NAMED_TYPE@289..295
                         - NAME@289..295
                             - IDENT@289..295 "Result"
                     - BANG@295..296 "!"
-                    - WHITESPACE@296..297 "\n"
+                - WHITESPACE@296..297 "\n"
             - R_CURLY@297..298 "}"
             - WHITESPACE@298..300 "\n\n"
     - OBJECT_TYPE_DEFINITION@300..328
