@@ -327,6 +327,8 @@ impl<'a> Parser<'a> {
         guard
     }
 
+    /// Set a checkpoint for *maybe* wrapping the following parse tree in some
+    /// other node.
     pub(crate) fn checkpoint_node(&self) -> Checkpoint {
         let checkpoint = self.builder.borrow().checkpoint();
         Checkpoint::new(self.builder.clone(), checkpoint)
@@ -399,6 +401,7 @@ impl Drop for NodeGuard {
     }
 }
 
+/// A rowan Checkpoint that can self-close the new wrapper node if required.
 pub(crate) struct Checkpoint {
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
     checkpoint: rowan::Checkpoint,
@@ -412,6 +415,9 @@ impl Checkpoint {
         }
     }
 
+    /// Wrap the nodes that were parsed since setting this checkpoint in a new parent node of kind
+    /// `kind`. Returns a NodeGuard that when dropped, finishes this new parent node. More children
+    /// can be added to this new node in the mean time.
     pub(crate) fn wrap_node(self, kind: SyntaxKind) -> NodeGuard {
         self.builder.borrow_mut().wrap_node(self.checkpoint, kind);
         NodeGuard::new(self.builder)
