@@ -35,7 +35,7 @@ fn parse(p: &mut Parser) -> Result<(), Token> {
     match p.peek() {
         Some(T!['[']) => {
             let _guard = p.start_node(SyntaxKind::LIST_TYPE);
-            p.eat(S!['[']);
+            p.bump(S!['[']);
             if let Err(token) = parse(p) {
                 // TODO(@goto-bus-stop) ideally the span here would point to the entire list
                 // type, so both opening and closing brackets `[]`.
@@ -56,6 +56,9 @@ fn parse(p: &mut Parser) -> Result<(), Token> {
         _ => return Err(p.pop()),
     };
 
+    // There may be whitespace inside a list node or between the type and the non-null `!`.
+    p.bump_ignored();
+
     // Deal with nullable types
     if let Some(T![!]) = p.peek() {
         let _guard = checkpoint.wrap_node(SyntaxKind::NON_NULL_TYPE);
@@ -64,6 +67,8 @@ fn parse(p: &mut Parser) -> Result<(), Token> {
     }
 
     // Handle post-node commas, whitespace, comments
+    // TODO(@goto-bus-stop) This should maybe be done further up the parse tree? the type node is
+    // parsed completely at this point.
     p.bump_ignored();
 
     Ok(())

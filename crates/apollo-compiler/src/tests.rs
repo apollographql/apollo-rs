@@ -39,6 +39,9 @@ fn compiler_tests() {
         compiler.add_document(text, path.file_name().unwrap());
 
         let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{diagnostic}");
+        }
         assert_diagnostics_are_present(&diagnostics, path);
         format!("{diagnostics:#?}")
     });
