@@ -529,11 +529,11 @@ mod tests {
                       R_PAREN@70..71 ")"
                     COLON@71..72 ":"
                     WHITESPACE@72..73 " "
-                    NAMED_TYPE@73..96
-                      COMMENT@73..93 "# limit reached here"
-                      NAME@93..96
-                        IDENT@93..96 "Int"
-                    WHITESPACE@96..113 "\n                "
+                    NAMED_TYPE@73..76
+                      NAME@73..76
+                        IDENT@73..76 "Int"
+                    WHITESPACE@76..93 "\n                "
+                    COMMENT@93..113 "# limit reached here"
         "##]];
         tree.assert_eq(&format!("{:#?}", ast.document().syntax));
     }

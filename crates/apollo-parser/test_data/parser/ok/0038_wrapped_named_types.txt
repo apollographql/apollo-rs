@@ -22,18 +22,18 @@
                     - IDENT@35..36 "b"
                 - COLON@36..37 ":"
                 - WHITESPACE@37..38 " "
-                - NON_NULL_TYPE@38..47
+                - NON_NULL_TYPE@38..42
                     - NAMED_TYPE@38..41
                         - NAME@38..41
                             - IDENT@38..41 "Int"
                     - BANG@41..42 "!"
-                    - WHITESPACE@42..47 "\n    "
+                - WHITESPACE@42..47 "\n    "
             - FIELD_DEFINITION@47..62
                 - NAME@47..48
                     - IDENT@47..48 "c"
                 - COLON@48..49 ":"
                 - WHITESPACE@49..50 " "
-                - NON_NULL_TYPE@50..62
+                - NON_NULL_TYPE@50..57
                     - LIST_TYPE@50..56
                         - L_BRACK@50..51 "["
                         - NON_NULL_TYPE@51..55
@@ -43,7 +43,7 @@
                             - BANG@54..55 "!"
                         - R_BRACK@55..56 "]"
                     - BANG@56..57 "!"
-                    - WHITESPACE@57..62 "\n    "
+                - WHITESPACE@57..62 "\n    "
             - FIELD_DEFINITION@62..83
                 - NAME@62..63
                     - IDENT@62..63 "d"
@@ -73,7 +73,7 @@
                     - IDENT@83..84 "d"
                 - COLON@84..85 ":"
                 - WHITESPACE@85..86 " "
-                - NON_NULL_TYPE@86..106
+                - NON_NULL_TYPE@86..105
                     - LIST_TYPE@86..104
                         - L_BRACK@86..87 "["
                         - NON_NULL_TYPE@87..103
@@ -103,7 +103,7 @@
                             - BANG@102..103 "!"
                         - R_BRACK@103..104 "]"
                     - BANG@104..105 "!"
-                    - WHITESPACE@105..106 "\n"
+                - WHITESPACE@105..106 "\n"
             - R_CURLY@106..107 "}"
             - WHITESPACE@107..109 "\n\n"
     - OBJECT_TYPE_DEFINITION@109..224
@@ -130,19 +130,19 @@
                     - IDENT@148..149 "b"
                 - COLON@149..150 ":"
                 - WHITESPACE@150..151 " "
-                - NON_NULL_TYPE@151..161
+                - NON_NULL_TYPE@151..155
                     - NAMED_TYPE@151..154
                         - NAME@151..154
                             - IDENT@151..154 "Int"
                     - BANG@154..155 "!"
-                    - COMMA@155..156 ","
-                    - WHITESPACE@156..161 "\n    "
+                - COMMA@155..156 ","
+                - WHITESPACE@156..161 "\n    "
             - FIELD_DEFINITION@161..177
                 - NAME@161..162
                     - IDENT@161..162 "c"
                 - COLON@162..163 ":"
                 - WHITESPACE@163..164 " "
-                - NON_NULL_TYPE@164..177
+                - NON_NULL_TYPE@164..171
                     - LIST_TYPE@164..170
                         - L_BRACK@164..165 "["
                         - NON_NULL_TYPE@165..169
@@ -152,8 +152,8 @@
                             - BANG@168..169 "!"
                         - R_BRACK@169..170 "]"
                     - BANG@170..171 "!"
-                    - COMMA@171..172 ","
-                    - WHITESPACE@172..177 "\n    "
+                - COMMA@171..172 ","
+                - WHITESPACE@172..177 "\n    "
             - FIELD_DEFINITION@177..199
                 - NAME@177..178
                     - IDENT@177..178 "d"
@@ -184,7 +184,7 @@
                     - IDENT@199..200 "d"
                 - COLON@200..201 ":"
                 - WHITESPACE@201..202 " "
-                - NON_NULL_TYPE@202..223
+                - NON_NULL_TYPE@202..221
                     - LIST_TYPE@202..220
                         - L_BRACK@202..203 "["
                         - NON_NULL_TYPE@203..219
@@ -214,7 +214,7 @@
                             - BANG@218..219 "!"
                         - R_BRACK@219..220 "]"
                     - BANG@220..221 "!"
-                    - COMMA@221..222 ","
-                    - WHITESPACE@222..223 "\n"
+                - COMMA@221..222 ","
+                - WHITESPACE@222..223 "\n"
             - R_CURLY@223..224 "}"
 recursion limit: 4096, high: 0
