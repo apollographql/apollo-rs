@@ -328,7 +328,7 @@ impl<'a> Parser<'a> {
     }
 
     pub(crate) fn checkpoint_node(&self) -> Checkpoint {
-        let checkpoint = self.builder.borrow_mut().checkpoint();
+        let checkpoint = self.builder.borrow().checkpoint();
         Checkpoint::new(self.builder.clone(), checkpoint)
     }
 

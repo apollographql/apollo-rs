@@ -63,14 +63,8 @@ fn parse(p: &mut Parser) -> Result<(), Token> {
         p.eat(S![!]);
     }
 
-    // deal with ignored tokens
-    if let Some(T![,]) = p.peek() {
-        p.eat(S![,]);
-    }
-
-    if let Some(TokenKind::Whitespace) = p.peek() {
-        p.eat(SyntaxKind::WHITESPACE);
-    }
+    // Handle post-node commas, whitespace, comments
+    p.bump_ignored();
 
     Ok(())
 }
