@@ -19,12 +19,12 @@
                     - IDENT@26..27 "b"
                 - COLON@27..28 ":"
                 - WHITESPACE@28..29 " "
-                - NON_NULL_TYPE@29..34
+                - NON_NULL_TYPE@29..33
                     - NAMED_TYPE@29..32
                         - NAME@29..32
                             - IDENT@29..32 "Int"
                     - BANG@32..33 "!"
-                    - WHITESPACE@33..34 "\n"
+                - WHITESPACE@33..34 "\n"
             - R_CURLY@34..35 "}"
 - ERROR@6:7 "expected a Name" {
 recursion limit: 4096, high: 0

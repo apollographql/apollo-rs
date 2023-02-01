@@ -8,14 +8,14 @@ pub(crate) fn name(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::NAME);
     match p.peek() {
         Some(TokenKind::Name) => {
-            validate_name(p.peek_data().unwrap(), p);
+            validate_name(&p.peek_data().unwrap(), p);
             p.bump(SyntaxKind::IDENT);
         }
         _ => p.err("expected a Name"),
     }
 }
 
-pub(crate) fn validate_name(name: String, p: &mut Parser) {
+pub(crate) fn validate_name(name: &str, p: &mut Parser) {
     if !name.starts_with(is_start_char) {
         p.err_and_pop("expected Name to start with a letter or an _");
     }

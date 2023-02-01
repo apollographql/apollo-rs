@@ -327,6 +327,13 @@ impl<'a> Parser<'a> {
         guard
     }
 
+    /// Set a checkpoint for *maybe* wrapping the following parse tree in some
+    /// other node.
+    pub(crate) fn checkpoint_node(&self) -> Checkpoint {
+        let checkpoint = self.builder.borrow().checkpoint();
+        Checkpoint::new(self.builder.clone(), checkpoint)
+    }
+
     /// Peek the next Token and return its TokenKind.
     pub(crate) fn peek(&mut self) -> Option<TokenKind> {
         self.peek_token().map(|token| token.kind())
@@ -391,6 +398,29 @@ impl NodeGuard {
 impl Drop for NodeGuard {
     fn drop(&mut self) {
         self.builder.borrow_mut().finish_node();
+    }
+}
+
+/// A rowan Checkpoint that can self-close the new wrapper node if required.
+pub(crate) struct Checkpoint {
+    builder: Rc<RefCell<SyntaxTreeBuilder>>,
+    checkpoint: rowan::Checkpoint,
+}
+
+impl Checkpoint {
+    fn new(builder: Rc<RefCell<SyntaxTreeBuilder>>, checkpoint: rowan::Checkpoint) -> Self {
+        Self {
+            builder,
+            checkpoint,
+        }
+    }
+
+    /// Wrap the nodes that were parsed since setting this checkpoint in a new parent node of kind
+    /// `kind`. Returns a NodeGuard that when dropped, finishes this new parent node. More children
+    /// can be added to this new node in the mean time.
+    pub(crate) fn wrap_node(self, kind: SyntaxKind) -> NodeGuard {
+        self.builder.borrow_mut().wrap_node(self.checkpoint, kind);
+        NodeGuard::new(self.builder)
     }
 }
 
@@ -505,11 +535,11 @@ mod tests {
                       R_PAREN@70..71 ")"
                     COLON@71..72 ":"
                     WHITESPACE@72..73 " "
-                    NAMED_TYPE@73..96
-                      COMMENT@73..93 "# limit reached here"
-                      NAME@93..96
-                        IDENT@93..96 "Int"
-                    WHITESPACE@96..113 "\n                "
+                    NAMED_TYPE@73..76
+                      NAME@73..76
+                        IDENT@73..76 "Int"
+                    WHITESPACE@76..93 "\n                "
+                    COMMENT@93..113 "# limit reached here"
         "##]];
         tree.assert_eq(&format!("{:#?}", ast.document().syntax));
     }

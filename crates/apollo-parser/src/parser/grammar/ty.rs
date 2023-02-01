@@ -20,27 +20,9 @@ use crate::{parser::grammar::name, Parser, SyntaxKind, Token, TokenKind, S, T};
 // created in the processing stage of this parsing rule.
 pub(crate) fn ty(p: &mut Parser) {
     match parse(p) {
-        Ok(ty) => process(ty, p),
+        Ok(_) => (),
         Err(token) => p.err_at_token(&token, "expected a type"),
     }
-}
-
-#[derive(Debug)]
-enum TokenTy {
-    List {
-        nullable: Option<Token>,
-        open_token: Token,
-        close_token: Option<Token>,
-        inner: Option<Box<TokenTy>>,
-        comma: Option<Token>,
-        trailing_ws: Option<Token>,
-    },
-    Named {
-        nullable: Option<Token>,
-        token: Token,
-        comma: Option<Token>,
-        trailing_ws: Option<Token>,
-    },
 }
 
 /// Returns the type on success, or the TokenKind that caused an error.
@@ -48,143 +30,48 @@ enum TokenTy {
 /// When errors occur deeper inside nested types like lists, this function
 /// pushes errors *inside* the list to the parser, and returns an Ok() with
 /// an incomplete type.
-fn parse(p: &mut Parser) -> Result<TokenTy, Token> {
-    let token = p.pop();
-    let mut types = match token.kind() {
-        T!['['] => {
-            let inner = match parse(p) {
-                Ok(ty) => Some(Box::new(ty)),
-                Err(token) => {
-                    // TODO(@goto-bus-stop) ideally the span here would point to the entire list
-                    // type, so both opening and closing brackets `[]`.
-                    p.err_at_token(&token, "expected item type");
-                    None
-                }
-            };
-            let close_token = if let Some(T![']']) = p.peek() {
-                Some(p.pop())
-            } else {
-                None
-            };
-
-            TokenTy::List {
-                inner,
-                open_token: token,
-                close_token,
-                nullable: None,
-                comma: None,
-                trailing_ws: None,
+fn parse(p: &mut Parser) -> Result<(), Token> {
+    let checkpoint = p.checkpoint_node();
+    match p.peek() {
+        Some(T!['[']) => {
+            let _guard = p.start_node(SyntaxKind::LIST_TYPE);
+            p.bump(S!['[']);
+            if let Err(token) = parse(p) {
+                // TODO(@goto-bus-stop) ideally the span here would point to the entire list
+                // type, so both opening and closing brackets `[]`.
+                p.err_at_token(&token, "expected item type");
+            }
+            if let Some(T![']']) = p.peek() {
+                p.eat(S![']']);
             }
         }
-        TokenKind::Name => TokenTy::Named {
-            token,
-            nullable: None,
-            comma: None,
-            trailing_ws: None,
-        },
-        _ => return Err(token),
+        Some(TokenKind::Name) => {
+            let _guard = p.start_node(SyntaxKind::NAMED_TYPE);
+            let _name_node_guard = p.start_node(SyntaxKind::NAME);
+
+            let token = p.pop();
+            name::validate_name(token.data(), p);
+            p.push_ast(SyntaxKind::IDENT, token);
+        }
+        _ => return Err(p.pop()),
     };
+
+    // There may be whitespace inside a list node or between the type and the non-null `!`.
+    p.bump_ignored();
 
     // Deal with nullable types
     if let Some(T![!]) = p.peek() {
-        match &mut types {
-            TokenTy::List { nullable, .. } => nullable.replace(p.pop()),
-            TokenTy::Named { nullable, .. } => nullable.replace(p.pop()),
-        };
+        let _guard = checkpoint.wrap_node(SyntaxKind::NON_NULL_TYPE);
+
+        p.eat(S![!]);
     }
 
-    // deal with ignored tokens
-    if let Some(T![,]) = p.peek() {
-        match &mut types {
-            TokenTy::List { comma, .. } => comma.replace(p.pop()),
-            TokenTy::Named { comma, .. } => comma.replace(p.pop()),
-        };
-    }
+    // Handle post-node commas, whitespace, comments
+    // TODO(@goto-bus-stop) This should maybe be done further up the parse tree? the type node is
+    // parsed completely at this point.
+    p.bump_ignored();
 
-    if let Some(TokenKind::Whitespace) = p.peek() {
-        match &mut types {
-            TokenTy::List { trailing_ws, .. } => trailing_ws.replace(p.pop()),
-            TokenTy::Named { trailing_ws, .. } => trailing_ws.replace(p.pop()),
-        };
-    }
-
-    Ok(types)
-}
-
-fn process(ty: TokenTy, p: &mut Parser) {
-    match ty {
-        TokenTy::List {
-            nullable,
-            open_token,
-            close_token,
-            inner,
-            comma,
-            trailing_ws,
-        } => match nullable {
-            Some(nullable_token) => {
-                let _non_null_g = p.start_node(SyntaxKind::NON_NULL_TYPE);
-                process_list(p, open_token, inner, close_token);
-                p.push_ast(S![!], nullable_token);
-                process_ignored_tokens(comma, p, trailing_ws);
-            }
-            None => {
-                process_list(p, open_token, inner, close_token);
-                process_ignored_tokens(comma, p, trailing_ws);
-            }
-        },
-        TokenTy::Named {
-            nullable,
-            token,
-            comma,
-            trailing_ws,
-        } => match nullable {
-            Some(nullable_token) => {
-                let _non_null_g = p.start_node(SyntaxKind::NON_NULL_TYPE);
-                process_named(p, token);
-
-                p.push_ast(S![!], nullable_token);
-                process_ignored_tokens(comma, p, trailing_ws);
-            }
-            None => {
-                process_named(p, token);
-                process_ignored_tokens(comma, p, trailing_ws);
-            }
-        },
-    }
-}
-
-fn process_ignored_tokens(comma: Option<Token>, p: &mut Parser, whitespace: Option<Token>) {
-    if let Some(comma_token) = comma {
-        p.push_ast(SyntaxKind::COMMA, comma_token);
-    }
-    if let Some(ws_token) = whitespace {
-        p.push_ast(SyntaxKind::WHITESPACE, ws_token);
-    }
-}
-
-fn process_list(
-    p: &mut Parser,
-    open_token: Token,
-    inner: Option<Box<TokenTy>>,
-    close_token: Option<Token>,
-) {
-    let _list_g = p.start_node(SyntaxKind::LIST_TYPE);
-    p.push_ast(S!['['], open_token);
-    if let Some(inner) = inner {
-        process(*inner, p);
-    }
-    if let Some(close_token) = close_token {
-        p.push_ast(S![']'], close_token);
-    }
-}
-
-fn process_named(p: &mut Parser, token: Token) {
-    let named_g = p.start_node(SyntaxKind::NAMED_TYPE);
-    let name_g = p.start_node(SyntaxKind::NAME);
-    name::validate_name(token.data().to_string(), p);
-    p.push_ast(SyntaxKind::IDENT, token);
-    name_g.finish_node();
-    named_g.finish_node();
+    Ok(())
 }
 
 /// See: https://spec.graphql.org/October2021/#NamedType
