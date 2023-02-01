@@ -19,8 +19,8 @@
                 - NAME@33..35
                     - IDENT@33..35 "id"
                 - COLON@35..36 ":"
-                - NON_NULL_TYPE@36..40
-                    - WHITESPACE@36..37 " "
+                - WHITESPACE@36..37 " "
+                - NON_NULL_TYPE@37..40
                     - NAMED_TYPE@37..39
                         - NAME@37..39
                             - IDENT@37..39 "ID"
@@ -41,8 +41,8 @@
                 - NAME@63..65
                     - IDENT@63..65 "id"
                 - COLON@65..66 ":"
-                - NON_NULL_TYPE@66..70
-                    - WHITESPACE@66..67 " "
+                - WHITESPACE@66..67 " "
+                - NON_NULL_TYPE@67..70
                     - NAMED_TYPE@67..69
                         - NAME@67..69
                             - IDENT@67..69 "ID"
@@ -70,8 +70,8 @@
                 - NAME@113..115
                     - IDENT@113..115 "id"
                 - COLON@115..116 ":"
-                - NON_NULL_TYPE@116..120
-                    - WHITESPACE@116..117 " "
+                - WHITESPACE@116..117 " "
+                - NON_NULL_TYPE@117..120
                     - NAMED_TYPE@117..119
                         - NAME@117..119
                             - IDENT@117..119 "ID"
@@ -123,8 +123,8 @@
                 - NAME@198..200
                     - IDENT@198..200 "id"
                 - COLON@200..201 ":"
-                - NON_NULL_TYPE@201..205
-                    - WHITESPACE@201..202 " "
+                - WHITESPACE@201..202 " "
+                - NON_NULL_TYPE@202..205
                     - NAMED_TYPE@202..204
                         - NAME@202..204
                             - IDENT@202..204 "ID"

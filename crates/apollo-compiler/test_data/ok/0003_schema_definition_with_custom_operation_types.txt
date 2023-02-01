@@ -103,8 +103,8 @@
                         - NAME@255..259
                             - IDENT@255..259 "name"
                         - COLON@259..260 ":"
-                        - NON_NULL_TYPE@260..268
-                            - WHITESPACE@260..261 " "
+                        - WHITESPACE@260..261 " "
+                        - NON_NULL_TYPE@261..268
                             - NAMED_TYPE@261..267
                                 - NAME@261..267
                                     - IDENT@261..267 "String"
@@ -121,8 +121,8 @@
                                 - IDENT@279..286 "PetType"
                     - R_PAREN@286..287 ")"
                 - COLON@287..288 ":"
-                - NON_NULL_TYPE@288..296
-                    - WHITESPACE@288..289 " "
+                - WHITESPACE@288..289 " "
+                - NON_NULL_TYPE@289..296
                     - NAMED_TYPE@289..295
                         - NAME@289..295
                             - IDENT@289..295 "Result"

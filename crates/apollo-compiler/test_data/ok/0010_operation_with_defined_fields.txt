@@ -153,8 +153,8 @@
                 - NAME@285..288
                     - IDENT@285..288 "upc"
                 - COLON@288..289 ":"
-                - NON_NULL_TYPE@289..297
-                    - WHITESPACE@289..290 " "
+                - WHITESPACE@289..290 " "
+                - NON_NULL_TYPE@290..297
                     - NAMED_TYPE@290..296
                         - NAME@290..296
                             - IDENT@290..296 "String"

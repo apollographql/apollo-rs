@@ -343,7 +343,11 @@ impl<'a> Parser<'a> {
 
     /// Set a checkpoint for *maybe* wrapping the following parse tree in some
     /// other node.
-    pub(crate) fn checkpoint_node(&self) -> Checkpoint {
+    pub(crate) fn checkpoint_node(&mut self) -> Checkpoint {
+        // We may start a new node here in the future, so let's process
+        // our preceding whitespace first
+        self.push_ignored();
+
         let checkpoint = self.builder.borrow().checkpoint();
         Checkpoint::new(self.builder.clone(), checkpoint)
     }

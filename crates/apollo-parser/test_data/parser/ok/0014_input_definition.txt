@@ -21,8 +21,8 @@
                 - NAME@45..46
                     - IDENT@45..46 "b"
                 - COLON@46..47 ":"
-                - NON_NULL_TYPE@47..52
-                    - WHITESPACE@47..48 " "
+                - WHITESPACE@47..48 " "
+                - NON_NULL_TYPE@48..52
                     - NAMED_TYPE@48..51
                         - NAME@48..51
                             - IDENT@48..51 "Int"

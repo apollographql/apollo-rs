@@ -21,8 +21,8 @@
                 - NAME@35..36
                     - IDENT@35..36 "b"
                 - COLON@36..37 ":"
-                - NON_NULL_TYPE@37..42
-                    - WHITESPACE@37..38 " "
+                - WHITESPACE@37..38 " "
+                - NON_NULL_TYPE@38..42
                     - NAMED_TYPE@38..41
                         - NAME@38..41
                             - IDENT@38..41 "Int"
@@ -32,8 +32,8 @@
                 - NAME@47..48
                     - IDENT@47..48 "c"
                 - COLON@48..49 ":"
-                - NON_NULL_TYPE@49..57
-                    - WHITESPACE@49..50 " "
+                - WHITESPACE@49..50 " "
+                - NON_NULL_TYPE@50..57
                     - LIST_TYPE@50..56
                         - L_BRACK@50..51 "["
                         - NON_NULL_TYPE@51..55
@@ -72,8 +72,8 @@
                 - NAME@83..84
                     - IDENT@83..84 "d"
                 - COLON@84..85 ":"
-                - NON_NULL_TYPE@85..105
-                    - WHITESPACE@85..86 " "
+                - WHITESPACE@85..86 " "
+                - NON_NULL_TYPE@86..105
                     - LIST_TYPE@86..104
                         - L_BRACK@86..87 "["
                         - NON_NULL_TYPE@87..103
@@ -129,8 +129,8 @@
                 - NAME@148..149
                     - IDENT@148..149 "b"
                 - COLON@149..150 ":"
-                - NON_NULL_TYPE@150..155
-                    - WHITESPACE@150..151 " "
+                - WHITESPACE@150..151 " "
+                - NON_NULL_TYPE@151..155
                     - NAMED_TYPE@151..154
                         - NAME@151..154
                             - IDENT@151..154 "Int"
@@ -141,8 +141,8 @@
                 - NAME@161..162
                     - IDENT@161..162 "c"
                 - COLON@162..163 ":"
-                - NON_NULL_TYPE@163..171
-                    - WHITESPACE@163..164 " "
+                - WHITESPACE@163..164 " "
+                - NON_NULL_TYPE@164..171
                     - LIST_TYPE@164..170
                         - L_BRACK@164..165 "["
                         - NON_NULL_TYPE@165..169
@@ -183,8 +183,8 @@
                 - NAME@199..200
                     - IDENT@199..200 "d"
                 - COLON@200..201 ":"
-                - NON_NULL_TYPE@201..221
-                    - WHITESPACE@201..202 " "
+                - WHITESPACE@201..202 " "
+                - NON_NULL_TYPE@202..221
                     - LIST_TYPE@202..220
                         - L_BRACK@202..203 "["
                         - NON_NULL_TYPE@203..219

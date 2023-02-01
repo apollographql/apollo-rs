@@ -14,8 +14,8 @@
                     - NAME@20..26
                         - IDENT@20..26 "param1"
                 - COLON@26..27 ":"
-                - NON_NULL_TYPE@27..35
-                    - WHITESPACE@27..28 " "
+                - WHITESPACE@27..28 " "
+                - NON_NULL_TYPE@28..35
                     - NAMED_TYPE@28..34
                         - NAME@28..34
                             - IDENT@28..34 "String"
@@ -27,8 +27,8 @@
                     - NAME@39..45
                         - IDENT@39..45 "param2"
                 - COLON@45..46 ":"
-                - NON_NULL_TYPE@46..54
-                    - WHITESPACE@46..47 " "
+                - WHITESPACE@46..47 " "
+                - NON_NULL_TYPE@47..54
                     - NAMED_TYPE@47..53
                         - NAME@47..53
                             - IDENT@47..53 "String"

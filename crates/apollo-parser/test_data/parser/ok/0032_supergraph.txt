@@ -68,8 +68,8 @@
                 - NAME@171..178
                     - IDENT@171..178 "feature"
                 - COLON@178..179 ":"
-                - NON_NULL_TYPE@179..187
-                    - WHITESPACE@179..180 " "
+                - WHITESPACE@179..180 " "
+                - NON_NULL_TYPE@180..187
                     - NAMED_TYPE@180..186
                         - NAME@180..186
                             - IDENT@180..186 "String"
@@ -140,8 +140,8 @@
                 - NAME@347..352
                     - IDENT@347..352 "graph"
                 - COLON@352..353 ":"
-                - NON_NULL_TYPE@353..366
-                    - WHITESPACE@353..354 " "
+                - WHITESPACE@353..354 " "
+                - NON_NULL_TYPE@354..366
                     - NAMED_TYPE@354..365
                         - NAME@354..365
                             - IDENT@354..365 "join__Graph"
@@ -183,8 +183,8 @@
                 - NAME@445..450
                     - IDENT@445..450 "graph"
                 - COLON@450..451 ":"
-                - NON_NULL_TYPE@451..464
-                    - WHITESPACE@451..452 " "
+                - WHITESPACE@451..452 " "
+                - NON_NULL_TYPE@452..464
                     - NAMED_TYPE@452..463
                         - NAME@452..463
                             - IDENT@452..463 "join__Graph"
@@ -214,8 +214,8 @@
                 - NAME@511..515
                     - IDENT@511..515 "name"
                 - COLON@515..516 ":"
-                - NON_NULL_TYPE@516..524
-                    - WHITESPACE@516..517 " "
+                - WHITESPACE@516..517 " "
+                - NON_NULL_TYPE@517..524
                     - NAMED_TYPE@517..523
                         - NAME@517..523
                             - IDENT@517..523 "String"
@@ -226,8 +226,8 @@
                 - NAME@526..529
                     - IDENT@526..529 "url"
                 - COLON@529..530 ":"
-                - NON_NULL_TYPE@530..538
-                    - WHITESPACE@530..531 " "
+                - WHITESPACE@530..531 " "
+                - NON_NULL_TYPE@531..538
                     - NAMED_TYPE@531..537
                         - NAME@531..537
                             - IDENT@531..537 "String"
@@ -265,8 +265,8 @@
                 - NAME@602..606
                     - IDENT@602..606 "from"
                 - COLON@606..607 ":"
-                - NON_NULL_TYPE@607..615
-                    - WHITESPACE@607..608 " "
+                - WHITESPACE@607..608 " "
+                - NON_NULL_TYPE@608..615
                     - NAMED_TYPE@608..614
                         - NAME@608..614
                             - IDENT@608..614 "String"
@@ -474,8 +474,8 @@
                 - NAME@964..968
                     - IDENT@964..968 "isbn"
                 - COLON@968..969 ":"
-                - NON_NULL_TYPE@969..977
-                    - WHITESPACE@969..970 " "
+                - WHITESPACE@969..970 " "
+                - NON_NULL_TYPE@970..977
                     - NAMED_TYPE@970..976
                         - NAME@970..976
                             - IDENT@970..976 "String"
@@ -554,8 +554,8 @@
                 - NAME@1089..1101
                     - IDENT@1089..1101 "similarBooks"
                 - COLON@1101..1102 ":"
-                - NON_NULL_TYPE@1102..1110
-                    - WHITESPACE@1102..1103 " "
+                - WHITESPACE@1102..1103 " "
+                - NON_NULL_TYPE@1103..1110
                     - LIST_TYPE@1103..1109
                         - L_BRACK@1103..1104 "["
                         - NAMED_TYPE@1104..1108
@@ -666,8 +666,8 @@
                 - NAME@1302..1305
                     - IDENT@1302..1305 "upc"
                 - COLON@1305..1306 ":"
-                - NON_NULL_TYPE@1306..1314
-                    - WHITESPACE@1306..1307 " "
+                - WHITESPACE@1306..1307 " "
+                - NON_NULL_TYPE@1307..1314
                     - NAMED_TYPE@1307..1313
                         - NAME@1307..1313
                             - IDENT@1307..1313 "String"
@@ -694,8 +694,8 @@
                 - NAME@1346..1349
                     - IDENT@1346..1349 "sku"
                 - COLON@1349..1350 ":"
-                - NON_NULL_TYPE@1350..1358
-                    - WHITESPACE@1350..1351 " "
+                - WHITESPACE@1350..1351 " "
+                - NON_NULL_TYPE@1351..1358
                     - NAMED_TYPE@1351..1357
                         - NAME@1351..1357
                             - IDENT@1351..1357 "String"
@@ -855,8 +855,8 @@
                 - NAME@1636..1650
                     - IDENT@1636..1650 "relatedReviews"
                 - COLON@1650..1651 ":"
-                - NON_NULL_TYPE@1651..1662
-                    - WHITESPACE@1651..1652 " "
+                - WHITESPACE@1651..1652 " "
+                - NON_NULL_TYPE@1652..1662
                     - LIST_TYPE@1652..1661
                         - L_BRACK@1652..1653 "["
                         - NON_NULL_TYPE@1653..1660
@@ -1001,8 +1001,8 @@
                 - NAME@1895..1897
                     - IDENT@1895..1897 "id"
                 - COLON@1897..1898 ":"
-                - NON_NULL_TYPE@1898..1906
-                    - WHITESPACE@1898..1899 " "
+                - WHITESPACE@1898..1899 " "
+                - NON_NULL_TYPE@1899..1906
                     - NAMED_TYPE@1899..1905
                         - NAME@1899..1905
                             - IDENT@1899..1905 "String"
@@ -1280,8 +1280,8 @@
                 - NAME@2380..2383
                     - IDENT@2380..2383 "upc"
                 - COLON@2383..2384 ":"
-                - NON_NULL_TYPE@2384..2392
-                    - WHITESPACE@2384..2385 " "
+                - WHITESPACE@2384..2385 " "
+                - NON_NULL_TYPE@2385..2392
                     - NAMED_TYPE@2385..2391
                         - NAME@2385..2391
                             - IDENT@2385..2391 "String"
@@ -1308,8 +1308,8 @@
                 - NAME@2424..2427
                     - IDENT@2424..2427 "sku"
                 - COLON@2427..2428 ":"
-                - NON_NULL_TYPE@2428..2436
-                    - WHITESPACE@2428..2429 " "
+                - WHITESPACE@2428..2429 " "
+                - NON_NULL_TYPE@2429..2436
                     - NAMED_TYPE@2429..2435
                         - NAME@2429..2435
                             - IDENT@2429..2435 "String"
@@ -1588,8 +1588,8 @@
                 - NAME@2940..2944
                     - IDENT@2940..2944 "name"
                 - COLON@2944..2945 ":"
-                - NON_NULL_TYPE@2945..2953
-                    - WHITESPACE@2945..2946 " "
+                - WHITESPACE@2945..2946 " "
+                - NON_NULL_TYPE@2946..2953
                     - NAMED_TYPE@2946..2952
                         - NAME@2946..2952
                             - IDENT@2946..2952 "String"
@@ -1599,8 +1599,8 @@
                 - NAME@2956..2966
                     - IDENT@2956..2966 "attributes"
                 - COLON@2966..2967 ":"
-                - NON_NULL_TYPE@2967..2984
-                    - WHITESPACE@2967..2968 " "
+                - WHITESPACE@2967..2968 " "
+                - NON_NULL_TYPE@2968..2984
                     - NAMED_TYPE@2968..2983
                         - NAME@2968..2983
                             - IDENT@2968..2983 "ImageAttributes"
@@ -1621,8 +1621,8 @@
                 - NAME@3013..3016
                     - IDENT@3013..3016 "url"
                 - COLON@3016..3017 ":"
-                - NON_NULL_TYPE@3017..3025
-                    - WHITESPACE@3017..3018 " "
+                - WHITESPACE@3017..3018 " "
+                - NON_NULL_TYPE@3018..3025
                     - NAMED_TYPE@3018..3024
                         - NAME@3018..3024
                             - IDENT@3018..3024 "String"
@@ -1834,8 +1834,8 @@
                 - NAME@3374..3377
                     - IDENT@3374..3377 "key"
                 - COLON@3377..3378 ":"
-                - NON_NULL_TYPE@3378..3386
-                    - WHITESPACE@3378..3379 " "
+                - WHITESPACE@3378..3379 " "
+                - NON_NULL_TYPE@3379..3386
                     - NAMED_TYPE@3379..3385
                         - NAME@3379..3385
                             - IDENT@3379..3385 "String"
@@ -1845,8 +1845,8 @@
                 - NAME@3389..3394
                     - IDENT@3389..3394 "value"
                 - COLON@3394..3395 ":"
-                - NON_NULL_TYPE@3395..3403
-                    - WHITESPACE@3395..3396 " "
+                - WHITESPACE@3395..3396 " "
+                - NON_NULL_TYPE@3396..3403
                     - NAMED_TYPE@3396..3402
                         - NAME@3396..3402
                             - IDENT@3396..3402 "String"
@@ -1934,8 +1934,8 @@
                 - NAME@3528..3530
                     - IDENT@3528..3530 "id"
                 - COLON@3530..3531 ":"
-                - NON_NULL_TYPE@3531..3535
-                    - WHITESPACE@3531..3532 " "
+                - WHITESPACE@3531..3532 " "
+                - NON_NULL_TYPE@3532..3535
                     - NAMED_TYPE@3532..3534
                         - NAME@3532..3534
                             - IDENT@3532..3534 "ID"
@@ -1993,8 +1993,8 @@
                         - NAME@3619..3621
                             - IDENT@3619..3621 "id"
                         - COLON@3621..3622 ":"
-                        - NON_NULL_TYPE@3622..3626
-                            - WHITESPACE@3622..3623 " "
+                        - WHITESPACE@3622..3623 " "
+                        - NON_NULL_TYPE@3623..3626
                             - NAMED_TYPE@3623..3625
                                 - NAME@3623..3625
                                     - IDENT@3623..3625 "ID"
@@ -2077,8 +2077,8 @@
                         - NAME@3755..3763
                             - IDENT@3755..3763 "username"
                         - COLON@3763..3764 ":"
-                        - NON_NULL_TYPE@3764..3772
-                            - WHITESPACE@3764..3765 " "
+                        - WHITESPACE@3764..3765 " "
+                        - NON_NULL_TYPE@3765..3772
                             - NAMED_TYPE@3765..3771
                                 - NAME@3765..3771
                                     - IDENT@3765..3771 "String"
@@ -2089,8 +2089,8 @@
                         - NAME@3774..3782
                             - IDENT@3774..3782 "password"
                         - COLON@3782..3783 ":"
-                        - NON_NULL_TYPE@3783..3791
-                            - WHITESPACE@3783..3784 " "
+                        - WHITESPACE@3783..3784 " "
+                        - NON_NULL_TYPE@3784..3791
                             - NAMED_TYPE@3784..3790
                                 - NAME@3784..3790
                                     - IDENT@3784..3790 "String"
@@ -2128,8 +2128,8 @@
                         - NAME@3845..3848
                             - IDENT@3845..3848 "upc"
                         - COLON@3848..3849 ":"
-                        - NON_NULL_TYPE@3849..3857
-                            - WHITESPACE@3849..3850 " "
+                        - WHITESPACE@3849..3850 " "
+                        - NON_NULL_TYPE@3850..3857
                             - NAMED_TYPE@3850..3856
                                 - NAME@3850..3856
                                     - IDENT@3850..3856 "String"
@@ -2140,8 +2140,8 @@
                         - NAME@3859..3863
                             - IDENT@3859..3863 "body"
                         - COLON@3863..3864 ":"
-                        - NON_NULL_TYPE@3864..3872
-                            - WHITESPACE@3864..3865 " "
+                        - WHITESPACE@3864..3865 " "
+                        - NON_NULL_TYPE@3865..3872
                             - NAMED_TYPE@3865..3871
                                 - NAME@3865..3871
                                     - IDENT@3865..3871 "String"
@@ -2179,8 +2179,8 @@
                         - NAME@3927..3933
                             - IDENT@3927..3933 "review"
                         - COLON@3933..3934 ":"
-                        - NON_NULL_TYPE@3934..3953
-                            - WHITESPACE@3934..3935 " "
+                        - WHITESPACE@3934..3935 " "
+                        - NON_NULL_TYPE@3935..3953
                             - NAMED_TYPE@3935..3952
                                 - NAME@3935..3952
                                     - IDENT@3935..3952 "UpdateReviewInput"
@@ -2218,8 +2218,8 @@
                         - NAME@4007..4009
                             - IDENT@4007..4009 "id"
                         - COLON@4009..4010 ":"
-                        - NON_NULL_TYPE@4010..4014
-                            - WHITESPACE@4010..4011 " "
+                        - WHITESPACE@4010..4011 " "
+                        - NON_NULL_TYPE@4011..4014
                             - NAMED_TYPE@4011..4013
                                 - NAME@4011..4013
                                     - IDENT@4011..4013 "ID"
@@ -2292,8 +2292,8 @@
                 - NAME@4129..4133
                     - IDENT@4129..4133 "name"
                 - COLON@4133..4134 ":"
-                - NON_NULL_TYPE@4134..4142
-                    - WHITESPACE@4134..4135 " "
+                - WHITESPACE@4134..4135 " "
+                - NON_NULL_TYPE@4135..4142
                     - NAMED_TYPE@4135..4141
                         - NAME@4135..4141
                             - IDENT@4135..4141 "String"
@@ -2356,8 +2356,8 @@
                 - NAME@4244..4249
                     - IDENT@4244..4249 "email"
                 - COLON@4249..4250 ":"
-                - NON_NULL_TYPE@4250..4258
-                    - WHITESPACE@4250..4251 " "
+                - WHITESPACE@4250..4251 " "
+                - NON_NULL_TYPE@4251..4258
                     - NAMED_TYPE@4251..4257
                         - NAME@4251..4257
                             - IDENT@4251..4257 "String"
@@ -2395,8 +2395,8 @@
                 - NAME@4314..4317
                     - IDENT@4314..4317 "upc"
                 - COLON@4317..4318 ":"
-                - NON_NULL_TYPE@4318..4326
-                    - WHITESPACE@4318..4319 " "
+                - WHITESPACE@4318..4319 " "
+                - NON_NULL_TYPE@4319..4326
                     - NAMED_TYPE@4319..4325
                         - NAME@4319..4325
                             - IDENT@4319..4325 "String"
@@ -2406,8 +2406,8 @@
                 - NAME@4329..4332
                     - IDENT@4329..4332 "sku"
                 - COLON@4332..4333 ":"
-                - NON_NULL_TYPE@4333..4341
-                    - WHITESPACE@4333..4334 " "
+                - WHITESPACE@4333..4334 " "
+                - NON_NULL_TYPE@4334..4341
                     - NAMED_TYPE@4334..4340
                         - NAME@4334..4340
                             - IDENT@4334..4340 "String"
@@ -2573,8 +2573,8 @@
                         - NAME@4689..4691
                             - IDENT@4689..4691 "id"
                         - COLON@4691..4692 ":"
-                        - NON_NULL_TYPE@4692..4696
-                            - WHITESPACE@4692..4693 " "
+                        - WHITESPACE@4692..4693 " "
+                        - NON_NULL_TYPE@4693..4696
                             - NAMED_TYPE@4693..4695
                                 - NAME@4693..4695
                                     - IDENT@4693..4695 "ID"
@@ -2638,8 +2638,8 @@
                         - NAME@4782..4786
                             - IDENT@4782..4786 "isbn"
                         - COLON@4786..4787 ":"
-                        - NON_NULL_TYPE@4787..4795
-                            - WHITESPACE@4787..4788 " "
+                        - WHITESPACE@4787..4788 " "
+                        - NON_NULL_TYPE@4788..4795
                             - NAMED_TYPE@4788..4794
                                 - NAME@4788..4794
                                     - IDENT@4788..4794 "String"
@@ -2706,8 +2706,8 @@
                         - NAME@4883..4885
                             - IDENT@4883..4885 "id"
                         - COLON@4885..4886 ":"
-                        - NON_NULL_TYPE@4886..4890
-                            - WHITESPACE@4886..4887 " "
+                        - WHITESPACE@4886..4887 " "
+                        - NON_NULL_TYPE@4887..4890
                             - NAMED_TYPE@4887..4889
                                 - NAME@4887..4889
                                     - IDENT@4887..4889 "ID"
@@ -2740,8 +2740,8 @@
                 - NAME@4930..4934
                     - IDENT@4930..4934 "body"
                 - COLON@4934..4935 ":"
-                - NON_NULL_TYPE@4935..4941
-                    - WHITESPACE@4935..4936 " "
+                - WHITESPACE@4935..4936 " "
+                - NON_NULL_TYPE@4936..4941
                     - NAMED_TYPE@4936..4940
                         - NAME@4936..4940
                             - IDENT@4936..4940 "Body"
@@ -2773,8 +2773,8 @@
                         - NAME@4983..4986
                             - IDENT@4983..4986 "upc"
                         - COLON@4986..4987 ":"
-                        - NON_NULL_TYPE@4987..4995
-                            - WHITESPACE@4987..4988 " "
+                        - WHITESPACE@4987..4988 " "
+                        - NON_NULL_TYPE@4988..4995
                             - NAMED_TYPE@4988..4994
                                 - NAME@4988..4994
                                     - IDENT@4988..4994 "String"
@@ -2812,8 +2812,8 @@
                         - NAME@5045..5047
                             - IDENT@5045..5047 "id"
                         - COLON@5047..5048 ":"
-                        - NON_NULL_TYPE@5048..5056
-                            - WHITESPACE@5048..5049 " "
+                        - WHITESPACE@5048..5049 " "
+                        - NON_NULL_TYPE@5049..5056
                             - NAMED_TYPE@5049..5055
                                 - NAME@5049..5055
                                     - IDENT@5049..5055 "String"
@@ -3037,8 +3037,8 @@
                 - NAME@5383..5385
                     - IDENT@5383..5385 "id"
                 - COLON@5385..5386 ":"
-                - NON_NULL_TYPE@5386..5390
-                    - WHITESPACE@5386..5387 " "
+                - WHITESPACE@5386..5387 " "
+                - NON_NULL_TYPE@5387..5390
                     - NAMED_TYPE@5387..5389
                         - NAME@5387..5389
                             - IDENT@5387..5389 "ID"
@@ -3295,8 +3295,8 @@
                 - NAME@5844..5848
                     - IDENT@5844..5848 "name"
                 - COLON@5848..5849 ":"
-                - NON_NULL_TYPE@5849..5857
-                    - WHITESPACE@5849..5850 " "
+                - WHITESPACE@5849..5850 " "
+                - NON_NULL_TYPE@5850..5857
                     - NAMED_TYPE@5850..5856
                         - NAME@5850..5856
                             - IDENT@5850..5856 "String"
@@ -3306,8 +3306,8 @@
                 - NAME@5860..5870
                     - IDENT@5860..5870 "attributes"
                 - COLON@5870..5871 ":"
-                - NON_NULL_TYPE@5871..5887
-                    - WHITESPACE@5871..5872 " "
+                - WHITESPACE@5871..5872 " "
+                - NON_NULL_TYPE@5872..5887
                     - NAMED_TYPE@5872..5886
                         - NAME@5872..5886
                             - IDENT@5872..5886 "TextAttributes"
@@ -3376,8 +3376,8 @@
                 - NAME@6001..6003
                     - IDENT@6001..6003 "id"
                 - COLON@6003..6004 ":"
-                - NON_NULL_TYPE@6004..6008
-                    - WHITESPACE@6004..6005 " "
+                - WHITESPACE@6004..6005 " "
+                - NON_NULL_TYPE@6005..6008
                     - NAMED_TYPE@6005..6007
                         - NAME@6005..6007
                             - IDENT@6005..6007 "ID"
@@ -3549,8 +3549,8 @@
                 - NAME@6293..6295
                     - IDENT@6293..6295 "id"
                 - COLON@6295..6296 ":"
-                - NON_NULL_TYPE@6296..6300
-                    - WHITESPACE@6296..6297 " "
+                - WHITESPACE@6296..6297 " "
+                - NON_NULL_TYPE@6297..6300
                     - NAMED_TYPE@6297..6299
                         - NAME@6297..6299
                             - IDENT@6297..6299 "ID"
@@ -3837,8 +3837,8 @@
                 - NAME@6835..6850
                     - IDENT@6835..6850 "numberOfReviews"
                 - COLON@6850..6851 ":"
-                - NON_NULL_TYPE@6851..6856
-                    - WHITESPACE@6851..6852 " "
+                - WHITESPACE@6851..6852 " "
+                - NON_NULL_TYPE@6852..6856
                     - NAMED_TYPE@6852..6855
                         - NAME@6852..6855
                             - IDENT@6852..6855 "Int"
@@ -4023,8 +4023,8 @@
                 - NAME@7189..7191
                     - IDENT@7189..7191 "id"
                 - COLON@7191..7192 ":"
-                - NON_NULL_TYPE@7192..7200
-                    - WHITESPACE@7192..7193 " "
+                - WHITESPACE@7192..7193 " "
+                - NON_NULL_TYPE@7193..7200
                     - NAMED_TYPE@7193..7199
                         - NAME@7193..7199
                             - IDENT@7193..7199 "String"
@@ -4149,8 +4149,8 @@
                 - NAME@7421..7423
                     - IDENT@7421..7423 "id"
                 - COLON@7423..7424 ":"
-                - NON_NULL_TYPE@7424..7432
-                    - WHITESPACE@7424..7425 " "
+                - WHITESPACE@7424..7425 " "
+                - NON_NULL_TYPE@7425..7432
                     - NAMED_TYPE@7425..7431
                         - NAME@7425..7431
                             - IDENT@7425..7431 "String"

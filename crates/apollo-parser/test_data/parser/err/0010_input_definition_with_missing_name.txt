@@ -18,8 +18,8 @@
                 - NAME@26..27
                     - IDENT@26..27 "b"
                 - COLON@27..28 ":"
-                - NON_NULL_TYPE@28..33
-                    - WHITESPACE@28..29 " "
+                - WHITESPACE@28..29 " "
+                - NON_NULL_TYPE@29..33
                     - NAMED_TYPE@29..32
                         - NAME@29..32
                             - IDENT@29..32 "Int"

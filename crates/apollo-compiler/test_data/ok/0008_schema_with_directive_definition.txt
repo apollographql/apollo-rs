@@ -31,8 +31,8 @@
                 - NAME@62..66
                     - IDENT@62..66 "name"
                 - COLON@66..67 ":"
-                - NON_NULL_TYPE@67..75
-                    - WHITESPACE@67..68 " "
+                - WHITESPACE@67..68 " "
+                - NON_NULL_TYPE@68..75
                     - NAMED_TYPE@68..74
                         - NAME@68..74
                             - IDENT@68..74 "String"
@@ -96,8 +96,8 @@
                 - NAME@190..192
                     - IDENT@190..192 "id"
                 - COLON@192..193 ":"
-                - NON_NULL_TYPE@193..197
-                    - WHITESPACE@193..194 " "
+                - WHITESPACE@193..194 " "
+                - NON_NULL_TYPE@194..197
                     - NAMED_TYPE@194..196
                         - NAME@194..196
                             - IDENT@194..196 "ID"
