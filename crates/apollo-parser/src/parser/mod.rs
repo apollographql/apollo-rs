@@ -141,13 +141,12 @@ impl<'a> Parser<'a> {
 
     /// Consume a token and add it to the AST. Queue any ignored tokens that follow.
     pub(crate) fn bump(&mut self, kind: SyntaxKind) {
-        self.push_ignored();
         self.eat(kind);
-        self.bump_ignored();
+        self.skip_ignored();
     }
 
-    /// Queue ignored tokens from the lexer.
-    pub(crate) fn bump_ignored(&mut self) {
+    /// Consume and skip ignored tokens from the lexer.
+    pub(crate) fn skip_ignored(&mut self) {
         while let Some(TokenKind::Comment | TokenKind::Whitespace | TokenKind::Comma) = self.peek()
         {
             let token = self.pop();
@@ -155,7 +154,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Add ignored tokens to the current node.
+    /// Push skipped ignored tokens to the current node.
     pub(crate) fn push_ignored(&mut self) {
         let tokens = std::mem::take(&mut self.ignored);
         for token in tokens {
@@ -176,6 +175,7 @@ impl<'a> Parser<'a> {
 
     /// Consume a token from the lexer and add it to the AST.
     fn eat(&mut self, kind: SyntaxKind) {
+        self.push_ignored();
         if self.current().is_none() {
             return;
         }
@@ -229,6 +229,7 @@ impl<'a> Parser<'a> {
 
     /// Create a parser error at the current location and eat the responsible token.
     pub(crate) fn err_and_pop(&mut self, message: &str) {
+        self.push_ignored();
         if self.current().is_none() {
             return;
         }
@@ -236,7 +237,7 @@ impl<'a> Parser<'a> {
         let current = self.pop();
         // we usually bump ignored after we pop a token, so make sure we also do
         // this when we create an error and pop.
-        self.bump_ignored();
+        self.skip_ignored();
         let err = if current.kind == TokenKind::Eof {
             Error::eof(message, current.index())
         } else {
@@ -335,7 +336,7 @@ impl<'a> Parser<'a> {
 
         self.builder.borrow_mut().start_node(kind);
         let guard = NodeGuard::new(self.builder.clone());
-        self.bump_ignored();
+        self.skip_ignored();
 
         guard
     }
