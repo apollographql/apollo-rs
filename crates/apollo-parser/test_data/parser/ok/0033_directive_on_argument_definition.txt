@@ -2,13 +2,13 @@
     - OBJECT_TYPE_DEFINITION@0..91
         - type_KW@0..4 "type"
         - WHITESPACE@4..5 " "
-        - NAME@5..14
+        - NAME@5..13
             - IDENT@5..13 "Mutation"
-            - WHITESPACE@13..14 " "
+        - WHITESPACE@13..14 " "
         - FIELDS_DEFINITION@14..91
             - L_CURLY@14..15 "{"
             - WHITESPACE@15..18 "\n  "
-            - FIELD_DEFINITION@18..90
+            - FIELD_DEFINITION@18..89
                 - NAME@18..23
                     - IDENT@18..23 "login"
                 - ARGUMENTS_DEFINITION@23..83
@@ -43,6 +43,6 @@
                 - NAMED_TYPE@85..89
                     - NAME@85..89
                         - IDENT@85..89 "User"
-                - WHITESPACE@89..90 "\n"
+            - WHITESPACE@89..90 "\n"
             - R_CURLY@90..91 "}"
 recursion limit: 4096, high: 0

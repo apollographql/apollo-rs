@@ -8,7 +8,7 @@
                 id: 37,
             },
             offset: 399,
-            length: 6,
+            length: 5,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 37,
                     },
                     offset: 399,
-                    length: 6,
+                    length: 5,
                 },
                 text: "not found in this scope",
             },
@@ -64,7 +64,7 @@
                 id: 37,
             },
             offset: 221,
-            length: 23,
+            length: 20,
         },
         labels: [
             Label {
@@ -73,7 +73,7 @@
                         id: 37,
                     },
                     offset: 221,
-                    length: 23,
+                    length: 20,
                 },
                 text: "this is of `InputObjectTypeDefinition` type",
             },

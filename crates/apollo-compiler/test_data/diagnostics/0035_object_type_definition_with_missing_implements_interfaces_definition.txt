@@ -8,7 +8,7 @@
                 id: 35,
             },
             offset: 239,
-            length: 9,
+            length: 8,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 35,
                     },
                     offset: 239,
-                    length: 9,
+                    length: 8,
                 },
                 text: "Node must also be implemented here",
             },
@@ -36,7 +36,7 @@
                 id: 35,
             },
             offset: 22,
-            length: 6,
+            length: 5,
         },
         labels: [
             Label {
@@ -45,7 +45,7 @@
                         id: 35,
                     },
                     offset: 22,
-                    length: 6,
+                    length: 5,
                 },
                 text: "Resource must also be implemented here",
             },

@@ -8,7 +8,7 @@
                 id: 49,
             },
             offset: 19,
-            length: 14,
+            length: 12,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 49,
                     },
                     offset: 19,
-                    length: 14,
+                    length: 12,
                 },
                 text: "previous definition of `arg` here",
             },
@@ -42,7 +42,7 @@
                     id: 49,
                 },
                 offset: 19,
-                length: 14,
+                length: 12,
             },
             redefined_value: DiagnosticLocation {
                 file_id: FileId {

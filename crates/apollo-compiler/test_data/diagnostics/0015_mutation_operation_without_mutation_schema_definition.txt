@@ -8,7 +8,7 @@
                 id: 14,
             },
             offset: 0,
-            length: 76,
+            length: 74,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 14,
                     },
                     offset: 0,
-                    length: 76,
+                    length: 74,
                 },
                 text: "Mutation operation is not defined in the schema and is therefore not supported",
             },
@@ -38,7 +38,7 @@
                 id: 14,
             },
             offset: 31,
-            length: 42,
+            length: 41,
         },
         labels: [
             Label {
@@ -47,7 +47,7 @@
                         id: 14,
                     },
                     offset: 31,
-                    length: 42,
+                    length: 41,
                 },
                 text: "`addPet` field is not defined",
             },

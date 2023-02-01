@@ -17,7 +17,7 @@
                         id: 47,
                     },
                     offset: 73,
-                    length: 11,
+                    length: 9,
                 },
                 text: "previously provided `arg` here",
             },
@@ -42,7 +42,7 @@
                     id: 47,
                 },
                 offset: 73,
-                length: 11,
+                length: 9,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {

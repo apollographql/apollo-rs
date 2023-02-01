@@ -8,7 +8,7 @@
                 id: 22,
             },
             offset: 87,
-            length: 12,
+            length: 11,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 22,
                     },
                     offset: 87,
-                    length: 12,
+                    length: 11,
                 },
                 text: "interface NamedEntity cannot implement itself",
             },

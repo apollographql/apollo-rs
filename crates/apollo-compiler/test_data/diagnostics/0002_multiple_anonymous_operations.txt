@@ -8,7 +8,7 @@
                 id: 1,
             },
             offset: 0,
-            length: 32,
+            length: 30,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 1,
                     },
                     offset: 0,
-                    length: 32,
+                    length: 30,
                 },
                 text: "provide a name for this definition",
             },
@@ -36,7 +36,7 @@
                 id: 1,
             },
             offset: 32,
-            length: 58,
+            length: 56,
         },
         labels: [
             Label {
@@ -45,7 +45,7 @@
                         id: 1,
                     },
                     offset: 32,
-                    length: 58,
+                    length: 56,
                 },
                 text: "provide a name for this definition",
             },

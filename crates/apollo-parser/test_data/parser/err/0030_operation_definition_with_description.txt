@@ -1,12 +1,12 @@
 - DOCUMENT@0..15
     - WHITESPACE@0..1 "\n"
     - OPERATION_DEFINITION@1..15
-        - OPERATION_TYPE@1..7
+        - OPERATION_TYPE@1..6
             - query_KW@1..6 "query"
-            - WHITESPACE@6..7 " "
-        - NAME@7..13
+        - WHITESPACE@6..7 " "
+        - NAME@7..12
             - IDENT@7..12 "empty"
-            - WHITESPACE@12..13 " "
+        - WHITESPACE@12..13 " "
         - SELECTION_SET@13..15
             - L_CURLY@13..14 "{"
             - R_CURLY@14..15 "}"

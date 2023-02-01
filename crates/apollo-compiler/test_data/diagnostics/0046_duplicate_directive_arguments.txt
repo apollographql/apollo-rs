@@ -17,7 +17,7 @@
                         id: 46,
                     },
                     offset: 30,
-                    length: 44,
+                    length: 42,
                 },
                 text: "previously provided `url` here",
             },
@@ -42,7 +42,7 @@
                     id: 46,
                 },
                 offset: 30,
-                length: 44,
+                length: 42,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
@@ -71,7 +71,7 @@
                         id: 46,
                     },
                     offset: 178,
-                    length: 11,
+                    length: 9,
                 },
                 text: "previously provided `if` here",
             },
@@ -96,7 +96,7 @@
                     id: 46,
                 },
                 offset: 178,
-                length: 11,
+                length: 9,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {

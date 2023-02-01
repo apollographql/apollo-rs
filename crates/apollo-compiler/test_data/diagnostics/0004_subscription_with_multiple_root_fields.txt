@@ -8,7 +8,7 @@
                 id: 3,
             },
             offset: 0,
-            length: 89,
+            length: 87,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 3,
                     },
                     offset: 0,
-                    length: 89,
+                    length: 87,
                 },
                 text: "subscription with 2 root fields",
             },
@@ -32,7 +32,7 @@
                     id: 3,
                 },
                 offset: 0,
-                length: 89,
+                length: 87,
             },
         },
     },
@@ -45,7 +45,7 @@
                 id: 3,
             },
             offset: 60,
-            length: 26,
+            length: 25,
         },
         labels: [
             Label {
@@ -54,7 +54,7 @@
                         id: 3,
                     },
                     offset: 60,
-                    length: 26,
+                    length: 25,
                 },
                 text: "`disallowedSecondRootField` field is not defined",
             },
@@ -64,7 +64,7 @@
                         id: 3,
                     },
                     offset: 89,
-                    length: 44,
+                    length: 42,
                 },
                 text: "`Subscription` declared here",
             },

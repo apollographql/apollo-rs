@@ -8,7 +8,7 @@
                 id: 41,
             },
             offset: 21,
-            length: 27,
+            length: 26,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 41,
                     },
                     offset: 21,
-                    length: 27,
+                    length: 26,
                 },
                 text: "`undefinedSubscriptionField` field is not defined",
             },
@@ -27,7 +27,7 @@
                         id: 41,
                     },
                     offset: 51,
-                    length: 44,
+                    length: 42,
                 },
                 text: "`Subscription` declared here",
             },

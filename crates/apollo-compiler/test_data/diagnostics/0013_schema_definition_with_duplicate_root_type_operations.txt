@@ -8,7 +8,7 @@
                 id: 12,
             },
             offset: 36,
-            length: 29,
+            length: 28,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 12,
                     },
                     offset: 11,
-                    length: 25,
+                    length: 21,
                 },
                 text: "previous definition of `customPetQuery` here",
             },
@@ -27,7 +27,7 @@
                         id: 12,
                     },
                     offset: 36,
-                    length: 29,
+                    length: 28,
                 },
                 text: "`customPetQuery` redefined here",
             },
@@ -43,14 +43,14 @@
                     id: 12,
                 },
                 offset: 11,
-                length: 25,
+                length: 21,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 12,
                 },
                 offset: 36,
-                length: 29,
+                length: 28,
             },
         },
     },

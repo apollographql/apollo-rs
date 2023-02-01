@@ -8,7 +8,7 @@
                 id: 29,
             },
             offset: 80,
-            length: 25,
+            length: 24,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 29,
                     },
                     offset: 80,
-                    length: 25,
+                    length: 24,
                 },
                 text: "previous definition of `foo` here",
             },
@@ -43,7 +43,7 @@
                     id: 29,
                 },
                 offset: 80,
-                length: 25,
+                length: 24,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {

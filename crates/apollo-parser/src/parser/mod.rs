@@ -76,6 +76,8 @@ pub struct Parser<'a> {
     current_token: Option<Token>,
     /// The in-progress tree.
     builder: Rc<RefCell<SyntaxTreeBuilder>>,
+    /// Ignored tokens that should be added to the tree.
+    ignored: Vec<Token>,
     /// The list of syntax errors we've accumulated so far.
     errors: Vec<crate::Error>,
     /// The limit to apply to parsing.
@@ -93,6 +95,7 @@ impl<'a> Parser<'a> {
             lexer,
             current_token: None,
             builder: Rc::new(RefCell::new(SyntaxTreeBuilder::new())),
+            ignored: vec![],
             errors: Vec::new(),
             recursion_limit: Default::default(),
             accept_errors: true,
@@ -136,25 +139,33 @@ impl<'a> Parser<'a> {
         false
     }
 
-    /// Consume a token and any ignored tokens that follow, then add it to AST.
+    /// Consume a token and add it to the AST. Queue any ignored tokens that follow.
     pub(crate) fn bump(&mut self, kind: SyntaxKind) {
+        self.push_ignored();
         self.eat(kind);
         self.bump_ignored();
     }
 
-    /// Consume ignored tokens and add them to the AST.
+    /// Queue ignored tokens from the lexer.
     pub(crate) fn bump_ignored(&mut self) {
         while let Some(TokenKind::Comment | TokenKind::Whitespace | TokenKind::Comma) = self.peek()
         {
-            if let Some(TokenKind::Comment) = self.peek() {
-                self.eat(SyntaxKind::COMMENT);
-            }
-            if let Some(TokenKind::Whitespace) = self.peek() {
-                self.eat(SyntaxKind::WHITESPACE);
-            }
-            if let Some(TokenKind::Comma) = self.peek() {
-                self.eat(SyntaxKind::COMMA);
-            }
+            let token = self.pop();
+            self.ignored.push(token);
+        }
+    }
+
+    /// Add ignored tokens to the current node.
+    pub(crate) fn push_ignored(&mut self) {
+        let tokens = std::mem::take(&mut self.ignored);
+        for token in tokens {
+            let syntax_kind = match token.kind {
+                TokenKind::Comment => SyntaxKind::COMMENT,
+                TokenKind::Whitespace => SyntaxKind::WHITESPACE,
+                TokenKind::Comma => SyntaxKind::COMMA,
+                _ => unreachable!(),
+            };
+            self.push_ast(syntax_kind, token);
         }
     }
 
@@ -320,6 +331,8 @@ impl<'a> Parser<'a> {
     /// This allows for us to not have to always close nodes when we are parsing
     /// tokens.
     pub(crate) fn start_node(&mut self, kind: SyntaxKind) -> NodeGuard {
+        self.push_ignored();
+
         self.builder.borrow_mut().start_node(kind);
         let guard = NodeGuard::new(self.builder.clone());
         self.bump_ignored();
@@ -505,21 +518,21 @@ mod tests {
         let tree = expect![[r##"
             DOCUMENT@0..113
               WHITESPACE@0..13 "\n            "
-              OBJECT_TYPE_DEFINITION@13..113
+              OBJECT_TYPE_DEFINITION@13..76
                 type_KW@13..17 "type"
                 WHITESPACE@17..18 " "
-                NAME@18..24
+                NAME@18..23
                   IDENT@18..23 "Query"
-                  WHITESPACE@23..24 " "
-                FIELDS_DEFINITION@24..113
+                WHITESPACE@23..24 " "
+                FIELDS_DEFINITION@24..76
                   L_CURLY@24..25 "{"
                   WHITESPACE@25..42 "\n                "
-                  FIELD_DEFINITION@42..113
+                  FIELD_DEFINITION@42..76
                     NAME@42..47
                       IDENT@42..47 "field"
                     ARGUMENTS_DEFINITION@47..71
                       L_PAREN@47..48 "("
-                      INPUT_VALUE_DEFINITION@48..59
+                      INPUT_VALUE_DEFINITION@48..57
                         NAME@48..52
                           IDENT@48..52 "arg1"
                         COLON@52..53 ":"
@@ -527,8 +540,8 @@ mod tests {
                         NAMED_TYPE@54..57
                           NAME@54..57
                             IDENT@54..57 "Int"
-                        COMMA@57..58 ","
-                        WHITESPACE@58..59 " "
+                      COMMA@57..58 ","
+                      WHITESPACE@58..59 " "
                       INPUT_VALUE_DEFINITION@59..70
                         NAME@59..70
                           IDENT@59..70 "missing_arg"
@@ -538,8 +551,8 @@ mod tests {
                     NAMED_TYPE@73..76
                       NAME@73..76
                         IDENT@73..76 "Int"
-                    WHITESPACE@76..93 "\n                "
-                    COMMENT@93..113 "# limit reached here"
+              WHITESPACE@76..93 "\n                "
+              COMMENT@93..113 "# limit reached here"
         "##]];
         tree.assert_eq(&format!("{:#?}", ast.document().syntax));
     }

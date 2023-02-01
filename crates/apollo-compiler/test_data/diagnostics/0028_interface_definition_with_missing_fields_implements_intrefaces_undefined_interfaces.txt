@@ -36,7 +36,7 @@
                 id: 27,
             },
             offset: 162,
-            length: 9,
+            length: 8,
         },
         labels: [
             Label {
@@ -45,7 +45,7 @@
                         id: 27,
                     },
                     offset: 162,
-                    length: 9,
+                    length: 8,
                 },
                 text: "Node must also be implemented here",
             },
@@ -73,7 +73,7 @@
                         id: 27,
                     },
                     offset: 72,
-                    length: 63,
+                    length: 61,
                 },
                 text: "`width` was originally defined here",
             },

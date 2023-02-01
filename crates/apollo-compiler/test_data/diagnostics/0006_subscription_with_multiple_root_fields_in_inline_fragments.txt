@@ -8,7 +8,7 @@
                 id: 5,
             },
             offset: 0,
-            length: 151,
+            length: 149,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 5,
                     },
                     offset: 0,
-                    length: 151,
+                    length: 149,
                 },
                 text: "subscription with 2 root fields",
             },
@@ -32,7 +32,7 @@
                     id: 5,
                 },
                 offset: 0,
-                length: 151,
+                length: 149,
             },
         },
     },

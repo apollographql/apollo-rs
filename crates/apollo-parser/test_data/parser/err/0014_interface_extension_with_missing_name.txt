@@ -7,7 +7,7 @@
         - FIELDS_DEFINITION@17..35
             - L_CURLY@17..18 "{"
             - WHITESPACE@18..23 "\n    "
-            - FIELD_DEFINITION@23..34
+            - FIELD_DEFINITION@23..33
                 - NAME@23..28
                     - IDENT@23..28 "value"
                 - COLON@28..29 ":"
@@ -15,7 +15,7 @@
                 - NAMED_TYPE@30..33
                     - NAME@30..33
                         - IDENT@30..33 "Int"
-                - WHITESPACE@33..34 "\n"
+            - WHITESPACE@33..34 "\n"
             - R_CURLY@34..35 "}"
 - ERROR@17:18 "expected a Name" {
 recursion limit: 4096, high: 0

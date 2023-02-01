@@ -1,8 +1,8 @@
 - DOCUMENT@0..70
     - OPERATION_DEFINITION@0..70
-        - OPERATION_TYPE@0..9
+        - OPERATION_TYPE@0..8
             - mutation_KW@0..8 "mutation"
-            - WHITESPACE@8..9 " "
+        - WHITESPACE@8..9 " "
         - SELECTION_SET@9..70
             - L_CURLY@9..10 "{"
             - WHITESPACE@10..13 "\n  "
@@ -29,15 +29,15 @@
                                     - OBJECT_VALUE@45..70
                                         - L_CURLY@45..46 "{"
                                         - WHITESPACE@46..47 " "
-                                        - OBJECT_FIELD@47..61
+                                        - OBJECT_FIELD@47..59
                                             - NAME@47..53
                                                 - IDENT@47..53 "locale"
                                             - COLON@53..54 ":"
                                             - WHITESPACE@54..55 " "
-                                            - STRING_VALUE@55..61
+                                            - STRING_VALUE@55..59
                                                 - STRING@55..59 "\"en\""
-                                                - COMMA@59..60 ","
-                                                - WHITESPACE@60..61 " "
+                                        - COMMA@59..60 ","
+                                        - WHITESPACE@60..61 " "
                                         - OBJECT_FIELD@61..70
                                             - NAME@61..66
                                                 - IDENT@61..66 "value"

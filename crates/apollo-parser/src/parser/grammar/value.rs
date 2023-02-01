@@ -175,8 +175,7 @@ enum Test @dir__one(string: "string value", int_value: -10, float_value: -1.123e
                             argument.value().expect("Cannot get argument value.")
                         {
                             let source = val.source_string();
-                            assert_eq!(source, r#""string value", "#); // SyntaxNodes include trailing
-                                                                       // tokens like commas
+                            assert_eq!(source, r#""string value""#);
 
                             let contents: String = val.into();
                             assert_eq!(contents, "string value");
