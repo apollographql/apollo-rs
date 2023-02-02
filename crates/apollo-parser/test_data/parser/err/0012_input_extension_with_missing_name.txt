@@ -7,7 +7,7 @@
         - INPUT_FIELDS_DEFINITION@13..30
             - L_CURLY@13..14 "{"
             - WHITESPACE@14..19 "\n    "
-            - INPUT_VALUE_DEFINITION@19..29
+            - INPUT_VALUE_DEFINITION@19..28
                 - NAME@19..20
                     - IDENT@19..20 "a"
                 - COLON@20..21 ":"
@@ -15,7 +15,7 @@
                 - NAMED_TYPE@22..28
                     - NAME@22..28
                         - IDENT@22..28 "String"
-                - WHITESPACE@28..29 "\n"
+            - WHITESPACE@28..29 "\n"
             - R_CURLY@29..30 "}"
 - ERROR@13:14 "expected a Name" {
 recursion limit: 4096, high: 0

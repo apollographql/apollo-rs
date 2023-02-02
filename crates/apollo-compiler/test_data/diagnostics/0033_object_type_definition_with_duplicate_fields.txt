@@ -8,7 +8,7 @@
                 id: 33,
             },
             offset: 15,
-            length: 15,
+            length: 12,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 33,
                     },
                     offset: 15,
-                    length: 15,
+                    length: 12,
                 },
                 text: "previous definition of `name` here",
             },
@@ -27,7 +27,7 @@
                         id: 33,
                     },
                     offset: 30,
-                    length: 13,
+                    length: 12,
                 },
                 text: "`name` redefined here",
             },
@@ -42,14 +42,14 @@
                     id: 33,
                 },
                 offset: 15,
-                length: 15,
+                length: 12,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 33,
                 },
                 offset: 30,
-                length: 13,
+                length: 12,
             },
         },
     },

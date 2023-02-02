@@ -8,7 +8,7 @@
                 id: 48,
             },
             offset: 34,
-            length: 14,
+            length: 12,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 48,
                     },
                     offset: 34,
-                    length: 14,
+                    length: 12,
                 },
                 text: "previous definition of `arg` here",
             },
@@ -42,7 +42,7 @@
                     id: 48,
                 },
                 offset: 34,
-                length: 14,
+                length: 12,
             },
             redefined_value: DiagnosticLocation {
                 file_id: FileId {
@@ -62,7 +62,7 @@
                 id: 48,
             },
             offset: 144,
-            length: 14,
+            length: 12,
         },
         labels: [
             Label {
@@ -71,7 +71,7 @@
                         id: 48,
                     },
                     offset: 144,
-                    length: 14,
+                    length: 12,
                 },
                 text: "previous definition of `arg` here",
             },
@@ -96,7 +96,7 @@
                     id: 48,
                 },
                 offset: 144,
-                length: 14,
+                length: 12,
             },
             redefined_value: DiagnosticLocation {
                 file_id: FileId {

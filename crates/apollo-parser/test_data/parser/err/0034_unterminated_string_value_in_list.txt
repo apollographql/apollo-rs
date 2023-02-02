@@ -11,15 +11,15 @@
                     - IDENT@17..21 "link"
                 - ARGUMENTS@21..98
                     - L_PAREN@21..22 "("
-                    - ARGUMENT@22..79
+                    - ARGUMENT@22..69
                         - NAME@22..25
                             - IDENT@22..25 "url"
                         - COLON@25..26 ":"
                         - WHITESPACE@26..27 " "
-                        - STRING_VALUE@27..79
+                        - STRING_VALUE@27..69
                             - STRING@27..69 "\"https://specs.apollo.dev/federation/v2.0\""
-                            - COMMA@69..70 ","
-                            - WHITESPACE@70..79 "\n        "
+                    - COMMA@69..70 ","
+                    - WHITESPACE@70..79 "\n        "
                     - ARGUMENT@79..98
                         - NAME@79..85
                             - IDENT@79..85 "import"
@@ -27,10 +27,10 @@
                         - WHITESPACE@86..87 " "
                         - LIST_VALUE@87..98
                             - L_BRACK@87..88 "["
-                            - STRING_VALUE@88..96
+                            - STRING_VALUE@88..94
                                 - STRING@88..94 "\"@key\""
-                                - COMMA@94..95 ","
-                                - WHITESPACE@95..96 " "
+                            - COMMA@94..95 ","
+                            - WHITESPACE@95..96 " "
                             - ENUM_VALUE@96..98
                                 - NAME@96..98
                                     - IDENT@96..98 "id"

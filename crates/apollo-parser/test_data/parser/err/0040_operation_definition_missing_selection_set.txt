@@ -1,10 +1,10 @@
 - DOCUMENT@0..17
     - OPERATION_DEFINITION@0..17
-        - OPERATION_TYPE@0..6
+        - OPERATION_TYPE@0..5
             - query_KW@0..5 "query"
-            - WHITESPACE@5..6 " "
-        - NAME@6..17
+        - WHITESPACE@5..6 " "
+        - NAME@6..16
             - IDENT@6..16 "__typename"
-            - WHITESPACE@16..17 " "
+        - WHITESPACE@16..17 " "
 - ERROR@17:18 "expected a Selection Set" }
 recursion limit: 4096, high: 0

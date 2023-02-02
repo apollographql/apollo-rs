@@ -5,26 +5,26 @@
         - ENUM_VALUES_DEFINITION@5..46
             - L_CURLY@5..6 "{"
             - WHITESPACE@6..11 "\n    "
-            - ENUM_VALUE_DEFINITION@11..21
-                - ENUM_VALUE@11..21
-                    - NAME@11..21
+            - ENUM_VALUE_DEFINITION@11..16
+                - ENUM_VALUE@11..16
+                    - NAME@11..16
                         - IDENT@11..16 "NORTH"
-                        - WHITESPACE@16..21 "\n    "
-            - ENUM_VALUE_DEFINITION@21..30
-                - ENUM_VALUE@21..30
-                    - NAME@21..30
+            - WHITESPACE@16..21 "\n    "
+            - ENUM_VALUE_DEFINITION@21..25
+                - ENUM_VALUE@21..25
+                    - NAME@21..25
                         - IDENT@21..25 "EAST"
-                        - WHITESPACE@25..30 "\n    "
-            - ENUM_VALUE_DEFINITION@30..40
-                - ENUM_VALUE@30..40
-                    - NAME@30..40
+            - WHITESPACE@25..30 "\n    "
+            - ENUM_VALUE_DEFINITION@30..35
+                - ENUM_VALUE@30..35
+                    - NAME@30..35
                         - IDENT@30..35 "SOUTH"
-                        - WHITESPACE@35..40 "\n    "
-            - ENUM_VALUE_DEFINITION@40..45
-                - ENUM_VALUE@40..45
-                    - NAME@40..45
+            - WHITESPACE@35..40 "\n    "
+            - ENUM_VALUE_DEFINITION@40..44
+                - ENUM_VALUE@40..44
+                    - NAME@40..44
                         - IDENT@40..44 "WEST"
-                        - WHITESPACE@44..45 "\n"
+            - WHITESPACE@44..45 "\n"
             - R_CURLY@45..46 "}"
 - ERROR@5:6 "expected a Name" {
 recursion limit: 4096, high: 0

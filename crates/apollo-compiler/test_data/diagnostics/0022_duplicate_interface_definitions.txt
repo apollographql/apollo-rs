@@ -8,7 +8,7 @@
                 id: 21,
             },
             offset: 106,
-            length: 12,
+            length: 11,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 21,
                     },
                     offset: 64,
-                    length: 12,
+                    length: 11,
                 },
                 text: "previous definition of `NamedEntity` here",
             },
@@ -27,7 +27,7 @@
                         id: 21,
                     },
                     offset: 106,
-                    length: 12,
+                    length: 11,
                 },
                 text: "`NamedEntity` redefined here",
             },
@@ -43,14 +43,14 @@
                     id: 21,
                 },
                 offset: 64,
-                length: 12,
+                length: 11,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 21,
                 },
                 offset: 106,
-                length: 12,
+                length: 11,
             },
         },
     },

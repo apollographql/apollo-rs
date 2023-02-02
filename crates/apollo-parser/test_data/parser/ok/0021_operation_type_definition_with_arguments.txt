@@ -1,13 +1,13 @@
 - DOCUMENT@0..72
     - OPERATION_DEFINITION@0..72
-        - OPERATION_TYPE@0..6
+        - OPERATION_TYPE@0..5
             - query_KW@0..5 "query"
-            - WHITESPACE@5..6 " "
+        - WHITESPACE@5..6 " "
         - NAME@6..13
             - IDENT@6..13 "myQuery"
         - VARIABLE_DEFINITIONS@13..48
             - L_PAREN@13..14 "("
-            - VARIABLE_DEFINITION@14..26
+            - VARIABLE_DEFINITION@14..25
                 - VARIABLE@14..18
                     - DOLLAR@14..15 "$"
                     - NAME@15..18
@@ -17,7 +17,7 @@
                 - NAMED_TYPE@20..25
                     - NAME@20..25
                         - IDENT@20..25 "input"
-                - WHITESPACE@25..26 " "
+            - WHITESPACE@25..26 " "
             - VARIABLE_DEFINITION@26..47
                 - VARIABLE@26..35
                     - DOLLAR@26..27 "$"
@@ -32,13 +32,13 @@
         - SELECTION_SET@48..72
             - L_CURLY@48..49 "{"
             - WHITESPACE@49..54 "\n    "
-            - FIELD@54..65
-                - NAME@54..65
+            - FIELD@54..60
+                - NAME@54..60
                     - IDENT@54..60 "animal"
-                    - WHITESPACE@60..65 "\n    "
-            - FIELD@65..71
-                - NAME@65..71
+            - WHITESPACE@60..65 "\n    "
+            - FIELD@65..70
+                - NAME@65..70
                     - IDENT@65..70 "treat"
-                    - WHITESPACE@70..71 "\n"
+            - WHITESPACE@70..71 "\n"
             - R_CURLY@71..72 "}"
 recursion limit: 4096, high: 3

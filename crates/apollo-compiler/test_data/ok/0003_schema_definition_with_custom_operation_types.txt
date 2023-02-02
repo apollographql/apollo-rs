@@ -1,49 +1,49 @@
 - DOCUMENT@0..328
-    - SCHEMA_DEFINITION@0..105
+    - SCHEMA_DEFINITION@0..103
         - schema_KW@0..6 "schema"
         - WHITESPACE@6..7 " "
         - L_CURLY@7..8 "{"
         - WHITESPACE@8..11 "\n  "
-        - ROOT_OPERATION_TYPE_DEFINITION@11..36
+        - ROOT_OPERATION_TYPE_DEFINITION@11..32
             - OPERATION_TYPE@11..16
                 - query_KW@11..16 "query"
             - COLON@16..17 ":"
             - WHITESPACE@17..18 " "
-            - NAMED_TYPE@18..36
-                - NAME@18..36
+            - NAMED_TYPE@18..32
+                - NAME@18..32
                     - IDENT@18..32 "customPetQuery"
-                    - COMMA@32..33 ","
-                    - WHITESPACE@33..36 "\n  "
-        - ROOT_OPERATION_TYPE_DEFINITION@36..74
+        - COMMA@32..33 ","
+        - WHITESPACE@33..36 "\n  "
+        - ROOT_OPERATION_TYPE_DEFINITION@36..71
             - OPERATION_TYPE@36..48
                 - subscription_KW@36..48 "subscription"
             - COLON@48..49 ":"
             - WHITESPACE@49..50 " "
-            - NAMED_TYPE@50..74
-                - NAME@50..74
+            - NAMED_TYPE@50..71
+                - NAME@50..71
                     - IDENT@50..71 "customPetSubscription"
-                    - WHITESPACE@71..74 "\n  "
-        - ROOT_OPERATION_TYPE_DEFINITION@74..102
+        - WHITESPACE@71..74 "\n  "
+        - ROOT_OPERATION_TYPE_DEFINITION@74..101
             - OPERATION_TYPE@74..82
                 - mutation_KW@74..82 "mutation"
             - COLON@82..83 ":"
             - WHITESPACE@83..84 " "
-            - NAMED_TYPE@84..102
-                - NAME@84..102
+            - NAMED_TYPE@84..101
+                - NAME@84..101
                     - IDENT@84..101 "customPetMutation"
-                    - WHITESPACE@101..102 "\n"
+        - WHITESPACE@101..102 "\n"
         - R_CURLY@102..103 "}"
-        - WHITESPACE@103..105 "\n\n"
-    - OBJECT_TYPE_DEFINITION@105..157
+    - WHITESPACE@103..105 "\n\n"
+    - OBJECT_TYPE_DEFINITION@105..155
         - type_KW@105..109 "type"
         - WHITESPACE@109..110 " "
-        - NAME@110..125
+        - NAME@110..124
             - IDENT@110..124 "customPetQuery"
-            - WHITESPACE@124..125 " "
-        - FIELDS_DEFINITION@125..157
+        - WHITESPACE@124..125 " "
+        - FIELDS_DEFINITION@125..155
             - L_CURLY@125..126 "{"
             - WHITESPACE@126..129 "\n  "
-            - FIELD_DEFINITION@129..145
+            - FIELD_DEFINITION@129..141
                 - NAME@129..133
                     - IDENT@129..133 "name"
                 - COLON@133..134 ":"
@@ -51,9 +51,9 @@
                 - NAMED_TYPE@135..141
                     - NAME@135..141
                         - IDENT@135..141 "String"
-                - COMMA@141..142 ","
-                - WHITESPACE@142..145 "\n  "
-            - FIELD_DEFINITION@145..154
+            - COMMA@141..142 ","
+            - WHITESPACE@142..145 "\n  "
+            - FIELD_DEFINITION@145..153
                 - NAME@145..148
                     - IDENT@145..148 "age"
                 - COLON@148..149 ":"
@@ -61,19 +61,19 @@
                 - NAMED_TYPE@150..153
                     - NAME@150..153
                         - IDENT@150..153 "Int"
-                - WHITESPACE@153..154 "\n"
+            - WHITESPACE@153..154 "\n"
             - R_CURLY@154..155 "}"
-            - WHITESPACE@155..157 "\n\n"
-    - OBJECT_TYPE_DEFINITION@157..220
+    - WHITESPACE@155..157 "\n\n"
+    - OBJECT_TYPE_DEFINITION@157..218
         - type_KW@157..161 "type"
         - WHITESPACE@161..162 " "
-        - NAME@162..184
+        - NAME@162..183
             - IDENT@162..183 "customPetSubscription"
-            - WHITESPACE@183..184 " "
-        - FIELDS_DEFINITION@184..220
+        - WHITESPACE@183..184 " "
+        - FIELDS_DEFINITION@184..218
             - L_CURLY@184..185 "{"
             - WHITESPACE@185..188 "\n  "
-            - FIELD_DEFINITION@188..217
+            - FIELD_DEFINITION@188..216
                 - NAME@188..208
                     - IDENT@188..208 "changeInPetHousehold"
                 - COLON@208..209 ":"
@@ -81,25 +81,25 @@
                 - NAMED_TYPE@210..216
                     - NAME@210..216
                         - IDENT@210..216 "Result"
-                - WHITESPACE@216..217 "\n"
+            - WHITESPACE@216..217 "\n"
             - R_CURLY@217..218 "}"
-            - WHITESPACE@218..220 "\n\n"
-    - OBJECT_TYPE_DEFINITION@220..300
+    - WHITESPACE@218..220 "\n\n"
+    - OBJECT_TYPE_DEFINITION@220..298
         - type_KW@220..224 "type"
         - WHITESPACE@224..225 " "
-        - NAME@225..243
+        - NAME@225..242
             - IDENT@225..242 "customPetMutation"
-            - WHITESPACE@242..243 " "
-        - FIELDS_DEFINITION@243..300
+        - WHITESPACE@242..243 " "
+        - FIELDS_DEFINITION@243..298
             - L_CURLY@243..244 "{"
             - WHITESPACE@244..247 "\n  "
-            - FIELD_DEFINITION@247..297
-                - NAME@247..254
+            - FIELD_DEFINITION@247..296
+                - NAME@247..253
                     - IDENT@247..253 "addPet"
-                    - WHITESPACE@253..254 " "
+                - WHITESPACE@253..254 " "
                 - ARGUMENTS_DEFINITION@254..287
                     - L_PAREN@254..255 "("
-                    - INPUT_VALUE_DEFINITION@255..270
+                    - INPUT_VALUE_DEFINITION@255..268
                         - NAME@255..259
                             - IDENT@255..259 "name"
                         - COLON@259..260 ":"
@@ -109,8 +109,8 @@
                                 - NAME@261..267
                                     - IDENT@261..267 "String"
                             - BANG@267..268 "!"
-                        - COMMA@268..269 ","
-                        - WHITESPACE@269..270 " "
+                    - COMMA@268..269 ","
+                    - WHITESPACE@269..270 " "
                     - INPUT_VALUE_DEFINITION@270..286
                         - NAME@270..277
                             - IDENT@270..277 "petType"
@@ -127,19 +127,19 @@
                         - NAME@289..295
                             - IDENT@289..295 "Result"
                     - BANG@295..296 "!"
-                - WHITESPACE@296..297 "\n"
+            - WHITESPACE@296..297 "\n"
             - R_CURLY@297..298 "}"
-            - WHITESPACE@298..300 "\n\n"
+    - WHITESPACE@298..300 "\n\n"
     - OBJECT_TYPE_DEFINITION@300..328
         - type_KW@300..304 "type"
         - WHITESPACE@304..305 " "
-        - NAME@305..312
+        - NAME@305..311
             - IDENT@305..311 "Result"
-            - WHITESPACE@311..312 " "
+        - WHITESPACE@311..312 " "
         - FIELDS_DEFINITION@312..328
             - L_CURLY@312..313 "{"
             - WHITESPACE@313..316 "\n  "
-            - FIELD_DEFINITION@316..327
+            - FIELD_DEFINITION@316..326
                 - NAME@316..318
                     - IDENT@316..318 "id"
                 - COLON@318..319 ":"
@@ -147,6 +147,6 @@
                 - NAMED_TYPE@320..326
                     - NAME@320..326
                         - IDENT@320..326 "String"
-                - WHITESPACE@326..327 "\n"
+            - WHITESPACE@326..327 "\n"
             - R_CURLY@327..328 "}"
 recursion limit: 4096, high: 0

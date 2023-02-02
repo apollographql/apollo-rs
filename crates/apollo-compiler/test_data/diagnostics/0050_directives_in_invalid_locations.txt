@@ -8,7 +8,7 @@
                 id: 50,
             },
             offset: 1105,
-            length: 9,
+            length: 8,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 50,
                     },
                     offset: 1105,
-                    length: 9,
+                    length: 8,
                 },
                 text: "SCHEMA is not a valid location",
             },
@@ -40,7 +40,7 @@
                 id: 50,
             },
             offset: 1246,
-            length: 12,
+            length: 11,
         },
         labels: [
             Label {
@@ -49,7 +49,7 @@
                         id: 50,
                     },
                     offset: 1246,
-                    length: 12,
+                    length: 11,
                 },
                 text: "SCALAR is not a valid location",
             },
@@ -90,7 +90,7 @@
                 id: 50,
             },
             offset: 791,
-            length: 12,
+            length: 11,
         },
         labels: [
             Label {
@@ -99,7 +99,7 @@
                         id: 50,
                     },
                     offset: 791,
-                    length: 12,
+                    length: 11,
                 },
                 text: "ENUM is not a valid location",
             },
@@ -109,7 +109,7 @@
                         id: 50,
                     },
                     offset: 1306,
-                    length: 31,
+                    length: 30,
                 },
                 text: "consider adding ENUM directive location here",
             },
@@ -126,7 +126,7 @@
                         id: 50,
                     },
                     offset: 1306,
-                    length: 31,
+                    length: 30,
                 },
             ),
         },
@@ -140,7 +140,7 @@
                 id: 50,
             },
             offset: 813,
-            length: 15,
+            length: 11,
         },
         labels: [
             Label {
@@ -149,7 +149,7 @@
                         id: 50,
                     },
                     offset: 813,
-                    length: 15,
+                    length: 11,
                 },
                 text: "ENUM_VALUE is not a valid location",
             },
@@ -159,7 +159,7 @@
                         id: 50,
                     },
                     offset: 1306,
-                    length: 31,
+                    length: 30,
                 },
                 text: "consider adding ENUM_VALUE directive location here",
             },
@@ -176,7 +176,7 @@
                         id: 50,
                     },
                     offset: 1306,
-                    length: 31,
+                    length: 30,
                 },
             ),
         },
@@ -190,7 +190,7 @@
                 id: 50,
             },
             offset: 709,
-            length: 12,
+            length: 11,
         },
         labels: [
             Label {
@@ -199,7 +199,7 @@
                         id: 50,
                     },
                     offset: 709,
-                    length: 12,
+                    length: 11,
                 },
                 text: "UNION is not a valid location",
             },
@@ -240,7 +240,7 @@
                 id: 50,
             },
             offset: 425,
-            length: 6,
+            length: 5,
         },
         labels: [
             Label {
@@ -249,7 +249,7 @@
                         id: 50,
                     },
                     offset: 425,
-                    length: 6,
+                    length: 5,
                 },
                 text: "INTERFACE is not a valid location",
             },
@@ -272,7 +272,7 @@
                 id: 50,
             },
             offset: 639,
-            length: 9,
+            length: 8,
         },
         labels: [
             Label {
@@ -281,7 +281,7 @@
                         id: 50,
                     },
                     offset: 639,
-                    length: 9,
+                    length: 8,
                 },
                 text: "INPUT_OBJECT is not a valid location",
             },
@@ -304,7 +304,7 @@
                 id: 50,
             },
             offset: 666,
-            length: 11,
+            length: 8,
         },
         labels: [
             Label {
@@ -313,7 +313,7 @@
                         id: 50,
                     },
                     offset: 666,
-                    length: 11,
+                    length: 8,
                 },
                 text: "INPUT_FIELD_DEFINITION is not a valid location",
             },
@@ -336,7 +336,7 @@
                 id: 50,
             },
             offset: 492,
-            length: 14,
+            length: 11,
         },
         labels: [
             Label {
@@ -345,7 +345,7 @@
                         id: 50,
                     },
                     offset: 492,
-                    length: 14,
+                    length: 11,
                 },
                 text: "FIELD_DEFINITION is not a valid location",
             },
@@ -386,7 +386,7 @@
                 id: 50,
             },
             offset: 856,
-            length: 12,
+            length: 11,
         },
         labels: [
             Label {
@@ -395,7 +395,7 @@
                         id: 50,
                     },
                     offset: 856,
-                    length: 12,
+                    length: 11,
                 },
                 text: "OBJECT is not a valid location",
             },
@@ -514,7 +514,7 @@
                 id: 50,
             },
             offset: 89,
-            length: 14,
+            length: 11,
         },
         labels: [
             Label {
@@ -523,7 +523,7 @@
                         id: 50,
                     },
                     offset: 89,
-                    length: 14,
+                    length: 11,
                 },
                 text: "FIELD is not a valid location",
             },
@@ -546,7 +546,7 @@
                 id: 50,
             },
             offset: 123,
-            length: 14,
+            length: 11,
         },
         labels: [
             Label {
@@ -555,7 +555,7 @@
                         id: 50,
                     },
                     offset: 123,
-                    length: 14,
+                    length: 11,
                 },
                 text: "FRAGMENT_SPREAD is not a valid location",
             },
@@ -596,7 +596,7 @@
                 id: 50,
             },
             offset: 258,
-            length: 12,
+            length: 11,
         },
         labels: [
             Label {
@@ -605,7 +605,7 @@
                         id: 50,
                     },
                     offset: 258,
-                    length: 12,
+                    length: 11,
                 },
                 text: "SUBSCRIPTION is not a valid location",
             },
@@ -615,7 +615,7 @@
                         id: 50,
                     },
                     offset: 1306,
-                    length: 31,
+                    length: 30,
                 },
                 text: "consider adding SUBSCRIPTION directive location here",
             },
@@ -632,7 +632,7 @@
                         id: 50,
                     },
                     offset: 1306,
-                    length: 31,
+                    length: 30,
                 },
             ),
         },
@@ -646,7 +646,7 @@
                 id: 50,
             },
             offset: 334,
-            length: 16,
+            length: 15,
         },
         labels: [
             Label {
@@ -655,7 +655,7 @@
                         id: 50,
                     },
                     offset: 334,
-                    length: 16,
+                    length: 15,
                 },
                 text: "MUTATION is not a valid location",
             },
@@ -728,7 +728,7 @@
                 id: 50,
             },
             offset: 201,
-            length: 12,
+            length: 11,
         },
         labels: [
             Label {
@@ -737,7 +737,7 @@
                         id: 50,
                     },
                     offset: 201,
-                    length: 12,
+                    length: 11,
                 },
                 text: "INLINE_FRAGMENT is not a valid location",
             },
@@ -747,7 +747,7 @@
                         id: 50,
                     },
                     offset: 1306,
-                    length: 31,
+                    length: 30,
                 },
                 text: "consider adding INLINE_FRAGMENT directive location here",
             },
@@ -764,7 +764,7 @@
                         id: 50,
                     },
                     offset: 1306,
-                    length: 31,
+                    length: 30,
                 },
             ),
         },

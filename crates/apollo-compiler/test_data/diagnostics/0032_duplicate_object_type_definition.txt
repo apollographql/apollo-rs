@@ -17,7 +17,7 @@
                         id: 32,
                     },
                     offset: 0,
-                    length: 31,
+                    length: 29,
                 },
                 text: "previous definition of `Query` here",
             },
@@ -43,7 +43,7 @@
                     id: 32,
                 },
                 offset: 0,
-                length: 31,
+                length: 29,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {

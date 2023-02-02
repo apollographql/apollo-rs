@@ -8,7 +8,7 @@
                 id: 30,
             },
             offset: 115,
-            length: 41,
+            length: 39,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 30,
                     },
                     offset: 115,
-                    length: 41,
+                    length: 39,
                 },
                 text: "previous definition of `Point2D` here",
             },
@@ -43,7 +43,7 @@
                     id: 30,
                 },
                 offset: 115,
-                length: 41,
+                length: 39,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {

@@ -32,6 +32,8 @@ pub(crate) fn document(p: &mut Parser) {
         }
     }
 
+    p.push_ignored();
+
     doc.finish_node();
 }
 

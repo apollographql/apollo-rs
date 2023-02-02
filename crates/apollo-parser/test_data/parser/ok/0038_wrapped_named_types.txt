@@ -1,14 +1,14 @@
 - DOCUMENT@0..224
-    - OBJECT_TYPE_DEFINITION@0..109
+    - OBJECT_TYPE_DEFINITION@0..107
         - type_KW@0..4 "type"
         - WHITESPACE@4..5 " "
-        - NAME@5..15
+        - NAME@5..14
             - IDENT@5..14 "ObjectDef"
-            - WHITESPACE@14..15 " "
-        - FIELDS_DEFINITION@15..109
+        - WHITESPACE@14..15 " "
+        - FIELDS_DEFINITION@15..107
             - L_CURLY@15..16 "{"
             - WHITESPACE@16..21 "\n    "
-            - FIELD_DEFINITION@21..35
+            - FIELD_DEFINITION@21..30
                 - NAME@21..22
                     - IDENT@21..22 "a"
                 - COLON@22..23 ":"
@@ -16,8 +16,8 @@
                 - NAMED_TYPE@24..30
                     - NAME@24..30
                         - IDENT@24..30 "String"
-                - WHITESPACE@30..35 "\n    "
-            - FIELD_DEFINITION@35..47
+            - WHITESPACE@30..35 "\n    "
+            - FIELD_DEFINITION@35..42
                 - NAME@35..36
                     - IDENT@35..36 "b"
                 - COLON@36..37 ":"
@@ -27,8 +27,8 @@
                         - NAME@38..41
                             - IDENT@38..41 "Int"
                     - BANG@41..42 "!"
-                - WHITESPACE@42..47 "\n    "
-            - FIELD_DEFINITION@47..62
+            - WHITESPACE@42..47 "\n    "
+            - FIELD_DEFINITION@47..57
                 - NAME@47..48
                     - IDENT@47..48 "c"
                 - COLON@48..49 ":"
@@ -43,8 +43,8 @@
                             - BANG@54..55 "!"
                         - R_BRACK@55..56 "]"
                     - BANG@56..57 "!"
-                - WHITESPACE@57..62 "\n    "
-            - FIELD_DEFINITION@62..83
+            - WHITESPACE@57..62 "\n    "
+            - FIELD_DEFINITION@62..78
                 - NAME@62..63
                     - IDENT@62..63 "d"
                 - COLON@63..64 ":"
@@ -67,8 +67,8 @@
                             - R_BRACK@75..76 "]"
                         - R_BRACK@76..77 "]"
                     - R_BRACK@77..78 "]"
-                - WHITESPACE@78..83 "\n    "
-            - FIELD_DEFINITION@83..106
+            - WHITESPACE@78..83 "\n    "
+            - FIELD_DEFINITION@83..105
                 - NAME@83..84
                     - IDENT@83..84 "d"
                 - COLON@84..85 ":"
@@ -103,19 +103,19 @@
                             - BANG@102..103 "!"
                         - R_BRACK@103..104 "]"
                     - BANG@104..105 "!"
-                - WHITESPACE@105..106 "\n"
+            - WHITESPACE@105..106 "\n"
             - R_CURLY@106..107 "}"
-            - WHITESPACE@107..109 "\n\n"
+    - WHITESPACE@107..109 "\n\n"
     - OBJECT_TYPE_DEFINITION@109..224
         - type_KW@109..113 "type"
         - WHITESPACE@113..114 " "
-        - NAME@114..127
+        - NAME@114..126
             - IDENT@114..126 "ObjectDefTwo"
-            - WHITESPACE@126..127 " "
+        - WHITESPACE@126..127 " "
         - FIELDS_DEFINITION@127..224
             - L_CURLY@127..128 "{"
             - WHITESPACE@128..133 "\n    "
-            - FIELD_DEFINITION@133..148
+            - FIELD_DEFINITION@133..142
                 - NAME@133..134
                     - IDENT@133..134 "a"
                 - COLON@134..135 ":"
@@ -123,9 +123,9 @@
                 - NAMED_TYPE@136..142
                     - NAME@136..142
                         - IDENT@136..142 "String"
-                - COMMA@142..143 ","
-                - WHITESPACE@143..148 "\n    "
-            - FIELD_DEFINITION@148..161
+            - COMMA@142..143 ","
+            - WHITESPACE@143..148 "\n    "
+            - FIELD_DEFINITION@148..155
                 - NAME@148..149
                     - IDENT@148..149 "b"
                 - COLON@149..150 ":"
@@ -135,9 +135,9 @@
                         - NAME@151..154
                             - IDENT@151..154 "Int"
                     - BANG@154..155 "!"
-                - COMMA@155..156 ","
-                - WHITESPACE@156..161 "\n    "
-            - FIELD_DEFINITION@161..177
+            - COMMA@155..156 ","
+            - WHITESPACE@156..161 "\n    "
+            - FIELD_DEFINITION@161..171
                 - NAME@161..162
                     - IDENT@161..162 "c"
                 - COLON@162..163 ":"
@@ -152,9 +152,9 @@
                             - BANG@168..169 "!"
                         - R_BRACK@169..170 "]"
                     - BANG@170..171 "!"
-                - COMMA@171..172 ","
-                - WHITESPACE@172..177 "\n    "
-            - FIELD_DEFINITION@177..199
+            - COMMA@171..172 ","
+            - WHITESPACE@172..177 "\n    "
+            - FIELD_DEFINITION@177..193
                 - NAME@177..178
                     - IDENT@177..178 "d"
                 - COLON@178..179 ":"
@@ -177,9 +177,9 @@
                             - R_BRACK@190..191 "]"
                         - R_BRACK@191..192 "]"
                     - R_BRACK@192..193 "]"
-                - COMMA@193..194 ","
-                - WHITESPACE@194..199 "\n    "
-            - FIELD_DEFINITION@199..223
+            - COMMA@193..194 ","
+            - WHITESPACE@194..199 "\n    "
+            - FIELD_DEFINITION@199..221
                 - NAME@199..200
                     - IDENT@199..200 "d"
                 - COLON@200..201 ":"
@@ -214,7 +214,7 @@
                             - BANG@218..219 "!"
                         - R_BRACK@219..220 "]"
                     - BANG@220..221 "!"
-                - COMMA@221..222 ","
-                - WHITESPACE@222..223 "\n"
+            - COMMA@221..222 ","
+            - WHITESPACE@222..223 "\n"
             - R_CURLY@223..224 "}"
 recursion limit: 4096, high: 0

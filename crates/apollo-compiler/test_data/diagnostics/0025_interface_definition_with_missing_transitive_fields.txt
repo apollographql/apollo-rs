@@ -17,7 +17,7 @@
                         id: 24,
                     },
                     offset: 72,
-                    length: 63,
+                    length: 61,
                 },
                 text: "`width` was originally defined here",
             },

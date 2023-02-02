@@ -8,7 +8,7 @@
                 id: 13,
             },
             offset: 0,
-            length: 77,
+            length: 75,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 13,
                     },
                     offset: 0,
-                    length: 77,
+                    length: 75,
                 },
                 text: "Subscription operation is not defined in the schema and is therefore not supported",
             },
@@ -27,7 +27,7 @@
                         id: 13,
                     },
                     offset: 77,
-                    length: 37,
+                    length: 35,
                 },
                 text: "Consider defining a `subscription` root operation type here",
             },
@@ -46,7 +46,7 @@
                 id: 13,
             },
             offset: 37,
-            length: 37,
+            length: 36,
         },
         labels: [
             Label {
@@ -55,7 +55,7 @@
                         id: 13,
                     },
                     offset: 37,
-                    length: 37,
+                    length: 36,
                 },
                 text: "`newMessage` field is not defined",
             },

@@ -1,14 +1,14 @@
 - DOCUMENT@0..214
-    - INPUT_OBJECT_TYPE_DEFINITION@0..214
+    - INPUT_OBJECT_TYPE_DEFINITION@0..213
         - input_KW@0..5 "input"
         - WHITESPACE@5..6 " "
-        - NAME@6..27
+        - NAME@6..26
             - IDENT@6..26 "WithAllKindsOfFloats"
-            - WHITESPACE@26..27 " "
-        - INPUT_FIELDS_DEFINITION@27..214
+        - WHITESPACE@26..27 " "
+        - INPUT_FIELDS_DEFINITION@27..213
             - L_CURLY@27..28 "{"
             - WHITESPACE@28..31 "\n  "
-            - INPUT_VALUE_DEFINITION@31..62
+            - INPUT_VALUE_DEFINITION@31..59
                 - NAME@31..46
                     - IDENT@31..46 "a_regular_float"
                 - COLON@46..47 ":"
@@ -17,13 +17,13 @@
                     - NAME@48..53
                         - IDENT@48..53 "Float"
                 - WHITESPACE@53..54 " "
-                - DEFAULT_VALUE@54..62
+                - DEFAULT_VALUE@54..59
                     - EQ@54..55 "="
                     - WHITESPACE@55..56 " "
-                    - FLOAT_VALUE@56..62
+                    - FLOAT_VALUE@56..59
                         - FLOAT@56..59 "1.2"
-                        - WHITESPACE@59..62 "\n  "
-            - INPUT_VALUE_DEFINITION@62..95
+            - WHITESPACE@59..62 "\n  "
+            - INPUT_VALUE_DEFINITION@62..92
                 - NAME@62..78
                     - IDENT@62..78 "an_integer_float"
                 - COLON@78..79 ":"
@@ -32,13 +32,13 @@
                     - NAME@80..85
                         - IDENT@80..85 "Float"
                 - WHITESPACE@85..86 " "
-                - DEFAULT_VALUE@86..95
+                - DEFAULT_VALUE@86..92
                     - EQ@86..87 "="
                     - WHITESPACE@87..88 " "
-                    - INT_VALUE@88..95
+                    - INT_VALUE@88..92
                         - INT@88..92 "1234"
-                        - WHITESPACE@92..95 "\n  "
-            - INPUT_VALUE_DEFINITION@95..148
+            - WHITESPACE@92..95 "\n  "
+            - INPUT_VALUE_DEFINITION@95..145
                 - NAME@95..125
                     - IDENT@95..125 "a_float_that_doesnt_fit_an_int"
                 - COLON@125..126 ":"
@@ -47,13 +47,13 @@
                     - NAME@127..132
                         - IDENT@127..132 "Float"
                 - WHITESPACE@132..133 " "
-                - DEFAULT_VALUE@133..148
+                - DEFAULT_VALUE@133..145
                     - EQ@133..134 "="
                     - WHITESPACE@134..135 " "
-                    - INT_VALUE@135..148
+                    - INT_VALUE@135..145
                         - INT@135..145 "9876543210"
-                        - WHITESPACE@145..148 "\n  "
-            - INPUT_VALUE_DEFINITION@148..212
+            - WHITESPACE@145..148 "\n  "
+            - INPUT_VALUE_DEFINITION@148..211
                 - NAME@148..162
                     - IDENT@148..162 "list_of_floats"
                 - COLON@162..163 ":"
@@ -65,23 +65,23 @@
                             - IDENT@165..170 "Float"
                     - R_BRACK@170..171 "]"
                 - WHITESPACE@171..172 " "
-                - DEFAULT_VALUE@172..212
+                - DEFAULT_VALUE@172..211
                     - EQ@172..173 "="
                     - WHITESPACE@173..174 " "
-                    - LIST_VALUE@174..212
+                    - LIST_VALUE@174..211
                         - L_BRACK@174..175 "["
-                        - INT_VALUE@175..178
+                        - INT_VALUE@175..176
                             - INT@175..176 "4"
-                            - COMMA@176..177 ","
-                            - WHITESPACE@177..178 " "
-                        - INT_VALUE@178..190
+                        - COMMA@176..177 ","
+                        - WHITESPACE@177..178 " "
+                        - INT_VALUE@178..188
                             - INT@178..188 "9876543210"
-                            - COMMA@188..189 ","
-                            - WHITESPACE@189..190 " "
+                        - COMMA@188..189 ","
+                        - WHITESPACE@189..190 " "
                         - INT_VALUE@190..210
                             - INT@190..210 "98765432109876543210"
                         - R_BRACK@210..211 "]"
-                        - WHITESPACE@211..212 "\n"
+            - WHITESPACE@211..212 "\n"
             - R_CURLY@212..213 "}"
-            - WHITESPACE@213..214 "\n"
+    - WHITESPACE@213..214 "\n"
 recursion limit: 4096, high: 0

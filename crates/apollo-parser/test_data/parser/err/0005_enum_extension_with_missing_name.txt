@@ -7,16 +7,16 @@
         - ENUM_VALUES_DEFINITION@12..34
             - L_CURLY@12..13 "{"
             - WHITESPACE@13..18 "\n    "
-            - ENUM_VALUE_DEFINITION@18..28
-                - ENUM_VALUE@18..28
-                    - NAME@18..28
+            - ENUM_VALUE_DEFINITION@18..23
+                - ENUM_VALUE@18..23
+                    - NAME@18..23
                         - IDENT@18..23 "NORTH"
-                        - WHITESPACE@23..28 "\n    "
-            - ENUM_VALUE_DEFINITION@28..33
-                - ENUM_VALUE@28..33
-                    - NAME@28..33
+            - WHITESPACE@23..28 "\n    "
+            - ENUM_VALUE_DEFINITION@28..32
+                - ENUM_VALUE@28..32
+                    - NAME@28..32
                         - IDENT@28..32 "EAST"
-                        - WHITESPACE@32..33 "\n"
+            - WHITESPACE@32..33 "\n"
             - R_CURLY@33..34 "}"
 - ERROR@12:13 "expected a Name" {
 recursion limit: 4096, high: 0

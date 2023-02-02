@@ -4,9 +4,9 @@
         - WHITESPACE@6..7 " "
         - scalar_KW@7..13 "scalar"
         - WHITESPACE@13..14 " "
-        - NAME@14..19
+        - NAME@14..18
             - IDENT@14..18 "Time"
-            - WHITESPACE@18..19 " "
+        - WHITESPACE@18..19 " "
         - DIRECTIVES@19..30
             - DIRECTIVE@19..30
                 - AT@19..20 "@"

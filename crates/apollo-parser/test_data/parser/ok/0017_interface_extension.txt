@@ -4,19 +4,19 @@
         - WHITESPACE@6..7 " "
         - interface_KW@7..16 "interface"
         - WHITESPACE@16..17 " "
-        - NAME@17..30
+        - NAME@17..29
             - IDENT@17..29 "ValuedEntity"
-            - WHITESPACE@29..30 " "
-        - DIRECTIVES@30..36
-            - DIRECTIVE@30..36
+        - WHITESPACE@29..30 " "
+        - DIRECTIVES@30..35
+            - DIRECTIVE@30..35
                 - AT@30..31 "@"
-                - NAME@31..36
+                - NAME@31..35
                     - IDENT@31..35 "skip"
-                    - WHITESPACE@35..36 " "
+        - WHITESPACE@35..36 " "
         - FIELDS_DEFINITION@36..54
             - L_CURLY@36..37 "{"
             - WHITESPACE@37..42 "\n    "
-            - FIELD_DEFINITION@42..53
+            - FIELD_DEFINITION@42..52
                 - NAME@42..47
                     - IDENT@42..47 "value"
                 - COLON@47..48 ":"
@@ -24,6 +24,6 @@
                 - NAMED_TYPE@49..52
                     - NAME@49..52
                         - IDENT@49..52 "Int"
-                - WHITESPACE@52..53 "\n"
+            - WHITESPACE@52..53 "\n"
             - R_CURLY@53..54 "}"
 recursion limit: 4096, high: 0

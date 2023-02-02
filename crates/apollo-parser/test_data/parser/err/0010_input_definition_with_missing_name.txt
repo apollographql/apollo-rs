@@ -5,7 +5,7 @@
         - INPUT_FIELDS_DEFINITION@6..35
             - L_CURLY@6..7 "{"
             - WHITESPACE@7..12 "\n    "
-            - INPUT_VALUE_DEFINITION@12..26
+            - INPUT_VALUE_DEFINITION@12..21
                 - NAME@12..13
                     - IDENT@12..13 "a"
                 - COLON@13..14 ":"
@@ -13,8 +13,8 @@
                 - NAMED_TYPE@15..21
                     - NAME@15..21
                         - IDENT@15..21 "String"
-                - WHITESPACE@21..26 "\n    "
-            - INPUT_VALUE_DEFINITION@26..34
+            - WHITESPACE@21..26 "\n    "
+            - INPUT_VALUE_DEFINITION@26..33
                 - NAME@26..27
                     - IDENT@26..27 "b"
                 - COLON@27..28 ":"
@@ -24,7 +24,7 @@
                         - NAME@29..32
                             - IDENT@29..32 "Int"
                     - BANG@32..33 "!"
-                - WHITESPACE@33..34 "\n"
+            - WHITESPACE@33..34 "\n"
             - R_CURLY@34..35 "}"
 - ERROR@6:7 "expected a Name" {
 recursion limit: 4096, high: 0

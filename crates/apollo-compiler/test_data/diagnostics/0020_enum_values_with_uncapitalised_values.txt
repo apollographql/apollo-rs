@@ -8,7 +8,7 @@
                 id: 19,
             },
             offset: 43,
-            length: 8,
+            length: 3,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 19,
                     },
                     offset: 43,
-                    length: 8,
+                    length: 3,
                 },
                 text: "consider capitalizing CAt",
             },
@@ -36,7 +36,7 @@
                 id: 19,
             },
             offset: 51,
-            length: 11,
+            length: 6,
         },
         labels: [
             Label {
@@ -45,7 +45,7 @@
                         id: 19,
                     },
                     offset: 51,
-                    length: 11,
+                    length: 6,
                 },
                 text: "consider capitalizing DOG_gO",
             },
@@ -64,7 +64,7 @@
                 id: 19,
             },
             offset: 70,
-            length: 9,
+            length: 4,
         },
         labels: [
             Label {
@@ -73,7 +73,7 @@
                         id: 19,
                     },
                     offset: 70,
-                    length: 9,
+                    length: 4,
                 },
                 text: "consider capitalizing _fox",
             },
@@ -92,7 +92,7 @@
                 id: 19,
             },
             offset: 79,
-            length: 13,
+            length: 8,
         },
         labels: [
             Label {
@@ -101,7 +101,7 @@
                         id: 19,
                     },
                     offset: 79,
-                    length: 13,
+                    length: 8,
                 },
                 text: "consider capitalizing squirrel",
             },
@@ -120,7 +120,7 @@
                 id: 19,
             },
             offset: 92,
-            length: 8,
+            length: 7,
         },
         labels: [
             Label {
@@ -129,7 +129,7 @@
                         id: 19,
                     },
                     offset: 92,
-                    length: 8,
+                    length: 7,
                 },
                 text: "consider capitalizing PARRot1",
             },

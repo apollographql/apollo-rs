@@ -57,7 +57,7 @@ fn parse(p: &mut Parser) -> Result<(), Token> {
     };
 
     // There may be whitespace inside a list node or between the type and the non-null `!`.
-    p.bump_ignored();
+    p.skip_ignored();
 
     // Deal with nullable types
     if let Some(T![!]) = p.peek() {
@@ -69,7 +69,7 @@ fn parse(p: &mut Parser) -> Result<(), Token> {
     // Handle post-node commas, whitespace, comments
     // TODO(@goto-bus-stop) This should maybe be done further up the parse tree? the type node is
     // parsed completely at this point.
-    p.bump_ignored();
+    p.skip_ignored();
 
     Ok(())
 }

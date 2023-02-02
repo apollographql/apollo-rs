@@ -2,13 +2,13 @@
     - OBJECT_TYPE_DEFINITION@0..63
         - type_KW@0..4 "type"
         - WHITESPACE@4..5 " "
-        - NAME@5..10
+        - NAME@5..9
             - IDENT@5..9 "List"
-            - WHITESPACE@9..10 " "
+        - WHITESPACE@9..10 " "
         - FIELDS_DEFINITION@10..63
             - L_CURLY@10..11 "{"
             - WHITESPACE@11..14 "\n  "
-            - FIELD_DEFINITION@14..40
+            - FIELD_DEFINITION@14..37
                 - NAME@14..19
                     - IDENT@14..19 "field"
                 - COLON@19..20 ":"
@@ -16,27 +16,27 @@
                 - LIST_TYPE@21..22
                     - L_BRACK@21..22 "["
                 - WHITESPACE@22..23 " "
-                - DIRECTIVES@23..40
-                    - DIRECTIVE@23..40
+                - DIRECTIVES@23..37
+                    - DIRECTIVE@23..37
                         - AT@23..24 "@"
-                        - NAME@24..40
+                        - NAME@24..37
                             - IDENT@24..37 "coolDirective"
-                            - WHITESPACE@37..40 "\n  "
-            - FIELD_DEFINITION@40..59
+            - WHITESPACE@37..40 "\n  "
+            - FIELD_DEFINITION@40..58
                 - NAME@40..49
                     - IDENT@40..49 "deepError"
                 - COLON@49..50 ":"
                 - WHITESPACE@50..51 " "
-                - LIST_TYPE@51..59
+                - LIST_TYPE@51..58
                     - L_BRACK@51..52 "["
-                    - LIST_TYPE@52..59
+                    - LIST_TYPE@52..58
                         - L_BRACK@52..53 "["
-                        - LIST_TYPE@53..59
+                        - LIST_TYPE@53..58
                             - L_BRACK@53..54 "["
                             - NAMED_TYPE@54..58
                                 - NAME@54..58
                                     - IDENT@54..58 "Item"
-                            - WHITESPACE@58..59 " "
+            - WHITESPACE@58..59 " "
             - FIELD_DEFINITION@59..63
                 - NAME@59..63
                     - IDENT@59..63 "Type"

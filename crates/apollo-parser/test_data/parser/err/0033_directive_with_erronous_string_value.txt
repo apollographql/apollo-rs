@@ -1,11 +1,11 @@
 - DOCUMENT@0..119
-    - DIRECTIVE_DEFINITION@0..74
+    - DIRECTIVE_DEFINITION@0..72
         - directive_KW@0..9 "directive"
         - WHITESPACE@9..10 " "
         - AT@10..11 "@"
         - NAME@11..24
             - IDENT@11..24 "delegateField"
-        - ARGUMENTS_DEFINITION@24..40
+        - ARGUMENTS_DEFINITION@24..39
             - L_PAREN@24..25 "("
             - INPUT_VALUE_DEFINITION@25..38
                 - NAME@25..29
@@ -18,26 +18,26 @@
                             - IDENT@31..37 "String"
                     - BANG@37..38 "!"
             - R_PAREN@38..39 ")"
-            - WHITESPACE@39..40 " "
+        - WHITESPACE@39..40 " "
         - repeatable_KW@40..50 "repeatable"
         - WHITESPACE@50..51 " "
         - on_KW@51..53 "on"
         - WHITESPACE@53..54 " "
-        - DIRECTIVE_LOCATIONS@54..74
-            - DIRECTIVE_LOCATION@54..61
+        - DIRECTIVE_LOCATIONS@54..72
+            - DIRECTIVE_LOCATION@54..60
                 - OBJECT_KW@54..60 "OBJECT"
-                - WHITESPACE@60..61 " "
+            - WHITESPACE@60..61 " "
             - PIPE@61..62 "|"
             - WHITESPACE@62..63 " "
-            - DIRECTIVE_LOCATION@63..74
+            - DIRECTIVE_LOCATION@63..72
                 - INTERFACE_KW@63..72 "INTERFACE"
-                - WHITESPACE@72..74 "\n\n"
+    - WHITESPACE@72..74 "\n\n"
     - OBJECT_TYPE_DEFINITION@74..119
         - type_KW@74..78 "type"
         - WHITESPACE@78..79 " "
-        - NAME@79..84
+        - NAME@79..83
             - IDENT@79..83 "Book"
-            - WHITESPACE@83..84 " "
+        - WHITESPACE@83..84 " "
         - DIRECTIVES@84..106
             - DIRECTIVE@84..106
                 - AT@84..85 "@"
@@ -45,16 +45,16 @@
                     - IDENT@85..98 "delegateField"
                 - ARGUMENTS@98..106
                     - L_PAREN@98..99 "("
-                    - ARGUMENT@99..105
+                    - ARGUMENT@99..104
                         - NAME@99..103
                             - IDENT@99..103 "name"
                         - COLON@103..104 ":"
-                        - WHITESPACE@104..105 " "
+                    - WHITESPACE@104..105 " "
                     - R_PAREN@105..106 ")"
         - FIELDS_DEFINITION@106..119
             - L_CURLY@106..107 "{"
             - WHITESPACE@107..110 "\n  "
-            - FIELD_DEFINITION@110..118
+            - FIELD_DEFINITION@110..117
                 - NAME@110..112
                     - IDENT@110..112 "id"
                 - COLON@112..113 ":"
@@ -64,7 +64,7 @@
                         - NAME@114..116
                             - IDENT@114..116 "ID"
                     - BANG@116..117 "!"
-                - WHITESPACE@117..118 "\n"
+            - WHITESPACE@117..118 "\n"
             - R_CURLY@118..119 "}"
 - ERROR@105:128 "unexpected escaped character" "\ errronous string \""
 - ERROR@128:129 "expected a valid Value" )

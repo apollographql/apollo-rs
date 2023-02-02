@@ -8,7 +8,7 @@
                 id: 40,
             },
             offset: 21,
-            length: 7,
+            length: 4,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 40,
                     },
                     offset: 21,
-                    length: 7,
+                    length: 4,
                 },
                 text: "`size` field is not defined",
             },
@@ -27,7 +27,7 @@
                         id: 40,
                     },
                     offset: 38,
-                    length: 54,
+                    length: 52,
                 },
                 text: "`Query` declared here",
             },
@@ -48,7 +48,7 @@
                 id: 40,
             },
             offset: 28,
-            length: 7,
+            length: 6,
         },
         labels: [
             Label {
@@ -57,7 +57,7 @@
                         id: 40,
                     },
                     offset: 28,
-                    length: 7,
+                    length: 6,
                 },
                 text: "`weight` field is not defined",
             },
@@ -67,7 +67,7 @@
                         id: 40,
                     },
                     offset: 38,
-                    length: 54,
+                    length: 52,
                 },
                 text: "`Query` declared here",
             },
