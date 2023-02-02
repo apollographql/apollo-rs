@@ -253,10 +253,7 @@ impl DiagnosticData {
         !self.is_warning() && !self.is_advice()
     }
     pub fn is_warning(&self) -> bool {
-        matches!(
-            self,
-            Self::CapitalizedValue { .. } | Self::UnusedVariable { .. }
-        )
+        matches!(self, Self::CapitalizedValue { .. })
     }
     pub fn is_advice(&self) -> bool {
         matches!(self, Self::ScalarSpecificationURL)

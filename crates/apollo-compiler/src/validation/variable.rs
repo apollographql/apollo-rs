@@ -1,10 +1,13 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self, VariableDefinition},
     validation::ValidationSet,
-    FileId, ValidationDatabase,
+    ValidationDatabase,
 };
 
 pub fn validate_variable_definitions(
@@ -80,71 +83,62 @@ pub fn validate_variable_definitions(
     diagnostics
 }
 
-// check in scope
-// check in use
-// compare the two
 pub fn validate_unused_variables(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
+    op: Arc<hir::OperationDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    db.operations(file_id)
+    let defined_vars: HashSet<ValidationSet> = op
+        .variables()
         .iter()
-        .flat_map(|op| {
-            let defined_vars: HashSet<ValidationSet> = op
-                .variables()
+        .map(|var| ValidationSet {
+            name: var.name().into(),
+            loc: var.loc(),
+        })
+        .collect();
+    let used_vars: HashSet<ValidationSet> = op
+        .selection_set
+        .clone()
+        .selection()
+        .iter()
+        .flat_map(|sel| {
+            let vars: HashSet<ValidationSet> = sel
+                .variables(db.upcast())
                 .iter()
                 .map(|var| ValidationSet {
                     name: var.name().into(),
                     loc: var.loc(),
                 })
                 .collect();
-            let used_vars: HashSet<ValidationSet> = op
-                .selection_set
-                .clone()
-                .selection()
-                .iter()
-                .flat_map(|sel| {
-                    let vars: HashSet<ValidationSet> = sel
-                        .variables(db.upcast())
-                        .iter()
-                        .map(|var| ValidationSet {
-                            name: var.name().into(),
-                            loc: var.loc(),
-                        })
-                        .collect();
-                    vars
-                })
-                .collect();
-            let undefined_vars = used_vars.difference(&defined_vars);
-            let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
-                .map(|undefined_var| {
-                    ApolloDiagnostic::new(
-                        db,
-                        undefined_var.loc.into(),
-                        DiagnosticData::UndefinedDefinition {
-                            name: undefined_var.name.clone(),
-                        },
-                    )
-                    .label(Label::new(undefined_var.loc, "not found in this scope"))
-                })
-                .collect();
-
-            let unused_vars = defined_vars.difference(&used_vars);
-            let warnings = unused_vars.map(|unused_var| {
-                ApolloDiagnostic::new(
-                    db,
-                    unused_var.loc.into(),
-                    DiagnosticData::UnusedVariable {
-                        name: unused_var.name.clone(),
-                    },
-                )
-                .label(Label::new(unused_var.loc, "this variable is never used"))
-            });
-
-            diagnostics.extend(warnings);
-            diagnostics
+            vars
         })
-        .collect()
+        .collect();
+    let undefined_vars = used_vars.difference(&defined_vars);
+    let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
+        .map(|undefined_var| {
+            ApolloDiagnostic::new(
+                db,
+                undefined_var.loc.into(),
+                DiagnosticData::UndefinedDefinition {
+                    name: undefined_var.name.clone(),
+                },
+            )
+            .label(Label::new(undefined_var.loc, "not found in this scope"))
+        })
+        .collect();
+
+    let unused_vars = defined_vars.difference(&used_vars);
+    diagnostics.extend(unused_vars.map(|unused_var| {
+        ApolloDiagnostic::new(
+            db,
+            unused_var.loc.into(),
+            DiagnosticData::UnusedVariable {
+                name: unused_var.name.clone(),
+            },
+        )
+        .label(Label::new(unused_var.loc, "this variable is never used"))
+    }));
+
+    diagnostics
 }
 
 #[cfg(test)]
