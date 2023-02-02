@@ -208,12 +208,12 @@ pub enum DiagnosticData {
         // field type
         ty: &'static str,
     },
-    #[error("`{name}` variable must be of an input type")]
+    #[error("`${name}` variable must be of an input type")]
     InputType {
         // variable name
         name: String,
         // variable type
-        ty: String,
+        ty: &'static str,
     },
     #[error(
         "custom scalars should provide a scalar specification URL via the @specifiedBy directive"

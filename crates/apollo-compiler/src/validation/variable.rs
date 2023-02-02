@@ -19,6 +19,32 @@ pub fn validate_variable_definitions(
             variable.directives().to_vec(),
             hir::DirectiveLocation::VariableDefinition,
         ));
+
+        let ty = variable.ty();
+        if !ty.is_input_type(db.upcast()) {
+            let type_def = ty.type_def(db.upcast());
+            if let Some(type_def) = type_def {
+                let ty_name = type_def.kind();
+                diagnostics.push(
+                    ApolloDiagnostic::new(db, variable.loc().into(), DiagnosticData::InputType {
+                        name: variable.name().into(),
+                        ty: ty_name,
+                    })
+                    .label(Label::new(ty.loc().unwrap(), format!("this is of `{ty_name}` type")))
+                    .help("objects, unions, and interfaces cannot be used as variables can only be of input type"),
+                );
+            } else {
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        variable.loc.into(),
+                        DiagnosticData::UndefinedDefinition { name: ty.name() },
+                    )
+                    .label(Label::new(variable.loc, "not found in the type system")),
+                )
+            }
+        }
+
         // Variable definitions must be unique.
         //
         // Return a Unique Definition error in case of a duplicate value.
