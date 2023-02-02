@@ -30,7 +30,7 @@ pub fn validate_enum_definition(
 
         // An Enum type must define one or more unique enum values.
         //
-        // Return a Unique Value error in case of a duplicate value.
+        // Return a Unique Definition error in case of a duplicate value.
         let value = enum_val.enum_value();
         if let Some(prev_def) = seen.get(&value) {
             let original_definition = prev_def.loc();

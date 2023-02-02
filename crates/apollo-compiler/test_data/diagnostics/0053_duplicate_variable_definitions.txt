@@ -1,0 +1,57 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            53: "0053_duplicate_variable_definitions.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 53,
+            },
+            offset: 48,
+            length: 22,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 53,
+                    },
+                    offset: 24,
+                    length: 22,
+                },
+                text: "previous definition of `atOtherHomes` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 53,
+                    },
+                    offset: 48,
+                    length: 22,
+                },
+                text: "`atOtherHomes` redefined here",
+            },
+        ],
+        help: Some(
+            "atOtherHomes must only be defined once in this enum.",
+        ),
+        data: UniqueDefinition {
+            ty: "enum",
+            name: "atOtherHomes",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 53,
+                },
+                offset: 24,
+                length: 22,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 53,
+                },
+                offset: 48,
+                length: 22,
+            },
+        },
+    },
+]

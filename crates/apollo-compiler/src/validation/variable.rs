@@ -1,8 +1,8 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
+    hir::{self, VariableDefinition},
     validation::ValidationSet,
     FileId, ValidationDatabase,
 };
@@ -13,11 +13,42 @@ pub fn validate_variable_definitions(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    let mut seen: HashMap<&str, &VariableDefinition> = HashMap::new();
     for variable in variables.iter() {
         diagnostics.extend(db.validate_directives(
             variable.directives().to_vec(),
             hir::DirectiveLocation::VariableDefinition,
         ));
+        // Variable definitions must be unique.
+        //
+        // Return a Unique Definition error in case of a duplicate value.
+        let name = variable.name();
+        if let Some(prev_def) = seen.get(&name) {
+            let original_definition = prev_def.loc();
+            let redefined_definition = variable.loc();
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    redefined_definition.into(),
+                    DiagnosticData::UniqueDefinition {
+                        ty: "enum",
+                        name: name.into(),
+                        original_definition: original_definition.into(),
+                        redefined_definition: redefined_definition.into(),
+                    },
+                )
+                .labels([
+                    Label::new(
+                        original_definition,
+                        format!("previous definition of `{name}` here"),
+                    ),
+                    Label::new(redefined_definition, format!("`{name}` redefined here")),
+                ])
+                .help(format!("{name} must only be defined once in this enum.")),
+            );
+        } else {
+            seen.insert(name, variable);
+        }
     }
 
     diagnostics
