@@ -66,14 +66,11 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
 
     // Derived from above queries:
     /// Return an operation definition corresponding to the name and file id.
-    fn find_operation_by_name(
+    fn find_operation(
         &self,
         file_id: FileId,
-        name: String,
+        name: Option<String>,
     ) -> Option<Arc<OperationDefinition>>;
-
-    /// Return an operation definition without a name, corresponding to the file id.
-    fn find_anonymous_operation(&self, file_id: FileId) -> Option<Arc<OperationDefinition>>;
 
     /// Return an fragment definition corresponding to the name and file id.
     /// Result of this query is not cached internally.
@@ -1590,5 +1587,43 @@ fn include_directive() -> DirectiveDefinition {
                                       DirectiveLocation::InlineFragment,
         ]),
         loc: None
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{ApolloCompiler, HirDatabase};
+
+    #[test]
+    fn it_finds_anonymous_operation() {
+        let type_system = r#"
+type Query {
+  name: String
+}
+        "#;
+        let op = r#"{ name }"#;
+        let named_op = r#"query getName { name } "#;
+        let noop = r#""#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(type_system, "ts.graphql");
+        let op_id = compiler.add_executable(op, "op.graphql");
+        let op = compiler.db.find_operation(op_id, None);
+        assert!(op.is_some());
+
+        compiler.update_executable(op_id, named_op);
+        let op = compiler.db.find_operation(op_id, Some("getName".into()));
+        assert!(op.is_some());
+
+        compiler.update_executable(op_id, named_op);
+        let op = compiler.db.find_operation(op_id, Some("getName".into()));
+        assert!(op.is_some());
+
+        compiler.update_executable(op_id, noop);
+        let op = compiler.db.find_operation(op_id, Some("getName".into()));
+        assert!(op.is_none());
+
+        let op = compiler.db.find_operation(op_id, None);
+        assert!(op.is_none());
     }
 }

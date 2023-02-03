@@ -634,7 +634,7 @@ fragment vipCustomer on User {
 
         let op = compiler
             .db
-            .find_operation_by_name(query_id, String::from("getProduct"));
+            .find_operation(query_id, Some("getProduct".into()));
         let fragment_in_op: Vec<crate::hir::FragmentDefinition> = op
             .unwrap()
             .selection_set()
@@ -1229,7 +1229,7 @@ type Query {
                     compiler.set_type_system_hir(cloned);
                     compiler
                         .db
-                        .find_anonymous_operation(query_id)
+                        .find_operation(query_id, None)
                         .unwrap()
                         .fields(&compiler.db)[0]
                         .ty(&compiler.db)

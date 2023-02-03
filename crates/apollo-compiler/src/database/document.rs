@@ -38,24 +38,14 @@ pub(crate) fn find_type_definition_by_name(
     db.types_definitions_by_name().get(&name).cloned()
 }
 
-pub(crate) fn find_operation_by_name(
+pub(crate) fn find_operation(
     db: &dyn HirDatabase,
     file_id: FileId,
-    name: String,
+    name: Option<String>,
 ) -> Option<Arc<OperationDefinition>> {
     db.operations(file_id)
         .iter()
-        .find(|def| def.name() == Some(&*name))
-        .cloned()
-}
-
-pub(crate) fn find_anonymous_operation(
-    db: &dyn HirDatabase,
-    file_id: FileId,
-) -> Option<Arc<OperationDefinition>> {
-    db.operations(file_id)
-        .iter()
-        .find(|def| def.name().is_none())
+        .find(|def| def.name() == name.as_deref())
         .cloned()
 }
 
