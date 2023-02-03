@@ -1,9 +1,10 @@
-- DOCUMENT@0..16
-    - OPERATION_DEFINITION@0..16
+- DOCUMENT@0..19
+    - OPERATION_DEFINITION@0..19
         - OPERATION_TYPE@0..5
             - query_KW@0..5 "query"
         - WHITESPACE@5..6 " "
         - NAME@6..16
             - IDENT@6..16 "__typename"
+        - ERROR@16..19 "EOF"
 - ERROR@16:16 "expected a Selection Set" EOF
 recursion limit: 4096, high: 0

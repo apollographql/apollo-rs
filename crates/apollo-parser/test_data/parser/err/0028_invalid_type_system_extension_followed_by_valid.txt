@@ -1,27 +1,29 @@
-- DOCUMENT@0..52
-    - WHITESPACE@0..1 " "
-    - WHITESPACE@1..3 "\n\n"
-    - INTERFACE_TYPE_EXTENSION@3..52
-        - extend_KW@3..9 "extend"
-        - WHITESPACE@9..10 " "
-        - interface_KW@10..19 "interface"
-        - WHITESPACE@19..20 " "
-        - NAME@20..31
-            - IDENT@20..31 "NamedEntity"
-        - WHITESPACE@31..32 " "
-        - FIELDS_DEFINITION@32..52
-            - L_CURLY@32..33 "{"
-            - WHITESPACE@33..38 "\n    "
-            - FIELD_DEFINITION@38..50
-                - NAME@38..42
-                    - IDENT@38..42 "name"
-                - COLON@42..43 ":"
-                - WHITESPACE@43..44 " "
-                - NAMED_TYPE@44..50
-                    - NAME@44..50
-                        - IDENT@44..50 "String"
-            - WHITESPACE@50..51 "\n"
-            - R_CURLY@51..52 "}"
+- DOCUMENT@0..61
+    - ERROR@0..6 "extend"
+    - WHITESPACE@6..7 " "
+    - ERROR@7..10 "Cat"
+    - WHITESPACE@10..12 "\n\n"
+    - INTERFACE_TYPE_EXTENSION@12..61
+        - extend_KW@12..18 "extend"
+        - WHITESPACE@18..19 " "
+        - interface_KW@19..28 "interface"
+        - WHITESPACE@28..29 " "
+        - NAME@29..40
+            - IDENT@29..40 "NamedEntity"
+        - WHITESPACE@40..41 " "
+        - FIELDS_DEFINITION@41..61
+            - L_CURLY@41..42 "{"
+            - WHITESPACE@42..47 "\n    "
+            - FIELD_DEFINITION@47..59
+                - NAME@47..51
+                    - IDENT@47..51 "name"
+                - COLON@51..52 ":"
+                - WHITESPACE@52..53 " "
+                - NAMED_TYPE@53..59
+                    - NAME@53..59
+                        - IDENT@53..59 "String"
+            - WHITESPACE@59..60 "\n"
+            - R_CURLY@60..61 "}"
 - ERROR@0:6 "Invalid Type System Extension. This extension cannot be applied." extend
 - ERROR@7:10 "expected definition" Cat
 recursion limit: 4096, high: 0

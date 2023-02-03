@@ -1,4 +1,4 @@
-- DOCUMENT@0..126
+- DOCUMENT@0..140
     - ENUM_TYPE_DEFINITION@0..97
         - enum_KW@0..4 "enum"
         - WHITESPACE@4..5 " "
@@ -40,19 +40,20 @@
             - WHITESPACE@95..96 "\n"
             - R_CURLY@96..97 "}"
     - WHITESPACE@97..99 "\n\n"
-    - WHITESPACE@99..101 "\n\n"
-    - OPERATION_DEFINITION@101..126
-        - SELECTION_SET@101..126
-            - L_CURLY@101..102 "{"
-            - WHITESPACE@102..107 "\n    "
-            - FIELD@107..110
-                - NAME@107..110
-                    - IDENT@107..110 "pet"
-            - WHITESPACE@110..115 "\n    "
-            - FIELD@115..124
-                - NAME@115..124
-                    - IDENT@115..124 "faveSnack"
-            - WHITESPACE@124..125 "\n"
-            - R_CURLY@125..126 "}"
+    - ERROR@99..113 "uasdf21230jkdw"
+    - WHITESPACE@113..115 "\n\n"
+    - OPERATION_DEFINITION@115..140
+        - SELECTION_SET@115..140
+            - L_CURLY@115..116 "{"
+            - WHITESPACE@116..121 "\n    "
+            - FIELD@121..124
+                - NAME@121..124
+                    - IDENT@121..124 "pet"
+            - WHITESPACE@124..129 "\n    "
+            - FIELD@129..138
+                - NAME@129..138
+                    - IDENT@129..138 "faveSnack"
+            - WHITESPACE@138..139 "\n"
+            - R_CURLY@139..140 "}"
 - ERROR@99:113 "expected definition" uasdf21230jkdw
 recursion limit: 4096, high: 3

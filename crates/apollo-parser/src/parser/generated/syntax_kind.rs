@@ -76,6 +76,7 @@ pub enum SyntaxKind {
     IDENT,
     WHITESPACE,
     COMMENT,
+    ERROR,
     NAME,
     INTEGER_PART,
     NEGATIVE_SIGN,
