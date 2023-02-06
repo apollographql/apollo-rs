@@ -1,4 +1,4 @@
-use crate::{hir::DirectiveLocation, ApolloDiagnostic, FileId, ValidationDatabase};
+use crate::{ApolloDiagnostic, FileId, hir::DirectiveLocation, ValidationDatabase};
 
 pub fn validate_fragment_definitions(
     db: &dyn ValidationDatabase,
@@ -20,4 +20,39 @@ pub fn validate_fragment_definitions(
     }
 
     diagnostics
+}
+
+
+#[cfg(test)]
+mod test {
+    use crate::ApolloCompiler;
+
+    #[test]
+    fn it_validates_fields_in_fragment_definitions() {
+        let input = r#"
+type Query {
+  name: String
+  topProducts: Product
+}
+
+type Product {
+  inStock: Boolean
+  name: String
+}
+
+fragment XY on Product {
+  notExistingField
+}
+"#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{diagnostic}");
+        }
+
+        assert_eq!(diagnostics.len(), 1)
+    }
 }
