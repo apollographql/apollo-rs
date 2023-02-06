@@ -1,15 +1,15 @@
 - DOCUMENT@0..237
-    - SCHEMA_EXTENSION@0..140
+    - SCHEMA_EXTENSION@0..237
         - extend_KW@0..6 "extend"
         - WHITESPACE@6..7 " "
         - schema_KW@7..13 "schema"
         - WHITESPACE@13..16 "\n  "
-        - DIRECTIVES@16..140
-            - DIRECTIVE@16..140
+        - DIRECTIVES@16..237
+            - DIRECTIVE@16..237
                 - AT@16..17 "@"
                 - NAME@17..21
                     - IDENT@17..21 "link"
-                - ARGUMENTS@21..140
+                - ARGUMENTS@21..237
                     - L_PAREN@21..22 "("
                     - ARGUMENT@22..69
                         - NAME@22..25
@@ -20,22 +20,22 @@
                             - STRING@27..69 "\"https://specs.apollo.dev/federation/v2.0\""
                     - COMMA@69..70 ","
                     - WHITESPACE@70..79 "\n        "
-                    - ARGUMENT@79..140
+                    - ARGUMENT@79..237
                         - NAME@79..85
                             - IDENT@79..85 "import"
                         - COLON@85..86 ":"
                         - WHITESPACE@86..87 " "
-                        - LIST_VALUE@87..140
+                        - LIST_VALUE@87..237
                             - L_BRACK@87..88 "["
-                            - STRING_VALUE@88..94
+                            - STRING_VALUE@88..136
                                 - STRING@88..94 "\"@key\""
-                            - COMMA@94..95 ","
-                            - WHITESPACE@95..96 " "
-                            - ERROR@96..138 "\"@external])\n\n\ntype Vehicle @key(fields: \""
-                            - ENUM_VALUE@138..140
-                                - NAME@138..140
+                                - ERROR@94..136 "\"@external])\n\n\ntype Vehicle @key(fields: \""
+                            - COMMA@136..137 ","
+                            - WHITESPACE@137..138 " "
+                            - ENUM_VALUE@138..237
+                                - NAME@138..237
                                     - IDENT@138..140 "id"
-    - ERROR@140..237 "\") {\n  id: ID!,\n  type: String,\n  modelCode: String,\n  brandName: String,\n  launchDate: String\n}\n"
+                                    - ERROR@140..237 "\") {\n  id: ID!,\n  type: String,\n  modelCode: String,\n  brandName: String,\n  launchDate: String\n}\n"
 - ERROR@96:138 "unexpected line terminator" "@external])
 
 

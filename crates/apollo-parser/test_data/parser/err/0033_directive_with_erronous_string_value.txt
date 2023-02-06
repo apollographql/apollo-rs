@@ -45,12 +45,12 @@
                     - IDENT@85..98 "delegateField"
                 - ARGUMENTS@98..129
                     - L_PAREN@98..99 "("
-                    - ARGUMENT@99..104
+                    - ARGUMENT@99..127
                         - NAME@99..103
                             - IDENT@99..103 "name"
                         - COLON@103..104 ":"
-                    - WHITESPACE@104..105 " "
-                    - ERROR@105..128 "\"\\ errronous string \\\"\""
+                        - ERROR@104..127 "\"\\ errronous string \\\"\""
+                    - WHITESPACE@127..128 " "
                     - R_PAREN@128..129 ")"
         - FIELDS_DEFINITION@129..142
             - L_CURLY@129..130 "{"

@@ -162,7 +162,6 @@ impl<'a> Parser<'a> {
                 TokenKind::Comment => SyntaxKind::COMMENT,
                 TokenKind::Whitespace => SyntaxKind::WHITESPACE,
                 TokenKind::Comma => SyntaxKind::COMMA,
-                TokenKind::Error => SyntaxKind::ERROR,
                 _ => unreachable!(),
             };
             self.push_ast(syntax_kind, token);
@@ -305,9 +304,9 @@ impl<'a> Parser<'a> {
                         self.accept_errors = false;
                     } else {
                         // Append error tokens to the AST so position information is correct
-                        // TODO(@goto-bus-stop) if there are queued ignored tokens, this will cause
-                        // the wrong order
-                        self.ignored.push(Token::new(TokenKind::Error, err.data().to_string()));
+                        self.builder
+                            .borrow_mut()
+                            .token(SyntaxKind::ERROR, err.data());
                     }
                     self.errors.push(err);
                 }
