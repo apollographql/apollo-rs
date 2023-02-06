@@ -92,60 +92,6 @@ pub fn validate_operation_definitions(
     diagnostics
 }
 
-/*
-pub fn check_selection_set(db: &dyn ValidationDatabase, selection_set: &SelectionSet, obj_type: Arc<ObjectTypeDefinition>, diagnostics: &mut Vec<ApolloDiagnostic>) {
-    for selection in selection_set.selection() {
-        if let Selection::Field(field) = selection {
-            check_field_selection(db, field, obj_type.clone(), diagnostics);
-        } /*
-        TODO How can I get the type of the selection as an ObjectTypeDefinition / InterfaceTypeDefinition ? */
-        // TODO handle fragments somewhere else
-        /*else if let Selection::FragmentSpread(fragment_spread) = selection {
-            let fragment = db.fragment(fragment_spread.fragment_name());
-            let fragment_type = fragment.type_condition().unwrap();
-            let fragment_type = db.object_type(fragment_type);
-            check_selection_set(db, fragment.selection_set(), fragment_type, diagnostics);
-        } */
-        else if let Selection::InlineFragment(inline_fragment) = selection {
-            let fragment_type = inline_fragment.type_condition().unwrap();
-            let fragment_type = db.object_type(fragment_type);
-            check_selection_set(db, inline_fragment.selection_set(), fragment_type, diagnostics);
-        }
-
-    }
-}
-
-pub fn format_invalid_field_error(db: &dyn ValidationDatabase, field: &Field, help: String, diagnostics: &mut Vec<ApolloDiagnostic>) {
-
-    let field_name = field.name().into();
-    let op_offset = field.loc().offset();
-    let op_len = field.loc().node_len();
-
-    diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
-        field: field_name,
-        src: db.source_code(field.loc().file_id()),
-        definition: (op_offset, op_len).into(),
-        help,
-    }));
-}
-
-pub fn check_field_selection(db: &dyn ValidationDatabase, field: &Field, obj_type: Arc<ObjectTypeDefinition>, diagnostics: &mut Vec<ApolloDiagnostic>) {
-    // Field type is none -> not defined on object type
-    let field_type = field.ty(db.upcast());
-    if field_type.is_none() {
-        let help = format!("`{}` is not defined on `{}` type", field.name(), obj_type.name());
-        format_invalid_field_error(db, field, help, diagnostics);
-    } else {
-        // Get the type system definition for the type of the field - is there a better way to do this?
-        let field_type_def = field.ty(db.upcast()).unwrap().type_def(db.upcast());
-
-        // TODO Handle Interface here - should be the same handling as object type
-        if let Some(TypeDefinition::ObjectTypeDefinition(field_type)) = field_type_def {
-            check_selection_set(db, field.selection_set(), field_type.clone(), diagnostics);
-        }
-    }
-}
-*/
 pub fn validate_subscription_operations(
     db: &dyn ValidationDatabase,
     subscriptions: Arc<Vec<Arc<hir::OperationDefinition>>>,
