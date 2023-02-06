@@ -1,4 +1,4 @@
-use crate::{ApolloDiagnostic, FileId, hir::DirectiveLocation, ValidationDatabase};
+use crate::{hir::DirectiveLocation, ApolloDiagnostic, FileId, ValidationDatabase};
 
 pub fn validate_fragment_definitions(
     db: &dyn ValidationDatabase,
@@ -21,7 +21,6 @@ pub fn validate_fragment_definitions(
 
     diagnostics
 }
-
 
 #[cfg(test)]
 mod test {

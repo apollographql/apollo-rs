@@ -1,12 +1,12 @@
 use std::{collections::HashMap, sync::Arc};
 
+use crate::diagnostics::UndefinedField;
 use crate::{
-    ApolloDiagnostic,
     diagnostics::{OutputType, UndefinedDefinition, UniqueField},
     hir,
     validation::ValidationDatabase,
+    ApolloDiagnostic,
 };
-use crate::diagnostics::UndefinedField;
 
 pub fn validate_field(
     db: &dyn ValidationDatabase,

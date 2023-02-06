@@ -37,7 +37,7 @@ pub fn validate_selection_set(
 
     // TODO handle Enums, Scalar (no selection set content allowed), Unions
 
-    diagnostics.extend(db.validate_selection(selection_set.selection,));
+    diagnostics.extend(db.validate_selection(selection_set.selection));
 
     diagnostics
 }

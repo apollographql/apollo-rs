@@ -1,6 +1,5 @@
 use std::{collections::HashMap, sync::Arc};
 
-use crate::hir::TypeDefinition;
 use crate::{
     diagnostics::{
         IntrospectionField, MissingIdent, SingleRootField, UniqueDefinition, UnsupportedOperation,
@@ -23,9 +22,7 @@ pub fn validate_operation_definitions(
         // Validate the Selection Set recursively
         // Check that the root type exists
         if def.object_type(db.upcast()).is_some() {
-            diagnostics.extend(db.validate_selection_set(
-                def.selection_set().clone()
-            ));
+            diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
         }
     }
 
