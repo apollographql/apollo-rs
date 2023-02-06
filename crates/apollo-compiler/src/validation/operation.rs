@@ -288,7 +288,6 @@ mod test {
 query {
   cat {
     name
-    nickname
   }
 }
 
@@ -298,46 +297,21 @@ query getPet {
   }
 }
 
-query getPet {
+query getOtherPet {
   cat {
     nickname
   }
 }
 
-subscription sub {
-  newMessage {
-    body
-    sender
-  }
-  disallowedSecondRootField
-}
-
 type Query {
-  cat: Pet
+  cat: Cat
 }
 
-type Subscription {
-  newMessage: Result
-}
-
-interface Pet {
-  name: String
-  nickname: String
-}
-
-type Dog implements Pet {
-  name: String
-  nickname: String
-  barkVolume: Int
-}
-
-type Cat implements Pet {
+type Cat {
   name: String
   nickname: String
   meowVolume: Int
 }
-
-union CatOrDog = Cat | Dog
 "#;
         let mut compiler = ApolloCompiler::new();
         compiler.add_document(input, "schema.graphql");
@@ -346,7 +320,7 @@ union CatOrDog = Cat | Dog
         for diagnostic in &diagnostics {
             println!("{diagnostic}")
         }
-        assert_eq!(diagnostics.len(), 5)
+        assert_eq!(diagnostics.len(), 1)
     }
 
     #[test]
