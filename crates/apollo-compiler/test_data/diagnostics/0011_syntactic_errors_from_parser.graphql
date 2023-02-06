@@ -11,4 +11,5 @@ type Query {
 
 type Product {
   name: String
+  birthday: String
 }

@@ -12,6 +12,7 @@ fragment multipleSubscriptions on Subscription {
 
 type Subscription {
   newMessage: Result
+  disallowedSecondRootField: String
 }
 
 type Result {

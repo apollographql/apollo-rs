@@ -1,14 +1,10 @@
 query {
-  cat {
-    name
-  }
+  cat
 }
 
 mutation {
   addPet {
-    owner {
-      name
-    }
+    response
   }
 }
 

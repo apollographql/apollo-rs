@@ -299,7 +299,7 @@ let diagnostics = compiler.validate();
 for diagnostic in &diagnostics {
     println!("{}", diagnostic)
 }
-assert_eq!(diagnostics.len(), 7)
+assert_eq!(diagnostics.len(), 9)
 ```
 
 ## License
