@@ -1,11 +1,11 @@
-- DOCUMENT@0..112
-    - OBJECT_TYPE_DEFINITION@0..111
+- DOCUMENT@0..53
+    - OBJECT_TYPE_DEFINITION@0..52
         - type_KW@0..4 "type"
         - WHITESPACE@4..5 " "
         - NAME@5..11
             - IDENT@5..11 "Person"
         - WHITESPACE@11..12 " "
-        - FIELDS_DEFINITION@12..111
+        - FIELDS_DEFINITION@12..52
             - L_CURLY@12..13 "{"
             - WHITESPACE@13..16 "\n  "
             - FIELD_DEFINITION@16..28
@@ -17,12 +17,12 @@
                     - NAME@22..28
                         - IDENT@22..28 "String"
             - WHITESPACE@28..31 "\n  "
-            - FIELD_DEFINITION@31..111
+            - FIELD_DEFINITION@31..52
                 - NAME@31..38
                     - IDENT@31..38 "picture"
-                - ARGUMENTS_DEFINITION@38..111
+                - ARGUMENTS_DEFINITION@38..52
                     - L_PAREN@38..39 "("
-                    - INPUT_VALUE_DEFINITION@39..111
+                    - INPUT_VALUE_DEFINITION@39..52
                         - NAME@39..42
                             - IDENT@39..42 "url"
                         - COLON@42..43 ":"
@@ -31,10 +31,9 @@
                             - NAME@44..50
                                 - IDENT@44..50 "String"
                         - WHITESPACE@50..51 " "
-                        - DEFAULT_VALUE@51..111
+                        - DEFAULT_VALUE@51..52
                             - EQ@51..52 "="
-                            - ERROR@52..111 "\"https://spec.graphql.org/October2021/#DefaultValue): Url\n}"
-    - WHITESPACE@111..112 " "
+    - WHITESPACE@52..53 " "
 - ERROR@53:112 "unterminated string value" "https://spec.graphql.org/October2021/#DefaultValue): Url
 }
 - ERROR@112:112 "expected a valid Value" EOF

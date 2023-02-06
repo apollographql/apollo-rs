@@ -1,32 +1,32 @@
-- DOCUMENT@0..116
-    - OPERATION_DEFINITION@0..116
+- DOCUMENT@0..70
+    - OPERATION_DEFINITION@0..70
         - OPERATION_TYPE@0..8
             - mutation_KW@0..8 "mutation"
         - WHITESPACE@8..9 " "
-        - SELECTION_SET@9..116
+        - SELECTION_SET@9..70
             - L_CURLY@9..10 "{"
             - WHITESPACE@10..13 "\n  "
-            - FIELD@13..116
+            - FIELD@13..70
                 - NAME@13..24
                     - IDENT@13..24 "createStore"
-                - ARGUMENTS@24..116
+                - ARGUMENTS@24..70
                     - L_PAREN@24..25 "("
-                    - ARGUMENT@25..116
+                    - ARGUMENT@25..70
                         - NAME@25..30
                             - IDENT@25..30 "draft"
                         - COLON@30..31 ":"
                         - WHITESPACE@31..32 " "
-                        - OBJECT_VALUE@32..116
+                        - OBJECT_VALUE@32..70
                             - L_CURLY@32..33 "{"
                             - WHITESPACE@33..38 "\n    "
-                            - OBJECT_FIELD@38..116
+                            - OBJECT_FIELD@38..70
                                 - NAME@38..42
                                     - IDENT@38..42 "name"
                                 - COLON@42..43 ":"
                                 - WHITESPACE@43..44 " "
-                                - LIST_VALUE@44..116
+                                - LIST_VALUE@44..70
                                     - L_BRACK@44..45 "["
-                                    - OBJECT_VALUE@45..116
+                                    - OBJECT_VALUE@45..70
                                         - L_CURLY@45..46 "{"
                                         - WHITESPACE@46..47 " "
                                         - OBJECT_FIELD@47..59
@@ -38,16 +38,14 @@
                                                 - STRING@55..59 "\"en\""
                                         - COMMA@59..60 ","
                                         - WHITESPACE@60..61 " "
-                                        - OBJECT_FIELD@61..116
+                                        - OBJECT_FIELD@61..70
                                             - NAME@61..66
                                                 - IDENT@61..66 "value"
                                             - COLON@66..67 ":"
-                                            - ERROR@67..105 "\"my store }]\n  }) {\n    name(locale: \""
-                                            - WHITESPACE@105..106 " "
-                                            - ENUM_VALUE@106..116
-                                                - NAME@106..116
-                                                    - IDENT@106..108 "en"
-                                                    - ERROR@108..116 "\")\n  }\n}"
+                                            - WHITESPACE@67..68 " "
+                                            - ENUM_VALUE@68..70
+                                                - NAME@68..70
+                                                    - IDENT@68..70 "en"
 - ERROR@68:106 "unexpected line terminator" "my store }]
   }) {
     name(locale: "
