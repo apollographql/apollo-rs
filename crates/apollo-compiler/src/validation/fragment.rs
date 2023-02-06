@@ -12,11 +12,10 @@ pub fn validate_fragment_definitions(
         ));
 
         let fragment_type_def = db.find_type_definition_by_name(def.type_condition().to_string());
-        if let Some(fragment_type_def) = fragment_type_def {
-            diagnostics
-                .extend(db.validate_selection_set(def.selection_set().clone(), fragment_type_def));
-        } else {
-            // TODO what should we do if fragment_type_def is None although fragment_type is Some? Is that a case we are expecting?
+        // Make sure the fragment type exists in the schema
+        if fragment_type_def.is_some() {
+            // TODO handle cases where the type does not support fragments (Enum, Scalar...)
+            diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
         }
     }
 

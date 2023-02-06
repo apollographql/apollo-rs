@@ -1,38 +1,29 @@
 use std::{collections::HashMap, sync::Arc};
 
-use crate::diagnostics::UndefinedField;
 use crate::{
+    ApolloDiagnostic,
     diagnostics::{OutputType, UndefinedDefinition, UniqueField},
     hir,
     validation::ValidationDatabase,
-    ApolloDiagnostic,
 };
+use crate::diagnostics::UndefinedField;
 
 pub fn validate_field(
     db: &dyn ValidationDatabase,
     field: Arc<hir::Field>,
-    type_def: hir::TypeDefinition,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics =
         db.validate_directives(field.directives().to_vec(), hir::DirectiveLocation::Field);
     diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
 
     let field_type = field.ty(db.upcast());
-    if let Some(field_type) = field_type {
-        // Get the type system definition for the type of the field - is there a better way to do this?
-        let field_type_def = field_type.type_def(db.upcast());
-
-        if let Some(field_type_def) = field_type_def {
-            diagnostics
-                .extend(db.validate_selection_set(field.selection_set().clone(), field_type_def));
-        } else {
-            // TODO what should we do if field_type_def is None although field_type is Some? Is that a case we are expecting?
-        }
+    if field_type.is_some() {
+        diagnostics.extend(db.validate_selection_set(field.selection_set().clone()));
     } else {
         let help = format!(
             "`{}` is not defined on `{}` type",
             field.name(),
-            type_def.name()
+            field.parent_obj.as_ref().unwrap(),
         );
 
         let op_offset = field.loc().offset();

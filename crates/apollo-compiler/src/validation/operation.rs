@@ -19,11 +19,12 @@ pub fn validate_operation_definitions(
         diagnostics
             .extend(db.validate_directives(def.directives().to_vec(), def.operation_ty().into()));
         diagnostics.extend(db.validate_variable_definitions(def.variables.as_ref().clone()));
-        // TODO move this somewhere below the root operation type check
-        if let Some(type_def) = def.object_type(db.upcast()) {
+
+        // Validate the Selection Set recursively
+        // Check that the root type exists
+        if def.object_type(db.upcast()).is_some() {
             diagnostics.extend(db.validate_selection_set(
-                def.selection_set().clone(),
-                TypeDefinition::ObjectTypeDefinition(type_def.clone()),
+                def.selection_set().clone()
             ));
         }
     }
