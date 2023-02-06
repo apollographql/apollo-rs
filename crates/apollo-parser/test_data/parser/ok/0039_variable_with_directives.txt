@@ -1,13 +1,13 @@
 - DOCUMENT@0..111
     - OPERATION_DEFINITION@0..111
-        - OPERATION_TYPE@0..6
+        - OPERATION_TYPE@0..5
             - query_KW@0..5 "query"
-            - WHITESPACE@5..6 " "
+        - WHITESPACE@5..6 " "
         - NAME@6..15
             - IDENT@6..15 "getOutput"
-        - VARIABLE_DEFINITIONS@15..97
+        - VARIABLE_DEFINITIONS@15..96
             - L_PAREN@15..16 "("
-            - VARIABLE_DEFINITION@16..40
+            - VARIABLE_DEFINITION@16..39
                 - VARIABLE@16..22
                     - DOLLAR@16..17 "$"
                     - NAME@17..22
@@ -18,12 +18,12 @@
                     - NAME@24..27
                         - IDENT@24..27 "Int"
                 - WHITESPACE@27..28 " "
-                - DIRECTIVES@28..40
-                    - DIRECTIVE@28..40
+                - DIRECTIVES@28..39
+                    - DIRECTIVE@28..39
                         - AT@28..29 "@"
-                        - NAME@29..40
+                        - NAME@29..39
                             - IDENT@29..39 "deprecated"
-                            - WHITESPACE@39..40 " "
+            - WHITESPACE@39..40 " "
             - VARIABLE_DEFINITION@40..95
                 - VARIABLE@40..47
                     - DOLLAR@40..41 "$"
@@ -35,12 +35,12 @@
                     - NAME@49..55
                         - IDENT@49..55 "String"
                 - WHITESPACE@55..56 " "
-                - DEFAULT_VALUE@56..67
+                - DEFAULT_VALUE@56..66
                     - EQ@56..57 "="
                     - WHITESPACE@57..58 " "
-                    - STRING_VALUE@58..67
+                    - STRING_VALUE@58..66
                         - STRING@58..66 "\"Config\""
-                        - WHITESPACE@66..67 " "
+                - WHITESPACE@66..67 " "
                 - DIRECTIVES@67..95
                     - DIRECTIVE@67..95
                         - AT@67..68 "@"
@@ -57,13 +57,13 @@
                                     - STRING@78..94 "\"team-customers\""
                             - R_PAREN@94..95 ")"
             - R_PAREN@95..96 ")"
-            - WHITESPACE@96..97 " "
+        - WHITESPACE@96..97 " "
         - SELECTION_SET@97..111
             - L_CURLY@97..98 "{"
             - WHITESPACE@98..103 "\n    "
-            - FIELD@103..110
-                - NAME@103..110
+            - FIELD@103..109
+                - NAME@103..109
                     - IDENT@103..109 "animal"
-                    - WHITESPACE@109..110 "\n"
+            - WHITESPACE@109..110 "\n"
             - R_CURLY@110..111 "}"
 recursion limit: 4096, high: 2

@@ -1,45 +1,98 @@
 [
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Cat",
-            src: "mutation adoptAPetMutation {\n  undefinedMutationField\n}\n\ntype Query {\n  name: String,\n  age: Int\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n\nunion PetType = Cat | Dog\n",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    217,
-                ),
-                length: SourceOffset(
-                    4,
-                ),
-            },
+    ApolloDiagnostic {
+        cache: {
+            42: "0042_mutation_operation_with_undefined_fields.graphql",
         },
-    ),
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Dog",
-            src: "mutation adoptAPetMutation {\n  undefinedMutationField\n}\n\ntype Query {\n  name: String,\n  age: Int\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n\nunion PetType = Cat | Dog\n",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    223,
-                ),
-                length: SourceOffset(
-                    4,
-                ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 42,
             },
+            offset: 217,
+            length: 3,
         },
-    ),
-    UndefinedField(
-        UndefinedField {
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 42,
+                    },
+                    offset: 217,
+                    length: 3,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "Cat",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            42: "0042_mutation_operation_with_undefined_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 42,
+            },
+            offset: 223,
+            length: 3,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 42,
+                    },
+                    offset: 223,
+                    length: 3,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "Dog",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            42: "0042_mutation_operation_with_undefined_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 42,
+            },
+            offset: 31,
+            length: 22,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 42,
+                    },
+                    offset: 31,
+                    length: 22,
+                },
+                text: "`undefinedMutationField` field is not defined",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 42,
+                    },
+                    offset: 100,
+                    length: 69,
+                },
+                text: "`Mutation` declared here",
+            },
+        ],
+        help: Some(
+            "`undefinedMutationField` is not defined on `Mutation` type",
+        ),
+        data: UndefinedField {
             field: "undefinedMutationField",
-            src: "mutation adoptAPetMutation {\n  undefinedMutationField\n}\n\ntype Query {\n  name: String,\n  age: Int\n}\n\ntype Mutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n\nunion PetType = Cat | Dog\n",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    31,
-                ),
-                length: SourceOffset(
-                    23,
-                ),
-            },
-            help: "`undefinedMutationField` is not defined on `Mutation` type",
         },
-    ),
+    },
 ]

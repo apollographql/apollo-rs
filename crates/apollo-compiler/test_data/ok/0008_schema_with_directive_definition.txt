@@ -1,14 +1,14 @@
 - DOCUMENT@0..199
-    - OBJECT_TYPE_DEFINITION@0..37
+    - OBJECT_TYPE_DEFINITION@0..35
         - type_KW@0..4 "type"
         - WHITESPACE@4..5 " "
-        - NAME@5..11
+        - NAME@5..10
             - IDENT@5..10 "Query"
-            - WHITESPACE@10..11 " "
-        - FIELDS_DEFINITION@11..37
+        - WHITESPACE@10..11 " "
+        - FIELDS_DEFINITION@11..35
             - L_CURLY@11..12 "{"
             - WHITESPACE@12..17 "\n    "
-            - FIELD_DEFINITION@17..34
+            - FIELD_DEFINITION@17..33
                 - NAME@17..27
                     - IDENT@17..27 "literature"
                 - COLON@27..28 ":"
@@ -16,16 +16,16 @@
                 - NAMED_TYPE@29..33
                     - NAME@29..33
                         - IDENT@29..33 "Book"
-                - WHITESPACE@33..34 "\n"
+            - WHITESPACE@33..34 "\n"
             - R_CURLY@34..35 "}"
-            - WHITESPACE@35..37 "\n\n"
-    - DIRECTIVE_DEFINITION@37..111
+    - WHITESPACE@35..37 "\n\n"
+    - DIRECTIVE_DEFINITION@37..109
         - directive_KW@37..46 "directive"
         - WHITESPACE@46..47 " "
         - AT@47..48 "@"
         - NAME@48..61
             - IDENT@48..61 "delegateField"
-        - ARGUMENTS_DEFINITION@61..77
+        - ARGUMENTS_DEFINITION@61..76
             - L_PAREN@61..62 "("
             - INPUT_VALUE_DEFINITION@62..75
                 - NAME@62..66
@@ -38,32 +38,32 @@
                             - IDENT@68..74 "String"
                     - BANG@74..75 "!"
             - R_PAREN@75..76 ")"
-            - WHITESPACE@76..77 " "
+        - WHITESPACE@76..77 " "
         - repeatable_KW@77..87 "repeatable"
         - WHITESPACE@87..88 " "
         - on_KW@88..90 "on"
         - WHITESPACE@90..91 " "
-        - DIRECTIVE_LOCATIONS@91..111
-            - DIRECTIVE_LOCATION@91..98
+        - DIRECTIVE_LOCATIONS@91..109
+            - DIRECTIVE_LOCATION@91..97
                 - OBJECT_KW@91..97 "OBJECT"
-                - WHITESPACE@97..98 " "
+            - WHITESPACE@97..98 " "
             - PIPE@98..99 "|"
             - WHITESPACE@99..100 " "
-            - DIRECTIVE_LOCATION@100..111
+            - DIRECTIVE_LOCATION@100..109
                 - INTERFACE_KW@100..109 "INTERFACE"
-                - WHITESPACE@109..111 "\n\n"
+    - WHITESPACE@109..111 "\n\n"
     - OBJECT_TYPE_DEFINITION@111..199
         - type_KW@111..115 "type"
         - WHITESPACE@115..116 " "
-        - NAME@116..121
+        - NAME@116..120
             - IDENT@116..120 "Book"
-            - WHITESPACE@120..121 " "
-        - DIRECTIVES@121..186
-            - DIRECTIVE@121..155
+        - WHITESPACE@120..121 " "
+        - DIRECTIVES@121..185
+            - DIRECTIVE@121..154
                 - AT@121..122 "@"
                 - NAME@122..135
                     - IDENT@122..135 "delegateField"
-                - ARGUMENTS@135..155
+                - ARGUMENTS@135..154
                     - L_PAREN@135..136 "("
                     - ARGUMENT@136..153
                         - NAME@136..140
@@ -73,12 +73,12 @@
                         - STRING_VALUE@142..153
                             - STRING@142..153 "\"pageCount\""
                     - R_PAREN@153..154 ")"
-                    - WHITESPACE@154..155 " "
-            - DIRECTIVE@155..186
+            - WHITESPACE@154..155 " "
+            - DIRECTIVE@155..185
                 - AT@155..156 "@"
                 - NAME@156..169
                     - IDENT@156..169 "delegateField"
-                - ARGUMENTS@169..186
+                - ARGUMENTS@169..185
                     - L_PAREN@169..170 "("
                     - ARGUMENT@170..184
                         - NAME@170..174
@@ -88,20 +88,20 @@
                         - STRING_VALUE@176..184
                             - STRING@176..184 "\"author\""
                     - R_PAREN@184..185 ")"
-                    - WHITESPACE@185..186 " "
+        - WHITESPACE@185..186 " "
         - FIELDS_DEFINITION@186..199
             - L_CURLY@186..187 "{"
             - WHITESPACE@187..190 "\n  "
-            - FIELD_DEFINITION@190..198
+            - FIELD_DEFINITION@190..197
                 - NAME@190..192
                     - IDENT@190..192 "id"
                 - COLON@192..193 ":"
                 - WHITESPACE@193..194 " "
-                - NON_NULL_TYPE@194..198
+                - NON_NULL_TYPE@194..197
                     - NAMED_TYPE@194..196
                         - NAME@194..196
                             - IDENT@194..196 "ID"
                     - BANG@196..197 "!"
-                    - WHITESPACE@197..198 "\n"
+            - WHITESPACE@197..198 "\n"
             - R_CURLY@198..199 "}"
 recursion limit: 4096, high: 0

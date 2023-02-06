@@ -6,13 +6,13 @@
         - WHITESPACE@9..10 " "
         - interface_KW@10..19 "interface"
         - WHITESPACE@19..20 " "
-        - NAME@20..32
+        - NAME@20..31
             - IDENT@20..31 "NamedEntity"
-            - WHITESPACE@31..32 " "
+        - WHITESPACE@31..32 " "
         - FIELDS_DEFINITION@32..52
             - L_CURLY@32..33 "{"
             - WHITESPACE@33..38 "\n    "
-            - FIELD_DEFINITION@38..51
+            - FIELD_DEFINITION@38..50
                 - NAME@38..42
                     - IDENT@38..42 "name"
                 - COLON@42..43 ":"
@@ -20,7 +20,7 @@
                 - NAMED_TYPE@44..50
                     - NAME@44..50
                         - IDENT@44..50 "String"
-                - WHITESPACE@50..51 "\n"
+            - WHITESPACE@50..51 "\n"
             - R_CURLY@51..52 "}"
 - ERROR@0:6 "Invalid Type System Extension. This extension cannot be applied." extend
 - ERROR@7:10 "expected definition" Cat

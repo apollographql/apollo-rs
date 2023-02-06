@@ -190,9 +190,9 @@ impl FragmentDefinition {
         db.find_type_definition_by_name(self.name().to_string())
     }
 
-    /// Get fragment definition's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -269,9 +269,9 @@ impl OperationDefinition {
         db.operation_fragment_spread_fields(self.selection_set.clone())
     }
 
-    /// Get operation definition's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 
     /// Returns true if this is a query operation and its [`SelectionSet`] is an introspection.
@@ -377,9 +377,9 @@ impl VariableDefinition {
         self.directives.as_ref()
     }
 
-    /// Get variable definition's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -457,12 +457,10 @@ impl Type {
         }
     }
 
-    /// Get a reference to location information of the current HIR node.
-    pub fn loc(&self) -> Option<&HirNodeLocation> {
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> Option<HirNodeLocation> {
         match self {
-            Type::NonNull { loc, .. } | Type::List { loc, .. } | Type::Named { loc, .. } => {
-                loc.as_ref()
-            }
+            Type::NonNull { loc, .. } | Type::List { loc, .. } | Type::Named { loc, .. } => *loc,
         }
     }
 
@@ -513,9 +511,9 @@ impl Directive {
         db.find_directive_definition_by_name(self.name().to_string())
     }
 
-    /// Get directive's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -560,9 +558,9 @@ impl DirectiveDefinition {
         self.repeatable
     }
 
-    /// Get directive definition's hir node location.
-    pub fn loc(&self) -> Option<&HirNodeLocation> {
-        self.loc.as_ref()
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> Option<HirNodeLocation> {
+        self.loc
     }
 }
 
@@ -684,9 +682,9 @@ impl Argument {
         self.name.src()
     }
 
-    /// Get argument's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -809,9 +807,9 @@ impl Variable {
         self.name.as_ref()
     }
 
-    /// Get variable's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -1014,9 +1012,9 @@ impl Field {
         vars
     }
 
-    /// Get field's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 
     /// returns true if this is an introspection field (i.e. it's [`Self::name()`] is one of __type, or __schema).
@@ -1061,9 +1059,9 @@ impl InlineFragment {
         vars
     }
 
-    /// Get inline fragment's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 
     /// Returns true if the inline fragment's [`SelectionSet`] is an introspection.
@@ -1109,9 +1107,9 @@ impl FragmentSpread {
         self.directives.as_ref()
     }
 
-    /// Get fragment spread's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 
     /// Returns true if the fragment referenced by this spread exists and its [`SelectionSet`] is an introspection.
@@ -1184,9 +1182,9 @@ impl SchemaDefinition {
             .push(op)
     }
 
-    /// Get schema definition's hir node location.
-    pub fn loc(&self) -> Option<&HirNodeLocation> {
-        self.loc.as_ref()
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> Option<HirNodeLocation> {
+        self.loc
     }
 
     /// Extensions that apply to this definition
@@ -1254,9 +1252,9 @@ impl RootOperationTypeDefinition {
         db.find_object_type_by_name(self.named_type().name())
     }
 
-    /// Get root operation type definition's hir node location.
-    pub fn loc(&self) -> Option<&HirNodeLocation> {
-        self.loc.as_ref()
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> Option<HirNodeLocation> {
+        self.loc
     }
 }
 
@@ -1320,9 +1318,9 @@ impl ObjectTypeDefinition {
         self.implements_interfaces.as_ref()
     }
 
-    /// Get object type definition's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 
     /// Extensions that apply to this definition
@@ -1351,9 +1349,9 @@ impl ImplementsInterface {
         self.interface.src()
     }
 
-    /// Get implements interfaces's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -1383,9 +1381,9 @@ impl FieldDefinition {
         self.directives.as_ref()
     }
 
-    /// Get field definition's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 
     /// Get a reference to field definition's type.
@@ -1411,9 +1409,9 @@ impl ArgumentsDefinition {
         self.input_values.as_ref()
     }
 
-    /// Get arguments definition's hir node location.
-    pub fn loc(&self) -> Option<&HirNodeLocation> {
-        self.loc.as_ref()
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> Option<HirNodeLocation> {
+        self.loc
     }
 }
 
@@ -1443,9 +1441,9 @@ impl InputValueDefinition {
         self.directives.as_ref()
     }
 
-    /// Get input value definition's hir node location.
-    pub fn loc(&self) -> Option<&HirNodeLocation> {
-        self.loc.as_ref()
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> Option<HirNodeLocation> {
+        self.loc
     }
 
     /// Get a reference to input value definition's type.
@@ -1497,9 +1495,9 @@ impl ScalarTypeDefinition {
         self.built_in
     }
 
-    /// Get scalar type definition's hir node location.
-    pub fn loc(&self) -> Option<&HirNodeLocation> {
-        self.loc.as_ref()
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> Option<HirNodeLocation> {
+        self.loc
     }
 
     /// Extensions that apply to this definition
@@ -1544,9 +1542,9 @@ impl EnumTypeDefinition {
         self.enum_values_definition.as_ref()
     }
 
-    /// Get enum type definition's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 
     /// Extensions that apply to this definition
@@ -1574,9 +1572,9 @@ impl EnumValueDefinition {
         self.directives.as_ref()
     }
 
-    /// Get enum value definition's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -1616,9 +1614,9 @@ impl UnionTypeDefinition {
         self.union_members.as_ref()
     }
 
-    /// Get union type definition's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 
     /// Extensions that apply to this definition
@@ -1644,9 +1642,9 @@ impl UnionMember {
         db.find_object_type_by_name(self.name().to_string())
     }
 
-    /// Get union member's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -1697,9 +1695,9 @@ impl InterfaceTypeDefinition {
         self.fields_definition().iter().find(|f| f.name() == name)
     }
 
-    /// Get interface type definition's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 
     /// Extensions that apply to this definition
@@ -1744,9 +1742,9 @@ impl InputObjectTypeDefinition {
         self.input_fields_definition.as_ref()
     }
 
-    /// Get input object type definition's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 
     /// Extensions that apply to this definition
@@ -1767,15 +1765,15 @@ impl Name {
         self.src.as_ref()
     }
 
-    /// Get input object type definition's hir node location.
-    pub fn loc(&self) -> Option<&HirNodeLocation> {
-        self.loc.as_ref()
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> Option<HirNodeLocation> {
+        self.loc
     }
 }
 
 impl From<Name> for String {
     fn from(name: Name) -> String {
-        name.src().to_owned()
+        name.src
     }
 }
 
@@ -1806,9 +1804,9 @@ impl SchemaExtension {
         self.root_operation_type_definition.as_ref()
     }
 
-    /// Get schema extension's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -1835,9 +1833,9 @@ impl ScalarTypeExtension {
         self.directives.as_ref()
     }
 
-    /// Get scalar type extension's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -1880,9 +1878,9 @@ impl ObjectTypeExtension {
         self.implements_interfaces.as_ref()
     }
 
-    /// Get object type extension's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -1926,9 +1924,9 @@ impl InterfaceTypeExtension {
         self.fields_definition().iter().find(|f| f.name() == name)
     }
 
-    /// Get interface type extension's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -1961,9 +1959,9 @@ impl UnionTypeExtension {
         self.union_members.as_ref()
     }
 
-    /// Get union type extension's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -1996,9 +1994,9 @@ impl EnumTypeExtension {
         self.enum_values_definition.as_ref()
     }
 
-    /// Get enum type extension's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -2030,9 +2028,9 @@ impl InputObjectTypeExtension {
         self.input_fields_definition.as_ref()
     }
 
-    /// Get input object type extension's hir node location.
-    pub fn loc(&self) -> &HirNodeLocation {
-        &self.loc
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        self.loc
     }
 }
 
@@ -2072,18 +2070,6 @@ impl HirNodeLocation {
 impl<Ast: ast::AstNode> From<(FileId, &'_ Ast)> for HirNodeLocation {
     fn from((file_id, node): (FileId, &'_ Ast)) -> Self {
         Self::new(file_id, node.syntax())
-    }
-}
-
-impl From<&'_ HirNodeLocation> for miette::SourceSpan {
-    fn from(loc: &'_ HirNodeLocation) -> Self {
-        (loc.offset, loc.node_len).into()
-    }
-}
-
-impl From<HirNodeLocation> for miette::SourceSpan {
-    fn from(loc: HirNodeLocation) -> Self {
-        (loc.offset, loc.node_len).into()
     }
 }
 

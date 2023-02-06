@@ -2,13 +2,13 @@
     - OBJECT_TYPE_DEFINITION@0..58
         - type_KW@0..4 "type"
         - WHITESPACE@4..5 " "
-        - NAME@5..12
+        - NAME@5..11
             - IDENT@5..11 "Person"
-            - WHITESPACE@11..12 " "
+        - WHITESPACE@11..12 " "
         - FIELDS_DEFINITION@12..58
             - L_CURLY@12..13 "{"
             - WHITESPACE@13..16 "\n  "
-            - FIELD_DEFINITION@16..31
+            - FIELD_DEFINITION@16..28
                 - NAME@16..20
                     - IDENT@16..20 "name"
                 - COLON@20..21 ":"
@@ -16,24 +16,24 @@
                 - NAMED_TYPE@22..28
                     - NAME@22..28
                         - IDENT@22..28 "String"
-                - WHITESPACE@28..31 "\n  "
-            - FIELD_DEFINITION@31..57
+            - WHITESPACE@28..31 "\n  "
+            - FIELD_DEFINITION@31..56
                 - NAME@31..38
                     - IDENT@31..38 "picture"
                 - ARGUMENTS_DEFINITION@38..51
                     - L_PAREN@38..39 "("
-                    - INPUT_VALUE_DEFINITION@39..50
+                    - INPUT_VALUE_DEFINITION@39..49
                         - NAME@39..48
                             - IDENT@39..48 "reference"
                         - COLON@48..49 ":"
-                        - WHITESPACE@49..50 " "
+                    - WHITESPACE@49..50 " "
                     - R_PAREN@50..51 ")"
                 - COLON@51..52 ":"
                 - WHITESPACE@52..53 " "
                 - NAMED_TYPE@53..56
                     - NAME@53..56
                         - IDENT@53..56 "Url"
-                - WHITESPACE@56..57 "\n"
+            - WHITESPACE@56..57 "\n"
             - R_CURLY@57..58 "}"
 - ERROR@50:70 "unexpected escaped character" "\a reference image"
 - ERROR@70:71 "expected a Type" )

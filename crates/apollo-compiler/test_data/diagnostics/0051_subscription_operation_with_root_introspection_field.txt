@@ -1,16 +1,30 @@
 [
-    IntrospectionField(
-        IntrospectionField {
-            field: "__typename",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    21,
-                ),
-                length: SourceOffset(
-                    11,
-                ),
-            },
-            src: "subscription sub {\n  __typename\n}\n\ntype Subscription {\n  __typename: String\n}",
+    ApolloDiagnostic {
+        cache: {
+            51: "0051_subscription_operation_with_root_introspection_field.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 51,
+            },
+            offset: 21,
+            length: 10,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 51,
+                    },
+                    offset: 21,
+                    length: 10,
+                },
+                text: "__typename is an introspection field",
+            },
+        ],
+        help: None,
+        data: IntrospectionField {
+            field: "__typename",
+        },
+    },
 ]

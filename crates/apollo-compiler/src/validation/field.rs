@@ -2,10 +2,9 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::diagnostics::UndefinedField;
 use crate::{
-    diagnostics::{OutputType, UndefinedDefinition, UniqueField},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::ValidationDatabase,
-    ApolloDiagnostic,
 };
 
 pub fn validate_field(
@@ -72,22 +71,26 @@ pub fn validate_field_definitions(
         //
         // Returns Unique Field error.
         let field_name = field.name();
-        let offset = field.loc().offset();
-        let len = field.loc().node_len();
+        let redefined_definition = field.loc();
 
         if let Some(prev_field) = seen.get(field_name) {
-            let prev_offset = prev_field.loc().offset();
-            let prev_node_len = prev_field.loc().node_len();
+            let original_definition = prev_field.loc();
 
-            diagnostics.push(ApolloDiagnostic::UniqueField(UniqueField {
-                field: field_name.into(),
-                src: db.source_code(prev_field.loc().file_id()),
-                original_field: (prev_offset, prev_node_len).into(),
-                redefined_field: (offset, len).into(),
-                help: Some(format!(
-                    "`{field_name}` field must only be defined once in this definition."
-                )),
-            }));
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db, original_definition.into(),
+                    DiagnosticData::UniqueField {
+                        field: field_name.into(),
+                        original_definition: original_definition.into(),
+                        redefined_definition: redefined_definition.into(),
+                    }
+                )
+                .labels([
+                    Label::new(original_definition, format!("previous definition of `{field_name}` here")),
+                    Label::new(redefined_definition, format!("`{field_name}` redefined here")),
+                ])
+                .help(format!("`{field_name}` field must only be defined once in this input object definition."))
+            );
         } else {
             seen.insert(field_name, field);
         }
@@ -95,27 +98,37 @@ pub fn validate_field_definitions(
         // Field types in Object Types must be of output type
         if let Some(field_ty) = field.ty().type_def(db.upcast()) {
             if !field.ty().is_output_type(db.upcast()) {
-                diagnostics.push(ApolloDiagnostic::OutputType(OutputType {
-                    name: field.name().into(),
-                    ty: field_ty.kind(),
-                    src: db.source_code(field.loc().file_id()),
-                    definition: (offset, len).into(),
-                }))
+                diagnostics.push(
+                    ApolloDiagnostic::new(db, field.loc().into(), DiagnosticData::OutputType {
+                        name: field.name().into(),
+                        ty: field_ty.kind(),
+                    })
+                    .label(Label::new(field.loc(), format!("this is of `{}` type", field_ty.kind())))
+                    .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
+                );
             }
-        } else if let Some(loc) = field.ty().loc() {
-            let field_ty_offset = loc.offset();
-            let field_ty_len = loc.node_len();
-            diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                ty: field.ty().name(),
-                src: db.source_code(field.loc().file_id()),
-                definition: (field_ty_offset, field_ty_len).into(),
-            }))
+        } else if let Some(field_ty_loc) = field.ty().loc() {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    field_ty_loc.into(),
+                    DiagnosticData::UndefinedDefinition {
+                        name: field.name().into(),
+                    },
+                )
+                .label(Label::new(field_ty_loc, "not found in this scope")),
+            );
         } else {
-            diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                ty: field.ty().name(),
-                src: db.source_code(field.loc().file_id()),
-                definition: (offset, len).into(),
-            }))
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    field.loc().into(),
+                    DiagnosticData::UndefinedDefinition {
+                        name: field.ty().name(),
+                    },
+                )
+                .label(Label::new(field.loc(), "not found in this scope")),
+            );
         }
     }
 

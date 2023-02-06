@@ -1,34 +1,79 @@
 [
-    SingleRootField(
-        SingleRootField {
-            src: "subscription sub {\n  newMessage {\n    body\n    sender\n  }\n  disallowedSecondRootField\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\ntype Query {\n  message: String\n}",
+    ApolloDiagnostic {
+        cache: {
+            3: "0004_subscription_with_multiple_root_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 3,
+            },
+            offset: 0,
+            length: 87,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 3,
+                    },
+                    offset: 0,
+                    length: 87,
+                },
+                text: "subscription with 2 root fields",
+            },
+        ],
+        help: Some(
+            "There are 2 root fields: newMessage, disallowedSecondRootField. This is not allowed.",
+        ),
+        data: SingleRootField {
             fields: 2,
-            subscription: SourceSpan {
-                offset: SourceOffset(
-                    0,
-                ),
-                length: SourceOffset(
-                    89,
-                ),
+            subscription: DiagnosticLocation {
+                file_id: FileId {
+                    id: 3,
+                },
+                offset: 0,
+                length: 87,
             },
-            help: Some(
-                "There are 2 root fields: newMessage, disallowedSecondRootField. This is not allowed.",
-            ),
         },
-    ),
-    UndefinedField(
-        UndefinedField {
+    },
+    ApolloDiagnostic {
+        cache: {
+            3: "0004_subscription_with_multiple_root_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 3,
+            },
+            offset: 60,
+            length: 25,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 3,
+                    },
+                    offset: 60,
+                    length: 25,
+                },
+                text: "`disallowedSecondRootField` field is not defined",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 3,
+                    },
+                    offset: 89,
+                    length: 42,
+                },
+                text: "`Subscription` declared here",
+            },
+        ],
+        help: Some(
+            "`disallowedSecondRootField` is not defined on `Subscription` type",
+        ),
+        data: UndefinedField {
             field: "disallowedSecondRootField",
-            src: "subscription sub {\n  newMessage {\n    body\n    sender\n  }\n  disallowedSecondRootField\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\ntype Query {\n  message: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    60,
-                ),
-                length: SourceOffset(
-                    26,
-                ),
-            },
-            help: "`disallowedSecondRootField` is not defined on `Subscription` type",
         },
-    ),
+    },
 ]

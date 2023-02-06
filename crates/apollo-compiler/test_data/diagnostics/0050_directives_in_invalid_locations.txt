@@ -1,444 +1,772 @@
 [
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "include",
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 1105,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1105,
+                    length: 8,
+                },
+                text: "SCHEMA is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "include",
             dir_loc: Schema,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    1105,
-                ),
-                length: SourceOffset(
-                    9,
-                ),
-            },
             directive_def: None,
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "directiveB",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 1246,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1246,
+                    length: 11,
+                },
+                text: "SCALAR is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1337,
+                    length: 29,
+                },
+                text: "consider adding SCALAR directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveB",
             dir_loc: Scalar,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    1246,
-                ),
-                length: SourceOffset(
-                    12,
-                ),
-            },
             directive_def: Some(
-                SourceSpan {
-                    offset: SourceOffset(
-                        1337,
-                    ),
-                    length: SourceOffset(
-                        29,
-                    ),
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1337,
+                    length: 29,
                 },
             ),
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "directiveA",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 791,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 791,
+                    length: 11,
+                },
+                text: "ENUM is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1306,
+                    length: 30,
+                },
+                text: "consider adding ENUM directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveA",
             dir_loc: Enum,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    791,
-                ),
-                length: SourceOffset(
-                    12,
-                ),
-            },
             directive_def: Some(
-                SourceSpan {
-                    offset: SourceOffset(
-                        1306,
-                    ),
-                    length: SourceOffset(
-                        31,
-                    ),
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1306,
+                    length: 30,
                 },
             ),
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "directiveA",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 813,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 813,
+                    length: 11,
+                },
+                text: "ENUM_VALUE is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1306,
+                    length: 30,
+                },
+                text: "consider adding ENUM_VALUE directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveA",
             dir_loc: EnumValue,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    813,
-                ),
-                length: SourceOffset(
-                    15,
-                ),
-            },
             directive_def: Some(
-                SourceSpan {
-                    offset: SourceOffset(
-                        1306,
-                    ),
-                    length: SourceOffset(
-                        31,
-                    ),
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1306,
+                    length: 30,
                 },
             ),
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "directiveB",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 709,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 709,
+                    length: 11,
+                },
+                text: "UNION is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1337,
+                    length: 29,
+                },
+                text: "consider adding UNION directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveB",
             dir_loc: Union,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    709,
-                ),
-                length: SourceOffset(
-                    12,
-                ),
-            },
             directive_def: Some(
-                SourceSpan {
-                    offset: SourceOffset(
-                        1337,
-                    ),
-                    length: SourceOffset(
-                        29,
-                    ),
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1337,
+                    length: 29,
                 },
             ),
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "skip",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 425,
+            length: 5,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 425,
+                    length: 5,
+                },
+                text: "INTERFACE is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "skip",
             dir_loc: Interface,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    425,
-                ),
-                length: SourceOffset(
-                    6,
-                ),
-            },
             directive_def: None,
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "include",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 639,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 639,
+                    length: 8,
+                },
+                text: "INPUT_OBJECT is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "include",
             dir_loc: InputObject,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    639,
-                ),
-                length: SourceOffset(
-                    9,
-                ),
-            },
             directive_def: None,
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "include",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 666,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 666,
+                    length: 8,
+                },
+                text: "INPUT_FIELD_DEFINITION is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "include",
             dir_loc: InputFieldDefinition,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    666,
-                ),
-                length: SourceOffset(
-                    11,
-                ),
-            },
             directive_def: None,
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "directiveB",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 492,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 492,
+                    length: 11,
+                },
+                text: "FIELD_DEFINITION is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1337,
+                    length: 29,
+                },
+                text: "consider adding FIELD_DEFINITION directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveB",
             dir_loc: FieldDefinition,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    492,
-                ),
-                length: SourceOffset(
-                    14,
-                ),
-            },
             directive_def: Some(
-                SourceSpan {
-                    offset: SourceOffset(
-                        1337,
-                    ),
-                    length: SourceOffset(
-                        29,
-                    ),
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1337,
+                    length: 29,
                 },
             ),
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "deprecated",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 856,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 856,
+                    length: 11,
+                },
+                text: "OBJECT is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "deprecated",
             dir_loc: Object,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    856,
-                ),
-                length: SourceOffset(
-                    12,
-                ),
-            },
             directive_def: None,
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "specifiedBy",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 928,
+            length: 56,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 928,
+                    length: 56,
+                },
+                text: "ARGUMENT_DEFINITION is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "specifiedBy",
             dir_loc: ArgumentDefinition,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    928,
-                ),
-                length: SourceOffset(
-                    56,
-                ),
-            },
             directive_def: None,
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "skip",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 36,
+            length: 15,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 36,
+                    length: 15,
+                },
+                text: "QUERY is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "skip",
             dir_loc: Query,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    36,
-                ),
-                length: SourceOffset(
-                    15,
-                ),
-            },
             directive_def: None,
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "skip",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 29,
+            length: 5,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 29,
+                    length: 5,
+                },
+                text: "VARIABLE_DEFINITION is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "skip",
             dir_loc: VariableDefinition,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    29,
-                ),
-                length: SourceOffset(
-                    5,
-                ),
-            },
             directive_def: None,
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "deprecated",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 89,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 89,
+                    length: 11,
+                },
+                text: "FIELD is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "deprecated",
             dir_loc: Field,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    89,
-                ),
-                length: SourceOffset(
-                    14,
-                ),
-            },
             directive_def: None,
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "directiveB",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 123,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 123,
+                    length: 11,
+                },
+                text: "FRAGMENT_SPREAD is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1337,
+                    length: 29,
+                },
+                text: "consider adding FRAGMENT_SPREAD directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveB",
             dir_loc: FragmentSpread,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    123,
-                ),
-                length: SourceOffset(
-                    14,
-                ),
-            },
             directive_def: Some(
-                SourceSpan {
-                    offset: SourceOffset(
-                        1337,
-                    ),
-                    length: SourceOffset(
-                        29,
-                    ),
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1337,
+                    length: 29,
                 },
             ),
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "directiveA",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 258,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 258,
+                    length: 11,
+                },
+                text: "SUBSCRIPTION is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1306,
+                    length: 30,
+                },
+                text: "consider adding SUBSCRIPTION directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveA",
             dir_loc: Subscription,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    258,
-                ),
-                length: SourceOffset(
-                    12,
-                ),
-            },
             directive_def: Some(
-                SourceSpan {
-                    offset: SourceOffset(
-                        1306,
-                    ),
-                    length: SourceOffset(
-                        31,
-                    ),
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1306,
+                    length: 30,
                 },
             ),
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "skip",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 334,
+            length: 15,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 334,
+                    length: 15,
+                },
+                text: "MUTATION is not a valid location",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "skip",
             dir_loc: Mutation,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    334,
-                ),
-                length: SourceOffset(
-                    16,
-                ),
-            },
             directive_def: None,
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "directiveB",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 162,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 162,
+                    length: 11,
+                },
+                text: "FRAGMENT_DEFINITION is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1337,
+                    length: 29,
+                },
+                text: "consider adding FRAGMENT_DEFINITION directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveB",
             dir_loc: FragmentDefinition,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    162,
-                ),
-                length: SourceOffset(
-                    11,
-                ),
-            },
             directive_def: Some(
-                SourceSpan {
-                    offset: SourceOffset(
-                        1337,
-                    ),
-                    length: SourceOffset(
-                        29,
-                    ),
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1337,
+                    length: 29,
                 },
             ),
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
-    UnsupportedLocation(
-        UnsupportedLocation {
-            ty: "directiveA",
+    },
+    ApolloDiagnostic {
+        cache: {
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
+            offset: 201,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 201,
+                    length: 11,
+                },
+                text: "INLINE_FRAGMENT is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1306,
+                    length: 30,
+                },
+                text: "consider adding INLINE_FRAGMENT directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveA",
             dir_loc: InlineFragment,
-            src: "query queryA($status: String @skip) @skip(if: $foo){\n  field\n  response(status: $status) @deprecated\n  human {\n    ... pet @directiveB\n  }\n}\n\nfragment pet on Cat @directiveB{\n  meowVolume\n  ... on Pet @directiveA {\n    name\n  }\n}\n\nsubscription subscriptionA @directiveA {\n  newMessage {\n    body\n    sender\n  }\n}\n\nmutation myMutation @skip(if: true) {\n  setMessage (message: \"Hello, World! Yours, GraphQL.\")\n}\n\ninterface Pet @skip {\n  name: String\n}\n\ntype Dog implements Pet {\n  name: String @directiveB\n  nickname: String\n  barkVolume: Int\n}\n\ntype Cat implements Pet {\n  name: String\n  nickname: String\n  meowVolume: Int\n}\n\ninput Example @include {\n  self: Example @include\n  value: String\n}\n\nunion CatOrDog @directiveB = Cat | Dog\n\ntype Human {\n  name: String\n  pets: [Pet]\n}\n\nenum Status @directiveA {\n  GREEN @directiveA,\n  RED,\n  YELLOW\n}\n\ntype Query @deprecated {\n  human: Human\n  field: String,\n  response(status: String @specifiedBy(url: \"https://tools.ietf.org/html/rfc4122\")): Status\n}\n\ntype Subscription {\n  newMessage: Result\n}\n\ntype Mutation {\n  setMessage(message: String): String\n}\n\nschema @include {\n  query: Query\n  subscription: Subscription\n  mutation: Mutation\n}\n\ntype Result {\n  body: String,\n  sender: String\n}\n\nscalar spec @directiveB @specifiedBy(url: \"https://spec.graphql.org/\")\n\ndirective @directiveA on UNION\ndirective @directiveB on ENUM",
-            directive: SourceSpan {
-                offset: SourceOffset(
-                    201,
-                ),
-                length: SourceOffset(
-                    12,
-                ),
-            },
             directive_def: Some(
-                SourceSpan {
-                    offset: SourceOffset(
-                        1306,
-                    ),
-                    length: SourceOffset(
-                        31,
-                    ),
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1306,
+                    length: 30,
                 },
             ),
-            help: Some(
-                "the directive must be used in a location that the service has declared support for",
-            ),
         },
-    ),
+    },
 ]

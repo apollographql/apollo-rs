@@ -1,16 +1,30 @@
 [
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "value",
-            src: "query ExampleQuery {\n  topProducts {\n    name\n  }\n  ... on Product {\n      price(setPrice: $value)\n  }\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    91,
-                ),
-                length: SourceOffset(
-                    6,
-                ),
-            },
+    ApolloDiagnostic {
+        cache: {
+            7: "0008_operation_with_undefined_variables_in_inline_fragment.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 7,
+            },
+            offset: 91,
+            length: 6,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 7,
+                    },
+                    offset: 91,
+                    length: 6,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "value",
+        },
+    },
 ]

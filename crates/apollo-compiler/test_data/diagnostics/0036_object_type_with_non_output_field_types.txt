@@ -1,59 +1,117 @@
 [
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Photo",
-            src: "query mainPage {\n  width\n  result\n  entity\n}\n\ntype Query {\n  width: Int\n  img: Url\n  relationship: Person\n  entity: NamedEntity\n  depth: Number\n  result: SearchResult\n  permissions: Auth\n  coordinates: Point2D\n  main: mainPage\n}\n\ntype Person {\n  name: String\n  age: Int\n}\n\ninterface NamedEntity {\n  name: String\n}\n\nenum Number {\n  INT\n  FLOAT\n}\n\nunion SearchResult = Photo | Person\n\ndirective @Auth(username: String!) repeatable on OBJECT | INTERFACE\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\nscalar Url @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    367,
-                ),
-                length: SourceOffset(
-                    6,
-                ),
-            },
+    ApolloDiagnostic {
+        cache: {
+            36: "0036_object_type_with_non_output_field_types.graphql",
         },
-    ),
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "Auth",
-            src: "query mainPage {\n  width\n  result\n  entity\n}\n\ntype Query {\n  width: Int\n  img: Url\n  relationship: Person\n  entity: NamedEntity\n  depth: Number\n  result: SearchResult\n  permissions: Auth\n  coordinates: Point2D\n  main: mainPage\n}\n\ntype Person {\n  name: String\n  age: Int\n}\n\ninterface NamedEntity {\n  name: String\n}\n\nenum Number {\n  INT\n  FLOAT\n}\n\nunion SearchResult = Photo | Person\n\ndirective @Auth(username: String!) repeatable on OBJECT | INTERFACE\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\nscalar Url @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    182,
-                ),
-                length: SourceOffset(
-                    4,
-                ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 36,
             },
+            offset: 367,
+            length: 5,
         },
-    ),
-    OutputType(
-        OutputType {
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 36,
+                    },
+                    offset: 367,
+                    length: 5,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "Photo",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            36: "0036_object_type_with_non_output_field_types.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 36,
+            },
+            offset: 182,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 36,
+                    },
+                    offset: 182,
+                    length: 4,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "permissions",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            36: "0036_object_type_with_non_output_field_types.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 36,
+            },
+            offset: 189,
+            length: 20,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 36,
+                    },
+                    offset: 189,
+                    length: 20,
+                },
+                text: "this is of `InputObjectTypeDefinition` type",
+            },
+        ],
+        help: Some(
+            "Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.",
+        ),
+        data: OutputType {
             name: "coordinates",
             ty: "InputObjectTypeDefinition",
-            src: "query mainPage {\n  width\n  result\n  entity\n}\n\ntype Query {\n  width: Int\n  img: Url\n  relationship: Person\n  entity: NamedEntity\n  depth: Number\n  result: SearchResult\n  permissions: Auth\n  coordinates: Point2D\n  main: mainPage\n}\n\ntype Person {\n  name: String\n  age: Int\n}\n\ninterface NamedEntity {\n  name: String\n}\n\nenum Number {\n  INT\n  FLOAT\n}\n\nunion SearchResult = Photo | Person\n\ndirective @Auth(username: String!) repeatable on OBJECT | INTERFACE\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\nscalar Url @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    189,
-                ),
-                length: SourceOffset(
-                    23,
-                ),
-            },
         },
-    ),
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "mainPage",
-            src: "query mainPage {\n  width\n  result\n  entity\n}\n\ntype Query {\n  width: Int\n  img: Url\n  relationship: Person\n  entity: NamedEntity\n  depth: Number\n  result: SearchResult\n  permissions: Auth\n  coordinates: Point2D\n  main: mainPage\n}\n\ntype Person {\n  name: String\n  age: Int\n}\n\ninterface NamedEntity {\n  name: String\n}\n\nenum Number {\n  INT\n  FLOAT\n}\n\nunion SearchResult = Photo | Person\n\ndirective @Auth(username: String!) repeatable on OBJECT | INTERFACE\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\nscalar Url @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    218,
-                ),
-                length: SourceOffset(
-                    8,
-                ),
-            },
+    },
+    ApolloDiagnostic {
+        cache: {
+            36: "0036_object_type_with_non_output_field_types.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 36,
+            },
+            offset: 218,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 36,
+                    },
+                    offset: 218,
+                    length: 8,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "main",
+        },
+    },
 ]

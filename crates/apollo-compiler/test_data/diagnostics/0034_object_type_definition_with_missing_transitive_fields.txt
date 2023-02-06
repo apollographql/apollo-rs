@@ -1,52 +1,82 @@
 [
-    MissingField(
-        MissingField {
-            ty: "id",
-            src: "type Query implements Node & Resource {\n  name: String\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource {\n  width: Int\n}",
-            super_definition: SourceSpan {
-                offset: SourceOffset(
-                    58,
-                ),
-                length: SourceOffset(
-                    30,
-                ),
-            },
-            current_definition: SourceSpan {
-                offset: SourceOffset(
-                    0,
-                ),
-                length: SourceOffset(
-                    58,
-                ),
-            },
-            help: Some(
-                "An interface must be a super-set of all interfaces it implement",
-            ),
+    ApolloDiagnostic {
+        cache: {
+            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
-    ),
-    MissingField(
-        MissingField {
-            ty: "width",
-            src: "type Query implements Node & Resource {\n  name: String\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource {\n  width: Int\n}",
-            super_definition: SourceSpan {
-                offset: SourceOffset(
-                    88,
-                ),
-                length: SourceOffset(
-                    35,
-                ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 34,
             },
-            current_definition: SourceSpan {
-                offset: SourceOffset(
-                    0,
-                ),
-                length: SourceOffset(
-                    58,
-                ),
-            },
-            help: Some(
-                "An interface must be a super-set of all interfaces it implement",
-            ),
+            offset: 0,
+            length: 56,
         },
-    ),
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 34,
+                    },
+                    offset: 77,
+                    length: 7,
+                },
+                text: "`id` was originally defined here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 34,
+                    },
+                    offset: 0,
+                    length: 56,
+                },
+                text: "add `id` field to this object",
+            },
+        ],
+        help: Some(
+            "An object must provide all fields required by the interfaces it implements",
+        ),
+        data: MissingField {
+            field: "id",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 34,
+            },
+            offset: 0,
+            length: 56,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 34,
+                    },
+                    offset: 111,
+                    length: 10,
+                },
+                text: "`width` was originally defined here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 34,
+                    },
+                    offset: 0,
+                    length: 56,
+                },
+                text: "add `width` field to this object",
+            },
+        ],
+        help: Some(
+            "An object must provide all fields required by the interfaces it implements",
+        ),
+        data: MissingField {
+            field: "width",
+        },
+    },
 ]

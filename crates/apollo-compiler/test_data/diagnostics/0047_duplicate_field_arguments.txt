@@ -1,27 +1,56 @@
 [
-    UniqueArgument(
-        UniqueArgument {
-            name: "arg",
-            src: "type Query {\n  single(arg: Boolean): Int\n}\nquery GetDuplicate {\n  single(arg: true, arg: false)\n}\n",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    73,
-                ),
-                length: SourceOffset(
-                    11,
-                ),
-            },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    84,
-                ),
-                length: SourceOffset(
-                    10,
-                ),
-            },
-            help: Some(
-                "`arg` argument must only be provided once.",
-            ),
+    ApolloDiagnostic {
+        cache: {
+            47: "0047_duplicate_field_arguments.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 47,
+            },
+            offset: 84,
+            length: 10,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 47,
+                    },
+                    offset: 73,
+                    length: 9,
+                },
+                text: "previously provided `arg` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 47,
+                    },
+                    offset: 84,
+                    length: 10,
+                },
+                text: "`arg` provided again here",
+            },
+        ],
+        help: Some(
+            "`arg` argument must only be provided once.",
+        ),
+        data: UniqueArgument {
+            name: "arg",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 47,
+                },
+                offset: 73,
+                length: 9,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 47,
+                },
+                offset: 84,
+                length: 10,
+            },
+        },
+    },
 ]

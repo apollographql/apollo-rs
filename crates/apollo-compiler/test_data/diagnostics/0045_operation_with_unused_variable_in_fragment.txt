@@ -1,30 +1,58 @@
 [
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "value",
-            src: "query ExampleQuery($variable: Int) {\n  topProducts {\n    name\n  }\n  ... multipleSubscriptions\n}\n\nfragment multipleSubscriptions on Subscription {\n  newMessage {\n    body\n    sender(attribute: $value)\n  }\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    192,
-                ),
-                length: SourceOffset(
-                    6,
-                ),
-            },
+    ApolloDiagnostic {
+        cache: {
+            45: "0045_operation_with_unused_variable_in_fragment.graphql",
         },
-    ),
-    UnusedVariable(
-        UnusedVariable {
-            ty: "variable",
-            src: "query ExampleQuery($variable: Int) {\n  topProducts {\n    name\n  }\n  ... multipleSubscriptions\n}\n\nfragment multipleSubscriptions on Subscription {\n  newMessage {\n    body\n    sender(attribute: $value)\n  }\n}\n\ntype Query {\n  topProducts(first: Int): Product,\n}\n\ntype Product {\n  name: String\n  price(setPrice: Int): Int\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    19,
-                ),
-                length: SourceOffset(
-                    14,
-                ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 45,
             },
+            offset: 192,
+            length: 6,
         },
-    ),
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 45,
+                    },
+                    offset: 192,
+                    length: 6,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "value",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            45: "0045_operation_with_unused_variable_in_fragment.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 45,
+            },
+            offset: 19,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 45,
+                    },
+                    offset: 19,
+                    length: 14,
+                },
+                text: "this variable is never used",
+            },
+        ],
+        help: None,
+        data: UnusedVariable {
+            name: "variable",
+        },
+    },
 ]

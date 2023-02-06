@@ -1,10 +1,10 @@
 use std::{collections::HashMap, sync::Arc};
 
 use crate::{
-    diagnostics::{UniqueDefinition, UniqueInputValue},
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::ast_type_definitions,
-    ApolloDiagnostic, ValidationDatabase,
+    ValidationDatabase,
 };
 use apollo_parser::ast;
 
@@ -35,20 +35,33 @@ pub fn validate_input_object_definition(
         if let Some(name) = ast_def.name() {
             let name = &*name.text();
             let hir_def = &hir[name];
-            let ast_loc = (file_id, &ast_def).into();
-            if *hir_def.loc() == ast_loc {
+            let original_definition = hir_def.loc();
+            let redefined_definition = (file_id, &ast_def).into();
+            if original_definition == redefined_definition {
                 // The HIR node was built from this AST node. This is fine.
             } else {
-                diagnostics.push(ApolloDiagnostic::UniqueDefinition(UniqueDefinition {
-                    ty: "input object".into(),
-                    name: name.to_owned(),
-                    src: db.source_code(hir_def.loc().file_id()),
-                    original_definition: hir_def.loc().into(),
-                    redefined_definition: ast_loc.into(),
-                    help: Some(format!(
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        original_definition.into(),
+                        DiagnosticData::UniqueDefinition {
+                            ty: "input object",
+                            name: name.to_owned(),
+                            original_definition: original_definition.into(),
+                            redefined_definition: redefined_definition.into(),
+                        },
+                    )
+                    .help(format!(
                         "`{name}` must only be defined once in this document."
-                    )),
-                }));
+                    ))
+                    .labels([
+                        Label::new(
+                            original_definition,
+                            format!("previous definition of `{name}` here"),
+                        ),
+                        Label::new(redefined_definition, format!("`{name}` redefined here")),
+                    ]),
+                );
             }
         }
     }
@@ -78,18 +91,31 @@ pub fn validate_input_values(
 
         let name = input_value.name();
         if let Some(prev_arg) = seen.get(name) {
-            let prev_offset = prev_arg.loc().unwrap().offset();
-            let prev_node_len = prev_arg.loc().unwrap().node_len();
-
-            let current_offset = input_value.loc().unwrap().offset();
-            let current_node_len = input_value.loc().unwrap().node_len();
-
-            diagnostics.push(ApolloDiagnostic::UniqueInputValue(UniqueInputValue {
-                value: name.into(),
-                src: db.source_code(prev_arg.loc().unwrap().file_id()),
-                original_value: (prev_offset, prev_node_len).into(),
-                redefined_value: (current_offset, current_node_len).into(),
-            }));
+            if let (Some(original_value), Some(redefined_value)) =
+                (prev_arg.loc(), input_value.loc())
+            {
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        original_value.into(),
+                        DiagnosticData::UniqueInputValue {
+                            name: name.into(),
+                            original_value: original_value.into(),
+                            redefined_value: redefined_value.into(),
+                        },
+                    )
+                    .labels([
+                        Label::new(
+                            original_value,
+                            format!("previous definition of `{name}` here"),
+                        ),
+                        Label::new(redefined_value, format!("`{name}` redefined here")),
+                    ])
+                    .help(format!(
+                        "`{name}` field must only be defined once in this input object definition."
+                    )),
+                );
+            }
         } else {
             seen.insert(name, input_value);
         }

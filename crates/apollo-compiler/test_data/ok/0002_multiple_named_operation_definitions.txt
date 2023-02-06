@@ -1,73 +1,73 @@
 - DOCUMENT@0..217
-    - OPERATION_DEFINITION@0..43
-        - OPERATION_TYPE@0..6
+    - OPERATION_DEFINITION@0..41
+        - OPERATION_TYPE@0..5
             - query_KW@0..5 "query"
-            - WHITESPACE@5..6 " "
-        - NAME@6..17
+        - WHITESPACE@5..6 " "
+        - NAME@6..16
             - IDENT@6..16 "getCatName"
-            - WHITESPACE@16..17 " "
-        - SELECTION_SET@17..43
+        - WHITESPACE@16..17 " "
+        - SELECTION_SET@17..41
             - L_CURLY@17..18 "{"
             - WHITESPACE@18..21 "\n  "
-            - FIELD@21..40
-                - NAME@21..25
+            - FIELD@21..39
+                - NAME@21..24
                     - IDENT@21..24 "cat"
-                    - WHITESPACE@24..25 " "
-                - SELECTION_SET@25..40
+                - WHITESPACE@24..25 " "
+                - SELECTION_SET@25..39
                     - L_CURLY@25..26 "{"
                     - WHITESPACE@26..31 "\n    "
-                    - FIELD@31..38
-                        - NAME@31..38
+                    - FIELD@31..35
+                        - NAME@31..35
                             - IDENT@31..35 "name"
-                            - WHITESPACE@35..38 "\n  "
+                    - WHITESPACE@35..38 "\n  "
                     - R_CURLY@38..39 "}"
-                    - WHITESPACE@39..40 "\n"
+            - WHITESPACE@39..40 "\n"
             - R_CURLY@40..41 "}"
-            - WHITESPACE@41..43 "\n\n"
-    - OPERATION_DEFINITION@43..109
-        - OPERATION_TYPE@43..49
+    - WHITESPACE@41..43 "\n\n"
+    - OPERATION_DEFINITION@43..106
+        - OPERATION_TYPE@43..48
             - query_KW@43..48 "query"
-            - WHITESPACE@48..49 " "
-        - NAME@49..62
+        - WHITESPACE@48..49 " "
+        - NAME@49..61
             - IDENT@49..61 "getOwnerName"
-            - WHITESPACE@61..62 " "
-        - SELECTION_SET@62..109
+        - WHITESPACE@61..62 " "
+        - SELECTION_SET@62..106
             - L_CURLY@62..63 "{"
             - WHITESPACE@63..66 "\n  "
-            - FIELD@66..105
-                - NAME@66..70
+            - FIELD@66..104
+                - NAME@66..69
                     - IDENT@66..69 "cat"
-                    - WHITESPACE@69..70 " "
-                - SELECTION_SET@70..105
+                - WHITESPACE@69..70 " "
+                - SELECTION_SET@70..104
                     - L_CURLY@70..71 "{"
                     - WHITESPACE@71..76 "\n    "
-                    - FIELD@76..103
-                        - NAME@76..82
+                    - FIELD@76..100
+                        - NAME@76..81
                             - IDENT@76..81 "owner"
-                            - WHITESPACE@81..82 " "
-                        - SELECTION_SET@82..103
+                        - WHITESPACE@81..82 " "
+                        - SELECTION_SET@82..100
                             - L_CURLY@82..83 "{"
                             - WHITESPACE@83..90 "\n      "
-                            - FIELD@90..99
-                                - NAME@90..99
+                            - FIELD@90..94
+                                - NAME@90..94
                                     - IDENT@90..94 "name"
-                                    - WHITESPACE@94..99 "\n    "
+                            - WHITESPACE@94..99 "\n    "
                             - R_CURLY@99..100 "}"
-                            - WHITESPACE@100..103 "\n  "
+                    - WHITESPACE@100..103 "\n  "
                     - R_CURLY@103..104 "}"
-                    - WHITESPACE@104..105 "\n"
+            - WHITESPACE@104..105 "\n"
             - R_CURLY@105..106 "}"
-            - WHITESPACE@106..109 "\n\n\n"
-    - OBJECT_TYPE_DEFINITION@109..136
+    - WHITESPACE@106..109 "\n\n\n"
+    - OBJECT_TYPE_DEFINITION@109..134
         - type_KW@109..113 "type"
         - WHITESPACE@113..114 " "
-        - NAME@114..120
+        - NAME@114..119
             - IDENT@114..119 "Query"
-            - WHITESPACE@119..120 " "
-        - FIELDS_DEFINITION@120..136
+        - WHITESPACE@119..120 " "
+        - FIELDS_DEFINITION@120..134
             - L_CURLY@120..121 "{"
             - WHITESPACE@121..124 "\n  "
-            - FIELD_DEFINITION@124..133
+            - FIELD_DEFINITION@124..132
                 - NAME@124..127
                     - IDENT@124..127 "cat"
                 - COLON@127..128 ":"
@@ -75,19 +75,19 @@
                 - NAMED_TYPE@129..132
                     - NAME@129..132
                         - IDENT@129..132 "Pet"
-                - WHITESPACE@132..133 "\n"
+            - WHITESPACE@132..133 "\n"
             - R_CURLY@133..134 "}"
-            - WHITESPACE@134..136 "\n\n"
-    - OBJECT_TYPE_DEFINITION@136..184
+    - WHITESPACE@134..136 "\n\n"
+    - OBJECT_TYPE_DEFINITION@136..182
         - type_KW@136..140 "type"
         - WHITESPACE@140..141 " "
-        - NAME@141..145
+        - NAME@141..144
             - IDENT@141..144 "Pet"
-            - WHITESPACE@144..145 " "
-        - FIELDS_DEFINITION@145..184
+        - WHITESPACE@144..145 " "
+        - FIELDS_DEFINITION@145..182
             - L_CURLY@145..146 "{"
             - WHITESPACE@146..149 "\n  "
-            - FIELD_DEFINITION@149..165
+            - FIELD_DEFINITION@149..161
                 - NAME@149..153
                     - IDENT@149..153 "name"
                 - COLON@153..154 ":"
@@ -95,9 +95,9 @@
                 - NAMED_TYPE@155..161
                     - NAME@155..161
                         - IDENT@155..161 "String"
-                - COMMA@161..162 ","
-                - WHITESPACE@162..165 "\n  "
-            - FIELD_DEFINITION@165..181
+            - COMMA@161..162 ","
+            - WHITESPACE@162..165 "\n  "
+            - FIELD_DEFINITION@165..180
                 - NAME@165..170
                     - IDENT@165..170 "owner"
                 - COLON@170..171 ":"
@@ -105,19 +105,19 @@
                 - NAMED_TYPE@172..180
                     - NAME@172..180
                         - IDENT@172..180 "PetOwner"
-                - WHITESPACE@180..181 "\n"
+            - WHITESPACE@180..181 "\n"
             - R_CURLY@181..182 "}"
-            - WHITESPACE@182..184 "\n\n"
-    - OBJECT_TYPE_DEFINITION@184..217
+    - WHITESPACE@182..184 "\n\n"
+    - OBJECT_TYPE_DEFINITION@184..216
         - type_KW@184..188 "type"
         - WHITESPACE@188..189 " "
-        - NAME@189..198
+        - NAME@189..197
             - IDENT@189..197 "PetOwner"
-            - WHITESPACE@197..198 " "
-        - FIELDS_DEFINITION@198..217
+        - WHITESPACE@197..198 " "
+        - FIELDS_DEFINITION@198..216
             - L_CURLY@198..199 "{"
             - WHITESPACE@199..202 "\n  "
-            - FIELD_DEFINITION@202..215
+            - FIELD_DEFINITION@202..214
                 - NAME@202..206
                     - IDENT@202..206 "name"
                 - COLON@206..207 ":"
@@ -125,7 +125,7 @@
                 - NAMED_TYPE@208..214
                     - NAME@208..214
                         - IDENT@208..214 "String"
-                - WHITESPACE@214..215 "\n"
+            - WHITESPACE@214..215 "\n"
             - R_CURLY@215..216 "}"
-            - WHITESPACE@216..217 "\n"
+    - WHITESPACE@216..217 "\n"
 recursion limit: 4096, high: 6

@@ -1,42 +1,70 @@
 [
-    UnsupportedOperation(
-        UnsupportedOperation {
-            ty: "Subscription",
-            src: "subscription messageSubscription {\n  newMessage {\n    body\n    sender\n  }\n}\n\nschema {\n  query: customPetQuery,\n}\n\ntype customPetQuery {\n  name: String,\n  newMessage: Message\n  age: Int\n}\n\ntype Message {\n  body: String\n  sender: String\n}",
-            operation: SourceSpan {
-                offset: SourceOffset(
-                    0,
-                ),
-                length: SourceOffset(
-                    77,
-                ),
+    ApolloDiagnostic {
+        cache: {
+            13: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 13,
             },
-            schema: Some(
-                SourceSpan {
-                    offset: SourceOffset(
-                        77,
-                    ),
-                    length: SourceOffset(
-                        37,
-                    ),
+            offset: 0,
+            length: 75,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 13,
+                    },
+                    offset: 0,
+                    length: 75,
                 },
-            ),
-            help: None,
-        },
-    ),
-    UndefinedField(
-        UndefinedField {
-            field: "newMessage",
-            src: "subscription messageSubscription {\n  newMessage {\n    body\n    sender\n  }\n}\n\nschema {\n  query: customPetQuery,\n}\n\ntype customPetQuery {\n  name: String,\n  newMessage: Message\n  age: Int\n}\n\ntype Message {\n  body: String\n  sender: String\n}",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    37,
-                ),
-                length: SourceOffset(
-                    37,
-                ),
+                text: "Subscription operation is not defined in the schema and is therefore not supported",
             },
-            help: "`newMessage` is not defined on the current Subscription root operation type.",
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 13,
+                    },
+                    offset: 77,
+                    length: 35,
+                },
+                text: "Consider defining a `subscription` root operation type here",
+            },
+        ],
+        help: None,
+        data: UnsupportedOperation {
+            ty: "subscription",
         },
-    ),
+    },
+    ApolloDiagnostic {
+        cache: {
+            13: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 13,
+            },
+            offset: 37,
+            length: 36,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 13,
+                    },
+                    offset: 37,
+                    length: 36,
+                },
+                text: "`newMessage` field is not defined",
+            },
+        ],
+        help: Some(
+            "`newMessage` is not defined on the current Subscription root operation type.",
+        ),
+        data: UndefinedField {
+            field: "newMessage",
+        },
+    },
 ]

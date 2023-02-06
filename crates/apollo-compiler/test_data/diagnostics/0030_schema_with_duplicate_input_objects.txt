@@ -1,28 +1,57 @@
 [
-    UniqueDefinition(
-        UniqueDefinition {
-            name: "Point2D",
-            ty: "input object",
-            src: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")\n\ninput Point2D {\n  x: Float\n  y: Float\n}\n\ninput Point2D {\n  x: Float\n  y: Float\n}",
-            original_definition: SourceSpan {
-                offset: SourceOffset(
-                    115,
-                ),
-                length: SourceOffset(
-                    41,
-                ),
-            },
-            redefined_definition: SourceSpan {
-                offset: SourceOffset(
-                    156,
-                ),
-                length: SourceOffset(
-                    39,
-                ),
-            },
-            help: Some(
-                "`Point2D` must only be defined once in this document.",
-            ),
+    ApolloDiagnostic {
+        cache: {
+            30: "0030_schema_with_duplicate_input_objects.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 30,
+            },
+            offset: 115,
+            length: 39,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 30,
+                    },
+                    offset: 115,
+                    length: 39,
+                },
+                text: "previous definition of `Point2D` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 30,
+                    },
+                    offset: 156,
+                    length: 39,
+                },
+                text: "`Point2D` redefined here",
+            },
+        ],
+        help: Some(
+            "`Point2D` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "input object",
+            name: "Point2D",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 30,
+                },
+                offset: 115,
+                length: 39,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 30,
+                },
+                offset: 156,
+                length: 39,
+            },
+        },
+    },
 ]

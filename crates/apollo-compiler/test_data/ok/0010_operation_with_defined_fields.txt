@@ -1,47 +1,47 @@
 - DOCUMENT@0..429
-    - OPERATION_DEFINITION@0..70
-        - OPERATION_TYPE@0..6
+    - OPERATION_DEFINITION@0..68
+        - OPERATION_TYPE@0..5
             - query_KW@0..5 "query"
-            - WHITESPACE@5..6 " "
-        - NAME@6..17
+        - WHITESPACE@5..6 " "
+        - NAME@6..16
             - IDENT@6..16 "getProduct"
-            - WHITESPACE@16..17 " "
-        - SELECTION_SET@17..70
+        - WHITESPACE@16..17 " "
+        - SELECTION_SET@17..68
             - L_CURLY@17..18 "{"
             - WHITESPACE@18..21 "\n  "
-            - FIELD@21..28
-                - NAME@21..28
+            - FIELD@21..25
+                - NAME@21..25
                     - IDENT@21..25 "size"
-                    - WHITESPACE@25..28 "\n  "
-            - FIELD@28..67
-                - NAME@28..40
+            - WHITESPACE@25..28 "\n  "
+            - FIELD@28..66
+                - NAME@28..39
                     - IDENT@28..39 "topProducts"
-                    - WHITESPACE@39..40 " "
-                - SELECTION_SET@40..67
+                - WHITESPACE@39..40 " "
+                - SELECTION_SET@40..66
                     - L_CURLY@40..41 "{"
                     - WHITESPACE@41..46 "\n    "
-                    - FIELD@46..55
-                        - NAME@46..55
+                    - FIELD@46..50
+                        - NAME@46..50
                             - IDENT@46..50 "name"
-                            - WHITESPACE@50..55 "\n    "
-                    - FIELD@55..65
-                        - NAME@55..65
+                    - WHITESPACE@50..55 "\n    "
+                    - FIELD@55..62
+                        - NAME@55..62
                             - IDENT@55..62 "inStock"
-                            - WHITESPACE@62..65 "\n  "
+                    - WHITESPACE@62..65 "\n  "
                     - R_CURLY@65..66 "}"
-                    - WHITESPACE@66..67 "\n"
+            - WHITESPACE@66..67 "\n"
             - R_CURLY@67..68 "}"
-            - WHITESPACE@68..70 "\n\n"
-    - OBJECT_TYPE_DEFINITION@70..136
+    - WHITESPACE@68..70 "\n\n"
+    - OBJECT_TYPE_DEFINITION@70..134
         - type_KW@70..74 "type"
         - WHITESPACE@74..75 " "
-        - NAME@75..81
+        - NAME@75..80
             - IDENT@75..80 "Query"
-            - WHITESPACE@80..81 " "
-        - FIELDS_DEFINITION@81..136
+        - WHITESPACE@80..81 " "
+        - FIELDS_DEFINITION@81..134
             - L_CURLY@81..82 "{"
             - WHITESPACE@82..85 "\n  "
-            - FIELD_DEFINITION@85..108
+            - FIELD_DEFINITION@85..105
                 - NAME@85..96
                     - IDENT@85..96 "topProducts"
                 - COLON@96..97 ":"
@@ -49,8 +49,8 @@
                 - NAMED_TYPE@98..105
                     - NAME@98..105
                         - IDENT@98..105 "Product"
-                - WHITESPACE@105..108 "\n  "
-            - FIELD_DEFINITION@108..123
+            - WHITESPACE@105..108 "\n  "
+            - FIELD_DEFINITION@108..120
                 - NAME@108..112
                     - IDENT@108..112 "name"
                 - COLON@112..113 ":"
@@ -58,8 +58,8 @@
                 - NAMED_TYPE@114..120
                     - NAME@114..120
                         - IDENT@114..120 "String"
-                - WHITESPACE@120..123 "\n  "
-            - FIELD_DEFINITION@123..133
+            - WHITESPACE@120..123 "\n  "
+            - FIELD_DEFINITION@123..132
                 - NAME@123..127
                     - IDENT@123..127 "size"
                 - COLON@127..128 ":"
@@ -67,19 +67,19 @@
                 - NAMED_TYPE@129..132
                     - NAME@129..132
                         - IDENT@129..132 "Int"
-                - WHITESPACE@132..133 "\n"
+            - WHITESPACE@132..133 "\n"
             - R_CURLY@133..134 "}"
-            - WHITESPACE@134..136 "\n\n"
-    - OBJECT_TYPE_DEFINITION@136..315
+    - WHITESPACE@134..136 "\n\n"
+    - OBJECT_TYPE_DEFINITION@136..313
         - type_KW@136..140 "type"
         - WHITESPACE@140..141 " "
-        - NAME@141..149
+        - NAME@141..148
             - IDENT@141..148 "Product"
-            - WHITESPACE@148..149 " "
-        - FIELDS_DEFINITION@149..315
+        - WHITESPACE@148..149 " "
+        - FIELDS_DEFINITION@149..313
             - L_CURLY@149..150 "{"
             - WHITESPACE@150..153 "\n  "
-            - FIELD_DEFINITION@153..203
+            - FIELD_DEFINITION@153..200
                 - NAME@153..160
                     - IDENT@153..160 "inStock"
                 - COLON@160..161 ":"
@@ -88,12 +88,12 @@
                     - NAME@162..169
                         - IDENT@162..169 "Boolean"
                 - WHITESPACE@169..170 " "
-                - DIRECTIVES@170..203
-                    - DIRECTIVE@170..203
+                - DIRECTIVES@170..200
+                    - DIRECTIVE@170..200
                         - AT@170..171 "@"
                         - NAME@171..182
                             - IDENT@171..182 "join__field"
-                        - ARGUMENTS@182..203
+                        - ARGUMENTS@182..200
                             - L_PAREN@182..183 "("
                             - ARGUMENT@183..199
                                 - NAME@183..188
@@ -104,8 +104,8 @@
                                     - NAME@190..199
                                         - IDENT@190..199 "INVENTORY"
                             - R_PAREN@199..200 ")"
-                            - WHITESPACE@200..203 "\n  "
-            - FIELD_DEFINITION@203..248
+            - WHITESPACE@200..203 "\n  "
+            - FIELD_DEFINITION@203..245
                 - NAME@203..207
                     - IDENT@203..207 "name"
                 - COLON@207..208 ":"
@@ -114,12 +114,12 @@
                     - NAME@209..215
                         - IDENT@209..215 "String"
                 - WHITESPACE@215..216 " "
-                - DIRECTIVES@216..248
-                    - DIRECTIVE@216..248
+                - DIRECTIVES@216..245
+                    - DIRECTIVE@216..245
                         - AT@216..217 "@"
                         - NAME@217..228
                             - IDENT@217..228 "join__field"
-                        - ARGUMENTS@228..248
+                        - ARGUMENTS@228..245
                             - L_PAREN@228..229 "("
                             - ARGUMENT@229..244
                                 - NAME@229..234
@@ -130,8 +130,8 @@
                                     - NAME@236..244
                                         - IDENT@236..244 "PRODUCTS"
                             - R_PAREN@244..245 ")"
-                            - WHITESPACE@245..248 "\n  "
-            - FIELD_DEFINITION@248..261
+            - WHITESPACE@245..248 "\n  "
+            - FIELD_DEFINITION@248..258
                 - NAME@248..253
                     - IDENT@248..253 "price"
                 - COLON@253..254 ":"
@@ -139,8 +139,8 @@
                 - NAMED_TYPE@255..258
                     - NAME@255..258
                         - IDENT@255..258 "Int"
-                - WHITESPACE@258..261 "\n  "
-            - FIELD_DEFINITION@261..285
+            - WHITESPACE@258..261 "\n  "
+            - FIELD_DEFINITION@261..282
                 - NAME@261..277
                     - IDENT@261..277 "shippingEstimate"
                 - COLON@277..278 ":"
@@ -148,19 +148,19 @@
                 - NAMED_TYPE@279..282
                     - NAME@279..282
                         - IDENT@279..282 "Int"
-                - WHITESPACE@282..285 "\n  "
-            - FIELD_DEFINITION@285..300
+            - WHITESPACE@282..285 "\n  "
+            - FIELD_DEFINITION@285..297
                 - NAME@285..288
                     - IDENT@285..288 "upc"
                 - COLON@288..289 ":"
                 - WHITESPACE@289..290 " "
-                - NON_NULL_TYPE@290..300
+                - NON_NULL_TYPE@290..297
                     - NAMED_TYPE@290..296
                         - NAME@290..296
                             - IDENT@290..296 "String"
                     - BANG@296..297 "!"
-                    - WHITESPACE@297..300 "\n  "
-            - FIELD_DEFINITION@300..312
+            - WHITESPACE@297..300 "\n  "
+            - FIELD_DEFINITION@300..311
                 - NAME@300..306
                     - IDENT@300..306 "weight"
                 - COLON@306..307 ":"
@@ -168,18 +168,18 @@
                 - NAMED_TYPE@308..311
                     - NAME@308..311
                         - IDENT@308..311 "Int"
-                - WHITESPACE@311..312 "\n"
+            - WHITESPACE@311..312 "\n"
             - R_CURLY@312..313 "}"
-            - WHITESPACE@313..315 "\n\n"
+    - WHITESPACE@313..315 "\n\n"
     - DIRECTIVE_DEFINITION@315..429
         - directive_KW@315..324 "directive"
         - WHITESPACE@324..325 " "
         - AT@325..326 "@"
         - NAME@326..337
             - IDENT@326..337 "join__field"
-        - ARGUMENTS_DEFINITION@337..410
+        - ARGUMENTS_DEFINITION@337..409
             - L_PAREN@337..338 "("
-            - INPUT_VALUE_DEFINITION@338..358
+            - INPUT_VALUE_DEFINITION@338..356
                 - NAME@338..343
                     - IDENT@338..343 "graph"
                 - COLON@343..344 ":"
@@ -187,9 +187,9 @@
                 - NAMED_TYPE@345..356
                     - NAME@345..356
                         - IDENT@345..356 "join__Graph"
-                - COMMA@356..357 ","
-                - WHITESPACE@357..358 " "
-            - INPUT_VALUE_DEFINITION@358..384
+            - COMMA@356..357 ","
+            - WHITESPACE@357..358 " "
+            - INPUT_VALUE_DEFINITION@358..382
                 - NAME@358..366
                     - IDENT@358..366 "requires"
                 - COLON@366..367 ":"
@@ -197,8 +197,8 @@
                 - NAMED_TYPE@368..382
                     - NAME@368..382
                         - IDENT@368..382 "join__FieldSet"
-                - COMMA@382..383 ","
-                - WHITESPACE@383..384 " "
+            - COMMA@382..383 ","
+            - WHITESPACE@383..384 " "
             - INPUT_VALUE_DEFINITION@384..408
                 - NAME@384..392
                     - IDENT@384..392 "provides"
@@ -208,7 +208,7 @@
                     - NAME@394..408
                         - IDENT@394..408 "join__FieldSet"
             - R_PAREN@408..409 ")"
-            - WHITESPACE@409..410 " "
+        - WHITESPACE@409..410 " "
         - on_KW@410..412 "on"
         - WHITESPACE@412..413 " "
         - DIRECTIVE_LOCATIONS@413..429

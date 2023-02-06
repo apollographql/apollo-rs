@@ -1,16 +1,30 @@
 [
-    UndefinedDefinition(
-        UndefinedDefinition {
-            ty: "directiveA",
-            src: "type Query {\n    name: String\n    status: Int @directiveA\n}\n\ndirective @directiveB on FIELD_DEFINITION\n",
-            definition: SourceSpan {
-                offset: SourceOffset(
-                    46,
-                ),
-                length: SourceOffset(
-                    12,
-                ),
-            },
+    ApolloDiagnostic {
+        cache: {
+            52: "0052_undefined_directive.graphql",
         },
-    ),
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 52,
+            },
+            offset: 46,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 52,
+                    },
+                    offset: 46,
+                    length: 11,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "directiveA",
+        },
+    },
 ]
