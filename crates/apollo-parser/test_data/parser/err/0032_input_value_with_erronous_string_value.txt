@@ -22,12 +22,12 @@
                     - IDENT@31..38 "picture"
                 - ARGUMENTS_DEFINITION@38..71
                     - L_PAREN@38..39 "("
-                    - INPUT_VALUE_DEFINITION@39..69
+                    - INPUT_VALUE_DEFINITION@39..49
                         - NAME@39..48
                             - IDENT@39..48 "reference"
                         - COLON@48..49 ":"
-                        - ERROR@49..69 "\"\\a reference image\""
-                    - WHITESPACE@69..70 " "
+                    - WHITESPACE@49..50 " "
+                    - ERROR@50..70 "\"\\a reference image\""
                     - R_PAREN@70..71 ")"
                 - COLON@71..72 ":"
                 - WHITESPACE@72..73 " "

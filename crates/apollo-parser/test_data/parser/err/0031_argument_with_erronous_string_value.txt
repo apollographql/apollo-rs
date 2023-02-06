@@ -8,12 +8,12 @@
                     - IDENT@4..8 "user"
                 - ARGUMENTS@8..26
                     - L_PAREN@8..9 "("
-                    - ARGUMENT@9..24
+                    - ARGUMENT@9..12
                         - NAME@9..11
                             - IDENT@9..11 "id"
                         - COLON@11..12 ":"
-                        - ERROR@12..24 "\"\\string ID\""
-                    - WHITESPACE@24..25 " "
+                    - WHITESPACE@12..13 " "
+                    - ERROR@13..25 "\"\\string ID\""
                     - R_PAREN@25..26 ")"
             - WHITESPACE@26..27 "\n"
             - R_CURLY@27..28 "}"
