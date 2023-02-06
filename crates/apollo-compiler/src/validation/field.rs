@@ -1,6 +1,5 @@
 use std::{collections::HashMap, sync::Arc};
 
-use crate::diagnostics::UndefinedField;
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
@@ -24,16 +23,33 @@ pub fn validate_field(
             field.name(),
             field.parent_obj.as_ref().unwrap(),
         );
+        let field_name = field.name();
+        let diagnostic = ApolloDiagnostic::new(
+            db,
+            field.loc().into(),
+            DiagnosticData::UndefinedField {
+                field: field_name.into(),
+            },
+        )
+        .label(Label::new(
+            field.loc(),
+            format!("`{field_name}` field is not defined"),
+        ))
+        .help(help);
 
-        let op_offset = field.loc().offset();
-        let op_len = field.loc().node_len();
+        let parent_type_loc = db
+            .find_type_definition_by_name(field.parent_obj.clone().unwrap())
+            .and_then(|type_def| type_def.loc());
 
-        diagnostics.push(ApolloDiagnostic::UndefinedField(UndefinedField {
-            field: field.name().into(),
-            src: db.source_code(field.loc().file_id()),
-            definition: (op_offset, op_len).into(),
-            help,
-        }));
+        let diagnostic = if let Some(parent_type_loc) = parent_type_loc {
+            diagnostic.label(Label::new(
+                parent_type_loc,
+                format!("`{}` declared here", field.parent_obj.as_ref().unwrap()),
+            ))
+        } else {
+            diagnostic
+        };
+        diagnostics.push(diagnostic);
     }
 
     diagnostics
@@ -83,13 +99,13 @@ pub fn validate_field_definitions(
                         field: field_name.into(),
                         original_definition: original_definition.into(),
                         redefined_definition: redefined_definition.into(),
-                    }
+                    },
                 )
-                .labels([
-                    Label::new(original_definition, format!("previous definition of `{field_name}` here")),
-                    Label::new(redefined_definition, format!("`{field_name}` redefined here")),
-                ])
-                .help(format!("`{field_name}` field must only be defined once in this input object definition."))
+                    .labels([
+                        Label::new(original_definition, format!("previous definition of `{field_name}` here")),
+                        Label::new(redefined_definition, format!("`{field_name}` redefined here")),
+                    ])
+                    .help(format!("`{field_name}` field must only be defined once in this input object definition."))
             );
         } else {
             seen.insert(field_name, field);
@@ -103,8 +119,8 @@ pub fn validate_field_definitions(
                         name: field.name().into(),
                         ty: field_ty.kind(),
                     })
-                    .label(Label::new(field.loc(), format!("this is of `{}` type", field_ty.kind())))
-                    .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
+                        .label(Label::new(field.loc(), format!("this is of `{}` type", field_ty.kind())))
+                        .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
                 );
             }
         } else if let Some(field_ty_loc) = field.ty().loc() {
