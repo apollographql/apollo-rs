@@ -584,6 +584,9 @@ mod tests {
         let interface_def = definitions.next().unwrap();
         assert_eq!(definitions.next(), None);
         assert!(matches!(query_def, Definition::ObjectTypeDefinition(_)));
-        assert!(matches!(interface_def, Definition::InterfaceTypeDefinition(_)));
+        assert!(matches!(
+            interface_def,
+            Definition::InterfaceTypeDefinition(_)
+        ));
     }
 }
