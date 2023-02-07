@@ -565,4 +565,25 @@ mod tests {
         "##]];
         tree.assert_eq(&format!("{:#?}", ast.document().syntax));
     }
+
+    #[test]
+    fn tree_with_syntax_errors() {
+        use crate::ast::Definition;
+
+        // Some arbitrary token spam in incorrect places--this test uses
+        // valid tokens only
+        let source = r#"
+            garbage type Query implements X {
+                field(arg: Int): Int
+            } garbage :,, (|) interface X {}
+        "#;
+        let ast = Parser::new(source).parse();
+
+        let mut definitions = ast.document().definitions();
+        let query_def = definitions.next().unwrap();
+        let interface_def = definitions.next().unwrap();
+        assert_eq!(definitions.next(), None);
+        assert!(matches!(query_def, Definition::ObjectTypeDefinition(_)));
+        assert!(matches!(interface_def, Definition::InterfaceTypeDefinition(_)));
+    }
 }
