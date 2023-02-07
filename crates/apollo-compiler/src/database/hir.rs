@@ -130,6 +130,17 @@ impl TypeDefinition {
             _ => None,
         }
     }
+
+    pub fn loc(&self) -> Option<HirNodeLocation> {
+        match self {
+            Self::ObjectTypeDefinition(def) => Some(def.loc()),
+            Self::InterfaceTypeDefinition(def) => Some(def.loc()),
+            Self::UnionTypeDefinition(def) => Some(def.loc()),
+            Self::EnumTypeDefinition(def) => Some(def.loc()),
+            Self::InputObjectTypeDefinition(def) => Some(def.loc()),
+            Self::ScalarTypeDefinition(def) => def.loc(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]

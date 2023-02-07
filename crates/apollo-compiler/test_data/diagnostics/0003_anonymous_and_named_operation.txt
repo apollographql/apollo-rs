@@ -8,7 +8,7 @@
                 id: 2,
             },
             offset: 0,
-            length: 30,
+            length: 15,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 2,
                     },
                     offset: 0,
-                    length: 30,
+                    length: 15,
                 },
                 text: "provide a name for this definition",
             },

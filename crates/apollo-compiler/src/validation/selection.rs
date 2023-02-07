@@ -11,12 +11,10 @@ pub fn validate_selection(
     for sel in selection.iter() {
         match sel {
             hir::Selection::Field(field) => {
-                if !field.selection_set().selection().is_empty() {
-                    diagnostics
-                        .extend(db.validate_selection(field.selection_set().selection.clone()))
-                }
                 diagnostics.extend(db.validate_field(field.clone()));
             }
+
+            // TODO handle fragment spreads on invalid parent types
             hir::Selection::FragmentSpread(frag) => diagnostics.extend(db.validate_directives(
                 frag.directives().to_vec(),
                 hir::DirectiveLocation::FragmentSpread,
@@ -35,5 +33,11 @@ pub fn validate_selection_set(
     db: &dyn ValidationDatabase,
     selection_set: hir::SelectionSet,
 ) -> Vec<ApolloDiagnostic> {
-    db.validate_selection(selection_set.selection)
+    let mut diagnostics = Vec::new();
+
+    // TODO handle Enums, Scalar (no selection set content allowed), Unions
+
+    diagnostics.extend(db.validate_selection(selection_set.selection));
+
+    diagnostics
 }

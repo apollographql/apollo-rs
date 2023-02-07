@@ -7,7 +7,7 @@
             file_id: FileId {
                 id: 0,
             },
-            offset: 46,
+            offset: 31,
             length: 7,
         },
         labels: [
@@ -26,7 +26,7 @@
                     file_id: FileId {
                         id: 0,
                     },
-                    offset: 46,
+                    offset: 31,
                     length: 7,
                 },
                 text: "`getName` redefined here",
@@ -49,7 +49,7 @@
                 file_id: FileId {
                     id: 0,
                 },
-                offset: 46,
+                offset: 31,
                 length: 7,
             },
         },

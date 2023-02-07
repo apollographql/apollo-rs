@@ -1,15 +1,9 @@
 query getName {
-  cat {
-    name
-  }
+  cat
 }
 
 query getName {
-  cat {
-    owner {
-      name
-    }
-  }
+  cat
 }
 
 type Query {

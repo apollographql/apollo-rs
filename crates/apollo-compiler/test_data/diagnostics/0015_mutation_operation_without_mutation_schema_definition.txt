@@ -29,34 +29,4 @@
             ty: "mutation",
         },
     },
-    ApolloDiagnostic {
-        cache: {
-            14: "0015_mutation_operation_without_mutation_schema_definition.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 14,
-            },
-            offset: 31,
-            length: 41,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 14,
-                    },
-                    offset: 31,
-                    length: 41,
-                },
-                text: "`addPet` field is not defined",
-            },
-        ],
-        help: Some(
-            "`addPet` is not defined on the current Mutation root operation type.",
-        ),
-        data: UndefinedField {
-            field: "addPet",
-        },
-    },
 ]

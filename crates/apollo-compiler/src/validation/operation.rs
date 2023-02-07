@@ -16,7 +16,12 @@ pub fn validate_operation_definitions(
         diagnostics
             .extend(db.validate_directives(def.directives().to_vec(), def.operation_ty().into()));
         diagnostics.extend(db.validate_variable_definitions(def.variables.as_ref().clone()));
-        diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
+
+        // Validate the Selection Set recursively
+        // Check that the root type exists
+        if def.object_type(db.upcast()).is_some() {
+            diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
+        }
     }
 
     let subscription_operations = db.upcast().subscription_operations(file_id);
@@ -89,50 +94,6 @@ pub fn validate_operation_definitions(
                 );
             } else {
                 seen.insert(name, op);
-            }
-        }
-    }
-
-    // Fields must exist on the type being queried.
-    for op in operations.iter() {
-        for selection in op.selection_set().selection() {
-            let obj_type = op.object_type(db.upcast());
-            let obj_name = obj_type.as_ref().map(|obj| obj.name().to_owned());
-            if let hir::Selection::Field(field) = selection {
-                if field.ty(db.upcast()).is_none() {
-                    let field_name = field.name();
-                    let help = if let Some(actual_name) = obj_name {
-                        format!("`{field_name}` is not defined on `{actual_name}` type")
-                    } else {
-                        format!(
-                            "`{}` is not defined on the current {} root operation type.",
-                            field_name,
-                            op.operation_ty()
-                        )
-                    };
-                    let diagnostic = ApolloDiagnostic::new(
-                        db,
-                        field.loc().into(),
-                        DiagnosticData::UndefinedField {
-                            field: field_name.into(),
-                        },
-                    )
-                    .label(Label::new(
-                        field.loc(),
-                        format!("`{field_name}` field is not defined"),
-                    ))
-                    .help(help);
-
-                    let diagnostic = if let Some(ty) = obj_type {
-                        diagnostic.label(Label::new(
-                            ty.loc(),
-                            format!("`{}` declared here", ty.name()),
-                        ))
-                    } else {
-                        diagnostic
-                    };
-                    diagnostics.push(diagnostic)
-                }
             }
         }
     }
@@ -317,51 +278,25 @@ query {
 
 query getPet {
   cat {
-    owner {
-      name
-    }
+    name
   }
 }
 
-query getPet {
+query getOtherPet {
   cat {
-    treat
+    nickname
   }
-}
-
-subscription sub {
-  newMessage {
-    body
-    sender
-  }
-  disallowedSecondRootField
 }
 
 type Query {
-  cat: Pet
+  cat: Cat
 }
 
-type Subscription {
-  newMessage: Result
-}
-
-interface Pet {
-  name: String
-}
-
-type Dog implements Pet {
-  name: String
-  nickname: String
-  barkVolume: Int
-}
-
-type Cat implements Pet {
+type Cat {
   name: String
   nickname: String
   meowVolume: Int
 }
-
-union CatOrDog = Cat | Dog
 "#;
         let mut compiler = ApolloCompiler::new();
         compiler.add_document(input, "schema.graphql");
@@ -370,7 +305,7 @@ union CatOrDog = Cat | Dog
         for diagnostic in &diagnostics {
             println!("{diagnostic}")
         }
-        assert_eq!(diagnostics.len(), 5)
+        assert_eq!(diagnostics.len(), 1)
     }
 
     #[test]
@@ -384,9 +319,8 @@ query getName {
 
 query getName {
   cat {
-    owner {
-      name
-    }
+    name
+    nickname
   }
 }
 
@@ -398,6 +332,7 @@ union CatOrDog = Cat | Dog
 
 interface Pet {
   name: String
+  nickname: String
 }
 
 type Dog implements Pet {
@@ -431,11 +366,9 @@ query getCatName {
   }
 }
 
-query getOwnerName {
+query getPetNickname {
   cat {
-    owner {
-      name
-    }
+    nickname
   }
 }
 
@@ -447,6 +380,7 @@ union CatOrDog = Cat | Dog
 
 interface Pet {
   name: String
+  nickname: String
 }
 
 type Dog implements Pet {
@@ -465,6 +399,9 @@ type Cat implements Pet {
         compiler.add_document(input, "schema.graphql");
 
         let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{diagnostic}")
+        }
         assert!(diagnostics.is_empty());
     }
 
@@ -508,15 +445,19 @@ type Cat implements Pet {
             println!("{diagnostic}")
         }
 
-        assert_eq!(diagnostics.len(), 2)
+        assert_eq!(diagnostics.len(), 1)
     }
 
     #[test]
     fn it_validates_fields_in_operations() {
         let input = r#"
 query getProduct {
-  size
-  weight
+  name
+  noName
+  topProducts {
+    inStock
+    price
+  }
 }
 
 type Query {
@@ -525,11 +466,9 @@ type Query {
 }
 
 type Product {
-  inStock: Boolean @join__field(graph: INVENTORY)
-  name: String @join__field(graph: PRODUCTS)
+  inStock: Boolean
+  name: String
 }
-
-directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
 "#;
 
         let mut compiler = ApolloCompiler::new();
