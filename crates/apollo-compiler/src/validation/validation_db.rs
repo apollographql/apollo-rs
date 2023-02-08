@@ -173,6 +173,12 @@ pub trait ValidationDatabase:
     #[salsa::invoke(fragment::validate_fragment_definitions)]
     fn validate_fragment_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
+    #[salsa::invoke(fragment::validate_fragment_name_uniqueness)]
+    fn validate_fragment_name_uniqueness(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(fragment::validate_fragment_spread_type_existence)]
+    fn validate_fragment_spread_type_existence(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+
     #[salsa::invoke(selection::validate_selection_set)]
     fn validate_selection_set(&self, sel_set: SelectionSet) -> Vec<ApolloDiagnostic>;
 

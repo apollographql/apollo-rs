@@ -1,0 +1,21 @@
+type Query {
+    dog: Dog
+}
+
+type Dog {
+    name: String
+}
+
+fragment fragmentOne on Dog {
+    name
+}
+
+fragment fragmentOne on Dog {
+    name
+}
+
+query GetDog {
+    dog {
+        ...fragmentOne
+    }
+}

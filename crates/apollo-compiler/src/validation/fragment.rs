@@ -57,6 +57,42 @@ pub fn validate_fragment_definitions(
     diagnostics
 }
 
+// Validate fragment spread type existence
+pub fn validate_fragment_spread_type_existence(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    // Store existing types in the schema
+    let schema_types = db.object_types();
+
+    for def in db.fragments(file_id).values() {
+        let type_def = def.type_condition();
+
+        if !schema_types.contains_key(type_def) {}
+    }
+
+    diagnostics
+}
+
+// Validate fragments on composite types
+// pub fn validate_fragments_on_composite_types(
+
+// ) -> Vec<ApolloDiagnostic> {
+//     let mut diagnostics = Vec::new();
+
+//     diagnostics
+// }
+
+// // Validate fragment is used
+// pub fn validate_fragment_is_used(
+
+// ) -> Vec<ApolloDiagnostic> {
+//     let mut diagnostics = Vec::new();
+
+//     diagnostics
+// }
 #[cfg(test)]
 mod test {
     use crate::ApolloCompiler;
@@ -78,7 +114,54 @@ fragment XY on Product {
   notExistingField
 }
 "#;
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_document(input, "schema.graphql");
 
+        let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{diagnostic}");
+        }
+
+        assert_eq!(diagnostics.len(), 1)
+    }
+
+    #[test]
+    fn it_fails_validation_with_invalid_fragment_spread_type() {
+        let input = r#"
+        query ExampleQuery {
+          topProducts {
+            name
+          }
+        
+          ... on User {
+            id
+            name
+            status(membership: $goldStatus)
+          }
+        
+          ... fragmentOne
+          ... invalidInlineFragment
+        }
+        
+        fragment fragmentOne on Query {
+            profilePic(size: $dimensions)
+        }
+        
+        fragment invalidInlineFragment on Dog {
+          ... on NotInSchema {
+            name
+          }
+        }
+        
+        type Query {
+          topProducts: Product
+        }
+        
+        type Product {
+          name: String
+          price(setPrice: Int): Int
+        }
+        "#;
         let mut compiler = ApolloCompiler::new();
         compiler.add_document(input, "schema.graphql");
 
