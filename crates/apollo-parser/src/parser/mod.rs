@@ -181,7 +181,7 @@ impl<'a> Parser<'a> {
         }
 
         let token = self.pop();
-        self.builder.borrow_mut().token(kind, token.data());
+        self.push_ast(kind, token);
     }
 
     /// Create a parser limit error and push it into the error vector.
@@ -235,16 +235,20 @@ impl<'a> Parser<'a> {
         }
 
         let current = self.pop();
-        // we usually bump ignored after we pop a token, so make sure we also do
-        // this when we create an error and pop.
-        self.skip_ignored();
         let err = if current.kind == TokenKind::Eof {
             Error::eof(message, current.index())
         } else {
             // this needs to be the computed location
             Error::with_loc(message, current.data().to_string(), current.index())
         };
+
+        // Keep the error in the parse tree for position information
+        self.push_ast(SyntaxKind::ERROR, current);
         self.push_err(err);
+
+        // we usually skip ignored tokens after we pop each token, so make sure we also do
+        // this when we create an error and pop.
+        self.skip_ignored();
     }
 
     /// Consume the next token if it is `kind` or emit an error
@@ -560,5 +564,29 @@ mod tests {
               COMMENT@93..113 "# limit reached here"
         "##]];
         tree.assert_eq(&format!("{:#?}", ast.document().syntax));
+    }
+
+    #[test]
+    fn tree_with_syntax_errors() {
+        use crate::ast::Definition;
+
+        // Some arbitrary token spam in incorrect places--this test uses
+        // valid tokens only
+        let source = r#"
+            garbage type Query implements X {
+                field(arg: Int): Int
+            } garbage :,, (|) interface X {}
+        "#;
+        let ast = Parser::new(source).parse();
+
+        let mut definitions = ast.document().definitions();
+        let query_def = definitions.next().unwrap();
+        let interface_def = definitions.next().unwrap();
+        assert_eq!(definitions.next(), None);
+        assert!(matches!(query_def, Definition::ObjectTypeDefinition(_)));
+        assert!(matches!(
+            interface_def,
+            Definition::InterfaceTypeDefinition(_)
+        ));
     }
 }
