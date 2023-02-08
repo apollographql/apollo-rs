@@ -33,15 +33,18 @@ pub fn validate_field(
                         name: arg.name().into(),
                     },
                 )
-                    .label(Label::new(arg.loc, "argument by this name not found"))
-                    .label(Label::new(field_definition.loc, "field declared here"));
+                .label(Label::new(arg.loc, "argument by this name not found"))
+                .label(Label::new(field_definition.loc, "field declared here"));
 
                 diagnostics.push(diagnostic);
             }
         }
 
         for arg_def in field_definition.arguments().input_values() {
-            let arg_value = field.arguments().iter().find(|value| value.name() == arg_def.name());
+            let arg_value = field
+                .arguments()
+                .iter()
+                .find(|value| value.name() == arg_def.name());
             let is_null = match arg_value {
                 None => true,
                 // Prevents explicitly providing `requiredArg: null`,
@@ -58,7 +61,10 @@ pub fn validate_field(
                         name: arg_def.name().into(),
                     },
                 );
-                diagnostic = diagnostic.label(Label::new(field.loc, format!("missing value for argument `{}`", arg_def.name())));
+                diagnostic = diagnostic.label(Label::new(
+                    field.loc,
+                    format!("missing value for argument `{}`", arg_def.name()),
+                ));
                 if let Some(loc) = arg_def.loc {
                     diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
                 }
