@@ -132,7 +132,7 @@ pub fn validate_directives(
                     let mut diagnostic = ApolloDiagnostic::new(
                         db,
                         arg.loc.into(),
-                        DiagnosticData::MissingArgument {
+                        DiagnosticData::UndefinedArgument {
                             name: arg.name().into(),
                         },
                     )
@@ -162,7 +162,7 @@ pub fn validate_directives(
                     let mut diagnostic = ApolloDiagnostic::new(
                         db,
                         dir.loc.into(),
-                        DiagnosticData::MissingArgument {
+                        DiagnosticData::RequiredArgument {
                             name: arg_def.name().into(),
                         },
                     );

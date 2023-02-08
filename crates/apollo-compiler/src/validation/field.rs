@@ -29,7 +29,7 @@ pub fn validate_field(
                 let diagnostic = ApolloDiagnostic::new(
                     db,
                     arg.loc.into(),
-                    DiagnosticData::MissingArgument {
+                    DiagnosticData::UndefinedArgument {
                         name: arg.name().into(),
                     },
                 )
@@ -57,7 +57,7 @@ pub fn validate_field(
                 let mut diagnostic = ApolloDiagnostic::new(
                     db,
                     field.loc.into(),
-                    DiagnosticData::MissingArgument {
+                    DiagnosticData::RequiredArgument {
                         name: arg_def.name().into(),
                     },
                 );

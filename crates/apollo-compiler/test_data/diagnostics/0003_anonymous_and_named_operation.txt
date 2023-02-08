@@ -33,7 +33,7 @@
             },
         ],
         help: None,
-        data: MissingArgument {
+        data: RequiredArgument {
             name: "name",
         },
     },
