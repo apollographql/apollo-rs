@@ -43,10 +43,14 @@ pub(crate) fn find_operation(
     file_id: FileId,
     name: Option<String>,
 ) -> Option<Arc<OperationDefinition>> {
-    db.operations(file_id)
-        .iter()
-        .find(|def| def.name() == name.as_deref())
-        .cloned()
+    let ops = db.operations(file_id);
+    if ops.len() == 1 {
+        Some(ops[0].clone())
+    } else {
+        ops.iter()
+            .find(|def| def.name() == name.as_deref())
+            .cloned()
+    }
 }
 
 pub(crate) fn find_fragment_by_name(

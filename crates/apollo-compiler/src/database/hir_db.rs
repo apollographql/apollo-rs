@@ -65,7 +65,12 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     fn input_objects(&self) -> ByName<InputObjectTypeDefinition>;
 
     // Derived from above queries:
+
     /// Return an operation definition corresponding to the name and file id.
+    /// If `name` is `None`, and there is only one operation, that operation will
+    /// be returned.
+    /// If `name` is `None`, and there is more than one operation, `None` will
+    /// be returned.
     fn find_operation(
         &self,
         file_id: FileId,
@@ -1595,7 +1600,7 @@ mod test {
     use crate::{ApolloCompiler, HirDatabase};
 
     #[test]
-    fn it_finds_anonymous_operation() {
+    fn it_finds_operations() {
         let type_system = r#"
 type Query {
   name: String
@@ -1603,6 +1608,7 @@ type Query {
         "#;
         let op = r#"{ name }"#;
         let named_op = r#"query getName { name } "#;
+        let several_named_op = r#"query getName { name } query getAnotherName { name }"#;
         let noop = r#""#;
 
         let mut compiler = ApolloCompiler::new();
@@ -1614,10 +1620,14 @@ type Query {
         compiler.update_executable(op_id, named_op);
         let op = compiler.db.find_operation(op_id, Some("getName".into()));
         assert!(op.is_some());
+        let op = compiler.db.find_operation(op_id, None);
+        assert!(op.is_some());
 
-        compiler.update_executable(op_id, named_op);
+        compiler.update_executable(op_id, several_named_op);
         let op = compiler.db.find_operation(op_id, Some("getName".into()));
         assert!(op.is_some());
+        let op = compiler.db.find_operation(op_id, None);
+        assert!(op.is_none());
 
         compiler.update_executable(op_id, noop);
         let op = compiler.db.find_operation(op_id, Some("getName".into()));
