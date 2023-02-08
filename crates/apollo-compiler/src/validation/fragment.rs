@@ -45,13 +45,7 @@ pub fn validate_fragment_definitions(
             def.directives().to_vec(),
             DirectiveLocation::FragmentDefinition,
         ));
-
-        let fragment_type_def = db.find_type_definition_by_name(def.type_condition().to_string());
-        // Make sure the fragment type exists in the schema
-        if fragment_type_def.is_some() {
-            // TODO handle cases where the type does not support fragments (Enum, Scalar...)
-            diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
-        }
+        diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
     }
 
     diagnostics
@@ -78,21 +72,18 @@ pub fn validate_fragment_spread_type_existence(
 
 // Validate fragments on composite types
 // pub fn validate_fragments_on_composite_types(
-
 // ) -> Vec<ApolloDiagnostic> {
 //     let mut diagnostics = Vec::new();
-
 //     diagnostics
 // }
 
 // // Validate fragment is used
 // pub fn validate_fragment_is_used(
-
 // ) -> Vec<ApolloDiagnostic> {
 //     let mut diagnostics = Vec::new();
-
 //     diagnostics
 // }
+
 #[cfg(test)]
 mod test {
     use crate::ApolloCompiler;
