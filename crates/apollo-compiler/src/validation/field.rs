@@ -42,8 +42,15 @@ pub fn validate_field(
 
         for arg_def in field_definition.arguments().input_values() {
             let arg_value = field.arguments().iter().find(|value| value.name() == arg_def.name());
+            let is_null = match arg_value {
+                None => true,
+                // Prevents explicitly providing `requiredArg: null`,
+                // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
+                // and it won't raise a validation error at this stage.
+                Some(value) => value.value() == &hir::Value::Null,
+            };
 
-            if arg_def.is_required() & arg_value.is_none() {
+            if arg_def.is_required() && is_null {
                 let mut diagnostic = ApolloDiagnostic::new(
                     db,
                     field.loc.into(),
