@@ -12,7 +12,17 @@ pub fn validate_field(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics =
         db.validate_directives(field.directives().to_vec(), hir::DirectiveLocation::Field);
-    diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
+
+    if !field.arguments().is_empty() {
+        diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
+    }
+
+    if let Some(field_definition) = field.field_definition(db.upcast()) {
+        diagnostics.extend(db.validate_argument_types(
+            field_definition.arguments().clone(),
+            field.arguments().to_vec(),
+        ));
+    }
 
     let field_type = field.ty(db.upcast());
     if field_type.is_some() {

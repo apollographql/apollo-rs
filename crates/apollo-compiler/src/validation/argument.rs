@@ -48,6 +48,37 @@ pub fn validate_arguments(
     diagnostics
 }
 
+pub fn validate_argument_types(
+    db: &dyn ValidationDatabase,
+    definition: hir::ArgumentsDefinition,
+    values: Vec<hir::Argument>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    for arg in &values {
+        let exists = definition
+            .input_values()
+            .iter()
+            .any(|arg_def| arg.name() == arg_def.name());
+        if !exists {
+            let mut diagnostic = ApolloDiagnostic::new(
+                db,
+                arg.loc.into(),
+                DiagnosticData::MissingArgument {
+                    name: arg.name().into(),
+                },
+            );
+            if let Some(loc) = definition.loc {
+                diagnostic = diagnostic.label(Label::new(loc, "field arguments declared here"));
+            }
+
+            diagnostics.push(diagnostic);
+        }
+    }
+
+    diagnostics
+}
+
 pub fn validate_arguments_definition(
     db: &dyn ValidationDatabase,
     args_def: hir::ArgumentsDefinition,

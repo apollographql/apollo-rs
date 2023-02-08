@@ -112,7 +112,7 @@ query ExampleQuery {
 }
 
 type Query {
-  topProducts: Products
+  topProducts(first: Int): Products
 }
 
 type Products {

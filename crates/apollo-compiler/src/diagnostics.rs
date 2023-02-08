@@ -190,6 +190,8 @@ pub enum DiagnosticData {
         // current field that should be defined
         field: String,
     },
+    #[error("the argument `{name}` is not supported by this field")]
+    MissingArgument { name: String },
     #[error(
         "Transitively implemented interfaces must also be defined on an implementing interface or object"
     )]

@@ -1,0 +1,30 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            53: "0053_argument_name_is_not_defined.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 53,
+            },
+            offset: 56,
+            length: 7,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 53,
+                    },
+                    offset: 20,
+                    length: 11,
+                },
+                text: "field arguments declared here",
+            },
+        ],
+        help: None,
+        data: MissingArgument {
+            name: "arg2",
+        },
+    },
+]

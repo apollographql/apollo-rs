@@ -1,0 +1,7 @@
+type Query {
+  field(arg1: Int): Int
+}
+
+query {
+  field(arg2: 3)
+}
