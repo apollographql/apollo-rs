@@ -147,13 +147,6 @@ pub trait ValidationDatabase:
     #[salsa::invoke(argument::validate_arguments)]
     fn validate_arguments(&self, arg: Vec<Argument>) -> Vec<ApolloDiagnostic>;
 
-    #[salsa::invoke(argument::validate_argument_types)]
-    fn validate_argument_types(
-        &self,
-        definition: ArgumentsDefinition,
-        values: Vec<Argument>,
-    ) -> Vec<ApolloDiagnostic>;
-
     #[salsa::invoke(operation::validate_operation_definitions)]
     fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 

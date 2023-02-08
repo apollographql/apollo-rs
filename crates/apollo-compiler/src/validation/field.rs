@@ -18,10 +18,47 @@ pub fn validate_field(
     }
 
     if let Some(field_definition) = field.field_definition(db.upcast()) {
-        diagnostics.extend(db.validate_argument_types(
-            field_definition.arguments().clone(),
-            field.arguments().to_vec(),
-        ));
+        for arg in field.arguments() {
+            let exists = field_definition
+                .arguments()
+                .input_values()
+                .iter()
+                .any(|arg_def| arg.name() == arg_def.name());
+
+            if !exists {
+                let diagnostic = ApolloDiagnostic::new(
+                    db,
+                    arg.loc.into(),
+                    DiagnosticData::MissingArgument {
+                        name: arg.name().into(),
+                    },
+                )
+                    .label(Label::new(arg.loc, "argument by this name not found"))
+                    .label(Label::new(field_definition.loc, "field declared here"));
+
+                diagnostics.push(diagnostic);
+            }
+        }
+
+        for arg_def in field_definition.arguments().input_values() {
+            let arg_value = field.arguments().iter().find(|value| value.name() == arg_def.name());
+
+            if arg_def.is_required() & arg_value.is_none() {
+                let mut diagnostic = ApolloDiagnostic::new(
+                    db,
+                    field.loc.into(),
+                    DiagnosticData::MissingArgument {
+                        name: arg_def.name().into(),
+                    },
+                );
+                diagnostic = diagnostic.label(Label::new(field.loc, format!("missing value for argument `{}`", arg_def.name())));
+                if let Some(loc) = arg_def.loc {
+                    diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
+                }
+
+                diagnostics.push(diagnostic);
+            }
+        }
     }
 
     let field_type = field.ty(db.upcast());

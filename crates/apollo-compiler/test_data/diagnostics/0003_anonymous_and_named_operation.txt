@@ -7,6 +7,44 @@
             file_id: FileId {
                 id: 2,
             },
+            offset: 38,
+            length: 25,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 2,
+                    },
+                    offset: 38,
+                    length: 25,
+                },
+                text: "missing value for argument `name`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 2,
+                    },
+                    offset: 123,
+                    length: 13,
+                },
+                text: "argument defined here",
+            },
+        ],
+        help: None,
+        data: MissingArgument {
+            name: "name",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            2: "0003_anonymous_and_named_operation.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 2,
+            },
             offset: 0,
             length: 15,
         },

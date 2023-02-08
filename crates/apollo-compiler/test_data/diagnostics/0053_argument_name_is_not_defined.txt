@@ -16,10 +16,20 @@
                     file_id: FileId {
                         id: 53,
                     },
-                    offset: 20,
-                    length: 11,
+                    offset: 56,
+                    length: 7,
                 },
-                text: "field arguments declared here",
+                text: "argument by this name not found",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 53,
+                    },
+                    offset: 15,
+                    length: 21,
+                },
+                text: "field declared here",
             },
         ],
         help: None,
