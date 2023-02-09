@@ -902,10 +902,7 @@ directive @directiveB(name: String) on OBJECT | INTERFACE
         }
         assert!(diagnostics.is_empty());
 
-        let book_obj = compiler
-            .db
-            .find_object_type_by_name("Book".to_string())
-            .unwrap();
+        let book_obj = compiler.db.find_object_type_by_name("Book").unwrap();
 
         let directive_names: Vec<&str> = book_obj.directives().iter().map(|d| d.name()).collect();
         assert_eq!(directive_names, ["directiveA", "directiveB"]);
@@ -936,7 +933,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         }
         assert!(diagnostics.is_empty());
 
-        let person_obj = compiler.db.find_object_type_by_name("Person".to_string());
+        let person_obj = compiler.db.find_object_type_by_name("Person");
 
         if let Some(person) = person_obj {
             let field_ty_directive: Vec<String> = person
@@ -1018,7 +1015,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         }
         assert!(diagnostics.is_empty());
 
-        let person_obj = compiler.db.find_input_object_by_name("Person".to_string());
+        let person_obj = compiler.db.find_input_object_by_name("Person");
 
         if let Some(person) = person_obj {
             let field_ty_directive: Vec<String> = person

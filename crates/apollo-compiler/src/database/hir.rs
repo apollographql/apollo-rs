@@ -198,7 +198,7 @@ impl FragmentDefinition {
     }
 
     pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
-        db.find_type_definition_by_name(self.name().to_string())
+        db.find_type_definition_by_name(self.name())
     }
 
     /// Get the AST location information for this HIR node.
@@ -477,7 +477,7 @@ impl Type {
 
     /// Get current Type's Type Definition.
     pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
-        db.find_type_definition_by_name(self.name())
+        db.find_type_definition_by_name(&self.name())
     }
 
     /// Get current Type's name.
@@ -519,7 +519,7 @@ impl Directive {
 
     // Get directive definition of the currently used directive
     pub fn directive(&self, db: &dyn HirDatabase) -> Option<Arc<DirectiveDefinition>> {
-        db.find_directive_definition_by_name(self.name().to_string())
+        db.find_directive_definition_by_name(self.name())
     }
 
     /// Get the AST location information for this HIR node.
@@ -973,7 +973,7 @@ impl Field {
     /// Get a reference to field's type.
     pub fn ty(&self, db: &dyn HirDatabase) -> Option<Type> {
         let def = db
-            .find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())?
+            .find_type_definition_by_name(self.parent_obj.as_ref()?)?
             .field(self.name())?
             .ty()
             .to_owned();
@@ -982,7 +982,7 @@ impl Field {
 
     /// Get field's original field definition.
     pub fn field_definition(&self, db: &dyn HirDatabase) -> Option<FieldDefinition> {
-        db.find_object_type_by_name(self.parent_obj.as_ref()?.to_string())?
+        db.find_object_type_by_name(self.parent_obj.as_ref()?)?
             .fields_definition()
             .iter()
             .find(|field| field.name() == self.name())
@@ -1096,7 +1096,7 @@ impl FragmentSpread {
 
     /// Get the fragment definition this fragment spread is referencing.
     pub fn fragment(&self, db: &dyn HirDatabase) -> Option<Arc<FragmentDefinition>> {
-        db.find_fragment_by_name(self.loc.file_id(), self.name().to_string())
+        db.find_fragment_by_name(self.loc.file_id(), self.name())
     }
 
     /// Get fragment spread's defined variables.
@@ -1260,7 +1260,7 @@ impl RootOperationTypeDefinition {
 
     /// Get the object type this root operation is referencing.
     pub fn object_type(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
-        db.find_object_type_by_name(self.named_type().name())
+        db.find_object_type_by_name(&self.named_type().name())
     }
 
     /// Get the AST location information for this HIR node.
@@ -1352,7 +1352,7 @@ impl ImplementsInterface {
         &self,
         db: &dyn HirDatabase,
     ) -> Option<Arc<InterfaceTypeDefinition>> {
-        db.find_interface_by_name(self.interface().to_string())
+        db.find_interface_by_name(self.interface())
     }
 
     /// Get implements interfaces' interface name.
@@ -1656,7 +1656,7 @@ impl UnionMember {
 
     /// Get the object definition this union member is referencing.
     pub fn object(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
-        db.find_object_type_by_name(self.name().to_string())
+        db.find_object_type_by_name(self.name())
     }
 
     /// Get the AST location information for this HIR node.

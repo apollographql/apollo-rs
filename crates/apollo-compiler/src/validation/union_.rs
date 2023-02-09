@@ -62,7 +62,7 @@ pub fn validate_union_definition(
             seen.insert(name, union_member);
         }
 
-        match db.upcast().find_type_definition_by_name(name.to_string()) {
+        match db.upcast().find_type_definition_by_name(name) {
             None => {
                 // Union member must be defined.
                 diagnostics.push(

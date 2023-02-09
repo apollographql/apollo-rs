@@ -33,9 +33,9 @@ pub(crate) fn types_definitions_by_name(
 
 pub(crate) fn find_type_definition_by_name(
     db: &dyn HirDatabase,
-    name: String,
+    name: &str,
 ) -> Option<TypeDefinition> {
-    db.types_definitions_by_name().get(&name).cloned()
+    db.types_definitions_by_name().get(name).cloned()
 }
 
 pub(crate) fn find_operation_by_name(
@@ -62,44 +62,44 @@ pub(crate) fn find_anonymous_operation(
 pub(crate) fn find_fragment_by_name(
     db: &dyn HirDatabase,
     file_id: FileId,
-    name: String,
+    name: &str,
 ) -> Option<Arc<FragmentDefinition>> {
-    db.fragments(file_id).get(&name).cloned()
+    db.fragments(file_id).get(name).cloned()
 }
 
 pub(crate) fn find_object_type_by_name(
     db: &dyn HirDatabase,
-    name: String,
+    name: &str,
 ) -> Option<Arc<ObjectTypeDefinition>> {
-    db.object_types().get(&name).cloned()
+    db.object_types().get(name).cloned()
 }
 
 pub(crate) fn find_union_by_name(
     db: &dyn HirDatabase,
-    name: String,
+    name: &str,
 ) -> Option<Arc<UnionTypeDefinition>> {
-    db.unions().get(&name).cloned()
+    db.unions().get(name).cloned()
 }
 
 pub(crate) fn find_enum_by_name(
     db: &dyn HirDatabase,
-    name: String,
+    name: &str,
 ) -> Option<Arc<EnumTypeDefinition>> {
-    db.enums().get(&name).cloned()
+    db.enums().get(name).cloned()
 }
 
 pub(crate) fn find_interface_by_name(
     db: &dyn HirDatabase,
-    name: String,
+    name: &str,
 ) -> Option<Arc<InterfaceTypeDefinition>> {
-    db.interfaces().get(&name).cloned()
+    db.interfaces().get(name).cloned()
 }
 
 pub(crate) fn find_directive_definition_by_name(
     db: &dyn HirDatabase,
-    name: String,
+    name: &str,
 ) -> Option<Arc<DirectiveDefinition>> {
-    db.directive_definitions().get(&name).cloned()
+    db.directive_definitions().get(name).cloned()
 }
 
 /// Find any definitions that use the specified directive.
@@ -118,9 +118,9 @@ pub(crate) fn find_types_with_directive(
 
 pub(crate) fn find_input_object_by_name(
     db: &dyn HirDatabase,
-    name: String,
+    name: &str,
 ) -> Option<Arc<InputObjectTypeDefinition>> {
-    db.input_objects().get(&name).cloned()
+    db.input_objects().get(name).cloned()
 }
 
 pub(crate) fn query_operations(

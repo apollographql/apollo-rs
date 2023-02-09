@@ -78,36 +78,33 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Return an fragment definition corresponding to the name and file id.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
-    fn find_fragment_by_name(
-        &self,
-        file_id: FileId,
-        name: String,
-    ) -> Option<Arc<FragmentDefinition>>;
+    fn find_fragment_by_name(&self, file_id: FileId, name: &str)
+        -> Option<Arc<FragmentDefinition>>;
 
     /// Return an object type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
-    fn find_object_type_by_name(&self, name: String) -> Option<Arc<ObjectTypeDefinition>>;
+    fn find_object_type_by_name(&self, name: &str) -> Option<Arc<ObjectTypeDefinition>>;
 
     /// Return an union type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
-    fn find_union_by_name(&self, name: String) -> Option<Arc<UnionTypeDefinition>>;
+    fn find_union_by_name(&self, name: &str) -> Option<Arc<UnionTypeDefinition>>;
 
     /// Return an enum type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
-    fn find_enum_by_name(&self, name: String) -> Option<Arc<EnumTypeDefinition>>;
+    fn find_enum_by_name(&self, name: &str) -> Option<Arc<EnumTypeDefinition>>;
 
     /// Return an interface type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
-    fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceTypeDefinition>>;
+    fn find_interface_by_name(&self, name: &str) -> Option<Arc<InterfaceTypeDefinition>>;
 
     /// Return an directive definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
-    fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
+    fn find_directive_definition_by_name(&self, name: &str) -> Option<Arc<DirectiveDefinition>>;
 
     /// Return any type definitions that contain the corresponding directive
     fn find_types_with_directive(&self, directive: String) -> Arc<Vec<TypeDefinition>>;
@@ -115,14 +112,14 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Return an input object type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
-    fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
+    fn find_input_object_by_name(&self, name: &str) -> Option<Arc<InputObjectTypeDefinition>>;
 
     fn types_definitions_by_name(&self) -> Arc<IndexMap<String, TypeDefinition>>;
 
     /// Return a type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
-    fn find_type_definition_by_name(&self, name: String) -> Option<TypeDefinition>;
+    fn find_type_definition_by_name(&self, name: &str) -> Option<TypeDefinition>;
 
     /// Return all query operations in a corresponding file.
     fn query_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
@@ -1315,7 +1312,7 @@ fn field(
 
 fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<String>) -> Option<String> {
     Some(
-        db.find_type_definition_by_name(parent_obj?)?
+        db.find_type_definition_by_name(&parent_obj?)?
             .field(field_name)?
             .ty()
             .name(),
