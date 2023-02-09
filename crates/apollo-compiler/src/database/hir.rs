@@ -1466,6 +1466,12 @@ impl InputValueDefinition {
     pub fn default_value(&self) -> Option<&DefaultValue> {
         self.default_value.as_ref()
     }
+
+    /// If the argument does not have a default value and has a non-null type,
+    /// a value must be provided by users.
+    pub fn is_required(&self) -> bool {
+        self.ty().is_non_null() && self.default_value.is_none()
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]

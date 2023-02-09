@@ -12,7 +12,67 @@ pub fn validate_field(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics =
         db.validate_directives(field.directives().to_vec(), hir::DirectiveLocation::Field);
-    diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
+
+    if !field.arguments().is_empty() {
+        diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
+    }
+
+    if let Some(field_definition) = field.field_definition(db.upcast()) {
+        for arg in field.arguments() {
+            let exists = field_definition
+                .arguments()
+                .input_values()
+                .iter()
+                .any(|arg_def| arg.name() == arg_def.name());
+
+            if !exists {
+                let diagnostic = ApolloDiagnostic::new(
+                    db,
+                    arg.loc.into(),
+                    DiagnosticData::UndefinedArgument {
+                        name: arg.name().into(),
+                    },
+                )
+                .label(Label::new(arg.loc, "argument by this name not found"))
+                .label(Label::new(field_definition.loc, "field declared here"));
+
+                diagnostics.push(diagnostic);
+            }
+        }
+
+        for arg_def in field_definition.arguments().input_values() {
+            let arg_value = field
+                .arguments()
+                .iter()
+                .find(|value| value.name() == arg_def.name());
+            let is_null = match arg_value {
+                None => true,
+                // Prevents explicitly providing `requiredArg: null`,
+                // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
+                // and it won't raise a validation error at this stage.
+                Some(value) => value.value() == &hir::Value::Null,
+            };
+
+            if arg_def.is_required() && is_null {
+                let mut diagnostic = ApolloDiagnostic::new(
+                    db,
+                    field.loc.into(),
+                    DiagnosticData::RequiredArgument {
+                        name: arg_def.name().into(),
+                    },
+                );
+                diagnostic = diagnostic.label(Label::new(
+                    field.loc,
+                    format!("missing value for argument `{}`", arg_def.name()),
+                ));
+                if let Some(loc) = arg_def.loc {
+                    diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
+                }
+
+                diagnostics.push(diagnostic);
+            }
+        }
+    }
 
     let field_type = field.ty(db.upcast());
     if field_type.is_some() {

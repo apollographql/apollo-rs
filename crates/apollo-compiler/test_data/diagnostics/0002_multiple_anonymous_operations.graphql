@@ -3,7 +3,7 @@ query {
 }
 
 mutation {
-  addPet {
+  addPet(name: "Example") {
     response
   }
 }

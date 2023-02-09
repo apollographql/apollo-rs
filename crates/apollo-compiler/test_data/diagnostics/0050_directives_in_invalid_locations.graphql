@@ -1,4 +1,4 @@
-query queryA($status: String @skip) @skip(if: $foo){
+query queryA($status: String @skip(if: true)) @skip(if: $foo){
   field
   response(status: $status) @deprecated
   human {
@@ -24,7 +24,7 @@ mutation myMutation @skip(if: true) {
   setMessage (message: "Hello, World! Yours, GraphQL.")
 }
 
-interface Pet @skip {
+interface Pet @skip(if: true) {
   name: String
 }
 
@@ -40,8 +40,8 @@ type Cat implements Pet {
   meowVolume: Int
 }
 
-input Example @include {
-  self: Example @include
+input Example @include(if: true) {
+  self: Example @include(if: true)
   value: String
 }
 
@@ -72,7 +72,7 @@ type Mutation {
   setMessage(message: String): String
 }
 
-schema @include {
+schema @include(if: true) {
   query: Query
   subscription: Subscription
   mutation: Mutation

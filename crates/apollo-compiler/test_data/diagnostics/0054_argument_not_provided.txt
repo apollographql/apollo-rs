@@ -1,0 +1,314 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            54: "0054_argument_not_provided.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 54,
+            },
+            offset: 333,
+            length: 5,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 333,
+                    length: 5,
+                },
+                text: "missing value for argument `if`",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "if",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            54: "0054_argument_not_provided.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 54,
+            },
+            offset: 348,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 348,
+                    length: 12,
+                },
+                text: "argument by this name not found",
+            },
+        ],
+        help: None,
+        data: UndefinedArgument {
+            name: "wrong",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            54: "0054_argument_not_provided.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 54,
+            },
+            offset: 339,
+            length: 22,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 339,
+                    length: 22,
+                },
+                text: "missing value for argument `if`",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "if",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            54: "0054_argument_not_provided.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 54,
+            },
+            offset: 387,
+            length: 21,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 387,
+                    length: 21,
+                },
+                text: "missing value for argument `req1`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 38,
+                    length: 10,
+                },
+                text: "argument defined here",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "req1",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            54: "0054_argument_not_provided.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 54,
+            },
+            offset: 413,
+            length: 26,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 413,
+                    length: 26,
+                },
+                text: "missing value for argument `req2`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 102,
+                    length: 10,
+                },
+                text: "argument defined here",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "req2",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            54: "0054_argument_not_provided.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 54,
+            },
+            offset: 444,
+            length: 44,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 444,
+                    length: 44,
+                },
+                text: "missing value for argument `req2`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 102,
+                    length: 10,
+                },
+                text: "argument defined here",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "req2",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            54: "0054_argument_not_provided.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 54,
+            },
+            offset: 281,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 281,
+                    length: 12,
+                },
+                text: "missing value for argument `req1`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 38,
+                    length: 10,
+                },
+                text: "argument defined here",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "req1",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            54: "0054_argument_not_provided.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 54,
+            },
+            offset: 281,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 281,
+                    length: 12,
+                },
+                text: "missing value for argument `req2`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 50,
+                    length: 10,
+                },
+                text: "argument defined here",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "req2",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            54: "0054_argument_not_provided.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 54,
+            },
+            offset: 298,
+            length: 21,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 298,
+                    length: 21,
+                },
+                text: "missing value for argument `req1`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 54,
+                    },
+                    offset: 38,
+                    length: 10,
+                },
+                text: "argument defined here",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "req1",
+        },
+    },
+]

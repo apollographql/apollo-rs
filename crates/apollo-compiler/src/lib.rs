@@ -272,7 +272,7 @@ fragment vipCustomer on User {
 }
 
 type Query {
-  topProducts: Product
+  topProducts(first: Int): Product
   customer: User
 }
 

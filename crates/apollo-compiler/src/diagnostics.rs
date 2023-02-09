@@ -167,6 +167,8 @@ pub enum DiagnosticData {
         /// Field name
         field: String,
     },
+    #[error("the argument `{name}` is not supported")]
+    UndefinedArgument { name: String },
     #[error("cannot find type `{name}` in this document")]
     UndefinedDefinition {
         /// Name of the type not in scope
@@ -190,6 +192,8 @@ pub enum DiagnosticData {
         // current field that should be defined
         field: String,
     },
+    #[error("the required argument `{name}` is not provided")]
+    RequiredArgument { name: String },
     #[error(
         "Transitively implemented interfaces must also be defined on an implementing interface or object"
     )]
