@@ -1,0 +1,21 @@
+type ComplicatedArgs {
+  multipleReqs(req1: Int!, req2: Int!): String
+  multipleOptAndReq(req1: Int!, req2: Int!, opt1: Int = 0, opt2: Int = 0): String
+}
+
+type Basic { a: Int! }
+
+type Query {
+  basic: Basic
+  complicatedArgs: ComplicatedArgs
+}
+
+{
+  basic @skip @include(wrong: false)
+
+  complicatedArgs {
+    multipleReqs(req2: 1)
+    multipleOptAndReq(req1: 1)
+    multipleOptAndReq(opt1: 1, opt2: 1, req1: 1)
+  }
+}
