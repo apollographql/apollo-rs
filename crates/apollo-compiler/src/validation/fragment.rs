@@ -11,7 +11,7 @@ pub fn validate_fragment_definitions(
             DirectiveLocation::FragmentDefinition,
         ));
 
-        let fragment_type_def = db.find_type_definition_by_name(def.type_condition().to_string());
+        let fragment_type_def = db.find_type_definition_by_name(def.type_condition());
         // Make sure the fragment type exists in the schema
         if fragment_type_def.is_some() {
             // TODO handle cases where the type does not support fragments (Enum, Scalar...)

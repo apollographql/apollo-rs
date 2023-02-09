@@ -98,7 +98,7 @@ pub fn validate_field(
         .help(help);
 
         let parent_type_loc = db
-            .find_type_definition_by_name(field.parent_obj.clone().unwrap())
+            .find_type_definition_by_name(&field.parent_obj.clone().unwrap())
             .and_then(|type_def| type_def.loc());
 
         let diagnostic = if let Some(parent_type_loc) = parent_type_loc {
