@@ -7,7 +7,7 @@
             file_id: FileId {
                 id: 53,
             },
-            offset: 56,
+            offset: 116,
             length: 7,
         },
         labels: [
@@ -16,7 +16,7 @@
                     file_id: FileId {
                         id: 53,
                     },
-                    offset: 56,
+                    offset: 116,
                     length: 7,
                 },
                 text: "argument by this name not found",
@@ -35,6 +35,82 @@
         help: None,
         data: UndefinedArgument {
             name: "arg2",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            53: "0053_argument_name_is_not_defined.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 53,
+            },
+            offset: 79,
+            length: 7,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 53,
+                    },
+                    offset: 79,
+                    length: 7,
+                },
+                text: "argument by this name not found",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 53,
+                    },
+                    offset: 15,
+                    length: 21,
+                },
+                text: "field declared here",
+            },
+        ],
+        help: None,
+        data: UndefinedArgument {
+            name: "arg2",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            53: "0053_argument_name_is_not_defined.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 53,
+            },
+            offset: 88,
+            length: 7,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 53,
+                    },
+                    offset: 88,
+                    length: 7,
+                },
+                text: "argument by this name not found",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 53,
+                    },
+                    offset: 15,
+                    length: 21,
+                },
+                text: "field declared here",
+            },
+        ],
+        help: None,
+        data: UndefinedArgument {
+            name: "arg3",
         },
     },
 ]

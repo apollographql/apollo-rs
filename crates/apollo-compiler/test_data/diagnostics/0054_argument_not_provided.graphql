@@ -10,6 +10,11 @@ type Query {
   complicatedArgs: ComplicatedArgs
 }
 
+fragment Y on ComplicatedArgs {
+    multipleReqs
+    multipleReqs(req2: 1)
+}
+
 {
   basic @skip @include(wrong: false)
 
