@@ -97,7 +97,7 @@ pub fn validate_directives(
         let name = dir.name();
         let loc = dir.loc();
 
-        if let Some(directive_definition) = db.find_directive_definition_by_name(name.into()) {
+        if let Some(directive_definition) = db.find_directive_definition_by_name(name) {
             let allowed_loc: HashSet<hir::DirectiveLocation> =
                 HashSet::from_iter(directive_definition.directive_locations().iter().cloned());
             if !allowed_loc.contains(&dir_loc) {

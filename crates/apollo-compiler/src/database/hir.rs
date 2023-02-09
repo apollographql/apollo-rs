@@ -2112,7 +2112,7 @@ mod tests {
 
         let default_values: Vec<_> = compiler
             .db
-            .find_input_object_by_name("HugeFloats".into())
+            .find_input_object_by_name("HugeFloats")
             .unwrap()
             .input_fields_definition
             .iter()
@@ -2143,10 +2143,7 @@ mod tests {
             }",
             "person.graphql",
         );
-        let person = compiler
-            .db
-            .find_object_type_by_name("Person".into())
-            .unwrap();
+        let person = compiler.db.find_object_type_by_name("Person").unwrap();
         let hir_field_names: Vec<_> = person
             .fields_definition
             .iter()

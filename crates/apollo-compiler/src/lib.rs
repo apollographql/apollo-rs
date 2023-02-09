@@ -1163,7 +1163,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         let snapshot = compiler.snapshot();
         let snapshot2 = compiler.snapshot();
 
-        let thread1 = std::thread::spawn(move || snapshot.find_object_type_by_name("Query".into()));
+        let thread1 = std::thread::spawn(move || snapshot.find_object_type_by_name("Query"));
         let thread2 = std::thread::spawn(move || snapshot2.scalars());
 
         thread1.join().expect("object_type_by_name panicked");
@@ -1182,10 +1182,7 @@ type Query {
         let mut compiler = ApolloCompiler::new();
         let input_id = compiler.add_document(input, "document.graphql");
 
-        let object_type = compiler
-            .db
-            .find_object_type_by_name("Query".into())
-            .unwrap();
+        let object_type = compiler.db.find_object_type_by_name("Query").unwrap();
         assert!(object_type.directives().is_empty());
 
         let input = r#"
@@ -1196,10 +1193,7 @@ type Query @withDirective {
 "#;
         compiler.update_document(input_id, input);
 
-        let object_type = compiler
-            .db
-            .find_object_type_by_name("Query".into())
-            .unwrap();
+        let object_type = compiler.db.find_object_type_by_name("Query").unwrap();
         assert_eq!(object_type.directives().len(), 1);
     }
 
