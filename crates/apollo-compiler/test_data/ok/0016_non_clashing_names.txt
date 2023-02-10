@@ -1,0 +1,113 @@
+- DOCUMENT@0..204
+    - COMMENT@0..77 "# Types, directives, fragments, and operations each have their own namespace."
+    - WHITESPACE@77..78 "\n"
+    - OBJECT_TYPE_DEFINITION@78..100
+        - type_KW@78..82 "type"
+        - WHITESPACE@82..83 " "
+        - NAME@83..84
+            - IDENT@83..84 "A"
+        - WHITESPACE@84..85 " "
+        - DIRECTIVES@85..87
+            - DIRECTIVE@85..87
+                - AT@85..86 "@"
+                - NAME@86..87
+                    - IDENT@86..87 "A"
+        - WHITESPACE@87..88 " "
+        - FIELDS_DEFINITION@88..100
+            - L_CURLY@88..89 "{"
+            - WHITESPACE@89..92 "\n  "
+            - FIELD_DEFINITION@92..98
+                - NAME@92..93
+                    - IDENT@92..93 "a"
+                - COLON@93..94 ":"
+                - WHITESPACE@94..95 " "
+                - NAMED_TYPE@95..98
+                    - NAME@95..98
+                        - IDENT@95..98 "Int"
+            - WHITESPACE@98..99 "\n"
+            - R_CURLY@99..100 "}"
+    - WHITESPACE@100..101 "\n"
+    - OBJECT_TYPE_DEFINITION@101..122
+        - type_KW@101..105 "type"
+        - WHITESPACE@105..106 " "
+        - NAME@106..111
+            - IDENT@106..111 "Query"
+        - WHITESPACE@111..112 " "
+        - FIELDS_DEFINITION@112..122
+            - L_CURLY@112..113 "{"
+            - WHITESPACE@113..116 "\n  "
+            - FIELD_DEFINITION@116..120
+                - NAME@116..117
+                    - IDENT@116..117 "a"
+                - COLON@117..118 ":"
+                - WHITESPACE@118..119 " "
+                - NAMED_TYPE@119..120
+                    - NAME@119..120
+                        - IDENT@119..120 "A"
+            - WHITESPACE@120..121 "\n"
+            - R_CURLY@121..122 "}"
+    - WHITESPACE@122..124 "\n\n"
+    - DIRECTIVE_DEFINITION@124..146
+        - directive_KW@124..133 "directive"
+        - WHITESPACE@133..134 " "
+        - AT@134..135 "@"
+        - NAME@135..136
+            - IDENT@135..136 "A"
+        - WHITESPACE@136..137 " "
+        - on_KW@137..139 "on"
+        - WHITESPACE@139..140 " "
+        - DIRECTIVE_LOCATIONS@140..146
+            - DIRECTIVE_LOCATION@140..146
+                - OBJECT_KW@140..146 "OBJECT"
+    - WHITESPACE@146..148 "\n\n"
+    - FRAGMENT_DEFINITION@148..171
+        - fragment_KW@148..156 "fragment"
+        - WHITESPACE@156..157 " "
+        - FRAGMENT_NAME@157..158
+            - NAME@157..158
+                - IDENT@157..158 "A"
+        - WHITESPACE@158..159 " "
+        - TYPE_CONDITION@159..163
+            - on_KW@159..161 "on"
+            - WHITESPACE@161..162 " "
+            - NAMED_TYPE@162..163
+                - NAME@162..163
+                    - IDENT@162..163 "A"
+        - WHITESPACE@163..164 " "
+        - SELECTION_SET@164..171
+            - L_CURLY@164..165 "{"
+            - WHITESPACE@165..168 "\n  "
+            - FIELD@168..169
+                - NAME@168..169
+                    - IDENT@168..169 "a"
+            - WHITESPACE@169..170 "\n"
+            - R_CURLY@170..171 "}"
+    - WHITESPACE@171..173 "\n\n"
+    - OPERATION_DEFINITION@173..203
+        - OPERATION_TYPE@173..178
+            - query_KW@173..178 "query"
+        - WHITESPACE@178..179 " "
+        - NAME@179..180
+            - IDENT@179..180 "A"
+        - WHITESPACE@180..181 " "
+        - SELECTION_SET@181..203
+            - L_CURLY@181..182 "{"
+            - WHITESPACE@182..185 "\n  "
+            - FIELD@185..201
+                - NAME@185..186
+                    - IDENT@185..186 "a"
+                - WHITESPACE@186..187 " "
+                - SELECTION_SET@187..201
+                    - L_CURLY@187..188 "{"
+                    - WHITESPACE@188..193 "\n    "
+                    - FRAGMENT_SPREAD@193..197
+                        - SPREAD@193..196 "..."
+                        - FRAGMENT_NAME@196..197
+                            - NAME@196..197
+                                - IDENT@196..197 "A"
+                    - WHITESPACE@197..200 "\n  "
+                    - R_CURLY@200..201 "}"
+            - WHITESPACE@201..202 "\n"
+            - R_CURLY@202..203 "}"
+    - WHITESPACE@203..204 "\n"
+recursion limit: 4096, high: 3
