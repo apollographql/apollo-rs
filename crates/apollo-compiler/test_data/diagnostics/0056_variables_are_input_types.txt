@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            55: "0054_variables_are_input_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 55,
+                id: 56,
             },
             offset: 15,
             length: 9,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 55,
+                        id: 56,
                     },
                     offset: 21,
                     length: 3,
@@ -23,7 +23,7 @@
             },
         ],
         help: Some(
-            "objects, unions, and interfaces cannot be used as variables can only be of input type",
+            "objects, unions, and interfaces cannot be used because variables can only be of input type",
         ),
         data: InputType {
             name: "cat",
@@ -32,11 +32,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            55: "0054_variables_are_input_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 55,
+                id: 56,
             },
             offset: 101,
             length: 10,
@@ -45,7 +45,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 55,
+                        id: 56,
                     },
                     offset: 107,
                     length: 3,
@@ -54,7 +54,7 @@
             },
         ],
         help: Some(
-            "objects, unions, and interfaces cannot be used as variables can only be of input type",
+            "objects, unions, and interfaces cannot be used because variables can only be of input type",
         ),
         data: InputType {
             name: "dog",
@@ -63,11 +63,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            55: "0054_variables_are_input_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 55,
+                id: 56,
             },
             offset: 190,
             length: 12,
@@ -76,7 +76,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 55,
+                        id: 56,
                     },
                     offset: 197,
                     length: 5,
@@ -85,7 +85,7 @@
             },
         ],
         help: Some(
-            "objects, unions, and interfaces cannot be used as variables can only be of input type",
+            "objects, unions, and interfaces cannot be used because variables can only be of input type",
         ),
         data: InputType {
             name: "pets",
@@ -94,11 +94,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            55: "0054_variables_are_input_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 55,
+                id: 56,
             },
             offset: 266,
             length: 19,
@@ -107,7 +107,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 55,
+                        id: 56,
                     },
                     offset: 277,
                     length: 8,
@@ -116,7 +116,7 @@
             },
         ],
         help: Some(
-            "objects, unions, and interfaces cannot be used as variables can only be of input type",
+            "objects, unions, and interfaces cannot be used because variables can only be of input type",
         ),
         data: InputType {
             name: "catOrDog",
@@ -125,11 +125,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            55: "0054_variables_are_input_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 55,
+                id: 56,
             },
             offset: 368,
             length: 17,
@@ -138,7 +138,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 55,
+                        id: 56,
                     },
                     offset: 368,
                     length: 17,
@@ -153,11 +153,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            55: "0054_variables_are_input_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 55,
+                id: 56,
             },
             offset: 354,
             length: 13,
@@ -166,7 +166,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 55,
+                        id: 56,
                     },
                     offset: 252,
                     length: 13,
@@ -176,7 +176,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 55,
+                        id: 56,
                     },
                     offset: 354,
                     length: 13,
@@ -192,14 +192,14 @@
             name: "takesCatOrDog",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 55,
+                    id: 56,
                 },
                 offset: 252,
                 length: 13,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 55,
+                    id: 56,
                 },
                 offset: 354,
                 length: 13,
