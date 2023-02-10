@@ -142,7 +142,7 @@ fn main() -> Result<()> {
     }
     assert!(diagnostics.is_empty());
 
-    let op = compiler.db.find_operation_by_name(query_id, String::from("getProduct"))
+    let op = compiler.db.find_operation(query_id, Some("getProduct".into()))
         .expect("getProduct query does not exist");
     let fragment_in_op: Vec<hir::FragmentDefinition> = op.selection_set().selection().iter().filter_map(|sel| match sel {
         hir::Selection::FragmentSpread(frag) => {

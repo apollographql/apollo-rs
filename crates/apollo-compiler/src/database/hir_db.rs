@@ -65,15 +65,17 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     fn input_objects(&self) -> ByName<InputObjectTypeDefinition>;
 
     // Derived from above queries:
+
     /// Return an operation definition corresponding to the name and file id.
-    fn find_operation_by_name(
+    /// If `name` is `None`, and there is only one operation, that operation will
+    /// be returned.
+    /// If `name` is `None`, and there is more than one operation, `None` will
+    /// be returned.
+    fn find_operation(
         &self,
         file_id: FileId,
-        name: String,
+        name: Option<String>,
     ) -> Option<Arc<OperationDefinition>>;
-
-    /// Return an operation definition without a name, corresponding to the file id.
-    fn find_anonymous_operation(&self, file_id: FileId) -> Option<Arc<OperationDefinition>>;
 
     /// Return an fragment definition corresponding to the name and file id.
     /// Result of this query is not cached internally.

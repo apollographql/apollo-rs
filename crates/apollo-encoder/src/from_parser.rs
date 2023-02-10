@@ -10,10 +10,13 @@ use thiserror::Error;
 // occurred
 #[derive(Debug, Clone, Error)]
 pub enum FromError {
+    /// the parse tree is missing a node
     #[error("parse tree is missing a node")]
     MissingNode,
+    /// expected to parse a `i32`
     #[error("invalid i32")]
     ParseIntError(#[from] std::num::ParseIntError),
+    /// expected to parse a `f64`
     #[error("invalid f64")]
     ParseFloatError(#[from] std::num::ParseFloatError),
 }

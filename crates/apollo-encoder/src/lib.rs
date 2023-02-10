@@ -37,6 +37,7 @@ pub use enum_def::EnumDefinition;
 pub use enum_value::EnumValue;
 pub use field::{Field, FieldDefinition};
 pub use fragment::{FragmentDefinition, FragmentSpread, InlineFragment, TypeCondition};
+pub use from_parser::FromError;
 pub use input_field::InputField;
 pub use input_object_def::InputObjectDefinition;
 pub use input_value::InputValueDefinition;
