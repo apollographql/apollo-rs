@@ -1,0 +1,222 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            55: "0055_duplicate_type_names.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 55,
+            },
+            offset: 34,
+            length: 5,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 55,
+                    },
+                    offset: 10,
+                    length: 5,
+                },
+                text: "previous definition of `World` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 55,
+                    },
+                    offset: 34,
+                    length: 5,
+                },
+                text: "`World` redefined here",
+            },
+        ],
+        help: Some(
+            "`World` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "object",
+            name: "World",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 55,
+                },
+                offset: 10,
+                length: 5,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 55,
+                },
+                offset: 34,
+                length: 5,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            55: "0055_duplicate_type_names.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 55,
+            },
+            offset: 147,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 55,
+                    },
+                    offset: 83,
+                    length: 1,
+                },
+                text: "previous definition of `X` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 55,
+                    },
+                    offset: 147,
+                    length: 1,
+                },
+                text: "`X` redefined here",
+            },
+        ],
+        help: Some(
+            "`X` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "union",
+            name: "X",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 55,
+                },
+                offset: 83,
+                length: 1,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 55,
+                },
+                offset: 147,
+                length: 1,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            55: "0055_duplicate_type_names.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 55,
+            },
+            offset: 174,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 55,
+                    },
+                    offset: 83,
+                    length: 1,
+                },
+                text: "previous definition of `X` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 55,
+                    },
+                    offset: 174,
+                    length: 1,
+                },
+                text: "`X` redefined here",
+            },
+        ],
+        help: Some(
+            "`X` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "enum",
+            name: "X",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 55,
+                },
+                offset: 83,
+                length: 1,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 55,
+                },
+                offset: 174,
+                length: 1,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            55: "0055_duplicate_type_names.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 55,
+            },
+            offset: 191,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 55,
+                    },
+                    offset: 83,
+                    length: 1,
+                },
+                text: "previous definition of `X` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 55,
+                    },
+                    offset: 191,
+                    length: 1,
+                },
+                text: "`X` redefined here",
+            },
+        ],
+        help: Some(
+            "`X` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "object",
+            name: "X",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 55,
+                },
+                offset: 83,
+                length: 1,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 55,
+                },
+                offset: 191,
+                length: 1,
+            },
+        },
+    },
+]

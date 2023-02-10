@@ -7,6 +7,61 @@
             file_id: FileId {
                 id: 32,
             },
+            offset: 36,
+            length: 5,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 32,
+                    },
+                    offset: 5,
+                    length: 5,
+                },
+                text: "previous definition of `Query` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 32,
+                    },
+                    offset: 36,
+                    length: 5,
+                },
+                text: "`Query` redefined here",
+            },
+        ],
+        help: Some(
+            "`Query` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "object",
+            name: "Query",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 32,
+                },
+                offset: 5,
+                length: 5,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 32,
+                },
+                offset: 36,
+                length: 5,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            32: "0032_duplicate_object_type_definition.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 32,
+            },
             offset: 31,
             length: 29,
         },

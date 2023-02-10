@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
@@ -53,49 +53,6 @@ pub fn validate_operation_definitions(
             })
             .collect();
         diagnostics.extend(missing_ident);
-    }
-
-    // Operation definitions must have unique names.
-    //
-    // Return a Unique Operation Definition error in case of a duplicate name.
-    let mut seen: HashMap<&str, &hir::OperationDefinition> = HashMap::new();
-    for op in operations.iter() {
-        if let Some(name) = op.name() {
-            if let Some(prev_def) = seen.get(&name) {
-                let original_definition = prev_def
-                    .name_src()
-                    .and_then(|name| name.loc())
-                    .unwrap_or_else(|| prev_def.loc());
-                let redefined_definition = op
-                    .name_src()
-                    .and_then(|name| name.loc())
-                    .unwrap_or_else(|| op.loc());
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        redefined_definition.into(),
-                        DiagnosticData::UniqueDefinition {
-                            ty: "operation",
-                            name: name.into(),
-                            original_definition: original_definition.into(),
-                            redefined_definition: redefined_definition.into(),
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            original_definition,
-                            format!("previous definition of `{name}` here"),
-                        ),
-                        Label::new(redefined_definition, format!("`{name}` redefined here")),
-                    ])
-                    .help(format!(
-                        "`{name}` must only be defined once in this document."
-                    )),
-                );
-            } else {
-                seen.insert(name, op);
-            }
-        }
     }
 
     diagnostics

@@ -3,10 +3,9 @@ use std::{collections::HashSet, sync::Arc};
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self, ImplementsInterface},
-    validation::{ast_type_definitions, ValidationSet},
+    validation::ValidationSet,
     ValidationDatabase,
 };
-use apollo_parser::ast;
 
 pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
@@ -27,48 +26,6 @@ pub fn validate_interface_definition(
     interface_def: Arc<hir::InterfaceTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-
-    // Interface definitions must have unique names.
-    //
-    // Return a Unique Definition error in case of a duplicate name.
-    let hir = db.interfaces();
-    for (file_id, ast_def) in ast_type_definitions::<ast::InterfaceTypeDefinition>(db) {
-        if let Some(name) = ast_def.name() {
-            let name = &*name.text();
-            let hir_def = &hir[name];
-            let original_definition = hir_def.name_src().loc().unwrap_or_else(|| hir_def.loc());
-            let redefined_definition = ast_def
-                .name()
-                .map(|name| (file_id, &name).into())
-                .unwrap_or_else(|| (file_id, &ast_def).into());
-            if original_definition == redefined_definition {
-                // The HIR node was built from this AST node. This is fine.
-            } else {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        redefined_definition.into(),
-                        DiagnosticData::UniqueDefinition {
-                            ty: "interface",
-                            name: name.into(),
-                            original_definition: original_definition.into(),
-                            redefined_definition: redefined_definition.into(),
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            original_definition,
-                            format!("previous definition of `{name}` here"),
-                        ),
-                        Label::new(redefined_definition, format!("`{name}` redefined here")),
-                    ])
-                    .help(format!(
-                        "`{name}` must only be defined once in this document."
-                    )),
-                );
-            }
-        }
-    }
 
     // Interface must not implement itself.
     //

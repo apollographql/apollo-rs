@@ -1,15 +1,17 @@
+use std::collections::{hash_map::Entry, HashMap};
 use std::sync::Arc;
 
 use crate::{
     database::db::Upcast,
-    diagnostics::ApolloDiagnostic,
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::*,
     validation::{
-        argument, directive, enum_, fragment, input_object, interface, object, operation, scalar,
-        schema, selection, union_, variable,
+        argument, ast_type_definitions, directive, enum_, fragment, input_object, interface,
+        object, operation, scalar, schema, selection, union_, variable,
     },
     AstDatabase, FileId, HirDatabase, InputDatabase,
 };
+use apollo_parser::ast;
 
 use super::field;
 
@@ -180,9 +182,90 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     diagnostics
 }
 
+fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    // Different node types use different namespaces.
+    let mut fragment_scope = HashMap::new();
+    let mut operation_scope = HashMap::new();
+    let mut directive_scope = HashMap::new();
+    let mut default_scope = HashMap::new();
+
+    for (file_id, ast_def) in ast_type_definitions::<ast::Definition>(db) {
+        if ast_def.is_extension_definition() {
+            continue;
+        }
+
+        let ty_ = match ast_def {
+            ast::Definition::OperationDefinition(_) => "operation",
+            ast::Definition::FragmentDefinition(_) => "fragment",
+            ast::Definition::DirectiveDefinition(_) => "directive",
+            ast::Definition::SchemaDefinition(_) => "schema",
+            ast::Definition::ScalarTypeDefinition(_) => "scalar",
+            ast::Definition::ObjectTypeDefinition(_) => "object",
+            ast::Definition::InterfaceTypeDefinition(_) => "interface",
+            ast::Definition::UnionTypeDefinition(_) => "union",
+            ast::Definition::EnumTypeDefinition(_) => "enum",
+            ast::Definition::InputObjectTypeDefinition(_) => "input object",
+            ast::Definition::SchemaExtension(_) => unreachable!(),
+            ast::Definition::ScalarTypeExtension(_) => unreachable!(),
+            ast::Definition::ObjectTypeExtension(_) => unreachable!(),
+            ast::Definition::InterfaceTypeExtension(_) => unreachable!(),
+            ast::Definition::UnionTypeExtension(_) => unreachable!(),
+            ast::Definition::EnumTypeExtension(_) => unreachable!(),
+            ast::Definition::InputObjectTypeExtension(_) => unreachable!(),
+        };
+        let scope = match ast_def {
+            ast::Definition::OperationDefinition(_) => &mut operation_scope,
+            ast::Definition::FragmentDefinition(_) => &mut fragment_scope,
+            ast::Definition::DirectiveDefinition(_) => &mut directive_scope,
+            _ => &mut default_scope,
+        };
+
+        if let Some(name_node) = ast_def.name() {
+            let name = &*name_node.text();
+            match scope.entry(name.to_string()) {
+                Entry::Occupied(entry) => {
+                    let (original_file_id, original) = entry.get();
+                    let original_definition: HirNodeLocation = (*original_file_id, original).into();
+                    let redefined_definition: HirNodeLocation = (file_id, &name_node).into();
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            redefined_definition.into(),
+                            DiagnosticData::UniqueDefinition {
+                                ty: ty_,
+                                name: name.to_string(),
+                                original_definition: original_definition.into(),
+                                redefined_definition: redefined_definition.into(),
+                            },
+                        )
+                        .labels([
+                            Label::new(
+                                original_definition,
+                                format!("previous definition of `{name}` here"),
+                            ),
+                            Label::new(redefined_definition, format!("`{name}` redefined here")),
+                        ])
+                        .help(format!(
+                            "`{name}` must only be defined once in this document."
+                        )),
+                    );
+                }
+                Entry::Vacant(entry) => {
+                    entry.insert((file_id, name_node));
+                }
+            }
+        }
+    }
+
+    diagnostics
+}
+
 pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    diagnostics.extend(validate_name_uniqueness(db));
     diagnostics.extend(db.validate_schema_definition(db.type_system_definitions().schema.clone()));
 
     diagnostics.extend(db.validate_scalar_definitions());
