@@ -1,0 +1,25 @@
+# https://github.com/apollographql/apollo-rs/issues/457
+type Query {
+  pet: Pet
+}
+type Pet {
+  name: String!
+  owner: String
+}
+
+query getPet {
+  pet {
+    name
+    ... petFragment
+  }
+}
+
+fragment petFragment on Pet {
+  name
+  owner
+}
+
+fragment petFragment on Pet {
+  name
+  owner
+}

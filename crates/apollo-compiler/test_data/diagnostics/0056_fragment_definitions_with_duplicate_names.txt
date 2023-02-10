@@ -1,0 +1,57 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            56: "0056_fragment_definitions_with_duplicate_names.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 56,
+            },
+            offset: 244,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 196,
+                    length: 11,
+                },
+                text: "previous definition of `petFragment` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 244,
+                    length: 11,
+                },
+                text: "`petFragment` redefined here",
+            },
+        ],
+        help: Some(
+            "`petFragment` must only be defined once in this document.",
+        ),
+        data: UniqueDefinition {
+            ty: "fragment",
+            name: "petFragment",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 56,
+                },
+                offset: 196,
+                length: 11,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 56,
+                },
+                offset: 244,
+                length: 11,
+            },
+        },
+    },
+]
