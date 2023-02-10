@@ -2183,7 +2183,7 @@ mod tests {
 
         let db = compiler.db;
         let type_introspect: Arc<OperationDefinition> = db
-            .find_operation_by_name(query_id, String::from("TypeIntrospect"))
+            .find_operation(query_id, Some(String::from("TypeIntrospect")))
             .expect("TypeIntrospect operation does not exist");
 
         assert!(type_introspect.is_introspection(&db));
@@ -2219,11 +2219,11 @@ mod tests {
 
         let db = compiler.db;
         let check_stock: Arc<OperationDefinition> = db
-            .find_operation_by_name(query_id, String::from("CheckStock"))
+            .find_operation(query_id, Some("CheckStock".into()))
             .expect("CheckStock operation does not exist");
 
         let purchase_operation: Arc<OperationDefinition> = db
-            .find_operation_by_name(mutation_id, String::from("PurchaseBasket"))
+            .find_operation(mutation_id, Some("PurchaseBasket".into()))
             .expect("CheckStock operation does not exist");
 
         assert!(!check_stock.is_introspection(&db));
@@ -2296,15 +2296,15 @@ mod tests {
 
         let db = compiler.db;
         let deep_introspect: Arc<OperationDefinition> = db
-            .find_operation_by_name(query_id, String::from("IntrospectDeepFragments"))
+            .find_operation(query_id, Some("IntrospectDeepFragments".into()))
             .expect("IntrospectDeepFragments operation does not exist");
 
         assert!(deep_introspect.is_introspection(&db));
 
         let deep_introspect: Arc<OperationDefinition> = db
-            .find_operation_by_name(
+            .find_operation(
                 query_id_not_introspect,
-                String::from("IntrospectDeepFragments"),
+                Some("IntrospectDeepFragments".into()),
             )
             .expect("IntrospectDeepFragments operation does not exist");
         assert!(!deep_introspect.is_introspection(&db));
