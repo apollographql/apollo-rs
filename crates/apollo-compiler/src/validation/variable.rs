@@ -34,7 +34,7 @@ pub fn validate_variable_definitions(
                         ty: ty_name,
                     })
                     .label(Label::new(ty.loc().unwrap(), format!("this is of `{ty_name}` type")))
-                    .help("objects, unions, and interfaces cannot be used as variables can only be of input type"),
+                    .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
                 );
             } else {
                 diagnostics.push(
