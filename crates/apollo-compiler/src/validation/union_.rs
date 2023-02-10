@@ -32,7 +32,7 @@ pub fn validate_union_definition(
         let redefined_definition = union_member.loc();
         // A Union type must include one or more unique member types.
         //
-        // Return a Unique Value error in case of a duplicate member.
+        // Return a Unique Definition error in case of a duplicate member.
         if let Some(prev_def) = seen.get(&name) {
             let original_definition = prev_def.loc();
 

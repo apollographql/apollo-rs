@@ -1,10 +1,13 @@
-use std::collections::HashSet;
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
+    hir::{self, VariableDefinition},
     validation::ValidationSet,
-    FileId, ValidationDatabase,
+    ValidationDatabase,
 };
 
 pub fn validate_variable_definitions(
@@ -13,81 +16,128 @@ pub fn validate_variable_definitions(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    let mut seen: HashMap<&str, &VariableDefinition> = HashMap::new();
     for variable in variables.iter() {
         diagnostics.extend(db.validate_directives(
             variable.directives().to_vec(),
             hir::DirectiveLocation::VariableDefinition,
         ));
+
+        let ty = variable.ty();
+        if !ty.is_input_type(db.upcast()) {
+            let type_def = ty.type_def(db.upcast());
+            if let Some(type_def) = type_def {
+                let ty_name = type_def.kind();
+                diagnostics.push(
+                    ApolloDiagnostic::new(db, variable.loc().into(), DiagnosticData::InputType {
+                        name: variable.name().into(),
+                        ty: ty_name,
+                    })
+                    .label(Label::new(ty.loc().unwrap(), format!("this is of `{ty_name}` type")))
+                    .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
+                );
+            } else {
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        variable.loc.into(),
+                        DiagnosticData::UndefinedDefinition { name: ty.name() },
+                    )
+                    .label(Label::new(variable.loc, "not found in the type system")),
+                )
+            }
+        }
+
+        // Variable definitions must be unique.
+        //
+        // Return a Unique Definition error in case of a duplicate value.
+        let name = variable.name();
+        if let Some(prev_def) = seen.get(&name) {
+            let original_definition = prev_def.loc();
+            let redefined_definition = variable.loc();
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    redefined_definition.into(),
+                    DiagnosticData::UniqueDefinition {
+                        ty: "enum",
+                        name: name.into(),
+                        original_definition: original_definition.into(),
+                        redefined_definition: redefined_definition.into(),
+                    },
+                )
+                .labels([
+                    Label::new(
+                        original_definition,
+                        format!("previous definition of `{name}` here"),
+                    ),
+                    Label::new(redefined_definition, format!("`{name}` redefined here")),
+                ])
+                .help(format!("{name} must only be defined once in this enum.")),
+            );
+        } else {
+            seen.insert(name, variable);
+        }
     }
 
     diagnostics
 }
 
-// check in scope
-// check in use
-// compare the two
 pub fn validate_unused_variables(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
+    op: Arc<hir::OperationDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    db.operations(file_id)
+    let defined_vars: HashSet<ValidationSet> = op
+        .variables()
         .iter()
-        .flat_map(|op| {
-            let defined_vars: HashSet<ValidationSet> = op
-                .variables()
+        .map(|var| ValidationSet {
+            name: var.name().into(),
+            loc: var.loc(),
+        })
+        .collect();
+    let used_vars: HashSet<ValidationSet> = op
+        .selection_set
+        .selection()
+        .iter()
+        .flat_map(|sel| {
+            let vars: HashSet<ValidationSet> = sel
+                .variables(db.upcast())
                 .iter()
                 .map(|var| ValidationSet {
                     name: var.name().into(),
                     loc: var.loc(),
                 })
                 .collect();
-            let used_vars: HashSet<ValidationSet> = op
-                .selection_set
-                .clone()
-                .selection()
-                .iter()
-                .flat_map(|sel| {
-                    let vars: HashSet<ValidationSet> = sel
-                        .variables(db.upcast())
-                        .iter()
-                        .map(|var| ValidationSet {
-                            name: var.name().into(),
-                            loc: var.loc(),
-                        })
-                        .collect();
-                    vars
-                })
-                .collect();
-            let undefined_vars = used_vars.difference(&defined_vars);
-            let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
-                .map(|undefined_var| {
-                    ApolloDiagnostic::new(
-                        db,
-                        undefined_var.loc.into(),
-                        DiagnosticData::UndefinedDefinition {
-                            name: undefined_var.name.clone(),
-                        },
-                    )
-                    .label(Label::new(undefined_var.loc, "not found in this scope"))
-                })
-                .collect();
-
-            let unused_vars = defined_vars.difference(&used_vars);
-            let warnings = unused_vars.map(|unused_var| {
-                ApolloDiagnostic::new(
-                    db,
-                    unused_var.loc.into(),
-                    DiagnosticData::UnusedVariable {
-                        name: unused_var.name.clone(),
-                    },
-                )
-                .label(Label::new(unused_var.loc, "this variable is never used"))
-            });
-
-            diagnostics.extend(warnings);
-            diagnostics
+            vars
         })
-        .collect()
+        .collect();
+    let undefined_vars = used_vars.difference(&defined_vars);
+    let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
+        .map(|undefined_var| {
+            ApolloDiagnostic::new(
+                db,
+                undefined_var.loc.into(),
+                DiagnosticData::UndefinedDefinition {
+                    name: undefined_var.name.clone(),
+                },
+            )
+            .label(Label::new(undefined_var.loc, "not found in this scope"))
+        })
+        .collect();
+
+    let unused_vars = defined_vars.difference(&used_vars);
+    diagnostics.extend(unused_vars.map(|unused_var| {
+        ApolloDiagnostic::new(
+            db,
+            unused_var.loc.into(),
+            DiagnosticData::UnusedVariable {
+                name: unused_var.name.clone(),
+            },
+        )
+        .label(Label::new(unused_var.loc, "this variable is never used"))
+    }));
+
+    diagnostics
 }
 
 #[cfg(test)]

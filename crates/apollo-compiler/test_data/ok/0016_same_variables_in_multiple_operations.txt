@@ -1,0 +1,189 @@
+- DOCUMENT@0..372
+    - OPERATION_DEFINITION@0..61
+        - OPERATION_TYPE@0..5
+            - query_KW@0..5 "query"
+        - WHITESPACE@5..6 " "
+        - NAME@6..7
+            - IDENT@6..7 "A"
+        - VARIABLE_DEFINITIONS@7..31
+            - L_PAREN@7..8 "("
+            - VARIABLE_DEFINITION@8..30
+                - VARIABLE@8..21
+                    - DOLLAR@8..9 "$"
+                    - NAME@9..21
+                        - IDENT@9..21 "atOtherHomes"
+                - COLON@21..22 ":"
+                - WHITESPACE@22..23 " "
+                - NAMED_TYPE@23..30
+                    - NAME@23..30
+                        - IDENT@23..30 "Boolean"
+            - R_PAREN@30..31 ")"
+        - WHITESPACE@31..32 " "
+        - SELECTION_SET@32..61
+            - L_CURLY@32..33 "{"
+            - WHITESPACE@33..36 "\n  "
+            - FRAGMENT_SPREAD@36..59
+                - SPREAD@36..39 "..."
+                - FRAGMENT_NAME@39..59
+                    - NAME@39..59
+                        - IDENT@39..59 "HouseTrainedFragment"
+            - WHITESPACE@59..60 "\n"
+            - R_CURLY@60..61 "}"
+    - WHITESPACE@61..63 "\n\n"
+    - OPERATION_DEFINITION@63..124
+        - OPERATION_TYPE@63..68
+            - query_KW@63..68 "query"
+        - WHITESPACE@68..69 " "
+        - NAME@69..70
+            - IDENT@69..70 "B"
+        - VARIABLE_DEFINITIONS@70..94
+            - L_PAREN@70..71 "("
+            - VARIABLE_DEFINITION@71..93
+                - VARIABLE@71..84
+                    - DOLLAR@71..72 "$"
+                    - NAME@72..84
+                        - IDENT@72..84 "atOtherHomes"
+                - COLON@84..85 ":"
+                - WHITESPACE@85..86 " "
+                - NAMED_TYPE@86..93
+                    - NAME@86..93
+                        - IDENT@86..93 "Boolean"
+            - R_PAREN@93..94 ")"
+        - WHITESPACE@94..95 " "
+        - SELECTION_SET@95..124
+            - L_CURLY@95..96 "{"
+            - WHITESPACE@96..99 "\n  "
+            - FRAGMENT_SPREAD@99..122
+                - SPREAD@99..102 "..."
+                - FRAGMENT_NAME@102..122
+                    - NAME@102..122
+                        - IDENT@102..122 "HouseTrainedFragment"
+            - WHITESPACE@122..123 "\n"
+            - R_CURLY@123..124 "}"
+    - WHITESPACE@124..126 "\n\n"
+    - FRAGMENT_DEFINITION@126..228
+        - fragment_KW@126..134 "fragment"
+        - WHITESPACE@134..135 " "
+        - FRAGMENT_NAME@135..155
+            - NAME@135..155
+                - IDENT@135..155 "HouseTrainedFragment"
+        - WHITESPACE@155..156 " "
+        - TYPE_CONDITION@156..164
+            - on_KW@156..158 "on"
+            - WHITESPACE@158..159 " "
+            - NAMED_TYPE@159..164
+                - NAME@159..164
+                    - IDENT@159..164 "Query"
+        - WHITESPACE@164..165 " "
+        - SELECTION_SET@165..228
+            - L_CURLY@165..166 "{"
+            - WHITESPACE@166..169 "\n  "
+            - FIELD@169..226
+                - NAME@169..172
+                    - IDENT@169..172 "dog"
+                - WHITESPACE@172..173 " "
+                - SELECTION_SET@173..226
+                    - L_CURLY@173..174 "{"
+                    - WHITESPACE@174..179 "\n    "
+                    - FIELD@179..222
+                        - NAME@179..193
+                            - IDENT@179..193 "isHouseTrained"
+                        - ARGUMENTS@193..222
+                            - L_PAREN@193..194 "("
+                            - ARGUMENT@194..221
+                                - NAME@194..206
+                                    - IDENT@194..206 "atOtherHomes"
+                                - COLON@206..207 ":"
+                                - WHITESPACE@207..208 " "
+                                - VARIABLE@208..221
+                                    - DOLLAR@208..209 "$"
+                                    - NAME@209..221
+                                        - IDENT@209..221 "atOtherHomes"
+                            - R_PAREN@221..222 ")"
+                    - WHITESPACE@222..225 "\n  "
+                    - R_CURLY@225..226 "}"
+            - WHITESPACE@226..227 "\n"
+            - R_CURLY@227..228 "}"
+    - WHITESPACE@228..230 "\n\n"
+    - OBJECT_TYPE_DEFINITION@230..255
+        - type_KW@230..234 "type"
+        - WHITESPACE@234..235 " "
+        - NAME@235..240
+            - IDENT@235..240 "Query"
+        - WHITESPACE@240..241 " "
+        - FIELDS_DEFINITION@241..255
+            - L_CURLY@241..242 "{"
+            - WHITESPACE@242..245 "\n  "
+            - FIELD_DEFINITION@245..253
+                - NAME@245..248
+                    - IDENT@245..248 "dog"
+                - COLON@248..249 ":"
+                - WHITESPACE@249..250 " "
+                - NAMED_TYPE@250..253
+                    - NAME@250..253
+                        - IDENT@250..253 "Dog"
+            - WHITESPACE@253..254 "\n"
+            - R_CURLY@254..255 "}"
+    - WHITESPACE@255..257 "\n\n"
+    - OBJECT_TYPE_DEFINITION@257..372
+        - type_KW@257..261 "type"
+        - WHITESPACE@261..262 " "
+        - NAME@262..265
+            - IDENT@262..265 "Dog"
+        - WHITESPACE@265..266 " "
+        - FIELDS_DEFINITION@266..372
+            - L_CURLY@266..267 "{"
+            - WHITESPACE@267..270 "\n  "
+            - FIELD_DEFINITION@270..283
+                - NAME@270..274
+                    - IDENT@270..274 "name"
+                - COLON@274..275 ":"
+                - WHITESPACE@275..276 " "
+                - NON_NULL_TYPE@276..283
+                    - NAMED_TYPE@276..282
+                        - NAME@276..282
+                            - IDENT@276..282 "String"
+                    - BANG@282..283 "!"
+            - WHITESPACE@283..286 "\n  "
+            - FIELD_DEFINITION@286..302
+                - NAME@286..294
+                    - IDENT@286..294 "nickname"
+                - COLON@294..295 ":"
+                - WHITESPACE@295..296 " "
+                - NAMED_TYPE@296..302
+                    - NAME@296..302
+                        - IDENT@296..302 "String"
+            - WHITESPACE@302..305 "\n  "
+            - FIELD_DEFINITION@305..320
+                - NAME@305..315
+                    - IDENT@305..315 "barkVolume"
+                - COLON@315..316 ":"
+                - WHITESPACE@316..317 " "
+                - NAMED_TYPE@317..320
+                    - NAME@317..320
+                        - IDENT@317..320 "Int"
+            - WHITESPACE@320..323 "\n  "
+            - FIELD_DEFINITION@323..370
+                - NAME@323..337
+                    - IDENT@323..337 "isHouseTrained"
+                - ARGUMENTS_DEFINITION@337..360
+                    - L_PAREN@337..338 "("
+                    - INPUT_VALUE_DEFINITION@338..359
+                        - NAME@338..350
+                            - IDENT@338..350 "atOtherHomes"
+                        - COLON@350..351 ":"
+                        - WHITESPACE@351..352 " "
+                        - NAMED_TYPE@352..359
+                            - NAME@352..359
+                                - IDENT@352..359 "Boolean"
+                    - R_PAREN@359..360 ")"
+                - COLON@360..361 ":"
+                - WHITESPACE@361..362 " "
+                - NON_NULL_TYPE@362..370
+                    - NAMED_TYPE@362..369
+                        - NAME@362..369
+                            - IDENT@362..369 "Boolean"
+                    - BANG@369..370 "!"
+            - WHITESPACE@370..371 "\n"
+            - R_CURLY@371..372 "}"
+recursion limit: 4096, high: 4
