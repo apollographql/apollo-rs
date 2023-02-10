@@ -20,7 +20,7 @@ query takesCatOrDog($catOrDog: CatOrDog) {
   }
 }
 
-query takesCatOrDog($catOrDog: Dragon) {
+query takesCatOrDog2($catOrDog: Dragon) {
   dog {
     isHouseTrained(atOtherHomes: $catOrDog)
   }
