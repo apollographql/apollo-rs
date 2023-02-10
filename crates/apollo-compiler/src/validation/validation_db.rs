@@ -205,7 +205,10 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
                 .filter_map(ast::Definition::cast)
                 // Extension names are allowed to be duplicates,
                 // and schema definitions don't have names.
-                .filter(|def| !def.is_extension_definition() && !matches!(def, ast::Definition::SchemaDefinition(_)))
+                .filter(|def| {
+                    !def.is_extension_definition()
+                        && !matches!(def, ast::Definition::SchemaDefinition(_))
+                })
                 .map(move |def| (file_id, def))
         });
 
