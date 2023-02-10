@@ -44,12 +44,13 @@ pub(crate) fn find_operation(
     name: Option<String>,
 ) -> Option<Arc<OperationDefinition>> {
     let ops = db.operations(file_id);
-    if ops.len() == 1 {
+
+    if let Some(name) = name {
+        ops.iter().find(|def| def.name() == Some(&*name)).cloned()
+    } else if ops.len() == 1 {
         Some(ops[0].clone())
     } else {
-        ops.iter()
-            .find(|def| def.name() == name.as_deref())
-            .cloned()
+        None
     }
 }
 
@@ -316,6 +317,44 @@ pub(crate) fn is_subtype(
 mod tests {
     use crate::ApolloCompiler;
     use crate::HirDatabase;
+
+    #[test]
+    fn find_operations() {
+        let type_system = r#"
+type Query {
+  name: String
+}
+        "#;
+        let op = r#"{ name }"#;
+        let named_op = r#"query getName { name } "#;
+        let several_named_op = r#"query getName { name } query getAnotherName { name }"#;
+        let noop = r#""#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(type_system, "ts.graphql");
+        let op_id = compiler.add_executable(op, "op.graphql");
+        let op = compiler.db.find_operation(op_id, None);
+        assert!(op.is_some());
+
+        compiler.update_executable(op_id, named_op);
+        let op = compiler.db.find_operation(op_id, Some("getName".into()));
+        assert!(op.is_some());
+        let op = compiler.db.find_operation(op_id, None);
+        assert!(op.is_some());
+
+        compiler.update_executable(op_id, several_named_op);
+        let op = compiler.db.find_operation(op_id, Some("getName".into()));
+        assert!(op.is_some());
+        let op = compiler.db.find_operation(op_id, None);
+        assert!(op.is_none());
+
+        compiler.update_executable(op_id, noop);
+        let op = compiler.db.find_operation(op_id, Some("getName".into()));
+        assert!(op.is_none());
+
+        let op = compiler.db.find_operation(op_id, None);
+        assert!(op.is_none());
+    }
 
     #[test]
     fn find_definitions_with_directive() {
