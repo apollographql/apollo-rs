@@ -78,6 +78,45 @@ impl ast::DirectiveLocation {
     }
 }
 
+impl ast::Definition {
+    /// Return the name of this definition, if any. Schema definitions are unnamed and always
+    /// return `None`.
+    pub fn name(&self) -> Option<ast::Name> {
+        match self {
+            Self::OperationDefinition(it) => it.name(),
+            Self::FragmentDefinition(it) => it.fragment_name()?.name(),
+            Self::DirectiveDefinition(it) => it.name(),
+            Self::SchemaDefinition(_) => None,
+            Self::ScalarTypeDefinition(it) => it.name(),
+            Self::ObjectTypeDefinition(it) => it.name(),
+            Self::InterfaceTypeDefinition(it) => it.name(),
+            Self::UnionTypeDefinition(it) => it.name(),
+            Self::EnumTypeDefinition(it) => it.name(),
+            Self::InputObjectTypeDefinition(it) => it.name(),
+            Self::SchemaExtension(_) => None,
+            Self::ScalarTypeExtension(it) => it.name(),
+            Self::ObjectTypeExtension(it) => it.name(),
+            Self::InterfaceTypeExtension(it) => it.name(),
+            Self::UnionTypeExtension(it) => it.name(),
+            Self::EnumTypeExtension(it) => it.name(),
+            Self::InputObjectTypeExtension(it) => it.name(),
+        }
+    }
+
+    pub fn is_extension_definition(&self) -> bool {
+        matches!(
+            self,
+            Self::SchemaExtension(_)
+                | Self::ScalarTypeExtension(_)
+                | Self::ObjectTypeExtension(_)
+                | Self::InterfaceTypeExtension(_)
+                | Self::UnionTypeExtension(_)
+                | Self::EnumTypeExtension(_)
+                | Self::InputObjectTypeExtension(_)
+        )
+    }
+}
+
 impl From<ast::StringValue> for String {
     fn from(val: ast::StringValue) -> Self {
         Self::from(&val)

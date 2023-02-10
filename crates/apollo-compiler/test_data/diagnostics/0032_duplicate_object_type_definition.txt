@@ -7,8 +7,8 @@
             file_id: FileId {
                 id: 32,
             },
-            offset: 31,
-            length: 29,
+            offset: 36,
+            length: 5,
         },
         labels: [
             Label {
@@ -16,8 +16,8 @@
                     file_id: FileId {
                         id: 32,
                     },
-                    offset: 0,
-                    length: 29,
+                    offset: 5,
+                    length: 5,
                 },
                 text: "previous definition of `Query` here",
             },
@@ -26,8 +26,8 @@
                     file_id: FileId {
                         id: 32,
                     },
-                    offset: 31,
-                    length: 29,
+                    offset: 36,
+                    length: 5,
                 },
                 text: "`Query` redefined here",
             },
@@ -36,21 +36,21 @@
             "`Query` must only be defined once in this document.",
         ),
         data: UniqueDefinition {
-            ty: "root operation type definition",
+            ty: "type",
             name: "Query",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 32,
                 },
-                offset: 0,
-                length: 29,
+                offset: 5,
+                length: 5,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 32,
                 },
-                offset: 31,
-                length: 29,
+                offset: 36,
+                length: 5,
             },
         },
     },

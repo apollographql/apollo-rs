@@ -3,10 +3,9 @@ use std::{collections::HashSet, sync::Arc};
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
-    validation::{ast_type_definitions, ValidationSet},
+    validation::ValidationSet,
     ValidationDatabase,
 };
-use apollo_parser::ast;
 
 pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
@@ -28,44 +27,6 @@ pub fn validate_object_type_definition(
     diagnostics.extend(
         db.validate_directives(object.directives().to_vec(), hir::DirectiveLocation::Object),
     );
-
-    // Object Type definitions must have unique names.
-    //
-    // Return a Unique Definition error in case of a duplicate name.
-    let hir = db.object_types();
-    for (file_id, ast_def) in ast_type_definitions::<ast::ObjectTypeDefinition>(db) {
-        if let Some(name) = ast_def.name() {
-            let name = &*name.text();
-            let original_definition = hir[name].loc();
-            let redefined_definition = (file_id, &ast_def).into();
-            if original_definition == redefined_definition {
-                // The HIR node was built from this AST node. This is fine.
-            } else {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        redefined_definition.into(),
-                        DiagnosticData::UniqueDefinition {
-                            ty: "root operation type definition",
-                            name: name.to_string(),
-                            original_definition: original_definition.into(),
-                            redefined_definition: redefined_definition.into(),
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            original_definition,
-                            format!("previous definition of `{name}` here"),
-                        ),
-                        Label::new(redefined_definition, format!("`{name}` redefined here")),
-                    ])
-                    .help(format!(
-                        "`{name}` must only be defined once in this document."
-                    )),
-                );
-            }
-        }
-    }
 
     // Object Type field validations.
     diagnostics.extend(db.validate_field_definitions(object.fields_definition().to_vec()));

@@ -7,8 +7,8 @@
             file_id: FileId {
                 id: 29,
             },
-            offset: 80,
-            length: 24,
+            offset: 116,
+            length: 3,
         },
         labels: [
             Label {
@@ -16,8 +16,8 @@
                     file_id: FileId {
                         id: 29,
                     },
-                    offset: 80,
-                    length: 24,
+                    offset: 91,
+                    length: 3,
                 },
                 text: "previous definition of `foo` here",
             },
@@ -26,8 +26,8 @@
                     file_id: FileId {
                         id: 29,
                     },
-                    offset: 105,
-                    length: 24,
+                    offset: 116,
+                    length: 3,
                 },
                 text: "`foo` redefined here",
             },
@@ -42,15 +42,15 @@
                 file_id: FileId {
                     id: 29,
                 },
-                offset: 80,
-                length: 24,
+                offset: 91,
+                length: 3,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 29,
                 },
-                offset: 105,
-                length: 24,
+                offset: 116,
+                length: 3,
             },
         },
     },
