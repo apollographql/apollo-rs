@@ -27,8 +27,10 @@ pub trait ValidationDatabase:
     /// the compiler.
     fn validate_type_system(&self) -> Vec<ApolloDiagnostic>;
 
-    /// Validate the corresonding executable document.
+    /// Validate an executable document.
     fn validate_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+
+    fn validate_name_uniqueness(&self) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(schema::validate_schema_definition)]
     fn validate_schema_definition(&self, def: Arc<SchemaDefinition>) -> Vec<ApolloDiagnostic>;
@@ -277,7 +279,8 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
 pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(validate_name_uniqueness(db));
+    diagnostics.extend(db.validate_name_uniqueness());
+
     diagnostics.extend(db.validate_schema_definition(db.type_system_definitions().schema.clone()));
 
     diagnostics.extend(db.validate_scalar_definitions());
