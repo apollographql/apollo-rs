@@ -187,7 +187,7 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
     let mut diagnostics = Vec::new();
 
     // Different node types use different namespaces.
-    let mut fragment_scope = HashMap::new();
+    let mut fragment_scope = HashMap::<String, (FileId, ast::Name)>::new();
     let mut operation_scope = HashMap::new();
     let mut directive_scope = HashMap::new();
     let mut type_scope = HashMap::new();
@@ -201,7 +201,9 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
                 .syntax()
                 .children()
                 .filter_map(ast::Definition::cast)
-                .filter(|def| !def.is_extension_definition())
+                // Extension names are allowed to be duplicates,
+                // and schema definitions don't have names.
+                .filter(|def| !def.is_extension_definition() && !matches!(def, ast::Definition::SchemaDefinition(_)))
                 .map(move |def| (file_id, def))
         });
 
@@ -210,14 +212,14 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
             ast::Definition::OperationDefinition(_) => "operation",
             ast::Definition::FragmentDefinition(_) => "fragment",
             ast::Definition::DirectiveDefinition(_) => "directive",
-            ast::Definition::SchemaDefinition(_) => "schema",
             ast::Definition::ScalarTypeDefinition(_)
             | ast::Definition::ObjectTypeDefinition(_)
             | ast::Definition::InterfaceTypeDefinition(_)
             | ast::Definition::UnionTypeDefinition(_)
             | ast::Definition::EnumTypeDefinition(_)
             | ast::Definition::InputObjectTypeDefinition(_) => "type",
-            ast::Definition::SchemaExtension(_)
+            ast::Definition::SchemaDefinition(_)
+            | ast::Definition::SchemaExtension(_)
             | ast::Definition::ScalarTypeExtension(_)
             | ast::Definition::ObjectTypeExtension(_)
             | ast::Definition::InterfaceTypeExtension(_)
@@ -237,8 +239,8 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
             match scope.entry(name.to_string()) {
                 Entry::Occupied(entry) => {
                     let (original_file_id, original) = entry.get();
-                    let original_definition: HirNodeLocation = (*original_file_id, original).into();
-                    let redefined_definition: HirNodeLocation = (file_id, &name_node).into();
+                    let original_definition = (*original_file_id, original.syntax().text_range());
+                    let redefined_definition = (file_id, name_node.syntax().text_range());
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,

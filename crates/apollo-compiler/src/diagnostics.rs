@@ -37,6 +37,16 @@ impl DiagnosticLocation {
     }
 }
 
+impl From<(FileId, rowan::TextRange)> for DiagnosticLocation {
+    fn from((file_id, range): (FileId, rowan::TextRange)) -> Self {
+        Self {
+            file_id,
+            offset: range.start().into(),
+            length: range.len().into(),
+        }
+    }
+}
+
 impl From<(FileId, usize, usize)> for DiagnosticLocation {
     fn from((file_id, offset, length): (FileId, usize, usize)) -> Self {
         Self {
