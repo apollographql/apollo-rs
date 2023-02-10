@@ -218,6 +218,13 @@ pub enum DiagnosticData {
         // field type
         ty: &'static str,
     },
+    #[error("`${name}` variable must be of an input type")]
+    InputType {
+        // variable name
+        name: String,
+        // variable type
+        ty: &'static str,
+    },
     #[error(
         "custom scalars should provide a scalar specification URL via the @specifiedBy directive"
     )]
@@ -256,10 +263,7 @@ impl DiagnosticData {
         !self.is_warning() && !self.is_advice()
     }
     pub fn is_warning(&self) -> bool {
-        matches!(
-            self,
-            Self::CapitalizedValue { .. } | Self::UnusedVariable { .. }
-        )
+        matches!(self, Self::CapitalizedValue { .. })
     }
     pub fn is_advice(&self) -> bool {
         matches!(self, Self::ScalarSpecificationURL)

@@ -22,6 +22,7 @@ pub fn validate_operation_definitions(
         if def.object_type(db.upcast()).is_some() {
             diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
         }
+        diagnostics.extend(db.validate_unused_variable(def.clone()));
     }
 
     let subscription_operations = db.upcast().subscription_operations(file_id);

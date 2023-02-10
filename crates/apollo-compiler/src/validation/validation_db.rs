@@ -169,7 +169,7 @@ pub trait ValidationDatabase:
         -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(variable::validate_unused_variables)]
-    fn validate_unused_variable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+    fn validate_unused_variable(&self, op: Arc<OperationDefinition>) -> Vec<ApolloDiagnostic>;
 }
 
 pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
@@ -303,7 +303,6 @@ pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<
 
     diagnostics.extend(db.validate_operation_definitions(file_id));
     diagnostics.extend(db.validate_fragment_definitions(file_id));
-    diagnostics.extend(db.validate_unused_variable(file_id));
 
     diagnostics
 }

@@ -27,7 +27,7 @@ pub fn validate_input_object_definition(
 
     // Fields in an Input Object Definition must be unique
     //
-    // Returns Unique Value error.
+    // Returns Unique Definition error.
     diagnostics.extend(db.validate_input_values(
         input_obj.input_fields_definition.clone(),
         hir::DirectiveLocation::InputFieldDefinition,
