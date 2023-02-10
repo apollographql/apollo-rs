@@ -6,12 +6,13 @@ use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::*,
     validation::{
-        argument, ast_type_definitions, directive, enum_, fragment, input_object, interface,
+        argument, directive, enum_, fragment, input_object, interface,
         object, operation, scalar, schema, selection, union_, variable,
     },
     AstDatabase, FileId, HirDatabase, InputDatabase,
 };
 use apollo_parser::ast;
+use apollo_parser::ast::AstNode;
 
 use super::field;
 
@@ -189,13 +190,21 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
     let mut fragment_scope = HashMap::new();
     let mut operation_scope = HashMap::new();
     let mut directive_scope = HashMap::new();
-    let mut default_scope = HashMap::new();
+    let mut type_scope = HashMap::new();
 
-    for (file_id, ast_def) in ast_type_definitions::<ast::Definition>(db) {
-        if ast_def.is_extension_definition() {
-            continue;
-        }
+    let all_types = db.type_definition_files()
+        .into_iter()
+        .flat_map(move |file_id| {
+            db.ast(file_id)
+                .document()
+                .syntax()
+                .children()
+                .filter_map(ast::Definition::cast)
+                .filter(|def| !def.is_extension_definition())
+                .map(move |def| (file_id, def))
+        });
 
+    for (file_id, ast_def) in all_types {
         let ty_ = match ast_def {
             ast::Definition::OperationDefinition(_) => "operation",
             ast::Definition::FragmentDefinition(_) => "fragment",
@@ -219,7 +228,7 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
             ast::Definition::OperationDefinition(_) => &mut operation_scope,
             ast::Definition::FragmentDefinition(_) => &mut fragment_scope,
             ast::Definition::DirectiveDefinition(_) => &mut directive_scope,
-            _ => &mut default_scope,
+            _ => &mut type_scope,
         };
 
         if let Some(name_node) = ast_def.name() {
