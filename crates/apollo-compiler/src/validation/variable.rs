@@ -97,7 +97,6 @@ pub fn validate_unused_variables(
         .collect();
     let used_vars: HashSet<ValidationSet> = op
         .selection_set
-        .clone()
         .selection()
         .iter()
         .flat_map(|sel| {
