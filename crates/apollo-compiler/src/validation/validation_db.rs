@@ -211,12 +211,12 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
             ast::Definition::FragmentDefinition(_) => "fragment",
             ast::Definition::DirectiveDefinition(_) => "directive",
             ast::Definition::SchemaDefinition(_) => "schema",
-            ast::Definition::ScalarTypeDefinition(_) => "scalar",
-            ast::Definition::ObjectTypeDefinition(_) => "object",
-            ast::Definition::InterfaceTypeDefinition(_) => "interface",
-            ast::Definition::UnionTypeDefinition(_) => "union",
-            ast::Definition::EnumTypeDefinition(_) => "enum",
-            ast::Definition::InputObjectTypeDefinition(_) => "input object",
+            ast::Definition::ScalarTypeDefinition(_)
+            | ast::Definition::ObjectTypeDefinition(_)
+            | ast::Definition::InterfaceTypeDefinition(_)
+            | ast::Definition::UnionTypeDefinition(_)
+            | ast::Definition::EnumTypeDefinition(_)
+            | ast::Definition::InputObjectTypeDefinition(_) => "type",
             ast::Definition::SchemaExtension(_)
             | ast::Definition::ScalarTypeExtension(_)
             | ast::Definition::ObjectTypeExtension(_)

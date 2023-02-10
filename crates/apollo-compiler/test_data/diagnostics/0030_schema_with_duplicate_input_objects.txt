@@ -36,7 +36,7 @@
             "`Point2D` must only be defined once in this document.",
         ),
         data: UniqueDefinition {
-            ty: "input object",
+            ty: "type",
             name: "Point2D",
             original_definition: DiagnosticLocation {
                 file_id: FileId {

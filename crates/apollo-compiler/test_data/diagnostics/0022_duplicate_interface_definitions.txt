@@ -36,7 +36,7 @@
             "`NamedEntity` must only be defined once in this document.",
         ),
         data: UniqueDefinition {
-            ty: "interface",
+            ty: "type",
             name: "NamedEntity",
             original_definition: DiagnosticLocation {
                 file_id: FileId {

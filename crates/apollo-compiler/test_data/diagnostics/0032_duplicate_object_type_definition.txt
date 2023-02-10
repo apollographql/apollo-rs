@@ -36,7 +36,7 @@
             "`Query` must only be defined once in this document.",
         ),
         data: UniqueDefinition {
-            ty: "object",
+            ty: "type",
             name: "Query",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
