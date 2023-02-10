@@ -2,8 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
-    ValidationDatabase,
+    hir, ValidationDatabase,
 };
 
 pub fn validate_input_object_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {

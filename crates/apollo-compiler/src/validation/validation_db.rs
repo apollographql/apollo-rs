@@ -6,8 +6,8 @@ use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::*,
     validation::{
-        argument, directive, enum_, fragment, input_object, interface,
-        object, operation, scalar, schema, selection, union_, variable,
+        argument, directive, enum_, fragment, input_object, interface, object, operation, scalar,
+        schema, selection, union_, variable,
     },
     AstDatabase, FileId, HirDatabase, InputDatabase,
 };
@@ -192,7 +192,8 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
     let mut directive_scope = HashMap::new();
     let mut type_scope = HashMap::new();
 
-    let all_types = db.type_definition_files()
+    let all_types = db
+        .type_definition_files()
         .into_iter()
         .flat_map(move |file_id| {
             db.ast(file_id)
@@ -216,13 +217,13 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
             ast::Definition::UnionTypeDefinition(_) => "union",
             ast::Definition::EnumTypeDefinition(_) => "enum",
             ast::Definition::InputObjectTypeDefinition(_) => "input object",
-            ast::Definition::SchemaExtension(_) => unreachable!(),
-            ast::Definition::ScalarTypeExtension(_) => unreachable!(),
-            ast::Definition::ObjectTypeExtension(_) => unreachable!(),
-            ast::Definition::InterfaceTypeExtension(_) => unreachable!(),
-            ast::Definition::UnionTypeExtension(_) => unreachable!(),
-            ast::Definition::EnumTypeExtension(_) => unreachable!(),
-            ast::Definition::InputObjectTypeExtension(_) => unreachable!(),
+            ast::Definition::SchemaExtension(_)
+            | ast::Definition::ScalarTypeExtension(_)
+            | ast::Definition::ObjectTypeExtension(_)
+            | ast::Definition::InterfaceTypeExtension(_)
+            | ast::Definition::UnionTypeExtension(_)
+            | ast::Definition::EnumTypeExtension(_)
+            | ast::Definition::InputObjectTypeExtension(_) => unreachable!(),
         };
         let scope = match ast_def {
             ast::Definition::OperationDefinition(_) => &mut operation_scope,

@@ -2,8 +2,7 @@ use std::collections::HashSet;
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
-    ValidationDatabase,
+    hir, ValidationDatabase,
 };
 
 pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
