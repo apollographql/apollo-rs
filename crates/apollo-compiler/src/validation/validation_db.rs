@@ -6,8 +6,8 @@ use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::*,
     validation::{
-        argument, directive, enum_, fragment, input_object, interface, object, operation, scalar,
-        schema, selection, union_, variable,
+        argument, directive, enum_, extension, fragment, input_object, interface, object,
+        operation, scalar, schema, selection, union_, variable,
     },
     AstDatabase, FileId, HirDatabase, InputDatabase,
 };
@@ -108,6 +108,9 @@ pub trait ValidationDatabase:
 
     #[salsa::invoke(object::validate_object_type_definitions)]
     fn validate_object_type_definitions(&self) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(extension::validate_extensions)]
+    fn validate_extensions(&self) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(operation::validate_subscription_operations)]
     fn validate_subscription_operations(
@@ -294,6 +297,8 @@ pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
     diagnostics.extend(db.validate_directive_definitions());
     diagnostics.extend(db.validate_input_object_definitions());
     diagnostics.extend(db.validate_object_type_definitions());
+
+    diagnostics.extend(db.validate_extensions());
 
     diagnostics
 }

@@ -3,6 +3,7 @@ mod validation_db;
 mod argument;
 mod directive;
 mod enum_;
+mod extension;
 mod field;
 mod fragment;
 mod input_object;

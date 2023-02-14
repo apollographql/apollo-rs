@@ -143,6 +143,81 @@ impl TypeDefinition {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum TypeExtension {
+    ScalarTypeExtension(Arc<ScalarTypeExtension>),
+    ObjectTypeExtension(Arc<ObjectTypeExtension>),
+    InterfaceTypeExtension(Arc<InterfaceTypeExtension>),
+    UnionTypeExtension(Arc<UnionTypeExtension>),
+    EnumTypeExtension(Arc<EnumTypeExtension>),
+    InputObjectTypeExtension(Arc<InputObjectTypeExtension>),
+}
+
+impl TypeExtension {
+    pub fn name(&self) -> &str {
+        match self {
+            Self::ScalarTypeExtension(def) => def.name(),
+            Self::ObjectTypeExtension(def) => def.name(),
+            Self::InterfaceTypeExtension(def) => def.name(),
+            Self::UnionTypeExtension(def) => def.name(),
+            Self::EnumTypeExtension(def) => def.name(),
+            Self::InputObjectTypeExtension(def) => def.name(),
+        }
+    }
+
+    pub fn name_src(&self) -> &Name {
+        match self {
+            Self::ScalarTypeExtension(def) => def.name_src(),
+            Self::ObjectTypeExtension(def) => def.name_src(),
+            Self::InterfaceTypeExtension(def) => def.name_src(),
+            Self::UnionTypeExtension(def) => def.name_src(),
+            Self::EnumTypeExtension(def) => def.name_src(),
+            Self::InputObjectTypeExtension(def) => def.name_src(),
+        }
+    }
+
+    pub fn kind(&self) -> &'static str {
+        match self {
+            Self::ScalarTypeExtension(_) => "ScalarTypeExtension",
+            Self::ObjectTypeExtension(_) => "ObjectTypeExtension",
+            Self::InterfaceTypeExtension(_) => "InterfaceTypeExtension",
+            Self::UnionTypeExtension(_) => "UnionTypeExtension",
+            Self::EnumTypeExtension(_) => "EnumTypeExtension",
+            Self::InputObjectTypeExtension(_) => "InputObjectTypeExtension",
+        }
+    }
+
+    pub fn directives(&self) -> &[Directive] {
+        match self {
+            Self::ScalarTypeExtension(def) => def.directives(),
+            Self::ObjectTypeExtension(def) => def.directives(),
+            Self::InterfaceTypeExtension(def) => def.directives(),
+            Self::UnionTypeExtension(def) => def.directives(),
+            Self::EnumTypeExtension(def) => def.directives(),
+            Self::InputObjectTypeExtension(def) => def.directives(),
+        }
+    }
+
+    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
+        match self {
+            Self::ObjectTypeExtension(def) => def.field(name),
+            Self::InterfaceTypeExtension(def) => def.field(name),
+            _ => None,
+        }
+    }
+
+    pub fn loc(&self) -> HirNodeLocation {
+        match self {
+            Self::ObjectTypeExtension(def) => def.loc(),
+            Self::InterfaceTypeExtension(def) => def.loc(),
+            Self::UnionTypeExtension(def) => def.loc(),
+            Self::EnumTypeExtension(def) => def.loc(),
+            Self::InputObjectTypeExtension(def) => def.loc(),
+            Self::ScalarTypeExtension(def) => def.loc(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct FragmentDefinition {
     pub(crate) name: Name,
@@ -1172,7 +1247,7 @@ pub struct SchemaDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) root_operation_type_definition: Arc<Vec<RootOperationTypeDefinition>>,
     pub(crate) loc: Option<HirNodeLocation>,
-    pub(crate) extensions: Vec<SchemaExtension>,
+    pub(crate) extensions: Vec<Arc<SchemaExtension>>,
 }
 
 impl SchemaDefinition {
@@ -1199,7 +1274,7 @@ impl SchemaDefinition {
     }
 
     /// Extensions that apply to this definition
-    pub fn extensions(&self) -> &[SchemaExtension] {
+    pub fn extensions(&self) -> &[Arc<SchemaExtension>] {
         &self.extensions
     }
 
@@ -1290,7 +1365,7 @@ pub struct ObjectTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
     pub(crate) loc: HirNodeLocation,
-    pub(crate) extensions: Vec<ObjectTypeExtension>,
+    pub(crate) extensions: Vec<Arc<ObjectTypeExtension>>,
 }
 
 impl ObjectTypeDefinition {
@@ -1335,7 +1410,7 @@ impl ObjectTypeDefinition {
     }
 
     /// Extensions that apply to this definition
-    pub fn extensions(&self) -> &[ObjectTypeExtension] {
+    pub fn extensions(&self) -> &[Arc<ObjectTypeExtension>] {
         &self.extensions
     }
 }
@@ -1481,7 +1556,7 @@ pub struct ScalarTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) built_in: bool,
     pub(crate) loc: Option<HirNodeLocation>,
-    pub(crate) extensions: Vec<ScalarTypeExtension>,
+    pub(crate) extensions: Vec<Arc<ScalarTypeExtension>>,
 }
 
 impl ScalarTypeDefinition {
@@ -1518,7 +1593,7 @@ impl ScalarTypeDefinition {
     }
 
     /// Extensions that apply to this definition
-    pub fn extensions(&self) -> &[ScalarTypeExtension] {
+    pub fn extensions(&self) -> &[Arc<ScalarTypeExtension>] {
         &self.extensions
     }
 }
@@ -1530,7 +1605,7 @@ pub struct EnumTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) enum_values_definition: Arc<Vec<EnumValueDefinition>>,
     pub(crate) loc: HirNodeLocation,
-    pub(crate) extensions: Vec<EnumTypeExtension>,
+    pub(crate) extensions: Vec<Arc<EnumTypeExtension>>,
 }
 
 impl EnumTypeDefinition {
@@ -1565,7 +1640,7 @@ impl EnumTypeDefinition {
     }
 
     /// Extensions that apply to this definition
-    pub fn extensions(&self) -> &[EnumTypeExtension] {
+    pub fn extensions(&self) -> &[Arc<EnumTypeExtension>] {
         &self.extensions
     }
 }
@@ -1602,7 +1677,7 @@ pub struct UnionTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) union_members: Arc<Vec<UnionMember>>,
     pub(crate) loc: HirNodeLocation,
-    pub(crate) extensions: Vec<UnionTypeExtension>,
+    pub(crate) extensions: Vec<Arc<UnionTypeExtension>>,
 }
 
 impl UnionTypeDefinition {
@@ -1637,7 +1712,7 @@ impl UnionTypeDefinition {
     }
 
     /// Extensions that apply to this definition
-    pub fn extensions(&self) -> &[UnionTypeExtension] {
+    pub fn extensions(&self) -> &[Arc<UnionTypeExtension>] {
         &self.extensions
     }
 }
@@ -1673,7 +1748,7 @@ pub struct InterfaceTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
     pub(crate) loc: HirNodeLocation,
-    pub(crate) extensions: Vec<InterfaceTypeExtension>,
+    pub(crate) extensions: Vec<Arc<InterfaceTypeExtension>>,
 }
 
 impl InterfaceTypeDefinition {
@@ -1718,7 +1793,7 @@ impl InterfaceTypeDefinition {
     }
 
     /// Extensions that apply to this definition
-    pub fn extensions(&self) -> &[InterfaceTypeExtension] {
+    pub fn extensions(&self) -> &[Arc<InterfaceTypeExtension>] {
         &self.extensions
     }
 }
@@ -1730,7 +1805,7 @@ pub struct InputObjectTypeDefinition {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) input_fields_definition: Arc<Vec<InputValueDefinition>>,
     pub(crate) loc: HirNodeLocation,
-    pub(crate) extensions: Vec<InputObjectTypeExtension>,
+    pub(crate) extensions: Vec<Arc<InputObjectTypeExtension>>,
 }
 
 impl InputObjectTypeDefinition {
@@ -1765,7 +1840,7 @@ impl InputObjectTypeDefinition {
     }
 
     /// Extensions that apply to this definition
-    pub fn extensions(&self) -> &[InputObjectTypeExtension] {
+    pub fn extensions(&self) -> &[Arc<InputObjectTypeExtension>] {
         &self.extensions
     }
 }

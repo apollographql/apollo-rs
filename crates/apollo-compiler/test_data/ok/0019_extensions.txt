@@ -1,0 +1,244 @@
+- DOCUMENT@0..451
+    - SCALAR_TYPE_DEFINITION@0..60
+        - scalar_KW@0..6 "scalar"
+        - WHITESPACE@6..7 " "
+        - NAME@7..13
+            - IDENT@7..13 "Scalar"
+        - WHITESPACE@13..14 " "
+        - DIRECTIVES@14..60
+            - DIRECTIVE@14..60
+                - AT@14..15 "@"
+                - NAME@15..26
+                    - IDENT@15..26 "specifiedBy"
+                - ARGUMENTS@26..60
+                    - L_PAREN@26..27 "("
+                    - ARGUMENT@27..59
+                        - NAME@27..30
+                            - IDENT@27..30 "url"
+                        - COLON@30..31 ":"
+                        - WHITESPACE@31..32 " "
+                        - STRING_VALUE@32..59
+                            - STRING@32..59 "\"https://apollographql.com\""
+                    - R_PAREN@59..60 ")"
+    - WHITESPACE@60..62 "\n\n"
+    - OBJECT_TYPE_DEFINITION@62..107
+        - type_KW@62..66 "type"
+        - WHITESPACE@66..67 " "
+        - NAME@67..73
+            - IDENT@67..73 "Object"
+        - WHITESPACE@73..74 " "
+        - IMPLEMENTS_INTERFACES@74..89
+            - implements_KW@74..84 "implements"
+            - WHITESPACE@84..85 " "
+            - NAMED_TYPE@85..89
+                - NAME@85..89
+                    - IDENT@85..89 "Intf"
+        - WHITESPACE@89..90 " "
+        - FIELDS_DEFINITION@90..107
+            - L_CURLY@90..91 "{"
+            - WHITESPACE@91..94 "\n  "
+            - FIELD_DEFINITION@94..104
+                - NAME@94..99
+                    - IDENT@94..99 "field"
+                - COLON@99..100 ":"
+                - WHITESPACE@100..101 " "
+                - NAMED_TYPE@101..104
+                    - NAME@101..104
+                        - IDENT@101..104 "Int"
+            - COMMA@104..105 ","
+            - WHITESPACE@105..106 "\n"
+            - R_CURLY@106..107 "}"
+    - WHITESPACE@107..109 "\n\n"
+    - INTERFACE_TYPE_DEFINITION@109..141
+        - interface_KW@109..118 "interface"
+        - WHITESPACE@118..119 " "
+        - NAME@119..123
+            - IDENT@119..123 "Intf"
+        - WHITESPACE@123..124 " "
+        - FIELDS_DEFINITION@124..141
+            - L_CURLY@124..125 "{"
+            - WHITESPACE@125..128 "\n  "
+            - FIELD_DEFINITION@128..138
+                - NAME@128..133
+                    - IDENT@128..133 "field"
+                - COLON@133..134 ":"
+                - WHITESPACE@134..135 " "
+                - NAMED_TYPE@135..138
+                    - NAME@135..138
+                        - IDENT@135..138 "Int"
+            - COMMA@138..139 ","
+            - WHITESPACE@139..140 "\n"
+            - R_CURLY@140..141 "}"
+    - WHITESPACE@141..143 "\n\n"
+    - INPUT_OBJECT_TYPE_DEFINITION@143..173
+        - input_KW@143..148 "input"
+        - WHITESPACE@148..149 " "
+        - NAME@149..154
+            - IDENT@149..154 "Input"
+        - WHITESPACE@154..155 " "
+        - INPUT_FIELDS_DEFINITION@155..173
+            - L_CURLY@155..156 "{"
+            - WHITESPACE@156..159 "\n  "
+            - INPUT_VALUE_DEFINITION@159..170
+                - NAME@159..164
+                    - IDENT@159..164 "field"
+                - COLON@164..165 ":"
+                - WHITESPACE@165..166 " "
+                - NAMED_TYPE@166..170
+                    - NAME@166..170
+                        - IDENT@166..170 "Enum"
+            - COMMA@170..171 ","
+            - WHITESPACE@171..172 "\n"
+            - R_CURLY@172..173 "}"
+    - WHITESPACE@173..174 "\n"
+    - ENUM_TYPE_DEFINITION@174..197
+        - enum_KW@174..178 "enum"
+        - WHITESPACE@178..179 " "
+        - NAME@179..183
+            - IDENT@179..183 "Enum"
+        - WHITESPACE@183..184 " "
+        - ENUM_VALUES_DEFINITION@184..197
+            - L_CURLY@184..185 "{"
+            - WHITESPACE@185..188 "\n  "
+            - ENUM_VALUE_DEFINITION@188..194
+                - ENUM_VALUE@188..194
+                    - NAME@188..194
+                        - IDENT@188..194 "MEMBER"
+            - COMMA@194..195 ","
+            - WHITESPACE@195..196 "\n"
+            - R_CURLY@196..197 "}"
+    - WHITESPACE@197..199 "\n\n"
+    - SCALAR_TYPE_EXTENSION@199..260
+        - extend_KW@199..205 "extend"
+        - WHITESPACE@205..206 " "
+        - scalar_KW@206..212 "scalar"
+        - WHITESPACE@212..213 " "
+        - NAME@213..219
+            - IDENT@213..219 "Scalar"
+        - WHITESPACE@219..220 " "
+        - DIRECTIVES@220..260
+            - DIRECTIVE@220..260
+                - AT@220..221 "@"
+                - NAME@221..231
+                    - IDENT@221..231 "deprecated"
+                - ARGUMENTS@231..260
+                    - L_PAREN@231..232 "("
+                    - ARGUMENT@232..259
+                        - NAME@232..238
+                            - IDENT@232..238 "reason"
+                        - COLON@238..239 ":"
+                        - WHITESPACE@239..240 " "
+                        - STRING_VALUE@240..259
+                            - STRING@240..259 "\"do something else\""
+                    - R_PAREN@259..260 ")"
+    - WHITESPACE@260..261 "\n"
+    - INTERFACE_TYPE_EXTENSION@261..304
+        - extend_KW@261..267 "extend"
+        - WHITESPACE@267..268 " "
+        - interface_KW@268..277 "interface"
+        - WHITESPACE@277..278 " "
+        - NAME@278..282
+            - IDENT@278..282 "Intf"
+        - WHITESPACE@282..283 " "
+        - FIELDS_DEFINITION@283..304
+            - L_CURLY@283..284 "{"
+            - WHITESPACE@284..287 "\n  "
+            - FIELD_DEFINITION@287..301
+                - NAME@287..293
+                    - IDENT@287..293 "field2"
+                - COLON@293..294 ":"
+                - WHITESPACE@294..295 " "
+                - NAMED_TYPE@295..301
+                    - NAME@295..301
+                        - IDENT@295..301 "Scalar"
+            - COMMA@301..302 ","
+            - WHITESPACE@302..303 "\n"
+            - R_CURLY@303..304 "}"
+    - WHITESPACE@304..305 "\n"
+    - OBJECT_TYPE_EXTENSION@305..345
+        - extend_KW@305..311 "extend"
+        - WHITESPACE@311..312 " "
+        - type_KW@312..316 "type"
+        - WHITESPACE@316..317 " "
+        - NAME@317..323
+            - IDENT@317..323 "Object"
+        - WHITESPACE@323..324 " "
+        - FIELDS_DEFINITION@324..345
+            - L_CURLY@324..325 "{"
+            - WHITESPACE@325..328 "\n  "
+            - FIELD_DEFINITION@328..342
+                - NAME@328..334
+                    - IDENT@328..334 "field2"
+                - COLON@334..335 ":"
+                - WHITESPACE@335..336 " "
+                - NAMED_TYPE@336..342
+                    - NAME@336..342
+                        - IDENT@336..342 "Scalar"
+            - COMMA@342..343 ","
+            - WHITESPACE@343..344 "\n"
+            - R_CURLY@344..345 "}"
+    - WHITESPACE@345..346 "\n"
+    - ENUM_TYPE_EXTENSION@346..378
+        - extend_KW@346..352 "extend"
+        - WHITESPACE@352..353 " "
+        - enum_KW@353..357 "enum"
+        - WHITESPACE@357..358 " "
+        - NAME@358..362
+            - IDENT@358..362 "Enum"
+        - WHITESPACE@362..363 " "
+        - ENUM_VALUES_DEFINITION@363..378
+            - L_CURLY@363..364 "{"
+            - WHITESPACE@364..367 "\n  "
+            - ENUM_VALUE_DEFINITION@367..375
+                - ENUM_VALUE@367..375
+                    - NAME@367..375
+                        - IDENT@367..375 "MEMBER_2"
+            - COMMA@375..376 ","
+            - WHITESPACE@376..377 "\n"
+            - R_CURLY@377..378 "}"
+    - WHITESPACE@378..379 "\n"
+    - INPUT_OBJECT_TYPE_EXTENSION@379..416
+        - extend_KW@379..385 "extend"
+        - WHITESPACE@385..386 " "
+        - input_KW@386..391 "input"
+        - WHITESPACE@391..392 " "
+        - NAME@392..397
+            - IDENT@392..397 "Input"
+        - WHITESPACE@397..398 " "
+        - INPUT_FIELDS_DEFINITION@398..416
+            - L_CURLY@398..399 "{"
+            - WHITESPACE@399..402 "\n  "
+            - INPUT_VALUE_DEFINITION@402..413
+                - NAME@402..408
+                    - IDENT@402..408 "field2"
+                - COLON@408..409 ":"
+                - WHITESPACE@409..410 " "
+                - NAMED_TYPE@410..413
+                    - NAME@410..413
+                        - IDENT@410..413 "Int"
+            - COMMA@413..414 ","
+            - WHITESPACE@414..415 "\n"
+            - R_CURLY@415..416 "}"
+    - WHITESPACE@416..418 "\n\n"
+    - OBJECT_TYPE_DEFINITION@418..450
+        - type_KW@418..422 "type"
+        - WHITESPACE@422..423 " "
+        - NAME@423..428
+            - IDENT@423..428 "Query"
+        - WHITESPACE@428..429 " "
+        - FIELDS_DEFINITION@429..450
+            - L_CURLY@429..430 "{"
+            - WHITESPACE@430..433 "\n  "
+            - FIELD_DEFINITION@433..447
+                - NAME@433..439
+                    - IDENT@433..439 "object"
+                - COLON@439..440 ":"
+                - WHITESPACE@440..441 " "
+                - NAMED_TYPE@441..447
+                    - NAME@441..447
+                        - IDENT@441..447 "Object"
+            - COMMA@447..448 ","
+            - WHITESPACE@448..449 "\n"
+            - R_CURLY@449..450 "}"
+    - WHITESPACE@450..451 "\n"
+recursion limit: 4096, high: 0

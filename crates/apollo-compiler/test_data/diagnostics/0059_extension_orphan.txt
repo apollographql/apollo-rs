@@ -1,0 +1,170 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            59: "0059_extension_orphan.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 59,
+            },
+            offset: 25,
+            length: 52,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 59,
+                    },
+                    offset: 39,
+                    length: 1,
+                },
+                text: "a type definition named `A` does not exist",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "A",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            59: "0059_extension_orphan.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 59,
+            },
+            offset: 78,
+            length: 29,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 59,
+                    },
+                    offset: 90,
+                    length: 1,
+                },
+                text: "a type definition named `B` does not exist",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "B",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            59: "0059_extension_orphan.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 59,
+            },
+            offset: 141,
+            length: 23,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 59,
+                    },
+                    offset: 154,
+                    length: 1,
+                },
+                text: "a type definition named `C` does not exist",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "C",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            59: "0059_extension_orphan.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 59,
+            },
+            offset: 165,
+            length: 35,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 59,
+                    },
+                    offset: 182,
+                    length: 1,
+                },
+                text: "a type definition named `D` does not exist",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "D",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            59: "0059_extension_orphan.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 59,
+            },
+            offset: 201,
+            length: 31,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 59,
+                    },
+                    offset: 214,
+                    length: 1,
+                },
+                text: "a type definition named `E` does not exist",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "E",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            59: "0059_extension_orphan.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 59,
+            },
+            offset: 233,
+            length: 26,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 59,
+                    },
+                    offset: 245,
+                    length: 1,
+                },
+                text: "a type definition named `F` does not exist",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "F",
+        },
+    },
+]
