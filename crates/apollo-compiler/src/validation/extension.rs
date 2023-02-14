@@ -1,6 +1,6 @@
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
+    hir::{TypeDefinition, TypeExtension},
     validation::ValidationDatabase,
 };
 
@@ -28,30 +28,20 @@ pub fn validate_extensions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic>
         };
 
         match (definition, extension) {
-            (
-                hir::TypeDefinition::ScalarTypeDefinition(_def),
-                hir::TypeExtension::ScalarTypeExtension(_ext),
-            ) => (),
-            (
-                hir::TypeDefinition::ObjectTypeDefinition(_def),
-                hir::TypeExtension::ObjectTypeExtension(_ext),
-            ) => (),
-            (
-                hir::TypeDefinition::InterfaceTypeDefinition(_def),
-                hir::TypeExtension::InterfaceTypeExtension(_ext),
-            ) => (),
-            (
-                hir::TypeDefinition::UnionTypeDefinition(_def),
-                hir::TypeExtension::UnionTypeExtension(_ext),
-            ) => (),
-            (
-                hir::TypeDefinition::EnumTypeDefinition(_def),
-                hir::TypeExtension::EnumTypeExtension(_ext),
-            ) => (),
-            (
-                hir::TypeDefinition::InputObjectTypeDefinition(_def),
-                hir::TypeExtension::InputObjectTypeExtension(_ext),
-            ) => (),
+            (TypeDefinition::ScalarTypeDefinition(_), TypeExtension::ScalarTypeExtension(_))
+            | (TypeDefinition::ObjectTypeDefinition(_), TypeExtension::ObjectTypeExtension(_))
+            | (
+                TypeDefinition::InterfaceTypeDefinition(_),
+                TypeExtension::InterfaceTypeExtension(_),
+            )
+            | (TypeDefinition::UnionTypeDefinition(_), TypeExtension::UnionTypeExtension(_))
+            | (TypeDefinition::EnumTypeDefinition(_), TypeExtension::EnumTypeExtension(_))
+            | (
+                TypeDefinition::InputObjectTypeDefinition(_),
+                TypeExtension::InputObjectTypeExtension(_),
+            ) => {
+                // Definition/extension kinds are the same
+            }
             (definition, extension) => {
                 let mut diagnostic = ApolloDiagnostic::new(
                     db,
@@ -74,8 +64,7 @@ pub fn validate_extensions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic>
                     ),
                 ));
                 if let Some(def_loc) = definition.loc() {
-                    diagnostic =
-                        diagnostic.label(Label::new(def_loc, format!("original type defined here")))
+                    diagnostic = diagnostic.label(Label::new(def_loc, "original type defined here"))
                 }
                 diagnostics.push(diagnostic);
             }
