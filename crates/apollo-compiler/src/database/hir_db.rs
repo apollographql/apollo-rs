@@ -376,13 +376,14 @@ macro_rules! by_name {
 }
 
 macro_rules! by_name_extensible {
-    ($db: ident, $convert: expr, $convert_extension: expr) => {{
+    ($db: ident, $convert: expr, $extension_type: ident) => {{
         let mut map = by_name!($db, $convert);
-        for ext in type_definitions($db, $convert_extension) {
-            if let Some(def) = map.get_mut(ext.name()) {
-                Arc::get_mut(def).unwrap().extensions.push(ext)
-            } else {
-                // TODO: record orphan extensions for validation purpose?
+        for ext in $db.extensions().iter() {
+            // Orphan or incorrect extensions are reported by validation.
+            if let TypeExtension::$extension_type(ext) = ext {
+                if let Some(def) = map.get_mut(ext.name()) {
+                    Arc::get_mut(def).unwrap().extensions.push(Arc::clone(ext))
+                }
             }
         }
         map
@@ -397,7 +398,7 @@ fn object_types(db: &dyn HirDatabase) -> ByName<ObjectTypeDefinition> {
     Arc::new(by_name_extensible!(
         db,
         object_type_definition,
-        object_type_extension
+        ObjectTypeExtension
     ))
 }
 
@@ -409,7 +410,7 @@ fn scalars(db: &dyn HirDatabase) -> ByName<ScalarTypeDefinition> {
     Arc::new(built_in_scalars(by_name_extensible!(
         db,
         scalar_definition,
-        scalar_extension
+        ScalarTypeExtension
     )))
 }
 
@@ -418,7 +419,7 @@ fn enums(db: &dyn HirDatabase) -> ByName<EnumTypeDefinition> {
         // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
         return precomputed.definitions.enums.clone();
     }
-    Arc::new(by_name_extensible!(db, enum_definition, enum_extension))
+    Arc::new(by_name_extensible!(db, enum_definition, EnumTypeExtension))
 }
 
 fn unions(db: &dyn HirDatabase) -> ByName<UnionTypeDefinition> {
@@ -426,14 +427,18 @@ fn unions(db: &dyn HirDatabase) -> ByName<UnionTypeDefinition> {
         // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
         return precomputed.definitions.unions.clone();
     }
-    Arc::new(by_name_extensible!(db, union_definition, union_extension))
+    Arc::new(by_name_extensible!(
+        db,
+        union_definition,
+        UnionTypeExtension
+    ))
 }
 
 fn interfaces(db: &dyn HirDatabase) -> ByName<InterfaceTypeDefinition> {
     Arc::new(by_name_extensible!(
         db,
         interface_definition,
-        interface_extension
+        InterfaceTypeExtension
     ))
 }
 
@@ -445,7 +450,7 @@ fn input_objects(db: &dyn HirDatabase) -> ByName<InputObjectTypeDefinition> {
     Arc::new(by_name_extensible!(
         db,
         input_object_definition,
-        input_object_extension
+        InputObjectTypeExtension
     ))
 }
 
