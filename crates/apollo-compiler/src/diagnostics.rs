@@ -235,7 +235,7 @@ pub enum DiagnosticData {
     BuiltInScalarDefinition,
     #[error("unused variable: `{name}`")]
     UnusedVariable { name: String },
-    #[error("`{name}` field must return an output type")]
+    #[error("`{name}` field must return an object type")]
     ObjectType {
         // union member
         name: String,
@@ -301,6 +301,3 @@ impl ApolloDiagnostic {
         builder.finish()
     }
 }
-
-/* Stash: new diagnostic
-*/

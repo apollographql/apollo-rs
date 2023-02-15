@@ -1004,15 +1004,19 @@ fn root_operation_type_definition(
     let type_defs: Vec<RootOperationTypeDefinition> = root_type_def
         .into_iter()
         .filter_map(|ty| {
-            let operation_type = operation_type(ty.operation_type());
-            let named_type = named_type(ty.named_type()?.name()?, file_id);
-            let loc = location(file_id, ty.syntax());
+            if let Some(named_ty) = ty.named_type() {
+                let operation_type = operation_type(ty.operation_type());
+                let named_type = named_type(named_ty.name()?, file_id);
+                let loc = location(file_id, ty.syntax());
 
-            Some(RootOperationTypeDefinition {
-                operation_ty: operation_type,
-                named_type,
-                loc: Some(loc),
-            })
+                Some(RootOperationTypeDefinition {
+                    operation_ty: operation_type,
+                    named_type,
+                    loc: Some(loc),
+                })
+            } else {
+                None
+            }
         })
         .collect();
 

@@ -91,26 +91,33 @@ pub fn validate_root_operation_definitions(
         let type_def = db.find_type_definition_by_name(op_type.named_type().name());
         if let Some(type_def) = type_def {
             if !type_def.is_object_type_definition() {
-                let offset = op_type.loc().unwrap().offset();
-                let node_len = op_type.loc().unwrap().node_len();
-
-                diagnostics.push(ApolloDiagnostic::ObjectType(ObjectType {
-                    name: op_type.named_type().name(),
-                    ty: type_def.ty(),
-                    src: db.source_code(op_type.loc().unwrap().file_id()),
-                    definition: (offset, node_len).into(),
-                    help: "root operation type must be of an Object Type.".into(),
-                }))
+                if let Some(op_loc) = op_type.loc() {
+                    let kind = type_def.kind();
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            op_loc.into(),
+                            DiagnosticData::ObjectType {
+                                name: op_type.named_type().name(),
+                                ty: kind,
+                            },
+                        )
+                        .label(Label::new(op_loc, format!("This is of `{kind}` type")))
+                        .help("root operation type must be of an Object Type"),
+                    );
+                }
             }
-        } else if op_type.loc().is_some() {
-            let offset = op_type.loc().unwrap().offset();
-            let node_len = op_type.loc().unwrap().node_len();
-
-            diagnostics.push(ApolloDiagnostic::UndefinedDefinition(UndefinedDefinition {
-                ty: op_type.named_type().name(),
-                src: db.source_code(op_type.loc().unwrap().file_id()),
-                definition: (offset, node_len).into(),
-            }))
+        } else if let Some(op_loc) = op_type.loc() {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    op_loc.into(),
+                    DiagnosticData::UndefinedDefinition {
+                        name: op_type.named_type().name(),
+                    },
+                )
+                .label(Label::new(op_loc, "not found in this scope")),
+            );
         }
     }
 
