@@ -21,7 +21,7 @@ pub fn validate_extensions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic>
                 ApolloDiagnostic::new(db, extension.loc().into(), DiagnosticData::UndefinedDefinition {
                     name: extension.name().into(),
                 })
-                .label(Label::new(extension.name_src().loc.unwrap(), format!("a type definition named `{}` does not exist", extension.name()))),
+                .label(Label::new(extension.name_src().loc.unwrap(), format!("`{}` type definition does not exist", extension.name()))),
             );
 
             continue;
