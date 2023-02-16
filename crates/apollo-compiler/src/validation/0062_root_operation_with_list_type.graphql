@@ -1,0 +1,6 @@
+schema {
+  query: [Object]
+}
+type Object {
+  field: Int
+}

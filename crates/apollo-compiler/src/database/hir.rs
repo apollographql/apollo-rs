@@ -141,6 +141,53 @@ impl TypeDefinition {
             Self::ScalarTypeDefinition(def) => def.loc(),
         }
     }
+    /// Returns `true` if the type definition is [`ScalarTypeDefinition`].
+    ///
+    /// [`ScalarTypeDefinition`]: TypeDefinition::ScalarTypeDefinition
+    #[must_use]
+    pub fn is_scalar_type_definition(&self) -> bool {
+        matches!(self, Self::ScalarTypeDefinition(..))
+    }
+
+    /// Returns `true` if the type definition is [`ObjectTypeDefinition`].
+    ///
+    /// [`ObjectTypeDefinition`]: TypeDefinition::ObjectTypeDefinition
+    #[must_use]
+    pub fn is_object_type_definition(&self) -> bool {
+        matches!(self, Self::ObjectTypeDefinition(..))
+    }
+
+    /// Returns `true` if the type definition is [`InterfaceTypeDefinition`].
+    ///
+    /// [`InterfaceTypeDefinition`]: TypeDefinition::InterfaceTypeDefinition
+    #[must_use]
+    pub fn is_interface_type_definition(&self) -> bool {
+        matches!(self, Self::InterfaceTypeDefinition(..))
+    }
+
+    /// Returns `true` if the type definition is [`UnionTypeDefinition`].
+    ///
+    /// [`UnionTypeDefinition`]: TypeDefinition::UnionTypeDefinition
+    #[must_use]
+    pub fn is_union_type_definition(&self) -> bool {
+        matches!(self, Self::UnionTypeDefinition(..))
+    }
+
+    /// Returns `true` if the type definition is [`EnumTypeDefinition`].
+    ///
+    /// [`EnumTypeDefinition`]: TypeDefinition::EnumTypeDefinition
+    #[must_use]
+    pub fn is_enum_type_definition(&self) -> bool {
+        matches!(self, Self::EnumTypeDefinition(..))
+    }
+
+    /// Returns `true` if the type definition is [`InputObjectTypeDefinition`].
+    ///
+    /// [`InputObjectTypeDefinition`]: TypeDefinition::InputObjectTypeDefinition
+    #[must_use]
+    pub fn is_input_object_type_definition(&self) -> bool {
+        matches!(self, Self::InputObjectTypeDefinition(..))
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]

@@ -1,0 +1,59 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            59: "0059_root_operation_object_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 59,
+            },
+            offset: 0,
+            length: 36,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 59,
+                    },
+                    offset: 0,
+                    length: 36,
+                },
+                text: "`query` root operation type must be defined here",
+            },
+        ],
+        help: None,
+        data: QueryRootOperationType,
+    },
+    ApolloDiagnostic {
+        cache: {
+            59: "0059_root_operation_object_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 59,
+            },
+            offset: 13,
+            length: 20,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 59,
+                    },
+                    offset: 13,
+                    length: 20,
+                },
+                text: "This is of `InterfaceTypeDefinition` type",
+            },
+        ],
+        help: Some(
+            "root operation type must be of an Object Type",
+        ),
+        data: ObjectType {
+            name: "SomeInterface",
+            ty: "InterfaceTypeDefinition",
+        },
+    },
+]

@@ -1,0 +1,7 @@
+schema {
+    query: SomeQuery
+}
+
+type ShouldBeTheQuery {
+    name: String
+}

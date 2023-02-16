@@ -1,3 +1,7 @@
+type Query {
+  name(arg: WithAllKindsOfFloats): String
+}
+
 input WithAllKindsOfFloats {
   a_regular_float: Float = 1.2
   an_integer_float: Float = 1234

@@ -1,0 +1,168 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            62: "0062_root_operation_with_list.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 62,
+            },
+            offset: 18,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 62,
+                    },
+                    offset: 18,
+                    length: 1,
+                },
+                text: "expected R_CURLY, got [",
+            },
+        ],
+        help: None,
+        data: SyntaxError {
+            message: "expected R_CURLY, got [",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            62: "0062_root_operation_with_list.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 62,
+            },
+            offset: 18,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 62,
+                    },
+                    offset: 18,
+                    length: 1,
+                },
+                text: "expected a StringValue, Name or OperationDefinition",
+            },
+        ],
+        help: None,
+        data: SyntaxError {
+            message: "expected a StringValue, Name or OperationDefinition",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            62: "0062_root_operation_with_list.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 62,
+            },
+            offset: 19,
+            length: 6,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 62,
+                    },
+                    offset: 19,
+                    length: 6,
+                },
+                text: "expected definition",
+            },
+        ],
+        help: None,
+        data: SyntaxError {
+            message: "expected definition",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            62: "0062_root_operation_with_list.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 62,
+            },
+            offset: 25,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 62,
+                    },
+                    offset: 25,
+                    length: 1,
+                },
+                text: "expected a StringValue, Name or OperationDefinition",
+            },
+        ],
+        help: None,
+        data: SyntaxError {
+            message: "expected a StringValue, Name or OperationDefinition",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            62: "0062_root_operation_with_list.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 62,
+            },
+            offset: 27,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 62,
+                    },
+                    offset: 27,
+                    length: 1,
+                },
+                text: "expected a StringValue, Name or OperationDefinition",
+            },
+        ],
+        help: None,
+        data: SyntaxError {
+            message: "expected a StringValue, Name or OperationDefinition",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            62: "0062_root_operation_with_list.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 62,
+            },
+            offset: 0,
+            length: 17,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 62,
+                    },
+                    offset: 0,
+                    length: 17,
+                },
+                text: "`query` root operation type must be defined here",
+            },
+        ],
+        help: None,
+        data: QueryRootOperationType,
+    },
+]
