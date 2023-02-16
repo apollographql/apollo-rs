@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            60: "0060_extension_wrong_type.graphql",
+            64: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 60,
+                id: 64,
             },
             offset: 138,
             length: 6,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 138,
                     length: 6,
@@ -32,11 +32,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            60: "0060_extension_wrong_type.graphql",
+            64: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 60,
+                id: 64,
             },
             offset: 208,
             length: 28,
@@ -45,7 +45,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 208,
                     length: 28,
@@ -55,7 +55,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 0,
                     length: 60,
@@ -69,7 +69,7 @@
             definition: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 0,
                     length: 60,
@@ -77,7 +77,7 @@
             ),
             extension: DiagnosticLocation {
                 file_id: FileId {
-                    id: 60,
+                    id: 64,
                 },
                 offset: 208,
                 length: 28,
@@ -86,11 +86,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            60: "0060_extension_wrong_type.graphql",
+            64: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 60,
+                id: 64,
             },
             offset: 237,
             length: 45,
@@ -99,7 +99,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 237,
                     length: 45,
@@ -109,7 +109,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 94,
                     length: 29,
@@ -123,7 +123,7 @@
             definition: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 94,
                     length: 29,
@@ -131,7 +131,7 @@
             ),
             extension: DiagnosticLocation {
                 file_id: FileId {
-                    id: 60,
+                    id: 64,
                 },
                 offset: 237,
                 length: 45,
@@ -140,11 +140,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            60: "0060_extension_wrong_type.graphql",
+            64: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 60,
+                id: 64,
             },
             offset: 283,
             length: 31,
@@ -153,7 +153,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 283,
                     length: 31,
@@ -163,7 +163,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 61,
                     length: 32,
@@ -177,7 +177,7 @@
             definition: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 61,
                     length: 32,
@@ -185,7 +185,7 @@
             ),
             extension: DiagnosticLocation {
                 file_id: FileId {
-                    id: 60,
+                    id: 64,
                 },
                 offset: 283,
                 length: 31,
@@ -194,11 +194,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            60: "0060_extension_wrong_type.graphql",
+            64: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 60,
+                id: 64,
             },
             offset: 315,
             length: 39,
@@ -207,7 +207,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 315,
                     length: 39,
@@ -217,7 +217,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 154,
                     length: 29,
@@ -231,7 +231,7 @@
             definition: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 154,
                     length: 29,
@@ -239,7 +239,7 @@
             ),
             extension: DiagnosticLocation {
                 file_id: FileId {
-                    id: 60,
+                    id: 64,
                 },
                 offset: 315,
                 length: 39,
@@ -248,11 +248,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            60: "0060_extension_wrong_type.graphql",
+            64: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 60,
+                id: 64,
             },
             offset: 355,
             length: 39,
@@ -261,7 +261,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 355,
                     length: 39,
@@ -271,7 +271,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 184,
                     length: 22,
@@ -285,7 +285,7 @@
             definition: Some(
                 DiagnosticLocation {
                     file_id: FileId {
-                        id: 60,
+                        id: 64,
                     },
                     offset: 184,
                     length: 22,
@@ -293,7 +293,7 @@
             ),
             extension: DiagnosticLocation {
                 file_id: FileId {
-                    id: 60,
+                    id: 64,
                 },
                 offset: 355,
                 length: 39,
