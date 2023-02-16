@@ -5,9 +5,9 @@ use crate::{Parser, SyntaxKind, TokenKind, S};
 /// *Name*:
 ///     [_A-Za-z][_0-9A-Za-z]
 pub(crate) fn name(p: &mut Parser) {
-    let _g = p.start_node(SyntaxKind::NAME);
     match p.peek() {
         Some(TokenKind::Name) => {
+            let _g = p.start_node(SyntaxKind::NAME);
             validate_name(&p.peek_data().unwrap(), p);
             p.bump(SyntaxKind::IDENT);
         }

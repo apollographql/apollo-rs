@@ -79,8 +79,10 @@ fn parse(p: &mut Parser) -> Result<(), Token> {
 /// *NamedType*:
 ///     Name
 pub(crate) fn named_type(p: &mut Parser) {
-    let _g = p.start_node(SyntaxKind::NAMED_TYPE);
-    name::name(p);
+    if let Some(TokenKind::Name) = p.peek() {
+        let _g = p.start_node(SyntaxKind::NAMED_TYPE);
+        name::name(p);
+    }
 }
 
 #[cfg(test)]
