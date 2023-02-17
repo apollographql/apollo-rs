@@ -22,7 +22,7 @@ thiserror = "1.0.30"
 
 [dev-dependencies]
 miette = { version = "3.2.0", features = ["fancy"] }
-apollo-encoder = { path = "../apollo-encoder", version = "0.4.0", features = [
+apollo-encoder = { path = "../apollo-encoder", version = "0.5.0", features = [
     "apollo-parser",
 ] }
 anyhow = "1.0.66"
