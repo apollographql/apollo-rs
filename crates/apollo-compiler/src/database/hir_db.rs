@@ -28,6 +28,9 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// on another compiler.
     fn type_system(&self) -> Arc<TypeSystem>;
 
+    /// Return all the extensions defined in the type system.
+    fn extensions(&self) -> Arc<Vec<TypeExtension>>;
+
     /// Return all the operations defined in a file.
     fn operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
@@ -242,6 +245,22 @@ fn type_system(db: &dyn HirDatabase) -> Arc<TypeSystem> {
     })
 }
 
+fn extensions(db: &dyn HirDatabase) -> Arc<Vec<TypeExtension>> {
+    let mut extensions = vec![];
+    for file_id in db.type_definition_files() {
+        extensions.extend(
+            db.ast(file_id)
+                .document()
+                .syntax()
+                .children()
+                .filter_map(ast::Definition::cast)
+                .filter_map(|def| extension(db, def, file_id)),
+        );
+    }
+
+    Arc::new(extensions)
+}
+
 fn operations(db: &dyn HirDatabase, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>> {
     Arc::new(
         db.ast(file_id)
@@ -357,13 +376,14 @@ macro_rules! by_name {
 }
 
 macro_rules! by_name_extensible {
-    ($db: ident, $convert: expr, $convert_extension: expr) => {{
+    ($db: ident, $convert: expr, $extension_type: ident) => {{
         let mut map = by_name!($db, $convert);
-        for ext in type_definitions($db, $convert_extension) {
-            if let Some(def) = map.get_mut(ext.name()) {
-                Arc::get_mut(def).unwrap().extensions.push(ext)
-            } else {
-                // TODO: record orphan extensions for validation purpose?
+        for ext in $db.extensions().iter() {
+            // Orphan or incorrect extensions are reported by validation.
+            if let TypeExtension::$extension_type(ext) = ext {
+                if let Some(def) = map.get_mut(ext.name()) {
+                    Arc::get_mut(def).unwrap().extensions.push(Arc::clone(ext))
+                }
             }
         }
         map
@@ -378,7 +398,7 @@ fn object_types(db: &dyn HirDatabase) -> ByName<ObjectTypeDefinition> {
     Arc::new(by_name_extensible!(
         db,
         object_type_definition,
-        object_type_extension
+        ObjectTypeExtension
     ))
 }
 
@@ -390,7 +410,7 @@ fn scalars(db: &dyn HirDatabase) -> ByName<ScalarTypeDefinition> {
     Arc::new(built_in_scalars(by_name_extensible!(
         db,
         scalar_definition,
-        scalar_extension
+        ScalarTypeExtension
     )))
 }
 
@@ -399,7 +419,7 @@ fn enums(db: &dyn HirDatabase) -> ByName<EnumTypeDefinition> {
         // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
         return precomputed.definitions.enums.clone();
     }
-    Arc::new(by_name_extensible!(db, enum_definition, enum_extension))
+    Arc::new(by_name_extensible!(db, enum_definition, EnumTypeExtension))
 }
 
 fn unions(db: &dyn HirDatabase) -> ByName<UnionTypeDefinition> {
@@ -407,14 +427,18 @@ fn unions(db: &dyn HirDatabase) -> ByName<UnionTypeDefinition> {
         // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
         return precomputed.definitions.unions.clone();
     }
-    Arc::new(by_name_extensible!(db, union_definition, union_extension))
+    Arc::new(by_name_extensible!(
+        db,
+        union_definition,
+        UnionTypeExtension
+    ))
 }
 
 fn interfaces(db: &dyn HirDatabase) -> ByName<InterfaceTypeDefinition> {
     Arc::new(by_name_extensible!(
         db,
         interface_definition,
-        interface_extension
+        InterfaceTypeExtension
     ))
 }
 
@@ -426,7 +450,7 @@ fn input_objects(db: &dyn HirDatabase) -> ByName<InputObjectTypeDefinition> {
     Arc::new(by_name_extensible!(
         db,
         input_object_definition,
-        input_object_extension
+        InputObjectTypeExtension
     ))
 }
 
@@ -510,14 +534,14 @@ fn schema_definition(
     file_id: FileId,
 ) -> Option<SchemaDefinition> {
     let extensions = type_definitions(db, |_db, def: ast::SchemaExtension, file_id| {
-        Some(SchemaExtension {
+        Some(Arc::new(SchemaExtension {
             directives: directives(def.directives(), file_id),
             root_operation_type_definition: root_operation_type_definition(
                 def.root_operation_type_definitions(),
                 file_id,
             ),
             loc: location(file_id, def.syntax()),
-        })
+        }))
     })
     .collect();
 
@@ -565,14 +589,14 @@ fn object_type_extension(
     _db: &dyn HirDatabase,
     def: ast::ObjectTypeExtension,
     file_id: FileId,
-) -> Option<ObjectTypeExtension> {
-    Some(ObjectTypeExtension {
+) -> Option<Arc<ObjectTypeExtension>> {
+    Some(Arc::new(ObjectTypeExtension {
         directives: directives(def.directives(), file_id),
         name: name(def.name(), file_id)?,
         implements_interfaces: implements_interfaces(def.implements_interfaces(), file_id),
         fields_definition: fields_definition(def.fields_definition(), file_id),
         loc: location(file_id, def.syntax()),
-    })
+    }))
 }
 
 fn scalar_definition(
@@ -601,12 +625,12 @@ fn scalar_extension(
     _db: &dyn HirDatabase,
     def: ast::ScalarTypeExtension,
     file_id: FileId,
-) -> Option<ScalarTypeExtension> {
-    Some(ScalarTypeExtension {
+) -> Option<Arc<ScalarTypeExtension>> {
+    Some(Arc::new(ScalarTypeExtension {
         directives: directives(def.directives(), file_id),
         name: name(def.name(), file_id)?,
         loc: location(file_id, def.syntax()),
-    })
+    }))
 }
 
 fn enum_definition(
@@ -636,13 +660,13 @@ fn enum_extension(
     _db: &dyn HirDatabase,
     def: ast::EnumTypeExtension,
     file_id: FileId,
-) -> Option<EnumTypeExtension> {
-    Some(EnumTypeExtension {
+) -> Option<Arc<EnumTypeExtension>> {
+    Some(Arc::new(EnumTypeExtension {
         directives: directives(def.directives(), file_id),
         name: name(def.name(), file_id)?,
         enum_values_definition: enum_values_definition(def.enum_values_definition(), file_id),
         loc: location(file_id, def.syntax()),
-    })
+    }))
 }
 
 fn enum_values_definition(
@@ -706,13 +730,13 @@ fn union_extension(
     _db: &dyn HirDatabase,
     def: ast::UnionTypeExtension,
     file_id: FileId,
-) -> Option<UnionTypeExtension> {
-    Some(UnionTypeExtension {
+) -> Option<Arc<UnionTypeExtension>> {
+    Some(Arc::new(UnionTypeExtension {
         directives: directives(def.directives(), file_id),
         name: name(def.name(), file_id)?,
         union_members: union_members(def.union_member_types(), file_id),
         loc: location(file_id, def.syntax()),
-    })
+    }))
 }
 
 fn union_members(
@@ -769,14 +793,14 @@ fn interface_extension(
     _db: &dyn HirDatabase,
     def: ast::InterfaceTypeExtension,
     file_id: FileId,
-) -> Option<InterfaceTypeExtension> {
-    Some(InterfaceTypeExtension {
+) -> Option<Arc<InterfaceTypeExtension>> {
+    Some(Arc::new(InterfaceTypeExtension {
         directives: directives(def.directives(), file_id),
         name: name(def.name(), file_id)?,
         implements_interfaces: implements_interfaces(def.implements_interfaces(), file_id),
         fields_definition: fields_definition(def.fields_definition(), file_id),
         loc: location(file_id, def.syntax()),
-    })
+    }))
 }
 
 fn directive_definition(
@@ -831,13 +855,37 @@ fn input_object_extension(
     _db: &dyn HirDatabase,
     def: ast::InputObjectTypeExtension,
     file_id: FileId,
-) -> Option<InputObjectTypeExtension> {
-    Some(InputObjectTypeExtension {
+) -> Option<Arc<InputObjectTypeExtension>> {
+    Some(Arc::new(InputObjectTypeExtension {
         directives: directives(def.directives(), file_id),
         name: name(def.name(), file_id)?,
         input_fields_definition: input_fields_definition(def.input_fields_definition(), file_id),
         loc: location(file_id, def.syntax()),
-    })
+    }))
+}
+
+fn extension(db: &dyn HirDatabase, def: ast::Definition, file_id: FileId) -> Option<TypeExtension> {
+    match def {
+        ast::Definition::ScalarTypeExtension(def) => {
+            scalar_extension(db, def, file_id).map(TypeExtension::ScalarTypeExtension)
+        }
+        ast::Definition::ObjectTypeExtension(def) => {
+            object_type_extension(db, def, file_id).map(TypeExtension::ObjectTypeExtension)
+        }
+        ast::Definition::InterfaceTypeExtension(def) => {
+            interface_extension(db, def, file_id).map(TypeExtension::InterfaceTypeExtension)
+        }
+        ast::Definition::UnionTypeExtension(def) => {
+            union_extension(db, def, file_id).map(TypeExtension::UnionTypeExtension)
+        }
+        ast::Definition::EnumTypeExtension(def) => {
+            enum_extension(db, def, file_id).map(TypeExtension::EnumTypeExtension)
+        }
+        ast::Definition::InputObjectTypeExtension(def) => {
+            input_object_extension(db, def, file_id).map(TypeExtension::InputObjectTypeExtension)
+        }
+        _ => None,
+    }
 }
 
 fn add_object_type_id_to_schema(db: &dyn HirDatabase) -> Arc<Vec<RootOperationTypeDefinition>> {

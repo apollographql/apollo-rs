@@ -1,0 +1,303 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            64: "0064_extension_wrong_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 64,
+            },
+            offset: 138,
+            length: 6,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 138,
+                    length: 6,
+                },
+                text: "This is of `ScalarTypeDefinition` type",
+            },
+        ],
+        help: Some(
+            "Union members must be of base Object Type.",
+        ),
+        data: ObjectType {
+            name: "Scalar",
+            ty: "ScalarTypeDefinition",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            64: "0064_extension_wrong_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 64,
+            },
+            offset: 208,
+            length: 28,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 208,
+                    length: 28,
+                },
+                text: "adding an UnionTypeExtension, but `Scalar` is a ScalarTypeDefinition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 0,
+                    length: 60,
+                },
+                text: "original type defined here",
+            },
+        ],
+        help: None,
+        data: WrongTypeExtension {
+            name: "Scalar",
+            definition: Some(
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 0,
+                    length: 60,
+                },
+            ),
+            extension: DiagnosticLocation {
+                file_id: FileId {
+                    id: 64,
+                },
+                offset: 208,
+                length: 28,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            64: "0064_extension_wrong_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 64,
+            },
+            offset: 237,
+            length: 45,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 237,
+                    length: 45,
+                },
+                text: "adding an InterfaceTypeExtension, but `Object` is an ObjectTypeDefinition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 94,
+                    length: 29,
+                },
+                text: "original type defined here",
+            },
+        ],
+        help: None,
+        data: WrongTypeExtension {
+            name: "Object",
+            definition: Some(
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 94,
+                    length: 29,
+                },
+            ),
+            extension: DiagnosticLocation {
+                file_id: FileId {
+                    id: 64,
+                },
+                offset: 237,
+                length: 45,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            64: "0064_extension_wrong_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 64,
+            },
+            offset: 283,
+            length: 31,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 283,
+                    length: 31,
+                },
+                text: "adding an EnumTypeExtension, but `Intf` is an InterfaceTypeDefinition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 61,
+                    length: 32,
+                },
+                text: "original type defined here",
+            },
+        ],
+        help: None,
+        data: WrongTypeExtension {
+            name: "Intf",
+            definition: Some(
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 61,
+                    length: 32,
+                },
+            ),
+            extension: DiagnosticLocation {
+                file_id: FileId {
+                    id: 64,
+                },
+                offset: 283,
+                length: 31,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            64: "0064_extension_wrong_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 64,
+            },
+            offset: 315,
+            length: 39,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 315,
+                    length: 39,
+                },
+                text: "adding an ObjectTypeExtension, but `Input` is an InputObjectTypeDefinition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 154,
+                    length: 29,
+                },
+                text: "original type defined here",
+            },
+        ],
+        help: None,
+        data: WrongTypeExtension {
+            name: "Input",
+            definition: Some(
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 154,
+                    length: 29,
+                },
+            ),
+            extension: DiagnosticLocation {
+                file_id: FileId {
+                    id: 64,
+                },
+                offset: 315,
+                length: 39,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            64: "0064_extension_wrong_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 64,
+            },
+            offset: 355,
+            length: 39,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 355,
+                    length: 39,
+                },
+                text: "adding an InputObjectTypeExtension, but `Enum` is an EnumTypeDefinition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 184,
+                    length: 22,
+                },
+                text: "original type defined here",
+            },
+        ],
+        help: None,
+        data: WrongTypeExtension {
+            name: "Enum",
+            definition: Some(
+                DiagnosticLocation {
+                    file_id: FileId {
+                        id: 64,
+                    },
+                    offset: 184,
+                    length: 22,
+                },
+            ),
+            extension: DiagnosticLocation {
+                file_id: FileId {
+                    id: 64,
+                },
+                offset: 355,
+                length: 39,
+            },
+        },
+    },
+]

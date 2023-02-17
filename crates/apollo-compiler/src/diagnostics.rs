@@ -184,6 +184,15 @@ pub enum DiagnosticData {
         /// Name of the type not in scope
         name: String,
     },
+    #[error("type extension for `{name}` is the wrong kind")]
+    WrongTypeExtension {
+        /// Name of the type being extended
+        name: String,
+        /// Location of the original definition. This may be None when extending a builtin GraphQL type.
+        definition: Option<DiagnosticLocation>,
+        /// Location of the extension
+        extension: DiagnosticLocation,
+    },
     #[error("{name} directive definition cannot reference itself")]
     RecursiveDefinition { name: String },
     #[error("interface {name} cannot implement itself")]
