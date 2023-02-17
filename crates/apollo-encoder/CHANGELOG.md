@@ -17,6 +17,25 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.5.0](https://crates.io/crates/apollo-encoder/0.5.0) - 2023-02-17
+
+## BREAKING
+- **apollo-parser@0.5.0 - [goto-bus-stop], [pull/459]**
+
+  This updates the version of `apollo-parser` required by the `TryFrom`
+  implementations in this crate.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/459]: https://github.com/apollographql/apollo-rs/pull/459
+
+## Features
+- **make `FromError` public - [Geal], [pull/453]**
+
+  In the `TryFrom` implementations for `apollo-parser` types, the error type was not public, so you could not wrap conversion errors in your own error types or name it in return values. Now you can use `apollo_encoder::FromError`.
+
+  [Geal]: https://github.com/Geal
+  [pull/453]: https://github.com/apollographql/apollo-rs/pull/453
+
 # [0.4.0](https://crates.io/crates/apollo-encoder/0.4.0) - 2022-11-29
 
 ## BREAKING
