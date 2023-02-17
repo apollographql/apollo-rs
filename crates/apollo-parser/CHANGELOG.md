@@ -7,7 +7,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 <!-- # [x.x.x] (unreleased) - 2022-mm-dd
 
 > Important: X breaking changes below, indicated by **BREAKING**
-
 ## BREAKING
 
 ## Features
@@ -17,6 +16,46 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+
+# [0.5.0](https://crates.io/crates/apollo-parser/0.5.0) - 2023-02-16
+## Features
+- **new `ast::Definition` methods - [goto-bus-stop], [pull/456]**
+  When working with `Definition` nodes, you can use the `.name()` method to get the name of a definition, regardless of its kind. For `schema` definitions, it returns `None`.
+  You can use `.is_extension_definition()` to check if a definition node is an extension.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/456]: https://github.com/apollographql/apollo-rs/pull/456
+
+## Fixes
+- **fix token order around type names - [goto-bus-stop], [issue/362], [pull/443]**
+
+  ```graphql
+  type Query {
+    field: Int # comment
+  }
+  ```
+  Previously, the whitespace and comment around the `Int` type name would end up *before* the type name in the parse tree. This would mess up the location information for the `Int` type name. Now this is fixed.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [issue/362]: https://github.com/apollographql/apollo-rs/issues/362
+  [pull/443]: https://github.com/apollographql/apollo-rs/pull/443
+
+- **fix spans after parsing unexpected tokens - [goto-bus-stop], [issue/325], [pull/446]**
+
+  Location information for all nodes after an unexpected token was incorrect. It's better now, though still imperfect: lexing errors still have this problem.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [issue/325]: https://github.com/apollographql/apollo-rs/issues/325
+  [pull/446]: https://github.com/apollographql/apollo-rs/pull/446
+
+- **fix ignored token positioning in the AST - [goto-bus-stop], [pull/445]**
+
+  This makes spans for all nodes more specific, not including ignored tokens after the node. When ignored tokens are consumed, they are first stored separately, and then added to the AST just before the next node is started. This way ignored tokens are always inside the outermost possible node, and therefore all individual nodes will have spans that only contain that node and not more.
+
+  The most obvious effect of this is that diagnostics now point to the exact thing they are about, instead of a bunch of whitespace :)
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/445]: https://github.com/apollographql/apollo-rs/pull/445
 
 # [0.4.1](https://crates.io/crates/apollo-parser/0.4.1) - 2022-12-13
 ## Fixes
