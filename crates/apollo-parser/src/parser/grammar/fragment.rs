@@ -77,7 +77,7 @@ pub(crate) fn inline_fragment(p: &mut Parser) {
     }
 
     match p.peek() {
-        Some(T!['{']) => selection::top_selection_set(p),
+        Some(T!['{']) => selection::selection_set(p),
         _ => p.err("expected Selection Set"),
     }
 }

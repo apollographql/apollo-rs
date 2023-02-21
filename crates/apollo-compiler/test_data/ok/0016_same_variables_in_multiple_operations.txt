@@ -186,4 +186,4 @@
                     - BANG@369..370 "!"
             - WHITESPACE@370..371 "\n"
             - R_CURLY@371..372 "}"
-recursion limit: 4096, high: 4
+recursion limit: 4096, high: 2

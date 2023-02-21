@@ -56,4 +56,4 @@
 - ERROR@116:116 "expected }" EOF
 - ERROR@116:116 "expected R_PAREN, got EOF" EOF
 - ERROR@116:116 "expected R_CURLY, got EOF" EOF
-recursion limit: 4096, high: 2
+recursion limit: 4096, high: 1

@@ -1165,4 +1165,4 @@
                         - IDENT@3074..3096 "INPUT_FIELD_DEFINITION"
             - WHITESPACE@3096..3097 "\n"
             - R_CURLY@3097..3098 "}"
-recursion limit: 4096, high: 31
+recursion limit: 4096, high: 8

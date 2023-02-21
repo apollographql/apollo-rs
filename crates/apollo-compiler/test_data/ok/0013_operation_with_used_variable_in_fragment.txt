@@ -163,4 +163,4 @@
                         - IDENT@316..319 "Int"
             - WHITESPACE@319..320 "\n"
             - R_CURLY@320..321 "}"
-recursion limit: 4096, high: 5
+recursion limit: 4096, high: 2

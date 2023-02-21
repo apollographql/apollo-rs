@@ -13,7 +13,6 @@ pub(crate) fn field(p: &mut Parser) {
     // We need to enforce recursion limits to prevent
     // excessive resource consumption or (more seriously)
     // stack overflows.
-    p.recursion_limit.consume();
     if p.recursion_limit.limited() {
         p.limit_err(format!("parser limit({}) reached", p.recursion_limit.limit));
         return;
