@@ -1,0 +1,41 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            65: "0065_subselection_of_enum.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 65,
+            },
+            offset: 26,
+            length: 18,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 26,
+                    length: 18,
+                },
+                text: "This field is an enum and cannot select any fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 76,
+                    length: 36,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: NoSubselectionAllowed {
+            name: "pet",
+            ty: "Pet",
+        },
+    },
+]

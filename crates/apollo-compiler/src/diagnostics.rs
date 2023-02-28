@@ -265,6 +265,13 @@ pub enum DiagnosticData {
         /// Name of the field
         field: String,
     },
+    #[error("`{name}` field of type '{ty}' must not have a sub selection")]
+    NoSubselectionAllowed {
+        // field name
+        name: String,
+        // field type
+        ty: String,
+    },
 }
 
 impl DiagnosticData {

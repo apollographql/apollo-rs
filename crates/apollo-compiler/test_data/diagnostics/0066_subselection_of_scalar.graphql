@@ -1,0 +1,11 @@
+query SelectionOfScalar {
+  url {
+    name
+  }
+}
+
+type Query {
+  url: URL,
+}
+
+scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")

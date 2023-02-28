@@ -1,0 +1,41 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            66: "0066_subselection_of_scalar.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 66,
+            },
+            offset: 28,
+            length: 18,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 66,
+                    },
+                    offset: 28,
+                    length: 18,
+                },
+                text: "This field is a scalar and cannot select any fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 66,
+                    },
+                    offset: 78,
+                    length: 67,
+                },
+                text: "`URL` declared here",
+            },
+        ],
+        help: None,
+        data: NoSubselectionAllowed {
+            name: "url",
+            ty: "URL",
+        },
+    },
+]

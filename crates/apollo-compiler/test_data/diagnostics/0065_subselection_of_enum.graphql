@@ -1,0 +1,15 @@
+query SelectionOfEnum {
+  pet {
+    name
+  }
+}
+
+type Query {
+  pet: Pet,
+}
+
+enum Pet {
+    CAT
+    DOG
+    FOX
+}
