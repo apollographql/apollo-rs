@@ -60,6 +60,7 @@ pub(crate) fn selection(p: &mut Parser) {
                             fragment::inline_fragment(p);
                         } else {
                             p.err("expected an Inline Fragment or a Fragment Spread");
+                            p.bump(S![...]);
                         }
                         has_selection = true;
                     }
