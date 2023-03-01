@@ -37,32 +37,34 @@ fn validate_selection_field(
     diagnostics: &mut Vec<ApolloDiagnostic>,
 ) {
     let leaf = field.selection_set.selection.is_empty();
-    let mut leaf_validation_error = false;
+    let mut leaf_validation_error: Option<&str> = None;
     let field_type = field.ty(db.upcast());
     if let Some(field_type) = field_type {
         let type_name = field_type.name();
         let type_def = db.find_type_definition_by_name(type_name.clone());
         if let Some(type_def) = type_def {
-            let error = match type_def {
+            match type_def {
                 TypeDefinition::EnumTypeDefinition(_) if !leaf => {
-                    Some("This field is an enum and cannot select any fields")
+                    leaf_validation_error =
+                        Some("This field is an enum and cannot select any fields");
                 }
                 TypeDefinition::ScalarTypeDefinition(_) if !leaf => {
-                    Some("This field is a scalar and cannot select any fields")
+                    leaf_validation_error =
+                        Some("This field is a scalar and cannot select any fields");
                 }
                 TypeDefinition::ObjectTypeDefinition(_) if leaf => {
-                    Some("This field is an object and must select fields")
+                    leaf_validation_error = Some("This field is an object and must select fields");
                 }
                 TypeDefinition::InterfaceTypeDefinition(_) if leaf => {
-                    Some("This field is an interface and must select fields")
+                    leaf_validation_error =
+                        Some("This field is an interface and must select fields");
                 }
                 TypeDefinition::UnionTypeDefinition(_) if leaf => {
-                    Some("This field is an union and must select fields")
+                    leaf_validation_error = Some("This field is an union and must select fields");
                 }
-                _ => None,
+                _ => {}
             };
-            if let Some(error) = error {
-                leaf_validation_error = true;
+            if let Some(error) = leaf_validation_error {
                 let name = field.name.src.clone();
                 let diagnostic_data = if leaf {
                     DiagnosticData::MandatorySubselection {
@@ -90,7 +92,7 @@ fn validate_selection_field(
         }
     }
 
-    if !leaf_validation_error {
+    if leaf_validation_error.is_none() {
         diagnostics.extend(db.validate_field(field));
     }
 }
