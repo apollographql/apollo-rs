@@ -98,8 +98,14 @@ mod test {
         let input = r#"
 query mainPage {
   width
-  result
-  entity
+  result {
+    ... on Person {
+      name
+    }
+  }
+  entity {
+    name
+  }
 }
 
 type Query {

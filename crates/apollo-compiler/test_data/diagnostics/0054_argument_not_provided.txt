@@ -91,7 +91,7 @@
             file_id: FileId {
                 id: 54,
             },
-            offset: 387,
+            offset: 399,
             length: 21,
         },
         labels: [
@@ -100,7 +100,7 @@
                     file_id: FileId {
                         id: 54,
                     },
-                    offset: 387,
+                    offset: 399,
                     length: 21,
                 },
                 text: "missing value for argument `req1`",
@@ -129,7 +129,7 @@
             file_id: FileId {
                 id: 54,
             },
-            offset: 413,
+            offset: 425,
             length: 26,
         },
         labels: [
@@ -138,7 +138,7 @@
                     file_id: FileId {
                         id: 54,
                     },
-                    offset: 413,
+                    offset: 425,
                     length: 26,
                 },
                 text: "missing value for argument `req2`",
@@ -167,7 +167,7 @@
             file_id: FileId {
                 id: 54,
             },
-            offset: 444,
+            offset: 456,
             length: 44,
         },
         labels: [
@@ -176,7 +176,7 @@
                     file_id: FileId {
                         id: 54,
                     },
-                    offset: 444,
+                    offset: 456,
                     length: 44,
                 },
                 text: "missing value for argument `req2`",

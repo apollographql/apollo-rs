@@ -1,0 +1,41 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            69: "0069_subselection_of_object.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 69,
+            },
+            offset: 28,
+            length: 3,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 28,
+                    length: 3,
+                },
+                text: "This field is an object and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 63,
+                    length: 26,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: MandatorySubselection {
+            name: "pet",
+            ty: "Pet",
+        },
+    },
+]

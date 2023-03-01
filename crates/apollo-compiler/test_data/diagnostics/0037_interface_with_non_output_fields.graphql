@@ -1,5 +1,7 @@
 query mainPage {
-  name
+  name {
+    width
+  }
 }
 
 type Query {

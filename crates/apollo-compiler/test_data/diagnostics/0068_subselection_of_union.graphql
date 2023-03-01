@@ -1,0 +1,11 @@
+query SelectionOfUnion {
+  pet
+}
+
+type Query {
+  pet: CatOrDog,
+}
+
+type Cat { id: String! }
+type Dog { id: String! }
+union CatOrDog = Cat | Dog

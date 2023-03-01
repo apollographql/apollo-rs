@@ -1,0 +1,11 @@
+query SelectionOfObject {
+  pet
+}
+
+type Query {
+  pet: Pet,
+}
+
+type Pet {
+  id: String,
+}

@@ -1,0 +1,11 @@
+query SelectionOfInterface {
+  pet
+}
+
+type Query {
+  pet: Pet,
+}
+
+interface Pet {
+  id: String,
+}

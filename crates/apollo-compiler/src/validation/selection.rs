@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::diagnostics::{DiagnosticData, Label};
+use crate::hir::TypeDefinition;
 use crate::{hir, validation::ValidationDatabase, ApolloDiagnostic};
 
 pub fn validate_selection(
@@ -35,41 +36,56 @@ fn validate_selection_field(
     field: Arc<hir::Field>,
     diagnostics: &mut Vec<ApolloDiagnostic>,
 ) {
-    let leaf = !field.selection_set.selection.is_empty();
+    let leaf = field.selection_set.selection.is_empty();
     let mut leaf_validation_error = false;
-    if leaf {
-        let field_type = field.ty(db.upcast());
-        if let Some(field_type) = field_type {
-            let type_name = field_type.name();
-            let type_def = db.find_type_definition_by_name(type_name.clone());
-            if let Some(type_def) = type_def {
-                if type_def.is_enum_type_definition() || type_def.is_scalar_type_definition() {
-                    leaf_validation_error = true;
-                    let name = field.name.src.clone();
-                    let label_text = if type_def.is_enum_type_definition() {
-                        "This field is an enum and cannot select any fields"
-                    } else {
-                        "This field is a scalar and cannot select any fields"
-                    };
-                    let diagnostic = ApolloDiagnostic::new(
-                        db,
-                        field.loc.into(),
-                        DiagnosticData::NoSubselectionAllowed {
-                            name,
-                            ty: type_name.clone(),
-                        },
-                    )
-                    .label(Label::new(field.loc, label_text));
-                    let diagnostic = if let Some(type_def_loc) = type_def.loc() {
-                        diagnostic.label(Label::new(
-                            type_def_loc,
-                            format!("`{}` declared here", &type_name),
-                        ))
-                    } else {
-                        diagnostic
-                    };
-                    diagnostics.push(diagnostic);
+    let field_type = field.ty(db.upcast());
+    if let Some(field_type) = field_type {
+        let type_name = field_type.name();
+        let type_def = db.find_type_definition_by_name(type_name.clone());
+        if let Some(type_def) = type_def {
+            let error = match type_def {
+                TypeDefinition::EnumTypeDefinition(_) if !leaf => {
+                    Some("This field is an enum and cannot select any fields")
                 }
+                TypeDefinition::ScalarTypeDefinition(_) if !leaf => {
+                    Some("This field is a scalar and cannot select any fields")
+                }
+                TypeDefinition::ObjectTypeDefinition(_) if leaf => {
+                    Some("This field is an object and must select fields")
+                }
+                TypeDefinition::InterfaceTypeDefinition(_) if leaf => {
+                    Some("This field is an interface and must select fields")
+                }
+                TypeDefinition::UnionTypeDefinition(_) if leaf => {
+                    Some("This field is an union and must select fields")
+                }
+                _ => None,
+            };
+            if let Some(error) = error {
+                leaf_validation_error = true;
+                let name = field.name.src.clone();
+                let diagnostic_data = if leaf {
+                    DiagnosticData::MandatorySubselection {
+                        name,
+                        ty: type_name.clone(),
+                    }
+                } else {
+                    DiagnosticData::NoSubselectionAllowed {
+                        name,
+                        ty: type_name.clone(),
+                    }
+                };
+                let diagnostic = ApolloDiagnostic::new(db, field.loc.into(), diagnostic_data)
+                    .label(Label::new(field.loc, error));
+                let diagnostic = if let Some(type_def_loc) = type_def.loc() {
+                    diagnostic.label(Label::new(
+                        type_def_loc,
+                        format!("`{}` declared here", &type_name),
+                    ))
+                } else {
+                    diagnostic
+                };
+                diagnostics.push(diagnostic);
             }
         }
     }
@@ -84,8 +100,6 @@ pub fn validate_selection_set(
     selection_set: hir::SelectionSet,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-
-    // TODO handle Unions
 
     diagnostics.extend(db.validate_selection(selection_set.selection));
 
@@ -114,6 +128,33 @@ enum Pet {
     DOG
     FOX
 }
+"#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{diagnostic}");
+        }
+
+        assert_eq!(diagnostics.len(), 1)
+    }
+
+    #[test]
+    fn it_validates_subselections_of_union() {
+        let input = r#"
+query SelectionOfEnum {
+  animal
+}
+
+type Query {
+  animal: CatOrDog,
+}
+
+type Cat { id: String! }
+type Dog { id: String! }
+union CatOrDog = Cat | Dog
 "#;
 
         let mut compiler = ApolloCompiler::new();
