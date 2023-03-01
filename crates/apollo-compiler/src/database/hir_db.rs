@@ -677,7 +677,6 @@ fn enum_values_definition(
         Some(enum_values) => {
             let enum_values = enum_values
                 .enum_value_definitions()
-                .into_iter()
                 .filter_map(|e| enum_value_definition(e, file_id))
                 .collect();
             Arc::new(enum_values)
@@ -747,7 +746,6 @@ fn union_members(
         Some(members) => {
             let mems = members
                 .named_types()
-                .into_iter()
                 .filter_map(|u| union_member(u, file_id))
                 .collect();
             Arc::new(mems)
@@ -1096,7 +1094,6 @@ fn variable_definitions(
         Some(vars) => {
             let variable_definitions = vars
                 .variable_definitions()
-                .into_iter()
                 .filter_map(|v| variable_definition(v, file_id))
                 .collect();
             Arc::new(variable_definitions)
@@ -1171,7 +1168,6 @@ fn directive_locations(
         Some(directive_loc) => {
             let locations: Vec<DirectiveLocation> = directive_loc
                 .directive_locations()
-                .into_iter()
                 .map(|loc| loc.into())
                 .collect();
             Arc::new(locations)
@@ -1185,7 +1181,6 @@ fn directives(directives: Option<ast::Directives>, file_id: FileId) -> Arc<Vec<D
         Some(directives) => {
             let directives = directives
                 .directives()
-                .into_iter()
                 .filter_map(|d| directive(d, file_id))
                 .collect();
             Arc::new(directives)
@@ -1211,7 +1206,6 @@ fn arguments(arguments: Option<ast::Arguments>, file_id: FileId) -> Arc<Vec<Argu
         Some(arguments) => {
             let arguments = arguments
                 .arguments()
-                .into_iter()
                 .filter_map(|a| argument(a, file_id))
                 .collect();
             Arc::new(arguments)
@@ -1269,7 +1263,6 @@ fn selection_set(
     let selection_set = match selections {
         Some(sel) => sel
             .selections()
-            .into_iter()
             .filter_map(|sel| selection(db, sel, parent_obj_ty.as_ref().cloned(), file_id))
             .collect(),
         None => Vec::new(),
