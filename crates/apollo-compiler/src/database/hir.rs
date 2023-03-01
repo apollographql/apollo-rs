@@ -2608,6 +2608,7 @@ pub struct EnumValueDefinition {
 }
 
 impl EnumValueDefinition {
+    /// Get a reference to enum value definition's description.
     pub fn description(&self) -> Option<&str> {
         self.description.as_deref()
     }
