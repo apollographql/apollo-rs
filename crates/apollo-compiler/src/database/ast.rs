@@ -46,7 +46,6 @@ fn syntax_errors(db: &dyn AstDatabase) -> Vec<ApolloDiagnostic> {
         .flat_map(|file_id| {
             db.ast(file_id)
                 .errors()
-                .into_iter()
                 .map(|err| {
                     ApolloDiagnostic::new(
                         db,
