@@ -76,7 +76,7 @@ pub fn validate_field(
 
     let field_type = field.ty(db.upcast());
     if let Some(field_type) = field_type {
-        if let Some(diagnostic) = validate_leaf_field_selection(db, field.clone(), field_type) {
+        if let Some(diagnostic) = validate_leaf_field_selection(db, &field, field_type) {
             diagnostics.push(diagnostic)
         } else {
             diagnostics.extend(db.validate_selection_set(field.selection_set().clone()));
@@ -217,7 +217,7 @@ pub fn validate_field_definitions(
 
 fn validate_leaf_field_selection(
     db: &dyn ValidationDatabase,
-    field: Arc<hir::Field>,
+    field: &hir::Field,
     field_type: hir::Type,
 ) -> Option<ApolloDiagnostic> {
     let leaf = field.selection_set.selection.is_empty();
