@@ -75,8 +75,12 @@ pub fn validate_field(
     }
 
     let field_type = field.ty(db.upcast());
-    if field_type.is_some() {
-        diagnostics.extend(db.validate_selection_set(field.selection_set().clone()));
+    if let Some(field_type) = field_type {
+        if let Some(diagnostic) = validate_leaf_field_selection(db, field.clone(), field_type) {
+            diagnostics.push(diagnostic)
+        } else {
+            diagnostics.extend(db.validate_selection_set(field.selection_set().clone()));
+        }
     } else {
         let help = format!(
             "`{}` is not defined on `{}` type",
@@ -209,4 +213,123 @@ pub fn validate_field_definitions(
     }
 
     diagnostics
+}
+
+fn validate_leaf_field_selection(
+    db: &dyn ValidationDatabase,
+    field: Arc<hir::Field>,
+    field_type: hir::Type,
+) -> Option<ApolloDiagnostic> {
+    let leaf = field.selection_set.selection.is_empty();
+    let type_name = field_type.name();
+    let type_def = db.find_type_definition_by_name(type_name.clone());
+    if let Some(type_def) = type_def {
+        let leaf_validation_error = match type_def {
+            hir::TypeDefinition::EnumTypeDefinition(_) if !leaf => {
+                Some("This field is an enum and cannot select any fields")
+            }
+            hir::TypeDefinition::ScalarTypeDefinition(_) if !leaf => {
+                Some("This field is a scalar and cannot select any fields")
+            }
+            hir::TypeDefinition::ObjectTypeDefinition(_) if leaf => {
+                Some("This field is an object and must select fields")
+            }
+            hir::TypeDefinition::InterfaceTypeDefinition(_) if leaf => {
+                Some("This field is an interface and must select fields")
+            }
+            hir::TypeDefinition::UnionTypeDefinition(_) if leaf => {
+                Some("This field is an union and must select fields")
+            }
+            _ => None,
+        };
+        if let Some(error) = leaf_validation_error {
+            let name = field.name.src.clone();
+            let diagnostic_data = if leaf {
+                DiagnosticData::MandatorySubselection {
+                    name,
+                    ty: type_name.clone(),
+                }
+            } else {
+                DiagnosticData::NoSubselectionAllowed {
+                    name,
+                    ty: type_name.clone(),
+                }
+            };
+            let diagnostic = ApolloDiagnostic::new(db, field.loc.into(), diagnostic_data)
+                .label(Label::new(field.loc, error));
+            let diagnostic = if let Some(type_def_loc) = type_def.loc() {
+                diagnostic.label(Label::new(
+                    type_def_loc,
+                    format!("`{}` declared here", &type_name),
+                ))
+            } else {
+                diagnostic
+            };
+            return Some(diagnostic);
+        }
+    }
+    None
+}
+
+#[cfg(test)]
+mod test {
+    use crate::ApolloCompiler;
+
+    #[test]
+    fn it_validates_enum_as_leaf_field() {
+        let input = r#"
+query SelectionOfEnum {
+  pet {
+    name
+  }
+}
+
+type Query {
+  pet: Pet,
+}
+
+enum Pet {
+    CAT
+    DOG
+    FOX
+}
+"#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{diagnostic}");
+        }
+
+        assert_eq!(diagnostics.len(), 1)
+    }
+
+    #[test]
+    fn it_validates_union_as_leaf_field() {
+        let input = r#"
+query SelectionOfEnum {
+  animal
+}
+
+type Query {
+  animal: CatOrDog,
+}
+
+type Cat { id: String! }
+type Dog { id: String! }
+union CatOrDog = Cat | Dog
+"#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{diagnostic}");
+        }
+
+        assert_eq!(diagnostics.len(), 1)
+    }
 }
