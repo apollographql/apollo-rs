@@ -1,9 +1,19 @@
 query SelectionOfUnion {
-  pet
+  pet1
+  pet2
+  pet3
+  pet4
+  pet5
+  pet6
 }
 
 type Query {
-  pet: CatOrDog,
+  pet1: CatOrDog,
+  pet2: CatOrDog!,
+  pet3: [CatOrDog],
+  pet4: [CatOrDog!],
+  pet5: [CatOrDog]!,
+  pet6: [CatOrDog!]!,
 }
 
 type Cat { id: String! }

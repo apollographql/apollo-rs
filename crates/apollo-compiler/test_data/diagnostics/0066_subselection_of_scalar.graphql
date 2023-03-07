@@ -1,11 +1,19 @@
 query SelectionOfScalar {
-  url {
-    name
-  }
+  url1 { name }
+  url2 { name }
+  url3 { name }
+  url4 { name }
+  url5 { name }
+  url6 { name }
 }
 
 type Query {
-  url: URL,
+  url1: URL,
+  url2: URL!,
+  url3: [URL],
+  url4: [URL!],
+  url5: [URL]!,
+  url6: [URL!]!,
 }
 
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")

@@ -1,11 +1,19 @@
 query SelectionOfEnum {
-  pet {
-    name
-  }
+  pet1 { name }
+  pet2 { name }
+  pet3 { name }
+  pet4 { name }
+  pet5 { name }
+  pet6 { name }
 }
 
 type Query {
-  pet: Pet,
+  pet1: Pet,
+  pet2: Pet!,
+  pet3: [Pet],
+  pet4: [Pet!],
+  pet5: [Pet]!,
+  pet6: [Pet!]!,
 }
 
 enum Pet {

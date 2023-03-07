@@ -8,7 +8,7 @@
                 id: 65,
             },
             offset: 26,
-            length: 18,
+            length: 13,
         },
         labels: [
             Label {
@@ -17,7 +17,7 @@
                         id: 65,
                     },
                     offset: 26,
-                    length: 18,
+                    length: 13,
                 },
                 text: "This field is an enum and cannot select any fields",
             },
@@ -26,7 +26,7 @@
                     file_id: FileId {
                         id: 65,
                     },
-                    offset: 76,
+                    offset: 230,
                     length: 36,
                 },
                 text: "`Pet` declared here",
@@ -34,7 +34,202 @@
         ],
         help: None,
         data: DisallowedSubselection {
-            name: "pet",
+            name: "pet1",
+            ty: "Pet",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            65: "0065_subselection_of_enum.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 65,
+            },
+            offset: 42,
+            length: 13,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 42,
+                    length: 13,
+                },
+                text: "This field is an enum and cannot select any fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 230,
+                    length: 36,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedSubselection {
+            name: "pet2",
+            ty: "Pet",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            65: "0065_subselection_of_enum.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 65,
+            },
+            offset: 58,
+            length: 13,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 58,
+                    length: 13,
+                },
+                text: "This field is an enum and cannot select any fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 230,
+                    length: 36,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedSubselection {
+            name: "pet3",
+            ty: "Pet",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            65: "0065_subselection_of_enum.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 65,
+            },
+            offset: 74,
+            length: 13,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 74,
+                    length: 13,
+                },
+                text: "This field is an enum and cannot select any fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 230,
+                    length: 36,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedSubselection {
+            name: "pet4",
+            ty: "Pet",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            65: "0065_subselection_of_enum.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 65,
+            },
+            offset: 90,
+            length: 13,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 90,
+                    length: 13,
+                },
+                text: "This field is an enum and cannot select any fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 230,
+                    length: 36,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedSubselection {
+            name: "pet5",
+            ty: "Pet",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            65: "0065_subselection_of_enum.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 65,
+            },
+            offset: 106,
+            length: 13,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 106,
+                    length: 13,
+                },
+                text: "This field is an enum and cannot select any fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 230,
+                    length: 36,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedSubselection {
+            name: "pet6",
             ty: "Pet",
         },
     },
