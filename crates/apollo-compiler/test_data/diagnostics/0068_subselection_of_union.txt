@@ -33,7 +33,7 @@
             },
         ],
         help: None,
-        data: MandatorySubselection {
+        data: MissingSubselection {
             name: "pet",
             ty: "CatOrDog",
         },

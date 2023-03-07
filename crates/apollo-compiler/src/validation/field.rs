@@ -245,12 +245,12 @@ fn validate_leaf_field_selection(
         if let Some(error) = leaf_validation_error {
             let name = field.name.src.clone();
             let diagnostic_data = if leaf {
-                DiagnosticData::MandatorySubselection {
+                DiagnosticData::MissingSubselection {
                     name,
                     ty: type_name.clone(),
                 }
             } else {
-                DiagnosticData::NoSubselectionAllowed {
+                DiagnosticData::DisallowedSubselection {
                     name,
                     ty: type_name.clone(),
                 }

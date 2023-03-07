@@ -266,14 +266,14 @@ pub enum DiagnosticData {
         field: String,
     },
     #[error("`{name}` field of type '{ty}' must not have a sub selection")]
-    NoSubselectionAllowed {
+    DisallowedSubselection {
         // field name
         name: String,
         // field type
         ty: String,
     },
     #[error("`{name}` field of type '{ty}' must have a sub selection")]
-    MandatorySubselection {
+    MissingSubselection {
         // field name
         name: String,
         // field type

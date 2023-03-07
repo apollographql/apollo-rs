@@ -33,7 +33,7 @@
             },
         ],
         help: None,
-        data: NoSubselectionAllowed {
+        data: DisallowedSubselection {
             name: "pet",
             ty: "Pet",
         },
