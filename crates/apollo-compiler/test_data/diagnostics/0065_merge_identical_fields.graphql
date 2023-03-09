@@ -1,6 +1,6 @@
 type Dog {
   nickname: String
-  name: String!
+  name: String
 }
 
 fragment conflictingBecauseAlias on Dog {
