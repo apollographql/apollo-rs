@@ -1,0 +1,14 @@
+type Dog {
+  nickname: String
+  name: String!
+}
+
+fragment mergeIdenticalFields on Dog {
+  name
+  name
+}
+
+fragment mergeIdenticalAliasesAndFields on Dog {
+  otherName: name
+  otherName: name
+}

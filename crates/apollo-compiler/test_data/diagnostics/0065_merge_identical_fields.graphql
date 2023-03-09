@@ -1,0 +1,9 @@
+type Dog {
+  nickname: String
+  name: String!
+}
+
+fragment conflictingBecauseAlias on Dog {
+  name: nickname
+  name
+}

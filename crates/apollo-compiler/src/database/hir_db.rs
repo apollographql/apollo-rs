@@ -138,7 +138,7 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Return all subscription operations in a corresponding file.
     fn subscription_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
-    /// Return all operation fields in a corresponding selection set.
+    /// Return the fields in a selection set, not including fragments.
     fn operation_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
     /// Return all operation inline fragment fields in a corresponding selection set.
@@ -146,6 +146,9 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
 
     /// Return all operation fragment spread fields in a corresponding selection set.
     fn operation_fragment_spread_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
+
+    /// Return all fields in a selection set, including fields in fragments.
+    fn flattened_operation_fields(&self, selection_set: SelectionSet) -> Vec<Arc<Field>>;
 
     /// Return all variables in a corresponding selection set.
     fn selection_variables(&self, selection_set: SelectionSet) -> Arc<HashSet<Variable>>;

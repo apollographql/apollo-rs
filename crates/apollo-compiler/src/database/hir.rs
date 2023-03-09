@@ -84,6 +84,12 @@ impl TypeDefinition {
         }
     }
 
+    /// Returns whether this definition is a composite definition (union, interface, or object).
+    #[must_use]
+    pub fn is_composite_definition(&self) -> bool {
+        matches!(self, Self::ObjectTypeDefinition(_) | Self::InterfaceTypeDefinition(_) | Self::UnionTypeDefinition(_))
+    }
+
     /// Returns whether this definition is a scalar, object, interface, union, or enum.
     #[must_use]
     pub fn is_output_definition(&self) -> bool {
@@ -1024,6 +1030,20 @@ impl SelectionSet {
             Selection::InlineFragment(inline) => inline.is_introspection(db),
         })
     }
+
+    /// Create a selection set for the concatenation of two selection sets' fields.
+    ///
+    /// This does not deduplicate fields: if the two selection sets both select a field `a`, the
+    /// merged set will select field `a` twice.
+    pub fn merge(&self, other: &SelectionSet) -> SelectionSet {
+        let mut merged: Vec<Selection> = Vec::with_capacity(self.selection.len() + other.selection.len());
+        merged.append(&mut self.selection.as_ref().clone());
+        merged.append(&mut other.selection.as_ref().clone());
+
+        SelectionSet {
+            selection: Arc::new(merged),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1065,6 +1085,15 @@ impl Selection {
     pub fn is_inline_fragment(&self) -> bool {
         matches!(self, Self::InlineFragment(..))
     }
+
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        match self {
+            Selection::Field(field) => field.loc(),
+            Selection::FragmentSpread(fragment_spread) => fragment_spread.loc(),
+            Selection::InlineFragment(inline_fragment) => inline_fragment.loc(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1087,9 +1116,16 @@ impl Field {
         }
     }
 
-    /// Get a reference to the field's name.
+    /// Get the field's name, corresponding to the definition it looks up.
     pub fn name(&self) -> &str {
         self.name.src()
+    }
+
+    /// Get the field's response name.
+    pub fn response_name(&self) -> &str {
+        self.alias()
+            .map(Alias::name)
+            .unwrap_or_else(|| self.name())
     }
 
     /// Get a reference to field's type.
@@ -1100,6 +1136,11 @@ impl Field {
             .ty()
             .to_owned();
         Some(def)
+    }
+
+    /// Get the field's parent type definition.
+    pub fn parent_type(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
+        db.find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())
     }
 
     /// Get field's original field definition.
@@ -1256,6 +1297,11 @@ impl FragmentSpread {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Alias(pub String);
+impl Alias {
+    pub fn name(&self) -> &str {
+        &self.0
+    }
+}
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Float {

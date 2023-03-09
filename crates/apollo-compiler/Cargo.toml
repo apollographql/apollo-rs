@@ -24,6 +24,7 @@ rowan = "0.15.5"
 salsa = "0.16.1"
 ordered-float = { version = "2.10.0", features = ["std"] }
 thiserror = "1.0.31"
+multimap = { version = "0.8.3", default-features = false }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 uuid = { version = "1.1", features = ["serde", "v4", "js"] }

@@ -137,7 +137,7 @@ impl fmt::Display for ApolloDiagnostic {
 #[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum DiagnosticData {
-    #[error("syntax error")]
+    #[error("syntax error: {message}")]
     SyntaxError { message: String },
     #[error("expected identifier")]
     MissingIdent,
@@ -264,6 +264,13 @@ pub enum DiagnosticData {
     IntrospectionField {
         /// Name of the field
         field: String,
+    },
+    #[error("operation must not select different types as the same name `{field}`")]
+    ConflictingSelection {
+        /// Name of the non-unique field.
+        field: String,
+        original_selection: DiagnosticLocation,
+        redefined_selection: DiagnosticLocation,
     },
 }
 
