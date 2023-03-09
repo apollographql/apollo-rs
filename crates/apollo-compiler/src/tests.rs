@@ -5,6 +5,7 @@
 // This is also an exact setup as we have in `apollo-parser`, in the future we
 // might want to consider merging the two dirs. (@lrlna)
 
+use indexmap::IndexMap;
 use std::{
     env, fs,
     path::{Path, PathBuf},
@@ -108,16 +109,29 @@ fn collect_graphql_files(root_dir: &Path, paths: &[&str]) -> Vec<(PathBuf, Strin
 
 /// Collects paths to all `.graphql` files from `dir` in a sorted `Vec<PathBuf>`.
 fn graphql_files_in_dir(dir: &Path) -> Vec<PathBuf> {
-    let mut acc = Vec::new();
+    let mut acc = IndexMap::new();
     for file in fs::read_dir(dir).unwrap() {
         let file = file.unwrap();
         let path = file.path();
         if path.extension().unwrap_or_default() == "graphql" {
-            acc.push(path);
+            let number: i64 = match file.file_name().to_string_lossy().split_once('_') {
+                Some((number, _)) => match number.parse() {
+                    Ok(number) => number,
+                    Err(err) => panic!(
+                        "Invalid test file name: {path:?} does not start with a number ({err})"
+                    ),
+                },
+                None => panic!("Invalid test file name: {path:?} does not start with a number"),
+            };
+
+            if let Some(existing) = acc.get(&number) {
+                panic!("Conflicting test file: {path:?} has the same number as {existing:?}");
+            }
+            acc.insert(number, path);
         }
     }
-    acc.sort();
-    acc
+    acc.sort_keys();
+    acc.into_values().collect()
 }
 
 /// PathBuf of test fixtures directory.

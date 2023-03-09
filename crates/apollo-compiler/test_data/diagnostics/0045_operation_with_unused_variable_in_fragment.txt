@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            45: "0045_operation_with_unused_variable_in_fragment.graphql",
+            44: "0045_operation_with_unused_variable_in_fragment.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 45,
+                id: 44,
             },
             offset: 192,
             length: 6,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 45,
+                        id: 44,
                     },
                     offset: 192,
                     length: 6,
@@ -29,11 +29,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            45: "0045_operation_with_unused_variable_in_fragment.graphql",
+            44: "0045_operation_with_unused_variable_in_fragment.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 45,
+                id: 44,
             },
             offset: 19,
             length: 14,
@@ -42,7 +42,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 45,
+                        id: 44,
                     },
                     offset: 19,
                     length: 14,

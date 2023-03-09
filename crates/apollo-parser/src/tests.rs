@@ -1,6 +1,7 @@
 // The testing framework in this file is pretty much entirely copied from rust-analyzer's parser and lexer tests:
 // https://github.com/rust-analyzer/rust-analyzer/blob/master/crates/syntax/src/tests.rs
 
+use indexmap::IndexMap;
 use std::{
     env,
     fmt::Write,
@@ -122,16 +123,29 @@ fn collect_graphql_files(root_dir: &Path, paths: &[&str]) -> Vec<(PathBuf, Strin
 
 /// Collects paths to all `.graphql` files from `dir` in a sorted `Vec<PathBuf>`.
 fn graphql_files_in_dir(dir: &Path) -> Vec<PathBuf> {
-    let mut acc = Vec::new();
+    let mut acc = IndexMap::new();
     for file in fs::read_dir(dir).unwrap() {
         let file = file.unwrap();
         let path = file.path();
         if path.extension().unwrap_or_default() == "graphql" {
-            acc.push(path);
+            let number: i64 = match file.file_name().to_string_lossy().split_once('_') {
+                Some((number, _)) => match number.parse() {
+                    Ok(number) => number,
+                    Err(err) => panic!(
+                        "Invalid test file name: {path:?} does not start with a number ({err})"
+                    ),
+                },
+                None => panic!("Invalid test file name: {path:?} does not start with a number"),
+            };
+
+            if let Some(existing) = acc.get(&number) {
+                panic!("Conflicting test file: {path:?} has the same number as {existing:?}");
+            }
+            acc.insert(number, path);
         }
     }
-    acc.sort();
-    acc
+    acc.sort_keys();
+    acc.into_values().collect()
 }
 
 /// PathBuf of test fixtures directory.
