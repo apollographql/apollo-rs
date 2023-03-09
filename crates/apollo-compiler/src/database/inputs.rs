@@ -116,10 +116,7 @@ fn source_cache(db: &dyn InputDatabase) -> Arc<SourceCache> {
         .iter()
         .map(|&id| (id, db.input(id).filename().to_owned()))
         .collect();
-    Arc::new(SourceCache {
-        sources,
-        paths,
-    })
+    Arc::new(SourceCache { sources, paths })
 }
 
 fn type_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {
