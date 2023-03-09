@@ -1,0 +1,218 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            65: "0065_merge_conflicting_args.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 65,
+            },
+            offset: 178,
+            length: 33,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 159,
+                    length: 15,
+                },
+                text: "field `doesKnowCommand` provides one argument value here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 194,
+                    length: 16,
+                },
+                text: "but a different value here",
+            },
+        ],
+        help: Some(
+            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
+        ),
+        data: ConflictingSelection {
+            field: "doesKnowCommand",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 65,
+                },
+                offset: 143,
+                length: 32,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 65,
+                },
+                offset: 178,
+                length: 33,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            65: "0065_merge_conflicting_args.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 65,
+            },
+            offset: 297,
+            length: 40,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 278,
+                    length: 15,
+                },
+                text: "field `doesKnowCommand` provides one argument value here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 313,
+                    length: 23,
+                },
+                text: "but a different value here",
+            },
+        ],
+        help: Some(
+            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
+        ),
+        data: ConflictingSelection {
+            field: "doesKnowCommand",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 65,
+                },
+                offset: 262,
+                length: 32,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 65,
+                },
+                offset: 297,
+                length: 40,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            65: "0065_merge_conflicting_args.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 65,
+            },
+            offset: 424,
+            length: 36,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 401,
+                    length: 19,
+                },
+                text: "field `doesKnowCommand` provides one argument value here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 440,
+                    length: 19,
+                },
+                text: "but a different value here",
+            },
+        ],
+        help: Some(
+            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
+        ),
+        data: ConflictingSelection {
+            field: "doesKnowCommand",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 65,
+                },
+                offset: 385,
+                length: 36,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 65,
+                },
+                offset: 424,
+                length: 36,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            65: "0065_merge_conflicting_args.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 65,
+            },
+            offset: 533,
+            length: 15,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 514,
+                    length: 15,
+                },
+                text: "field `doesKnowCommand` is selected with argument `dogCommand` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 65,
+                    },
+                    offset: 533,
+                    length: 15,
+                },
+                text: "but argument `dogCommand` is not provided here",
+            },
+        ],
+        help: Some(
+            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
+        ),
+        data: ConflictingSelection {
+            field: "doesKnowCommand",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 65,
+                },
+                offset: 498,
+                length: 32,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 65,
+                },
+                offset: 533,
+                length: 15,
+            },
+        },
+    },
+]

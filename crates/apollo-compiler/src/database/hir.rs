@@ -874,6 +874,31 @@ impl Value {
     pub fn is_variable(&self) -> bool {
         matches!(self, Self::Variable(..))
     }
+
+    /// Returns `true` if `other` represents the same value as `self`. This is different from the
+    /// `Eq` implementation as it ignores location information.
+    pub fn is_same_value(&self, other: &Value) -> bool {
+        match (self, other) {
+            (Value::Variable(left), Value::Variable(right)) => left.name() == right.name(),
+            (Value::Int(left) | Value::Float(left), Value::Int(right) | Value::Float(right)) => {
+                left == right
+            }
+            (Value::String(left), Value::String(right)) => left == right,
+            (Value::Boolean(left), Value::Boolean(right)) => left == right,
+            (Value::Null, Value::Null) => true,
+            (Value::Enum(left), Value::Enum(right)) => left.src() == right.src(),
+            (Value::List(left), Value::List(right)) if left.len() == right.len() => left
+                .iter()
+                .zip(right)
+                .all(|(left, right)| left.is_same_value(right)),
+            (Value::Object(left), Value::Object(right)) if left.len() == right.len() => {
+                left.iter().zip(right).all(|(left, right)| {
+                    left.0.src() == left.0.src() && left.1.is_same_value(&right.1)
+                })
+            }
+            _ => false,
+        }
+    }
 }
 
 /// Coerce to a `Float` input type (from either `Float` or `Int` syntax)

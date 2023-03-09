@@ -156,7 +156,7 @@ fn identical_arguments(
             );
         };
 
-        if other_arg.value != arg.value {
+        if !other_arg.value.is_same_value(&arg.value) {
             return Err(
                 ApolloDiagnostic::new(
                     db,
