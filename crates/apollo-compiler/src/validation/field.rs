@@ -76,10 +76,9 @@ pub fn validate_field(
 
     let field_type = field.ty(db.upcast());
     if let Some(field_type) = field_type {
-        if let Some(diagnostic) = validate_leaf_field_selection(db, &field, field_type) {
-            diagnostics.push(diagnostic)
-        } else {
-            diagnostics.extend(db.validate_selection_set(field.selection_set().clone()));
+        match db.validate_leaf_field_selection(field.clone(), field_type) {
+            Err(diag) => diagnostics.push(diag),
+            Ok(_) => diagnostics.extend(db.validate_selection_set(field.selection_set().clone())),
         }
     } else {
         let help = format!(
@@ -87,17 +86,17 @@ pub fn validate_field(
             field.name(),
             field.parent_obj.as_ref().unwrap(),
         );
-        let field_name = field.name();
+        let fname = field.name();
         let diagnostic = ApolloDiagnostic::new(
             db,
             field.loc().into(),
             DiagnosticData::UndefinedField {
-                field: field_name.into(),
+                field: fname.into(),
             },
         )
         .label(Label::new(
             field.loc(),
-            format!("`{field_name}` field is not defined"),
+            format!("`{fname}` field is not defined"),
         ))
         .help(help);
 
@@ -150,29 +149,35 @@ pub fn validate_field_definitions(
         // Fields must be unique.
         //
         // Returns Unique Field error.
-        let field_name = field.name();
+        let fname = field.name();
         let redefined_definition = field.loc();
 
-        if let Some(prev_field) = seen.get(field_name) {
+        if let Some(prev_field) = seen.get(fname) {
             let original_definition = prev_field.loc();
 
             diagnostics.push(
                 ApolloDiagnostic::new(
-                    db, original_definition.into(),
+                    db,
+                    original_definition.into(),
                     DiagnosticData::UniqueField {
-                        field: field_name.into(),
+                        field: fname.into(),
                         original_definition: original_definition.into(),
                         redefined_definition: redefined_definition.into(),
                     },
                 )
-                    .labels([
-                        Label::new(original_definition, format!("previous definition of `{field_name}` here")),
-                        Label::new(redefined_definition, format!("`{field_name}` redefined here")),
-                    ])
-                    .help(format!("`{field_name}` field must only be defined once in this input object definition."))
+                .labels([
+                    Label::new(
+                        original_definition,
+                        format!("previous definition of `{fname}` here"),
+                    ),
+                    Label::new(redefined_definition, format!("`{fname}` redefined here")),
+                ])
+                .help(format!(
+                    "`{fname}` field must only be defined once in this input object definition."
+                )),
             );
         } else {
-            seen.insert(field_name, field);
+            seen.insert(fname, field);
         }
 
         // Field types in Object Types must be of output type
@@ -215,58 +220,55 @@ pub fn validate_field_definitions(
     diagnostics
 }
 
-fn validate_leaf_field_selection(
+pub fn validate_leaf_field_selection(
     db: &dyn ValidationDatabase,
-    field: &hir::Field,
+    field: Arc<hir::Field>,
     field_type: hir::Type,
-) -> Option<ApolloDiagnostic> {
-    let leaf = field.selection_set.selection.is_empty();
-    let type_name = field_type.name();
-    let type_def = db.find_type_definition_by_name(type_name.clone());
-    if let Some(type_def) = type_def {
-        let leaf_validation_error = match type_def {
-            hir::TypeDefinition::EnumTypeDefinition(_) if !leaf => {
-                Some("This field is an enum and cannot select any fields")
+) -> Result<(), ApolloDiagnostic> {
+    let is_leaf = field.selection_set.selection.is_empty();
+    let tname = field_type.name();
+    let fname = field.name.src.clone();
+
+    let type_def = match db.find_type_definition_by_name(tname.clone()) {
+        Some(type_def) => type_def,
+        None => return Ok(()),
+    };
+
+    let (label, diagnostic_data) = if is_leaf {
+        let label = match type_def {
+            hir::TypeDefinition::ObjectTypeDefinition(_) => {
+                format!("field `{fname}` type `{tname}` is an object and must select fields")
             }
-            hir::TypeDefinition::ScalarTypeDefinition(_) if !leaf => {
-                Some("This field is a scalar and cannot select any fields")
+            hir::TypeDefinition::InterfaceTypeDefinition(_) => {
+                format!("field `{fname}` type `{tname}` is an interface and must select fields")
             }
-            hir::TypeDefinition::ObjectTypeDefinition(_) if leaf => {
-                Some("This field is an object and must select fields")
+            hir::TypeDefinition::UnionTypeDefinition(_) => {
+                format!("field `{fname}` type `{tname}` is an union and must select fields")
             }
-            hir::TypeDefinition::InterfaceTypeDefinition(_) if leaf => {
-                Some("This field is an interface and must select fields")
-            }
-            hir::TypeDefinition::UnionTypeDefinition(_) if leaf => {
-                Some("This field is an union and must select fields")
-            }
-            _ => None,
+            _ => return Ok(()),
         };
-        if let Some(error) = leaf_validation_error {
-            let name = field.name.src.clone();
-            let diagnostic_data = if leaf {
-                DiagnosticData::MissingSubselection {
-                    name,
-                    ty: type_name.clone(),
-                }
-            } else {
-                DiagnosticData::DisallowedSubselection {
-                    name,
-                    ty: type_name.clone(),
-                }
-            };
-            let diagnostic = ApolloDiagnostic::new(db, field.loc.into(), diagnostic_data)
-                .label(Label::new(field.loc, error));
-            let diagnostic = if let Some(type_def_loc) = type_def.loc() {
-                diagnostic.label(Label::new(
-                    type_def_loc,
-                    format!("`{}` declared here", &type_name),
-                ))
-            } else {
-                diagnostic
-            };
-            return Some(diagnostic);
+        (label, DiagnosticData::MissingSubselection)
+    } else {
+        let label = match type_def {
+            hir::TypeDefinition::EnumTypeDefinition(_) => {
+                format!("field `{fname}` of type `{tname}` is an enum and cannot select any fields")
+            }
+            hir::TypeDefinition::ScalarTypeDefinition(_) => format!(
+                "field `{fname}` of type `{tname}` is a scalar and cannot select any fields"
+            ),
+            _ => return Ok(()),
+        };
+        (label, DiagnosticData::DisallowedSubselection)
+    };
+
+    let diagnostic = ApolloDiagnostic::new(db, field.loc.into(), diagnostic_data)
+        .label(Label::new(field.loc, label));
+
+    match type_def.loc() {
+        Some(type_def_loc) => {
+            let s = format!("`{tname}` declared here");
+            Err(diagnostic.label(Label::new(type_def_loc, s)))
         }
+        None => Err(diagnostic),
     }
-    None
 }

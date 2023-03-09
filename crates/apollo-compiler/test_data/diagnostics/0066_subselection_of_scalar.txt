@@ -19,7 +19,7 @@
                     offset: 28,
                     length: 13,
                 },
-                text: "This field is a scalar and cannot select any fields",
+                text: "field `url1` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -33,10 +33,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "url1",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -58,7 +55,7 @@
                     offset: 44,
                     length: 13,
                 },
-                text: "This field is a scalar and cannot select any fields",
+                text: "field `url2` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -72,10 +69,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "url2",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -97,7 +91,7 @@
                     offset: 60,
                     length: 13,
                 },
-                text: "This field is a scalar and cannot select any fields",
+                text: "field `url3` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -111,10 +105,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "url3",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -136,7 +127,7 @@
                     offset: 76,
                     length: 13,
                 },
-                text: "This field is a scalar and cannot select any fields",
+                text: "field `url4` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -150,10 +141,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "url4",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -175,7 +163,7 @@
                     offset: 92,
                     length: 13,
                 },
-                text: "This field is a scalar and cannot select any fields",
+                text: "field `url5` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -189,10 +177,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "url5",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -214,7 +199,7 @@
                     offset: 108,
                     length: 13,
                 },
-                text: "This field is a scalar and cannot select any fields",
+                text: "field `url6` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -228,9 +213,6 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "url6",
-            ty: "URL",
-        },
+        data: DisallowedSubselection,
     },
 ]

@@ -19,7 +19,7 @@
                     offset: 26,
                     length: 13,
                 },
-                text: "This field is an enum and cannot select any fields",
+                text: "field `pet1` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -33,10 +33,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "pet1",
-            ty: "Pet",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -58,7 +55,7 @@
                     offset: 42,
                     length: 13,
                 },
-                text: "This field is an enum and cannot select any fields",
+                text: "field `pet2` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -72,10 +69,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "pet2",
-            ty: "Pet",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -97,7 +91,7 @@
                     offset: 58,
                     length: 13,
                 },
-                text: "This field is an enum and cannot select any fields",
+                text: "field `pet3` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -111,10 +105,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "pet3",
-            ty: "Pet",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -136,7 +127,7 @@
                     offset: 74,
                     length: 13,
                 },
-                text: "This field is an enum and cannot select any fields",
+                text: "field `pet4` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -150,10 +141,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "pet4",
-            ty: "Pet",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -175,7 +163,7 @@
                     offset: 90,
                     length: 13,
                 },
-                text: "This field is an enum and cannot select any fields",
+                text: "field `pet5` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -189,10 +177,7 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "pet5",
-            ty: "Pet",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -214,7 +199,7 @@
                     offset: 106,
                     length: 13,
                 },
-                text: "This field is an enum and cannot select any fields",
+                text: "field `pet6` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -228,9 +213,6 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection {
-            name: "pet6",
-            ty: "Pet",
-        },
+        data: DisallowedSubselection,
     },
 ]

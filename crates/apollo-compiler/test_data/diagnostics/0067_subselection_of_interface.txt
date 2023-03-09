@@ -19,7 +19,7 @@
                     offset: 31,
                     length: 4,
                 },
-                text: "This field is an interface and must select fields",
+                text: "field `pet1` type `Pet` is an interface and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -33,10 +33,7 @@
             },
         ],
         help: None,
-        data: MissingSubselection {
-            name: "pet1",
-            ty: "Pet",
-        },
+        data: MissingSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -58,7 +55,7 @@
                     offset: 38,
                     length: 4,
                 },
-                text: "This field is an interface and must select fields",
+                text: "field `pet2` type `Pet` is an interface and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -72,10 +69,7 @@
             },
         ],
         help: None,
-        data: MissingSubselection {
-            name: "pet2",
-            ty: "Pet",
-        },
+        data: MissingSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -97,7 +91,7 @@
                     offset: 45,
                     length: 4,
                 },
-                text: "This field is an interface and must select fields",
+                text: "field `pet3` type `Pet` is an interface and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -111,10 +105,7 @@
             },
         ],
         help: None,
-        data: MissingSubselection {
-            name: "pet3",
-            ty: "Pet",
-        },
+        data: MissingSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -136,7 +127,7 @@
                     offset: 52,
                     length: 4,
                 },
-                text: "This field is an interface and must select fields",
+                text: "field `pet4` type `Pet` is an interface and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -150,10 +141,7 @@
             },
         ],
         help: None,
-        data: MissingSubselection {
-            name: "pet4",
-            ty: "Pet",
-        },
+        data: MissingSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -175,7 +163,7 @@
                     offset: 59,
                     length: 4,
                 },
-                text: "This field is an interface and must select fields",
+                text: "field `pet5` type `Pet` is an interface and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -189,10 +177,7 @@
             },
         ],
         help: None,
-        data: MissingSubselection {
-            name: "pet5",
-            ty: "Pet",
-        },
+        data: MissingSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -214,7 +199,7 @@
                     offset: 66,
                     length: 4,
                 },
-                text: "This field is an interface and must select fields",
+                text: "field `pet6` type `Pet` is an interface and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -228,9 +213,6 @@
             },
         ],
         help: None,
-        data: MissingSubselection {
-            name: "pet6",
-            ty: "Pet",
-        },
+        data: MissingSubselection,
     },
 ]

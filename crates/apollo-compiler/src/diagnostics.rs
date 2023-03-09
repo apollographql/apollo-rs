@@ -265,20 +265,10 @@ pub enum DiagnosticData {
         /// Name of the field
         field: String,
     },
-    #[error("`{name}` field of type '{ty}' must not have a sub selection")]
-    DisallowedSubselection {
-        // field name
-        name: String,
-        // field type
-        ty: String,
-    },
-    #[error("`{name}` field of type '{ty}' must have a sub selection")]
-    MissingSubselection {
-        // field name
-        name: String,
-        // field type
-        ty: String,
-    },
+    #[error("subselection set for scalar and enum types must be empty")]
+    DisallowedSubselection,
+    #[error("interface, union and object types must have a subselection set")]
+    MissingSubselection,
 }
 
 impl DiagnosticData {
