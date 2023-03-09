@@ -265,6 +265,10 @@ pub enum DiagnosticData {
         /// Name of the field
         field: String,
     },
+    #[error("subselection set for scalar and enum types must be empty")]
+    DisallowedSubselection,
+    #[error("interface, union and object types must have a subselection set")]
+    MissingSubselection,
 }
 
 impl DiagnosticData {

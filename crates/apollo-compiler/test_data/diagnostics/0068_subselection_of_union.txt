@@ -1,0 +1,218 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            68: "0068_subselection_of_union.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 68,
+            },
+            offset: 27,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 27,
+                    length: 4,
+                },
+                text: "field `pet1` type `CatOrDog` is an union and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 257,
+                    length: 26,
+                },
+                text: "`CatOrDog` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+    ApolloDiagnostic {
+        cache: {
+            68: "0068_subselection_of_union.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 68,
+            },
+            offset: 34,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 34,
+                    length: 4,
+                },
+                text: "field `pet2` type `CatOrDog` is an union and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 257,
+                    length: 26,
+                },
+                text: "`CatOrDog` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+    ApolloDiagnostic {
+        cache: {
+            68: "0068_subselection_of_union.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 68,
+            },
+            offset: 41,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 41,
+                    length: 4,
+                },
+                text: "field `pet3` type `CatOrDog` is an union and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 257,
+                    length: 26,
+                },
+                text: "`CatOrDog` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+    ApolloDiagnostic {
+        cache: {
+            68: "0068_subselection_of_union.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 68,
+            },
+            offset: 48,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 48,
+                    length: 4,
+                },
+                text: "field `pet4` type `CatOrDog` is an union and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 257,
+                    length: 26,
+                },
+                text: "`CatOrDog` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+    ApolloDiagnostic {
+        cache: {
+            68: "0068_subselection_of_union.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 68,
+            },
+            offset: 55,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 55,
+                    length: 4,
+                },
+                text: "field `pet5` type `CatOrDog` is an union and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 257,
+                    length: 26,
+                },
+                text: "`CatOrDog` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+    ApolloDiagnostic {
+        cache: {
+            68: "0068_subselection_of_union.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 68,
+            },
+            offset: 62,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 62,
+                    length: 4,
+                },
+                text: "field `pet6` type `CatOrDog` is an union and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 68,
+                    },
+                    offset: 257,
+                    length: 26,
+                },
+                text: "`CatOrDog` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+]

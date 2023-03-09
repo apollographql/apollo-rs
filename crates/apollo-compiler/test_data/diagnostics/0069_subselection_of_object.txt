@@ -1,0 +1,218 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            69: "0069_subselection_of_object.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 69,
+            },
+            offset: 28,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 28,
+                    length: 4,
+                },
+                text: "field `pet1` type `Pet` is an object and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 178,
+                    length: 26,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+    ApolloDiagnostic {
+        cache: {
+            69: "0069_subselection_of_object.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 69,
+            },
+            offset: 35,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 35,
+                    length: 4,
+                },
+                text: "field `pet2` type `Pet` is an object and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 178,
+                    length: 26,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+    ApolloDiagnostic {
+        cache: {
+            69: "0069_subselection_of_object.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 69,
+            },
+            offset: 42,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 42,
+                    length: 4,
+                },
+                text: "field `pet3` type `Pet` is an object and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 178,
+                    length: 26,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+    ApolloDiagnostic {
+        cache: {
+            69: "0069_subselection_of_object.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 69,
+            },
+            offset: 49,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 49,
+                    length: 4,
+                },
+                text: "field `pet4` type `Pet` is an object and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 178,
+                    length: 26,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+    ApolloDiagnostic {
+        cache: {
+            69: "0069_subselection_of_object.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 69,
+            },
+            offset: 56,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 56,
+                    length: 4,
+                },
+                text: "field `pet5` type `Pet` is an object and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 178,
+                    length: 26,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+    ApolloDiagnostic {
+        cache: {
+            69: "0069_subselection_of_object.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 69,
+            },
+            offset: 63,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 63,
+                    length: 4,
+                },
+                text: "field `pet6` type `Pet` is an object and must select fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 178,
+                    length: 26,
+                },
+                text: "`Pet` declared here",
+            },
+        ],
+        help: None,
+        data: MissingSubselection,
+    },
+]

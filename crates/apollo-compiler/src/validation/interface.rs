@@ -360,7 +360,9 @@ interface Image implements Resource & Node {
     fn it_generates_diagnostics_for_non_output_field_types() {
         let input = r#"
 query mainPage {
-  name
+  name {
+    width
+  }
 }
 
 type Query {

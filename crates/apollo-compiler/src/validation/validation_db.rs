@@ -145,6 +145,13 @@ pub trait ValidationDatabase:
     #[salsa::invoke(field::validate_field)]
     fn validate_field(&self, field: Arc<Field>) -> Vec<ApolloDiagnostic>;
 
+    #[salsa::invoke(field::validate_leaf_field_selection)]
+    fn validate_leaf_field_selection(
+        &self,
+        field: Arc<Field>,
+        field_ty: Type,
+    ) -> Result<(), ApolloDiagnostic>;
+
     #[salsa::invoke(argument::validate_arguments_definition)]
     fn validate_arguments_definition(
         &self,

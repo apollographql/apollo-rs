@@ -7,7 +7,7 @@
             file_id: FileId {
                 id: 36,
             },
-            offset: 367,
+            offset: 425,
             length: 5,
         },
         labels: [
@@ -16,7 +16,7 @@
                     file_id: FileId {
                         id: 36,
                     },
-                    offset: 367,
+                    offset: 425,
                     length: 5,
                 },
                 text: "not found in this scope",
@@ -35,7 +35,7 @@
             file_id: FileId {
                 id: 36,
             },
-            offset: 182,
+            offset: 240,
             length: 4,
         },
         labels: [
@@ -44,7 +44,7 @@
                     file_id: FileId {
                         id: 36,
                     },
-                    offset: 182,
+                    offset: 240,
                     length: 4,
                 },
                 text: "not found in this scope",
@@ -63,7 +63,7 @@
             file_id: FileId {
                 id: 36,
             },
-            offset: 189,
+            offset: 247,
             length: 20,
         },
         labels: [
@@ -72,7 +72,7 @@
                     file_id: FileId {
                         id: 36,
                     },
-                    offset: 189,
+                    offset: 247,
                     length: 20,
                 },
                 text: "this is of `InputObjectTypeDefinition` type",
@@ -94,7 +94,7 @@
             file_id: FileId {
                 id: 36,
             },
-            offset: 218,
+            offset: 276,
             length: 8,
         },
         labels: [
@@ -103,7 +103,7 @@
                     file_id: FileId {
                         id: 36,
                     },
-                    offset: 218,
+                    offset: 276,
                     length: 8,
                 },
                 text: "not found in this scope",
