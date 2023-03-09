@@ -7,6 +7,9 @@ use crate::{
     validation::ValidationDatabase,
 };
 
+/// Check if two fields will output the same type.
+///
+/// Spec: https://spec.graphql.org/October2021/#SameResponseShape()
 fn same_response_shape(
     db: &dyn ValidationDatabase,
     field_a: &hir::Field,
@@ -44,7 +47,7 @@ fn same_response_shape(
         ))
         .label(Label::new(
             field_b.loc(),
-            format!("but the same name has type `{}` here", full_type_b),
+            format!("but the same name has type `{full_type_b}` here"),
         ))
     };
 
@@ -122,6 +125,7 @@ fn same_response_shape(
     }
 }
 
+/// Given a list of fields, group them by response name.
 fn group_fields_by_name(fields: Vec<Arc<hir::Field>>) -> MultiMap<String, Arc<hir::Field>> {
     fields
         .into_iter()
@@ -129,6 +133,7 @@ fn group_fields_by_name(fields: Vec<Arc<hir::Field>>) -> MultiMap<String, Arc<hi
         .collect()
 }
 
+/// Check if the arguments provided to two fields are the same, so the fields can be merged.
 fn identical_arguments(
     db: &dyn ValidationDatabase,
     field_a: &hir::Field,
@@ -199,6 +204,9 @@ fn identical_arguments(
     Ok(())
 }
 
+/// Check if the fields in a given selection set can be merged.
+///
+/// Spec: https://spec.graphql.org/October2021/#FieldsInSetCanMerge()
 fn fields_in_set_can_merge(
     db: &dyn ValidationDatabase,
     selection_set: &hir::SelectionSet,

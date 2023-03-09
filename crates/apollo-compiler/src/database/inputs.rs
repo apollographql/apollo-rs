@@ -14,7 +14,7 @@ struct UnknownFileError;
 /// Use [`InputDatabase::source_cache`] to construct one.
 #[derive(Clone, PartialEq, Eq)]
 pub struct SourceCache {
-    sources: Arc<HashMap<FileId, Arc<AriadneSource>>>,
+    sources: HashMap<FileId, Arc<AriadneSource>>,
     paths: HashMap<FileId, PathBuf>,
 }
 impl AriadneCache<FileId> for &SourceCache {
@@ -78,7 +78,7 @@ pub trait InputDatabase {
     fn source_with_lines(&self, file_id: FileId) -> Arc<AriadneSource>;
     /// Get all GraphQL sources known to the compiler, split up into lines
     /// for printing diagnostics.
-    fn source_cache(&self) -> SourceCache;
+    fn source_cache(&self) -> Arc<SourceCache>;
 
     /// Get all type system definition (GraphQL schema) files.
     fn type_definition_files(&self) -> Vec<FileId>;
@@ -106,7 +106,7 @@ fn source_with_lines(db: &dyn InputDatabase, file_id: FileId) -> Arc<AriadneSour
     Arc::new(AriadneSource::from(code))
 }
 
-fn source_cache(db: &dyn InputDatabase) -> SourceCache {
+fn source_cache(db: &dyn InputDatabase) -> Arc<SourceCache> {
     let file_ids = db.source_files();
     let sources = file_ids
         .iter()
@@ -116,10 +116,10 @@ fn source_cache(db: &dyn InputDatabase) -> SourceCache {
         .iter()
         .map(|&id| (id, db.input(id).filename().to_owned()))
         .collect();
-    SourceCache {
-        sources: Arc::new(sources),
+    Arc::new(SourceCache {
+        sources,
         paths,
-    }
+    })
 }
 
 fn type_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {

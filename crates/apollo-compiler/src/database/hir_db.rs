@@ -147,7 +147,7 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Return all operation fragment spread fields in a corresponding selection set.
     fn operation_fragment_spread_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
-    /// Return all fields in a selection set, including fields in fragments.
+    /// Return the fields that `selection_set` selects including visiting fragments and inline fragments.
     fn flattened_operation_fields(&self, selection_set: SelectionSet) -> Vec<Arc<Field>>;
 
     /// Return all variables in a corresponding selection set.

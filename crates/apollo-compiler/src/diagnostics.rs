@@ -1,4 +1,7 @@
-use std::fmt;
+use std::{
+    fmt,
+    sync::Arc,
+};
 
 use crate::database::hir::{DirectiveLocation, HirNodeLocation};
 use crate::database::{InputDatabase, SourceCache};
@@ -83,11 +86,11 @@ impl Label {
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub struct ApolloDiagnostic {
-    cache: SourceCache,
+    cache: Arc<SourceCache>,
     pub location: DiagnosticLocation,
     pub labels: Vec<Label>,
     pub help: Option<String>,
-    pub data: DiagnosticData,
+    pub data: Box<DiagnosticData>,
 }
 
 impl ApolloDiagnostic {
@@ -101,7 +104,7 @@ impl ApolloDiagnostic {
             location,
             labels: vec![],
             help: None,
-            data,
+            data: Box::new(data),
         }
     }
 
@@ -128,7 +131,7 @@ impl ApolloDiagnostic {
 impl fmt::Display for ApolloDiagnostic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut buf = std::io::Cursor::new(Vec::<u8>::new());
-        self.to_report().write(&self.cache, &mut buf).unwrap();
+        self.to_report().write(self.cache.as_ref(), &mut buf).unwrap();
         writeln!(f, "{}", std::str::from_utf8(&buf.into_inner()).unwrap())
     }
 }
