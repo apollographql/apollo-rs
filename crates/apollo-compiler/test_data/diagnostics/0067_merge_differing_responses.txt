@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            67: "0066_merge_differing_responses.graphql",
+            67: "0067_merge_differing_responses.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
