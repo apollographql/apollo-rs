@@ -8,25 +8,25 @@ use std::{
 };
 
 use anyhow::{bail, Result};
-use structopt::StructOpt;
-use xshell::{cmd, pushenv};
+use clap::{Parser, Subcommand};
+use xshell::{cmd, Shell};
 
 fn main() -> Result<()> {
-    let app = Xtask::from_args();
+    let app = Xtask::parse();
     app.run()
 }
 
-#[derive(Debug, StructOpt)]
-#[structopt(name = "xtask", about = "apollo-rs development workflows")]
+#[derive(Debug, Parser)]
+#[clap(name = "xtask", about = "apollo-rs development workflows")]
 struct Xtask {
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     pub command: Command,
 
-    #[structopt(long = "verbose", short = "v", global = true)]
+    #[clap(long = "verbose", short = 'v', global = true)]
     verbose: bool,
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Subcommand)]
 pub enum Command {
     /// Perform code generation for the parser
     Codegen(codegen::Codegen),
@@ -53,7 +53,9 @@ fn root_path() -> PathBuf {
 }
 
 fn rustfmt() -> Result<()> {
-    let out = cmd!("rustfmt --version").read()?;
+    let sh = Shell::new()?;
+
+    let out = cmd!(sh, "rustfmt --version").read()?;
     if !out.contains("stable") {
         bail!(
             "Failed to run rustfmt from toolchain 'stable'. \
@@ -64,9 +66,10 @@ fn rustfmt() -> Result<()> {
 }
 
 fn reformat(text: &str) -> Result<String> {
-    let _e = pushenv("RUSTUP_TOOLCHAIN", "stable");
+    let sh = Shell::new()?;
+    let _e = sh.push_env("RUSTUP_TOOLCHAIN", "stable");
     rustfmt()?;
-    let stdout = cmd!("rustfmt --config fn_single_line=true")
+    let stdout = cmd!(sh, "rustfmt --config fn_single_line=true")
         .stdin(text)
         .read()?;
     Ok(format!(

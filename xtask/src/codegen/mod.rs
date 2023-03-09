@@ -4,7 +4,7 @@ mod gen_syntax_nodes;
 use std::collections::BTreeSet;
 
 use anyhow::Result;
-use structopt::StructOpt;
+use clap::Parser;
 use ungrammar::{Grammar, Rule};
 
 use crate::{
@@ -16,7 +16,7 @@ use crate::{
 use gen_syntax_kinds::generate_kinds;
 use gen_syntax_nodes::generate_nodes;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 pub struct Codegen {}
 
 impl Codegen {
