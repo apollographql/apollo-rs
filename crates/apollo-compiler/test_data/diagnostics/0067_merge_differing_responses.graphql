@@ -1,0 +1,34 @@
+interface Pet {
+  name: String!
+}
+
+enum DogCommand {
+  SIT
+  HEEL
+}
+
+enum CatCommand {
+  JUMP
+}
+
+type Dog implements Pet {
+  name: String!
+  nickname: String!
+  barkVolume: Int!
+  doesKnowCommand(dogCommand: DogCommand!): Boolean!
+}
+
+type Cat implements Pet {
+  name: String!
+  meowVolume: Int!
+  doesKnowCommand(catCommand: CatCommand!): Boolean!
+}
+
+fragment conflictingDifferingResponses on Pet {
+  ... on Dog {
+    someValue: nickname
+  }
+  ... on Cat {
+    someValue: meowVolume
+  }
+}
