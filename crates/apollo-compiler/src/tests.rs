@@ -40,7 +40,7 @@ fn compiler_tests() {
 
         let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
-            // println!("{diagnostic}");
+            println!("{diagnostic}");
         }
         assert_diagnostics_are_present(&diagnostics, path);
         format!("{diagnostics:#?}")

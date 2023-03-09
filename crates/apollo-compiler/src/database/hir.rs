@@ -87,7 +87,12 @@ impl TypeDefinition {
     /// Returns whether this definition is a composite definition (union, interface, or object).
     #[must_use]
     pub fn is_composite_definition(&self) -> bool {
-        matches!(self, Self::ObjectTypeDefinition(_) | Self::InterfaceTypeDefinition(_) | Self::UnionTypeDefinition(_))
+        matches!(
+            self,
+            Self::ObjectTypeDefinition(_)
+                | Self::InterfaceTypeDefinition(_)
+                | Self::UnionTypeDefinition(_)
+        )
     }
 
     /// Returns whether this definition is a scalar, object, interface, union, or enum.
@@ -617,6 +622,16 @@ impl Type {
     }
 }
 
+impl std::fmt::Display for Type {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Type::NonNull { ty, .. } => write!(f, "{ty}!"),
+            Type::List { ty, .. } => write!(f, "[{ty}]"),
+            Type::Named { name, .. } => write!(f, "{name}"),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Directive {
     pub(crate) name: Name,
@@ -1036,7 +1051,8 @@ impl SelectionSet {
     /// This does not deduplicate fields: if the two selection sets both select a field `a`, the
     /// merged set will select field `a` twice.
     pub fn merge(&self, other: &SelectionSet) -> SelectionSet {
-        let mut merged: Vec<Selection> = Vec::with_capacity(self.selection.len() + other.selection.len());
+        let mut merged: Vec<Selection> =
+            Vec::with_capacity(self.selection.len() + other.selection.len());
         merged.append(&mut self.selection.as_ref().clone());
         merged.append(&mut other.selection.as_ref().clone());
 
@@ -1123,9 +1139,7 @@ impl Field {
 
     /// Get the field's response name.
     pub fn response_name(&self) -> &str {
-        self.alias()
-            .map(Alias::name)
-            .unwrap_or_else(|| self.name())
+        self.alias().map(Alias::name).unwrap_or_else(|| self.name())
     }
 
     /// Get a reference to field's type.
