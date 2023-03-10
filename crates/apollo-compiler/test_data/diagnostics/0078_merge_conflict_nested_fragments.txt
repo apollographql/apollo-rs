@@ -1,0 +1,56 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            74: "0078_merge_conflict_nested_fragments.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 74,
+            },
+            offset: 206,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 74,
+                    },
+                    offset: 179,
+                    length: 4,
+                },
+                text: "field `y` is selected from field `c`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 74,
+                    },
+                    offset: 206,
+                    length: 4,
+                },
+                text: "but also from field `d` here",
+            },
+        ],
+        help: Some(
+            "Cannot select different fields as the same name",
+        ),
+        data: ConflictingSelection {
+            field: "c",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 74,
+                },
+                offset: 179,
+                length: 4,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 74,
+                },
+                offset: 206,
+                length: 4,
+            },
+        },
+    },
+]
