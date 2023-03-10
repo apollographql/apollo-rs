@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            59: "0059_root_operation_object_type.graphql",
+            58: "0059_root_operation_object_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 59,
+                id: 58,
             },
             offset: 0,
             length: 36,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 59,
+                        id: 58,
                     },
                     offset: 0,
                     length: 36,
@@ -27,11 +27,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            59: "0059_root_operation_object_type.graphql",
+            58: "0059_root_operation_object_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 59,
+                id: 58,
             },
             offset: 13,
             length: 20,
@@ -40,7 +40,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 59,
+                        id: 58,
                     },
                     offset: 13,
                     length: 20,

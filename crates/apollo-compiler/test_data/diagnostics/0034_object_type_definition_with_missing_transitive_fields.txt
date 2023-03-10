@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
+            33: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 34,
+                id: 33,
             },
             offset: 0,
             length: 56,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 34,
+                        id: 33,
                     },
                     offset: 77,
                     length: 7,
@@ -24,7 +24,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 34,
+                        id: 33,
                     },
                     offset: 0,
                     length: 56,
@@ -41,11 +41,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
+            33: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 34,
+                id: 33,
             },
             offset: 0,
             length: 56,
@@ -54,7 +54,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 34,
+                        id: 33,
                     },
                     offset: 111,
                     length: 10,
@@ -64,7 +64,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 34,
+                        id: 33,
                     },
                     offset: 0,
                     length: 56,

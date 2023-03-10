@@ -5,6 +5,7 @@
 // This is also an exact setup as we have in `apollo-parser`, in the future we
 // might want to consider merging the two dirs. (@lrlna)
 
+use indexmap::IndexMap;
 use std::{
     env, fs,
     path::{Path, PathBuf},
@@ -108,16 +109,48 @@ fn collect_graphql_files(root_dir: &Path, paths: &[&str]) -> Vec<(PathBuf, Strin
 
 /// Collects paths to all `.graphql` files from `dir` in a sorted `Vec<PathBuf>`.
 fn graphql_files_in_dir(dir: &Path) -> Vec<PathBuf> {
-    let mut acc = Vec::new();
-    for file in fs::read_dir(dir).unwrap() {
-        let file = file.unwrap();
-        let path = file.path();
-        if path.extension().unwrap_or_default() == "graphql" {
-            acc.push(path);
+    let mut paths = fs::read_dir(dir)
+        .unwrap()
+        .map(|file| {
+            let file = file?;
+            let path = file.path();
+            if path.extension().unwrap_or_default() == "graphql" {
+                Ok(Some(path))
+            } else {
+                Ok(None)
+            }
+        })
+        // Get rid of the `None`s
+        .filter_map(|result: std::io::Result<_>| result.transpose())
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+
+    paths.sort();
+
+    // Check for duplicate numbers.
+    let mut seen = IndexMap::new();
+    let next_number = paths.len() + 1;
+    for path in &paths {
+        let file_name = path.file_name().unwrap().to_string_lossy();
+        let (number, name): (usize, _) = match file_name.split_once('_') {
+            Some((number, name)) => match number.parse() {
+                Ok(number) => (number, name),
+                Err(err) => {
+                    panic!("Invalid test file name: {path:?} does not start with a number ({err})")
+                }
+            },
+            None => panic!("Invalid test file name: {path:?} does not start with a number"),
+        };
+
+        if let Some(existing) = seen.get(&number) {
+            let suggest = dir.join(format!("{next_number:03}_{name}"));
+            panic!("Conflicting test file: {path:?} has the same number as {existing:?}. Suggested name: {suggest:?}");
         }
+
+        seen.insert(number, path);
     }
-    acc.sort();
-    acc
+
+    paths
 }
 
 /// PathBuf of test fixtures directory.

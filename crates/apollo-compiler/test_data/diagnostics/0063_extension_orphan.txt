@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            63: "0063_extension_orphan.graphql",
+            62: "0063_extension_orphan.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 63,
+                id: 62,
             },
             offset: 25,
             length: 52,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 63,
+                        id: 62,
                     },
                     offset: 39,
                     length: 1,
@@ -29,11 +29,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            63: "0063_extension_orphan.graphql",
+            62: "0063_extension_orphan.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 63,
+                id: 62,
             },
             offset: 78,
             length: 29,
@@ -42,7 +42,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 63,
+                        id: 62,
                     },
                     offset: 90,
                     length: 1,
@@ -57,11 +57,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            63: "0063_extension_orphan.graphql",
+            62: "0063_extension_orphan.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 63,
+                id: 62,
             },
             offset: 141,
             length: 23,
@@ -70,7 +70,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 63,
+                        id: 62,
                     },
                     offset: 154,
                     length: 1,
@@ -85,11 +85,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            63: "0063_extension_orphan.graphql",
+            62: "0063_extension_orphan.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 63,
+                id: 62,
             },
             offset: 165,
             length: 35,
@@ -98,7 +98,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 63,
+                        id: 62,
                     },
                     offset: 182,
                     length: 1,
@@ -113,11 +113,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            63: "0063_extension_orphan.graphql",
+            62: "0063_extension_orphan.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 63,
+                id: 62,
             },
             offset: 201,
             length: 31,
@@ -126,7 +126,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 63,
+                        id: 62,
                     },
                     offset: 214,
                     length: 1,
@@ -141,11 +141,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            63: "0063_extension_orphan.graphql",
+            62: "0063_extension_orphan.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 63,
+                id: 62,
             },
             offset: 233,
             length: 26,
@@ -154,7 +154,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 63,
+                        id: 62,
                     },
                     offset: 245,
                     length: 1,

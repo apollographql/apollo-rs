@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            68: "0068_subselection_of_union.graphql",
+            67: "0068_subselection_of_union.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 68,
+                id: 67,
             },
             offset: 27,
             length: 4,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 27,
                     length: 4,
@@ -24,7 +24,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 257,
                     length: 26,
@@ -37,11 +37,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            68: "0068_subselection_of_union.graphql",
+            67: "0068_subselection_of_union.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 68,
+                id: 67,
             },
             offset: 34,
             length: 4,
@@ -50,7 +50,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 34,
                     length: 4,
@@ -60,7 +60,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 257,
                     length: 26,
@@ -73,11 +73,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            68: "0068_subselection_of_union.graphql",
+            67: "0068_subselection_of_union.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 68,
+                id: 67,
             },
             offset: 41,
             length: 4,
@@ -86,7 +86,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 41,
                     length: 4,
@@ -96,7 +96,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 257,
                     length: 26,
@@ -109,11 +109,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            68: "0068_subselection_of_union.graphql",
+            67: "0068_subselection_of_union.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 68,
+                id: 67,
             },
             offset: 48,
             length: 4,
@@ -122,7 +122,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 48,
                     length: 4,
@@ -132,7 +132,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 257,
                     length: 26,
@@ -145,11 +145,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            68: "0068_subselection_of_union.graphql",
+            67: "0068_subselection_of_union.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 68,
+                id: 67,
             },
             offset: 55,
             length: 4,
@@ -158,7 +158,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 55,
                     length: 4,
@@ -168,7 +168,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 257,
                     length: 26,
@@ -181,11 +181,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            68: "0068_subselection_of_union.graphql",
+            67: "0068_subselection_of_union.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 68,
+                id: 67,
             },
             offset: 62,
             length: 4,
@@ -194,7 +194,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 62,
                     length: 4,
@@ -204,7 +204,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 68,
+                        id: 67,
                     },
                     offset: 257,
                     length: 26,

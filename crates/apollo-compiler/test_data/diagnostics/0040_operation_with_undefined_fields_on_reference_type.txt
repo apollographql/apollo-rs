@@ -1,11 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
+            39: "0040_operation_with_undefined_fields_on_reference_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 40,
+                id: 39,
             },
             offset: 21,
             length: 4,
@@ -14,7 +14,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 40,
+                        id: 39,
                     },
                     offset: 21,
                     length: 4,
@@ -24,7 +24,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 40,
+                        id: 39,
                     },
                     offset: 38,
                     length: 52,
@@ -41,11 +41,11 @@
     },
     ApolloDiagnostic {
         cache: {
-            40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
+            39: "0040_operation_with_undefined_fields_on_reference_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 40,
+                id: 39,
             },
             offset: 28,
             length: 6,
@@ -54,7 +54,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 40,
+                        id: 39,
                     },
                     offset: 28,
                     length: 6,
@@ -64,7 +64,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 40,
+                        id: 39,
                     },
                     offset: 38,
                     length: 52,
