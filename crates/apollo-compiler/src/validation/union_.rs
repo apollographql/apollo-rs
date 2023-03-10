@@ -22,7 +22,7 @@ pub fn validate_union_definition(
     union_def: Arc<hir::UnionTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = db.validate_directives(
-        union_def.directives().to_vec(),
+        union_def.self_directives().to_vec(),
         hir::DirectiveLocation::Union,
     );
 
