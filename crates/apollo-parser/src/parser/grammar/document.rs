@@ -126,7 +126,7 @@ uasdf21230jkdw
         let ast = parser.parse();
 
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+        assert_eq!(ast.document().definitions().count(), 1);
     }
 
     #[test]
@@ -138,7 +138,7 @@ uasdf21230jkdw
         assert_eq!(ast.errors().len(), 1);
 
         let doc = ast.document();
-        assert!(doc.definitions().into_iter().next().is_none());
+        assert!(doc.definitions().next().is_none());
     }
 
     #[test]

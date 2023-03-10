@@ -103,6 +103,6 @@ mod test {
         let ast = parser.parse();
 
         assert_eq!(ast.errors().len(), 2);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+        assert_eq!(ast.document().definitions().count(), 1);
     }
 }

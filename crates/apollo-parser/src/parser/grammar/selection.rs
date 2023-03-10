@@ -304,7 +304,7 @@ query SomeQuery(
         let ast = parser.parse();
 
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+        assert_eq!(ast.document().definitions().count(), 1);
     }
 
     #[test]
@@ -322,7 +322,7 @@ query SomeQuery(
 
         assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().into_iter().count(), 2);
+        assert_eq!(ast.document().definitions().count(), 2);
     }
 
     #[test]
@@ -340,7 +340,7 @@ query SomeQuery(
 
         assert_eq!(ast.recursion_limit().high, 4);
         assert_eq!(ast.errors().len(), 0);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+        assert_eq!(ast.document().definitions().count(), 1);
     }
 
     #[test]
@@ -359,7 +359,7 @@ query SomeQuery(
 
         assert_eq!(ast.recursion_limit().high, 3);
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+        assert_eq!(ast.document().definitions().count(), 1);
     }
 
     #[test]
@@ -377,7 +377,7 @@ query SomeQuery(
 
         assert_eq!(ast.recursion_limit().high, 3);
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+        assert_eq!(ast.document().definitions().count(), 1);
     }
 
     #[test]
@@ -403,7 +403,7 @@ query SomeQuery(
 
         assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().into_iter().count(), 4);
+        assert_eq!(ast.document().definitions().count(), 4);
     }
 
     #[test]
@@ -421,6 +421,6 @@ query SomeQuery(
 
         assert_eq!(ast.recursion_limit().high, 4);
         assert_eq!(ast.errors().len(), 0);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+        assert_eq!(ast.document().definitions().count(), 1);
     }
 }
