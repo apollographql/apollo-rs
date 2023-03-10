@@ -53,4 +53,58 @@
             },
         },
     },
+    ApolloDiagnostic {
+        cache: {
+            70: "0074_merge_identical_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 70,
+            },
+            offset: 187,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 70,
+                    },
+                    offset: 174,
+                    length: 10,
+                },
+                text: "field `fido` is selected from field `name`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 70,
+                    },
+                    offset: 187,
+                    length: 14,
+                },
+                text: "but also from field `nickname` here",
+            },
+        ],
+        help: Some(
+            "Cannot select different fields as the same name",
+        ),
+        data: ConflictingSelection {
+            field: "name",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 70,
+                },
+                offset: 174,
+                length: 10,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 70,
+                },
+                offset: 187,
+                length: 14,
+            },
+        },
+    },
 ]

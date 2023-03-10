@@ -5,6 +5,7 @@ enum DogCommand {
 
 type Dog {
   doesKnowCommand(dogCommand: DogCommand): Boolean
+  isAtLocation(x: Int, y: Int): Boolean
 }
 
 fragment conflictingArgsOnValues on Dog {
@@ -25,4 +26,9 @@ fragment conflictingArgsWithVars on Dog {
 fragment differingArgs on Dog {
   doesKnowCommand(dogCommand: SIT)
   doesKnowCommand
+}
+
+fragment conflictingArgs on Dog {
+  isAtLocation(x: 0)
+  isAtLocation(y: 0)
 }
