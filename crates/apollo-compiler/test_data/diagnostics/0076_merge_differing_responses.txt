@@ -1,55 +1,53 @@
 [
     ApolloDiagnostic {
         cache: {
-            65: "0065_merge_identical_fields.graphql",
+            72: "0076_merge_differing_responses.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 65,
+                id: 72,
             },
-            offset: 109,
-            length: 4,
+            offset: 461,
+            length: 21,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 72,
                     },
-                    offset: 92,
-                    length: 14,
+                    offset: 418,
+                    length: 19,
                 },
-                text: "field `name` is selected from field `nickname`",
+                text: "`someValue` has type `String!` here",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 72,
                     },
-                    offset: 109,
-                    length: 4,
+                    offset: 461,
+                    length: 21,
                 },
-                text: "but also from field `name` here",
+                text: "but the same name has type `Int!` here",
             },
         ],
-        help: Some(
-            "Cannot select different fields as the same name",
-        ),
+        help: None,
         data: ConflictingSelection {
             field: "nickname",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 65,
+                    id: 72,
                 },
-                offset: 92,
-                length: 14,
+                offset: 418,
+                length: 19,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 65,
+                    id: 72,
                 },
-                offset: 109,
-                length: 4,
+                offset: 461,
+                length: 21,
             },
         },
     },

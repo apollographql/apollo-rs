@@ -18,7 +18,9 @@ fragment Z on ComplicatedArgs {
 }
 
 {
-  basic @skip @include(wrong: false)
+  basic @skip @include(wrong: false) {
+    a
+  }
 
   complicatedArgs {
     a: multipleReqs(req2: 1)

@@ -574,7 +574,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
 
         let product_query = r#"query getProduct { topProducts { type } }"#;
-        let customer_query = r#"{ customer }"#;
+        let customer_query = r#"{ customer { id } }"#;
         let colliding_query = r#"query getProduct { topProducts { type, price } }"#;
 
         let mut compiler = ApolloCompiler::new();

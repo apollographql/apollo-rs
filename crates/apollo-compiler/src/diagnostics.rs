@@ -267,6 +267,10 @@ pub enum DiagnosticData {
         /// Name of the field
         field: String,
     },
+    #[error("subselection set for scalar and enum types must be empty")]
+    DisallowedSubselection,
+    #[error("interface, union and object types must have a subselection set")]
+    MissingSubselection,
     #[error("operation must not select different types as the same name `{field}`")]
     ConflictingSelection {
         /// Name of the non-unique field.

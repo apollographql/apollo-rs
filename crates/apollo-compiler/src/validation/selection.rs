@@ -302,8 +302,6 @@ pub fn validate_selection_set(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    // TODO handle Enums, Scalar (no selection set content allowed), Unions
-
     if let Err(diagnostic) = fields_in_set_can_merge(db, &selection_set) {
         diagnostics.push(diagnostic);
     }
