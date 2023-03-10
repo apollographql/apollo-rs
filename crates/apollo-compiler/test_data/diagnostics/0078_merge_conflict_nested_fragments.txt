@@ -7,7 +7,7 @@
             file_id: FileId {
                 id: 74,
             },
-            offset: 206,
+            offset: 240,
             length: 4,
         },
         labels: [
@@ -16,39 +16,39 @@
                     file_id: FileId {
                         id: 74,
                     },
-                    offset: 179,
+                    offset: 145,
                     length: 4,
                 },
-                text: "field `y` is selected from field `c`",
+                text: "field `x` is selected from field `a`",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 74,
                     },
-                    offset: 206,
+                    offset: 240,
                     length: 4,
                 },
-                text: "but also from field `d` here",
+                text: "but also from field `b` here",
             },
         ],
         help: Some(
             "Cannot select different fields as the same name",
         ),
         data: ConflictingSelection {
-            field: "c",
+            field: "a",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 74,
                 },
-                offset: 179,
+                offset: 145,
                 length: 4,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 74,
                 },
-                offset: 206,
+                offset: 240,
                 length: 4,
             },
         },
