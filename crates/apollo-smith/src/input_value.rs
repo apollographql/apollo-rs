@@ -367,10 +367,7 @@ mod tests {
 
     #[test]
     fn test_input_value_for_type() {
-        let data: Vec<u8> = (0..=5000usize)
-            .into_iter()
-            .map(|n| (n % 255) as u8)
-            .collect();
+        let data: Vec<u8> = (0..=5000usize).map(|n| (n % 255) as u8).collect();
         let mut u = Unstructured::new(&data);
         let mut document_builder = DocumentBuilder {
             u: &mut u,

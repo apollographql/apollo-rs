@@ -77,7 +77,6 @@ type Query {
                             .arguments_definition()
                             .unwrap()
                             .input_value_definitions()
-                            .into_iter()
                             .next()
                             .unwrap();
                         assert_eq!(argument.name().unwrap().text(), "category");

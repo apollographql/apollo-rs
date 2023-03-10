@@ -136,7 +136,7 @@ extend Cat
         let ast = parser.parse();
 
         assert!(ast.errors().len() == 2);
-        assert_eq!(ast.document().definitions().into_iter().count(), 0);
+        assert_eq!(ast.document().definitions().count(), 0);
     }
 
     #[test]
@@ -153,6 +153,6 @@ extend interface NamedEntity {
         let ast = parser.parse();
 
         assert!(ast.errors().len() == 2);
-        assert_eq!(ast.document().definitions().into_iter().count(), 1);
+        assert_eq!(ast.document().definitions().count(), 1);
     }
 }
