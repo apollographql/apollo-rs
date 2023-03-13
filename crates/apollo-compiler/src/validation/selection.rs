@@ -1,4 +1,4 @@
-use multimap::MultiMap;
+use indexmap::IndexMap;
 use std::sync::Arc;
 
 use crate::{
@@ -126,11 +126,19 @@ pub(crate) fn same_response_shape(
 }
 
 /// Given a list of fields, group them by response name.
-fn group_fields_by_name(fields: Vec<Arc<hir::Field>>) -> MultiMap<String, Arc<hir::Field>> {
-    fields
-        .into_iter()
-        .map(|field| (field.response_name().to_string(), field))
-        .collect()
+fn group_fields_by_name(fields: Vec<Arc<hir::Field>>) -> IndexMap<String, Vec<Arc<hir::Field>>> {
+    let mut map = IndexMap::<String, Vec<Arc<hir::Field>>>::new();
+    for field in fields {
+        match map.entry(field.response_name().to_string()) {
+            indexmap::map::Entry::Occupied(mut entry) => {
+                entry.get_mut().push(field);
+            },
+            indexmap::map::Entry::Vacant(entry) => {
+                entry.insert(vec![field]);
+            },
+        }
+    }
+    map
 }
 
 /// Check if the arguments provided to two fields are the same, so the fields can be merged.
