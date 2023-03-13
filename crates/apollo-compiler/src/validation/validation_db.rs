@@ -192,7 +192,11 @@ pub trait ValidationDatabase:
     ///
     /// Spec: https://spec.graphql.org/October2021/#SameResponseShape()
     #[salsa::invoke(selection::same_response_shape)]
-    fn same_response_shape(&self, field_a: Arc<Field>, field_b: Arc<Field>) -> Result<(), ApolloDiagnostic>;
+    fn same_response_shape(
+        &self,
+        field_a: Arc<Field>,
+        field_b: Arc<Field>,
+    ) -> Result<(), ApolloDiagnostic>;
 
     /// Check if the fields in a given selection set can be merged.
     ///

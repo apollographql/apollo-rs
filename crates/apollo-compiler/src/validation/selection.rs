@@ -132,10 +132,10 @@ fn group_fields_by_name(fields: Vec<Arc<hir::Field>>) -> IndexMap<String, Vec<Ar
         match map.entry(field.response_name().to_string()) {
             indexmap::map::Entry::Occupied(mut entry) => {
                 entry.get_mut().push(field);
-            },
+            }
             indexmap::map::Entry::Vacant(entry) => {
                 entry.insert(vec![field]);
-            },
+            }
         }
     }
     map
@@ -220,7 +220,7 @@ pub(crate) fn fields_in_set_can_merge(
     selection_set: hir::SelectionSet,
 ) -> Result<(), ApolloDiagnostic> {
     // 1. Let `fieldsForName` be the set of selections with a given response name in set including visiting fragments and inline fragments.
-    let fields = db.flattened_operation_fields(selection_set.clone());
+    let fields = db.flattened_operation_fields(selection_set);
     let grouped_by_name = group_fields_by_name(fields);
 
     for (_, fields_for_name) in grouped_by_name {
