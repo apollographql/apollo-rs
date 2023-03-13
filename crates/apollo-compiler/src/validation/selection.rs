@@ -10,10 +10,10 @@ use crate::{
 /// Check if two fields will output the same type.
 ///
 /// Spec: https://spec.graphql.org/October2021/#SameResponseShape()
-fn same_response_shape(
+pub(crate) fn same_response_shape(
     db: &dyn ValidationDatabase,
-    field_a: &hir::Field,
-    field_b: &hir::Field,
+    field_a: Arc<hir::Field>,
+    field_b: Arc<hir::Field>,
 ) -> Result<(), ApolloDiagnostic> {
     // 1. Let typeA be the return type of fieldA.
     let Some(full_type_a) = field_a.ty(db.upcast()) else {
@@ -115,7 +115,7 @@ fn same_response_shape(
                 };
                 for subfield_b in rest {
                     // 9a. If SameResponseShape(subfieldA, subfieldB) is false, return false.
-                    same_response_shape(db, subfield_a, subfield_b)?;
+                    db.same_response_shape(Arc::clone(subfield_a), Arc::clone(subfield_b))?;
                 }
             }
 
@@ -207,9 +207,9 @@ fn identical_arguments(
 /// Check if the fields in a given selection set can be merged.
 ///
 /// Spec: https://spec.graphql.org/October2021/#FieldsInSetCanMerge()
-fn fields_in_set_can_merge(
+pub(crate) fn fields_in_set_can_merge(
     db: &dyn ValidationDatabase,
-    selection_set: &hir::SelectionSet,
+    selection_set: hir::SelectionSet,
 ) -> Result<(), ApolloDiagnostic> {
     // 1. Let `fieldsForName` be the set of selections with a given response name in set including visiting fragments and inline fragments.
     let fields = db.flattened_operation_fields(selection_set.clone());
@@ -225,7 +225,7 @@ fn fields_in_set_can_merge(
         };
         for field_b in rest {
             // 2a. SameResponseShape(fieldA, fieldB) must be true.
-            same_response_shape(db, field_a, field_b)?;
+            db.same_response_shape(Arc::clone(field_a), Arc::clone(field_b))?;
             // 2b. If the parent types of fieldA and fieldB are equal or if either is not an Object Type:
             let Some(parent_b) = field_b.parent_type(db.upcast()) else {
                 continue; // We can't find the type
@@ -261,7 +261,7 @@ fn fields_in_set_can_merge(
                 // 2biii. Let mergedSet be the result of adding the selection set of fieldA and the selection set of fieldB.
                 let merged_set = field_a.selection_set().merge(field_b.selection_set());
                 // 2biv. FieldsInSetCanMerge(mergedSet) must be true.
-                fields_in_set_can_merge(db, &merged_set)?;
+                db.fields_in_set_can_merge(merged_set)?;
             }
         }
     }
@@ -302,7 +302,7 @@ pub fn validate_selection_set(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    if let Err(diagnostic) = fields_in_set_can_merge(db, &selection_set) {
+    if let Err(diagnostic) = fields_in_set_can_merge(db, selection_set.clone()) {
         diagnostics.push(diagnostic);
     }
 
