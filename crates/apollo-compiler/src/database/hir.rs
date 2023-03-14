@@ -1246,6 +1246,7 @@ impl Field {
         &self.selection_set
     }
 
+    /// Return an iterator over the variables used in arguments to this field.
     fn self_used_variables(&self) -> impl Iterator<Item = Variable> + '_ {
         self.arguments.iter().filter_map(|arg| match arg.value() {
             Value::Variable(var) => Some(var.clone()),
@@ -1253,7 +1254,17 @@ impl Field {
         })
     }
 
-    /// Get variables used in the field.
+    /// Get variables used in the field, including in sub-selections.
+    ///
+    /// For example, with this field:
+    /// ```graphql
+    /// {
+    ///   field(arg: $arg) {
+    ///     number(formatAs: $format)
+    ///   }
+    /// }
+    /// ```
+    /// the used variables are `$arg` and `$format`.
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         let mut vars = self.self_used_variables().collect::<Vec<_>>();
         vars.extend(self.selection_set.variables(db));
