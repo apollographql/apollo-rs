@@ -322,6 +322,8 @@ impl FragmentDefinition {
     // which operation definition the fragment is used in.
 
     /// Get variables used in a fragment definition.
+    ///
+    /// TODO(@goto-bus-stop): Maybe rename this to used_variables
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         self.selection_set
             .selection()
@@ -1304,12 +1306,7 @@ impl FragmentSpread {
     /// Get fragment spread's defined variables.
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         let vars = match self.fragment(db) {
-            Some(fragment) => fragment
-                .selection_set
-                .selection()
-                .iter()
-                .flat_map(|sel| sel.variables(db))
-                .collect(),
+            Some(fragment) => fragment.variables(db),
             None => Vec::new(),
         };
         vars
