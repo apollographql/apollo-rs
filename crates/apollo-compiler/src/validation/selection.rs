@@ -147,7 +147,6 @@ fn identical_arguments(
     field_a: &hir::Field,
     field_b: &hir::Field,
 ) -> Result<(), ApolloDiagnostic> {
-    // TODO(@goto-bus-stop) This should probably "resolve" arguments? eg. fill in default values…
     let args_a = field_a.arguments();
     let args_b = field_b.arguments();
     // Check if fieldB provides the same argument names and values as fieldA (order-independent).
