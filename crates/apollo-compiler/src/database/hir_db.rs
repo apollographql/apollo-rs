@@ -171,6 +171,8 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     #[salsa::invoke(document::find_input_object_by_name)]
     fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
 
+    /// Returns a map of type definitions in a GraphQL schema,
+    /// Where the key is the type name and the value is a `TypeDefinition` representing the type.
     #[salsa::invoke(document::types_definitions_by_name)]
     fn types_definitions_by_name(&self) -> Arc<IndexMap<String, TypeDefinition>>;
 

@@ -215,6 +215,11 @@ pub enum DiagnosticData {
         // current field that should be defined
         field: String,
     },
+    #[error("missing `{ty}` type")]
+    MissingType {
+        // current type that should be defined
+        ty: String,
+    },
     #[error("the required argument `{name}` is not provided")]
     RequiredArgument { name: String },
     #[error(
@@ -290,6 +295,18 @@ pub enum DiagnosticData {
     #[error("cannot find fragment `{name}` in this document")]
     UndefinedFragment {
         /// Name of the fragment not in scope
+        name: String,
+    },
+    #[error("`{name}` can not be declared on scalar types")]
+    InvalidFragmentType {
+        /// Name of the fragment
+        name: String,
+        /// Name of the type on which the fragment is declared
+        ty: String,
+    },
+    #[error("`{name}` must be used in schema definition")]
+    UnusedFragment {
+        /// Name of the fragment
         name: String,
     },
 }
