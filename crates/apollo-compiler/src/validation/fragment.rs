@@ -91,40 +91,43 @@ pub fn validate_fragment_spread_type_existence(
 
     // Validate FragmentDefinition-level inline fragments
     let inline_fragment_diagnostics = db
-            .fragments(file_id)
-            .values()
-            .filter_map(|def| {
-            Some(def.selection_set()
-                .inline_fragments()
-                .iter()
-                .filter_map(|inline_def| {
-                    inline_def.type_condition().and_then(|inline_type_cond| {
+    .fragments(file_id)
+    .values()
+    .flat_map(|def| {
+        Some(def.selection_set()
+            .inline_fragments()
+            .iter()
+            .filter_map(|inline_def| {
+                inline_def
+                    .type_condition()
+                    .and_then(|inline_type_cond| {
                         if !schema_types.contains_key(inline_type_cond) {
-                            Some(
-                                ApolloDiagnostic::new(
-                                    db,
-                                    inline_def.loc().into(),
-                                    DiagnosticData::MissingType {
-                                        ty: inline_type_cond.into(),
-                                    },
-                                )
-                                .label(Label::new(
-                                    inline_def.loc(),
-                                    format!("`{inline_type_cond}` is defined here but not declared in the schema"),
-                                ))
-                                .help(format!(
-                                    "Fragments must be specified on types that exist in the schema. Consider defining `{inline_type_cond}` in the schema."
-                                )),
+                            Some(ApolloDiagnostic::new(
+                                db,
+                                inline_def.loc().into(),
+                                DiagnosticData::MissingType {
+                                    ty: inline_type_cond.into(),
+                                },
                             )
+                            .label(Label::new(
+                                inline_def.loc(),
+                                format!(
+                                    "`{inline_type_cond}` is defined here but not declared in the schema"
+                                ),
+                            ))
+                            .help(format!(
+                                "Fragments must be specified on types that exist in the schema. Consider defining `{inline_type_cond}` in the schema."
+                            )))
                         } else {
                             None
                         }
                     })
-                })
-                .collect::<Vec<_>>())
-        })
-        .flatten()
-        .collect::<Vec<_>>();
+            })
+            .collect::<Vec<_>>())
+    })
+    .flatten()
+    .collect::<Vec<_>>();
+
 
     // Validate operation-level inline fragments
     let operation_inline_fragment_diagnostics = db
@@ -189,7 +192,7 @@ pub fn validate_fragment_on_composite_types(
     let fragment_diagnostics: Vec<ApolloDiagnostic> = db
         .fragments(file_id)
         .values()
-        .map(|def| {
+        .filter_map(|def| {
             let type_cond = def.type_condition();
 
             if BUILT_IN_SCALARS.contains(&type_cond) && !detected_scalars.contains(type_cond) {
@@ -215,7 +218,6 @@ pub fn validate_fragment_on_composite_types(
                 None
             }
         })
-        .flatten()
         .collect();
 
     invalid_fragments.clear(); // clear the set between calls
@@ -223,47 +225,44 @@ pub fn validate_fragment_on_composite_types(
     let inline_fragment_diagnostics: Vec<ApolloDiagnostic> = db
         .fragments(file_id)
         .values()
-        .filter_map(|def| {
+        .flat_map(|def| {
             let type_cond = def.type_condition();
             detected_scalars.insert(type_cond.to_owned());
 
-            Some(
-                def.selection_set()
-                    .inline_fragments()
-                    .iter()
-                    .filter_map(|inline_def| {
-                        let inline_type_cond = inline_def.type_condition().unwrap_or_default();
+            def.selection_set()
+                .inline_fragments()
+                .iter()
+                .filter_map(|inline_def| {
+                    let inline_type_cond = inline_def.type_condition().unwrap_or_default();
 
-                        if BUILT_IN_SCALARS.contains(&inline_type_cond)
-                            && !detected_scalars.contains(inline_type_cond)
-                        {
-                            let name = def.name().to_string();
-                            if invalid_fragments.insert(name.clone()) {
-                                Some(
-                                    ApolloDiagnostic::new(
-                                        db,
-                                        inline_def.loc().into(),
-                                        DiagnosticData::InvalidFragmentType {
-                                            name: name.into(),
-                                            ty: inline_type_cond.into(),
-                                        },
-                                    )
-                                    .label(Label::new(
-                                        inline_def.loc(),
-                                        format!("`{inline_type_cond}` is defined here"),
-                                    )),
+                    if BUILT_IN_SCALARS.contains(&inline_type_cond)
+                        && !detected_scalars.contains(inline_type_cond)
+                    {
+                        let name = def.name().to_string();
+                        if invalid_fragments.insert(name.clone()) {
+                            Some(
+                                ApolloDiagnostic::new(
+                                    db,
+                                    inline_def.loc().into(),
+                                    DiagnosticData::InvalidFragmentType {
+                                        name,
+                                        ty: inline_type_cond.into(),
+                                    },
                                 )
-                            } else {
-                                None
-                            }
+                                .label(Label::new(
+                                    inline_def.loc(),
+                                    format!("`{inline_type_cond}` is defined here"),
+                                )),
+                            )
                         } else {
                             None
                         }
-                    })
-                    .collect::<Vec<_>>(),
-            )
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>()
         })
-        .flatten()
         .collect();
 
     let mut diagnostics =
@@ -292,8 +291,7 @@ pub fn validate_fragment_used(
             let fields = op.fields(db.upcast());
             let fragment_spreads = fields
                 .iter()
-                .filter_map(|f| Some(f.selection_set().fragment_spreads()))
-                .flatten()
+                .flat_map(|f| f.selection_set().fragment_spreads())
                 .map(|f| f.name().to_owned())
                 .collect::<Vec<_>>();
 
