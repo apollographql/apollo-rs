@@ -1,6 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
-    fmt,
+    fmt, hash,
     sync::Arc,
 };
 
@@ -1223,7 +1223,7 @@ impl Field {
     /// Get field's original field definition.
     pub fn field_definition(&self, db: &dyn HirDatabase) -> Option<FieldDefinition> {
         db.find_object_type_by_name(self.parent_obj.as_ref()?.to_string())?
-            .fields_definition()
+            .self_fields()
             .iter()
             .find(|field| field.name() == self.name())
             .cloned()
@@ -1463,6 +1463,92 @@ impl Float {
     }
 }
 
+/// When some item (for example fields of an object type) have unique names
+/// and may be found on type extensions, this pre-computes where to find
+/// each item from its name
+#[derive(Clone, Debug, Eq)]
+pub(crate) struct ByNameWithExtensions {
+    /// `(None, i)` designates `def.example[i]`.
+    /// `(Some(j), i)` designates `def.extensions[j].example[i]`.
+    indices: IndexMap<String, (Option<usize>, usize)>,
+}
+
+/// Equivalent to ignoring a `ByNameWithExtensions` field in `PartialEq` for its parent struct,
+/// since it is determined by other fields.
+impl PartialEq for ByNameWithExtensions {
+    fn eq(&self, _other: &Self) -> bool {
+        true
+    }
+}
+
+/// Equivalent to ignoring a `ByNameWithExtensions` field in `Hash` for its parent struct,
+/// since it is determined by other fields.
+impl hash::Hash for ByNameWithExtensions {
+    fn hash<H: hash::Hasher>(&self, _state: &mut H) {
+        // do nothing
+    }
+}
+
+impl ByNameWithExtensions {
+    pub(crate) fn new<Item>(self_items: &[Item], name: impl Fn(&Item) -> &str) -> Self {
+        let mut indices = IndexMap::new();
+        for (i, item) in self_items.iter().enumerate() {
+            indices.entry(name(item).to_owned()).or_insert((None, i));
+        }
+        ByNameWithExtensions { indices }
+    }
+
+    pub(crate) fn add_extension<Item>(
+        &mut self,
+        extension_index: usize,
+        extension_items: &[Item],
+        name: impl Fn(&Item) -> &str,
+    ) {
+        for (i, item) in extension_items.iter().enumerate() {
+            self.indices
+                .entry(name(item).to_owned())
+                .or_insert((Some(extension_index), i));
+        }
+    }
+
+    fn get_by_index<'a, Item, Ext>(
+        &self,
+        (ext, i): (Option<usize>, usize),
+        self_items: &'a [Item],
+        extensions: &'a [Arc<Ext>],
+        extension_items: impl Fn(&'a Ext) -> &'a [Item],
+    ) -> &'a Item {
+        let items = if let Some(j) = ext {
+            extension_items(&extensions[j])
+        } else {
+            self_items
+        };
+        &items[i]
+    }
+
+    pub(crate) fn get<'a, Item, Ext>(
+        &self,
+        name: &str,
+        self_items: &'a [Item],
+        extensions: &'a [Arc<Ext>],
+        extension_items: impl Fn(&'a Ext) -> &'a [Item],
+    ) -> Option<&'a Item> {
+        let index = *self.indices.get(name)?;
+        Some(self.get_by_index(index, self_items, extensions, extension_items))
+    }
+
+    pub(crate) fn iter<'a, Item, Ext>(
+        &'a self,
+        self_items: &'a [Item],
+        extensions: &'a [Arc<Ext>],
+        extension_items: impl Fn(&'a Ext) -> &'a [Item] + Copy + 'a,
+    ) -> impl Iterator<Item = &'a Item> + ExactSizeIterator + DoubleEndedIterator {
+        self.indices
+            .values()
+            .map(move |&index| self.get_by_index(index, self_items, extensions, extension_items))
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Default, Eq)]
 pub struct SchemaDefinition {
     pub(crate) description: Option<String>,
@@ -1473,6 +1559,10 @@ pub struct SchemaDefinition {
 }
 
 impl SchemaDefinition {
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
+
     /// Get a reference to the schema definition's directives (excluding those on extensions).
     pub fn self_directives(&self) -> &[Directive] {
         self.directives.as_ref()
@@ -1619,6 +1709,8 @@ pub struct ObjectTypeDefinition {
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
     pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<ObjectTypeExtension>>,
+    pub(crate) fields_by_name: ByNameWithExtensions,
+    pub(crate) implements_interfaces_by_name: ByNameWithExtensions,
 }
 
 impl ObjectTypeDefinition {
@@ -1673,19 +1765,63 @@ impl ObjectTypeDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get a reference to the object type definition's field definitions.
-    pub fn fields_definition(&self) -> &[FieldDefinition] {
+    /// Get a reference to the object type definition's field definitions,
+    /// excluding fields from extensions.
+    pub fn self_fields(&self) -> &[FieldDefinition] {
         self.fields_definition.as_ref()
     }
 
-    /// Find a field in object type definition.
-    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
-        self.fields_definition().iter().find(|f| f.name() == name)
+    /// Returns an iterator of fields of this object type,
+    /// whether from its own definition or from extensions.
+    pub fn fields(
+        &self,
+    ) -> impl Iterator<Item = &FieldDefinition> + ExactSizeIterator + DoubleEndedIterator {
+        self.fields_by_name.iter(
+            self.self_fields(),
+            self.extensions(),
+            ObjectTypeExtension::fields_definition,
+        )
     }
 
-    /// Get a reference to object type definition's implements interfaces vector.
-    pub fn implements_interfaces(&self) -> &[ImplementsInterface] {
+    /// Find a field by its name, either in this object type definition or its extensions.
+    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
+        self.fields_by_name.get(
+            name,
+            self.self_fields(),
+            self.extensions(),
+            ObjectTypeExtension::fields_definition,
+        )
+    }
+
+    /// Returns interfaces implemented by this object type definition,
+    /// excluding those from extensions.
+    pub fn self_implements_interfaces(&self) -> &[ImplementsInterface] {
         self.implements_interfaces.as_ref()
+    }
+
+    /// Returns an iterator of interfaces implemented by this object type,
+    /// whether from its own definition or from extensions.
+    pub fn implements_interfaces(
+        &self,
+    ) -> impl Iterator<Item = &ImplementsInterface> + ExactSizeIterator + DoubleEndedIterator {
+        self.implements_interfaces_by_name.iter(
+            self.self_implements_interfaces(),
+            self.extensions(),
+            ObjectTypeExtension::implements_interfaces,
+        )
+    }
+
+    /// Returns whether this object type implements the interface of the given name,
+    /// either in its own definition or its extensions.
+    pub fn implements_interface(&self, name: &str) -> bool {
+        self.implements_interfaces_by_name
+            .get(
+                name,
+                self.self_implements_interfaces(),
+                self.extensions(),
+                ObjectTypeExtension::implements_interfaces,
+            )
+            .is_some()
     }
 
     /// Get the AST location information for this HIR node.
@@ -1696,6 +1832,21 @@ impl ObjectTypeDefinition {
     /// Extensions that apply to this definition
     pub fn extensions(&self) -> &[Arc<ObjectTypeExtension>] {
         &self.extensions
+    }
+
+    pub(crate) fn push_extension(&mut self, ext: Arc<ObjectTypeExtension>) {
+        let next_index = self.extensions.len();
+        self.fields_by_name.add_extension(
+            next_index,
+            ext.fields_definition(),
+            FieldDefinition::name,
+        );
+        self.implements_interfaces_by_name.add_extension(
+            next_index,
+            ext.implements_interfaces(),
+            ImplementsInterface::interface,
+        );
+        self.extensions.push(ext);
     }
 }
 
@@ -1949,6 +2100,10 @@ impl ScalarTypeDefinition {
     pub fn extensions(&self) -> &[Arc<ScalarTypeExtension>] {
         &self.extensions
     }
+
+    pub(crate) fn push_extension(&mut self, ext: Arc<ScalarTypeExtension>) {
+        self.extensions.push(ext);
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1959,6 +2114,7 @@ pub struct EnumTypeDefinition {
     pub(crate) enum_values_definition: Arc<Vec<EnumValueDefinition>>,
     pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<EnumTypeExtension>>,
+    pub(crate) values_by_name: ByNameWithExtensions,
 }
 
 impl EnumTypeDefinition {
@@ -2013,9 +2169,31 @@ impl EnumTypeDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get a reference to enum definition's enum values definition vector.
-    pub fn enum_values_definition(&self) -> &[EnumValueDefinition] {
+    /// Returns the values of this enum definition, excluding those from extensions.
+    pub fn self_values(&self) -> &[EnumValueDefinition] {
         self.enum_values_definition.as_ref()
+    }
+
+    /// Returns an iterator of values of this enum type,
+    /// whether from its own definition or from extensions.
+    pub fn values(
+        &self,
+    ) -> impl Iterator<Item = &EnumValueDefinition> + ExactSizeIterator + DoubleEndedIterator {
+        self.values_by_name.iter(
+            self.self_values(),
+            self.extensions(),
+            EnumTypeExtension::enum_values_definition,
+        )
+    }
+
+    /// Find an enum value by its name, either in this enum type definition or its extensions.
+    pub fn value(&self, name: &str) -> Option<&EnumValueDefinition> {
+        self.values_by_name.get(
+            name,
+            self.self_values(),
+            self.extensions(),
+            EnumTypeExtension::enum_values_definition,
+        )
     }
 
     /// Get the AST location information for this HIR node.
@@ -2026,6 +2204,16 @@ impl EnumTypeDefinition {
     /// Extensions that apply to this definition
     pub fn extensions(&self) -> &[Arc<EnumTypeExtension>] {
         &self.extensions
+    }
+
+    pub(crate) fn push_extension(&mut self, ext: Arc<EnumTypeExtension>) {
+        let next_index = self.extensions.len();
+        self.values_by_name.add_extension(
+            next_index,
+            ext.enum_values_definition(),
+            EnumValueDefinition::enum_value,
+        );
+        self.extensions.push(ext);
     }
 }
 
@@ -2038,6 +2226,10 @@ pub struct EnumValueDefinition {
 }
 
 impl EnumValueDefinition {
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
+
     /// Get a reference to enum value definition's enum value
     pub fn enum_value(&self) -> &str {
         self.enum_value.src()
@@ -2081,6 +2273,7 @@ pub struct UnionTypeDefinition {
     pub(crate) union_members: Arc<Vec<UnionMember>>,
     pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<UnionTypeExtension>>,
+    pub(crate) members_by_name: ByNameWithExtensions,
 }
 
 impl UnionTypeDefinition {
@@ -2135,9 +2328,35 @@ impl UnionTypeDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get a reference to union definition's union members.
-    pub fn union_members(&self) -> &[UnionMember] {
+    /// Get a reference to union definition's union members,
+    /// excluding those from extensions.
+    pub fn self_members(&self) -> &[UnionMember] {
         self.union_members.as_ref()
+    }
+
+    /// Returns an iterator of members of this union type,
+    /// whether from its own definition or from extensions.
+    pub fn members(
+        &self,
+    ) -> impl Iterator<Item = &UnionMember> + ExactSizeIterator + DoubleEndedIterator {
+        self.members_by_name.iter(
+            self.self_members(),
+            self.extensions(),
+            UnionTypeExtension::union_members,
+        )
+    }
+
+    /// Returns whether the type of the given name is a member of this union type,
+    /// either from the union type definition or its extensions.
+    pub fn has_member(&self, name: &str) -> bool {
+        self.members_by_name
+            .get(
+                name,
+                self.self_members(),
+                self.extensions(),
+                UnionTypeExtension::union_members,
+            )
+            .is_some()
     }
 
     /// Get the AST location information for this HIR node.
@@ -2148,6 +2367,13 @@ impl UnionTypeDefinition {
     /// Extensions that apply to this definition
     pub fn extensions(&self) -> &[Arc<UnionTypeExtension>] {
         &self.extensions
+    }
+
+    pub(crate) fn push_extension(&mut self, ext: Arc<UnionTypeExtension>) {
+        let next_index = self.extensions.len();
+        self.members_by_name
+            .add_extension(next_index, ext.union_members(), UnionMember::name);
+        self.extensions.push(ext);
     }
 }
 
@@ -2183,6 +2409,8 @@ pub struct InterfaceTypeDefinition {
     pub(crate) fields_definition: Arc<Vec<FieldDefinition>>,
     pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<InterfaceTypeExtension>>,
+    pub(crate) fields_by_name: ByNameWithExtensions,
+    pub(crate) implements_interfaces_by_name: ByNameWithExtensions,
 }
 
 impl InterfaceTypeDefinition {
@@ -2201,9 +2429,35 @@ impl InterfaceTypeDefinition {
         self.description.as_deref()
     }
 
-    /// Get a reference to interface definition's implements interfaces vector.
-    pub fn implements_interfaces(&self) -> &[ImplementsInterface] {
+    /// Returns interfaces implemented by this interface type definition,
+    /// excluding those from extensions.
+    pub fn self_implements_interfaces(&self) -> &[ImplementsInterface] {
         self.implements_interfaces.as_ref()
+    }
+
+    /// Returns an iterator of interfaces implemented by this interface type,
+    /// whether from its own definition or from extensions.
+    pub fn implements_interfaces(
+        &self,
+    ) -> impl Iterator<Item = &ImplementsInterface> + ExactSizeIterator + DoubleEndedIterator {
+        self.implements_interfaces_by_name.iter(
+            self.self_implements_interfaces(),
+            self.extensions(),
+            InterfaceTypeExtension::implements_interfaces,
+        )
+    }
+
+    /// Returns whether this interface type implements the interface of the given name,
+    /// either in its own definition or its extensions.
+    pub fn implements_interface(&self, name: &str) -> bool {
+        self.implements_interfaces_by_name
+            .get(
+                name,
+                self.self_implements_interfaces(),
+                self.extensions(),
+                InterfaceTypeExtension::implements_interfaces,
+            )
+            .is_some()
     }
 
     /// Get a reference to the interface definition's directives (excluding those on extensions).
@@ -2242,14 +2496,32 @@ impl InterfaceTypeDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get a reference to interface definition's fields.
-    pub fn fields_definition(&self) -> &[FieldDefinition] {
+    /// Get a reference to interface definition's fields,
+    /// excluding those from extensions.
+    pub fn self_fields(&self) -> &[FieldDefinition] {
         self.fields_definition.as_ref()
     }
 
-    /// Find a field in interface face definition.
+    /// Returns an iterator of fields of this interface type,
+    /// whether from its own definition or from extensions.
+    pub fn fields(
+        &self,
+    ) -> impl Iterator<Item = &FieldDefinition> + ExactSizeIterator + DoubleEndedIterator {
+        self.fields_by_name.iter(
+            self.self_fields(),
+            self.extensions(),
+            InterfaceTypeExtension::fields_definition,
+        )
+    }
+
+    /// Find a field by its name, either in this interface type definition or its extensions.
     pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
-        self.fields_definition().iter().find(|f| f.name() == name)
+        self.fields_by_name.get(
+            name,
+            self.self_fields(),
+            self.extensions(),
+            InterfaceTypeExtension::fields_definition,
+        )
     }
 
     /// Get the AST location information for this HIR node.
@@ -2261,6 +2533,21 @@ impl InterfaceTypeDefinition {
     pub fn extensions(&self) -> &[Arc<InterfaceTypeExtension>] {
         &self.extensions
     }
+
+    pub(crate) fn push_extension(&mut self, ext: Arc<InterfaceTypeExtension>) {
+        let next_index = self.extensions.len();
+        self.fields_by_name.add_extension(
+            next_index,
+            ext.fields_definition(),
+            FieldDefinition::name,
+        );
+        self.implements_interfaces_by_name.add_extension(
+            next_index,
+            ext.implements_interfaces(),
+            ImplementsInterface::interface,
+        );
+        self.extensions.push(ext);
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -2271,6 +2558,7 @@ pub struct InputObjectTypeDefinition {
     pub(crate) input_fields_definition: Arc<Vec<InputValueDefinition>>,
     pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<InputObjectTypeExtension>>,
+    pub(crate) input_fields_by_name: ByNameWithExtensions,
 }
 
 impl InputObjectTypeDefinition {
@@ -2325,9 +2613,32 @@ impl InputObjectTypeDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get a reference to input fields definitions.
-    pub fn input_fields_definition(&self) -> &[InputValueDefinition] {
+    /// Get a reference to input fields definitions,
+    /// excluding those from extensions.
+    pub fn self_fields(&self) -> &[InputValueDefinition] {
         self.input_fields_definition.as_ref()
+    }
+
+    /// Returns an iterator of fields of this input object type,
+    /// whether from its own definition or from extensions.
+    pub fn fields(
+        &self,
+    ) -> impl Iterator<Item = &InputValueDefinition> + ExactSizeIterator + DoubleEndedIterator {
+        self.input_fields_by_name.iter(
+            self.self_fields(),
+            self.extensions(),
+            InputObjectTypeExtension::input_fields_definition,
+        )
+    }
+
+    /// Find a field by its name, either in this input object type definition or its extensions.
+    pub fn field(&self, name: &str) -> Option<&InputValueDefinition> {
+        self.input_fields_by_name.get(
+            name,
+            self.self_fields(),
+            self.extensions(),
+            InputObjectTypeExtension::input_fields_definition,
+        )
     }
 
     /// Get the AST location information for this HIR node.
@@ -2338,6 +2649,16 @@ impl InputObjectTypeDefinition {
     /// Extensions that apply to this definition
     pub fn extensions(&self) -> &[Arc<InputObjectTypeExtension>] {
         &self.extensions
+    }
+
+    pub(crate) fn push_extension(&mut self, ext: Arc<InputObjectTypeExtension>) {
+        let next_index = self.extensions.len();
+        self.input_fields_by_name.add_extension(
+            next_index,
+            ext.input_fields_definition(),
+            InputValueDefinition::name,
+        );
+        self.extensions.push(ext);
     }
 }
 
@@ -2600,6 +2921,7 @@ pub struct UnionTypeExtension {
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) union_members: Arc<Vec<UnionMember>>,
     pub(crate) loc: HirNodeLocation,
+    pub(crate) members_by_name: ByNameWithExtensions,
 }
 
 impl UnionTypeExtension {
@@ -2838,26 +3160,187 @@ mod tests {
     #[test]
     fn extensions() {
         let mut compiler = ApolloCompiler::new();
-        let first = "
-            scalar URL
-        ";
-        let second = "
-            extend scalar URL @example(arg: true)
-        ";
+        let first = r#"
+            scalar Scalar @specifiedBy(url: "https://apollographql.com")
+            type Object implements Intf {
+                field: Int,
+            }
+            type Object2 {
+                field: String,
+            }
+            interface Intf {
+                field: Int,
+            }
+            input Input {
+                field: Enum,
+            }
+            enum Enum {
+                VALUE,
+            }
+            union Union = Object | Object2;
+        "#;
+        let second = r#"
+            extend scalar Scalar @deprecated(reason: "do something else")
+            extend interface Intf implements Intf2 {
+                field2: Scalar,
+            }
+            interface Intf2 {
+                field3: String,
+            }
+            extend type Object implements Intf2 {
+                field2: Scalar,
+                field3: String,
+            }
+            extend enum Enum {
+                "like VALUE, but more"
+                VALUE_2,
+            }
+            extend input Input {
+                field2: Int,
+            }
+            extend union Union = Query;
+            type Query {
+                object: Object,
+            }
+        "#;
         compiler.add_type_system(first, "first.graphql");
         compiler.add_type_system(second, "second.graphql");
 
-        assert!(matches!(
-            compiler
-                .db
-                .find_type_definition_by_name("URL".into())
+        let scalar = &compiler.db.types_definitions_by_name()["Scalar"];
+        let object = &compiler.db.object_types()["Object"];
+        let interface = &compiler.db.interfaces()["Intf"];
+        let input = &compiler.db.input_objects()["Input"];
+        let enum_ = &compiler.db.enums()["Enum"];
+        let union_ = &compiler.db.unions()["Union"];
+
+        assert_eq!(
+            scalar
+                .self_directives()
+                .iter()
+                .map(|d| d.name())
+                .collect::<Vec<_>>(),
+            ["specifiedBy"]
+        );
+        assert_eq!(
+            scalar.directives().map(|d| d.name()).collect::<Vec<_>>(),
+            ["specifiedBy", "deprecated"]
+        );
+        assert_eq!(
+            *scalar
+                .directive_by_name("deprecated")
                 .unwrap()
-                .directive_by_name("example")
-                .unwrap()
-                .argument_by_name("arg")
+                .argument_by_name("reason")
                 .unwrap(),
-            super::Value::Boolean(true)
-        ));
+            super::Value::String("do something else".to_owned())
+        );
+        assert!(scalar.directive_by_name("haunted").is_none());
+
+        assert_eq!(
+            object
+                .self_fields()
+                .iter()
+                .map(|f| f.name())
+                .collect::<Vec<_>>(),
+            ["field"]
+        );
+        assert_eq!(
+            object.fields().map(|f| f.name()).collect::<Vec<_>>(),
+            ["field", "field2", "field3"]
+        );
+        assert_eq!(object.field("field").unwrap().ty().name(), "Int");
+        assert!(object.field("field4").is_none());
+
+        assert_eq!(
+            object
+                .self_implements_interfaces()
+                .iter()
+                .map(|i| i.interface())
+                .collect::<Vec<_>>(),
+            ["Intf"]
+        );
+        assert_eq!(
+            object
+                .implements_interfaces()
+                .map(|f| f.interface())
+                .collect::<Vec<_>>(),
+            ["Intf", "Intf2"]
+        );
+        assert!(object.implements_interface("Intf2"));
+        assert!(!object.implements_interface("Intf3"));
+
+        assert_eq!(
+            interface
+                .self_fields()
+                .iter()
+                .map(|f| f.name())
+                .collect::<Vec<_>>(),
+            ["field"]
+        );
+        assert_eq!(
+            interface.fields().map(|f| f.name()).collect::<Vec<_>>(),
+            ["field", "field2"]
+        );
+        assert_eq!(interface.field("field").unwrap().ty().name(), "Int");
+        assert!(interface.field("field4").is_none());
+
+        assert!(interface.self_implements_interfaces().is_empty());
+        assert_eq!(
+            interface
+                .implements_interfaces()
+                .map(|f| f.interface())
+                .collect::<Vec<_>>(),
+            ["Intf2"]
+        );
+        assert!(interface.implements_interface("Intf2"));
+        assert!(!interface.implements_interface("Intf3"));
+
+        assert_eq!(
+            input
+                .self_fields()
+                .iter()
+                .map(|f| f.name())
+                .collect::<Vec<_>>(),
+            ["field"]
+        );
+        assert_eq!(
+            input.fields().map(|f| f.name()).collect::<Vec<_>>(),
+            ["field", "field2"]
+        );
+        assert_eq!(input.field("field").unwrap().ty().name(), "Enum");
+        assert!(input.field("field3").is_none());
+
+        assert_eq!(
+            enum_
+                .self_values()
+                .iter()
+                .map(|v| v.enum_value())
+                .collect::<Vec<_>>(),
+            ["VALUE"]
+        );
+        assert_eq!(
+            enum_.values().map(|v| v.enum_value()).collect::<Vec<_>>(),
+            ["VALUE", "VALUE_2"]
+        );
+        assert_eq!(
+            enum_.value("VALUE_2").unwrap().description(),
+            Some("like VALUE, but more")
+        );
+        assert!(enum_.value("VALUE_3").is_none());
+
+        assert_eq!(
+            union_
+                .self_members()
+                .iter()
+                .map(|m| m.name())
+                .collect::<Vec<_>>(),
+            ["Object", "Object2"]
+        );
+        assert_eq!(
+            union_.members().map(|m| m.name()).collect::<Vec<_>>(),
+            ["Object", "Object2", "Query"]
+        );
+        assert!(union_.has_member("Object2"));
+        assert!(!union_.has_member("Enum"));
     }
 
     #[test]

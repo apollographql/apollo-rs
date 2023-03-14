@@ -27,7 +27,7 @@ pub fn validate_union_definition(
     );
 
     let mut seen: HashMap<&str, &UnionMember> = HashMap::new();
-    for union_member in union_def.union_members().iter() {
+    for union_member in union_def.self_members().iter() {
         let name = union_member.name();
         let redefined_definition = union_member.loc();
         // A Union type must include one or more unique member types.
