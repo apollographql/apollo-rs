@@ -325,11 +325,7 @@ impl FragmentDefinition {
     ///
     /// TODO(@goto-bus-stop): Maybe rename this to used_variables
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
-        self.selection_set
-            .selection()
-            .iter()
-            .flat_map(|sel| sel.variables(db))
-            .collect()
+        self.selection_set.variables(db)
     }
 
     pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
@@ -1064,6 +1060,48 @@ impl SelectionSet {
         })
     }
 
+    /// Get all variables used in this selection set.
+    pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
+        /// Recursively collect used variables. Accounts for self-referential fragments.
+        fn collect_used_variables(
+            db: &dyn HirDatabase,
+            set: &SelectionSet,
+            seen_fragments: &mut HashSet<Arc<FragmentDefinition>>,
+            output: &mut Vec<Variable>,
+        ) {
+            for selection in set.selection() {
+                match selection {
+                    Selection::Field(field) => {
+                        output.extend(field.self_used_variables());
+                        collect_used_variables(db, field.selection_set(), seen_fragments, output);
+                    }
+                    Selection::FragmentSpread(spread) => {
+                        let Some(fragment) = spread.fragment(db) else {
+                            return;
+                        };
+                        if seen_fragments.contains(&fragment) {
+                            return; // prevent recursion loop
+                        }
+                        seen_fragments.insert(Arc::clone(&fragment));
+                        collect_used_variables(
+                            db,
+                            fragment.selection_set(),
+                            seen_fragments,
+                            output,
+                        );
+                    }
+                    Selection::InlineFragment(inline) => {
+                        collect_used_variables(db, inline.selection_set(), seen_fragments, output);
+                    }
+                }
+            }
+        }
+
+        let mut output = vec![];
+        collect_used_variables(db, self, &mut HashSet::new(), &mut output);
+        output
+    }
+
     /// Returns true if all the [`Selection`]s in this selection set are themselves introspections.
     pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
         self.selection().iter().all(|selection| match selection {
@@ -1208,22 +1246,17 @@ impl Field {
         &self.selection_set
     }
 
+    fn self_used_variables(&self) -> impl Iterator<Item = Variable> + '_ {
+        self.arguments.iter().filter_map(|arg| match arg.value() {
+            Value::Variable(var) => Some(var.clone()),
+            _ => None,
+        })
+    }
+
     /// Get variables used in the field.
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
-        let mut vars: Vec<_> = self
-            .arguments
-            .iter()
-            .filter_map(|arg| match arg.value() {
-                Value::Variable(var) => Some(var.clone()),
-                _ => None,
-            })
-            .collect();
-        let iter = self
-            .selection_set
-            .selection()
-            .iter()
-            .flat_map(|sel| sel.variables(db));
-        vars.extend(iter);
+        let mut vars = self.self_used_variables().collect::<Vec<_>>();
+        vars.extend(self.selection_set.variables(db));
         vars
     }
 
@@ -1265,13 +1298,7 @@ impl InlineFragment {
 
     /// Get variables in use in the inline fragment.
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
-        let vars = self
-            .selection_set
-            .selection()
-            .iter()
-            .flat_map(|sel| sel.variables(db))
-            .collect();
-        vars
+        self.selection_set.variables(db)
     }
 
     /// Get the AST location information for this HIR node.
@@ -1305,11 +1332,9 @@ impl FragmentSpread {
 
     /// Get fragment spread's defined variables.
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
-        let vars = match self.fragment(db) {
-            Some(fragment) => fragment.variables(db),
-            None => Vec::new(),
-        };
-        vars
+        self.fragment(db)
+            .map(|fragment| fragment.variables(db))
+            .unwrap_or_default()
     }
 
     /// Get a reference to fragment spread directives.
