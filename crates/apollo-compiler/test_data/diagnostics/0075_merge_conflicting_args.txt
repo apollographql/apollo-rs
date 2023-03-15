@@ -35,7 +35,7 @@
         help: Some(
             "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
         ),
-        data: ConflictingSelection {
+        data: ConflictingField {
             field: "doesKnowCommand",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
@@ -89,7 +89,7 @@
         help: Some(
             "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
         ),
-        data: ConflictingSelection {
+        data: ConflictingField {
             field: "doesKnowCommand",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
@@ -143,7 +143,7 @@
         help: Some(
             "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
         ),
-        data: ConflictingSelection {
+        data: ConflictingField {
             field: "doesKnowCommand",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
@@ -197,7 +197,7 @@
         help: Some(
             "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
         ),
-        data: ConflictingSelection {
+        data: ConflictingField {
             field: "doesKnowCommand",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
@@ -251,7 +251,7 @@
         help: Some(
             "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
         ),
-        data: ConflictingSelection {
+        data: ConflictingField {
             field: "isAtLocation",
             original_selection: DiagnosticLocation {
                 file_id: FileId {

@@ -19,7 +19,7 @@
                     offset: 92,
                     length: 14,
                 },
-                text: "field `name` is selected from field `nickname`",
+                text: "field `name` is selected from field `nickname` here",
             },
             Label {
                 location: DiagnosticLocation {
@@ -29,14 +29,14 @@
                     offset: 109,
                     length: 4,
                 },
-                text: "but also from field `name` here",
+                text: "but the same field `name` is also selected from field `name` here",
             },
         ],
         help: Some(
-            "Cannot select different fields as the same name",
+            "Alias is already used for a different field",
         ),
-        data: ConflictingSelection {
-            field: "nickname",
+        data: ConflictingField {
+            field: "name",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 70,
@@ -73,7 +73,7 @@
                     offset: 174,
                     length: 10,
                 },
-                text: "field `fido` is selected from field `name`",
+                text: "field `fido` is selected from field `name` here",
             },
             Label {
                 location: DiagnosticLocation {
@@ -83,14 +83,14 @@
                     offset: 187,
                     length: 14,
                 },
-                text: "but also from field `nickname` here",
+                text: "but the same field `fido` is also selected from field `nickname` here",
             },
         ],
         help: Some(
-            "Cannot select different fields as the same name",
+            "Alias is already used for a different field",
         ),
-        data: ConflictingSelection {
-            field: "name",
+        data: ConflictingField {
+            field: "nickname",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 70,

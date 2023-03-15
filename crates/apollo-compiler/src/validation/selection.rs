@@ -31,7 +31,7 @@ pub(crate) fn same_response_shape(
         ApolloDiagnostic::new(
             db,
             field_b.loc().into(),
-            DiagnosticData::ConflictingSelection {
+            DiagnosticData::ConflictingField {
                 field: field_a.name().to_string(),
                 original_selection: field_a.loc().into(),
                 redefined_selection: field_b.loc().into(),
@@ -47,7 +47,7 @@ pub(crate) fn same_response_shape(
         ))
         .label(Label::new(
             field_b.loc(),
-            format!("but the same name has type `{full_type_b}` here"),
+            format!("but the same field name has type `{full_type_b}` here"),
         ))
     };
 
@@ -156,7 +156,7 @@ fn identical_arguments(
                 ApolloDiagnostic::new(
                     db,
                     field_b.loc().into(),
-                    DiagnosticData::ConflictingSelection {
+                    DiagnosticData::ConflictingField {
                         field: field_a.name().to_string(),
                         original_selection: field_a.loc().into(),
                         redefined_selection: field_b.loc().into(),
@@ -173,7 +173,7 @@ fn identical_arguments(
                 ApolloDiagnostic::new(
                     db,
                     field_b.loc().into(),
-                    DiagnosticData::ConflictingSelection {
+                    DiagnosticData::ConflictingField {
                         field: field_a.name().to_string(),
                         original_selection: field_a.loc().into(),
                         redefined_selection: field_b.loc().into(),
@@ -195,7 +195,7 @@ fn identical_arguments(
                 ApolloDiagnostic::new(
                     db,
                     field_b.loc().into(),
-                    DiagnosticData::ConflictingSelection {
+                    DiagnosticData::ConflictingField {
                         field: field_a.name().to_string(),
                         original_selection: field_a.loc().into(),
                         redefined_selection: field_b.loc().into(),
@@ -243,8 +243,8 @@ pub(crate) fn fields_in_set_can_merge(
                     return Err(ApolloDiagnostic::new(
                         db,
                         field_b.loc().into(),
-                        DiagnosticData::ConflictingSelection {
-                            field: field_a.name().to_string(),
+                        DiagnosticData::ConflictingField {
+                            field: field_b.name().to_string(),
                             original_selection: field_a.loc().into(),
                             redefined_selection: field_b.loc().into(),
                         },
@@ -252,16 +252,20 @@ pub(crate) fn fields_in_set_can_merge(
                     .label(Label::new(
                         field_a.loc(),
                         format!(
-                            "field `{}` is selected from field `{}`",
+                            "field `{}` is selected from field `{}` here",
                             field_a.response_name(),
                             field_a.name()
                         ),
                     ))
                     .label(Label::new(
                         field_b.loc(),
-                        format!("but also from field `{}` here", field_b.name()),
+                        format!(
+                            "but the same field `{}` is also selected from field `{}` here",
+                            field_b.response_name(),
+                            field_b.name()
+                        ),
                     ))
-                    .help("Cannot select different fields as the same name"));
+                    .help("Alias is already used for a different field"));
                 }
                 // 2bii. fieldA and fieldB must have identical sets of arguments.
                 identical_arguments(db, field_a, field_b)?;

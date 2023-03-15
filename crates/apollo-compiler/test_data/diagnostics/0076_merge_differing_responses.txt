@@ -29,11 +29,11 @@
                     offset: 461,
                     length: 21,
                 },
-                text: "but the same name has type `Int!` here",
+                text: "but the same field name has type `Int!` here",
             },
         ],
         help: None,
-        data: ConflictingSelection {
+        data: ConflictingField {
             field: "nickname",
             original_selection: DiagnosticLocation {
                 file_id: FileId {

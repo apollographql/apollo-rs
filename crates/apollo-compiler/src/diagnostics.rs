@@ -271,8 +271,8 @@ pub enum DiagnosticData {
     DisallowedSubselection,
     #[error("interface, union and object types must have a subselection set")]
     MissingSubselection,
-    #[error("operation must not select different types as the same name `{field}`")]
-    ConflictingSelection {
+    #[error("operation must not select different types using the same field name `{field}`")]
+    ConflictingField {
         /// Name of the non-unique field.
         field: String,
         original_selection: DiagnosticLocation,
