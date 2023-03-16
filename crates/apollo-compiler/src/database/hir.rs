@@ -146,7 +146,7 @@ impl TypeDefinition {
     /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
     ///
     /// Includes directives on either the type definition or its type extensions,
-    /// like [`all_directives`][Self::all_directives].
+    /// like [`directives`][Self::directives].
     pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
         self.directives_by_name(name).next()
     }
