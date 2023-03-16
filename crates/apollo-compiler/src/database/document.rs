@@ -105,7 +105,11 @@ pub(crate) fn find_types_with_directive(
     let definitions = db
         .types_definitions_by_name()
         .values()
-        .filter(|def| def.directives().iter().any(|dir| dir.name() == directive))
+        .filter(|def| {
+            def.self_directives()
+                .iter()
+                .any(|dir| dir.name() == directive)
+        })
         .cloned()
         .collect();
     Arc::new(definitions)

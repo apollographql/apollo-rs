@@ -21,8 +21,10 @@ pub fn validate_enum_definition(
     db: &dyn ValidationDatabase,
     enum_def: Arc<hir::EnumTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics =
-        db.validate_directives(enum_def.directives().to_vec(), hir::DirectiveLocation::Enum);
+    let mut diagnostics = db.validate_directives(
+        enum_def.self_directives().to_vec(),
+        hir::DirectiveLocation::Enum,
+    );
 
     let mut seen: HashMap<&str, &EnumValueDefinition> = HashMap::new();
     for enum_val in enum_def.enum_values_definition() {
