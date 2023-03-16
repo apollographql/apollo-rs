@@ -30,7 +30,7 @@ pub fn validate_schema_definition(
     );
 
     diagnostics.extend(db.validate_directives(
-        schema_def.directives().to_vec(),
+        schema_def.self_directives().to_vec(),
         hir::DirectiveLocation::Schema,
     ));
 

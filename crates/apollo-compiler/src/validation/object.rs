@@ -24,9 +24,10 @@ pub fn validate_object_type_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    diagnostics.extend(
-        db.validate_directives(object.directives().to_vec(), hir::DirectiveLocation::Object),
-    );
+    diagnostics.extend(db.validate_directives(
+        object.self_directives().to_vec(),
+        hir::DirectiveLocation::Object,
+    ));
 
     // Object Type field validations.
     diagnostics.extend(db.validate_field_definitions(object.fields_definition().to_vec()));

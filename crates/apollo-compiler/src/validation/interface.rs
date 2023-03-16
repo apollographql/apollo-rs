@@ -12,9 +12,10 @@ pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
 
     let defs = &db.type_system_definitions().interfaces;
     for def in defs.values() {
-        diagnostics.extend(
-            db.validate_directives(def.directives().to_vec(), hir::DirectiveLocation::Interface),
-        );
+        diagnostics.extend(db.validate_directives(
+            def.self_directives().to_vec(),
+            hir::DirectiveLocation::Interface,
+        ));
         diagnostics.extend(db.validate_interface_definition(def.clone()));
     }
 

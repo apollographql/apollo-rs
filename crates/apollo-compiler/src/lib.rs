@@ -716,7 +716,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         let scalars = compiler.db.scalars();
 
         let directives: Vec<&str> = scalars["URL"]
-            .directives()
+            .self_directives()
             .iter()
             .map(|directive| directive.name())
             .collect();
@@ -907,7 +907,11 @@ directive @directiveB(name: String) on OBJECT | INTERFACE
             .find_object_type_by_name("Book".to_string())
             .unwrap();
 
-        let directive_names: Vec<&str> = book_obj.directives().iter().map(|d| d.name()).collect();
+        let directive_names: Vec<&str> = book_obj
+            .self_directives()
+            .iter()
+            .map(|d| d.name())
+            .collect();
         assert_eq!(directive_names, ["directiveA", "directiveB"]);
     }
 
@@ -949,7 +953,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                             // get that definition's directives, for example
                             TypeDefinition::ScalarTypeDefinition(scalar) => {
                                 let dir_names: Vec<String> = scalar
-                                    .directives()
+                                    .self_directives()
                                     .iter()
                                     .map(|dir| dir.name().to_owned())
                                     .collect();
@@ -1029,7 +1033,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                         match field_ty {
                             TypeDefinition::ScalarTypeDefinition(scalar) => {
                                 let dir_names: Vec<String> = scalar
-                                    .directives()
+                                    .self_directives()
                                     .iter()
                                     .map(|dir| dir.name().to_owned())
                                     .collect();
@@ -1189,7 +1193,7 @@ type Query {
             .db
             .find_object_type_by_name("Query".into())
             .unwrap();
-        assert!(object_type.directives().is_empty());
+        assert!(object_type.self_directives().is_empty());
 
         let input = r#"
 type Query @withDirective {
@@ -1203,7 +1207,7 @@ type Query @withDirective {
             .db
             .find_object_type_by_name("Query".into())
             .unwrap();
-        assert_eq!(object_type.directives().len(), 1);
+        assert_eq!(object_type.self_directives().len(), 1);
     }
 
     #[test]

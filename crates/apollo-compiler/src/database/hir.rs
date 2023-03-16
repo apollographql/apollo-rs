@@ -112,15 +112,57 @@ impl TypeDefinition {
         )
     }
 
-    pub fn directives(&self) -> &[Directive] {
+    /// Returns directives of this type definition (excluding those on its extensions)
+    pub fn self_directives(&self) -> &[Directive] {
         match self {
-            Self::ScalarTypeDefinition(def) => def.directives(),
-            Self::ObjectTypeDefinition(def) => def.directives(),
-            Self::InterfaceTypeDefinition(def) => def.directives(),
-            Self::UnionTypeDefinition(def) => def.directives(),
-            Self::EnumTypeDefinition(def) => def.directives(),
-            Self::InputObjectTypeDefinition(def) => def.directives(),
+            Self::ScalarTypeDefinition(def) => def.self_directives(),
+            Self::ObjectTypeDefinition(def) => def.self_directives(),
+            Self::InterfaceTypeDefinition(def) => def.self_directives(),
+            Self::UnionTypeDefinition(def) => def.self_directives(),
+            Self::EnumTypeDefinition(def) => def.self_directives(),
+            Self::InputObjectTypeDefinition(def) => def.self_directives(),
         }
+    }
+
+    /// Returns an iterator of directives on either the type definition or its type extensions
+    pub fn directives(&self) -> impl Iterator<Item = &Directive> + '_ {
+        match self {
+            Self::ScalarTypeDefinition(def) => {
+                // Use `Box<dyn _>` since each inner method returns a different iterator type.
+                // https://crates.io/crates/enum_dispatch could be used instead
+                // but is it worth the trouble?
+                Box::new(def.directives()) as Box<dyn Iterator<Item = &Directive>>
+            }
+            Self::ObjectTypeDefinition(def) => Box::new(def.directives()),
+            Self::InterfaceTypeDefinition(def) => Box::new(def.directives()),
+            Self::UnionTypeDefinition(def) => Box::new(def.directives()),
+            Self::EnumTypeDefinition(def) => Box::new(def.directives()),
+            Self::InputObjectTypeDefinition(def) => Box::new(def.directives()),
+        }
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    ///
+    /// Includes directives on either the type definition or its type extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    ///
+    /// Includes directives on either the type definition or its type extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .filter(move |directive| directive.name() == name)
     }
 
     pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
@@ -245,6 +287,25 @@ impl TypeExtension {
         }
     }
 
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
+    }
+
     pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
         match self {
             Self::ObjectTypeExtension(def) => def.field(name),
@@ -298,6 +359,25 @@ impl FragmentDefinition {
     /// TODO: is this good??
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Get a reference to fragment definition's selection set.
@@ -372,6 +452,25 @@ impl OperationDefinition {
     /// Get a mutable reference to the operation definition's directives.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Get a reference to the operation definition's selection set.
@@ -508,6 +607,25 @@ impl VariableDefinition {
     /// Get a reference to the variable definition's directives.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Get the AST location information for this HIR node.
@@ -1121,6 +1239,25 @@ impl Field {
         self.directives.as_ref()
     }
 
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
+    }
+
     /// Get a reference to the field's selection set.
     pub fn selection_set(&self) -> &SelectionSet {
         &self.selection_set
@@ -1174,6 +1311,25 @@ impl InlineFragment {
     /// Get a reference to inline fragment's directives.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Get a reference inline fragment's selection set.
@@ -1240,6 +1396,25 @@ impl FragmentSpread {
         self.directives.as_ref()
     }
 
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
+    }
+
     /// Get the AST location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
@@ -1298,9 +1473,40 @@ pub struct SchemaDefinition {
 }
 
 impl SchemaDefinition {
-    /// Get a reference to the schema definition's directives.
-    pub fn directives(&self) -> &[Directive] {
+    /// Get a reference to the schema definition's directives (excluding those on extensions).
+    pub fn self_directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns an iterator of directives on either the `schema` definition or its extensions
+    pub fn directives(&self) -> impl Iterator<Item = &Directive> + '_ {
+        self.self_directives()
+            .iter()
+            .chain(self.extensions.iter().flat_map(|ext| ext.directives()))
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Get a reference to the schema definition's root operation type definition.
@@ -1431,9 +1637,40 @@ impl ObjectTypeDefinition {
         self.description.as_deref()
     }
 
-    /// Get a reference to the object type definition's directives.
-    pub fn directives(&self) -> &[Directive] {
+    /// Get a reference to the object type definition's directives (excluding those on extensions).
+    pub fn self_directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns an iterator of directives on either the type definition or its type extensions
+    pub fn directives(&self) -> impl Iterator<Item = &Directive> + '_ {
+        self.self_directives()
+            .iter()
+            .chain(self.extensions.iter().flat_map(|ext| ext.directives()))
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Get a reference to the object type definition's field definitions.
@@ -1514,6 +1751,25 @@ impl FieldDefinition {
         self.directives.as_ref()
     }
 
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
+    }
+
     /// Get the AST location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
@@ -1574,6 +1830,25 @@ impl InputValueDefinition {
         self.directives.as_ref()
     }
 
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
+    }
+
     /// Get the AST location information for this HIR node.
     pub fn loc(&self) -> Option<HirNodeLocation> {
         self.loc
@@ -1624,9 +1899,40 @@ impl ScalarTypeDefinition {
         self.description.as_deref()
     }
 
-    /// Get a reference to scalar definition's directives.
-    pub fn directives(&self) -> &[Directive] {
+    /// Get a reference to scalar definition's directives (excluding those on extensions).
+    pub fn self_directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns an iterator of directives on either the type definition or its type extensions
+    pub fn directives(&self) -> impl Iterator<Item = &Directive> + '_ {
+        self.self_directives()
+            .iter()
+            .chain(self.extensions.iter().flat_map(|ext| ext.directives()))
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Returns true if the current scalar is a GraphQL built in.
@@ -1671,9 +1977,40 @@ impl EnumTypeDefinition {
         self.description.as_deref()
     }
 
-    /// Get a reference to enum definition's directives.
-    pub fn directives(&self) -> &[Directive] {
+    /// Get a reference to enum definition's directives (excluding those on extensions).
+    pub fn self_directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns an iterator of directives on either the type definition or its type extensions
+    pub fn directives(&self) -> impl Iterator<Item = &Directive> + '_ {
+        self.self_directives()
+            .iter()
+            .chain(self.extensions.iter().flat_map(|ext| ext.directives()))
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Get a reference to enum definition's enum values definition vector.
@@ -1711,6 +2048,25 @@ impl EnumValueDefinition {
         self.directives.as_ref()
     }
 
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
+    }
+
     /// Get the AST location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
@@ -1743,9 +2099,40 @@ impl UnionTypeDefinition {
         self.description.as_deref()
     }
 
-    /// Get a reference to union definition's directives.
-    pub fn directives(&self) -> &[Directive] {
+    /// Get a reference to union definition's directives (excluding those on extensions).
+    pub fn self_directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns an iterator of directives on either the type definition or its type extensions
+    pub fn directives(&self) -> impl Iterator<Item = &Directive> + '_ {
+        self.self_directives()
+            .iter()
+            .chain(self.extensions.iter().flat_map(|ext| ext.directives()))
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Get a reference to union definition's union members.
@@ -1819,9 +2206,40 @@ impl InterfaceTypeDefinition {
         self.implements_interfaces.as_ref()
     }
 
-    /// Get a reference to the interface definition's directives.
-    pub fn directives(&self) -> &[Directive] {
+    /// Get a reference to the interface definition's directives (excluding those on extensions).
+    pub fn self_directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns an iterator of directives on either the type definition or its type extensions
+    pub fn directives(&self) -> impl Iterator<Item = &Directive> + '_ {
+        self.self_directives()
+            .iter()
+            .chain(self.extensions.iter().flat_map(|ext| ext.directives()))
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Get a reference to interface definition's fields.
@@ -1871,9 +2289,40 @@ impl InputObjectTypeDefinition {
         self.description.as_deref()
     }
 
-    /// Get a reference to input object definition's directives.
-    pub fn directives(&self) -> &[Directive] {
+    /// Get a reference to input object definition's directives (excluding those on extensions).
+    pub fn self_directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns an iterator of directives on either the type definition or its type extensions
+    pub fn directives(&self) -> impl Iterator<Item = &Directive> + '_ {
+        self.self_directives()
+            .iter()
+            .chain(self.extensions.iter().flat_map(|ext| ext.directives()))
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    ///
+    /// Includes directives on either the `schema` definition or its extensions,
+    /// like [`directives`][Self::directives].
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Get a reference to input fields definitions.
@@ -1938,6 +2387,25 @@ impl SchemaExtension {
         self.directives.as_ref()
     }
 
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
+    }
+
     /// Get a reference to the schema definition's root operation type definition.
     pub fn root_operation_type_definition(&self) -> &[RootOperationTypeDefinition] {
         self.root_operation_type_definition.as_ref()
@@ -1972,6 +2440,25 @@ impl ScalarTypeExtension {
         self.directives.as_ref()
     }
 
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
+    }
+
     /// Get the AST location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
@@ -2000,6 +2487,25 @@ impl ObjectTypeExtension {
     /// Get a reference to the object type definition's directives.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
     }
 
     /// Get a reference to the object type definition's field definitions.
@@ -2053,6 +2559,25 @@ impl InterfaceTypeExtension {
         self.directives.as_ref()
     }
 
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
+    }
+
     /// Get a reference to interface definition's fields.
     pub fn fields_definition(&self) -> &[FieldDefinition] {
         self.fields_definition.as_ref()
@@ -2093,6 +2618,25 @@ impl UnionTypeExtension {
         self.directives.as_ref()
     }
 
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
+    }
+
     /// Get a reference to union definition's union members.
     pub fn union_members(&self) -> &[UnionMember] {
         self.union_members.as_ref()
@@ -2128,6 +2672,25 @@ impl EnumTypeExtension {
         self.directives.as_ref()
     }
 
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
+    }
+
     /// Get a reference to enum definition's enum values definition vector.
     pub fn enum_values_definition(&self) -> &[EnumValueDefinition] {
         self.enum_values_definition.as_ref()
@@ -2161,6 +2724,25 @@ impl InputObjectTypeExtension {
     /// Get a reference to input object definition's directives.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
+    }
+
+    /// Returns the first directive with the given name.
+    ///
+    /// For repeatable directives, see [`directives_by_name`][Self::directives_by_name] (plural).
+    pub fn directive_by_name(&self, name: &str) -> Option<&Directive> {
+        self.directives_by_name(name).next()
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// For non-repeatable directives, [`directive_by_name`][Self::directive_by_name] (singular).
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Directive> + 'name {
+        self.directives()
+            .iter()
+            .filter(move |directive| directive.name() == name)
     }
 
     pub fn input_fields_definition(&self) -> &[InputValueDefinition] {
@@ -2251,6 +2833,31 @@ mod tests {
         // but this is approximation is still in the range of finite f64 values.
         assert_eq!(default_values[2], "98765432109876540000");
         assert_eq!(default_values[3], "98765432109876540000");
+    }
+
+    #[test]
+    fn extensions() {
+        let mut compiler = ApolloCompiler::new();
+        let first = "
+            scalar URL
+        ";
+        let second = "
+            extend scalar URL @example(arg: true)
+        ";
+        compiler.add_type_system(first, "first.graphql");
+        compiler.add_type_system(second, "second.graphql");
+
+        assert!(matches!(
+            compiler
+                .db
+                .find_type_definition_by_name("URL".into())
+                .unwrap()
+                .directive_by_name("example")
+                .unwrap()
+                .argument_by_name("arg")
+                .unwrap(),
+            super::Value::Boolean(true)
+        ));
     }
 
     #[test]
