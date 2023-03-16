@@ -223,8 +223,6 @@ pub(crate) fn fields_in_set_can_merge(
     let grouped_by_name = group_fields_by_name(fields);
 
     let mut diagnostics = vec![];
-    // Use as `.map_err(err_vec)` to report `Vec<ApolloDiagnostic>`s.
-    let err_vec = |err| vec![err];
 
     for (_, fields_for_name) in grouped_by_name {
         let Some((field_a, rest)) = fields_for_name.split_first() else {
@@ -234,60 +232,64 @@ pub(crate) fn fields_in_set_can_merge(
             continue; // We can't find the type
         };
 
-        // This is a closure so we can use ? to report one error per field.
-        //
         // 2. Given each pair of members fieldA and fieldB in fieldsForName:
-        let fields_can_merge = |field_a, field_b| -> Result<(), Vec<ApolloDiagnostic>> {
+        for field_b in rest {
             // 2a. SameResponseShape(fieldA, fieldB) must be true.
-            db.same_response_shape(Arc::clone(field_a), Arc::clone(field_b))
-                .map_err(err_vec)?;
+            if let Err(diagnostic) =
+                db.same_response_shape(Arc::clone(field_a), Arc::clone(field_b))
+            {
+                diagnostics.push(diagnostic);
+                continue;
+            }
             // 2b. If the parent types of fieldA and fieldB are equal or if either is not an Object Type:
             let Some(parent_b) = field_b.parent_type(db.upcast()) else {
-                return Ok(()); // We can't find the type
+                continue; // We can't find the type
             };
             if parent_a == parent_b {
                 // 2bi. fieldA and fieldB must have identical field names.
                 if field_a.name() != field_b.name() {
-                    return Err(vec![ApolloDiagnostic::new(
-                        db,
-                        field_b.loc().into(),
-                        DiagnosticData::ConflictingField {
-                            field: field_b.name().to_string(),
-                            original_selection: field_a.loc().into(),
-                            redefined_selection: field_b.loc().into(),
-                        },
-                    )
-                    .label(Label::new(
-                        field_a.loc(),
-                        format!(
-                            "field `{}` is selected from field `{}` here",
-                            field_a.response_name(),
-                            field_a.name()
-                        ),
-                    ))
-                    .label(Label::new(
-                        field_b.loc(),
-                        format!(
-                            "but the same field `{}` is also selected from field `{}` here",
-                            field_b.response_name(),
-                            field_b.name()
-                        ),
-                    ))
-                    .help("Alias is already used for a different field")]);
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            field_b.loc().into(),
+                            DiagnosticData::ConflictingField {
+                                field: field_b.name().to_string(),
+                                original_selection: field_a.loc().into(),
+                                redefined_selection: field_b.loc().into(),
+                            },
+                        )
+                        .label(Label::new(
+                            field_a.loc(),
+                            format!(
+                                "field `{}` is selected from field `{}` here",
+                                field_a.response_name(),
+                                field_a.name()
+                            ),
+                        ))
+                        .label(Label::new(
+                            field_b.loc(),
+                            format!(
+                                "but the same field `{}` is also selected from field `{}` here",
+                                field_b.response_name(),
+                                field_b.name()
+                            ),
+                        ))
+                        .help("Alias is already used for a different field"),
+                    );
+                    continue;
                 }
                 // 2bii. fieldA and fieldB must have identical sets of arguments.
-                identical_arguments(db, field_a, field_b).map_err(err_vec)?;
+                if let Err(diagnostic) = identical_arguments(db, field_a, field_b) {
+                    diagnostics.push(diagnostic);
+                    continue;
+                }
                 // 2biii. Let mergedSet be the result of adding the selection set of fieldA and the selection set of fieldB.
                 let merged_set = field_a.selection_set().merge(field_b.selection_set());
                 // 2biv. FieldsInSetCanMerge(mergedSet) must be true.
-                db.fields_in_set_can_merge(merged_set)?;
-            }
-            Ok(())
-        };
-
-        for field_b in rest {
-            if let Err(diagnostic) = fields_can_merge(field_a, field_b) {
-                diagnostics.extend(diagnostic);
+                if let Err(sub_diagnostics) = db.fields_in_set_can_merge(merged_set) {
+                    diagnostics.extend(sub_diagnostics);
+                    continue;
+                }
             }
         }
     }
