@@ -217,30 +217,38 @@ fn identical_arguments(
 pub(crate) fn fields_in_set_can_merge(
     db: &dyn ValidationDatabase,
     selection_set: hir::SelectionSet,
-) -> Result<(), ApolloDiagnostic> {
+) -> Result<(), Vec<ApolloDiagnostic>> {
     // 1. Let `fieldsForName` be the set of selections with a given response name in set including visiting fragments and inline fragments.
     let fields = db.flattened_operation_fields(selection_set);
     let grouped_by_name = group_fields_by_name(fields);
 
+    let mut diagnostics = vec![];
+    // Use as `.map_err(err_vec)` to report `Vec<ApolloDiagnostic>`s.
+    let err_vec = |err| vec![err];
+
     for (_, fields_for_name) in grouped_by_name {
-        // 2. Given each pair of members fieldA and fieldB in fieldsForName:
         let Some((field_a, rest)) = fields_for_name.split_first() else {
             continue; // Nothing to merge
         };
         let Some(parent_a) = field_a.parent_type(db.upcast()) else {
             continue; // We can't find the type
         };
-        for field_b in rest {
+
+        // This is a closure so we can use ? to report one error per field.
+        //
+        // 2. Given each pair of members fieldA and fieldB in fieldsForName:
+        let fields_can_merge = |field_a, field_b| -> Result<(), Vec<ApolloDiagnostic>> {
             // 2a. SameResponseShape(fieldA, fieldB) must be true.
-            db.same_response_shape(Arc::clone(field_a), Arc::clone(field_b))?;
+            db.same_response_shape(Arc::clone(field_a), Arc::clone(field_b))
+                .map_err(err_vec)?;
             // 2b. If the parent types of fieldA and fieldB are equal or if either is not an Object Type:
             let Some(parent_b) = field_b.parent_type(db.upcast()) else {
-                continue; // We can't find the type
+                return Ok(()); // We can't find the type
             };
             if parent_a == parent_b {
                 // 2bi. fieldA and fieldB must have identical field names.
                 if field_a.name() != field_b.name() {
-                    return Err(ApolloDiagnostic::new(
+                    return Err(vec![ApolloDiagnostic::new(
                         db,
                         field_b.loc().into(),
                         DiagnosticData::ConflictingField {
@@ -265,19 +273,30 @@ pub(crate) fn fields_in_set_can_merge(
                             field_b.name()
                         ),
                     ))
-                    .help("Alias is already used for a different field"));
+                    .help("Alias is already used for a different field")]);
                 }
                 // 2bii. fieldA and fieldB must have identical sets of arguments.
-                identical_arguments(db, field_a, field_b)?;
+                identical_arguments(db, field_a, field_b).map_err(err_vec)?;
                 // 2biii. Let mergedSet be the result of adding the selection set of fieldA and the selection set of fieldB.
                 let merged_set = field_a.selection_set().merge(field_b.selection_set());
                 // 2biv. FieldsInSetCanMerge(mergedSet) must be true.
                 db.fields_in_set_can_merge(merged_set)?;
             }
+            Ok(())
+        };
+
+        for field_b in rest {
+            if let Err(diagnostic) = fields_can_merge(field_a, field_b) {
+                diagnostics.extend(diagnostic);
+            }
         }
     }
 
-    Ok(())
+    if diagnostics.is_empty() {
+        Ok(())
+    } else {
+        Err(diagnostics)
+    }
 }
 
 pub fn validate_selection(
@@ -314,7 +333,7 @@ pub fn validate_selection_set(
     let mut diagnostics = Vec::new();
 
     if let Err(diagnostic) = db.fields_in_set_can_merge(selection_set.clone()) {
-        diagnostics.push(diagnostic);
+        diagnostics.extend(diagnostic);
     }
 
     diagnostics.extend(db.validate_selection(selection_set.selection));

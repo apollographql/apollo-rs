@@ -204,7 +204,10 @@ pub trait ValidationDatabase:
     ///
     /// Spec: https://spec.graphql.org/October2021/#FieldsInSetCanMerge()
     #[salsa::invoke(selection::fields_in_set_can_merge)]
-    fn fields_in_set_can_merge(&self, selection_set: SelectionSet) -> Result<(), ApolloDiagnostic>;
+    fn fields_in_set_can_merge(
+        &self,
+        selection_set: SelectionSet,
+    ) -> Result<(), Vec<ApolloDiagnostic>>;
 }
 
 pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
