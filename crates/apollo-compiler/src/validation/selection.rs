@@ -313,7 +313,7 @@ pub fn validate_selection_set(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    if let Err(diagnostic) = fields_in_set_can_merge(db, selection_set.clone()) {
+    if let Err(diagnostic) = db.fields_in_set_can_merge(selection_set.clone()) {
         diagnostics.push(diagnostic);
     }
 
