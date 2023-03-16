@@ -344,24 +344,11 @@ fn schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
         // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
         return precomputed.definitions.schema.clone();
     }
-    let mut schema_def = type_definitions(db, schema_definition)
-        .next()
-        .unwrap_or_default();
-
-    // NOTE(@lrlna):
-    //
-    // "Query", "Subscription", "Mutation" object type definitions do not need
-    // to be explicitly defined in a schema definition, but are implicitly
-    // added.
-    //
-    // There will be a time when we need to distinguish between implicit and
-    // explicit definitions for validation purposes.
-    let type_defs = add_object_type_id_to_schema(db);
-    type_defs
-        .iter()
-        .for_each(|type_def| schema_def.set_root_operation_type_definition(type_def.clone()));
-
-    Arc::new(schema_def)
+    Arc::new(
+        type_definitions(db, schema_definition)
+            .next()
+            .unwrap_or_else(|| implicit_schema_definition(db)),
+    )
 }
 
 macro_rules! by_name {
@@ -473,17 +460,13 @@ fn operation_definition(
     let name = op_def.name().map(|n| name_hir_node(n, file_id));
     let ty = operation_type(op_def.operation_type());
     let variables = variable_definitions(op_def.variable_definitions(), file_id);
-    let parent_object_ty = db
-        .schema()
-        .root_operation_type_definition()
-        .iter()
-        .find_map(|op| {
-            if op.operation_ty() == ty {
-                Some(op.named_type().name())
-            } else {
-                None
-            }
-        });
+    let parent_object_ty = db.schema().self_root_operations().iter().find_map(|op| {
+        if op.operation_ty() == ty {
+            Some(op.named_type().name())
+        } else {
+            None
+        }
+    });
     let selection_set = selection_set(db, op_def.selection_set(), parent_object_ty, file_id);
     let directives = directives(op_def.directives(), file_id);
     let loc = location(file_id, op_def.syntax());
@@ -533,31 +516,113 @@ fn schema_definition(
     schema_def: ast::SchemaDefinition,
     file_id: FileId,
 ) -> Option<SchemaDefinition> {
-    let extensions = type_definitions(db, |_db, def: ast::SchemaExtension, file_id| {
-        Some(Arc::new(SchemaExtension {
-            directives: directives(def.directives(), file_id),
-            root_operation_type_definition: root_operation_type_definition(
-                def.root_operation_type_definitions(),
-                file_id,
-            ),
-            loc: location(file_id, def.syntax()),
-        }))
-    })
-    .collect();
-
     let description = description(schema_def.description());
     let directives = directives(schema_def.directives(), file_id);
-    let root_operation_type_definition =
+    let mut operations =
         root_operation_type_definition(schema_def.root_operation_type_definitions(), file_id);
     let loc = location(file_id, schema_def.syntax());
+    let extensions = schema_extensions(db);
+    let mut root_operation_names = root_operations_names(&operations, &extensions);
+    add_implicit_operations(db, &mut operations, &mut root_operation_names);
 
     Some(SchemaDefinition {
         description,
         directives,
-        root_operation_type_definition,
+        root_operation_type_definition: Arc::new(operations),
         loc: Some(loc),
         extensions,
+        root_operation_names,
     })
+}
+
+fn implicit_schema_definition(db: &dyn HirDatabase) -> SchemaDefinition {
+    let extensions = schema_extensions(db);
+    let mut operations = Vec::new();
+    let mut root_operation_names = root_operations_names(&operations, &extensions);
+    add_implicit_operations(db, &mut operations, &mut root_operation_names);
+    SchemaDefinition {
+        description: None,
+        directives: Arc::new(Vec::new()),
+        root_operation_type_definition: Arc::new(operations),
+        loc: None,
+        extensions,
+        root_operation_names,
+    }
+}
+
+fn schema_extensions(db: &dyn HirDatabase) -> Vec<Arc<SchemaExtension>> {
+    type_definitions(db, |_db, def: ast::SchemaExtension, file_id| {
+        let directives = directives(def.directives(), file_id);
+        let root_operation_type_definition = Arc::new(root_operation_type_definition(
+            def.root_operation_type_definitions(),
+            file_id,
+        ));
+        let loc = location(file_id, def.syntax());
+        Some(Arc::new(SchemaExtension {
+            directives,
+            root_operation_type_definition,
+            loc,
+        }))
+    })
+    .collect()
+}
+
+fn root_operations_names(
+    root_operation_type_definition: &[RootOperationTypeDefinition],
+    extensions: &[Arc<SchemaExtension>],
+) -> RootOperationNames {
+    let mut names = RootOperationNames::default();
+    let mut add_operations = |ops: &[RootOperationTypeDefinition]| {
+        for op in ops {
+            let name_field = match op.operation_ty() {
+                OperationType::Query => &mut names.query,
+                OperationType::Mutation => &mut names.mutation,
+                OperationType::Subscription => &mut names.subscription,
+            };
+            if name_field.is_none() {
+                *name_field = Some(op.named_type().name());
+            }
+        }
+    };
+    add_operations(root_operation_type_definition);
+    for extension in extensions {
+        add_operations(extension.root_operations());
+    }
+    names
+}
+
+/// https://spec.graphql.org/October2021/#sec-Root-Operation-Types.Default-Root-Operation-Type-Names
+///
+/// To distinguish between implicit and explicit definitions for validation purposes,
+/// check `operation.loc.is_none()`.
+///
+/// NOTE(@lrlna):
+/// "Query", "Subscription", "Mutation" object type definitions do not need
+/// to be explicitly defined in a schema definition, but are implicitly
+/// added.
+fn add_implicit_operations(
+    db: &dyn HirDatabase,
+    operations: &mut Vec<RootOperationTypeDefinition>,
+    names: &mut RootOperationNames,
+) {
+    for (name_field, operation_ty) in [
+        (&mut names.query, OperationType::Query),
+        (&mut names.mutation, OperationType::Mutation),
+        (&mut names.subscription, OperationType::Subscription),
+    ] {
+        let name = operation_ty.into();
+        if name_field.is_none() && db.object_types().contains_key(name) {
+            *name_field = Some(name.to_owned());
+            operations.push(RootOperationTypeDefinition {
+                operation_ty,
+                named_type: Type::Named {
+                    name: name.to_owned(),
+                    loc: None,
+                },
+                loc: None,
+            })
+        }
+    }
 }
 
 fn object_type_definition(
@@ -886,38 +951,6 @@ fn extension(db: &dyn HirDatabase, def: ast::Definition, file_id: FileId) -> Opt
     }
 }
 
-fn add_object_type_id_to_schema(db: &dyn HirDatabase) -> Arc<Vec<RootOperationTypeDefinition>> {
-    // Schema Definition does not have to be present in the SDL if ObjectType name is
-    // - Query
-    // - Subscription
-    // - Mutation
-    //
-    // Compiler's internal schema, however, should have a reference to these
-    // object types if they are present
-    let type_defs: Vec<RootOperationTypeDefinition> = db
-        .object_types()
-        .values()
-        .filter_map(|obj_type| {
-            let obj_name = obj_type.name();
-            if matches!(obj_name, "Query" | "Subscription" | "Mutation") {
-                let operation_type = obj_name.into();
-                Some(RootOperationTypeDefinition {
-                    operation_ty: operation_type,
-                    named_type: Type::Named {
-                        name: obj_name.to_string(),
-                        loc: None,
-                    },
-                    loc: None,
-                })
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    Arc::new(type_defs)
-}
-
 fn implements_interfaces(
     implements_interfaces: Option<ast::ImplementsInterfaces>,
     file_id: FileId,
@@ -1046,8 +1079,8 @@ fn default_value(
 fn root_operation_type_definition(
     root_type_def: AstChildren<ast::RootOperationTypeDefinition>,
     file_id: FileId,
-) -> Arc<Vec<RootOperationTypeDefinition>> {
-    let type_defs: Vec<RootOperationTypeDefinition> = root_type_def
+) -> Vec<RootOperationTypeDefinition> {
+    root_type_def
         .into_iter()
         .filter_map(|ty| {
             if let Some(named_ty) = ty.named_type() {
@@ -1064,9 +1097,7 @@ fn root_operation_type_definition(
                 None
             }
         })
-        .collect();
-
-    Arc::new(type_defs)
+        .collect()
 }
 
 fn operation_type(op_type: Option<ast::OperationType>) -> OperationType {
