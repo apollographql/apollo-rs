@@ -1316,11 +1316,26 @@ impl Field {
     }
 
     /// Get the field's name, corresponding to the definition it looks up.
+    ///
+    /// For example, in this operation, the `.name()` is "sourceField":
+    /// ```graphql
+    /// query GetField { alias: sourceField }
+    /// ```
     pub fn name(&self) -> &str {
         self.name.src()
     }
 
-    /// Get the field's response name.
+    /// Get the name that will be used for this field selection in response formatting.
+    ///
+    /// For example, in this operation, the `.response_name()` is "sourceField":
+    /// ```graphql
+    /// query GetField { sourceField }
+    /// ```
+    ///
+    /// But in this operation that uses an alias, the `.response_name()` is "responseField":
+    /// ```graphql
+    /// query GetField { responseField: sourceField }
+    /// ```
     pub fn response_name(&self) -> &str {
         self.alias().map(Alias::name).unwrap_or_else(|| self.name())
     }
