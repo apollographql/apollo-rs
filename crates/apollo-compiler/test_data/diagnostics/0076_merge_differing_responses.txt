@@ -1,0 +1,54 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            72: "0076_merge_differing_responses.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 72,
+            },
+            offset: 461,
+            length: 21,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 72,
+                    },
+                    offset: 418,
+                    length: 19,
+                },
+                text: "`someValue` has type `String!` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 72,
+                    },
+                    offset: 461,
+                    length: 21,
+                },
+                text: "but the same field name has type `Int!` here",
+            },
+        ],
+        help: None,
+        data: ConflictingField {
+            field: "nickname",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 72,
+                },
+                offset: 418,
+                length: 19,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 72,
+                },
+                offset: 461,
+                length: 21,
+            },
+        },
+    },
+]

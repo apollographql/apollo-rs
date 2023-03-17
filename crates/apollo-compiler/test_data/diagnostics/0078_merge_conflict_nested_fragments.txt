@@ -1,0 +1,110 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            74: "0078_merge_conflict_nested_fragments.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 74,
+            },
+            offset: 240,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 74,
+                    },
+                    offset: 145,
+                    length: 4,
+                },
+                text: "field `x` is selected from field `a` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 74,
+                    },
+                    offset: 240,
+                    length: 4,
+                },
+                text: "but the same field `x` is also selected from field `b` here",
+            },
+        ],
+        help: Some(
+            "Alias is already used for a different field",
+        ),
+        data: ConflictingField {
+            field: "b",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 74,
+                },
+                offset: 145,
+                length: 4,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 74,
+                },
+                offset: 240,
+                length: 4,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            74: "0078_merge_conflict_nested_fragments.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 74,
+            },
+            offset: 206,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 74,
+                    },
+                    offset: 179,
+                    length: 4,
+                },
+                text: "field `y` is selected from field `c` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 74,
+                    },
+                    offset: 206,
+                    length: 4,
+                },
+                text: "but the same field `y` is also selected from field `d` here",
+            },
+        ],
+        help: Some(
+            "Alias is already used for a different field",
+        ),
+        data: ConflictingField {
+            field: "d",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 74,
+                },
+                offset: 179,
+                length: 4,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 74,
+                },
+                offset: 206,
+                length: 4,
+            },
+        },
+    },
+]

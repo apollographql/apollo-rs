@@ -211,6 +211,41 @@ pub(crate) fn operation_fragment_spread_fields(
     Arc::new(fields)
 }
 
+pub(crate) fn flattened_operation_fields(
+    db: &dyn HirDatabase,
+    selection_set: SelectionSet,
+) -> Vec<Arc<Field>> {
+    fn flatten_selection_set(
+        db: &dyn HirDatabase,
+        selection_set: &SelectionSet,
+        seen: &mut HashSet<SelectionSet>,
+    ) -> Vec<Arc<Field>> {
+        if seen.contains(selection_set) {
+            return vec![];
+        }
+        seen.insert(selection_set.clone());
+
+        selection_set
+            .selection()
+            .iter()
+            .flat_map(|sel| match sel {
+                Selection::Field(field) => {
+                    vec![Arc::clone(field)]
+                }
+                Selection::FragmentSpread(fragment_spread) => fragment_spread
+                    .fragment(db)
+                    .map(|fragment| flatten_selection_set(db, fragment.selection_set(), seen))
+                    .unwrap_or_default(),
+                Selection::InlineFragment(fragment_spread) => {
+                    flatten_selection_set(db, fragment_spread.selection_set(), seen)
+                }
+            })
+            .collect()
+    }
+
+    flatten_selection_set(db, &selection_set, &mut HashSet::new())
+}
+
 // Should be part of operation's db
 // NOTE: potentially want to return a hashmap of variables and their types?
 pub(crate) fn selection_variables(

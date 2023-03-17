@@ -1,0 +1,110 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            70: "0074_merge_identical_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 70,
+            },
+            offset: 109,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 70,
+                    },
+                    offset: 92,
+                    length: 14,
+                },
+                text: "field `name` is selected from field `nickname` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 70,
+                    },
+                    offset: 109,
+                    length: 4,
+                },
+                text: "but the same field `name` is also selected from field `name` here",
+            },
+        ],
+        help: Some(
+            "Alias is already used for a different field",
+        ),
+        data: ConflictingField {
+            field: "name",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 70,
+                },
+                offset: 92,
+                length: 14,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 70,
+                },
+                offset: 109,
+                length: 4,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            70: "0074_merge_identical_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 70,
+            },
+            offset: 187,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 70,
+                    },
+                    offset: 174,
+                    length: 10,
+                },
+                text: "field `fido` is selected from field `name` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 70,
+                    },
+                    offset: 187,
+                    length: 14,
+                },
+                text: "but the same field `fido` is also selected from field `nickname` here",
+            },
+        ],
+        help: Some(
+            "Alias is already used for a different field",
+        ),
+        data: ConflictingField {
+            field: "nickname",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 70,
+                },
+                offset: 174,
+                length: 10,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 70,
+                },
+                offset: 187,
+                length: 14,
+            },
+        },
+    },
+]

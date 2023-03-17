@@ -84,6 +84,17 @@ impl TypeDefinition {
         }
     }
 
+    /// Returns whether this definition is a composite definition (union, interface, or object).
+    #[must_use]
+    pub fn is_composite_definition(&self) -> bool {
+        matches!(
+            self,
+            Self::ObjectTypeDefinition(_)
+                | Self::InterfaceTypeDefinition(_)
+                | Self::UnionTypeDefinition(_)
+        )
+    }
+
     /// Returns whether this definition is a scalar, object, interface, union, or enum.
     #[must_use]
     pub fn is_output_definition(&self) -> bool {
@@ -391,12 +402,10 @@ impl FragmentDefinition {
     // which operation definition the fragment is used in.
 
     /// Get variables used in a fragment definition.
+    ///
+    /// TODO(@goto-bus-stop): Maybe rename this to used_variables
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
-        self.selection_set
-            .selection()
-            .iter()
-            .flat_map(|sel| sel.variables(db))
-            .collect()
+        self.selection_set.variables(db)
     }
 
     pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
@@ -729,6 +738,16 @@ impl Type {
     }
 }
 
+impl std::fmt::Display for Type {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Type::NonNull { ty, .. } => write!(f, "{ty}!"),
+            Type::List { ty, .. } => write!(f, "[{ty}]"),
+            Type::Named { name, .. } => write!(f, "{name}"),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Directive {
     pub(crate) name: Name,
@@ -971,6 +990,31 @@ impl Value {
     pub fn is_variable(&self) -> bool {
         matches!(self, Self::Variable(..))
     }
+
+    /// Returns `true` if `other` represents the same value as `self`. This is different from the
+    /// `Eq` implementation as it ignores location information.
+    pub fn is_same_value(&self, other: &Value) -> bool {
+        match (self, other) {
+            (Value::Variable(left), Value::Variable(right)) => left.name() == right.name(),
+            (Value::Int(left) | Value::Float(left), Value::Int(right) | Value::Float(right)) => {
+                left == right
+            }
+            (Value::String(left), Value::String(right)) => left == right,
+            (Value::Boolean(left), Value::Boolean(right)) => left == right,
+            (Value::Null, Value::Null) => true,
+            (Value::Enum(left), Value::Enum(right)) => left.src() == right.src(),
+            (Value::List(left), Value::List(right)) if left.len() == right.len() => left
+                .iter()
+                .zip(right)
+                .all(|(left, right)| left.is_same_value(right)),
+            (Value::Object(left), Value::Object(right)) if left.len() == right.len() => {
+                left.iter().zip(right).all(|(left, right)| {
+                    left.0.src() == left.0.src() && left.1.is_same_value(&right.1)
+                })
+            }
+            _ => false,
+        }
+    }
 }
 
 /// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
@@ -1134,6 +1178,48 @@ impl SelectionSet {
         })
     }
 
+    /// Get all variables used in this selection set.
+    pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
+        /// Recursively collect used variables. Accounts for self-referential fragments.
+        fn collect_used_variables(
+            db: &dyn HirDatabase,
+            set: &SelectionSet,
+            seen_fragments: &mut HashSet<Arc<FragmentDefinition>>,
+            output: &mut Vec<Variable>,
+        ) {
+            for selection in set.selection() {
+                match selection {
+                    Selection::Field(field) => {
+                        output.extend(field.self_used_variables());
+                        collect_used_variables(db, field.selection_set(), seen_fragments, output);
+                    }
+                    Selection::FragmentSpread(spread) => {
+                        let Some(fragment) = spread.fragment(db) else {
+                            return;
+                        };
+                        if seen_fragments.contains(&fragment) {
+                            return; // prevent recursion loop
+                        }
+                        seen_fragments.insert(Arc::clone(&fragment));
+                        collect_used_variables(
+                            db,
+                            fragment.selection_set(),
+                            seen_fragments,
+                            output,
+                        );
+                    }
+                    Selection::InlineFragment(inline) => {
+                        collect_used_variables(db, inline.selection_set(), seen_fragments, output);
+                    }
+                }
+            }
+        }
+
+        let mut output = vec![];
+        collect_used_variables(db, self, &mut HashSet::new(), &mut output);
+        output
+    }
+
     /// Returns true if all the [`Selection`]s in this selection set are themselves introspections.
     pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
         self.selection().iter().all(|selection| match selection {
@@ -1141,6 +1227,21 @@ impl SelectionSet {
             Selection::FragmentSpread(spread) => spread.is_introspection(db),
             Selection::InlineFragment(inline) => inline.is_introspection(db),
         })
+    }
+
+    /// Create a selection set for the concatenation of two selection sets' fields.
+    ///
+    /// This does not deduplicate fields: if the two selection sets both select a field `a`, the
+    /// merged set will select field `a` twice.
+    pub fn merge(&self, other: &SelectionSet) -> SelectionSet {
+        let mut merged: Vec<Selection> =
+            Vec::with_capacity(self.selection.len() + other.selection.len());
+        merged.append(&mut self.selection.as_ref().clone());
+        merged.append(&mut other.selection.as_ref().clone());
+
+        SelectionSet {
+            selection: Arc::new(merged),
+        }
     }
 }
 
@@ -1183,6 +1284,15 @@ impl Selection {
     pub fn is_inline_fragment(&self) -> bool {
         matches!(self, Self::InlineFragment(..))
     }
+
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        match self {
+            Selection::Field(field) => field.loc(),
+            Selection::FragmentSpread(fragment_spread) => fragment_spread.loc(),
+            Selection::InlineFragment(inline_fragment) => inline_fragment.loc(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1205,9 +1315,29 @@ impl Field {
         }
     }
 
-    /// Get a reference to the field's name.
+    /// Get the field's name, corresponding to the definition it looks up.
+    ///
+    /// For example, in this operation, the `.name()` is "sourceField":
+    /// ```graphql
+    /// query GetField { alias: sourceField }
+    /// ```
     pub fn name(&self) -> &str {
         self.name.src()
+    }
+
+    /// Get the name that will be used for this field selection in response formatting.
+    ///
+    /// For example, in this operation, the `.response_name()` is "sourceField":
+    /// ```graphql
+    /// query GetField { sourceField }
+    /// ```
+    ///
+    /// But in this operation that uses an alias, the `.response_name()` is "responseField":
+    /// ```graphql
+    /// query GetField { responseField: sourceField }
+    /// ```
+    pub fn response_name(&self) -> &str {
+        self.alias().map(Alias::name).unwrap_or_else(|| self.name())
     }
 
     /// Get a reference to field's type.
@@ -1218,6 +1348,11 @@ impl Field {
             .ty()
             .to_owned();
         Some(def)
+    }
+
+    /// Get the field's parent type definition.
+    pub fn parent_type(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
+        db.find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())
     }
 
     /// Get field's original field definition.
@@ -1263,22 +1398,28 @@ impl Field {
         &self.selection_set
     }
 
-    /// Get variables used in the field.
+    /// Return an iterator over the variables used in arguments to this field.
+    fn self_used_variables(&self) -> impl Iterator<Item = Variable> + '_ {
+        self.arguments.iter().filter_map(|arg| match arg.value() {
+            Value::Variable(var) => Some(var.clone()),
+            _ => None,
+        })
+    }
+
+    /// Get variables used in the field, including in sub-selections.
+    ///
+    /// For example, with this field:
+    /// ```graphql
+    /// {
+    ///   field(arg: $arg) {
+    ///     number(formatAs: $format)
+    ///   }
+    /// }
+    /// ```
+    /// the used variables are `$arg` and `$format`.
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
-        let mut vars: Vec<_> = self
-            .arguments
-            .iter()
-            .filter_map(|arg| match arg.value() {
-                Value::Variable(var) => Some(var.clone()),
-                _ => None,
-            })
-            .collect();
-        let iter = self
-            .selection_set
-            .selection()
-            .iter()
-            .flat_map(|sel| sel.variables(db));
-        vars.extend(iter);
+        let mut vars = self.self_used_variables().collect::<Vec<_>>();
+        vars.extend(self.selection_set.variables(db));
         vars
     }
 
@@ -1339,13 +1480,7 @@ impl InlineFragment {
 
     /// Get variables in use in the inline fragment.
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
-        let vars = self
-            .selection_set
-            .selection()
-            .iter()
-            .flat_map(|sel| sel.variables(db))
-            .collect();
-        vars
+        self.selection_set.variables(db)
     }
 
     /// Get the AST location information for this HIR node.
@@ -1379,16 +1514,9 @@ impl FragmentSpread {
 
     /// Get fragment spread's defined variables.
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
-        let vars = match self.fragment(db) {
-            Some(fragment) => fragment
-                .selection_set
-                .selection()
-                .iter()
-                .flat_map(|sel| sel.variables(db))
-                .collect(),
-            None => Vec::new(),
-        };
-        vars
+        self.fragment(db)
+            .map(|fragment| fragment.variables(db))
+            .unwrap_or_default()
     }
 
     /// Get a reference to fragment spread directives.
@@ -1431,6 +1559,11 @@ impl FragmentSpread {
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Alias(pub String);
+impl Alias {
+    pub fn name(&self) -> &str {
+        &self.0
+    }
+}
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Float {

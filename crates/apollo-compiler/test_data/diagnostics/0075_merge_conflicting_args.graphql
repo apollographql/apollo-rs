@@ -1,0 +1,34 @@
+enum DogCommand {
+  SIT
+  HEEL
+}
+
+type Dog {
+  doesKnowCommand(dogCommand: DogCommand): Boolean
+  isAtLocation(x: Int, y: Int): Boolean
+}
+
+fragment conflictingArgsOnValues on Dog {
+  doesKnowCommand(dogCommand: SIT)
+  doesKnowCommand(dogCommand: HEEL)
+}
+
+fragment conflictingArgsValueAndVar on Dog {
+  doesKnowCommand(dogCommand: SIT)
+  doesKnowCommand(dogCommand: $dogCommand)
+}
+
+fragment conflictingArgsWithVars on Dog {
+  doesKnowCommand(dogCommand: $varOne)
+  doesKnowCommand(dogCommand: $varTwo)
+}
+
+fragment differingArgs on Dog {
+  doesKnowCommand(dogCommand: SIT)
+  doesKnowCommand
+}
+
+fragment conflictingArgs on Dog {
+  isAtLocation(x: 0)
+  isAtLocation(y: 0)
+}

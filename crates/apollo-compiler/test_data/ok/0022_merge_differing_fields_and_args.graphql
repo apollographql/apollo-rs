@@ -1,0 +1,49 @@
+interface Pet {
+  name: String!
+}
+
+enum DogCommand {
+  SIT
+  HEEL
+}
+
+enum CatCommand {
+  JUMP
+}
+
+type Dog implements Pet {
+  name: String!
+  nickname: String!
+  barkVolume: Int!
+  doesKnowCommand(dogCommand: DogCommand!): Boolean!
+  isAtLocation(x: Int, y: Int): Boolean!
+}
+
+type Cat implements Pet {
+  name: String!
+  meowVolume: Int!
+  doesKnowCommand(catCommand: CatCommand!): Boolean!
+}
+
+fragment safeDifferingFields on Pet {
+  ... on Dog {
+    volume: barkVolume
+  }
+  ... on Cat {
+    volume: meowVolume
+  }
+}
+
+fragment safeDifferingArgs on Pet {
+  ... on Dog {
+    doesKnowCommand(dogCommand: SIT)
+  }
+  ... on Cat {
+    doesKnowCommand(catCommand: JUMP)
+  }
+}
+
+fragment safeDifferingArgOrder on Dog {
+  isAtLocation(x: 0, y: 0)
+  isAtLocation(y: 0, x: 0)
+}
