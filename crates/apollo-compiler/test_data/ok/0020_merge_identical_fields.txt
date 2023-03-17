@@ -1,0 +1,97 @@
+- DOCUMENT@0..192
+    - OBJECT_TYPE_DEFINITION@0..47
+        - type_KW@0..4 "type"
+        - WHITESPACE@4..5 " "
+        - NAME@5..8
+            - IDENT@5..8 "Dog"
+        - WHITESPACE@8..9 " "
+        - FIELDS_DEFINITION@9..47
+            - L_CURLY@9..10 "{"
+            - WHITESPACE@10..13 "\n  "
+            - FIELD_DEFINITION@13..29
+                - NAME@13..21
+                    - IDENT@13..21 "nickname"
+                - COLON@21..22 ":"
+                - WHITESPACE@22..23 " "
+                - NAMED_TYPE@23..29
+                    - NAME@23..29
+                        - IDENT@23..29 "String"
+            - WHITESPACE@29..32 "\n  "
+            - FIELD_DEFINITION@32..45
+                - NAME@32..36
+                    - IDENT@32..36 "name"
+                - COLON@36..37 ":"
+                - WHITESPACE@37..38 " "
+                - NON_NULL_TYPE@38..45
+                    - NAMED_TYPE@38..44
+                        - NAME@38..44
+                            - IDENT@38..44 "String"
+                    - BANG@44..45 "!"
+            - WHITESPACE@45..46 "\n"
+            - R_CURLY@46..47 "}"
+    - WHITESPACE@47..49 "\n\n"
+    - FRAGMENT_DEFINITION@49..103
+        - fragment_KW@49..57 "fragment"
+        - WHITESPACE@57..58 " "
+        - FRAGMENT_NAME@58..78
+            - NAME@58..78
+                - IDENT@58..78 "mergeIdenticalFields"
+        - WHITESPACE@78..79 " "
+        - TYPE_CONDITION@79..85
+            - on_KW@79..81 "on"
+            - WHITESPACE@81..82 " "
+            - NAMED_TYPE@82..85
+                - NAME@82..85
+                    - IDENT@82..85 "Dog"
+        - WHITESPACE@85..86 " "
+        - SELECTION_SET@86..103
+            - L_CURLY@86..87 "{"
+            - WHITESPACE@87..90 "\n  "
+            - FIELD@90..94
+                - NAME@90..94
+                    - IDENT@90..94 "name"
+            - WHITESPACE@94..97 "\n  "
+            - FIELD@97..101
+                - NAME@97..101
+                    - IDENT@97..101 "name"
+            - WHITESPACE@101..102 "\n"
+            - R_CURLY@102..103 "}"
+    - WHITESPACE@103..105 "\n\n"
+    - FRAGMENT_DEFINITION@105..191
+        - fragment_KW@105..113 "fragment"
+        - WHITESPACE@113..114 " "
+        - FRAGMENT_NAME@114..144
+            - NAME@114..144
+                - IDENT@114..144 "mergeIdenticalAliasesAndFields"
+        - WHITESPACE@144..145 " "
+        - TYPE_CONDITION@145..151
+            - on_KW@145..147 "on"
+            - WHITESPACE@147..148 " "
+            - NAMED_TYPE@148..151
+                - NAME@148..151
+                    - IDENT@148..151 "Dog"
+        - WHITESPACE@151..152 " "
+        - SELECTION_SET@152..191
+            - L_CURLY@152..153 "{"
+            - WHITESPACE@153..156 "\n  "
+            - FIELD@156..171
+                - ALIAS@156..166
+                    - NAME@156..165
+                        - IDENT@156..165 "otherName"
+                    - COLON@165..166 ":"
+                - WHITESPACE@166..167 " "
+                - NAME@167..171
+                    - IDENT@167..171 "name"
+            - WHITESPACE@171..174 "\n  "
+            - FIELD@174..189
+                - ALIAS@174..184
+                    - NAME@174..183
+                        - IDENT@174..183 "otherName"
+                    - COLON@183..184 ":"
+                - WHITESPACE@184..185 " "
+                - NAME@185..189
+                    - IDENT@185..189 "name"
+            - WHITESPACE@189..190 "\n"
+            - R_CURLY@190..191 "}"
+    - WHITESPACE@191..192 "\n"
+recursion limit: 4096, high: 3

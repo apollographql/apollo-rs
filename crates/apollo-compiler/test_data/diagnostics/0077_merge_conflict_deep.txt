@@ -1,0 +1,56 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            73: "0077_merge_conflict_deep.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 73,
+            },
+            offset: 97,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 73,
+                    },
+                    offset: 73,
+                    length: 4,
+                },
+                text: "field `x` is selected from field `a` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 73,
+                    },
+                    offset: 97,
+                    length: 4,
+                },
+                text: "but the same field `x` is also selected from field `b` here",
+            },
+        ],
+        help: Some(
+            "Alias is already used for a different field",
+        ),
+        data: ConflictingField {
+            field: "b",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 73,
+                },
+                offset: 73,
+                length: 4,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 73,
+                },
+                offset: 97,
+                length: 4,
+            },
+        },
+    },
+]

@@ -1,0 +1,443 @@
+- DOCUMENT@0..765
+    - INTERFACE_TYPE_DEFINITION@0..33
+        - interface_KW@0..9 "interface"
+        - WHITESPACE@9..10 " "
+        - NAME@10..13
+            - IDENT@10..13 "Pet"
+        - WHITESPACE@13..14 " "
+        - FIELDS_DEFINITION@14..33
+            - L_CURLY@14..15 "{"
+            - WHITESPACE@15..18 "\n  "
+            - FIELD_DEFINITION@18..31
+                - NAME@18..22
+                    - IDENT@18..22 "name"
+                - COLON@22..23 ":"
+                - WHITESPACE@23..24 " "
+                - NON_NULL_TYPE@24..31
+                    - NAMED_TYPE@24..30
+                        - NAME@24..30
+                            - IDENT@24..30 "String"
+                    - BANG@30..31 "!"
+            - WHITESPACE@31..32 "\n"
+            - R_CURLY@32..33 "}"
+    - WHITESPACE@33..35 "\n\n"
+    - ENUM_TYPE_DEFINITION@35..67
+        - enum_KW@35..39 "enum"
+        - WHITESPACE@39..40 " "
+        - NAME@40..50
+            - IDENT@40..50 "DogCommand"
+        - WHITESPACE@50..51 " "
+        - ENUM_VALUES_DEFINITION@51..67
+            - L_CURLY@51..52 "{"
+            - WHITESPACE@52..55 "\n  "
+            - ENUM_VALUE_DEFINITION@55..58
+                - ENUM_VALUE@55..58
+                    - NAME@55..58
+                        - IDENT@55..58 "SIT"
+            - WHITESPACE@58..61 "\n  "
+            - ENUM_VALUE_DEFINITION@61..65
+                - ENUM_VALUE@61..65
+                    - NAME@61..65
+                        - IDENT@61..65 "HEEL"
+            - WHITESPACE@65..66 "\n"
+            - R_CURLY@66..67 "}"
+    - WHITESPACE@67..69 "\n\n"
+    - ENUM_TYPE_DEFINITION@69..95
+        - enum_KW@69..73 "enum"
+        - WHITESPACE@73..74 " "
+        - NAME@74..84
+            - IDENT@74..84 "CatCommand"
+        - WHITESPACE@84..85 " "
+        - ENUM_VALUES_DEFINITION@85..95
+            - L_CURLY@85..86 "{"
+            - WHITESPACE@86..89 "\n  "
+            - ENUM_VALUE_DEFINITION@89..93
+                - ENUM_VALUE@89..93
+                    - NAME@89..93
+                        - IDENT@89..93 "JUMP"
+            - WHITESPACE@93..94 "\n"
+            - R_CURLY@94..95 "}"
+    - WHITESPACE@95..97 "\n\n"
+    - OBJECT_TYPE_DEFINITION@97..273
+        - type_KW@97..101 "type"
+        - WHITESPACE@101..102 " "
+        - NAME@102..105
+            - IDENT@102..105 "Dog"
+        - WHITESPACE@105..106 " "
+        - IMPLEMENTS_INTERFACES@106..120
+            - implements_KW@106..116 "implements"
+            - WHITESPACE@116..117 " "
+            - NAMED_TYPE@117..120
+                - NAME@117..120
+                    - IDENT@117..120 "Pet"
+        - WHITESPACE@120..121 " "
+        - FIELDS_DEFINITION@121..273
+            - L_CURLY@121..122 "{"
+            - WHITESPACE@122..125 "\n  "
+            - FIELD_DEFINITION@125..138
+                - NAME@125..129
+                    - IDENT@125..129 "name"
+                - COLON@129..130 ":"
+                - WHITESPACE@130..131 " "
+                - NON_NULL_TYPE@131..138
+                    - NAMED_TYPE@131..137
+                        - NAME@131..137
+                            - IDENT@131..137 "String"
+                    - BANG@137..138 "!"
+            - WHITESPACE@138..141 "\n  "
+            - FIELD_DEFINITION@141..158
+                - NAME@141..149
+                    - IDENT@141..149 "nickname"
+                - COLON@149..150 ":"
+                - WHITESPACE@150..151 " "
+                - NON_NULL_TYPE@151..158
+                    - NAMED_TYPE@151..157
+                        - NAME@151..157
+                            - IDENT@151..157 "String"
+                    - BANG@157..158 "!"
+            - WHITESPACE@158..161 "\n  "
+            - FIELD_DEFINITION@161..177
+                - NAME@161..171
+                    - IDENT@161..171 "barkVolume"
+                - COLON@171..172 ":"
+                - WHITESPACE@172..173 " "
+                - NON_NULL_TYPE@173..177
+                    - NAMED_TYPE@173..176
+                        - NAME@173..176
+                            - IDENT@173..176 "Int"
+                    - BANG@176..177 "!"
+            - WHITESPACE@177..180 "\n  "
+            - FIELD_DEFINITION@180..230
+                - NAME@180..195
+                    - IDENT@180..195 "doesKnowCommand"
+                - ARGUMENTS_DEFINITION@195..220
+                    - L_PAREN@195..196 "("
+                    - INPUT_VALUE_DEFINITION@196..219
+                        - NAME@196..206
+                            - IDENT@196..206 "dogCommand"
+                        - COLON@206..207 ":"
+                        - WHITESPACE@207..208 " "
+                        - NON_NULL_TYPE@208..219
+                            - NAMED_TYPE@208..218
+                                - NAME@208..218
+                                    - IDENT@208..218 "DogCommand"
+                            - BANG@218..219 "!"
+                    - R_PAREN@219..220 ")"
+                - COLON@220..221 ":"
+                - WHITESPACE@221..222 " "
+                - NON_NULL_TYPE@222..230
+                    - NAMED_TYPE@222..229
+                        - NAME@222..229
+                            - IDENT@222..229 "Boolean"
+                    - BANG@229..230 "!"
+            - WHITESPACE@230..233 "\n  "
+            - FIELD_DEFINITION@233..271
+                - NAME@233..245
+                    - IDENT@233..245 "isAtLocation"
+                - ARGUMENTS_DEFINITION@245..261
+                    - L_PAREN@245..246 "("
+                    - INPUT_VALUE_DEFINITION@246..252
+                        - NAME@246..247
+                            - IDENT@246..247 "x"
+                        - COLON@247..248 ":"
+                        - WHITESPACE@248..249 " "
+                        - NAMED_TYPE@249..252
+                            - NAME@249..252
+                                - IDENT@249..252 "Int"
+                    - COMMA@252..253 ","
+                    - WHITESPACE@253..254 " "
+                    - INPUT_VALUE_DEFINITION@254..260
+                        - NAME@254..255
+                            - IDENT@254..255 "y"
+                        - COLON@255..256 ":"
+                        - WHITESPACE@256..257 " "
+                        - NAMED_TYPE@257..260
+                            - NAME@257..260
+                                - IDENT@257..260 "Int"
+                    - R_PAREN@260..261 ")"
+                - COLON@261..262 ":"
+                - WHITESPACE@262..263 " "
+                - NON_NULL_TYPE@263..271
+                    - NAMED_TYPE@263..270
+                        - NAME@263..270
+                            - IDENT@263..270 "Boolean"
+                    - BANG@270..271 "!"
+            - WHITESPACE@271..272 "\n"
+            - R_CURLY@272..273 "}"
+    - WHITESPACE@273..275 "\n\n"
+    - OBJECT_TYPE_DEFINITION@275..390
+        - type_KW@275..279 "type"
+        - WHITESPACE@279..280 " "
+        - NAME@280..283
+            - IDENT@280..283 "Cat"
+        - WHITESPACE@283..284 " "
+        - IMPLEMENTS_INTERFACES@284..298
+            - implements_KW@284..294 "implements"
+            - WHITESPACE@294..295 " "
+            - NAMED_TYPE@295..298
+                - NAME@295..298
+                    - IDENT@295..298 "Pet"
+        - WHITESPACE@298..299 " "
+        - FIELDS_DEFINITION@299..390
+            - L_CURLY@299..300 "{"
+            - WHITESPACE@300..303 "\n  "
+            - FIELD_DEFINITION@303..316
+                - NAME@303..307
+                    - IDENT@303..307 "name"
+                - COLON@307..308 ":"
+                - WHITESPACE@308..309 " "
+                - NON_NULL_TYPE@309..316
+                    - NAMED_TYPE@309..315
+                        - NAME@309..315
+                            - IDENT@309..315 "String"
+                    - BANG@315..316 "!"
+            - WHITESPACE@316..319 "\n  "
+            - FIELD_DEFINITION@319..335
+                - NAME@319..329
+                    - IDENT@319..329 "meowVolume"
+                - COLON@329..330 ":"
+                - WHITESPACE@330..331 " "
+                - NON_NULL_TYPE@331..335
+                    - NAMED_TYPE@331..334
+                        - NAME@331..334
+                            - IDENT@331..334 "Int"
+                    - BANG@334..335 "!"
+            - WHITESPACE@335..338 "\n  "
+            - FIELD_DEFINITION@338..388
+                - NAME@338..353
+                    - IDENT@338..353 "doesKnowCommand"
+                - ARGUMENTS_DEFINITION@353..378
+                    - L_PAREN@353..354 "("
+                    - INPUT_VALUE_DEFINITION@354..377
+                        - NAME@354..364
+                            - IDENT@354..364 "catCommand"
+                        - COLON@364..365 ":"
+                        - WHITESPACE@365..366 " "
+                        - NON_NULL_TYPE@366..377
+                            - NAMED_TYPE@366..376
+                                - NAME@366..376
+                                    - IDENT@366..376 "CatCommand"
+                            - BANG@376..377 "!"
+                    - R_PAREN@377..378 ")"
+                - COLON@378..379 ":"
+                - WHITESPACE@379..380 " "
+                - NON_NULL_TYPE@380..388
+                    - NAMED_TYPE@380..387
+                        - NAME@380..387
+                            - IDENT@380..387 "Boolean"
+                    - BANG@387..388 "!"
+            - WHITESPACE@388..389 "\n"
+            - R_CURLY@389..390 "}"
+    - WHITESPACE@390..392 "\n\n"
+    - FRAGMENT_DEFINITION@392..515
+        - fragment_KW@392..400 "fragment"
+        - WHITESPACE@400..401 " "
+        - FRAGMENT_NAME@401..420
+            - NAME@401..420
+                - IDENT@401..420 "safeDifferingFields"
+        - WHITESPACE@420..421 " "
+        - TYPE_CONDITION@421..427
+            - on_KW@421..423 "on"
+            - WHITESPACE@423..424 " "
+            - NAMED_TYPE@424..427
+                - NAME@424..427
+                    - IDENT@424..427 "Pet"
+        - WHITESPACE@427..428 " "
+        - SELECTION_SET@428..515
+            - L_CURLY@428..429 "{"
+            - WHITESPACE@429..432 "\n  "
+            - INLINE_FRAGMENT@432..471
+                - SPREAD@432..435 "..."
+                - WHITESPACE@435..436 " "
+                - TYPE_CONDITION@436..442
+                    - on_KW@436..438 "on"
+                    - WHITESPACE@438..439 " "
+                    - NAMED_TYPE@439..442
+                        - NAME@439..442
+                            - IDENT@439..442 "Dog"
+                - WHITESPACE@442..443 " "
+                - SELECTION_SET@443..471
+                    - L_CURLY@443..444 "{"
+                    - WHITESPACE@444..449 "\n    "
+                    - FIELD@449..467
+                        - ALIAS@449..456
+                            - NAME@449..455
+                                - IDENT@449..455 "volume"
+                            - COLON@455..456 ":"
+                        - WHITESPACE@456..457 " "
+                        - NAME@457..467
+                            - IDENT@457..467 "barkVolume"
+                    - WHITESPACE@467..470 "\n  "
+                    - R_CURLY@470..471 "}"
+            - WHITESPACE@471..474 "\n  "
+            - INLINE_FRAGMENT@474..513
+                - SPREAD@474..477 "..."
+                - WHITESPACE@477..478 " "
+                - TYPE_CONDITION@478..484
+                    - on_KW@478..480 "on"
+                    - WHITESPACE@480..481 " "
+                    - NAMED_TYPE@481..484
+                        - NAME@481..484
+                            - IDENT@481..484 "Cat"
+                - WHITESPACE@484..485 " "
+                - SELECTION_SET@485..513
+                    - L_CURLY@485..486 "{"
+                    - WHITESPACE@486..491 "\n    "
+                    - FIELD@491..509
+                        - ALIAS@491..498
+                            - NAME@491..497
+                                - IDENT@491..497 "volume"
+                            - COLON@497..498 ":"
+                        - WHITESPACE@498..499 " "
+                        - NAME@499..509
+                            - IDENT@499..509 "meowVolume"
+                    - WHITESPACE@509..512 "\n  "
+                    - R_CURLY@512..513 "}"
+            - WHITESPACE@513..514 "\n"
+            - R_CURLY@514..515 "}"
+    - WHITESPACE@515..517 "\n\n"
+    - FRAGMENT_DEFINITION@517..667
+        - fragment_KW@517..525 "fragment"
+        - WHITESPACE@525..526 " "
+        - FRAGMENT_NAME@526..543
+            - NAME@526..543
+                - IDENT@526..543 "safeDifferingArgs"
+        - WHITESPACE@543..544 " "
+        - TYPE_CONDITION@544..550
+            - on_KW@544..546 "on"
+            - WHITESPACE@546..547 " "
+            - NAMED_TYPE@547..550
+                - NAME@547..550
+                    - IDENT@547..550 "Pet"
+        - WHITESPACE@550..551 " "
+        - SELECTION_SET@551..667
+            - L_CURLY@551..552 "{"
+            - WHITESPACE@552..555 "\n  "
+            - INLINE_FRAGMENT@555..608
+                - SPREAD@555..558 "..."
+                - WHITESPACE@558..559 " "
+                - TYPE_CONDITION@559..565
+                    - on_KW@559..561 "on"
+                    - WHITESPACE@561..562 " "
+                    - NAMED_TYPE@562..565
+                        - NAME@562..565
+                            - IDENT@562..565 "Dog"
+                - WHITESPACE@565..566 " "
+                - SELECTION_SET@566..608
+                    - L_CURLY@566..567 "{"
+                    - WHITESPACE@567..572 "\n    "
+                    - FIELD@572..604
+                        - NAME@572..587
+                            - IDENT@572..587 "doesKnowCommand"
+                        - ARGUMENTS@587..604
+                            - L_PAREN@587..588 "("
+                            - ARGUMENT@588..603
+                                - NAME@588..598
+                                    - IDENT@588..598 "dogCommand"
+                                - COLON@598..599 ":"
+                                - WHITESPACE@599..600 " "
+                                - ENUM_VALUE@600..603
+                                    - NAME@600..603
+                                        - IDENT@600..603 "SIT"
+                            - R_PAREN@603..604 ")"
+                    - WHITESPACE@604..607 "\n  "
+                    - R_CURLY@607..608 "}"
+            - WHITESPACE@608..611 "\n  "
+            - INLINE_FRAGMENT@611..665
+                - SPREAD@611..614 "..."
+                - WHITESPACE@614..615 " "
+                - TYPE_CONDITION@615..621
+                    - on_KW@615..617 "on"
+                    - WHITESPACE@617..618 " "
+                    - NAMED_TYPE@618..621
+                        - NAME@618..621
+                            - IDENT@618..621 "Cat"
+                - WHITESPACE@621..622 " "
+                - SELECTION_SET@622..665
+                    - L_CURLY@622..623 "{"
+                    - WHITESPACE@623..628 "\n    "
+                    - FIELD@628..661
+                        - NAME@628..643
+                            - IDENT@628..643 "doesKnowCommand"
+                        - ARGUMENTS@643..661
+                            - L_PAREN@643..644 "("
+                            - ARGUMENT@644..660
+                                - NAME@644..654
+                                    - IDENT@644..654 "catCommand"
+                                - COLON@654..655 ":"
+                                - WHITESPACE@655..656 " "
+                                - ENUM_VALUE@656..660
+                                    - NAME@656..660
+                                        - IDENT@656..660 "JUMP"
+                            - R_PAREN@660..661 ")"
+                    - WHITESPACE@661..664 "\n  "
+                    - R_CURLY@664..665 "}"
+            - WHITESPACE@665..666 "\n"
+            - R_CURLY@666..667 "}"
+    - WHITESPACE@667..669 "\n\n"
+    - FRAGMENT_DEFINITION@669..764
+        - fragment_KW@669..677 "fragment"
+        - WHITESPACE@677..678 " "
+        - FRAGMENT_NAME@678..699
+            - NAME@678..699
+                - IDENT@678..699 "safeDifferingArgOrder"
+        - WHITESPACE@699..700 " "
+        - TYPE_CONDITION@700..706
+            - on_KW@700..702 "on"
+            - WHITESPACE@702..703 " "
+            - NAMED_TYPE@703..706
+                - NAME@703..706
+                    - IDENT@703..706 "Dog"
+        - WHITESPACE@706..707 " "
+        - SELECTION_SET@707..764
+            - L_CURLY@707..708 "{"
+            - WHITESPACE@708..711 "\n  "
+            - FIELD@711..735
+                - NAME@711..723
+                    - IDENT@711..723 "isAtLocation"
+                - ARGUMENTS@723..735
+                    - L_PAREN@723..724 "("
+                    - ARGUMENT@724..728
+                        - NAME@724..725
+                            - IDENT@724..725 "x"
+                        - COLON@725..726 ":"
+                        - WHITESPACE@726..727 " "
+                        - INT_VALUE@727..728
+                            - INT@727..728 "0"
+                    - COMMA@728..729 ","
+                    - WHITESPACE@729..730 " "
+                    - ARGUMENT@730..734
+                        - NAME@730..731
+                            - IDENT@730..731 "y"
+                        - COLON@731..732 ":"
+                        - WHITESPACE@732..733 " "
+                        - INT_VALUE@733..734
+                            - INT@733..734 "0"
+                    - R_PAREN@734..735 ")"
+            - WHITESPACE@735..738 "\n  "
+            - FIELD@738..762
+                - NAME@738..750
+                    - IDENT@738..750 "isAtLocation"
+                - ARGUMENTS@750..762
+                    - L_PAREN@750..751 "("
+                    - ARGUMENT@751..755
+                        - NAME@751..752
+                            - IDENT@751..752 "y"
+                        - COLON@752..753 ":"
+                        - WHITESPACE@753..754 " "
+                        - INT_VALUE@754..755
+                            - INT@754..755 "0"
+                    - COMMA@755..756 ","
+                    - WHITESPACE@756..757 " "
+                    - ARGUMENT@757..761
+                        - NAME@757..758
+                            - IDENT@757..758 "x"
+                        - COLON@758..759 ":"
+                        - WHITESPACE@759..760 " "
+                        - INT_VALUE@760..761
+                            - INT@760..761 "0"
+                    - R_PAREN@761..762 ")"
+            - WHITESPACE@762..763 "\n"
+            - R_CURLY@763..764 "}"
+    - WHITESPACE@764..765 "\n"
+recursion limit: 4096, high: 3

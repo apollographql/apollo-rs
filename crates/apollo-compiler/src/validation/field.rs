@@ -220,8 +220,6 @@ pub fn validate_field_definitions(
     diagnostics
 }
 
-// TODO(@lrlna): don't allow this!!
-#[allow(clippy::result_large_err)]
 pub fn validate_leaf_field_selection(
     db: &dyn ValidationDatabase,
     field: Arc<hir::Field>,

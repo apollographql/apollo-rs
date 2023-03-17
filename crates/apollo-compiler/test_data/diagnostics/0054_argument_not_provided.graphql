@@ -12,6 +12,8 @@ type Query {
 
 fragment Y on ComplicatedArgs {
     multipleReqs
+}
+fragment Z on ComplicatedArgs {
     multipleReqs(req2: 1)
 }
 
@@ -21,8 +23,8 @@ fragment Y on ComplicatedArgs {
   }
 
   complicatedArgs {
-    multipleReqs(req2: 1)
-    multipleOptAndReq(req1: 1)
-    multipleOptAndReq(opt1: 1, opt2: 1, req1: 1)
+    a: multipleReqs(req2: 1)
+    b: multipleOptAndReq(req1: 1)
+    c: multipleOptAndReq(opt1: 1, opt2: 1, req1: 1)
   }
 }

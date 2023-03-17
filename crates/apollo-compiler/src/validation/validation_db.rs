@@ -180,6 +180,34 @@ pub trait ValidationDatabase:
 
     #[salsa::invoke(variable::validate_unused_variables)]
     fn validate_unused_variable(&self, op: Arc<OperationDefinition>) -> Vec<ApolloDiagnostic>;
+
+    /// Check if two fields will output the same type.
+    ///
+    /// If the two fields output different types, returns an `Err` containing diagnostic information.
+    /// To simply check if outputs are the same, you can use `.is_ok()`:
+    /// ```rust,ignore
+    /// let is_same = db.same_response_shape(field_a, field_b).is_ok();
+    /// // `is_same` is `bool`
+    /// ```
+    ///
+    /// Spec: https://spec.graphql.org/October2021/#SameResponseShape()
+    #[salsa::invoke(selection::same_response_shape)]
+    fn same_response_shape(
+        &self,
+        field_a: Arc<Field>,
+        field_b: Arc<Field>,
+    ) -> Result<(), ApolloDiagnostic>;
+
+    /// Check if the fields in a given selection set can be merged.
+    ///
+    /// If the fields cannot be merged, returns an `Err` containing diagnostic information.
+    ///
+    /// Spec: https://spec.graphql.org/October2021/#FieldsInSetCanMerge()
+    #[salsa::invoke(selection::fields_in_set_can_merge)]
+    fn fields_in_set_can_merge(
+        &self,
+        selection_set: SelectionSet,
+    ) -> Result<(), Vec<ApolloDiagnostic>>;
 }
 
 pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {

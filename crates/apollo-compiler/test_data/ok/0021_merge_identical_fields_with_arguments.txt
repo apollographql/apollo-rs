@@ -1,0 +1,154 @@
+- DOCUMENT@0..374
+    - ENUM_TYPE_DEFINITION@0..32
+        - enum_KW@0..4 "enum"
+        - WHITESPACE@4..5 " "
+        - NAME@5..15
+            - IDENT@5..15 "DogCommand"
+        - WHITESPACE@15..16 " "
+        - ENUM_VALUES_DEFINITION@16..32
+            - L_CURLY@16..17 "{"
+            - WHITESPACE@17..20 "\n  "
+            - ENUM_VALUE_DEFINITION@20..23
+                - ENUM_VALUE@20..23
+                    - NAME@20..23
+                        - IDENT@20..23 "SIT"
+            - WHITESPACE@23..26 "\n  "
+            - ENUM_VALUE_DEFINITION@26..30
+                - ENUM_VALUE@26..30
+                    - NAME@26..30
+                        - IDENT@26..30 "HEEL"
+            - WHITESPACE@30..31 "\n"
+            - R_CURLY@31..32 "}"
+    - WHITESPACE@32..34 "\n\n"
+    - OBJECT_TYPE_DEFINITION@34..97
+        - type_KW@34..38 "type"
+        - WHITESPACE@38..39 " "
+        - NAME@39..42
+            - IDENT@39..42 "Dog"
+        - WHITESPACE@42..43 " "
+        - FIELDS_DEFINITION@43..97
+            - L_CURLY@43..44 "{"
+            - WHITESPACE@44..47 "\n  "
+            - FIELD_DEFINITION@47..95
+                - NAME@47..62
+                    - IDENT@47..62 "doesKnowCommand"
+                - ARGUMENTS_DEFINITION@62..86
+                    - L_PAREN@62..63 "("
+                    - INPUT_VALUE_DEFINITION@63..85
+                        - NAME@63..73
+                            - IDENT@63..73 "dogCommand"
+                        - COLON@73..74 ":"
+                        - WHITESPACE@74..75 " "
+                        - NAMED_TYPE@75..85
+                            - NAME@75..85
+                                - IDENT@75..85 "DogCommand"
+                    - R_PAREN@85..86 ")"
+                - COLON@86..87 ":"
+                - WHITESPACE@87..88 " "
+                - NAMED_TYPE@88..95
+                    - NAME@88..95
+                        - IDENT@88..95 "Boolean"
+            - WHITESPACE@95..96 "\n"
+            - R_CURLY@96..97 "}"
+    - WHITESPACE@97..99 "\n\n"
+    - FRAGMENT_DEFINITION@99..226
+        - fragment_KW@99..107 "fragment"
+        - WHITESPACE@107..108 " "
+        - FRAGMENT_NAME@108..145
+            - NAME@108..145
+                - IDENT@108..145 "mergeIdenticalFieldsWithIdenticalArgs"
+        - WHITESPACE@145..146 " "
+        - TYPE_CONDITION@146..152
+            - on_KW@146..148 "on"
+            - WHITESPACE@148..149 " "
+            - NAMED_TYPE@149..152
+                - NAME@149..152
+                    - IDENT@149..152 "Dog"
+        - WHITESPACE@152..153 " "
+        - SELECTION_SET@153..226
+            - L_CURLY@153..154 "{"
+            - WHITESPACE@154..157 "\n  "
+            - FIELD@157..189
+                - NAME@157..172
+                    - IDENT@157..172 "doesKnowCommand"
+                - ARGUMENTS@172..189
+                    - L_PAREN@172..173 "("
+                    - ARGUMENT@173..188
+                        - NAME@173..183
+                            - IDENT@173..183 "dogCommand"
+                        - COLON@183..184 ":"
+                        - WHITESPACE@184..185 " "
+                        - ENUM_VALUE@185..188
+                            - NAME@185..188
+                                - IDENT@185..188 "SIT"
+                    - R_PAREN@188..189 ")"
+            - WHITESPACE@189..192 "\n  "
+            - FIELD@192..224
+                - NAME@192..207
+                    - IDENT@192..207 "doesKnowCommand"
+                - ARGUMENTS@207..224
+                    - L_PAREN@207..208 "("
+                    - ARGUMENT@208..223
+                        - NAME@208..218
+                            - IDENT@208..218 "dogCommand"
+                        - COLON@218..219 ":"
+                        - WHITESPACE@219..220 " "
+                        - ENUM_VALUE@220..223
+                            - NAME@220..223
+                                - IDENT@220..223 "SIT"
+                    - R_PAREN@223..224 ")"
+            - WHITESPACE@224..225 "\n"
+            - R_CURLY@225..226 "}"
+    - WHITESPACE@226..228 "\n\n"
+    - FRAGMENT_DEFINITION@228..373
+        - fragment_KW@228..236 "fragment"
+        - WHITESPACE@236..237 " "
+        - FRAGMENT_NAME@237..276
+            - NAME@237..276
+                - IDENT@237..276 "mergeIdenticalFieldsWithIdenticalValues"
+        - WHITESPACE@276..277 " "
+        - TYPE_CONDITION@277..283
+            - on_KW@277..279 "on"
+            - WHITESPACE@279..280 " "
+            - NAMED_TYPE@280..283
+                - NAME@280..283
+                    - IDENT@280..283 "Dog"
+        - WHITESPACE@283..284 " "
+        - SELECTION_SET@284..373
+            - L_CURLY@284..285 "{"
+            - WHITESPACE@285..288 "\n  "
+            - FIELD@288..328
+                - NAME@288..303
+                    - IDENT@288..303 "doesKnowCommand"
+                - ARGUMENTS@303..328
+                    - L_PAREN@303..304 "("
+                    - ARGUMENT@304..327
+                        - NAME@304..314
+                            - IDENT@304..314 "dogCommand"
+                        - COLON@314..315 ":"
+                        - WHITESPACE@315..316 " "
+                        - VARIABLE@316..327
+                            - DOLLAR@316..317 "$"
+                            - NAME@317..327
+                                - IDENT@317..327 "dogCommand"
+                    - R_PAREN@327..328 ")"
+            - WHITESPACE@328..331 "\n  "
+            - FIELD@331..371
+                - NAME@331..346
+                    - IDENT@331..346 "doesKnowCommand"
+                - ARGUMENTS@346..371
+                    - L_PAREN@346..347 "("
+                    - ARGUMENT@347..370
+                        - NAME@347..357
+                            - IDENT@347..357 "dogCommand"
+                        - COLON@357..358 ":"
+                        - WHITESPACE@358..359 " "
+                        - VARIABLE@359..370
+                            - DOLLAR@359..360 "$"
+                            - NAME@360..370
+                                - IDENT@360..370 "dogCommand"
+                    - R_PAREN@370..371 ")"
+            - WHITESPACE@371..372 "\n"
+            - R_CURLY@372..373 "}"
+    - WHITESPACE@373..374 "\n"
+recursion limit: 4096, high: 3

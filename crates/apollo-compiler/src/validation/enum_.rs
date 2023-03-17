@@ -27,7 +27,7 @@ pub fn validate_enum_definition(
     );
 
     let mut seen: HashMap<&str, &EnumValueDefinition> = HashMap::new();
-    for enum_val in enum_def.enum_values_definition() {
+    for enum_val in enum_def.self_values() {
         diagnostics.extend(db.validate_enum_value(enum_val.clone()));
 
         // An Enum type must define one or more unique enum values.
