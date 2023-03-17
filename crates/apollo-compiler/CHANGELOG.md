@@ -23,10 +23,10 @@ This release has a few breaking changes as we try to standardise APIs across the
 compiler. We appreciate your patience with these changes. If you run into trouble, please [open an issue].
 
 ## BREAKING
-- Rename `compiler.create_*` methods to `compiler.add_*`, [SimonSapin] in [412]
+- Rename `compiler.create_*` methods to `compiler.add_*`, [SimonSapin] in [pull/412]
 - Rename `schema` to `type_system` for `compiler.add_` and `compiler.update_`
-methods, [SimonSapin] in [413]
-- Unify `ty`, `type_def` and `kind` namings in HIR, [lrlna] in [415]
+methods, [SimonSapin] in [pull/413]
+- Unify `ty`, `type_def` and `kind` namings in HIR, [lrlna] in [pull/415]
   - in `Type` struct impl: `ty()` --> `type_def()`
   - in `TypeDefinition` struct impl: `ty()` --> `kind()`
   - in `FragmentDefinition` struct impl: `ty()` --> `type_def()`
