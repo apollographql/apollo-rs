@@ -748,7 +748,7 @@ enum Pet {
 
         let enums = compiler.db.enums();
         let enum_values: Vec<&str> = enums["Pet"]
-            .enum_values_definition()
+            .self_values()
             .iter()
             .map(|enum_val| enum_val.enum_value())
             .collect();
@@ -790,14 +790,14 @@ type SearchQuery {
 
         let unions = compiler.db.unions();
         let union_members: Vec<&str> = unions["SearchResult"]
-            .union_members()
+            .self_members()
             .iter()
             .map(|member| member.name())
             .collect();
         assert_eq!(union_members, ["Photo", "Person"]);
 
         let photo_object = unions["SearchResult"]
-            .union_members()
+            .self_members()
             .iter()
             .find(|mem| mem.name() == "Person")
             .unwrap()
@@ -805,7 +805,7 @@ type SearchQuery {
 
         if let Some(photo) = photo_object {
             let fields: Vec<&str> = photo
-                .fields_definition()
+                .self_fields()
                 .iter()
                 .map(|field| field.name())
                 .collect();
@@ -873,7 +873,7 @@ input Point2D {
 
         let input_objects = compiler.db.input_objects();
         let fields: Vec<&str> = input_objects["Point2D"]
-            .input_fields_definition()
+            .self_fields()
             .iter()
             .map(|val| val.name())
             .collect();
@@ -944,7 +944,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         if let Some(person) = person_obj {
             let field_ty_directive: Vec<String> = person
-                .fields_definition()
+                .self_fields()
                 .iter()
                 .filter_map(|f| {
                     // get access to the actual definition the field is using
@@ -969,7 +969,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
             assert_eq!(field_ty_directive, ["specifiedBy"]);
 
             let field_arg_ty_vals: Vec<String> = person
-                .fields_definition()
+                .self_fields()
                 .iter()
                 .flat_map(|f| {
                     let enum_vals: Vec<String> = f
@@ -982,7 +982,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
                                     // get that definition's directives, for example
                                     TypeDefinition::EnumTypeDefinition(enum_) => {
                                         let dir_names: Vec<String> = enum_
-                                            .enum_values_definition()
+                                            .self_values()
                                             .iter()
                                             .map(|enum_val| enum_val.enum_value().to_owned())
                                             .collect();
@@ -1026,7 +1026,7 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 
         if let Some(person) = person_obj {
             let field_ty_directive: Vec<String> = person
-                .input_fields_definition()
+                .self_fields()
                 .iter()
                 .filter_map(|f| {
                     if let Some(field_ty) = f.ty().type_def(&compiler.db) {

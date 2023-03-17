@@ -30,10 +30,11 @@ pub fn validate_object_type_definition(
     ));
 
     // Object Type field validations.
-    diagnostics.extend(db.validate_field_definitions(object.fields_definition().to_vec()));
+    diagnostics.extend(db.validate_field_definitions(object.self_fields().to_vec()));
 
     // Implements Interfaces validation.
-    diagnostics.extend(db.validate_implements_interfaces(object.implements_interfaces().to_vec()));
+    diagnostics
+        .extend(db.validate_implements_interfaces(object.self_implements_interfaces().to_vec()));
 
     // When defining an interface that implements another interface, the
     // implementing interface must define each field that is specified by
@@ -41,17 +42,17 @@ pub fn validate_object_type_definition(
     //
     // Returns a Missing Field error.
     let fields: HashSet<ValidationSet> = object
-        .fields_definition()
+        .self_fields()
         .iter()
         .map(|field| ValidationSet {
             name: field.name().into(),
             loc: field.loc(),
         })
         .collect();
-    for implements_interface in object.implements_interfaces().iter() {
+    for implements_interface in object.self_implements_interfaces().iter() {
         if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
             let implements_interface_fields: HashSet<ValidationSet> = interface
-                .fields_definition()
+                .self_fields()
                 .iter()
                 .map(|field| ValidationSet {
                     name: field.name().into(),

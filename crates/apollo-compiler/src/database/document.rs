@@ -310,7 +310,7 @@ pub(crate) fn subtype_map(db: &dyn HirDatabase) -> Arc<HashMap<String, HashSet<S
             .insert(value.to_owned())
     };
     for (name, definition) in &*db.object_types() {
-        for implements in definition.implements_interfaces() {
+        for implements in definition.self_implements_interfaces() {
             add(implements.interface(), name);
         }
         for extension in definition.extensions() {
@@ -320,7 +320,7 @@ pub(crate) fn subtype_map(db: &dyn HirDatabase) -> Arc<HashMap<String, HashSet<S
         }
     }
     for (name, definition) in &*db.interfaces() {
-        for implements in definition.implements_interfaces() {
+        for implements in definition.self_implements_interfaces() {
             add(implements.interface(), name);
         }
         for extension in definition.extensions() {
@@ -330,7 +330,7 @@ pub(crate) fn subtype_map(db: &dyn HirDatabase) -> Arc<HashMap<String, HashSet<S
         }
     }
     for (name, definition) in &*db.unions() {
-        for member in definition.union_members() {
+        for member in definition.self_members() {
             add(name, member.name());
         }
         for extension in definition.extensions() {

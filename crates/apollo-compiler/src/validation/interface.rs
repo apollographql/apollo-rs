@@ -44,7 +44,7 @@ pub fn validate_interface_definition(
     //   name: String
     // }
     for (name, interface_def) in db.interfaces().iter() {
-        for implements_interface in interface_def.implements_interfaces() {
+        for implements_interface in interface_def.self_implements_interfaces() {
             if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
                 let super_name = interface.name();
                 if name == super_name {
@@ -67,11 +67,12 @@ pub fn validate_interface_definition(
     }
 
     // Interface Type field validation.
-    diagnostics.extend(db.validate_field_definitions(interface_def.fields_definition().to_vec()));
+    diagnostics.extend(db.validate_field_definitions(interface_def.self_fields().to_vec()));
 
     // Implements Interfaceds validation.
-    diagnostics
-        .extend(db.validate_implements_interfaces(interface_def.implements_interfaces().to_vec()));
+    diagnostics.extend(
+        db.validate_implements_interfaces(interface_def.self_implements_interfaces().to_vec()),
+    );
 
     // When defining an interface that implements another interface, the
     // implementing interface must define each field that is specified by
@@ -79,17 +80,17 @@ pub fn validate_interface_definition(
     //
     // Returns a Missing Field error.
     let fields: HashSet<ValidationSet> = interface_def
-        .fields_definition()
+        .self_fields()
         .iter()
         .map(|field| ValidationSet {
             name: field.name().into(),
             loc: field.loc(),
         })
         .collect();
-    for implements_interface in interface_def.implements_interfaces().iter() {
+    for implements_interface in interface_def.self_implements_interfaces().iter() {
         if let Some(super_interface) = implements_interface.interface_definition(db.upcast()) {
             let implements_interface_fields: HashSet<ValidationSet> = super_interface
-                .fields_definition()
+                .self_fields()
                 .iter()
                 .map(|field| ValidationSet {
                     name: field.name().into(),
@@ -176,7 +177,7 @@ pub fn validate_implements_interfaces(
         .filter_map(|implements_interface| {
             if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
                 let child_interfaces: HashSet<ValidationSet> = interface
-                    .implements_interfaces()
+                    .self_implements_interfaces()
                     .iter()
                     .map(|interface| ValidationSet {
                         name: interface.interface().to_owned(),

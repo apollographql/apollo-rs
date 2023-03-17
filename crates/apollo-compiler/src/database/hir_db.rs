@@ -385,7 +385,7 @@ macro_rules! by_name_extensible {
             // Orphan or incorrect extensions are reported by validation.
             if let TypeExtension::$extension_type(ext) = ext {
                 if let Some(def) = map.get_mut(ext.name()) {
-                    Arc::get_mut(def).unwrap().extensions.push(Arc::clone(ext))
+                    Arc::get_mut(def).unwrap().push_extension(Arc::clone(ext))
                 }
             }
         }
@@ -574,6 +574,9 @@ fn object_type_definition(
     let directives = directives(obj_def.directives(), file_id);
     let fields_definition = fields_definition(obj_def.fields_definition(), file_id);
     let loc = location(file_id, obj_def.syntax());
+    let fields_by_name = ByNameWithExtensions::new(&fields_definition, FieldDefinition::name);
+    let implements_interfaces_by_name =
+        ByNameWithExtensions::new(&implements_interfaces, ImplementsInterface::interface);
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -585,6 +588,8 @@ fn object_type_definition(
         fields_definition,
         loc,
         extensions: Vec::new(),
+        fields_by_name,
+        implements_interfaces_by_name,
     })
 }
 
@@ -646,6 +651,8 @@ fn enum_definition(
     let directives = directives(enum_def.directives(), file_id);
     let enum_values_definition = enum_values_definition(enum_def.enum_values_definition(), file_id);
     let loc = location(file_id, enum_def.syntax());
+    let values_by_name =
+        ByNameWithExtensions::new(&enum_values_definition, EnumValueDefinition::enum_value);
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -656,6 +663,7 @@ fn enum_definition(
         enum_values_definition,
         loc,
         extensions: Vec::new(),
+        values_by_name,
     })
 }
 
@@ -715,6 +723,7 @@ fn union_definition(
     let directives = directives(union_def.directives(), file_id);
     let union_members = union_members(union_def.union_member_types(), file_id);
     let loc = location(file_id, union_def.syntax());
+    let members_by_name = ByNameWithExtensions::new(&union_members, UnionMember::name);
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -725,6 +734,7 @@ fn union_definition(
         union_members,
         loc,
         extensions: Vec::new(),
+        members_by_name,
     })
 }
 
@@ -733,11 +743,17 @@ fn union_extension(
     def: ast::UnionTypeExtension,
     file_id: FileId,
 ) -> Option<Arc<UnionTypeExtension>> {
+    let directives = directives(def.directives(), file_id);
+    let name = name(def.name(), file_id)?;
+    let union_members = union_members(def.union_member_types(), file_id);
+    let loc = location(file_id, def.syntax());
+    let members_by_name = ByNameWithExtensions::new(&union_members, UnionMember::name);
     Some(Arc::new(UnionTypeExtension {
-        directives: directives(def.directives(), file_id),
-        name: name(def.name(), file_id)?,
-        union_members: union_members(def.union_member_types(), file_id),
-        loc: location(file_id, def.syntax()),
+        directives,
+        name,
+        union_members,
+        loc,
+        members_by_name,
     }))
 }
 
@@ -776,6 +792,9 @@ fn interface_definition(
     let directives = directives(interface_def.directives(), file_id);
     let fields_definition = fields_definition(interface_def.fields_definition(), file_id);
     let loc = location(file_id, interface_def.syntax());
+    let fields_by_name = ByNameWithExtensions::new(&fields_definition, FieldDefinition::name);
+    let implements_interfaces_by_name =
+        ByNameWithExtensions::new(&implements_interfaces, ImplementsInterface::interface);
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -787,6 +806,8 @@ fn interface_definition(
         fields_definition,
         loc,
         extensions: Vec::new(),
+        fields_by_name,
+        implements_interfaces_by_name,
     })
 }
 
@@ -839,6 +860,8 @@ fn input_object_definition(
     let input_fields_definition =
         input_fields_definition(input_obj.input_fields_definition(), file_id);
     let loc = location(file_id, input_obj.syntax());
+    let input_fields_by_name =
+        ByNameWithExtensions::new(&input_fields_definition, InputValueDefinition::name);
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -849,6 +872,7 @@ fn input_object_definition(
         input_fields_definition,
         loc,
         extensions: Vec::new(),
+        input_fields_by_name,
     })
 }
 
