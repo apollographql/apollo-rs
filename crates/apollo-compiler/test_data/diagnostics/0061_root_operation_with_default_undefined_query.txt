@@ -7,32 +7,6 @@
             file_id: FileId {
                 id: 60,
             },
-            offset: 0,
-            length: 27,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 60,
-                    },
-                    offset: 0,
-                    length: 27,
-                },
-                text: "`query` root operation type must be defined here",
-            },
-        ],
-        help: None,
-        data: QueryRootOperationType,
-    },
-    ApolloDiagnostic {
-        cache: {
-            60: "0061_root_operation_with_default_undefined_query.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 60,
-            },
             offset: 13,
             length: 12,
         },

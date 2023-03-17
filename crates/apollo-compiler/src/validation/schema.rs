@@ -12,7 +12,7 @@ pub fn validate_schema_definition(
     let mut diagnostics = Vec::new();
 
     // A GraphQL schema must have a Query root operation.
-    if schema_def.query(db.upcast()).is_none() {
+    if schema_def.query().is_none() {
         if let Some(loc) = db.schema().loc() {
             diagnostics.push(
                 ApolloDiagnostic::new(db, loc.into(), DiagnosticData::QueryRootOperationType)
@@ -23,11 +23,8 @@ pub fn validate_schema_definition(
             );
         }
     }
-    diagnostics.extend(
-        db.validate_root_operation_definitions(
-            schema_def.root_operation_type_definition().to_vec(),
-        ),
-    );
+    diagnostics
+        .extend(db.validate_root_operation_definitions(schema_def.self_root_operations().to_vec()));
 
     diagnostics.extend(db.validate_directives(
         schema_def.self_directives().to_vec(),

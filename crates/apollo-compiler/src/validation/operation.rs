@@ -133,7 +133,7 @@ pub fn validate_subscription_operations(
     // defined schema root operation types.
     //
     //   * subscription operation - subscription root operation
-    if !subscriptions.is_empty() && db.schema().subscription(db.upcast()).is_none() {
+    if !subscriptions.is_empty() && db.schema().subscription().is_none() {
         let unsupported_ops: Vec<ApolloDiagnostic> = subscriptions
             .iter()
             .map(|op| {
@@ -162,7 +162,7 @@ pub fn validate_query_operations(
     // defined schema root operation types.
     //
     //   * query operation - query root operation
-    if !queries.is_empty() && db.schema().query(db.upcast()).is_none() {
+    if !queries.is_empty() && db.schema().query().is_none() {
         let unsupported_ops: Vec<ApolloDiagnostic> = queries
             .iter()
             .map(|op| {
@@ -202,7 +202,7 @@ pub fn validate_mutation_operations(
     // defined schema root operation types.
     //
     //   * mutation operation - mutation root operation
-    if !mutations.is_empty() && db.schema().mutation(db.upcast()).is_none() {
+    if !mutations.is_empty() && db.schema().mutation().is_none() {
         let unsupported_ops: Vec<ApolloDiagnostic> = mutations
             .iter()
             .map(|op| {

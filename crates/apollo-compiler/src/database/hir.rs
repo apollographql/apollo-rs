@@ -446,11 +446,13 @@ impl OperationDefinition {
 
     /// Get operation's definition object type.
     pub fn object_type(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
-        match self.operation_ty {
-            OperationType::Query => db.schema().query(db),
-            OperationType::Mutation => db.schema().mutation(db),
-            OperationType::Subscription => db.schema().subscription(db),
-        }
+        let schema = db.schema();
+        let name = match self.operation_ty {
+            OperationType::Query => schema.query()?,
+            OperationType::Mutation => schema.mutation()?,
+            OperationType::Subscription => schema.subscription()?,
+        };
+        db.object_types().get(name).cloned()
     }
 
     /// Get a reference to the operation definition's variables.
@@ -554,13 +556,19 @@ impl OperationType {
     }
 }
 
+impl From<OperationType> for &'static str {
+    fn from(ty: OperationType) -> &'static str {
+        match ty {
+            OperationType::Query => "Query",
+            OperationType::Mutation => "Mutation",
+            OperationType::Subscription => "Subscription",
+        }
+    }
+}
+
 impl fmt::Display for OperationType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            OperationType::Query => write!(f, "Query"),
-            OperationType::Mutation => write!(f, "Mutation"),
-            OperationType::Subscription => write!(f, "Subscription"),
-        }
+        f.write_str((*self).into())
     }
 }
 
@@ -1689,6 +1697,14 @@ pub struct SchemaDefinition {
     pub(crate) root_operation_type_definition: Arc<Vec<RootOperationTypeDefinition>>,
     pub(crate) loc: Option<HirNodeLocation>,
     pub(crate) extensions: Vec<Arc<SchemaExtension>>,
+    pub(crate) root_operation_names: RootOperationNames,
+}
+
+#[derive(Default, Clone, Debug, Hash, PartialEq, Eq)]
+pub(crate) struct RootOperationNames {
+    pub(crate) query: Option<String>,
+    pub(crate) mutation: Option<String>,
+    pub(crate) subscription: Option<String>,
 }
 
 impl SchemaDefinition {
@@ -1732,16 +1748,19 @@ impl SchemaDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get a reference to the schema definition's root operation type definition.
-    pub fn root_operation_type_definition(&self) -> &[RootOperationTypeDefinition] {
+    /// Returns the root operations from this schema definition,
+    /// excluding those from schema extensions.
+    pub fn self_root_operations(&self) -> &[RootOperationTypeDefinition] {
         self.root_operation_type_definition.as_ref()
     }
 
-    /// Set the schema definition's root operation type definition.
-    pub(crate) fn set_root_operation_type_definition(&mut self, op: RootOperationTypeDefinition) {
-        Arc::get_mut(&mut self.root_operation_type_definition)
-            .unwrap()
-            .push(op)
+    /// Returns an iterator of root operations, from either on this schema defintion or its extensions.
+    pub fn root_operations(&self) -> impl Iterator<Item = &RootOperationTypeDefinition> {
+        self.self_root_operations().iter().chain(
+            self.extensions()
+                .iter()
+                .flat_map(|ext| ext.root_operations()),
+        )
     }
 
     /// Get the AST location information for this HIR node.
@@ -1754,40 +1773,31 @@ impl SchemaDefinition {
         &self.extensions
     }
 
-    // NOTE(@lrlna): potentially have the following fns on the database itself
-    // so they are memoised as well
-
-    /// Get Schema's query object type definition.
-    pub fn query(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
-        self.root_operation_type_definition().iter().find_map(|op| {
-            if op.operation_ty.is_query() {
-                op.object_type(db)
-            } else {
-                None
-            }
-        })
+    /// Returns the name of the object type for the `query` root operation,
+    /// defined either on this schema defintion or its extensions.
+    ///
+    /// The corresponding object type definition can be found
+    /// at [`compiler.db.object_types().get(name)`][HirDatabase::object_types].
+    pub fn query(&self) -> Option<&str> {
+        self.root_operation_names.query.as_deref()
     }
 
-    /// Get Schema's mutation object type definition.
-    pub fn mutation(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
-        self.root_operation_type_definition().iter().find_map(|op| {
-            if op.operation_ty.is_mutation() {
-                op.object_type(db)
-            } else {
-                None
-            }
-        })
+    /// Returns the name of the object type for the `mutation` root operation,
+    /// defined either on this schema defintion or its extensions.
+    ///
+    /// The corresponding object type definition can be found
+    /// at [`compiler.db.object_types().get(name)`][HirDatabase::object_types].
+    pub fn mutation(&self) -> Option<&str> {
+        self.root_operation_names.mutation.as_deref()
     }
 
-    /// Get Schema's subscription object type definition.
-    pub fn subscription(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
-        self.root_operation_type_definition().iter().find_map(|op| {
-            if op.operation_ty.is_subscription() {
-                op.object_type(db)
-            } else {
-                None
-            }
-        })
+    /// Returns the name of the object type for the `subscription` root operation,
+    /// defined either on this schema defintion or its extensions.
+    ///
+    /// The corresponding object type definition can be found
+    /// at [`compiler.db.object_types().get(name)`][HirDatabase::object_types].
+    pub fn subscription(&self) -> Option<&str> {
+        self.root_operation_names.subscription.as_deref()
     }
 }
 
@@ -2861,7 +2871,7 @@ impl SchemaExtension {
     }
 
     /// Get a reference to the schema definition's root operation type definition.
-    pub fn root_operation_type_definition(&self) -> &[RootOperationTypeDefinition] {
+    pub fn root_operations(&self) -> &[RootOperationTypeDefinition] {
         self.root_operation_type_definition.as_ref()
     }
 
@@ -3288,6 +3298,50 @@ mod tests {
         // but this is approximation is still in the range of finite f64 values.
         assert_eq!(default_values[2], "98765432109876540000");
         assert_eq!(default_values[3], "98765432109876540000");
+    }
+
+    #[test]
+    fn root_operations() {
+        let mut compiler = ApolloCompiler::new();
+        let first = r#"
+            schema @core(feature: "https://specs.apollo.dev/core/v0.1")
+            type Query {
+                field: Int
+            }
+            type Subscription {
+                newsletter: [String]
+            }
+        "#;
+        let second = r#"
+            extend schema @core(feature: "https://specs.apollo.dev/join/v0.1") {
+                query: MyQuery
+            }
+            type MyQuery {
+                different_field: String
+            }
+        "#;
+        compiler.add_type_system(first, "first.graphql");
+        compiler.add_type_system(second, "second.graphql");
+
+        let schema = compiler.db.schema();
+        assert_eq!(
+            schema
+                .self_root_operations()
+                .iter()
+                .map(|op| op.named_type().name())
+                .collect::<Vec<_>>(),
+            ["Subscription"]
+        );
+        assert_eq!(
+            schema
+                .root_operations()
+                .map(|op| op.named_type().name())
+                .collect::<Vec<_>>(),
+            ["Subscription", "MyQuery"]
+        );
+        assert!(schema.mutation().is_none());
+        assert_eq!(schema.query().unwrap(), "MyQuery");
+        assert_eq!(schema.subscription().unwrap(), "Subscription");
     }
 
     #[test]
