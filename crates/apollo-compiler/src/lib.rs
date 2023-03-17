@@ -6,7 +6,7 @@ pub mod diagnostics;
 mod tests;
 pub mod validation;
 
-use std::{path::Path, sync::Arc};
+use std::{fs, path::Path, sync::Arc};
 
 use salsa::ParallelDatabase;
 use validation::ValidationDatabase;
@@ -99,8 +99,23 @@ impl ApolloCompiler {
         sources.push(file_id);
         self.db.set_input(file_id, source);
         self.db.set_source_files(sources);
+        self.add_implicit_inputs();
 
         file_id
+    }
+
+    // This adds the introspection type system and any built-in graphql types.
+    fn add_implicit_inputs(&mut self) {
+        let path = Path::new("src/introspection_tys.graphql");
+        if self.db.source_file(path.to_path_buf()).is_none() {
+            let file_id = FileId::new();
+            let mut sources = self.db.source_files();
+            sources.push(file_id);
+            let implicit_tys = fs::read_to_string(path).expect("implicit types could not be added");
+            self.db
+                .set_input(file_id, Source::document(path.to_path_buf(), implicit_tys));
+            self.db.set_source_files(sources);
+        }
     }
 
     /// Add a document with executable _and_ type system definitions and
@@ -253,6 +268,7 @@ query ExampleQuery {
         let mut compiler = ApolloCompiler::new();
         compiler.add_document(schema, "schema.graphql");
         compiler.add_executable(query, "query.graphql");
+        dbg!(compiler.db.source_files());
     }
 
     #[test]

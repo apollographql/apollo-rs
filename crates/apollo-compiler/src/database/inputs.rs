@@ -73,6 +73,9 @@ pub trait InputDatabase {
     #[salsa::input]
     fn source_files(&self) -> Vec<FileId>;
 
+    /// Find source file by file name.
+    fn source_file(&self, path: PathBuf) -> Option<FileId>;
+
     /// Get the GraphQL source text for a file, split up into lines for
     /// printing diagnostics.
     fn source_with_lines(&self, file_id: FileId) -> Arc<AriadneSource>;
@@ -95,6 +98,13 @@ fn source_code(db: &dyn InputDatabase, file_id: FileId) -> Arc<str> {
         }
     }
     db.input(file_id).text()
+}
+
+fn source_file(db: &dyn InputDatabase, path: PathBuf) -> Option<FileId> {
+    db.source_files()
+        .iter()
+        .find(|id| db.input(**id).filename() == path)
+        .copied()
 }
 
 fn source_type(db: &dyn InputDatabase, file_id: FileId) -> SourceType {

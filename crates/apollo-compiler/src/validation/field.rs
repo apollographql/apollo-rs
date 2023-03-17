@@ -272,3 +272,31 @@ pub fn validate_leaf_field_selection(
         None => Err(diagnostic),
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::ApolloCompiler;
+
+    #[test]
+    fn it_fails_validation_missing_type() {
+        let input = r#"
+type Query {
+  id: String
+  name: String
+  birthday: Date
+}
+
+{
+  __schema
+}
+"#;
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{diagnostic}")
+        }
+        assert_eq!(diagnostics.len(), 2)
+    }
+}
