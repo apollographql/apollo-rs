@@ -1202,6 +1202,8 @@ impl SelectionSet {
                         collect_used_variables(db, field.selection_set(), seen_fragments, output);
                     }
                     Selection::FragmentSpread(spread) => {
+                        output.extend(spread.self_used_variables());
+
                         let Some(fragment) = spread.fragment(db) else {
                             return;
                         };
@@ -1217,6 +1219,7 @@ impl SelectionSet {
                         );
                     }
                     Selection::InlineFragment(inline) => {
+                        output.extend(inline.self_used_variables());
                         collect_used_variables(db, inline.selection_set(), seen_fragments, output);
                     }
                 }
@@ -1406,12 +1409,19 @@ impl Field {
         &self.selection_set
     }
 
-    /// Return an iterator over the variables used in arguments to this field.
+    /// Return an iterator over the variables used in arguments to this field and its directives.
     fn self_used_variables(&self) -> impl Iterator<Item = Variable> + '_ {
-        self.arguments.iter().filter_map(|arg| match arg.value() {
-            Value::Variable(var) => Some(var.clone()),
-            _ => None,
-        })
+        self.arguments
+            .iter()
+            .chain(
+                self.directives()
+                    .iter()
+                    .flat_map(|directive| directive.arguments()),
+            )
+            .filter_map(|arg| match arg.value() {
+                Value::Variable(var) => Some(var.clone()),
+                _ => None,
+            })
     }
 
     /// Get variables used in the field, including in sub-selections.
@@ -1486,6 +1496,20 @@ impl InlineFragment {
         &self.selection_set
     }
 
+    /// Return an iterator over the variables used in directives on this spread.
+    ///
+    /// Variables used *inside* the fragment are not included. For that, use
+    /// [`variables()`][Self::variables].
+    pub fn self_used_variables(&self) -> impl Iterator<Item = Variable> + '_ {
+        self.directives()
+            .iter()
+            .flat_map(Directive::arguments)
+            .filter_map(|arg| match arg.value() {
+                Value::Variable(var) => Some(var.clone()),
+                _ => None,
+            })
+    }
+
     /// Get variables in use in the inline fragment.
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         self.selection_set.variables(db)
@@ -1518,6 +1542,20 @@ impl FragmentSpread {
     /// Get the fragment definition this fragment spread is referencing.
     pub fn fragment(&self, db: &dyn HirDatabase) -> Option<Arc<FragmentDefinition>> {
         db.find_fragment_by_name(self.loc.file_id(), self.name().to_string())
+    }
+
+    /// Return an iterator over the variables used in directives on this spread.
+    ///
+    /// Variables used by the fragment definition are not included. For that, use
+    /// [`variables()`][Self::variables].
+    pub fn self_used_variables(&self) -> impl Iterator<Item = Variable> + '_ {
+        self.directives()
+            .iter()
+            .flat_map(Directive::arguments)
+            .filter_map(|arg| match arg.value() {
+                Value::Variable(var) => Some(var.clone()),
+                _ => None,
+            })
     }
 
     /// Get fragment spread's defined variables.

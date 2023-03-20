@@ -97,18 +97,11 @@ pub fn validate_unused_variables(
         .collect();
     let used_vars: HashSet<ValidationSet> = op
         .selection_set
-        .selection()
-        .iter()
-        .flat_map(|sel| {
-            let vars: HashSet<ValidationSet> = sel
-                .variables(db.upcast())
-                .iter()
-                .map(|var| ValidationSet {
-                    name: var.name().into(),
-                    loc: var.loc(),
-                })
-                .collect();
-            vars
+        .variables(db.upcast())
+        .into_iter()
+        .map(|var| ValidationSet {
+            name: var.name().into(),
+            loc: var.loc(),
         })
         .collect();
     let undefined_vars = used_vars.difference(&defined_vars);
