@@ -1,4 +1,4 @@
-scalar Scalar @specifiedBy(url: "https://apollographql.com")
+scalar Scalar
 
 type Object implements Intf {
   field: Int,
@@ -15,7 +15,7 @@ enum Enum {
   MEMBER,
 }
 
-extend scalar Scalar @deprecated(reason: "do something else")
+extend scalar Scalar @specifiedBy(url: "https://apollographql.com")
 extend interface Intf {
   field2: Scalar,
 }

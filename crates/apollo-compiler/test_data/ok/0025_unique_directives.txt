@@ -1,0 +1,91 @@
+- DOCUMENT@0..167
+    - DIRECTIVE_DEFINITION@0..41
+        - directive_KW@0..9 "directive"
+        - WHITESPACE@9..10 " "
+        - AT@10..11 "@"
+        - NAME@11..21
+            - IDENT@11..21 "repeatable"
+        - WHITESPACE@21..22 " "
+        - repeatable_KW@22..32 "repeatable"
+        - WHITESPACE@32..33 " "
+        - on_KW@33..35 "on"
+        - WHITESPACE@35..36 " "
+        - DIRECTIVE_LOCATIONS@36..41
+            - DIRECTIVE_LOCATION@36..41
+                - FIELD_KW@36..41 "FIELD"
+    - WHITESPACE@41..42 "\n"
+    - DIRECTIVE_DEFINITION@42..68
+        - directive_KW@42..51 "directive"
+        - WHITESPACE@51..52 " "
+        - AT@52..53 "@"
+        - NAME@53..59
+            - IDENT@53..59 "unique"
+        - WHITESPACE@59..60 " "
+        - on_KW@60..62 "on"
+        - WHITESPACE@62..63 " "
+        - DIRECTIVE_LOCATIONS@63..68
+            - DIRECTIVE_LOCATION@63..68
+                - FIELD_KW@63..68 "FIELD"
+    - WHITESPACE@68..70 "\n\n"
+    - OBJECT_TYPE_DEFINITION@70..97
+        - type_KW@70..74 "type"
+        - WHITESPACE@74..75 " "
+        - NAME@75..80
+            - IDENT@75..80 "Query"
+        - WHITESPACE@80..81 " "
+        - FIELDS_DEFINITION@81..97
+            - L_CURLY@81..82 "{"
+            - WHITESPACE@82..85 "\n  "
+            - FIELD_DEFINITION@85..95
+                - NAME@85..90
+                    - IDENT@85..90 "field"
+                - COLON@90..91 ":"
+                - WHITESPACE@91..92 " "
+                - NAMED_TYPE@92..95
+                    - NAME@92..95
+                        - IDENT@92..95 "Int"
+            - WHITESPACE@95..96 "\n"
+            - R_CURLY@96..97 "}"
+    - WHITESPACE@97..99 "\n\n"
+    - OPERATION_DEFINITION@99..166
+        - SELECTION_SET@99..166
+            - L_CURLY@99..100 "{"
+            - WHITESPACE@100..103 "\n  "
+            - FIELD@103..132
+                - NAME@103..108
+                    - IDENT@103..108 "field"
+                - WHITESPACE@108..109 " "
+                - DIRECTIVES@109..132
+                    - DIRECTIVE@109..120
+                        - AT@109..110 "@"
+                        - NAME@110..120
+                            - IDENT@110..120 "repeatable"
+                    - WHITESPACE@120..121 " "
+                    - DIRECTIVE@121..132
+                        - AT@121..122 "@"
+                        - NAME@122..132
+                            - IDENT@122..132 "repeatable"
+            - WHITESPACE@132..135 "\n  "
+            - FIELD@135..148
+                - NAME@135..140
+                    - IDENT@135..140 "field"
+                - WHITESPACE@140..141 " "
+                - DIRECTIVES@141..148
+                    - DIRECTIVE@141..148
+                        - AT@141..142 "@"
+                        - NAME@142..148
+                            - IDENT@142..148 "unique"
+            - WHITESPACE@148..151 "\n  "
+            - FIELD@151..164
+                - NAME@151..156
+                    - IDENT@151..156 "field"
+                - WHITESPACE@156..157 " "
+                - DIRECTIVES@157..164
+                    - DIRECTIVE@157..164
+                        - AT@157..158 "@"
+                        - NAME@158..164
+                            - IDENT@158..164 "unique"
+            - WHITESPACE@164..165 "\n"
+            - R_CURLY@165..166 "}"
+    - WHITESPACE@166..167 "\n"
+recursion limit: 4096, high: 4

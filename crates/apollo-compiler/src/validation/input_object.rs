@@ -21,7 +21,7 @@ pub fn validate_input_object_definition(
     input_obj: Arc<hir::InputObjectTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = db.validate_directives(
-        input_obj.self_directives().to_vec(),
+        input_obj.directives().cloned().collect(),
         hir::DirectiveLocation::InputObject,
     );
 

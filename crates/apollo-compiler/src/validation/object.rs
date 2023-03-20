@@ -25,7 +25,7 @@ pub fn validate_object_type_definition(
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(db.validate_directives(
-        object.self_directives().to_vec(),
+        object.directives().cloned().collect(),
         hir::DirectiveLocation::Object,
     ));
 
