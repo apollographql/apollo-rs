@@ -1,0 +1,284 @@
+- DOCUMENT@0..506
+    - OBJECT_TYPE_DEFINITION@0..77
+        - type_KW@0..4 "type"
+        - WHITESPACE@4..5 " "
+        - NAME@5..10
+            - IDENT@5..10 "Query"
+        - WHITESPACE@10..11 " "
+        - FIELDS_DEFINITION@11..77
+            - L_CURLY@11..12 "{"
+            - WHITESPACE@12..15 "\n  "
+            - FIELD_DEFINITION@15..39
+                - NAME@15..20
+                    - IDENT@15..20 "field"
+                - ARGUMENTS_DEFINITION@20..34
+                    - L_PAREN@20..21 "("
+                    - INPUT_VALUE_DEFINITION@21..33
+                        - NAME@21..24
+                            - IDENT@21..24 "arg"
+                        - COLON@24..25 ":"
+                        - WHITESPACE@25..26 " "
+                        - NAMED_TYPE@26..33
+                            - NAME@26..33
+                                - IDENT@26..33 "Boolean"
+                    - R_PAREN@33..34 ")"
+                - COLON@34..35 ":"
+                - WHITESPACE@35..36 " "
+                - NAMED_TYPE@36..39
+                    - NAME@36..39
+                        - IDENT@36..39 "Int"
+            - WHITESPACE@39..42 "\n  "
+            - FIELD_DEFINITION@42..56
+                - NAME@42..51
+                    - IDENT@42..51 "fragField"
+                - COLON@51..52 ":"
+                - WHITESPACE@52..53 " "
+                - NAMED_TYPE@53..56
+                    - NAME@53..56
+                        - IDENT@53..56 "Int"
+            - WHITESPACE@56..59 "\n  "
+            - FIELD_DEFINITION@59..75
+                - NAME@59..70
+                    - IDENT@59..70 "inlineField"
+                - COLON@70..71 ":"
+                - WHITESPACE@71..72 " "
+                - NAMED_TYPE@72..75
+                    - NAME@72..75
+                        - IDENT@72..75 "Int"
+            - WHITESPACE@75..76 "\n"
+            - R_CURLY@76..77 "}"
+    - WHITESPACE@77..79 "\n\n"
+    - FRAGMENT_DEFINITION@79..154
+        - fragment_KW@79..87 "fragment"
+        - WHITESPACE@87..88 " "
+        - FRAGMENT_NAME@88..96
+            - NAME@88..96
+                - IDENT@88..96 "fragment"
+        - WHITESPACE@96..97 " "
+        - TYPE_CONDITION@97..105
+            - on_KW@97..99 "on"
+            - WHITESPACE@99..100 " "
+            - NAMED_TYPE@100..105
+                - NAME@100..105
+                    - IDENT@100..105 "Query"
+        - WHITESPACE@105..106 " "
+        - SELECTION_SET@106..154
+            - L_CURLY@106..107 "{"
+            - WHITESPACE@107..110 "\n  "
+            - FIELD@110..152
+                - NAME@110..119
+                    - IDENT@110..119 "fragField"
+                - WHITESPACE@119..120 " "
+                - DIRECTIVES@120..152
+                    - DIRECTIVE@120..152
+                        - AT@120..121 "@"
+                        - NAME@121..128
+                            - IDENT@121..128 "include"
+                        - ARGUMENTS@128..152
+                            - L_PAREN@128..129 "("
+                            - ARGUMENT@129..151
+                                - NAME@129..131
+                                    - IDENT@129..131 "if"
+                                - COLON@131..132 ":"
+                                - WHITESPACE@132..133 " "
+                                - VARIABLE@133..151
+                                    - DOLLAR@133..134 "$"
+                                    - NAME@134..151
+                                        - IDENT@134..151 "indirectDirective"
+                            - R_PAREN@151..152 ")"
+            - WHITESPACE@152..153 "\n"
+            - R_CURLY@153..154 "}"
+    - WHITESPACE@154..156 "\n\n"
+    - OPERATION_DEFINITION@156..505
+        - OPERATION_TYPE@156..161
+            - query_KW@156..161 "query"
+        - WHITESPACE@161..162 " "
+        - VARIABLE_DEFINITIONS@162..345
+            - L_PAREN@162..163 "("
+            - WHITESPACE@163..166 "\n  "
+            - VARIABLE_DEFINITION@166..197
+                - VARIABLE@166..181
+                    - DOLLAR@166..167 "$"
+                    - NAME@167..181
+                        - IDENT@167..181 "fieldDirective"
+                - COLON@181..182 ":"
+                - WHITESPACE@182..183 " "
+                - NAMED_TYPE@183..190
+                    - NAME@183..190
+                        - IDENT@183..190 "Boolean"
+                - WHITESPACE@190..191 " "
+                - DEFAULT_VALUE@191..197
+                    - EQ@191..192 "="
+                    - WHITESPACE@192..193 " "
+                    - BOOLEAN_VALUE@193..197
+                        - true_KW@193..197 "true"
+            - COMMA@197..198 ","
+            - WHITESPACE@198..201 "\n  "
+            - VARIABLE_DEFINITION@201..232
+                - VARIABLE@201..215
+                    - DOLLAR@201..202 "$"
+                    - NAME@202..215
+                        - IDENT@202..215 "fragDirective"
+                - COLON@215..216 ":"
+                - WHITESPACE@216..217 " "
+                - NAMED_TYPE@217..224
+                    - NAME@217..224
+                        - IDENT@217..224 "Boolean"
+                - WHITESPACE@224..225 " "
+                - DEFAULT_VALUE@225..232
+                    - EQ@225..226 "="
+                    - WHITESPACE@226..227 " "
+                    - BOOLEAN_VALUE@227..232
+                        - false_KW@227..232 "false"
+            - COMMA@232..233 ","
+            - WHITESPACE@233..236 "\n  "
+            - VARIABLE_DEFINITION@236..269
+                - VARIABLE@236..252
+                    - DOLLAR@236..237 "$"
+                    - NAME@237..252
+                        - IDENT@237..252 "inlineDirective"
+                - COLON@252..253 ":"
+                - WHITESPACE@253..254 " "
+                - NAMED_TYPE@254..261
+                    - NAME@254..261
+                        - IDENT@254..261 "Boolean"
+                - WHITESPACE@261..262 " "
+                - DEFAULT_VALUE@262..269
+                    - EQ@262..263 "="
+                    - WHITESPACE@263..264 " "
+                    - BOOLEAN_VALUE@264..269
+                        - false_KW@264..269 "false"
+            - COMMA@269..270 ","
+            - WHITESPACE@270..273 "\n  "
+            - VARIABLE_DEFINITION@273..303
+                - VARIABLE@273..286
+                    - DOLLAR@273..274 "$"
+                    - NAME@274..286
+                        - IDENT@274..286 "argDirective"
+                - COLON@286..287 ":"
+                - WHITESPACE@287..288 " "
+                - NAMED_TYPE@288..295
+                    - NAME@288..295
+                        - IDENT@288..295 "Boolean"
+                - WHITESPACE@295..296 " "
+                - DEFAULT_VALUE@296..303
+                    - EQ@296..297 "="
+                    - WHITESPACE@297..298 " "
+                    - BOOLEAN_VALUE@298..303
+                        - false_KW@298..303 "false"
+            - COMMA@303..304 ","
+            - WHITESPACE@304..307 "\n  "
+            - VARIABLE_DEFINITION@307..342
+                - VARIABLE@307..325
+                    - DOLLAR@307..308 "$"
+                    - NAME@308..325
+                        - IDENT@308..325 "indirectDirective"
+                - COLON@325..326 ":"
+                - WHITESPACE@326..327 " "
+                - NAMED_TYPE@327..334
+                    - NAME@327..334
+                        - IDENT@327..334 "Boolean"
+                - WHITESPACE@334..335 " "
+                - DEFAULT_VALUE@335..342
+                    - EQ@335..336 "="
+                    - WHITESPACE@336..337 " "
+                    - BOOLEAN_VALUE@337..342
+                        - false_KW@337..342 "false"
+            - COMMA@342..343 ","
+            - WHITESPACE@343..344 "\n"
+            - R_PAREN@344..345 ")"
+        - WHITESPACE@345..346 " "
+        - SELECTION_SET@346..505
+            - L_CURLY@346..347 "{"
+            - WHITESPACE@347..350 "\n  "
+            - FIELD@350..402
+                - NAME@350..355
+                    - IDENT@350..355 "field"
+                - ARGUMENTS@355..375
+                    - L_PAREN@355..356 "("
+                    - ARGUMENT@356..374
+                        - NAME@356..359
+                            - IDENT@356..359 "arg"
+                        - COLON@359..360 ":"
+                        - WHITESPACE@360..361 " "
+                        - VARIABLE@361..374
+                            - DOLLAR@361..362 "$"
+                            - NAME@362..374
+                                - IDENT@362..374 "argDirective"
+                    - R_PAREN@374..375 ")"
+                - WHITESPACE@375..376 " "
+                - DIRECTIVES@376..402
+                    - DIRECTIVE@376..402
+                        - AT@376..377 "@"
+                        - NAME@377..381
+                            - IDENT@377..381 "skip"
+                        - ARGUMENTS@381..402
+                            - L_PAREN@381..382 "("
+                            - ARGUMENT@382..401
+                                - NAME@382..384
+                                    - IDENT@382..384 "if"
+                                - COLON@384..385 ":"
+                                - WHITESPACE@385..386 " "
+                                - VARIABLE@386..401
+                                    - DOLLAR@386..387 "$"
+                                    - NAME@387..401
+                                        - IDENT@387..401 "fieldDirective"
+                            - R_PAREN@401..402 ")"
+            - WHITESPACE@402..406 "\n\n  "
+            - FRAGMENT_SPREAD@406..446
+                - SPREAD@406..409 "..."
+                - FRAGMENT_NAME@409..417
+                    - NAME@409..417
+                        - IDENT@409..417 "fragment"
+                - WHITESPACE@417..418 " "
+                - DIRECTIVES@418..446
+                    - DIRECTIVE@418..446
+                        - AT@418..419 "@"
+                        - NAME@419..426
+                            - IDENT@419..426 "include"
+                        - ARGUMENTS@426..446
+                            - L_PAREN@426..427 "("
+                            - ARGUMENT@427..445
+                                - NAME@427..429
+                                    - IDENT@427..429 "if"
+                                - COLON@429..430 ":"
+                                - WHITESPACE@430..431 " "
+                                - VARIABLE@431..445
+                                    - DOLLAR@431..432 "$"
+                                    - NAME@432..445
+                                        - IDENT@432..445 "fragDirective"
+                            - R_PAREN@445..446 ")"
+            - WHITESPACE@446..450 "\n\n  "
+            - INLINE_FRAGMENT@450..503
+                - SPREAD@450..453 "..."
+                - WHITESPACE@453..454 " "
+                - DIRECTIVES@454..481
+                    - DIRECTIVE@454..481
+                        - AT@454..455 "@"
+                        - NAME@455..459
+                            - IDENT@455..459 "skip"
+                        - ARGUMENTS@459..481
+                            - L_PAREN@459..460 "("
+                            - ARGUMENT@460..480
+                                - NAME@460..462
+                                    - IDENT@460..462 "if"
+                                - COLON@462..463 ":"
+                                - WHITESPACE@463..464 " "
+                                - VARIABLE@464..480
+                                    - DOLLAR@464..465 "$"
+                                    - NAME@465..480
+                                        - IDENT@465..480 "inlineDirective"
+                            - R_PAREN@480..481 ")"
+                - WHITESPACE@481..482 " "
+                - SELECTION_SET@482..503
+                    - L_CURLY@482..483 "{"
+                    - WHITESPACE@483..488 "\n    "
+                    - FIELD@488..499
+                        - NAME@488..499
+                            - IDENT@488..499 "inlineField"
+                    - WHITESPACE@499..502 "\n  "
+                    - R_CURLY@502..503 "}"
+            - WHITESPACE@503..504 "\n"
+            - R_CURLY@504..505 "}"
+    - WHITESPACE@505..506 "\n"
+recursion limit: 4096, high: 2
