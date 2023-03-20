@@ -37,8 +37,7 @@ pub fn validate_scalar_definition(
             // Custom scalars must provide a scalar specification URL via the
             // @specifiedBy directive
             if !scalar_def
-                .self_directives()
-                .iter()
+                .directives()
                 .any(|directive| directive.name() == "specifiedBy")
             {
                 diagnostics.push(
@@ -51,7 +50,7 @@ pub fn validate_scalar_definition(
             }
 
             diagnostics.extend(db.validate_directives(
-                scalar_def.self_directives().to_vec(),
+                scalar_def.directives().cloned().collect(),
                 DirectiveLocation::Scalar,
             ));
         }

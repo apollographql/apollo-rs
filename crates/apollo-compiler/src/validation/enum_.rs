@@ -22,7 +22,7 @@ pub fn validate_enum_definition(
     enum_def: Arc<hir::EnumTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = db.validate_directives(
-        enum_def.self_directives().to_vec(),
+        enum_def.directives().cloned().collect(),
         hir::DirectiveLocation::Enum,
     );
 

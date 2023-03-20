@@ -27,7 +27,7 @@ pub fn validate_schema_definition(
         .extend(db.validate_root_operation_definitions(schema_def.self_root_operations().to_vec()));
 
     diagnostics.extend(db.validate_directives(
-        schema_def.self_directives().to_vec(),
+        schema_def.directives().cloned().collect(),
         hir::DirectiveLocation::Schema,
     ));
 
