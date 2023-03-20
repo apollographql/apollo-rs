@@ -262,6 +262,13 @@ pub enum DiagnosticData {
         /// The source location where the directive that's being used was defined.
         directive_def: Option<DiagnosticLocation>,
     },
+    #[error("non-repeatable directive {name} can only be used once per location")]
+    UniqueDirective {
+        /// Name of the non-unique directive.
+        name: String,
+        original_call: DiagnosticLocation,
+        conflicting_call: DiagnosticLocation,
+    },
     #[error("subscription operations can not have an introspection field as a root field")]
     IntrospectionField {
         /// Name of the field

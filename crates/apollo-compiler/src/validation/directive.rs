@@ -2,7 +2,9 @@ use std::collections::HashSet;
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir, ValidationDatabase,
+    hir,
+    validation::ValidationSet,
+    ValidationDatabase,
 };
 
 pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
@@ -48,13 +50,52 @@ pub fn validate_directives(
     dir_loc: hir::DirectiveLocation,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
+
+    let mut seen_dirs = HashSet::<ValidationSet>::new();
+
     for dir in dirs {
         diagnostics.extend(db.validate_arguments(dir.arguments().to_vec()));
 
         let name = dir.name();
         let loc = dir.loc();
+        let directive_definition = db.find_directive_definition_by_name(name.into());
 
-        if let Some(directive_definition) = db.find_directive_definition_by_name(name.into()) {
+        let duplicate = ValidationSet {
+            name: name.to_string(),
+            loc,
+        };
+        if let Some(original) = seen_dirs.get(&duplicate) {
+            let is_repeatable = directive_definition
+                .as_ref()
+                .map(|def| def.repeatable())
+                // Assume unknown directives are repeatable to avoid producing confusing diagnostics
+                .unwrap_or(true);
+
+            if !is_repeatable {
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        loc.into(),
+                        DiagnosticData::UniqueDirective {
+                            name: name.to_string(),
+                            original_call: original.loc.into(),
+                            conflicting_call: loc.into(),
+                        },
+                    )
+                    .label(Label::new(
+                        original.loc,
+                        format!("directive {name} first called here"),
+                    ))
+                    .label(Label::new(
+                        loc,
+                        format!("directive {name} called again here"),
+                    )),
+                );
+            }
+        }
+        seen_dirs.insert(duplicate);
+
+        if let Some(directive_definition) = directive_definition {
             let allowed_loc: HashSet<hir::DirectiveLocation> =
                 HashSet::from_iter(directive_definition.directive_locations().iter().cloned());
             if !allowed_loc.contains(&dir_loc) {
@@ -145,5 +186,6 @@ pub fn validate_directives(
             )
         }
     }
+
     diagnostics
 }
