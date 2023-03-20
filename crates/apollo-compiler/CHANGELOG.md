@@ -31,7 +31,7 @@ This release makes a number of breaking changes to API signatures and behavior
 so these modifications are be accounted for implicitly.
 For example, `interface.field(name)` may now return a field
 from an `extend interface` extension as well as from the original `interface` definition.
-We expct that most callers don’t need to tell the difference.
+We expect that most callers don’t need to tell the difference.
 For callers that do, methods with a `self_` prefix are added (or renamed)
 for accessing components of a definition itself as opposed to added by an extension.
 
