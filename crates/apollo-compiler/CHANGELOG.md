@@ -17,6 +17,93 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+
+# [0.7.0] (unreleased) - 2023-mm-dd
+
+> Important: X breaking changes below, indicated by **BREAKING**
+
+## BREAKING
+
+### Extensions are applied implicitly in HIR, [SimonSapin] in [pull/481], [pull/482], and [pull/484]
+
+Adding a GraphQL type extension is similar to modifying a type.
+This release makes a number of breaking changes to API signatures and behavior
+so these modifications are be accounted for implicitly.
+For example, `interface.field(name)` may now return a field
+from an `extend interface` extension as well as from the original `interface` definition.
+We expect that most callers don’t need to tell the difference.
+For callers that do, methods with a `self_` prefix are added (or renamed)
+for accessing components of a definition itself as opposed to added by an extension.
+
+Renamed:
+
+* `SchemaDefinition::root_operation_type_definition` → `self_root_operations`
+* `ObjectTypeDefinition::fields_definition` → `self_fields`
+* `InterfaceTypeDefinition::fields_definition` → `self_fields`
+* `InputObjectTypeDefinition::input_fields_definition` → `self_fields`
+* `ObjectTypeDefinition::implements_interfaces` → `self_implements_interfaces`
+* `InterfaceTypeDefinition::implements_interfaces` → `self_implements_interfaces`
+* `UnionTypeDefinition::union_members` → `self_members`
+* `EnumTypeDefinition::enum_values_definition` → `self_values`
+* `TypeDefiniton::directives` → `self_directives`
+* `SchemaDefiniton::directives` → `self_directives`
+* `EnumTypeDefiniton::directives` → `self_directives`
+* `UnionTypeDefiniton::directives` → `self_directives`
+* `ObjectTypeDefiniton::directives` → `self_directives`
+* `ScalarTypeDefiniton::directives` → `self_directives`
+* `InterfaceTypeDefiniton::directives` → `self_directives`
+* `InputObjectTypeDefiniton::directives` → `self_directives`
+
+Names freed by the above, redefined with new behavior (to consider extensions) and signature:
+
+* `ObjectTypeDefinition::implements_interfaces() -> impl Iterator`
+* `InterfaceTypeDefinition::implements_interfaces() -> impl Iterator`
+* `TypeDefiniton::directives() -> impl Iterator`
+* `SchemaDefiniton::directives() -> impl Iterator`
+* `EnumTypeDefiniton::directives() -> impl Iterator`
+* `UnionTypeDefiniton::directives() -> impl Iterator`
+* `ObjectTypeDefiniton::directives() -> impl Iterator`
+* `ScalarTypeDefiniton::directives() -> impl Iterator`
+* `InterfaceTypeDefiniton::directives() -> impl Iterator`
+* `InputObjectTypeDefiniton::directives() -> impl Iterator`
+
+Behavior and signature change (return the name of an object type instead of its definition):
+
+* `SchemaDefinition::query() -> Option<&str>`
+* `SchemaDefinition::mutation() -> Option<&str>`
+* `SchemaDefinition::subscription() -> Option<&str>`
+
+Behavior changed to consider extensions (no signature change):
+
+* `TypeDefinition::field(name) -> Option`
+* `ObjectTypeDefinition::field(name) -> Option`
+* `InterfaceTypeDefinition::field(name) -> Option`
+
+New methods (that consider extensions):
+
+* `SchemaDefinition::root_operations() -> impl Iterator`
+* `ObjectTypeDefinition::fields() -> impl Iterator`
+* `ObjectTypeDefinition::implements_interface(name) -> bool`
+* `InterfaceTypeDefinition::fields() -> impl Iterator`
+* `InterfaceTypeDefinition::implements_interface(name) -> bool`
+* `InputObjectTypeDefinition::self_fields() -> &[_]`
+* `InputObjectTypeDefinition::fields() -> impl Iterator`
+* `InputObjectTypeDefinition::field(name) -> Option`
+* `UnionTypeDefinition::members() -> impl Iterator`
+* `UnionTypeDefinition::has_member(name) -> bool`
+* `EnumTypeDefinition::values() -> impl Iterator`
+* `EnumTypeDefinition::value(name) -> Option`
+
+New methods, for every type that has a `directives` method:
+
+* `directive_by_name(name) -> Option`
+* `directives_by_name(name) -> impl Iterator`
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/481]: https://github.com/apollographql/apollo-rs/pull/481
+[pull/482]: https://github.com/apollographql/apollo-rs/pull/482
+[pull/484]: https://github.com/apollographql/apollo-rs/pull/484
+
 # [0.6.0](https://crates.io/crates/apollo-compiler/0.6.0) - 2023-01-18
 
 This release has a few breaking changes as we try to standardise APIs across the
