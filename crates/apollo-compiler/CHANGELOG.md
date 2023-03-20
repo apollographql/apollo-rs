@@ -24,7 +24,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## BREAKING
 
-### Extensions are “applied” implicitly in HIR, [SimonSapin] in [pull/481], [pull/482], and [pull/484]
+### Extensions are applied implicitly in HIR, [SimonSapin] in [pull/481], [pull/482], and [pull/484]
 
 Adding a GraphQL type extension is similar to modifying a type.
 This release makes a number of breaking changes to API signatures and behavior
