@@ -92,8 +92,9 @@ pub fn validate_directives(
                     )),
                 );
             }
+        } else {
+            seen_dirs.insert(duplicate);
         }
-        seen_dirs.insert(duplicate);
 
         if let Some(directive_definition) = directive_definition {
             let allowed_loc: HashSet<hir::DirectiveLocation> =
