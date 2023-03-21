@@ -181,7 +181,13 @@ impl TypeDefinition {
             Self::ObjectTypeDefinition(def) => def
                 .field(name)
                 .or(def.implicit_fields(db).iter().find(|f| f.name() == name)),
-            Self::InterfaceTypeDefinition(def) => def.field(name),
+            Self::InterfaceTypeDefinition(def) => {
+                def.field(name).or(if def.implicit_field().name() == name {
+                    Some(def.implicit_field())
+                } else {
+                    None
+                })
+            }
             _ => None,
         }
     }
@@ -1456,11 +1462,6 @@ impl Field {
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub(crate) struct ImplicitFields {
-    pub(crate) fields: Arc<Vec<FieldDefinition>>,
-}
-
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct InlineFragment {
     pub(crate) type_condition: Option<Name>,
     pub(crate) directives: Arc<Vec<Directive>>,
@@ -2637,6 +2638,7 @@ pub struct InterfaceTypeDefinition {
     pub(crate) extensions: Vec<Arc<InterfaceTypeExtension>>,
     pub(crate) fields_by_name: ByNameWithExtensions,
     pub(crate) implements_interfaces_by_name: ByNameWithExtensions,
+    pub(crate) implicit_field: FieldDefinition,
 }
 
 impl InterfaceTypeDefinition {
@@ -2773,6 +2775,10 @@ impl InterfaceTypeDefinition {
             ImplementsInterface::interface,
         );
         self.extensions.push(ext);
+    }
+
+    pub fn implicit_field(&self) -> &FieldDefinition {
+        &self.implicit_field
     }
 }
 

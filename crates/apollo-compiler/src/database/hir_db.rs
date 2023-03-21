@@ -862,6 +862,7 @@ fn interface_definition(
     let fields_by_name = ByNameWithExtensions::new(&fields_definition, FieldDefinition::name);
     let implements_interfaces_by_name =
         ByNameWithExtensions::new(&implements_interfaces, ImplementsInterface::interface);
+    let implicit_field = typename_field();
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -875,6 +876,7 @@ fn interface_definition(
         extensions: Vec::new(),
         fields_by_name,
         implements_interfaces_by_name,
+        implicit_field,
     })
 }
 
