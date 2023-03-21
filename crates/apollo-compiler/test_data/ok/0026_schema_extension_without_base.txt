@@ -1,0 +1,78 @@
+- DOCUMENT@0..100
+    - OPERATION_DEFINITION@0..22
+        - OPERATION_TYPE@0..5
+            - query_KW@0..5 "query"
+        - WHITESPACE@5..6 " "
+        - NAME@6..8
+            - IDENT@6..8 "nA"
+        - WHITESPACE@8..9 " "
+        - SELECTION_SET@9..22
+            - L_CURLY@9..10 "{"
+            - WHITESPACE@10..13 "\n  "
+            - FIELD@13..15
+                - NAME@13..15
+                    - IDENT@13..15 "A1"
+            - WHITESPACE@15..18 "\n  "
+            - FIELD@18..20
+                - NAME@18..20
+                    - IDENT@18..20 "A1"
+            - WHITESPACE@20..21 "\n"
+            - R_CURLY@21..22 "}"
+    - WHITESPACE@22..23 "\n"
+    - SCHEMA_EXTENSION@23..67
+        - extend_KW@23..29 "extend"
+        - WHITESPACE@29..30 " "
+        - schema_KW@30..36 "schema"
+        - WHITESPACE@36..37 " "
+        - L_CURLY@37..38 "{"
+        - WHITESPACE@38..41 "\n  "
+        - ROOT_OPERATION_TYPE_DEFINITION@41..50
+            - OPERATION_TYPE@41..46
+                - query_KW@41..46 "query"
+            - COLON@46..47 ":"
+            - WHITESPACE@47..48 " "
+            - NAMED_TYPE@48..50
+                - NAME@48..50
+                    - IDENT@48..50 "A1"
+        - WHITESPACE@50..53 "\n  "
+        - ROOT_OPERATION_TYPE_DEFINITION@53..65
+            - OPERATION_TYPE@53..61
+                - mutation_KW@53..61 "mutation"
+            - COLON@61..62 ":"
+            - WHITESPACE@62..63 " "
+            - NAMED_TYPE@63..65
+                - NAME@63..65
+                    - IDENT@63..65 "A1"
+        - WHITESPACE@65..66 "\n"
+        - R_CURLY@66..67 "}"
+    - WHITESPACE@67..68 "\n"
+    - OBJECT_TYPE_DEFINITION@68..99
+        - type_KW@68..72 "type"
+        - WHITESPACE@72..73 " "
+        - NAME@73..75
+            - IDENT@73..75 "A1"
+        - WHITESPACE@75..76 " "
+        - FIELDS_DEFINITION@76..99
+            - L_CURLY@76..77 "{"
+            - WHITESPACE@77..80 "\n  "
+            - FIELD_DEFINITION@80..87
+                - NAME@80..82
+                    - IDENT@80..82 "A1"
+                - COLON@82..83 ":"
+                - WHITESPACE@83..84 " "
+                - NAMED_TYPE@84..87
+                    - NAME@84..87
+                        - IDENT@84..87 "Int"
+            - WHITESPACE@87..90 "\n  "
+            - FIELD_DEFINITION@90..97
+                - NAME@90..92
+                    - IDENT@90..92 "A0"
+                - COLON@92..93 ":"
+                - WHITESPACE@93..94 " "
+                - NAMED_TYPE@94..97
+                    - NAME@94..97
+                        - IDENT@94..97 "Int"
+            - WHITESPACE@97..98 "\n"
+            - R_CURLY@98..99 "}"
+    - WHITESPACE@99..100 "\n"
+recursion limit: 4096, high: 3

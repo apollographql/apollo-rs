@@ -463,7 +463,7 @@ fn operation_definition(
     let name = op_def.name().map(|n| name_hir_node(n, file_id));
     let ty = operation_type(op_def.operation_type());
     let variables = variable_definitions(op_def.variable_definitions(), file_id);
-    let parent_object_ty = db.schema().self_root_operations().iter().find_map(|op| {
+    let parent_object_ty = db.schema().root_operations().find_map(|op| {
         if op.operation_ty() == ty {
             Some(op.named_type().name())
         } else {

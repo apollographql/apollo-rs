@@ -1,0 +1,12 @@
+query nA {
+  A1
+  A1
+}
+extend schema {
+  query: A1
+  mutation: A1
+}
+type A1 {
+  A1: Int
+  A0: Int
+}
