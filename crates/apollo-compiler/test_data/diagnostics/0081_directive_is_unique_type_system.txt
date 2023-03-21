@@ -1,20 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            77: "0081_directive_is_unique_type_system.graphql",
+            154: "src/implicit_types.graphql",
+            155: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 77,
+                id: 155,
             },
-            offset: 112,
+            offset: 97,
             length: 14,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
                     offset: 97,
                     length: 14,
@@ -24,9 +25,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
-                    offset: 112,
+                    offset: 97,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -37,36 +38,37 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
                 offset: 97,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
-                offset: 112,
+                offset: 97,
                 length: 14,
             },
         },
     },
     ApolloDiagnostic {
         cache: {
-            77: "0081_directive_is_unique_type_system.graphql",
+            154: "src/implicit_types.graphql",
+            155: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 77,
+                id: 155,
             },
-            offset: 177,
+            offset: 162,
             length: 14,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
                     offset: 162,
                     length: 14,
@@ -76,9 +78,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
-                    offset: 177,
+                    offset: 162,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -89,36 +91,37 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
                 offset: 162,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
-                offset: 177,
+                offset: 162,
                 length: 14,
             },
         },
     },
     ApolloDiagnostic {
         cache: {
-            77: "0081_directive_is_unique_type_system.graphql",
+            154: "src/implicit_types.graphql",
+            155: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 77,
+                id: 155,
             },
-            offset: 351,
+            offset: 336,
             length: 14,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
                     offset: 336,
                     length: 14,
@@ -128,9 +131,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
-                    offset: 351,
+                    offset: 336,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -141,36 +144,37 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
                 offset: 336,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
-                offset: 351,
+                offset: 336,
                 length: 14,
             },
         },
     },
     ApolloDiagnostic {
         cache: {
-            77: "0081_directive_is_unique_type_system.graphql",
+            154: "src/implicit_types.graphql",
+            155: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 77,
+                id: 155,
             },
-            offset: 305,
+            offset: 290,
             length: 14,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
                     offset: 290,
                     length: 14,
@@ -180,9 +184,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
-                    offset: 305,
+                    offset: 290,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -193,36 +197,37 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
                 offset: 290,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
-                offset: 305,
+                offset: 290,
                 length: 14,
             },
         },
     },
     ApolloDiagnostic {
         cache: {
-            77: "0081_directive_is_unique_type_system.graphql",
+            154: "src/implicit_types.graphql",
+            155: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 77,
+                id: 155,
             },
-            offset: 397,
+            offset: 382,
             length: 14,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
                     offset: 382,
                     length: 14,
@@ -232,9 +237,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
-                    offset: 397,
+                    offset: 382,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -245,36 +250,37 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
                 offset: 382,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
-                offset: 397,
+                offset: 382,
                 length: 14,
             },
         },
     },
     ApolloDiagnostic {
         cache: {
-            77: "0081_directive_is_unique_type_system.graphql",
+            154: "src/implicit_types.graphql",
+            155: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 77,
+                id: 155,
             },
-            offset: 251,
+            offset: 236,
             length: 14,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
                     offset: 236,
                     length: 14,
@@ -284,9 +290,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 77,
+                        id: 155,
                     },
-                    offset: 251,
+                    offset: 236,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -297,16 +303,16 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
                 offset: 236,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 77,
+                    id: 155,
                 },
-                offset: 251,
+                offset: 236,
                 length: 14,
             },
         },

@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            127: "0064_extension_wrong_type.graphql",
             126: "src/implicit_types.graphql",
+            127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -33,8 +33,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            127: "0064_extension_wrong_type.graphql",
             126: "src/implicit_types.graphql",
+            127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -88,8 +88,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            127: "0064_extension_wrong_type.graphql",
             126: "src/implicit_types.graphql",
+            127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -143,8 +143,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            127: "0064_extension_wrong_type.graphql",
             126: "src/implicit_types.graphql",
+            127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -198,8 +198,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            127: "0064_extension_wrong_type.graphql",
             126: "src/implicit_types.graphql",
+            127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -253,8 +253,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            127: "0064_extension_wrong_type.graphql",
             126: "src/implicit_types.graphql",
+            127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

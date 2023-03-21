@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            37: "0019_enum_definition_with_duplicate_values.graphql",
             36: "src/implicit_types.graphql",
+            37: "0019_enum_definition_with_duplicate_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -57,8 +57,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            37: "0019_enum_definition_with_duplicate_values.graphql",
             36: "src/implicit_types.graphql",
+            37: "0019_enum_definition_with_duplicate_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

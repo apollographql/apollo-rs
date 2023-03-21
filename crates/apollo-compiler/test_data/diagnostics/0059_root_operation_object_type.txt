@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            116: "src/implicit_types.graphql",
             117: "0059_root_operation_object_type.graphql",
+            116: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            123: "0062_root_operation_with_list.graphql",
             122: "src/implicit_types.graphql",
+            123: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -30,8 +30,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0062_root_operation_with_list.graphql",
             122: "src/implicit_types.graphql",
+            123: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -59,8 +59,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0062_root_operation_with_list.graphql",
             122: "src/implicit_types.graphql",
+            123: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -88,8 +88,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0062_root_operation_with_list.graphql",
             122: "src/implicit_types.graphql",
+            123: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -117,8 +117,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0062_root_operation_with_list.graphql",
             122: "src/implicit_types.graphql",
+            123: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -146,8 +146,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            123: "0062_root_operation_with_list.graphql",
             122: "src/implicit_types.graphql",
+            123: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

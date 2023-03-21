@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            130: "src/implicit_types.graphql",
             131: "0066_subselection_of_scalar.graphql",
+            130: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -38,8 +38,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            130: "src/implicit_types.graphql",
             131: "0066_subselection_of_scalar.graphql",
+            130: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -75,8 +75,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            130: "src/implicit_types.graphql",
             131: "0066_subselection_of_scalar.graphql",
+            130: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -112,8 +112,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            130: "src/implicit_types.graphql",
             131: "0066_subselection_of_scalar.graphql",
+            130: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -149,8 +149,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            130: "src/implicit_types.graphql",
             131: "0066_subselection_of_scalar.graphql",
+            130: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -186,8 +186,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            130: "src/implicit_types.graphql",
             131: "0066_subselection_of_scalar.graphql",
+            130: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

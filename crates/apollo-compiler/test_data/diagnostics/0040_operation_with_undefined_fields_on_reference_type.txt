@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            78: "src/implicit_types.graphql",
             79: "0040_operation_with_undefined_fields_on_reference_type.graphql",
+            78: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -42,8 +42,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            78: "src/implicit_types.graphql",
             79: "0040_operation_with_undefined_fields_on_reference_type.graphql",
+            78: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

@@ -62,7 +62,7 @@ pub fn validate_directives(
 
         let duplicate = ValidationSet {
             name: name.to_string(),
-            loc,
+            loc: Some(loc),
         };
         if let Some(original) = seen_dirs.get(&duplicate) {
             let is_repeatable = directive_definition
@@ -72,18 +72,20 @@ pub fn validate_directives(
                 .unwrap_or(true);
 
             if !is_repeatable {
+                // original loc must be Some
+                let loc = original.loc.expect("undefined original directive location");
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
                         loc.into(),
                         DiagnosticData::UniqueDirective {
                             name: name.to_string(),
-                            original_call: original.loc.into(),
+                            original_call: loc.into(),
                             conflicting_call: loc.into(),
                         },
                     )
                     .label(Label::new(
-                        original.loc,
+                        loc,
                         format!("directive {name} first called here"),
                     ))
                     .label(Label::new(
