@@ -99,14 +99,13 @@ impl ApolloCompiler {
         sources.push(file_id);
         self.db.set_input(file_id, source);
         self.db.set_source_files(sources);
-        self.add_implicit_inputs();
 
         file_id
     }
 
     // This adds the introspection type system and any built-in graphql types.
-    fn add_implicit_inputs(&mut self) {
-        let path = Path::new("src/introspection_tys.graphql");
+    fn add_implicit_types(&mut self) {
+        let path = Path::new("src/implicit_types.graphql");
         if self.db.source_file(path.to_path_buf()).is_none() {
             let file_id = FileId::new();
             let mut sources = self.db.source_files();
@@ -134,6 +133,7 @@ impl ApolloCompiler {
             )
         }
         let filename = path.as_ref().to_owned();
+        self.add_implicit_types();
         self.add_input(Source::document(filename, input))
     }
 
@@ -152,6 +152,7 @@ impl ApolloCompiler {
             )
         }
         let filename = path.as_ref().to_owned();
+        self.add_implicit_types();
         self.add_input(Source::schema(filename, input))
     }
 
@@ -1157,7 +1158,19 @@ type User
         let object_types = compiler.db.object_types();
         let object_names: Vec<_> = object_types.keys().map(|name| &**name).collect();
         assert_eq!(
-            ["Mutation", "Product", "Query", "Review", "User"],
+            [
+                "__Schema",
+                "__Type",
+                "__Field",
+                "__InputValue",
+                "__EnumValue",
+                "__Directive",
+                "Mutation",
+                "Product",
+                "Query",
+                "Review",
+                "User"
+            ],
             object_names.as_slice()
         );
     }

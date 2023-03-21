@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            56: "0057_duplicate_type_names.graphql",
+            113: "0057_duplicate_type_names.graphql",
+            112: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 56,
+                id: 113,
             },
             offset: 34,
             length: 5,
@@ -14,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 56,
+                        id: 113,
                     },
                     offset: 10,
                     length: 5,
@@ -24,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 56,
+                        id: 113,
                     },
                     offset: 34,
                     length: 5,
@@ -40,14 +41,14 @@
             name: "World",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 56,
+                    id: 113,
                 },
                 offset: 10,
                 length: 5,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 56,
+                    id: 113,
                 },
                 offset: 34,
                 length: 5,
@@ -56,11 +57,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            56: "0057_duplicate_type_names.graphql",
+            113: "0057_duplicate_type_names.graphql",
+            112: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 56,
+                id: 113,
             },
             offset: 147,
             length: 1,
@@ -69,7 +71,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 56,
+                        id: 113,
                     },
                     offset: 83,
                     length: 1,
@@ -79,7 +81,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 56,
+                        id: 113,
                     },
                     offset: 147,
                     length: 1,
@@ -95,14 +97,14 @@
             name: "X",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 56,
+                    id: 113,
                 },
                 offset: 83,
                 length: 1,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 56,
+                    id: 113,
                 },
                 offset: 147,
                 length: 1,
@@ -111,11 +113,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            56: "0057_duplicate_type_names.graphql",
+            113: "0057_duplicate_type_names.graphql",
+            112: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 56,
+                id: 113,
             },
             offset: 174,
             length: 1,
@@ -124,7 +127,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 56,
+                        id: 113,
                     },
                     offset: 83,
                     length: 1,
@@ -134,7 +137,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 56,
+                        id: 113,
                     },
                     offset: 174,
                     length: 1,
@@ -150,14 +153,14 @@
             name: "X",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 56,
+                    id: 113,
                 },
                 offset: 83,
                 length: 1,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 56,
+                    id: 113,
                 },
                 offset: 174,
                 length: 1,
@@ -166,11 +169,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            56: "0057_duplicate_type_names.graphql",
+            113: "0057_duplicate_type_names.graphql",
+            112: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 56,
+                id: 113,
             },
             offset: 191,
             length: 1,
@@ -179,7 +183,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 56,
+                        id: 113,
                     },
                     offset: 83,
                     length: 1,
@@ -189,7 +193,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 56,
+                        id: 113,
                     },
                     offset: 191,
                     length: 1,
@@ -205,14 +209,14 @@
             name: "X",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 56,
+                    id: 113,
                 },
                 offset: 83,
                 length: 1,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 56,
+                    id: 113,
                 },
                 offset: 191,
                 length: 1,

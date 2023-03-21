@@ -176,9 +176,11 @@ impl TypeDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
+    pub fn field(&self, db: &dyn HirDatabase, name: &str) -> Option<&FieldDefinition> {
         match self {
-            Self::ObjectTypeDefinition(def) => def.field(name),
+            Self::ObjectTypeDefinition(def) => def
+                .field(name)
+                .or(def.implicit_fields(db).iter().find(|f| f.name() == name)),
             Self::InterfaceTypeDefinition(def) => def.field(name),
             _ => None,
         }
@@ -1355,7 +1357,7 @@ impl Field {
     pub fn ty(&self, db: &dyn HirDatabase) -> Option<Type> {
         let def = db
             .find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())?
-            .field(self.name())?
+            .field(db, self.name())?
             .ty()
             .to_owned();
         Some(def)
@@ -1451,6 +1453,11 @@ impl Field {
         let field_name = self.name();
         field_name == "__type" || field_name == "__schema" || field_name == "__typename"
     }
+}
+
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub(crate) struct ImplicitFields {
+    pub(crate) fields: Arc<Vec<FieldDefinition>>,
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -1642,9 +1649,8 @@ impl Float {
     }
 }
 
-/// When some item (for example fields of an object type) have unique names
-/// and may be found on type extensions, this pre-computes where to find
-/// each item from its name
+/// This pre-computes where to find items such as fields of an object type on a
+/// type extension based on the item's name.
 #[derive(Clone, Debug, Eq)]
 pub(crate) struct ByNameWithExtensions {
     /// `(None, i)` designates `def.example[i]`.
@@ -1892,6 +1898,7 @@ pub struct ObjectTypeDefinition {
     pub(crate) extensions: Vec<Arc<ObjectTypeExtension>>,
     pub(crate) fields_by_name: ByNameWithExtensions,
     pub(crate) implements_interfaces_by_name: ByNameWithExtensions,
+    pub(crate) implicit_fields: Arc<Vec<FieldDefinition>>,
 }
 
 impl ObjectTypeDefinition {
@@ -1972,6 +1979,44 @@ impl ObjectTypeDefinition {
             self.extensions(),
             ObjectTypeExtension::fields_definition,
         )
+    }
+    /// Introspection fields that must not be returned as part of `fields` method.
+    // pub(crate) fn implicit_fields_2(
+    //     &self,
+    //     db: &dyn HirDatabase,
+    // ) -> impl Iterator<Item = FieldDefinition> + ExactSizeIterator + DoubleEndedIterator {
+    //     if db
+    //         .schema()
+    //         .root_operations()
+    //         .any(|op| op.operation_ty().is_query() && op.named_type().name() == self.name())
+    //     {
+    //         self.implicit_fields.iter().cloned()
+    //     } else {
+    //         self.implicit_fields
+    //             .iter()
+    //             .filter(|f| f.name() == "__typename")
+    //             .cloned()
+    //             .collect::<Vec<FieldDefinition>>()
+    //             .into_iter()
+    //     }
+    // }
+    /// Introspection fields that must not be returned as part of `fields` method.
+    pub(crate) fn implicit_fields(&self, db: &dyn HirDatabase) -> &[FieldDefinition] {
+        let is_root_query = db
+            .schema()
+            .root_operations()
+            .any(|op| op.operation_ty().is_query() && op.named_type().name() == self.name());
+        if is_root_query {
+            self.implicit_fields.as_ref()
+        } else {
+            let position = self
+                .implicit_fields
+                .iter()
+                .cloned()
+                .position(|f| f.name() == "__typename")
+                .unwrap();
+            &self.implicit_fields[position..position + 1]
+        }
     }
 
     /// Returns interfaces implemented by this object type definition,
@@ -2064,7 +2109,7 @@ pub struct FieldDefinition {
     pub(crate) arguments: ArgumentsDefinition,
     pub(crate) ty: Type,
     pub(crate) directives: Arc<Vec<Directive>>,
-    pub(crate) loc: HirNodeLocation,
+    pub(crate) loc: Option<HirNodeLocation>,
 }
 
 impl FieldDefinition {
@@ -2103,7 +2148,7 @@ impl FieldDefinition {
     }
 
     /// Get the AST location information for this HIR node.
-    pub fn loc(&self) -> HirNodeLocation {
+    pub fn loc(&self) -> Option<HirNodeLocation> {
         self.loc
     }
 

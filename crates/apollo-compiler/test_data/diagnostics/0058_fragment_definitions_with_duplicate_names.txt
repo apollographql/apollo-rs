@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            57: "0058_fragment_definitions_with_duplicate_names.graphql",
+            115: "0058_fragment_definitions_with_duplicate_names.graphql",
+            114: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 57,
+                id: 115,
             },
             offset: 244,
             length: 11,
@@ -14,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 57,
+                        id: 115,
                     },
                     offset: 196,
                     length: 11,
@@ -24,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 57,
+                        id: 115,
                     },
                     offset: 244,
                     length: 11,
@@ -40,14 +41,14 @@
             name: "petFragment",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 57,
+                    id: 115,
                 },
                 offset: 196,
                 length: 11,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 57,
+                    id: 115,
                 },
                 offset: 244,
                 length: 11,

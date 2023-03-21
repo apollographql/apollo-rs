@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            61: "0062_root_operation_with_list.graphql",
+            123: "0062_root_operation_with_list.graphql",
+            122: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 61,
+                id: 123,
             },
             offset: 18,
             length: 1,
@@ -14,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 61,
+                        id: 123,
                     },
                     offset: 18,
                     length: 1,
@@ -29,11 +30,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            61: "0062_root_operation_with_list.graphql",
+            123: "0062_root_operation_with_list.graphql",
+            122: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 61,
+                id: 123,
             },
             offset: 18,
             length: 1,
@@ -42,7 +44,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 61,
+                        id: 123,
                     },
                     offset: 18,
                     length: 1,
@@ -57,11 +59,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            61: "0062_root_operation_with_list.graphql",
+            123: "0062_root_operation_with_list.graphql",
+            122: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 61,
+                id: 123,
             },
             offset: 19,
             length: 6,
@@ -70,7 +73,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 61,
+                        id: 123,
                     },
                     offset: 19,
                     length: 6,
@@ -85,11 +88,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            61: "0062_root_operation_with_list.graphql",
+            123: "0062_root_operation_with_list.graphql",
+            122: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 61,
+                id: 123,
             },
             offset: 25,
             length: 1,
@@ -98,7 +102,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 61,
+                        id: 123,
                     },
                     offset: 25,
                     length: 1,
@@ -113,11 +117,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            61: "0062_root_operation_with_list.graphql",
+            123: "0062_root_operation_with_list.graphql",
+            122: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 61,
+                id: 123,
             },
             offset: 27,
             length: 1,
@@ -126,7 +131,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 61,
+                        id: 123,
                     },
                     offset: 27,
                     length: 1,
@@ -141,11 +146,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            61: "0062_root_operation_with_list.graphql",
+            123: "0062_root_operation_with_list.graphql",
+            122: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 61,
+                id: 123,
             },
             offset: 0,
             length: 17,
@@ -154,7 +160,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 61,
+                        id: 123,
                     },
                     offset: 0,
                     length: 17,

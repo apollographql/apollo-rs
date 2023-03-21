@@ -140,7 +140,7 @@ pub fn validate_implements_interfaces(
         .iter()
         .map(|(name, interface)| ValidationSet {
             name: name.to_owned(),
-            loc: interface.loc(),
+            loc: Some(interface.loc()),
         })
         .collect();
 
@@ -151,20 +151,24 @@ pub fn validate_implements_interfaces(
         .iter()
         .map(|interface| ValidationSet {
             name: interface.interface().to_owned(),
-            loc: interface.loc(),
+            loc: Some(interface.loc()),
         })
         .collect();
     let diff = implements_interfaces.difference(&defined_interfaces);
     for undefined in diff {
+        // undefined.loc should always be Some
+        let loc = undefined
+            .loc
+            .expect("missing implements interface location");
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                undefined.loc.into(),
+                loc.into(),
                 DiagnosticData::UndefinedDefinition {
                     name: undefined.name.clone(),
                 },
             )
-            .label(Label::new(undefined.loc, "not found in this scope")),
+            .label(Label::new(loc, "not found in this scope")),
         );
     }
 
@@ -181,7 +185,7 @@ pub fn validate_implements_interfaces(
                     .iter()
                     .map(|interface| ValidationSet {
                         name: interface.interface().to_owned(),
-                        loc: implements_interface.loc(),
+                        loc: Some(implements_interface.loc()),
                     })
                     .collect();
                 Some(child_interfaces)
@@ -193,16 +197,20 @@ pub fn validate_implements_interfaces(
         .collect();
     let transitive_diff = transitive_interfaces.difference(&implements_interfaces);
     for undefined in transitive_diff {
+        // undefined.loc is always be Some
+        let loc = undefined
+            .loc
+            .expect("missing implements interface location");
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                undefined.loc.into(),
+                loc.into(),
                 DiagnosticData::TransitiveImplementedInterfaces {
                     missing_interface: undefined.name.clone(),
                 },
             )
             .label(Label::new(
-                undefined.loc,
+                loc,
                 format!("{} must also be implemented here", undefined.name),
             )),
         );

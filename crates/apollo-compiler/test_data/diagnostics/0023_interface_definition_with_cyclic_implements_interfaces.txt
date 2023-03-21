@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            22: "0023_interface_definition_with_cyclic_implements_interfaces.graphql",
+            45: "0023_interface_definition_with_cyclic_implements_interfaces.graphql",
+            44: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 22,
+                id: 45,
             },
             offset: 87,
             length: 11,
@@ -14,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 22,
+                        id: 45,
                     },
                     offset: 87,
                     length: 11,

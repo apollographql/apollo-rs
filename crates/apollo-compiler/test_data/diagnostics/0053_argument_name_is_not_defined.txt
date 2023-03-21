@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            52: "0053_argument_name_is_not_defined.graphql",
+            105: "0053_argument_name_is_not_defined.graphql",
+            104: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 52,
+                id: 105,
             },
             offset: 116,
             length: 7,
@@ -14,17 +15,17 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 52,
+                        id: 105,
                     },
                     offset: 116,
                     length: 7,
                 },
-                text: "argument by this name not found",
+                text: "argument name not found",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 52,
+                        id: 105,
                     },
                     offset: 15,
                     length: 21,
@@ -39,11 +40,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            52: "0053_argument_name_is_not_defined.graphql",
+            105: "0053_argument_name_is_not_defined.graphql",
+            104: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 52,
+                id: 105,
             },
             offset: 79,
             length: 7,
@@ -52,17 +54,17 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 52,
+                        id: 105,
                     },
                     offset: 79,
                     length: 7,
                 },
-                text: "argument by this name not found",
+                text: "argument name not found",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 52,
+                        id: 105,
                     },
                     offset: 15,
                     length: 21,
@@ -77,11 +79,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            52: "0053_argument_name_is_not_defined.graphql",
+            105: "0053_argument_name_is_not_defined.graphql",
+            104: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 52,
+                id: 105,
             },
             offset: 88,
             length: 7,
@@ -90,17 +93,17 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 52,
+                        id: 105,
                     },
                     offset: 88,
                     length: 7,
                 },
-                text: "argument by this name not found",
+                text: "argument name not found",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 52,
+                        id: 105,
                     },
                     offset: 15,
                     length: 21,

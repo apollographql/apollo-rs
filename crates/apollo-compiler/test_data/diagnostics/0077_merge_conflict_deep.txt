@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            73: "0077_merge_conflict_deep.graphql",
+            147: "0077_merge_conflict_deep.graphql",
+            146: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 73,
+                id: 147,
             },
             offset: 97,
             length: 4,
@@ -14,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 73,
+                        id: 147,
                     },
                     offset: 73,
                     length: 4,
@@ -24,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 73,
+                        id: 147,
                     },
                     offset: 97,
                     length: 4,
@@ -39,14 +40,14 @@
             field: "b",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 73,
+                    id: 147,
                 },
                 offset: 73,
                 length: 4,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 73,
+                    id: 147,
                 },
                 offset: 97,
                 length: 4,

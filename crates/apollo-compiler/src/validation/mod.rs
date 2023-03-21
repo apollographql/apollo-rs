@@ -23,7 +23,7 @@ use crate::hir::HirNodeLocation;
 #[derive(Debug, Eq)]
 struct ValidationSet {
     name: String,
-    loc: HirNodeLocation,
+    loc: Option<HirNodeLocation>,
 }
 
 impl std::hash::Hash for ValidationSet {

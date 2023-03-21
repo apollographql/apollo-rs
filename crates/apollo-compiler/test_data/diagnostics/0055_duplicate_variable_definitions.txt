@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            54: "0055_duplicate_variable_definitions.graphql",
+            109: "0055_duplicate_variable_definitions.graphql",
+            108: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 54,
+                id: 109,
             },
             offset: 48,
             length: 22,
@@ -14,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 54,
+                        id: 109,
                     },
                     offset: 24,
                     length: 22,
@@ -24,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 54,
+                        id: 109,
                     },
                     offset: 48,
                     length: 22,
@@ -40,14 +41,14 @@
             name: "atOtherHomes",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 54,
+                    id: 109,
                 },
                 offset: 24,
                 length: 22,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 54,
+                    id: 109,
                 },
                 offset: 48,
                 length: 22,

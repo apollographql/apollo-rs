@@ -642,6 +642,7 @@ fn object_type_definition(
     let fields_by_name = ByNameWithExtensions::new(&fields_definition, FieldDefinition::name);
     let implements_interfaces_by_name =
         ByNameWithExtensions::new(&implements_interfaces, ImplementsInterface::interface);
+    let implicit_fields = Arc::new(vec![type_field(), typename_field(), schema_field()]);
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -655,6 +656,7 @@ fn object_type_definition(
         extensions: Vec::new(),
         fields_by_name,
         implements_interfaces_by_name,
+        implicit_fields,
     })
 }
 
@@ -978,6 +980,88 @@ fn extension(db: &dyn HirDatabase, def: ast::Definition, file_id: FileId) -> Opt
     }
 }
 
+fn type_field() -> FieldDefinition {
+    FieldDefinition {
+        description: None,
+        name: Name {
+            src: "__type".into(),
+            loc: None,
+        },
+        arguments: ArgumentsDefinition {
+            input_values: Arc::new(vec![InputValueDefinition {
+                description: None,
+                name: Name {
+                    src: "name".into(),
+                    loc: None,
+                },
+                ty: Type::NonNull {
+                    ty: Box::new(Type::Named {
+                        name: "String".into(),
+                        loc: None,
+                    }),
+                    loc: None,
+                },
+                default_value: None,
+                directives: Arc::new(Vec::new()),
+                loc: None,
+            }]),
+            loc: None,
+        },
+        ty: Type::Named {
+            name: "__Type".into(),
+            loc: None,
+        },
+        directives: Arc::new(Vec::new()),
+        loc: None,
+    }
+}
+
+fn schema_field() -> FieldDefinition {
+    FieldDefinition {
+        description: None,
+        name: Name {
+            src: "__schema".into(),
+            loc: None,
+        },
+        arguments: ArgumentsDefinition {
+            input_values: Arc::new(Vec::new()),
+            loc: None,
+        },
+        ty: Type::NonNull {
+            ty: Box::new(Type::Named {
+                name: "__Schema".into(),
+                loc: None,
+            }),
+            loc: None,
+        },
+        directives: Arc::new(Vec::new()),
+        loc: None,
+    }
+}
+
+fn typename_field() -> FieldDefinition {
+    FieldDefinition {
+        description: None,
+        name: Name {
+            src: "__typename".into(),
+            loc: None,
+        },
+        arguments: ArgumentsDefinition {
+            input_values: Arc::new(Vec::new()),
+            loc: None,
+        },
+        ty: Type::NonNull {
+            ty: Box::new(Type::Named {
+                name: "String".into(),
+                loc: None,
+            }),
+            loc: None,
+        },
+        directives: Arc::new(Vec::new()),
+        loc: None,
+    }
+}
+
 fn implements_interfaces(
     implements_interfaces: Option<ast::ImplementsInterfaces>,
     file_id: FileId,
@@ -1032,7 +1116,7 @@ fn field_definition(field: ast::FieldDefinition, file_id: FileId) -> Option<Fiel
         arguments,
         ty,
         directives,
-        loc,
+        loc: Some(loc),
     })
 }
 
@@ -1421,7 +1505,7 @@ fn field(
 fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<String>) -> Option<String> {
     Some(
         db.find_type_definition_by_name(parent_obj?)?
-            .field(field_name)?
+            .field(db, field_name)?
             .ty()
             .name(),
     )

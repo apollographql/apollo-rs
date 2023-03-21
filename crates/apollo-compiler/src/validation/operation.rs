@@ -163,29 +163,35 @@ pub fn validate_query_operations(
     //
     //   * query operation - query root operation
     if !queries.is_empty() && db.schema().query().is_none() {
-        let unsupported_ops: Vec<ApolloDiagnostic> = queries
-            .iter()
-            .map(|op| {
-                let diagnostic = ApolloDiagnostic::new(
-                    db,
-                    op.loc().into(),
-                    DiagnosticData::UnsupportedOperation { ty: "query" },
-                )
-                .label(Label::new(
-                    op.loc(),
-                    "Query operation is not defined in the schema and is therefore not supported",
-                ));
-                if let Some(schema_loc) = db.schema().loc() {
-                    diagnostic.label(Label::new(
-                        schema_loc,
-                        "Consider defining a `query` root operation type here",
-                    ))
-                } else {
-                    diagnostic
-                        .help("consider defining a `query` root operation type in your schema")
-                }
-            })
-            .collect();
+        let unsupported_ops: Vec<ApolloDiagnostic> =
+            queries
+                .iter()
+                .filter_map(|op| {
+                    if !op.is_introspection(db.upcast()) {
+                        let diagnostic = ApolloDiagnostic::new(
+                            db,
+                            op.loc().into(),
+                            DiagnosticData::UnsupportedOperation { ty: "query" },
+                        )
+                        .label(Label::new(
+                            op.loc(),
+                            "Query operation is not defined in the schema and is therefore not supported",
+                        ));
+                        if let Some(schema_loc) = db.schema().loc() {
+                            Some(diagnostic.label(Label::new(
+                                schema_loc,
+                                "Consider defining a `query` root operation type here",
+                            )))
+                        } else {
+                            Some(diagnostic.help(
+                                "consider defining a `query` root operation type in your schema",
+                            ))
+                        }
+                    } else {
+                        None
+                    }
+                })
+                .collect();
         diagnostics.extend(unsupported_ops)
     }
 

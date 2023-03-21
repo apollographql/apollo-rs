@@ -26,17 +26,20 @@ pub fn validate_field(
                 .any(|arg_def| arg.name() == arg_def.name());
 
             if !exists {
-                let diagnostic = ApolloDiagnostic::new(
-                    db,
-                    arg.loc.into(),
-                    DiagnosticData::UndefinedArgument {
-                        name: arg.name().into(),
-                    },
-                )
-                .label(Label::new(arg.loc, "argument by this name not found"))
-                .label(Label::new(field_definition.loc, "field declared here"));
-
-                diagnostics.push(diagnostic);
+                let mut labels = vec![Label::new(arg.loc, "argument name not found")];
+                if let Some(loc) = field_definition.loc {
+                    labels.push(Label::new(loc, "field declared here"));
+                };
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        arg.loc.into(),
+                        DiagnosticData::UndefinedArgument {
+                            name: arg.name().into(),
+                        },
+                    )
+                    .labels(labels),
+                );
             }
         }
 
@@ -150,10 +153,12 @@ pub fn validate_field_definitions(
         //
         // Returns Unique Field error.
         let fname = field.name();
-        let redefined_definition = field.loc();
+        let redefined_definition = field.loc().expect("undefined field definition location");
 
         if let Some(prev_field) = seen.get(fname) {
-            let original_definition = prev_field.loc();
+            let original_definition = prev_field
+                .loc()
+                .expect("undefined field definition location");
 
             diagnostics.push(
                 ApolloDiagnostic::new(
@@ -181,14 +186,15 @@ pub fn validate_field_definitions(
         }
 
         // Field types in Object Types must be of output type
+        let loc = field.loc().expect("undefined field definition location");
         if let Some(field_ty) = field.ty().type_def(db.upcast()) {
             if !field.ty().is_output_type(db.upcast()) {
                 diagnostics.push(
-                    ApolloDiagnostic::new(db, field.loc().into(), DiagnosticData::OutputType {
+                    ApolloDiagnostic::new(db, loc.into(), DiagnosticData::OutputType {
                         name: field.name().into(),
                         ty: field_ty.kind(),
                     })
-                        .label(Label::new(field.loc(), format!("this is of `{}` type", field_ty.kind())))
+                        .label(Label::new(loc, format!("this is of `{}` type", field_ty.kind())))
                         .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
                 );
             }
@@ -207,12 +213,12 @@ pub fn validate_field_definitions(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    field.loc().into(),
+                    loc.into(),
                     DiagnosticData::UndefinedDefinition {
                         name: field.ty().name(),
                     },
                 )
-                .label(Label::new(field.loc(), "not found in this scope")),
+                .label(Label::new(loc, "not found in this scope")),
             );
         }
     }
@@ -270,33 +276,5 @@ pub fn validate_leaf_field_selection(
             Err(diagnostic.label(Label::new(type_def_loc, s)))
         }
         None => Err(diagnostic),
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use crate::ApolloCompiler;
-
-    #[test]
-    fn it_fails_validation_missing_type() {
-        let input = r#"
-type Query {
-  id: String
-  name: String
-  birthday: Date
-}
-
-{
-  __schema
-}
-"#;
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_document(input, "schema.graphql");
-
-        let diagnostics = compiler.validate();
-        for diagnostic in &diagnostics {
-            println!("{diagnostic}")
-        }
-        assert_eq!(diagnostics.len(), 2)
     }
 }
