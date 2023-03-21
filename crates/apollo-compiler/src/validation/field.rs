@@ -278,3 +278,54 @@ pub fn validate_leaf_field_selection(
         None => Err(diagnostic),
     }
 }
+#[cfg(test)]
+mod test {
+    use crate::ApolloCompiler;
+
+    #[test]
+    fn it_fails_validation_with_introspection_type_in_mutation() {
+        let input = r#"
+query getProduct {
+  size
+  topProducts {
+    __type(name: "User") {
+        name
+        fields {
+        name
+        type {
+            name
+        }
+        }
+    }
+    name
+    inStock
+  }
+}
+
+type Query {
+  topProducts: Product
+  name: String
+  size: Int
+}
+
+type Product {
+  inStock: Boolean @join__field(graph: INVENTORY)
+  name: String @join__field(graph: PRODUCTS)
+  price: Int
+  shippingEstimate: Int
+  upc: String!
+  weight: Int
+}
+
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
+            "#;
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{diagnostic}")
+        }
+        assert_eq!(diagnostics.len(), 1)
+    }
+}

@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            142: "src/implicit_types.graphql",
             143: "0075_merge_conflicting_args.graphql",
+            142: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -56,8 +56,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            142: "src/implicit_types.graphql",
             143: "0075_merge_conflicting_args.graphql",
+            142: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -111,8 +111,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            142: "src/implicit_types.graphql",
             143: "0075_merge_conflicting_args.graphql",
+            142: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -166,8 +166,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            142: "src/implicit_types.graphql",
             143: "0075_merge_conflicting_args.graphql",
+            142: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -221,8 +221,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            142: "src/implicit_types.graphql",
             143: "0075_merge_conflicting_args.graphql",
+            142: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

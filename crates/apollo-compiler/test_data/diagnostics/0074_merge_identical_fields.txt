@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            141: "0074_merge_identical_fields.graphql",
             140: "src/implicit_types.graphql",
+            141: "0074_merge_identical_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -56,8 +56,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            141: "0074_merge_identical_fields.graphql",
             140: "src/implicit_types.graphql",
+            141: "0074_merge_identical_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

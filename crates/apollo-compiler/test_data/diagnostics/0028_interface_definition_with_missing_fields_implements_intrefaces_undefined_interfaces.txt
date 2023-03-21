@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            55: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
             54: "src/implicit_types.graphql",
+            55: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -30,8 +30,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            55: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
             54: "src/implicit_types.graphql",
+            55: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -59,8 +59,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            55: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
             54: "src/implicit_types.graphql",
+            55: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

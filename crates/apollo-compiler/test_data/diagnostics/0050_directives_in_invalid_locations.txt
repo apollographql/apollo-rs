@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -34,8 +34,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -85,8 +85,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -136,8 +136,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -187,8 +187,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -238,8 +238,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -271,8 +271,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -304,8 +304,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -337,8 +337,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -388,8 +388,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -421,8 +421,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -454,8 +454,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -487,8 +487,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -520,8 +520,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -553,8 +553,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -604,8 +604,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -655,8 +655,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -688,8 +688,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -739,8 +739,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            99: "0050_directives_in_invalid_locations.graphql",
             98: "src/implicit_types.graphql",
+            99: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

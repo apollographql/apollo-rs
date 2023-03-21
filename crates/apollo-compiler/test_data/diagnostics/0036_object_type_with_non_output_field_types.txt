@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            71: "0036_object_type_with_non_output_field_types.graphql",
             70: "src/implicit_types.graphql",
+            71: "0036_object_type_with_non_output_field_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -30,8 +30,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            71: "0036_object_type_with_non_output_field_types.graphql",
             70: "src/implicit_types.graphql",
+            71: "0036_object_type_with_non_output_field_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -59,8 +59,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            71: "0036_object_type_with_non_output_field_types.graphql",
             70: "src/implicit_types.graphql",
+            71: "0036_object_type_with_non_output_field_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -91,8 +91,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            71: "0036_object_type_with_non_output_field_types.graphql",
             70: "src/implicit_types.graphql",
+            71: "0036_object_type_with_non_output_field_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

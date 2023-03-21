@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            33: "0017_schema_with_unspecified_scalar.graphql",
             32: "src/implicit_types.graphql",
+            33: "0017_schema_with_unspecified_scalar.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

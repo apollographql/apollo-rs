@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            88: "src/implicit_types.graphql",
             89: "0045_operation_with_unused_variable_in_fragment.graphql",
+            88: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -30,8 +30,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            88: "src/implicit_types.graphql",
             89: "0045_operation_with_unused_variable_in_fragment.graphql",
+            88: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

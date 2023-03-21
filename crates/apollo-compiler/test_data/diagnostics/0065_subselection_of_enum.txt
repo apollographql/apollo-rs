@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            129: "0065_subselection_of_enum.graphql",
             128: "src/implicit_types.graphql",
+            129: "0065_subselection_of_enum.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -38,8 +38,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            129: "0065_subselection_of_enum.graphql",
             128: "src/implicit_types.graphql",
+            129: "0065_subselection_of_enum.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -75,8 +75,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            129: "0065_subselection_of_enum.graphql",
             128: "src/implicit_types.graphql",
+            129: "0065_subselection_of_enum.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -112,8 +112,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            129: "0065_subselection_of_enum.graphql",
             128: "src/implicit_types.graphql",
+            129: "0065_subselection_of_enum.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -149,8 +149,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            129: "0065_subselection_of_enum.graphql",
             128: "src/implicit_types.graphql",
+            129: "0065_subselection_of_enum.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -186,8 +186,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            129: "0065_subselection_of_enum.graphql",
             128: "src/implicit_types.graphql",
+            129: "0065_subselection_of_enum.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

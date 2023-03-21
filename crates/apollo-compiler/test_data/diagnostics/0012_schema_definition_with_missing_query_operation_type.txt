@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            23: "0012_schema_definition_with_missing_query_operation_type.graphql",
             22: "src/implicit_types.graphql",
+            23: "0012_schema_definition_with_missing_query_operation_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

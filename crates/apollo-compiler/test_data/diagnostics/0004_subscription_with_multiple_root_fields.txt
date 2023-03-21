@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            6: "src/implicit_types.graphql",
             7: "0004_subscription_with_multiple_root_fields.graphql",
+            6: "src/implicit_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

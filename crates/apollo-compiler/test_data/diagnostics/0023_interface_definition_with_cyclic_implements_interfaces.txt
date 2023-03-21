@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            45: "0023_interface_definition_with_cyclic_implements_interfaces.graphql",
             44: "src/implicit_types.graphql",
+            45: "0023_interface_definition_with_cyclic_implements_interfaces.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

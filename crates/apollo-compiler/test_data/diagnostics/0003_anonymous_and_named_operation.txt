@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            5: "0003_anonymous_and_named_operation.graphql",
             4: "src/implicit_types.graphql",
+            5: "0003_anonymous_and_named_operation.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -40,8 +40,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            5: "0003_anonymous_and_named_operation.graphql",
             4: "src/implicit_types.graphql",
+            5: "0003_anonymous_and_named_operation.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

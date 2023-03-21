@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            13: "0007_operation_with_undefined_variables.graphql",
             12: "src/implicit_types.graphql",
+            13: "0007_operation_with_undefined_variables.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

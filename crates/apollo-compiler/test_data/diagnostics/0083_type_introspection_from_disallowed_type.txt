@@ -1,0 +1,43 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            159: "0083_type_introspection_from_disallowed_type.graphql",
+            158: "src/implicit_types.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 159,
+            },
+            offset: 46,
+            length: 123,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 159,
+                    },
+                    offset: 46,
+                    length: 123,
+                },
+                text: "`__type` field is not defined",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 159,
+                    },
+                    offset: 264,
+                    length: 177,
+                },
+                text: "`Product` declared here",
+            },
+        ],
+        help: Some(
+            "`__type` is not defined on `Product` type",
+        ),
+        data: UndefinedField {
+            field: "__type",
+        },
+    },
+]

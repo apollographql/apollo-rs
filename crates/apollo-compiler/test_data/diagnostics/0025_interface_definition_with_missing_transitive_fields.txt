@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            49: "0025_interface_definition_with_missing_transitive_fields.graphql",
             48: "src/implicit_types.graphql",
+            49: "0025_interface_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
