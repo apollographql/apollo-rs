@@ -1997,26 +1997,7 @@ impl ObjectTypeDefinition {
             ObjectTypeExtension::fields_definition,
         )
     }
-    /// Introspection fields that must not be returned as part of `fields` method.
-    // pub(crate) fn implicit_fields_2(
-    //     &self,
-    //     db: &dyn HirDatabase,
-    // ) -> impl Iterator<Item = FieldDefinition> + ExactSizeIterator + DoubleEndedIterator {
-    //     if db
-    //         .schema()
-    //         .root_operations()
-    //         .any(|op| op.operation_ty().is_query() && op.named_type().name() == self.name())
-    //     {
-    //         self.implicit_fields.iter().cloned()
-    //     } else {
-    //         self.implicit_fields
-    //             .iter()
-    //             .filter(|f| f.name() == "__typename")
-    //             .cloned()
-    //             .collect::<Vec<FieldDefinition>>()
-    //             .into_iter()
-    //     }
-    // }
+
     /// Introspection fields that must not be returned as part of `fields` method.
     pub(crate) fn implicit_fields(&self, db: &dyn HirDatabase) -> &[FieldDefinition] {
         let is_root_query = db
