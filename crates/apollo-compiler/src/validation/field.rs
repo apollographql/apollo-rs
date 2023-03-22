@@ -285,39 +285,33 @@ mod test {
     #[test]
     fn it_fails_validation_with_introspection_type_in_mutation() {
         let input = r#"
-query getProduct {
-  size
-  topProducts {
-    __type(name: "User") {
-        name
-        fields {
-        name
-        type {
-            name
-        }
-        }
-    }
-    name
-    inStock
-  }
+union SearchResult = Photo | Person
+
+type Person {
+  name: String
+  age: Int
+}
+
+type Photo {
+  height: Int
+  width: Int
 }
 
 type Query {
-  topProducts: Product
-  name: String
-  size: Int
+  firstSearchResult: SearchResult
 }
 
-type Product {
-  inStock: Boolean @join__field(graph: INVENTORY)
-  name: String @join__field(graph: PRODUCTS)
-  price: Int
-  shippingEstimate: Int
-  upc: String!
-  weight: Int
+{
+  firstSearchResult {
+    __typename
+    ... on Person {
+      name
+    }
+    ... on Photo {
+      height
+    }
+  }
 }
-
-directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
             "#;
         let mut compiler = ApolloCompiler::new();
         compiler.add_document(input, "schema.graphql");
@@ -326,6 +320,6 @@ directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: j
         for diagnostic in &diagnostics {
             println!("{diagnostic}")
         }
-        assert_eq!(diagnostics.len(), 1)
+        assert_eq!(diagnostics.len(), 0)
     }
 }

@@ -62,7 +62,6 @@ impl Source {
     }
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct FileId {
     id: u64,
 }

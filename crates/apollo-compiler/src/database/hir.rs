@@ -188,6 +188,13 @@ impl TypeDefinition {
                     None
                 })
             }
+            Self::UnionTypeDefinition(def) => {
+                if def.implicit_field().name() == name {
+                    Some(def.implicit_field())
+                } else {
+                    None
+                }
+            }
             _ => None,
         }
     }
@@ -2501,6 +2508,7 @@ pub struct UnionTypeDefinition {
     pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<UnionTypeExtension>>,
     pub(crate) members_by_name: ByNameWithExtensions,
+    pub(crate) implicit_field: FieldDefinition,
 }
 
 impl UnionTypeDefinition {
@@ -2601,6 +2609,10 @@ impl UnionTypeDefinition {
         self.members_by_name
             .add_extension(next_index, ext.union_members(), UnionMember::name);
         self.extensions.push(ext);
+    }
+
+    pub fn implicit_field(&self) -> &FieldDefinition {
+        &self.implicit_field
     }
 }
 

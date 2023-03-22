@@ -791,6 +791,7 @@ fn union_definition(
     let union_members = union_members(union_def.union_member_types(), file_id);
     let loc = location(file_id, union_def.syntax());
     let members_by_name = ByNameWithExtensions::new(&union_members, UnionMember::name);
+    let implicit_field = typename_field();
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -802,6 +803,7 @@ fn union_definition(
         loc,
         extensions: Vec::new(),
         members_by_name,
+        implicit_field,
     })
 }
 
