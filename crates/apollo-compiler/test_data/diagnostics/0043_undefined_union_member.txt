@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            85: "0043_undefined_union_member.graphql",
             84: "src/implicit_types.graphql",
+            85: "0043_undefined_union_member.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            95: "0048_duplicate_field_argument_definition_names.graphql",
             94: "src/implicit_types.graphql",
+            95: "0048_duplicate_field_argument_definition_names.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -56,8 +56,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            95: "0048_duplicate_field_argument_definition_names.graphql",
             94: "src/implicit_types.graphql",
+            95: "0048_duplicate_field_argument_definition_names.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

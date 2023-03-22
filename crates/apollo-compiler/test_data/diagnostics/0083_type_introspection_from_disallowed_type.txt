@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            159: "0083_type_introspection_from_disallowed_type.graphql",
             158: "src/implicit_types.graphql",
+            159: "0083_type_introspection_from_disallowed_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

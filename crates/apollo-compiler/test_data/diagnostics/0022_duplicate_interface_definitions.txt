@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            43: "0022_duplicate_interface_definitions.graphql",
             42: "src/implicit_types.graphql",
+            43: "0022_duplicate_interface_definitions.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

@@ -1,7 +1,7 @@
 use super::sources::{FileId, Source, SourceType};
 use crate::hir::TypeSystem;
 use ariadne::{Cache as AriadneCache, Source as AriadneSource};
-use std::collections::HashMap;
+use indexmap::IndexMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -14,8 +14,8 @@ struct UnknownFileError;
 /// Use [`InputDatabase::source_cache`] to construct one.
 #[derive(Clone, PartialEq, Eq)]
 pub struct SourceCache {
-    sources: HashMap<FileId, Arc<AriadneSource>>,
-    paths: HashMap<FileId, PathBuf>,
+    sources: IndexMap<FileId, Arc<AriadneSource>>,
+    paths: IndexMap<FileId, PathBuf>,
 }
 impl AriadneCache<FileId> for &SourceCache {
     fn fetch(&mut self, id: &FileId) -> Result<&AriadneSource, Box<dyn std::fmt::Debug>> {

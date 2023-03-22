@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            93: "0047_duplicate_field_arguments.graphql",
             92: "src/implicit_types.graphql",
+            93: "0047_duplicate_field_arguments.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
