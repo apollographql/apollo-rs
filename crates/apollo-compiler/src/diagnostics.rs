@@ -260,7 +260,7 @@ pub enum DiagnosticData {
         /// current location where the directive is used
         dir_loc: DirectiveLocation,
         /// The source location where the directive that's being used was defined.
-        directive_def: Option<DiagnosticLocation>,
+        directive_def: DiagnosticLocation,
     },
     #[error("non-repeatable directive {name} can only be used once per location")]
     UniqueDirective {

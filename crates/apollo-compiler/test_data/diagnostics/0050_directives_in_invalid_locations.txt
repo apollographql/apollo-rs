@@ -29,7 +29,13 @@
         data: UnsupportedLocation {
             name: "include",
             dir_loc: Schema,
-            directive_def: None,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 98,
+                },
+                offset: 1985,
+                length: 199,
+            },
         },
     },
     ApolloDiagnostic {
@@ -72,15 +78,13 @@
         data: UnsupportedLocation {
             name: "directiveB",
             dir_loc: Scalar,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1387,
-                    length: 29,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 99,
                 },
-            ),
+                offset: 1387,
+                length: 29,
+            },
         },
     },
     ApolloDiagnostic {
@@ -123,15 +127,13 @@
         data: UnsupportedLocation {
             name: "directiveA",
             dir_loc: Enum,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1356,
-                    length: 30,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 99,
                 },
-            ),
+                offset: 1356,
+                length: 30,
+            },
         },
     },
     ApolloDiagnostic {
@@ -174,15 +176,13 @@
         data: UnsupportedLocation {
             name: "directiveA",
             dir_loc: EnumValue,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1356,
-                    length: 30,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 99,
                 },
-            ),
+                offset: 1356,
+                length: 30,
+            },
         },
     },
     ApolloDiagnostic {
@@ -225,15 +225,13 @@
         data: UnsupportedLocation {
             name: "directiveB",
             dir_loc: Union,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1387,
-                    length: 29,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 99,
                 },
-            ),
+                offset: 1387,
+                length: 29,
+            },
         },
     },
     ApolloDiagnostic {
@@ -266,7 +264,13 @@
         data: UnsupportedLocation {
             name: "skip",
             dir_loc: Interface,
-            directive_def: None,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 98,
+                },
+                offset: 1796,
+                length: 187,
+            },
         },
     },
     ApolloDiagnostic {
@@ -299,7 +303,13 @@
         data: UnsupportedLocation {
             name: "include",
             dir_loc: InputObject,
-            directive_def: None,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 98,
+                },
+                offset: 1985,
+                length: 199,
+            },
         },
     },
     ApolloDiagnostic {
@@ -332,7 +342,13 @@
         data: UnsupportedLocation {
             name: "include",
             dir_loc: InputFieldDefinition,
-            directive_def: None,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 98,
+                },
+                offset: 1985,
+                length: 199,
+            },
         },
     },
     ApolloDiagnostic {
@@ -375,15 +391,13 @@
         data: UnsupportedLocation {
             name: "directiveB",
             dir_loc: FieldDefinition,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1387,
-                    length: 29,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 99,
                 },
-            ),
+                offset: 1387,
+                length: 29,
+            },
         },
     },
     ApolloDiagnostic {
@@ -416,7 +430,13 @@
         data: UnsupportedLocation {
             name: "deprecated",
             dir_loc: Object,
-            directive_def: None,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 98,
+                },
+                offset: 2186,
+                length: 393,
+            },
         },
     },
     ApolloDiagnostic {
@@ -449,7 +469,13 @@
         data: UnsupportedLocation {
             name: "specifiedBy",
             dir_loc: ArgumentDefinition,
-            directive_def: None,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 98,
+                },
+                offset: 2581,
+                length: 172,
+            },
         },
     },
     ApolloDiagnostic {
@@ -482,7 +508,13 @@
         data: UnsupportedLocation {
             name: "skip",
             dir_loc: Query,
-            directive_def: None,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 98,
+                },
+                offset: 1796,
+                length: 187,
+            },
         },
     },
     ApolloDiagnostic {
@@ -515,7 +547,13 @@
         data: UnsupportedLocation {
             name: "skip",
             dir_loc: VariableDefinition,
-            directive_def: None,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 98,
+                },
+                offset: 1796,
+                length: 187,
+            },
         },
     },
     ApolloDiagnostic {
@@ -548,7 +586,13 @@
         data: UnsupportedLocation {
             name: "deprecated",
             dir_loc: Field,
-            directive_def: None,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 98,
+                },
+                offset: 2186,
+                length: 393,
+            },
         },
     },
     ApolloDiagnostic {
@@ -591,15 +635,13 @@
         data: UnsupportedLocation {
             name: "directiveB",
             dir_loc: FragmentSpread,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1387,
-                    length: 29,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 99,
                 },
-            ),
+                offset: 1387,
+                length: 29,
+            },
         },
     },
     ApolloDiagnostic {
@@ -642,15 +684,13 @@
         data: UnsupportedLocation {
             name: "directiveA",
             dir_loc: Subscription,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1356,
-                    length: 30,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 99,
                 },
-            ),
+                offset: 1356,
+                length: 30,
+            },
         },
     },
     ApolloDiagnostic {
@@ -683,7 +723,13 @@
         data: UnsupportedLocation {
             name: "skip",
             dir_loc: Mutation,
-            directive_def: None,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 98,
+                },
+                offset: 1796,
+                length: 187,
+            },
         },
     },
     ApolloDiagnostic {
@@ -726,15 +772,13 @@
         data: UnsupportedLocation {
             name: "directiveB",
             dir_loc: FragmentDefinition,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1387,
-                    length: 29,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 99,
                 },
-            ),
+                offset: 1387,
+                length: 29,
+            },
         },
     },
     ApolloDiagnostic {
@@ -777,15 +821,13 @@
         data: UnsupportedLocation {
             name: "directiveA",
             dir_loc: InlineFragment,
-            directive_def: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1356,
-                    length: 30,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 99,
                 },
-            ),
+                offset: 1356,
+                length: 30,
+            },
         },
     },
 ]

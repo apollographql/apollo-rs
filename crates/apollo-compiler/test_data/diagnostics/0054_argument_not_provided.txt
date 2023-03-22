@@ -22,6 +22,16 @@
                 },
                 text: "missing value for argument `if`",
             },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 106,
+                    },
+                    offset: 1901,
+                    length: 35,
+                },
+                text: "argument defined here",
+            },
         ],
         help: None,
         data: RequiredArgument {
@@ -51,6 +61,16 @@
                 },
                 text: "argument by this name not found",
             },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 107,
+                    },
+                    offset: 373,
+                    length: 22,
+                },
+                text: "directive declared here",
+            },
         ],
         help: None,
         data: UndefinedArgument {
@@ -79,6 +99,16 @@
                     length: 22,
                 },
                 text: "missing value for argument `if`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 106,
+                    },
+                    offset: 2101,
+                    length: 36,
+                },
+                text: "argument defined here",
             },
         ],
         help: None,

@@ -108,14 +108,14 @@ pub fn validate_directives(
                         DiagnosticData::UnsupportedLocation {
                             name: name.into(),
                             dir_loc,
-                            directive_def: directive_definition.loc.map(|loc| loc.into()),
+                            directive_def: directive_definition.loc.into(),
                         },
                 )
                     .label(Label::new(loc, format!("{dir_loc} is not a valid location")))
                     .help("the directive must be used in a location that the service has declared support for");
-                if let Some(directive_def_loc) = directive_definition.loc {
+                if !directive_definition.is_built_in() {
                     diag = diag.label(Label::new(
-                        directive_def_loc,
+                        directive_definition.loc,
                         format!("consider adding {dir_loc} directive location here"),
                     ));
                 }
@@ -130,19 +130,17 @@ pub fn validate_directives(
                     .any(|arg_def| arg.name() == arg_def.name());
 
                 if !exists {
-                    let mut diagnostic = ApolloDiagnostic::new(
-                        db,
-                        arg.loc.into(),
-                        DiagnosticData::UndefinedArgument {
-                            name: arg.name().into(),
-                        },
-                    )
-                    .label(Label::new(arg.loc, "argument by this name not found"));
-                    if let Some(loc) = directive_definition.loc {
-                        diagnostic = diagnostic.label(Label::new(loc, "directive declared here"));
-                    }
-
-                    diagnostics.push(diagnostic);
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            arg.loc.into(),
+                            DiagnosticData::UndefinedArgument {
+                                name: arg.name().into(),
+                            },
+                        )
+                        .label(Label::new(arg.loc, "argument by this name not found"))
+                        .label(Label::new(loc, "directive declared here")),
+                    );
                 }
             }
 

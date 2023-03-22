@@ -449,7 +449,7 @@ fn directive_definitions(db: &dyn HirDatabase) -> ByName<DirectiveDefinition> {
         // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
         return precomputed.definitions.directives.clone();
     }
-    Arc::new(built_in_directives(by_name!(db, directive_definition)))
+    Arc::new(by_name!(db, directive_definition))
 }
 
 fn operation_definition(
@@ -916,7 +916,7 @@ fn directive_definition(
         arguments,
         repeatable,
         directive_locations,
-        loc: Some(loc),
+        loc,
     })
 }
 
@@ -1617,171 +1617,5 @@ fn id_scalar() -> ScalarTypeDefinition {
         loc: None,
         built_in: true,
         extensions: Vec::new(),
-    }
-}
-
-fn built_in_directives(
-    mut directives: IndexMap<String, Arc<DirectiveDefinition>>,
-) -> IndexMap<String, Arc<DirectiveDefinition>> {
-    directives
-        .entry("skip".to_owned())
-        .or_insert_with(|| Arc::new(skip_directive()));
-    directives
-        .entry("specifiedBy".to_owned())
-        .or_insert_with(|| Arc::new(specified_by_directive()));
-    directives
-        .entry("deprecated".to_owned())
-        .or_insert_with(|| Arc::new(deprecated_directive()));
-    directives
-        .entry("include".to_owned())
-        .or_insert_with(|| Arc::new(include_directive()));
-    directives
-}
-
-fn skip_directive() -> DirectiveDefinition {
-    // "Directs the executor to skip this field or fragment when the `if` argument is true."
-    // directive @skip(
-    //   "Skipped when true."
-    //   if: Boolean!
-    // ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-    DirectiveDefinition {
-        description: Some(
-            "Directs the executor to skip this field or fragment when the `if` argument is true."
-                .into(),
-        ),
-        name: "skip".to_string().into(),
-        arguments: ArgumentsDefinition {
-            input_values: Arc::new(vec![InputValueDefinition {
-                description: Some("Skipped when true.".into()),
-                name: "if".to_string().into(),
-                ty: Type::NonNull {
-                    ty: Box::new(Type::Named {
-                        name: "Boolean".into(),
-                        loc: None,
-                    }),
-                    loc: None,
-                },
-                default_value: None,
-                directives: Arc::new(Vec::new()),
-                loc: None,
-            }]),
-            loc: None,
-        },
-        repeatable: false,
-        directive_locations: Arc::new(vec![
-            DirectiveLocation::Field,
-            DirectiveLocation::FragmentSpread,
-            DirectiveLocation::InlineFragment,
-        ]),
-        loc: None,
-    }
-}
-
-fn specified_by_directive() -> DirectiveDefinition {
-    // "Exposes a URL that specifies the behaviour of this scalar."
-    // directive @specifiedBy(
-    //     "The URL that specifies the behaviour of this scalar."
-    //     url: String!
-    // ) on SCALAR
-    DirectiveDefinition {
-        description: Some("Exposes a URL that specifies the behaviour of this scalar.".into()),
-        name: "specifiedBy".to_string().into(),
-        arguments: ArgumentsDefinition {
-            input_values: Arc::new(vec![InputValueDefinition {
-                description: Some("The URL that specifies the behaviour of this scalar.".into()),
-                name: "url".to_string().into(),
-                ty: Type::NonNull {
-                    ty: Box::new(Type::Named {
-                        name: "String".into(),
-                        loc: None,
-                    }),
-                    loc: None,
-                },
-                default_value: None,
-                directives: Arc::new(Vec::new()),
-                loc: None,
-            }]),
-            loc: None,
-        },
-        repeatable: false,
-        directive_locations: Arc::new(vec![DirectiveLocation::Scalar]),
-        loc: None,
-    }
-}
-
-fn deprecated_directive() -> DirectiveDefinition {
-    // "Marks an element of a GraphQL schema as no longer supported."
-    // directive @deprecated(
-    //   """
-    //   Explains why this element was deprecated, usually also including a
-    //   suggestion for how to access supported similar data. Formatted using
-    //   the Markdown syntax, as specified by
-    //   [CommonMark](https://commonmark.org/).
-    //   """
-    //   reason: String = "No longer supported"
-    // ) on FIELD_DEFINITION | ENUM_VALUE
-    DirectiveDefinition {
-        description: Some("Marks an element of a GraphQL schema as no longer supported.".into()),
-        name: "deprecated".to_string().into(),
-        arguments: ArgumentsDefinition {
-            input_values: Arc::new(vec![InputValueDefinition {
-                description: Some(
-                                 "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).".into(),
-                                 ),
-                                 name: "reason".to_string().into(),
-                                 ty: Type::Named {
-                                     name: "String".into(),
-                                     loc: None,
-                                 },
-                                 default_value: Some(DefaultValue::String("No longer supported".into())),
-                                 directives: Arc::new(Vec::new()),
-                                 loc: None
-            }]),
-            loc: None
-        },
-        repeatable: false,
-        directive_locations: Arc::new(vec![
-                                      DirectiveLocation::FieldDefinition,
-                                      DirectiveLocation::EnumValue
-        ]),
-        loc: None
-    }
-}
-
-fn include_directive() -> DirectiveDefinition {
-    // "Directs the executor to include this field or fragment only when the `if` argument is true."
-    // directive @include(
-    //   "Included when true."
-    //   if: Boolean!
-    // ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-    DirectiveDefinition {
-        description: Some("Directs the executor to include this field or fragment only when the `if` argument is true.".into()),
-        name: "include".to_string().into(),
-        arguments: ArgumentsDefinition {
-            input_values: Arc::new(vec![InputValueDefinition {
-                description: Some(
-                                 "Included when true.".into(),
-                                 ),
-                                 name: "if".to_string().into(),
-                                 ty: Type::NonNull {
-                                     ty: Box::new(Type::Named {
-                                         name: "Boolean".into(),
-                                         loc: None,
-                                     }),
-                                     loc: None,
-                                 },
-                                 default_value: None,
-                                 directives: Arc::new(Vec::new()),
-                                 loc: None
-            }]),
-            loc: None
-        },
-        repeatable: false,
-        directive_locations: Arc::new(vec![
-                                      DirectiveLocation::Field,
-                                      DirectiveLocation::FragmentSpread,
-                                      DirectiveLocation::InlineFragment,
-        ]),
-        loc: None
     }
 }

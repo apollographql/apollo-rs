@@ -817,7 +817,7 @@ pub struct DirectiveDefinition {
     pub(crate) arguments: ArgumentsDefinition,
     pub(crate) repeatable: bool,
     pub(crate) directive_locations: Arc<Vec<DirectiveLocation>>,
-    pub(crate) loc: Option<HirNodeLocation>,
+    pub(crate) loc: HirNodeLocation,
 }
 
 impl DirectiveDefinition {
@@ -852,8 +852,17 @@ impl DirectiveDefinition {
     }
 
     /// Get the AST location information for this HIR node.
-    pub fn loc(&self) -> Option<HirNodeLocation> {
+    pub fn loc(&self) -> HirNodeLocation {
         self.loc
+    }
+
+    /// Checks if current directive is one of built-in directives - `@skip`,
+    /// `@include`, `@deprecated`, `@specifiedBy`.
+    pub fn is_built_in(&self) -> bool {
+        matches!(
+            self.name(),
+            "skip" | "include" | "deprecated" | "specifiedBy"
+        )
     }
 }
 
