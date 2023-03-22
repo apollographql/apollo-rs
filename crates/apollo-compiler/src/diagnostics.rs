@@ -191,7 +191,7 @@ pub enum DiagnosticData {
         /// Name of the type being extended
         name: String,
         /// Location of the original definition. This may be None when extending a builtin GraphQL type.
-        definition: Option<DiagnosticLocation>,
+        definition: DiagnosticLocation,
         /// Location of the extension
         extension: DiagnosticLocation,
     },

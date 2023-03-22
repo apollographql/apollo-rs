@@ -139,7 +139,7 @@ fn type_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {
         .filter(|source| {
             matches!(
                 db.source_type(*source),
-                SourceType::Schema | SourceType::Document
+                SourceType::Schema | SourceType::Document | SourceType::BuiltIn
             )
         })
         .collect()

@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            28: "src/implicit_types.graphql",
+            28: "src/built_in_types.graphql",
             29: "0015_mutation_operation_without_mutation_schema_definition.graphql",
         },
         location: DiagnosticLocation {

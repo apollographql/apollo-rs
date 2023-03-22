@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            54: "src/implicit_types.graphql",
+            54: "src/built_in_types.graphql",
             55: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
         location: DiagnosticLocation {
@@ -30,7 +30,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            54: "src/implicit_types.graphql",
+            54: "src/built_in_types.graphql",
             55: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
         location: DiagnosticLocation {
@@ -59,7 +59,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            54: "src/implicit_types.graphql",
+            54: "src/built_in_types.graphql",
             55: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
         },
         location: DiagnosticLocation {

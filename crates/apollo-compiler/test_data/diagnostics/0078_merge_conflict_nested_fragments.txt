@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            148: "src/implicit_types.graphql",
+            148: "src/built_in_types.graphql",
             149: "0078_merge_conflict_nested_fragments.graphql",
         },
         location: DiagnosticLocation {
@@ -56,7 +56,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            148: "src/implicit_types.graphql",
+            148: "src/built_in_types.graphql",
             149: "0078_merge_conflict_nested_fragments.graphql",
         },
         location: DiagnosticLocation {

@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            40: "src/implicit_types.graphql",
+            40: "src/built_in_types.graphql",
             41: "0021_union_definition_with_duplicate_members.graphql",
         },
         location: DiagnosticLocation {

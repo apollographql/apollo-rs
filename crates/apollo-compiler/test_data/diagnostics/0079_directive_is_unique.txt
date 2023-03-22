@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            150: "src/implicit_types.graphql",
+            150: "src/built_in_types.graphql",
             151: "0079_directive_is_unique.graphql",
         },
         location: DiagnosticLocation {

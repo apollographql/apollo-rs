@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            52: "src/implicit_types.graphql",
+            52: "src/built_in_types.graphql",
             53: "0027_interface_definition_with_undefined_implements_interface.graphql",
         },
         location: DiagnosticLocation {

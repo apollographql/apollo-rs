@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            72: "src/implicit_types.graphql",
+            72: "src/built_in_types.graphql",
             73: "0037_interface_with_non_output_fields.graphql",
         },
         location: DiagnosticLocation {
@@ -30,7 +30,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            72: "src/implicit_types.graphql",
+            72: "src/built_in_types.graphql",
             73: "0037_interface_with_non_output_fields.graphql",
         },
         location: DiagnosticLocation {
@@ -59,7 +59,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            72: "src/implicit_types.graphql",
+            72: "src/built_in_types.graphql",
             73: "0037_interface_with_non_output_fields.graphql",
         },
         location: DiagnosticLocation {
@@ -91,7 +91,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            72: "src/implicit_types.graphql",
+            72: "src/built_in_types.graphql",
             73: "0037_interface_with_non_output_fields.graphql",
         },
         location: DiagnosticLocation {

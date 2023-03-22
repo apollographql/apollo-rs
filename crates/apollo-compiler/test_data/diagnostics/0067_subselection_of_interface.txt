@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            132: "src/implicit_types.graphql",
+            132: "src/built_in_types.graphql",
             133: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {
@@ -38,7 +38,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            132: "src/implicit_types.graphql",
+            132: "src/built_in_types.graphql",
             133: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {
@@ -75,7 +75,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            132: "src/implicit_types.graphql",
+            132: "src/built_in_types.graphql",
             133: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {
@@ -112,7 +112,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            132: "src/implicit_types.graphql",
+            132: "src/built_in_types.graphql",
             133: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {
@@ -149,7 +149,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            132: "src/implicit_types.graphql",
+            132: "src/built_in_types.graphql",
             133: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {
@@ -186,7 +186,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            132: "src/implicit_types.graphql",
+            132: "src/built_in_types.graphql",
             133: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {

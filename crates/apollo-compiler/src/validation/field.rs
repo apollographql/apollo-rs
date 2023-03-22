@@ -105,7 +105,7 @@ pub fn validate_field(
 
         let parent_type_loc = db
             .find_type_definition_by_name(field.parent_obj.clone().unwrap())
-            .and_then(|type_def| type_def.loc());
+            .map(|type_def| type_def.loc());
 
         let diagnostic = if let Some(parent_type_loc) = parent_type_loc {
             diagnostic.label(Label::new(
@@ -267,14 +267,10 @@ pub fn validate_leaf_field_selection(
         (label, DiagnosticData::DisallowedSubselection)
     };
 
-    let diagnostic = ApolloDiagnostic::new(db, field.loc.into(), diagnostic_data)
-        .label(Label::new(field.loc, label));
-
-    match type_def.loc() {
-        Some(type_def_loc) => {
-            let s = format!("`{tname}` declared here");
-            Err(diagnostic.label(Label::new(type_def_loc, s)))
-        }
-        None => Err(diagnostic),
-    }
+    Err(ApolloDiagnostic::new(db, field.loc.into(), diagnostic_data)
+        .label(Label::new(field.loc, label))
+        .label(Label::new(
+            type_def.loc(),
+            format!("`{tname}` declared here"),
+        )))
 }

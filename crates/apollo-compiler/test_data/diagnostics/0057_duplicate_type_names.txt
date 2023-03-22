@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            112: "src/implicit_types.graphql",
+            112: "src/built_in_types.graphql",
             113: "0057_duplicate_type_names.graphql",
         },
         location: DiagnosticLocation {
@@ -57,7 +57,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            112: "src/implicit_types.graphql",
+            112: "src/built_in_types.graphql",
             113: "0057_duplicate_type_names.graphql",
         },
         location: DiagnosticLocation {
@@ -113,7 +113,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            112: "src/implicit_types.graphql",
+            112: "src/built_in_types.graphql",
             113: "0057_duplicate_type_names.graphql",
         },
         location: DiagnosticLocation {
@@ -169,7 +169,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            112: "src/implicit_types.graphql",
+            112: "src/built_in_types.graphql",
             113: "0057_duplicate_type_names.graphql",
         },
         location: DiagnosticLocation {

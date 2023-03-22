@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            4: "src/implicit_types.graphql",
+            4: "src/built_in_types.graphql",
             5: "0003_anonymous_and_named_operation.graphql",
         },
         location: DiagnosticLocation {
@@ -40,7 +40,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            4: "src/implicit_types.graphql",
+            4: "src/built_in_types.graphql",
             5: "0003_anonymous_and_named_operation.graphql",
         },
         location: DiagnosticLocation {

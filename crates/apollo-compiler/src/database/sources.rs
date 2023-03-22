@@ -8,6 +8,41 @@ pub enum SourceType {
     Schema,
     Query,
     Document,
+    BuiltIn,
+}
+
+impl SourceType {
+    /// Returns `true` if the source type is [`BuiltIn`].
+    ///
+    /// [`BuiltIn`]: SourceType::BuiltIn
+    #[must_use]
+    pub fn is_built_in(&self) -> bool {
+        matches!(self, Self::BuiltIn)
+    }
+
+    /// Returns `true` if the source type is [`Document`].
+    ///
+    /// [`Document`]: SourceType::Document
+    #[must_use]
+    pub fn is_document(&self) -> bool {
+        matches!(self, Self::Document)
+    }
+
+    /// Returns `true` if the source type is [`Query`].
+    ///
+    /// [`Query`]: SourceType::Query
+    #[must_use]
+    pub fn is_query(&self) -> bool {
+        matches!(self, Self::Query)
+    }
+
+    /// Returns `true` if the source type is [`Schema`].
+    ///
+    /// [`Schema`]: SourceType::Schema
+    #[must_use]
+    pub fn is_schema(&self) -> bool {
+        matches!(self, Self::Schema)
+    }
 }
 
 /// Represents a GraphQL source file.
@@ -44,6 +79,14 @@ impl Source {
     pub fn document(filename: PathBuf, text: impl Into<Arc<str>>) -> Self {
         Self {
             ty: SourceType::Document,
+            filename,
+            text: text.into(),
+        }
+    }
+    /// Create a GraphQL type system file with built in types.
+    pub(crate) fn built_in(filename: PathBuf, text: impl Into<Arc<str>>) -> Self {
+        Self {
+            ty: SourceType::BuiltIn,
             filename,
             text: text.into(),
         }

@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            66: "src/implicit_types.graphql",
+            66: "src/built_in_types.graphql",
             67: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {
@@ -42,7 +42,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            66: "src/implicit_types.graphql",
+            66: "src/built_in_types.graphql",
             67: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {

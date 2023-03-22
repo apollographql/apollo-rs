@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            142: "src/implicit_types.graphql",
+            142: "src/built_in_types.graphql",
             143: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -56,7 +56,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            142: "src/implicit_types.graphql",
+            142: "src/built_in_types.graphql",
             143: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -111,7 +111,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            142: "src/implicit_types.graphql",
+            142: "src/built_in_types.graphql",
             143: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -166,7 +166,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            142: "src/implicit_types.graphql",
+            142: "src/built_in_types.graphql",
             143: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -221,7 +221,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            142: "src/implicit_types.graphql",
+            142: "src/built_in_types.graphql",
             143: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {

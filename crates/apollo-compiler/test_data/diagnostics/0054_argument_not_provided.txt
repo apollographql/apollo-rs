@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            106: "src/implicit_types.graphql",
+            106: "src/built_in_types.graphql",
             107: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -40,7 +40,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            106: "src/implicit_types.graphql",
+            106: "src/built_in_types.graphql",
             107: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -79,7 +79,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            106: "src/implicit_types.graphql",
+            106: "src/built_in_types.graphql",
             107: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -118,7 +118,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            106: "src/implicit_types.graphql",
+            106: "src/built_in_types.graphql",
             107: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -157,7 +157,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            106: "src/implicit_types.graphql",
+            106: "src/built_in_types.graphql",
             107: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -196,7 +196,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            106: "src/implicit_types.graphql",
+            106: "src/built_in_types.graphql",
             107: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -235,7 +235,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            106: "src/implicit_types.graphql",
+            106: "src/built_in_types.graphql",
             107: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -274,7 +274,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            106: "src/implicit_types.graphql",
+            106: "src/built_in_types.graphql",
             107: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -313,7 +313,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            106: "src/implicit_types.graphql",
+            106: "src/built_in_types.graphql",
             107: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {

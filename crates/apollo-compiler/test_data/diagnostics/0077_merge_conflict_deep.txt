@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            146: "src/implicit_types.graphql",
+            146: "src/built_in_types.graphql",
             147: "0077_merge_conflict_deep.graphql",
         },
         location: DiagnosticLocation {

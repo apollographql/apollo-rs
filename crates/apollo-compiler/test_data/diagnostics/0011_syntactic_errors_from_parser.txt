@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            20: "src/implicit_types.graphql",
+            20: "src/built_in_types.graphql",
             21: "0011_syntactic_errors_from_parser.graphql",
         },
         location: DiagnosticLocation {

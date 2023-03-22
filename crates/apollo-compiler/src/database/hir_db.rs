@@ -397,11 +397,11 @@ fn scalars(db: &dyn HirDatabase) -> ByName<ScalarTypeDefinition> {
         // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
         return precomputed.definitions.scalars.clone();
     }
-    Arc::new(built_in_scalars(by_name_extensible!(
+    Arc::new(by_name_extensible!(
         db,
         scalar_definition,
         ScalarTypeExtension
-    )))
+    ))
 }
 
 fn enums(db: &dyn HirDatabase) -> ByName<EnumTypeDefinition> {
@@ -675,7 +675,7 @@ fn object_type_extension(
 }
 
 fn scalar_definition(
-    _db: &dyn HirDatabase,
+    db: &dyn HirDatabase,
     scalar_def: ast::ScalarTypeDefinition,
     file_id: FileId,
 ) -> Option<ScalarTypeDefinition> {
@@ -683,6 +683,7 @@ fn scalar_definition(
     let name = name(scalar_def.name(), file_id)?;
     let directives = directives(scalar_def.directives(), file_id);
     let loc = location(file_id, scalar_def.syntax());
+    let built_in = db.input(file_id).source_type().is_built_in();
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -690,8 +691,8 @@ fn scalar_definition(
         description,
         name,
         directives,
-        loc: Some(loc),
-        built_in: false,
+        loc,
+        built_in,
         extensions: Vec::new(),
     })
 }
@@ -1545,77 +1546,4 @@ fn alias(alias: Option<ast::Alias>) -> Option<Arc<Alias>> {
 
 fn location(file_id: FileId, syntax_node: &SyntaxNode) -> HirNodeLocation {
     HirNodeLocation::new(file_id, syntax_node)
-}
-
-// Add `Int`, `Float`, `String`, `Boolean`, and `ID`
-fn built_in_scalars(
-    mut scalars: IndexMap<String, Arc<ScalarTypeDefinition>>,
-) -> IndexMap<String, Arc<ScalarTypeDefinition>> {
-    for built_in in [
-        int_scalar(),
-        float_scalar(),
-        string_scalar(),
-        boolean_scalar(),
-        id_scalar(),
-    ] {
-        scalars
-            .entry(built_in.name().to_owned())
-            .or_insert_with(|| Arc::new(built_in));
-    }
-    scalars
-}
-
-fn int_scalar() -> ScalarTypeDefinition {
-    ScalarTypeDefinition {
-        description: Some("The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.".into()),
-        name: "Int".to_string().into(),
-        directives: Arc::new(Vec::new()),
-        loc: None,
-        built_in: true,
-        extensions: Vec::new(),
-    }
-}
-
-fn float_scalar() -> ScalarTypeDefinition {
-    ScalarTypeDefinition {
-        description: Some("The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).".into()),
-        name: "Float".to_string().into(),
-        directives: Arc::new(Vec::new()),
-        loc: None,
-        built_in: true,
-        extensions: Vec::new(),
-    }
-}
-
-fn string_scalar() -> ScalarTypeDefinition {
-    ScalarTypeDefinition {
-        description: Some("The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.".into()),
-        name: "String".to_string().into(),
-        directives: Arc::new(Vec::new()),
-        loc: None,
-        built_in: true,
-        extensions: Vec::new(),
-    }
-}
-
-fn boolean_scalar() -> ScalarTypeDefinition {
-    ScalarTypeDefinition {
-        description: Some("The `Boolean` scalar type represents `true` or `false`.".into()),
-        name: "Boolean".to_string().into(),
-        directives: Arc::new(Vec::new()),
-        loc: None,
-        built_in: true,
-        extensions: Vec::new(),
-    }
-}
-
-fn id_scalar() -> ScalarTypeDefinition {
-    ScalarTypeDefinition {
-        description: Some("The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `\"4\"`) or integer (such as `4`) input value will be accepted as an ID.".into()),
-        name: "ID".to_string().into(),
-        directives: Arc::new(Vec::new()),
-        loc: None,
-        built_in: true,
-        extensions: Vec::new(),
-    }
 }

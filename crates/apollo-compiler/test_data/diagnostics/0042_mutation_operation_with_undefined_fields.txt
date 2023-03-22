@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            82: "src/implicit_types.graphql",
+            82: "src/built_in_types.graphql",
             83: "0042_mutation_operation_with_undefined_fields.graphql",
         },
         location: DiagnosticLocation {
@@ -30,7 +30,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            82: "src/implicit_types.graphql",
+            82: "src/built_in_types.graphql",
             83: "0042_mutation_operation_with_undefined_fields.graphql",
         },
         location: DiagnosticLocation {
@@ -59,7 +59,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            82: "src/implicit_types.graphql",
+            82: "src/built_in_types.graphql",
             83: "0042_mutation_operation_with_undefined_fields.graphql",
         },
         location: DiagnosticLocation {

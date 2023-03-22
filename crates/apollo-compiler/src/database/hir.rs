@@ -199,13 +199,13 @@ impl TypeDefinition {
         }
     }
 
-    pub fn loc(&self) -> Option<HirNodeLocation> {
+    pub fn loc(&self) -> HirNodeLocation {
         match self {
-            Self::ObjectTypeDefinition(def) => Some(def.loc()),
-            Self::InterfaceTypeDefinition(def) => Some(def.loc()),
-            Self::UnionTypeDefinition(def) => Some(def.loc()),
-            Self::EnumTypeDefinition(def) => Some(def.loc()),
-            Self::InputObjectTypeDefinition(def) => Some(def.loc()),
+            Self::ObjectTypeDefinition(def) => def.loc(),
+            Self::InterfaceTypeDefinition(def) => def.loc(),
+            Self::UnionTypeDefinition(def) => def.loc(),
+            Self::EnumTypeDefinition(def) => def.loc(),
+            Self::InputObjectTypeDefinition(def) => def.loc(),
             Self::ScalarTypeDefinition(def) => def.loc(),
         }
     }
@@ -2271,7 +2271,7 @@ pub struct ScalarTypeDefinition {
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) built_in: bool,
-    pub(crate) loc: Option<HirNodeLocation>,
+    pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<ScalarTypeExtension>>,
 }
 
@@ -2335,7 +2335,7 @@ impl ScalarTypeDefinition {
     }
 
     /// Get the AST location information for this HIR node.
-    pub fn loc(&self) -> Option<HirNodeLocation> {
+    pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
 

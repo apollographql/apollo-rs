@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            126: "src/implicit_types.graphql",
+            126: "src/built_in_types.graphql",
             127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
@@ -33,7 +33,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            126: "src/implicit_types.graphql",
+            126: "src/built_in_types.graphql",
             127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
@@ -68,15 +68,13 @@
         help: None,
         data: WrongTypeExtension {
             name: "Scalar",
-            definition: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 127,
-                    },
-                    offset: 0,
-                    length: 60,
+            definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 127,
                 },
-            ),
+                offset: 0,
+                length: 60,
+            },
             extension: DiagnosticLocation {
                 file_id: FileId {
                     id: 127,
@@ -88,7 +86,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            126: "src/implicit_types.graphql",
+            126: "src/built_in_types.graphql",
             127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
@@ -123,15 +121,13 @@
         help: None,
         data: WrongTypeExtension {
             name: "Object",
-            definition: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 127,
-                    },
-                    offset: 94,
-                    length: 29,
+            definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 127,
                 },
-            ),
+                offset: 94,
+                length: 29,
+            },
             extension: DiagnosticLocation {
                 file_id: FileId {
                     id: 127,
@@ -143,7 +139,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            126: "src/implicit_types.graphql",
+            126: "src/built_in_types.graphql",
             127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
@@ -178,15 +174,13 @@
         help: None,
         data: WrongTypeExtension {
             name: "Intf",
-            definition: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 127,
-                    },
-                    offset: 61,
-                    length: 32,
+            definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 127,
                 },
-            ),
+                offset: 61,
+                length: 32,
+            },
             extension: DiagnosticLocation {
                 file_id: FileId {
                     id: 127,
@@ -198,7 +192,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            126: "src/implicit_types.graphql",
+            126: "src/built_in_types.graphql",
             127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
@@ -233,15 +227,13 @@
         help: None,
         data: WrongTypeExtension {
             name: "Input",
-            definition: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 127,
-                    },
-                    offset: 154,
-                    length: 29,
+            definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 127,
                 },
-            ),
+                offset: 154,
+                length: 29,
+            },
             extension: DiagnosticLocation {
                 file_id: FileId {
                     id: 127,
@@ -253,7 +245,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            126: "src/implicit_types.graphql",
+            126: "src/built_in_types.graphql",
             127: "0064_extension_wrong_type.graphql",
         },
         location: DiagnosticLocation {
@@ -288,15 +280,13 @@
         help: None,
         data: WrongTypeExtension {
             name: "Enum",
-            definition: Some(
-                DiagnosticLocation {
-                    file_id: FileId {
-                        id: 127,
-                    },
-                    offset: 184,
-                    length: 22,
+            definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 127,
                 },
-            ),
+                offset: 184,
+                length: 22,
+            },
             extension: DiagnosticLocation {
                 file_id: FileId {
                     id: 127,

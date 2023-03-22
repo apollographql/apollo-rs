@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            68: "src/implicit_types.graphql",
+            68: "src/built_in_types.graphql",
             69: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
         },
         location: DiagnosticLocation {
@@ -30,7 +30,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            68: "src/implicit_types.graphql",
+            68: "src/built_in_types.graphql",
             69: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
         },
         location: DiagnosticLocation {

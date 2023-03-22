@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            38: "src/implicit_types.graphql",
+            38: "src/built_in_types.graphql",
             39: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
@@ -30,7 +30,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            38: "src/implicit_types.graphql",
+            38: "src/built_in_types.graphql",
             39: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
@@ -59,7 +59,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            38: "src/implicit_types.graphql",
+            38: "src/built_in_types.graphql",
             39: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
@@ -88,7 +88,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            38: "src/implicit_types.graphql",
+            38: "src/built_in_types.graphql",
             39: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
@@ -117,7 +117,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            38: "src/implicit_types.graphql",
+            38: "src/built_in_types.graphql",
             39: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {

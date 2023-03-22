@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            14: "src/implicit_types.graphql",
+            14: "src/built_in_types.graphql",
             15: "0008_operation_with_undefined_variables_in_inline_fragment.graphql",
         },
         location: DiagnosticLocation {
