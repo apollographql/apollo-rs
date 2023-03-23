@@ -1158,19 +1158,7 @@ type User
         let object_types = compiler.db.object_types();
         let object_names: Vec<_> = object_types.keys().map(|name| &**name).collect();
         assert_eq!(
-            [
-                "__Schema",
-                "__Type",
-                "__Field",
-                "__InputValue",
-                "__EnumValue",
-                "__Directive",
-                "Mutation",
-                "Product",
-                "Query",
-                "Review",
-                "User"
-            ],
+            ["Mutation", "Product", "Query", "Review", "User"],
             object_names.as_slice()
         );
     }

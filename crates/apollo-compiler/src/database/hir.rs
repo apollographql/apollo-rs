@@ -467,7 +467,7 @@ impl OperationDefinition {
             OperationType::Mutation => schema.mutation()?,
             OperationType::Subscription => schema.subscription()?,
         };
-        db.object_types().get(name).cloned()
+        db.object_types_with_built_ins().get(name).cloned()
     }
 
     /// Get a reference to the operation definition's variables.
@@ -1916,6 +1916,7 @@ pub struct ObjectTypeDefinition {
     pub(crate) fields_by_name: ByNameWithExtensions,
     pub(crate) implements_interfaces_by_name: ByNameWithExtensions,
     pub(crate) implicit_fields: Arc<Vec<FieldDefinition>>,
+    pub(crate) is_introspection: bool,
 }
 
 impl ObjectTypeDefinition {
@@ -2071,6 +2072,15 @@ impl ObjectTypeDefinition {
             ImplementsInterface::interface,
         );
         self.extensions.push(ext);
+    }
+
+    /// Returns `true` if this Object Type Definition is one of the
+    /// introspection types:
+    ///
+    /// `__Schema`, `__Type`, `__TypeKind`, `__Field`, `__InputValue`,
+    /// `__EnumValue`, `__Directive`, `__DirectiveLocation`
+    pub fn is_introspection(&self) -> bool {
+        self.is_introspection
     }
 }
 

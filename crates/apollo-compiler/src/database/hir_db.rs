@@ -14,6 +14,17 @@ use crate::hir::*;
 use crate::AstDatabase;
 use crate::InputDatabase;
 
+const INTROSPECTION_TYS: [&str; 8] = [
+    "__Schema",
+    "__Type",
+    "__TypeKind",
+    "__Field",
+    "__InputValue",
+    "__EnumValue",
+    "__Directive",
+    "__DirectiveLocation",
+];
+
 // HIR creators *ignore* missing data entirely. *Only* missing data
 // as a result of parser errors should be ignored.
 
@@ -48,6 +59,10 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
 
     /// Return all object type definitions defined in the compiler.
     fn object_types(&self) -> ByName<ObjectTypeDefinition>;
+
+    /// Return all object type definitions, including instrospection types like
+    /// `__Schema`, defined in the compiler.
+    fn object_types_with_built_ins(&self) -> ByName<ObjectTypeDefinition>;
 
     /// Return all scalar type definitions defined in the compiler.
     fn scalars(&self) -> ByName<ScalarTypeDefinition>;
@@ -222,7 +237,7 @@ fn type_system_definitions(db: &dyn HirDatabase) -> Arc<TypeSystemDefinitions> {
     Arc::new(TypeSystemDefinitions {
         schema: db.schema(),
         scalars: db.scalars(),
-        objects: db.object_types(),
+        objects: db.object_types_with_built_ins(),
         interfaces: db.interfaces(),
         unions: db.unions(),
         enums: db.enums(),
@@ -380,7 +395,7 @@ macro_rules! by_name_extensible {
     }};
 }
 
-fn object_types(db: &dyn HirDatabase) -> ByName<ObjectTypeDefinition> {
+fn object_types_with_built_ins(db: &dyn HirDatabase) -> ByName<ObjectTypeDefinition> {
     if let Some(precomputed) = db.type_system_hir_input() {
         // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
         return precomputed.definitions.objects.clone();
@@ -390,6 +405,13 @@ fn object_types(db: &dyn HirDatabase) -> ByName<ObjectTypeDefinition> {
         object_type_definition,
         ObjectTypeExtension
     ))
+}
+
+fn object_types(db: &dyn HirDatabase) -> ByName<ObjectTypeDefinition> {
+    let mut objs = db.object_types_with_built_ins().as_ref().clone();
+
+    objs.retain(|_k, v| !v.is_introspection());
+    Arc::new(objs)
 }
 
 fn scalars(db: &dyn HirDatabase) -> ByName<ScalarTypeDefinition> {
@@ -614,7 +636,7 @@ fn add_implicit_operations(
         (&mut names.subscription, OperationType::Subscription),
     ] {
         let name = operation_ty.into();
-        if name_field.is_none() && db.object_types().contains_key(name) {
+        if name_field.is_none() && db.object_types_with_built_ins().contains_key(name) {
             *name_field = Some(name.to_owned());
             operations.push(RootOperationTypeDefinition {
                 operation_ty,
@@ -643,6 +665,7 @@ fn object_type_definition(
     let implements_interfaces_by_name =
         ByNameWithExtensions::new(&implements_interfaces, ImplementsInterface::interface);
     let implicit_fields = Arc::new(vec![type_field(), typename_field(), schema_field()]);
+    let is_introspection = INTROSPECTION_TYS.contains(&obj_def.name()?.text().as_str());
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -657,6 +680,7 @@ fn object_type_definition(
         fields_by_name,
         implements_interfaces_by_name,
         implicit_fields,
+        is_introspection,
     })
 }
 
