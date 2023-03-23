@@ -14,16 +14,18 @@ use crate::hir::*;
 use crate::AstDatabase;
 use crate::InputDatabase;
 
-const INTROSPECTION_TYS: [&str; 8] = [
+use super::document;
+
+const INTROSPECTION_OBJECT_TYS: [&str; 6] = [
     "__Schema",
     "__Type",
-    "__TypeKind",
     "__Field",
     "__InputValue",
     "__EnumValue",
     "__Directive",
-    "__DirectiveLocation",
 ];
+
+const INTROSPECTION_ENUM_TYS: [&str; 2] = ["__TypeKind", "__DirectiveLocation"];
 
 // HIR creators *ignore* missing data entirely. *Only* missing data
 // as a result of parser errors should be ignored.
@@ -69,6 +71,10 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
 
     /// Return all enum type definitions defined in the compiler.
     fn enums(&self) -> ByName<EnumTypeDefinition>;
+
+    /// Return all enums, including introspection types like `__TypeKind`, defined
+    /// in the compiler.
+    fn enums_with_built_ins(&self) -> ByName<EnumTypeDefinition>;
 
     /// Return all union type definitions defined in the compiler.
     fn unions(&self) -> ByName<UnionTypeDefinition>;
@@ -118,6 +124,12 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Result of this query is not cached internally.
     #[salsa::transparent]
     fn find_enum_by_name(&self, name: String) -> Option<Arc<EnumTypeDefinition>>;
+
+    /// Return a scalar type definition corresponding to the name.
+    /// Result of this query is not cached internally.
+    #[salsa::transparent]
+    #[salsa::invoke(document::find_scalar_by_name)]
+    fn find_scalar_by_name(&self, name: String) -> Option<Arc<ScalarTypeDefinition>>;
 
     /// Return an interface type definition corresponding to the name.
     /// Result of this query is not cached internally.
@@ -425,13 +437,19 @@ fn scalars(db: &dyn HirDatabase) -> ByName<ScalarTypeDefinition> {
         ScalarTypeExtension
     ))
 }
-
-fn enums(db: &dyn HirDatabase) -> ByName<EnumTypeDefinition> {
+fn enums_with_built_ins(db: &dyn HirDatabase) -> ByName<EnumTypeDefinition> {
     if let Some(precomputed) = db.type_system_hir_input() {
         // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
         return precomputed.definitions.enums.clone();
     }
     Arc::new(by_name_extensible!(db, enum_definition, EnumTypeExtension))
+}
+
+fn enums(db: &dyn HirDatabase) -> ByName<EnumTypeDefinition> {
+    let mut enums = db.enums_with_built_ins().as_ref().clone();
+
+    enums.retain(|_k, v| !v.is_introspection());
+    Arc::new(enums)
 }
 
 fn unions(db: &dyn HirDatabase) -> ByName<UnionTypeDefinition> {
@@ -665,7 +683,7 @@ fn object_type_definition(
     let implements_interfaces_by_name =
         ByNameWithExtensions::new(&implements_interfaces, ImplementsInterface::interface);
     let implicit_fields = Arc::new(vec![type_field(), typename_field(), schema_field()]);
-    let is_introspection = INTROSPECTION_TYS.contains(&obj_def.name()?.text().as_str());
+    let is_introspection = INTROSPECTION_OBJECT_TYS.contains(&obj_def.name()?.text().as_str());
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -745,6 +763,7 @@ fn enum_definition(
     let loc = location(file_id, enum_def.syntax());
     let values_by_name =
         ByNameWithExtensions::new(&enum_values_definition, EnumValueDefinition::enum_value);
+    let is_introspection = INTROSPECTION_ENUM_TYS.contains(&enum_def.name()?.text().as_str());
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -756,6 +775,7 @@ fn enum_definition(
         loc,
         extensions: Vec::new(),
         values_by_name,
+        is_introspection,
     })
 }
 

@@ -26,7 +26,7 @@ pub(crate) fn types_definitions_by_name(
     add!(object_types_with_built_ins, ObjectTypeDefinition);
     add!(interfaces, InterfaceTypeDefinition);
     add!(unions, UnionTypeDefinition);
-    add!(enums, EnumTypeDefinition);
+    add!(enums_with_built_ins, EnumTypeDefinition);
     add!(input_objects, InputObjectTypeDefinition);
     Arc::new(map)
 }
@@ -80,7 +80,14 @@ pub(crate) fn find_enum_by_name(
     db: &dyn HirDatabase,
     name: String,
 ) -> Option<Arc<EnumTypeDefinition>> {
-    db.enums().get(&name).cloned()
+    db.enums_with_built_ins().get(&name).cloned()
+}
+
+pub(crate) fn find_scalar_by_name(
+    db: &dyn HirDatabase,
+    name: String,
+) -> Option<Arc<ScalarTypeDefinition>> {
+    db.scalars().get(&name).cloned()
 }
 
 pub(crate) fn find_interface_by_name(

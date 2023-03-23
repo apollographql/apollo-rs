@@ -1470,7 +1470,8 @@ impl Field {
         self.loc
     }
 
-    /// returns true if this is an introspection field (i.e. it's [`Self::name()`] is one of __type, or __schema).
+    /// Returns true if this is an introspection field (i.e. it's
+    /// [`Self::name()`] is one of __type, or __schema).
     pub fn is_introspection(&self) -> bool {
         let field_name = self.name();
         field_name == "__type" || field_name == "__schema" || field_name == "__typename"
@@ -1618,7 +1619,8 @@ impl FragmentSpread {
         self.loc
     }
 
-    /// Returns true if the fragment referenced by this spread exists and its [`SelectionSet`] is an introspection.
+    /// Returns true if the fragment referenced by this spread exists and its
+    /// [`SelectionSet`] is an introspection.
     pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
         let maybe_fragment = self.fragment(db);
         maybe_fragment.map_or(false, |fragment| {
@@ -2077,8 +2079,8 @@ impl ObjectTypeDefinition {
     /// Returns `true` if this Object Type Definition is one of the
     /// introspection types:
     ///
-    /// `__Schema`, `__Type`, `__TypeKind`, `__Field`, `__InputValue`,
-    /// `__EnumValue`, `__Directive`, `__DirectiveLocation`
+    /// `__Schema`, `__Type`, `__Field`, `__InputValue`,
+    /// `__EnumValue`, `__Directive`
     pub fn is_introspection(&self) -> bool {
         self.is_introspection
     }
@@ -2349,6 +2351,7 @@ pub struct EnumTypeDefinition {
     pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<EnumTypeExtension>>,
     pub(crate) values_by_name: ByNameWithExtensions,
+    pub(crate) is_introspection: bool,
 }
 
 impl EnumTypeDefinition {
@@ -2448,6 +2451,14 @@ impl EnumTypeDefinition {
             EnumValueDefinition::enum_value,
         );
         self.extensions.push(ext);
+    }
+
+    /// Returns `true` if this Object Type Definition is one of the
+    /// introspection types:
+    ///
+    /// `__TypeKind`, `__DirectiveLocation`
+    pub fn is_introspection(&self) -> bool {
+        self.is_introspection
     }
 }
 
@@ -3808,5 +3819,61 @@ mod tests {
             )
             .expect("IntrospectDeepFragments operation does not exist");
         assert!(!deep_introspect.is_introspection(&db));
+    }
+
+    #[test]
+    fn built_in_types() {
+        let input = r#"
+type Query {
+  id: String
+  name: String
+  birthday: Date
+}
+        "#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(input, "ts.graphql");
+        let db = compiler.db;
+
+        // introspection types
+        assert!(db
+            .find_object_type_by_name("__Schema".to_string())
+            .is_some());
+        assert!(db.find_object_type_by_name("__Type".to_string()).is_some());
+        assert!(db.find_enum_by_name("__TypeKind".to_string()).is_some());
+        assert!(db.find_object_type_by_name("__Field".to_string()).is_some());
+        assert!(db
+            .find_object_type_by_name("__InputValue".to_string())
+            .is_some());
+        assert!(db
+            .find_object_type_by_name("__EnumValue".to_string())
+            .is_some());
+        assert!(db
+            .find_object_type_by_name("__Directive".to_string())
+            .is_some());
+        assert!(db
+            .find_enum_by_name("__DirectiveLocation".to_string())
+            .is_some());
+
+        // scalar types
+        assert!(db.find_scalar_by_name("Int".to_string()).is_some());
+        assert!(db.find_scalar_by_name("Float".to_string()).is_some());
+        assert!(db.find_scalar_by_name("Boolean".to_string()).is_some());
+        assert!(db.find_scalar_by_name("String".to_string()).is_some());
+        assert!(db.find_scalar_by_name("ID".to_string()).is_some());
+
+        // directive definitions
+        assert!(db
+            .find_directive_definition_by_name("specifiedBy".to_string())
+            .is_some());
+        assert!(db
+            .find_directive_definition_by_name("skip".to_string())
+            .is_some());
+        assert!(db
+            .find_directive_definition_by_name("include".to_string())
+            .is_some());
+        assert!(db
+            .find_directive_definition_by_name("deprecated".to_string())
+            .is_some());
     }
 }
