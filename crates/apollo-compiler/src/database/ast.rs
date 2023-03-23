@@ -10,14 +10,17 @@ pub trait AstDatabase: InputDatabase {
     /// Get an AST for a particular file. Returns a `rowan` SyntaxTree.  The
     /// SyntaxTree can be safely shared between threads as it's `Send` and
     /// `Sync`.
+    #[salsa::invoke(ast)]
     fn ast(&self, file_id: FileId) -> SyntaxTree;
 
     /// Get a file's GraphQL Document. Returns a `rowan` Green Node. This is the
     /// top level document node that can be used when going between an
     /// SyntaxNodePtr to an actual SyntaxNode.
+    #[salsa::invoke(document)]
     fn document(&self, file_id: FileId) -> GreenNode;
 
     /// Get syntax errors found in the compiler's manifest.
+    #[salsa::invoke(syntax_errors)]
     fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
 }
 
