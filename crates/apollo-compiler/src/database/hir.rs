@@ -194,6 +194,7 @@ impl TypeDefinition {
             Self::ScalarTypeDefinition(def) => def.loc(),
         }
     }
+
     /// Returns `true` if the type definition is [`ScalarTypeDefinition`].
     ///
     /// [`ScalarTypeDefinition`]: TypeDefinition::ScalarTypeDefinition
@@ -836,9 +837,25 @@ impl DirectiveDefinition {
         self.repeatable
     }
 
+    pub fn used_directives(&self) -> impl Iterator<Item = &Directive> {
+        self.arguments
+            .input_values
+            .iter()
+            .flat_map(|input_values| input_values.directives())
+    }
+
     /// Get the AST location information for this HIR node.
     pub fn loc(&self) -> Option<HirNodeLocation> {
         self.loc
+    }
+
+    pub(crate) fn head_loc(&self) -> Option<HirNodeLocation> {
+        self.loc.map(|loc| HirNodeLocation {
+            node_len: self.name_src().loc().unwrap().offset()
+                + self.name_src().loc().unwrap().node_len()
+                - loc.offset(),
+            ..loc
+        })
     }
 }
 
@@ -2157,7 +2174,7 @@ impl InputValueDefinition {
         self.description.as_deref()
     }
 
-    /// Get a reference to input value definition's directives.
+    /// Return the directives used on this input value definition.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
     }

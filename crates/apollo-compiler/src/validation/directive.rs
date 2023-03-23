@@ -7,6 +7,102 @@ use crate::{
     ValidationDatabase,
 };
 
+/// Track used names in a recursive function.
+///
+/// Pass the result of `stack.push(name)` to recursive calls. Use `stack.contains(name)` to check
+/// if the name was used somewhere up the call stack.
+struct RecursionStack<'a>(&'a mut Vec<String>);
+impl RecursionStack<'_> {
+    fn push(&mut self, name: String) -> RecursionStack<'_> {
+        self.0.push(name);
+        RecursionStack(&mut self.0)
+    }
+    fn contains(&self, name: &str) -> bool {
+        self.0.iter().any(|seen| seen == name)
+    }
+}
+impl Drop for RecursionStack<'_> {
+    fn drop(&mut self) {
+        self.0.pop();
+    }
+}
+
+/// Use `FindRecursiveDirective::check`.
+struct FindRecursiveDirective<'a> {
+    db: &'a dyn ValidationDatabase,
+}
+impl FindRecursiveDirective<'_> {
+    fn type_definition(
+        &self,
+        seen: &mut RecursionStack<'_>,
+        def: &hir::TypeDefinition,
+    ) -> Result<(), hir::Directive> {
+        for directive in def.directives() {
+            self.directive(seen, directive)?;
+        }
+
+        if let hir::TypeDefinition::InputObjectTypeDefinition(input_type_definition) = def {
+            for input_value in input_type_definition.fields() {
+                self.input_value(seen, input_value)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn input_value(
+        &self,
+        seen: &mut RecursionStack<'_>,
+        input_value: &hir::InputValueDefinition,
+    ) -> Result<(), hir::Directive> {
+        for directive in input_value.directives() {
+            self.directive(seen, directive)?;
+        }
+        if let Some(type_def) = input_value.ty().type_def(self.db.upcast()) {
+            self.type_definition(seen, &type_def)?;
+        }
+
+        Ok(())
+    }
+
+    fn directive(
+        &self,
+        seen: &mut RecursionStack<'_>,
+        directive: &hir::Directive,
+    ) -> Result<(), hir::Directive> {
+        if !seen.contains(directive.name()) {
+            if let Some(def) = directive.directive(self.db.upcast()) {
+                self.directive_definition(seen.push(directive.name().to_string()), &def)?;
+            }
+        } else {
+            return Err(directive.clone());
+        }
+
+        Ok(())
+    }
+
+    fn directive_definition(
+        &self,
+        mut seen: RecursionStack<'_>,
+        def: &hir::DirectiveDefinition,
+    ) -> Result<(), hir::Directive> {
+        let mut guard = seen.push(def.name().to_string());
+        for input_value in def.arguments().input_values() {
+            self.input_value(&mut guard, input_value)?;
+        }
+
+        Ok(())
+    }
+
+    fn check(
+        db: &dyn ValidationDatabase,
+        directive_def: &hir::DirectiveDefinition,
+    ) -> Result<(), hir::Directive> {
+        FindRecursiveDirective { db }
+            .directive_definition(RecursionStack(&mut vec![]), &directive_def)
+    }
+}
+
 pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -15,23 +111,19 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
     //
     // Returns Recursive Definition error.
     for (name, directive_def) in db.directive_definitions().iter() {
-        for input_values in directive_def.arguments().input_values() {
-            for directive in input_values.directives().iter() {
-                let directive_name = directive.name();
-                if name == directive_name {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            directive.loc().into(),
-                            DiagnosticData::RecursiveDefinition { name: name.clone() },
-                        )
-                        .label(Label::new(
-                            directive.loc(),
-                            "recursive directive definition",
-                        )),
-                    );
-                }
-            }
+        if let Err(directive) = FindRecursiveDirective::check(db, &directive_def) {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    directive_def.loc().unwrap().into(),
+                    DiagnosticData::RecursiveDefinition { name: name.clone() },
+                )
+                .label(Label::new(
+                    directive_def.head_loc().unwrap(),
+                    "recursive directive definition",
+                ))
+                .label(Label::new(directive.loc(), "refers to itself here")),
+            );
         }
 
         // Validate directive definitions' arguments

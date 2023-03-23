@@ -7,8 +7,8 @@
             file_id: FileId {
                 id: 69,
             },
-            offset: 106,
-            length: 15,
+            offset: 100,
+            length: 77,
         },
         labels: [
             Label {
@@ -16,15 +16,177 @@
                     file_id: FileId {
                         id: 69,
                     },
-                    offset: 106,
-                    length: 15,
+                    offset: 100,
+                    length: 25,
                 },
                 text: "recursive directive definition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 138,
+                    length: 15,
+                },
+                text: "refers to itself here",
             },
         ],
         help: None,
         data: RecursiveDefinition {
             name: "invalidExample",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            69: "0070_self_referential_directive_definition.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 69,
+            },
+            offset: 380,
+            length: 60,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 380,
+                    length: 16,
+                },
+                text: "recursive directive definition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 532,
+                    length: 6,
+                },
+                text: "refers to itself here",
+            },
+        ],
+        help: None,
+        data: RecursiveDefinition {
+            name: "loopA",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            69: "0070_self_referential_directive_definition.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 69,
+            },
+            offset: 441,
+            length: 60,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 441,
+                    length: 16,
+                },
+                text: "recursive directive definition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 410,
+                    length: 6,
+                },
+                text: "refers to itself here",
+            },
+        ],
+        help: None,
+        data: RecursiveDefinition {
+            name: "loopB",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            69: "0070_self_referential_directive_definition.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 69,
+            },
+            offset: 502,
+            length: 60,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 502,
+                    length: 16,
+                },
+                text: "recursive directive definition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 471,
+                    length: 6,
+                },
+                text: "refers to itself here",
+            },
+        ],
+        help: None,
+        data: RecursiveDefinition {
+            name: "loopC",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            69: "0070_self_referential_directive_definition.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 69,
+            },
+            offset: 608,
+            length: 62,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 608,
+                    length: 16,
+                },
+                text: "recursive directive definition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 69,
+                    },
+                    offset: 599,
+                    length: 6,
+                },
+                text: "refers to itself here",
+            },
+        ],
+        help: None,
+        data: RecursiveDefinition {
+            name: "wrong",
         },
     },
 ]
