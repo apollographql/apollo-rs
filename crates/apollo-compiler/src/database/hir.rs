@@ -849,13 +849,17 @@ impl DirectiveDefinition {
         self.loc
     }
 
+    /// Get the location information for the "head" of the directive definition, namely the
+    /// `directive` keyword and the name.
     pub(crate) fn head_loc(&self) -> Option<HirNodeLocation> {
-        self.loc.map(|loc| HirNodeLocation {
-            node_len: self.name_src().loc().unwrap().offset()
-                + self.name_src().loc().unwrap().node_len()
-                - loc.offset(),
-            ..loc
-        })
+        match (self.loc, self.name_src().loc()) {
+            (Some(loc), Some(name_loc)) => Some(HirNodeLocation {
+                // Adjust the node length to include the name
+                node_len: name_loc.end_offset() - loc.offset(),
+                ..loc
+            }),
+            _ => None,
+        }
     }
 }
 
@@ -3300,6 +3304,11 @@ impl HirNodeLocation {
     /// Get source offset of the current node.
     pub fn offset(&self) -> usize {
         self.offset
+    }
+
+    /// Get the source offset of the end of the current node.
+    pub fn end_offset(&self) -> usize {
+        self.offset + self.node_len
     }
 
     /// Get node length.
