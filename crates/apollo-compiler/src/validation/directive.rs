@@ -27,7 +27,8 @@ impl Drop for RecursionStack<'_> {
     }
 }
 
-/// Use `FindRecursiveDirective::check`.
+/// This struct just groups functions that are used to find self-referential directives.
+/// The way to use it is to call `FindRecursiveDirective::check`.
 struct FindRecursiveDirective<'a> {
     db: &'a dyn ValidationDatabase,
 }

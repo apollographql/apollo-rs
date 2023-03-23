@@ -837,13 +837,6 @@ impl DirectiveDefinition {
         self.repeatable
     }
 
-    pub fn used_directives(&self) -> impl Iterator<Item = &Directive> {
-        self.arguments
-            .input_values
-            .iter()
-            .flat_map(|input_values| input_values.directives())
-    }
-
     /// Get the AST location information for this HIR node.
     pub fn loc(&self) -> Option<HirNodeLocation> {
         self.loc
