@@ -8,7 +8,7 @@ use apollo_parser::ast::{self};
 use apollo_parser::SyntaxNode;
 use indexmap::IndexMap;
 
-use crate::database::document::*;
+use crate::database::document;
 use crate::database::FileId;
 use crate::hir::*;
 use crate::AstDatabase;
@@ -74,6 +74,7 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// be returned.
     /// If `name` is `None`, and there is more than one operation, `None` will
     /// be returned.
+    #[salsa::invoke(document::find_operation)]
     fn find_operation(
         &self,
         file_id: FileId,
@@ -83,6 +84,7 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Return an fragment definition corresponding to the name and file id.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
+    #[salsa::invoke(document::find_fragment_by_name)]
     fn find_fragment_by_name(
         &self,
         file_id: FileId,
@@ -92,68 +94,86 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Return an object type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
+    #[salsa::invoke(document::find_object_type_by_name)]
     fn find_object_type_by_name(&self, name: String) -> Option<Arc<ObjectTypeDefinition>>;
 
     /// Return an union type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
+    #[salsa::invoke(document::find_union_by_name)]
     fn find_union_by_name(&self, name: String) -> Option<Arc<UnionTypeDefinition>>;
 
     /// Return an enum type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
+    #[salsa::invoke(document::find_enum_by_name)]
     fn find_enum_by_name(&self, name: String) -> Option<Arc<EnumTypeDefinition>>;
 
     /// Return an interface type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
+    #[salsa::invoke(document::find_interface_by_name)]
     fn find_interface_by_name(&self, name: String) -> Option<Arc<InterfaceTypeDefinition>>;
 
     /// Return an directive definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
+    #[salsa::invoke(document::find_directive_definition_by_name)]
     fn find_directive_definition_by_name(&self, name: String) -> Option<Arc<DirectiveDefinition>>;
 
     /// Return any type definitions that contain the corresponding directive
+    #[salsa::invoke(document::find_types_with_directive)]
     fn find_types_with_directive(&self, directive: String) -> Arc<Vec<TypeDefinition>>;
 
     /// Return an input object type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
+    #[salsa::invoke(document::find_input_object_by_name)]
     fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
 
+    #[salsa::invoke(document::types_definitions_by_name)]
     fn types_definitions_by_name(&self) -> Arc<IndexMap<String, TypeDefinition>>;
 
     /// Return a type definition corresponding to the name.
     /// Result of this query is not cached internally.
     #[salsa::transparent]
+    #[salsa::invoke(document::find_type_definition_by_name)]
     fn find_type_definition_by_name(&self, name: String) -> Option<TypeDefinition>;
 
     /// Return all query operations in a corresponding file.
+    #[salsa::invoke(document::query_operations)]
     fn query_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
     /// Return all mutation operations in a corresponding file.
+    #[salsa::invoke(document::mutation_operations)]
     fn mutation_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
     /// Return all subscription operations in a corresponding file.
+    #[salsa::invoke(document::subscription_operations)]
     fn subscription_operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
     /// Return the fields in a selection set, not including fragments.
+    #[salsa::invoke(document::operation_fields)]
     fn operation_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
     /// Return all operation inline fragment fields in a corresponding selection set.
+    #[salsa::invoke(document::operation_inline_fragment_fields)]
     fn operation_inline_fragment_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
     /// Return all operation fragment spread fields in a corresponding selection set.
+    #[salsa::invoke(document::operation_fragment_spread_fields)]
     fn operation_fragment_spread_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
     /// Return the fields that `selection_set` selects including visiting fragments and inline fragments.
+    #[salsa::invoke(document::flattened_operation_fields)]
     fn flattened_operation_fields(&self, selection_set: SelectionSet) -> Vec<Arc<Field>>;
 
     /// Return all variables in a corresponding selection set.
+    #[salsa::invoke(document::selection_variables)]
     fn selection_variables(&self, selection_set: SelectionSet) -> Arc<HashSet<Variable>>;
 
     /// Return all variables in corresponding variable definitions.
+    #[salsa::invoke(document::operation_definition_variables)]
     fn operation_definition_variables(
         &self,
         variables: Arc<Vec<VariableDefinition>>,
@@ -184,6 +204,8 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     ///
     /// - `Foo` and `Bar` are a subtypes of `UnionType`.
     /// - `ObjectType` and `InterfaceType` are subtypes of `Baz`.
+
+    #[salsa::invoke(document::subtype_map)]
     fn subtype_map(&self) -> Arc<HashMap<String, HashSet<String>>>;
 
     /// Return `true` if the provided `maybe_subtype` is a subtype of the
@@ -215,6 +237,7 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// - `db.is_subtype("Baz".into(), "ObjectType".into()) // true`
     /// - `db.is_subtype("Baz".into(), "InterfaceType".into()) // true`
     #[salsa::transparent]
+    #[salsa::invoke(document::is_subtype)]
     fn is_subtype(&self, abstract_type: String, maybe_subtype: String) -> bool;
 }
 
