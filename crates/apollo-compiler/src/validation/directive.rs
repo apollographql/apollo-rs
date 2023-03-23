@@ -15,7 +15,7 @@ struct RecursionStack<'a>(&'a mut Vec<String>);
 impl RecursionStack<'_> {
     fn push(&mut self, name: String) -> RecursionStack<'_> {
         self.0.push(name);
-        RecursionStack(&mut self.0)
+        RecursionStack(self.0)
     }
     fn contains(&self, name: &str) -> bool {
         self.0.iter().any(|seen| seen == name)
@@ -99,7 +99,7 @@ impl FindRecursiveDirective<'_> {
         directive_def: &hir::DirectiveDefinition,
     ) -> Result<(), hir::Directive> {
         FindRecursiveDirective { db }
-            .directive_definition(RecursionStack(&mut vec![]), &directive_def)
+            .directive_definition(RecursionStack(&mut vec![]), directive_def)
     }
 }
 
@@ -111,7 +111,7 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
     //
     // Returns Recursive Definition error.
     for (name, directive_def) in db.directive_definitions().iter() {
-        if let Err(directive) = FindRecursiveDirective::check(db, &directive_def) {
+        if let Err(directive) = FindRecursiveDirective::check(db, directive_def) {
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
