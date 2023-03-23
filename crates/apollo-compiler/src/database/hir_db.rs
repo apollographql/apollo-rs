@@ -20,51 +20,66 @@ use crate::InputDatabase;
 #[salsa::query_group(HirStorage)]
 pub trait HirDatabase: InputDatabase + AstDatabase {
     /// Return all type system definitions defined in the compiler.
+    #[salsa::invoke(type_system_definitions)]
     fn type_system_definitions(&self) -> Arc<TypeSystemDefinitions>;
 
     /// Return a [`TypeSystem`] containing definitions and more.
     ///
     /// This can be used with [`set_type_system_hir`][crate::ApolloCompiler::set_type_system_hir]
     /// on another compiler.
+    #[salsa::invoke(type_system)]
     fn type_system(&self) -> Arc<TypeSystem>;
 
     /// Return all the extensions defined in the type system.
+    #[salsa::invoke(extensions)]
     fn extensions(&self) -> Arc<Vec<TypeExtension>>;
 
     /// Return all the operations defined in a file.
+    #[salsa::invoke(operations)]
     fn operations(&self, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>>;
 
     /// Return all the fragments defined in a file.
+    #[salsa::invoke(fragments)]
     fn fragments(&self, file_id: FileId) -> ByName<FragmentDefinition>;
 
     /// Return all the operations defined in any file.
+    #[salsa::invoke(all_operations)]
     fn all_operations(&self) -> Arc<Vec<Arc<OperationDefinition>>>;
 
     /// Return all the fragments defined in any file.
+    #[salsa::invoke(all_fragments)]
     fn all_fragments(&self) -> ByName<FragmentDefinition>;
 
     /// Return schema definition defined in the compiler.
+    #[salsa::invoke(schema)]
     fn schema(&self) -> Arc<SchemaDefinition>;
 
     /// Return all object type definitions defined in the compiler.
+    #[salsa::invoke(object_types)]
     fn object_types(&self) -> ByName<ObjectTypeDefinition>;
 
     /// Return all scalar type definitions defined in the compiler.
+    #[salsa::invoke(scalars)]
     fn scalars(&self) -> ByName<ScalarTypeDefinition>;
 
     /// Return all enum type definitions defined in the compiler.
+    #[salsa::invoke(enums)]
     fn enums(&self) -> ByName<EnumTypeDefinition>;
 
     /// Return all union type definitions defined in the compiler.
+    #[salsa::invoke(unions)]
     fn unions(&self) -> ByName<UnionTypeDefinition>;
 
     /// Return all interface type definitions defined in the compiler.
+    #[salsa::invoke(interfaces)]
     fn interfaces(&self) -> ByName<InterfaceTypeDefinition>;
 
     /// Return all directive definitions defined in the compiler.
+    #[salsa::invoke(directive_definitions)]
     fn directive_definitions(&self) -> ByName<DirectiveDefinition>;
 
     /// Return all input object type definitions defined in the compiler.
+    #[salsa::invoke(input_objects)]
     fn input_objects(&self) -> ByName<InputObjectTypeDefinition>;
 
     // Derived from above queries:

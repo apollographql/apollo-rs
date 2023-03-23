@@ -64,9 +64,11 @@ pub trait InputDatabase {
     fn input(&self, file_id: FileId) -> Source;
 
     /// Get the GraphQL source text for a file.
+    #[salsa::invoke(source_code)]
     fn source_code(&self, file_id: FileId) -> Arc<str>;
 
     /// Get the source type (document/schema/executable) for a file.
+    #[salsa::invoke(source_type)]
     fn source_type(&self, file_id: FileId) -> SourceType;
 
     /// Get all file ids currently in the compiler.
@@ -75,15 +77,20 @@ pub trait InputDatabase {
 
     /// Get the GraphQL source text for a file, split up into lines for
     /// printing diagnostics.
+    #[salsa::invoke(source_with_lines)]
     fn source_with_lines(&self, file_id: FileId) -> Arc<AriadneSource>;
+
     /// Get all GraphQL sources known to the compiler, split up into lines
     /// for printing diagnostics.
+    #[salsa::invoke(source_cache)]
     fn source_cache(&self) -> Arc<SourceCache>;
 
     /// Get all type system definition (GraphQL schema) files.
+    #[salsa::invoke(type_definition_files)]
     fn type_definition_files(&self) -> Vec<FileId>;
 
     /// Get all executable definition (GraphQL query) files.
+    #[salsa::invoke(executable_definition_files)]
     fn executable_definition_files(&self) -> Vec<FileId>;
 }
 
