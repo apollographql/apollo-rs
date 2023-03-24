@@ -105,14 +105,14 @@ impl ApolloCompiler {
 
     // This adds the introspection type system and any built-in graphql types.
     fn add_implicit_types(&mut self) {
-        let path = Path::new("src/built_in_types.graphql");
-        if self.db.source_file(path.to_path_buf()).is_none() {
+        let path = include_str!("built_in_types.graphql");
+        if self.db.source_file(path.into()).is_none() {
             let file_id = FileId::new();
             let mut sources = self.db.source_files();
             sources.push(file_id);
             let implicit_tys = fs::read_to_string(path).expect("built in types could not be added");
             self.db
-                .set_input(file_id, Source::built_in(path.to_path_buf(), implicit_tys));
+                .set_input(file_id, Source::built_in(path.into(), implicit_tys));
             self.db.set_source_files(sources);
         }
     }
