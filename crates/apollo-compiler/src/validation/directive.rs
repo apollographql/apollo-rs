@@ -20,6 +20,9 @@ impl RecursionStack<'_> {
     fn contains(&self, name: &str) -> bool {
         self.0.iter().any(|seen| seen == name)
     }
+    fn first(&self) -> Option<&str> {
+        self.0.get(0).map(|s| s.as_str())
+    }
 }
 impl Drop for RecursionStack<'_> {
     fn drop(&mut self) {
@@ -95,7 +98,11 @@ impl FindRecursiveDirective<'_> {
             if let Some(def) = directive.directive(self.db.upcast()) {
                 self.directive_definition(seen.push(directive.name().to_string()), &def)?;
             }
-        } else {
+        } else if seen.first() == Some(directive.name()) {
+            // Only report an error & bail out early if this is the *initial* directive.
+            // This prevents raising confusing errors when a directive `@b` which is not
+            // self-referential uses a directive `@a` that *is*. The error with `@a` should
+            // only be reported on its definition, not on `@b`'s.
             return Err(directive.clone());
         }
 

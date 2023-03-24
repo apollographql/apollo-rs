@@ -19,3 +19,5 @@ extend enum Enum { RECURSIVE @wrong }
 input Name { value: String!, type: Enum }
 input InputObject { name: Name }
 directive @wrong(input: InputObject) on INPUT_FIELD_DEFINITION
+
+directive @thisOneShouldNotError(arg: Boolean @loopC) on FIELD
