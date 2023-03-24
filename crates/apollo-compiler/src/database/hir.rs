@@ -3569,6 +3569,20 @@ mod tests {
     }
 
     #[test]
+    fn query_extended_type() {
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system("type Query { foo: String }", "base.graphql");
+        compiler.add_type_system("extend type Query { bar: Int }", "ext.graphql");
+        compiler.add_executable("{ bar }", "query.graphql");
+        let operations = compiler.db.all_operations();
+        let fields = operations[0].fields(&compiler.db);
+        // This unwrap failed before https://github.com/apollographql/apollo-rs/pull/482
+        // changed the behavior of `ObjectTypeDefinition::field(name)` in `hir_db::parent_ty`
+        let ty = fields[0].ty(&compiler.db).unwrap();
+        assert_eq!(ty.name(), "Int");
+    }
+
+    #[test]
     fn syntax_errors() {
         let mut compiler = ApolloCompiler::new();
         compiler.add_type_system(
