@@ -42,10 +42,18 @@ impl FindRecursiveDirective<'_> {
             self.directive(seen, directive)?;
         }
 
-        if let hir::TypeDefinition::InputObjectTypeDefinition(input_type_definition) = def {
-            for input_value in input_type_definition.fields() {
-                self.input_value(seen, input_value)?;
+        match def {
+            hir::TypeDefinition::InputObjectTypeDefinition(input_type_definition) => {
+                for input_value in input_type_definition.fields() {
+                    self.input_value(seen, input_value)?;
+                }
             }
+            hir::TypeDefinition::EnumTypeDefinition(enum_type_definition) => {
+                for enum_value in enum_type_definition.values() {
+                    self.enum_value(seen, enum_value)?;
+                }
+            }
+            _ => (),
         }
 
         Ok(())
@@ -61,6 +69,18 @@ impl FindRecursiveDirective<'_> {
         }
         if let Some(type_def) = input_value.ty().type_def(self.db.upcast()) {
             self.type_definition(seen, &type_def)?;
+        }
+
+        Ok(())
+    }
+
+    fn enum_value(
+        &self,
+        seen: &mut RecursionStack<'_>,
+        enum_value: &hir::EnumValueDefinition,
+    ) -> Result<(), hir::Directive> {
+        for directive in enum_value.directives() {
+            self.directive(seen, directive)?;
         }
 
         Ok(())
