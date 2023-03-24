@@ -179,9 +179,9 @@ impl TypeDefinition {
     pub fn field(&self, db: &dyn HirDatabase, name: &str) -> Option<&FieldDefinition> {
         match self {
             Self::ObjectTypeDefinition(def) => def.field(db, name),
-            Self::InterfaceTypeDefinition(def) => def.field(name),
+            Self::InterfaceTypeDefinition(def) => def.field(db, name),
             Self::UnionTypeDefinition(def) => {
-                def.implicit_fields().iter().find(|f| f.name() == name)
+                def.implicit_fields(db).iter().find(|f| f.name() == name)
             }
             _ => None,
         }
@@ -1905,7 +1905,6 @@ pub struct ObjectTypeDefinition {
     pub(crate) extensions: Vec<Arc<ObjectTypeExtension>>,
     pub(crate) fields_by_name: ByNameWithExtensions,
     pub(crate) implements_interfaces_by_name: ByNameWithExtensions,
-    pub(crate) implicit_fields: Arc<Vec<FieldDefinition>>,
     pub(crate) is_introspection: bool,
 }
 
@@ -1993,21 +1992,7 @@ impl ObjectTypeDefinition {
 
     /// Introspection fields that must not be returned as part of `fields` method.
     pub(crate) fn implicit_fields(&self, db: &dyn HirDatabase) -> &[FieldDefinition] {
-        let is_root_query = db
-            .schema()
-            .root_operations()
-            .any(|op| op.operation_ty().is_query() && op.named_type().name() == self.name());
-        if is_root_query {
-            self.implicit_fields.as_ref()
-        } else {
-            let position = self
-                .implicit_fields
-                .iter()
-                .cloned()
-                .position(|f| f.name() == "__typename")
-                .unwrap();
-            &self.implicit_fields[position..position + 1]
-        }
+        db.implicit_fields(self.name().to_string()).0.as_ref()
     }
 
     /// Returns interfaces implemented by this object type definition,
@@ -2509,7 +2494,6 @@ pub struct UnionTypeDefinition {
     pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<UnionTypeExtension>>,
     pub(crate) members_by_name: ByNameWithExtensions,
-    pub(crate) implicit_fields: Arc<Vec<FieldDefinition>>,
 }
 
 impl UnionTypeDefinition {
@@ -2612,8 +2596,8 @@ impl UnionTypeDefinition {
         self.extensions.push(ext);
     }
 
-    pub fn implicit_fields(&self) -> &[FieldDefinition] {
-        self.implicit_fields.as_ref()
+    pub fn implicit_fields(&self, db: &dyn HirDatabase) -> &[FieldDefinition] {
+        db.implicit_fields(self.name().to_string()).0.as_ref()
     }
 }
 
@@ -2651,7 +2635,6 @@ pub struct InterfaceTypeDefinition {
     pub(crate) extensions: Vec<Arc<InterfaceTypeExtension>>,
     pub(crate) fields_by_name: ByNameWithExtensions,
     pub(crate) implements_interfaces_by_name: ByNameWithExtensions,
-    pub(crate) implicit_fields: Arc<Vec<FieldDefinition>>,
 }
 
 impl InterfaceTypeDefinition {
@@ -2756,7 +2739,7 @@ impl InterfaceTypeDefinition {
     }
 
     /// Find a field by its name, either in this interface type definition or its extensions.
-    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
+    pub fn field(&self, db: &dyn HirDatabase, name: &str) -> Option<&FieldDefinition> {
         self.fields_by_name
             .get(
                 name,
@@ -2764,7 +2747,7 @@ impl InterfaceTypeDefinition {
                 self.extensions(),
                 InterfaceTypeExtension::fields_definition,
             )
-            .or_else(|| self.implicit_fields().iter().find(|f| f.name() == name))
+            .or_else(|| self.implicit_fields(db).iter().find(|f| f.name() == name))
     }
 
     /// Get the AST location information for this HIR node.
@@ -2792,8 +2775,8 @@ impl InterfaceTypeDefinition {
         self.extensions.push(ext);
     }
 
-    pub fn implicit_fields(&self) -> &[FieldDefinition] {
-        self.implicit_fields.as_ref()
+    pub fn implicit_fields(&self, db: &dyn HirDatabase) -> &[FieldDefinition] {
+        db.implicit_fields(self.name().to_string()).0.as_ref()
     }
 }
 
@@ -3363,6 +3346,9 @@ impl<Ast: ast::AstNode> From<(FileId, &'_ Ast)> for HirNodeLocation {
     }
 }
 
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub(crate) struct ImplicitFields(pub(crate) Arc<Vec<FieldDefinition>>);
+
 #[cfg(test)]
 mod tests {
     use crate::hir::OperationDefinition;
@@ -3574,8 +3560,11 @@ mod tests {
             interface.fields().map(|f| f.name()).collect::<Vec<_>>(),
             ["field", "field2"]
         );
-        assert_eq!(interface.field("field").unwrap().ty().name(), "Int");
-        assert!(interface.field("field4").is_none());
+        assert_eq!(
+            interface.field(&compiler.db, "field").unwrap().ty().name(),
+            "Int"
+        );
+        assert!(interface.field(&compiler.db, "field4").is_none());
 
         assert!(interface.self_implements_interfaces().is_empty());
         assert_eq!(
