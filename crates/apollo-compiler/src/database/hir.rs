@@ -3817,6 +3817,48 @@ mod tests {
     }
 
     #[test]
+    fn introspection_field_types() {
+        let input = r#"
+type Query {
+  id: String
+  name: String
+  birthday: Date
+}
+
+scalar Date @specifiedBy(url: "datespec.com")
+
+{
+  __type(name: "User") {
+    name
+    fields {
+      name
+      type {
+        name
+      }
+    }
+  }
+}
+        "#;
+        let mut compiler = ApolloCompiler::new();
+        let file_id = compiler.add_type_system(input, "ts.graphql");
+
+        let diagnostics = compiler.validate();
+        assert!(diagnostics.is_empty());
+
+        let db = compiler.db;
+        let op = db.find_operation(file_id, None).unwrap();
+        let ty_field = op
+            .selection_set()
+            .field("__type")
+            .unwrap()
+            .ty(&db)
+            .unwrap()
+            .name();
+
+        assert_eq!(ty_field, "__Type");
+    }
+
+    #[test]
     fn built_in_types() {
         let input = r#"
 type Query {
