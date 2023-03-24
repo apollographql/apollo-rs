@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            90: "src/built_in_types.graphql",
-            91: "0046_duplicate_directive_arguments.graphql",
+            0: "built_in_types.graphql",
+            46: "0046_duplicate_directive_arguments.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 91,
+                id: 46,
             },
             offset: 74,
             length: 42,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 91,
+                        id: 46,
                     },
                     offset: 30,
                     length: 42,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 91,
+                        id: 46,
                     },
                     offset: 74,
                     length: 42,
@@ -40,14 +40,14 @@
             name: "url",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 91,
+                    id: 46,
                 },
                 offset: 30,
                 length: 42,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 91,
+                    id: 46,
                 },
                 offset: 74,
                 length: 42,
@@ -56,12 +56,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            90: "src/built_in_types.graphql",
-            91: "0046_duplicate_directive_arguments.graphql",
+            0: "built_in_types.graphql",
+            46: "0046_duplicate_directive_arguments.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 91,
+                id: 46,
             },
             offset: 189,
             length: 8,
@@ -70,7 +70,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 91,
+                        id: 46,
                     },
                     offset: 178,
                     length: 9,
@@ -80,7 +80,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 91,
+                        id: 46,
                     },
                     offset: 189,
                     length: 8,
@@ -95,14 +95,14 @@
             name: "if",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 91,
+                    id: 46,
                 },
                 offset: 178,
                 length: 9,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 91,
+                    id: 46,
                 },
                 offset: 189,
                 length: 8,

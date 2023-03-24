@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            110: "src/built_in_types.graphql",
-            111: "0056_variables_are_input_types.graphql",
+            0: "built_in_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 111,
+                id: 56,
             },
             offset: 15,
             length: 9,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 111,
+                        id: 56,
                     },
                     offset: 21,
                     length: 3,
@@ -33,12 +33,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            110: "src/built_in_types.graphql",
-            111: "0056_variables_are_input_types.graphql",
+            0: "built_in_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 111,
+                id: 56,
             },
             offset: 101,
             length: 10,
@@ -47,7 +47,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 111,
+                        id: 56,
                     },
                     offset: 107,
                     length: 3,
@@ -65,12 +65,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            110: "src/built_in_types.graphql",
-            111: "0056_variables_are_input_types.graphql",
+            0: "built_in_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 111,
+                id: 56,
             },
             offset: 190,
             length: 12,
@@ -79,7 +79,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 111,
+                        id: 56,
                     },
                     offset: 197,
                     length: 5,
@@ -97,12 +97,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            110: "src/built_in_types.graphql",
-            111: "0056_variables_are_input_types.graphql",
+            0: "built_in_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 111,
+                id: 56,
             },
             offset: 266,
             length: 19,
@@ -111,7 +111,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 111,
+                        id: 56,
                     },
                     offset: 277,
                     length: 8,
@@ -129,12 +129,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            110: "src/built_in_types.graphql",
-            111: "0056_variables_are_input_types.graphql",
+            0: "built_in_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 111,
+                id: 56,
             },
             offset: 369,
             length: 17,
@@ -143,7 +143,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 111,
+                        id: 56,
                     },
                     offset: 369,
                     length: 17,

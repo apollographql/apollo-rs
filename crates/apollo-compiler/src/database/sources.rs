@@ -105,14 +105,20 @@ impl Source {
     }
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct FileId {
     id: u64,
 }
 
+impl From<u64> for FileId {
+    fn from(val: u64) -> Self {
+        Self { id: val }
+    }
+}
+
 /// The next file ID to use. This is global so file IDs do not conflict between different compiler
 /// instances.
-static NEXT: atomic::AtomicU64 = atomic::AtomicU64::new(0);
+static NEXT: atomic::AtomicU64 = atomic::AtomicU64::new(1);
 
 impl FileId {
     // Returning a different value every time does not sound like good `impl Default`
@@ -131,6 +137,6 @@ impl FileId {
     /// Reset file ID back to 0, used to get consistent results in tests.
     #[allow(unused)]
     pub(crate) fn reset() {
-        NEXT.store(0, atomic::Ordering::SeqCst);
+        NEXT.store(1, atomic::Ordering::SeqCst);
     }
 }

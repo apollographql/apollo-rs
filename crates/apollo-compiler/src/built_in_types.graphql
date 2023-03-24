@@ -92,7 +92,6 @@ enum __DirectiveLocation {
   INPUT_OBJECT
   INPUT_FIELD_DEFINITION
 }
-4.2.1
 
 "Directs the executor to skip this field or fragment when the `if` argument is true."
 directive @skip(

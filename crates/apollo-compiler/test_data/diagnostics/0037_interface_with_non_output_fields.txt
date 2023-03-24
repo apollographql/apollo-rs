@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            72: "src/built_in_types.graphql",
-            73: "0037_interface_with_non_output_fields.graphql",
+            0: "built_in_types.graphql",
+            37: "0037_interface_with_non_output_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 73,
+                id: 37,
             },
             offset: 415,
             length: 5,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 73,
+                        id: 37,
                     },
                     offset: 415,
                     length: 5,
@@ -30,12 +30,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            72: "src/built_in_types.graphql",
-            73: "0037_interface_with_non_output_fields.graphql",
+            0: "built_in_types.graphql",
+            37: "0037_interface_with_non_output_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 73,
+                id: 37,
             },
             offset: 230,
             length: 4,
@@ -44,7 +44,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 73,
+                        id: 37,
                     },
                     offset: 230,
                     length: 4,
@@ -59,12 +59,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            72: "src/built_in_types.graphql",
-            73: "0037_interface_with_non_output_fields.graphql",
+            0: "built_in_types.graphql",
+            37: "0037_interface_with_non_output_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 73,
+                id: 37,
             },
             offset: 237,
             length: 20,
@@ -73,7 +73,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 73,
+                        id: 37,
                     },
                     offset: 237,
                     length: 20,
@@ -91,12 +91,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            72: "src/built_in_types.graphql",
-            73: "0037_interface_with_non_output_fields.graphql",
+            0: "built_in_types.graphql",
+            37: "0037_interface_with_non_output_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 73,
+                id: 37,
             },
             offset: 266,
             length: 8,
@@ -105,7 +105,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 73,
+                        id: 37,
                     },
                     offset: 266,
                     length: 8,

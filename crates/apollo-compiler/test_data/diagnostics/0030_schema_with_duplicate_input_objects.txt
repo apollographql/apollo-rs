@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            58: "src/built_in_types.graphql",
-            59: "0030_schema_with_duplicate_input_objects.graphql",
+            0: "built_in_types.graphql",
+            30: "0030_schema_with_duplicate_input_objects.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 59,
+                id: 30,
             },
             offset: 162,
             length: 7,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 59,
+                        id: 30,
                     },
                     offset: 121,
                     length: 7,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 59,
+                        id: 30,
                     },
                     offset: 162,
                     length: 7,
@@ -41,14 +41,14 @@
             name: "Point2D",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 59,
+                    id: 30,
                 },
                 offset: 121,
                 length: 7,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 59,
+                    id: 30,
                 },
                 offset: 162,
                 length: 7,

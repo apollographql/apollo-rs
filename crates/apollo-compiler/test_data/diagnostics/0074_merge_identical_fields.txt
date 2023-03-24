@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            140: "src/built_in_types.graphql",
-            141: "0074_merge_identical_fields.graphql",
+            0: "built_in_types.graphql",
+            71: "0074_merge_identical_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 141,
+                id: 71,
             },
             offset: 109,
             length: 4,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 141,
+                        id: 71,
                     },
                     offset: 92,
                     length: 14,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 141,
+                        id: 71,
                     },
                     offset: 109,
                     length: 4,
@@ -40,14 +40,14 @@
             field: "name",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 141,
+                    id: 71,
                 },
                 offset: 92,
                 length: 14,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 141,
+                    id: 71,
                 },
                 offset: 109,
                 length: 4,
@@ -56,12 +56,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            140: "src/built_in_types.graphql",
-            141: "0074_merge_identical_fields.graphql",
+            0: "built_in_types.graphql",
+            71: "0074_merge_identical_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 141,
+                id: 71,
             },
             offset: 187,
             length: 14,
@@ -70,7 +70,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 141,
+                        id: 71,
                     },
                     offset: 174,
                     length: 10,
@@ -80,7 +80,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 141,
+                        id: 71,
                     },
                     offset: 187,
                     length: 14,
@@ -95,14 +95,14 @@
             field: "nickname",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 141,
+                    id: 71,
                 },
                 offset: 174,
                 length: 10,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 141,
+                    id: 71,
                 },
                 offset: 187,
                 length: 14,

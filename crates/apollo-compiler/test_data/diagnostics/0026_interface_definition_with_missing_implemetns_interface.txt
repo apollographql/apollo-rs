@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            50: "src/built_in_types.graphql",
-            51: "0026_interface_definition_with_missing_implemetns_interface.graphql",
+            0: "built_in_types.graphql",
+            26: "0026_interface_definition_with_missing_implemetns_interface.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 51,
+                id: 26,
             },
             offset: 176,
             length: 8,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 51,
+                        id: 26,
                     },
                     offset: 176,
                     length: 8,

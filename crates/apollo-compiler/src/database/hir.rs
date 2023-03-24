@@ -178,22 +178,10 @@ impl TypeDefinition {
 
     pub fn field(&self, db: &dyn HirDatabase, name: &str) -> Option<&FieldDefinition> {
         match self {
-            Self::ObjectTypeDefinition(def) => def
-                .field(name)
-                .or(def.implicit_fields(db).iter().find(|f| f.name() == name)),
-            Self::InterfaceTypeDefinition(def) => {
-                def.field(name).or(if def.implicit_field().name() == name {
-                    Some(def.implicit_field())
-                } else {
-                    None
-                })
-            }
+            Self::ObjectTypeDefinition(def) => def.field(db, name),
+            Self::InterfaceTypeDefinition(def) => def.field(name),
             Self::UnionTypeDefinition(def) => {
-                if def.implicit_field().name() == name {
-                    Some(def.implicit_field())
-                } else {
-                    None
-                }
+                def.implicit_fields().iter().find(|f| f.name() == name)
             }
             _ => None,
         }
@@ -1992,13 +1980,15 @@ impl ObjectTypeDefinition {
     }
 
     /// Find a field by its name, either in this object type definition or its extensions.
-    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
-        self.fields_by_name.get(
-            name,
-            self.self_fields(),
-            self.extensions(),
-            ObjectTypeExtension::fields_definition,
-        )
+    pub fn field(&self, db: &dyn HirDatabase, name: &str) -> Option<&FieldDefinition> {
+        self.fields_by_name
+            .get(
+                name,
+                self.self_fields(),
+                self.extensions(),
+                ObjectTypeExtension::fields_definition,
+            )
+            .or_else(|| self.implicit_fields(db).iter().find(|f| f.name() == name))
     }
 
     /// Introspection fields that must not be returned as part of `fields` method.
@@ -2519,7 +2509,7 @@ pub struct UnionTypeDefinition {
     pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<UnionTypeExtension>>,
     pub(crate) members_by_name: ByNameWithExtensions,
-    pub(crate) implicit_field: FieldDefinition,
+    pub(crate) implicit_fields: Arc<Vec<FieldDefinition>>,
 }
 
 impl UnionTypeDefinition {
@@ -2622,8 +2612,8 @@ impl UnionTypeDefinition {
         self.extensions.push(ext);
     }
 
-    pub fn implicit_field(&self) -> &FieldDefinition {
-        &self.implicit_field
+    pub fn implicit_fields(&self) -> &[FieldDefinition] {
+        self.implicit_fields.as_ref()
     }
 }
 
@@ -2661,7 +2651,7 @@ pub struct InterfaceTypeDefinition {
     pub(crate) extensions: Vec<Arc<InterfaceTypeExtension>>,
     pub(crate) fields_by_name: ByNameWithExtensions,
     pub(crate) implements_interfaces_by_name: ByNameWithExtensions,
-    pub(crate) implicit_field: FieldDefinition,
+    pub(crate) implicit_fields: Arc<Vec<FieldDefinition>>,
 }
 
 impl InterfaceTypeDefinition {
@@ -2767,12 +2757,14 @@ impl InterfaceTypeDefinition {
 
     /// Find a field by its name, either in this interface type definition or its extensions.
     pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
-        self.fields_by_name.get(
-            name,
-            self.self_fields(),
-            self.extensions(),
-            InterfaceTypeExtension::fields_definition,
-        )
+        self.fields_by_name
+            .get(
+                name,
+                self.self_fields(),
+                self.extensions(),
+                InterfaceTypeExtension::fields_definition,
+            )
+            .or_else(|| self.implicit_fields().iter().find(|f| f.name() == name))
     }
 
     /// Get the AST location information for this HIR node.
@@ -2800,8 +2792,8 @@ impl InterfaceTypeDefinition {
         self.extensions.push(ext);
     }
 
-    pub fn implicit_field(&self) -> &FieldDefinition {
-        &self.implicit_field
+    pub fn implicit_fields(&self) -> &[FieldDefinition] {
+        self.implicit_fields.as_ref()
     }
 }
 
@@ -3546,8 +3538,11 @@ mod tests {
             object.fields().map(|f| f.name()).collect::<Vec<_>>(),
             ["field", "field2", "field3"]
         );
-        assert_eq!(object.field("field").unwrap().ty().name(), "Int");
-        assert!(object.field("field4").is_none());
+        assert_eq!(
+            object.field(&compiler.db, "field").unwrap().ty().name(),
+            "Int"
+        );
+        assert!(object.field(&compiler.db, "field4").is_none());
 
         assert_eq!(
             object

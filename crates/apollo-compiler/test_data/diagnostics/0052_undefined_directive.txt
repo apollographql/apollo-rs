@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            102: "src/built_in_types.graphql",
-            103: "0052_undefined_directive.graphql",
+            0: "built_in_types.graphql",
+            52: "0052_undefined_directive.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 103,
+                id: 52,
             },
             offset: 46,
             length: 11,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 103,
+                        id: 52,
                     },
                     offset: 46,
                     length: 11,

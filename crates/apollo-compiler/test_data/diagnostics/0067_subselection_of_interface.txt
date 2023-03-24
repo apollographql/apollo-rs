@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            132: "src/built_in_types.graphql",
-            133: "0067_subselection_of_interface.graphql",
+            0: "built_in_types.graphql",
+            67: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 133,
+                id: 67,
             },
             offset: 31,
             length: 4,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 31,
                     length: 4,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 181,
                     length: 31,
@@ -38,12 +38,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            132: "src/built_in_types.graphql",
-            133: "0067_subselection_of_interface.graphql",
+            0: "built_in_types.graphql",
+            67: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 133,
+                id: 67,
             },
             offset: 38,
             length: 4,
@@ -52,7 +52,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 38,
                     length: 4,
@@ -62,7 +62,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 181,
                     length: 31,
@@ -75,12 +75,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            132: "src/built_in_types.graphql",
-            133: "0067_subselection_of_interface.graphql",
+            0: "built_in_types.graphql",
+            67: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 133,
+                id: 67,
             },
             offset: 45,
             length: 4,
@@ -89,7 +89,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 45,
                     length: 4,
@@ -99,7 +99,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 181,
                     length: 31,
@@ -112,12 +112,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            132: "src/built_in_types.graphql",
-            133: "0067_subselection_of_interface.graphql",
+            0: "built_in_types.graphql",
+            67: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 133,
+                id: 67,
             },
             offset: 52,
             length: 4,
@@ -126,7 +126,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 52,
                     length: 4,
@@ -136,7 +136,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 181,
                     length: 31,
@@ -149,12 +149,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            132: "src/built_in_types.graphql",
-            133: "0067_subselection_of_interface.graphql",
+            0: "built_in_types.graphql",
+            67: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 133,
+                id: 67,
             },
             offset: 59,
             length: 4,
@@ -163,7 +163,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 59,
                     length: 4,
@@ -173,7 +173,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 181,
                     length: 31,
@@ -186,12 +186,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            132: "src/built_in_types.graphql",
-            133: "0067_subselection_of_interface.graphql",
+            0: "built_in_types.graphql",
+            67: "0067_subselection_of_interface.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 133,
+                id: 67,
             },
             offset: 66,
             length: 4,
@@ -200,7 +200,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 66,
                     length: 4,
@@ -210,7 +210,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 133,
+                        id: 67,
                     },
                     offset: 181,
                     length: 31,

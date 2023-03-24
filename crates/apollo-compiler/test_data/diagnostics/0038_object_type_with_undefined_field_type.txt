@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            74: "src/built_in_types.graphql",
-            75: "0038_object_type_with_undefined_field_type.graphql",
+            0: "built_in_types.graphql",
+            38: "0038_object_type_with_undefined_field_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 75,
+                id: 38,
             },
             offset: 33,
             length: 3,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 75,
+                        id: 38,
                     },
                     offset: 33,
                     length: 3,
@@ -30,12 +30,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            74: "src/built_in_types.graphql",
-            75: "0038_object_type_with_undefined_field_type.graphql",
+            0: "built_in_types.graphql",
+            38: "0038_object_type_with_undefined_field_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 75,
+                id: 38,
             },
             offset: 53,
             length: 6,
@@ -44,7 +44,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 75,
+                        id: 38,
                     },
                     offset: 53,
                     length: 6,

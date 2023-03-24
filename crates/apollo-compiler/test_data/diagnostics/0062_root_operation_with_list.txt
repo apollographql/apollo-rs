@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            122: "src/built_in_types.graphql",
-            123: "0062_root_operation_with_list.graphql",
+            0: "built_in_types.graphql",
+            62: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 62,
             },
             offset: 18,
             length: 1,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 62,
                     },
                     offset: 18,
                     length: 1,
@@ -30,12 +30,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            122: "src/built_in_types.graphql",
-            123: "0062_root_operation_with_list.graphql",
+            0: "built_in_types.graphql",
+            62: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 62,
             },
             offset: 18,
             length: 1,
@@ -44,7 +44,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 62,
                     },
                     offset: 18,
                     length: 1,
@@ -59,12 +59,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            122: "src/built_in_types.graphql",
-            123: "0062_root_operation_with_list.graphql",
+            0: "built_in_types.graphql",
+            62: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 62,
             },
             offset: 19,
             length: 6,
@@ -73,7 +73,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 62,
                     },
                     offset: 19,
                     length: 6,
@@ -88,12 +88,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            122: "src/built_in_types.graphql",
-            123: "0062_root_operation_with_list.graphql",
+            0: "built_in_types.graphql",
+            62: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 62,
             },
             offset: 25,
             length: 1,
@@ -102,7 +102,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 62,
                     },
                     offset: 25,
                     length: 1,
@@ -117,12 +117,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            122: "src/built_in_types.graphql",
-            123: "0062_root_operation_with_list.graphql",
+            0: "built_in_types.graphql",
+            62: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 62,
             },
             offset: 27,
             length: 1,
@@ -131,7 +131,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 62,
                     },
                     offset: 27,
                     length: 1,
@@ -146,12 +146,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            122: "src/built_in_types.graphql",
-            123: "0062_root_operation_with_list.graphql",
+            0: "built_in_types.graphql",
+            62: "0062_root_operation_with_list.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 123,
+                id: 62,
             },
             offset: 0,
             length: 17,
@@ -160,7 +160,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 123,
+                        id: 62,
                     },
                     offset: 0,
                     length: 17,
