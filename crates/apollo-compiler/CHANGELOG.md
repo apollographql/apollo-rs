@@ -18,24 +18,31 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [0.7.0] (unreleased) - 2023-mm-dd
+# [0.7.0](https://crates.io/crates/apollo-compiler/0.7.0) - 2023-03-27
 
 > Important: X breaking changes below, indicated by **BREAKING**
 
+This release encompasses quite a few validation rules the compiler was missing.
+Here, we primarily focused on field and directive validation, as well as supporting
+multi-file diagnostics.
 ## BREAKING
-
-### Extensions are applied implicitly in HIR, [SimonSapin] in [pull/481], [pull/482], and [pull/484]
+- `find_operation` query now mimics spec's
+[`getOperation`](https://spec.graphql.org/October2021/#GetOperation())
+functionality and returns the anonymous operation if `None` is specified for
+operation name; by [lrlna] in [pull/447]
+- Extensions are applied implicitly in HIR by [SimonSapin] in [pull/481],
+[pull/482], and [pull/484]
 
 Adding a GraphQL type extension is similar to modifying a type.
 This release makes a number of breaking changes to API signatures and behavior
-so these modifications are be accounted for implicitly.
+so these modifications are accounted for implicitly.
 For example, `interface.field(name)` may now return a field
-from an `extend interface` extension as well as from the original `interface` definition.
+from an `extend interface` extension or from the original `interface` definition.
 We expect that most callers don’t need to tell the difference.
 For callers that do, methods with a `self_` prefix are added (or renamed)
 for accessing components of a definition itself as opposed to added by an extension.
 
-Renamed:
+Renamed methods:
 
 * `SchemaDefinition::root_operation_type_definition` → `self_root_operations`
 * `ObjectTypeDefinition::fields_definition` → `self_fields`
@@ -54,7 +61,8 @@ Renamed:
 * `InterfaceTypeDefiniton::directives` → `self_directives`
 * `InputObjectTypeDefiniton::directives` → `self_directives`
 
-Names freed by the above, redefined with new behavior (to consider extensions) and signature:
+Method names freed by the above are now redefined with new behaviour and
+signature, and include extensions:
 
 * `ObjectTypeDefinition::implements_interfaces() -> impl Iterator`
 * `InterfaceTypeDefinition::implements_interfaces() -> impl Iterator`
@@ -67,19 +75,20 @@ Names freed by the above, redefined with new behavior (to consider extensions) a
 * `InterfaceTypeDefiniton::directives() -> impl Iterator`
 * `InputObjectTypeDefiniton::directives() -> impl Iterator`
 
-Behavior and signature change (return the name of an object type instead of its definition):
+Methods whose behaviour and signature changed, where each method now returns the
+name of an object type instead of its definition:
 
 * `SchemaDefinition::query() -> Option<&str>`
 * `SchemaDefinition::mutation() -> Option<&str>`
 * `SchemaDefinition::subscription() -> Option<&str>`
 
-Behavior changed to consider extensions (no signature change):
+Methods whose behaviour changed to consider extensions, and no signature has changed
 
 * `TypeDefinition::field(name) -> Option`
 * `ObjectTypeDefinition::field(name) -> Option`
 * `InterfaceTypeDefinition::field(name) -> Option`
 
-New methods (that consider extensions):
+New methods which take extensions into consideration:
 
 * `SchemaDefinition::root_operations() -> impl Iterator`
 * `ObjectTypeDefinition::fields() -> impl Iterator`
@@ -94,15 +103,73 @@ New methods (that consider extensions):
 * `EnumTypeDefinition::values() -> impl Iterator`
 * `EnumTypeDefinition::value(name) -> Option`
 
-New methods, for every type that has a `directives` method:
+New methods for every type which have a `directives` method:
 
 * `directive_by_name(name) -> Option`
 * `directives_by_name(name) -> impl Iterator`
 
+## Features
+- support mutli-file diagnostics by [goto-bus-stop] in [pull/414]
+- validate directive locations by [lrlna] in [pull/417]
+- validate undefined directives by [lrlna] in [pull/417]
+- validate non-repeatable directives in a given location by [goto-bus-stop] in [pull/488]
+- validate conflicting fields in a selection set (spec: fields can merge) by [goto-bus-stop] in [pull/470]
+- validate introspection fields in subscriptions by [gocamille] in [pull/438]
+- validate argument correctnes by [goto-bus-stop] in [pull/452]
+- validate unique variables by [lrlna] in [pull/455]
+- validate variables are of input type by [lrlna] in [pull/455]
+- validate root operation type is of Object Type by [lrlna] in [pull/419]
+- validate nested fields in selection sets by [erikwrede] in [pull/441]
+- validate extension existance and kind by [goto-bus-stop] in [pull/458]
+- validate leaf field selection by [yanns] in [pull/465]
+- introduce `op.is_introspection` helper method by [jregistr] in [pull/421]
+- built-in graphql types, including introspection types, are now part of the
+compiler context by [lrlna] in [pull/489]
+
+## Fixes
+- fix variables in directive arguments being reported as unused [goto-bus-stop] in [pull/487]
+- `op.operation_ty()` does not deref [lrlna] in [pull/434]
+
+## Maintenance
+- tests for operation field type resolution v.s. type extensions by [SimonSapin] in [pull/492]
+- using [salsa::invoke] macro to annotate trait function location by [lrlna] in [pull/491]
+- use `Display` for `hir::OperationType` and `hir::DirectiveLocation` by [goto-bus-stop] in [pull/435]
+- rework and simplify validation database by [lrlna] in [pull/436]
+- reset `FileId` between directory tests by [goto-bus-stop] in [pull/437]
+- remove unncessary into_iter() calls by [goto-bus-stop] in [pull/472]
+- check test numbers are unique in test output files by [goto-bus-stop] in [pull/471]
+
 [SimonSapin]: https://github.com/SimonSapin
+[lrlna]: https://github.com/lrlna
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[jregistr]: https://github.com/jregistr
+[gocamille]: https://github.com/gocamille
+[erikwrede]: https://github.com/erikwrede
+[pull/414]: https://github.com/apollographql/apollo-rs/pull/414
+[pull/417]: https://github.com/apollographql/apollo-rs/pull/417
+[pull/419]: https://github.com/apollographql/apollo-rs/pull/419
+[pull/421]: https://github.com/apollographql/apollo-rs/pull/421
+[pull/434]: https://github.com/apollographql/apollo-rs/pull/434
+[pull/435]: https://github.com/apollographql/apollo-rs/pull/435
+[pull/436]: https://github.com/apollographql/apollo-rs/pull/436
+[pull/437]: https://github.com/apollographql/apollo-rs/pull/437
+[pull/441]: https://github.com/apollographql/apollo-rs/pull/441
+[pull/447]: https://github.com/apollographql/apollo-rs/pull/447
+[pull/452]: https://github.com/apollographql/apollo-rs/pull/452
+[pull/455]: https://github.com/apollographql/apollo-rs/pull/455
+[pull/458]: https://github.com/apollographql/apollo-rs/pull/458
+[pull/465]: https://github.com/apollographql/apollo-rs/pull/465
+[pull/470]: https://github.com/apollographql/apollo-rs/pull/470
+[pull/471]: https://github.com/apollographql/apollo-rs/pull/471
+[pull/472]: https://github.com/apollographql/apollo-rs/pull/472
 [pull/481]: https://github.com/apollographql/apollo-rs/pull/481
 [pull/482]: https://github.com/apollographql/apollo-rs/pull/482
 [pull/484]: https://github.com/apollographql/apollo-rs/pull/484
+[pull/487]: https://github.com/apollographql/apollo-rs/pull/487
+[pull/488]: https://github.com/apollographql/apollo-rs/pull/488
+[pull/489]: https://github.com/apollographql/apollo-rs/pull/489
+[pull/491]: https://github.com/apollographql/apollo-rs/pull/491
+[pull/492]: https://github.com/apollographql/apollo-rs/pull/492
 
 # [0.6.0](https://crates.io/crates/apollo-compiler/0.6.0) - 2023-01-18
 
