@@ -15,44 +15,15 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 0,
-                    },
-                    offset: 3063,
-                    length: 3,
-                },
-                text: "previous definition of `Int` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
                         id: 16,
                     },
                     offset: 37,
                     length: 3,
                 },
-                text: "`Int` redefined here",
+                text: "remove this scalar definition",
             },
         ],
-        help: Some(
-            "`Int` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "type",
-            name: "Int",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 0,
-                },
-                offset: 3063,
-                length: 3,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 16,
-                },
-                offset: 37,
-                length: 3,
-            },
-        },
+        help: None,
+        data: BuiltInScalarDefinition,
     },
 ]

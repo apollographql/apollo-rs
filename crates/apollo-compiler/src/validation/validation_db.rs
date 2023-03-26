@@ -16,6 +16,8 @@ use apollo_parser::ast::AstNode;
 
 use super::field;
 
+const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
+
 #[salsa::query_group(ValidationStorage)]
 pub trait ValidationDatabase:
     Upcast<dyn HirDatabase> + InputDatabase + AstDatabase + HirDatabase
@@ -284,28 +286,48 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
                     let (original_file_id, original) = entry.get();
                     let original_definition = (*original_file_id, original.syntax().text_range());
                     let redefined_definition = (file_id, name_node.syntax().text_range());
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            redefined_definition.into(),
-                            DiagnosticData::UniqueDefinition {
-                                ty: ty_,
-                                name: name.to_string(),
-                                original_definition: original_definition.into(),
-                                redefined_definition: redefined_definition.into(),
-                            },
-                        )
-                        .labels([
-                            Label::new(
-                                original_definition,
-                                format!("previous definition of `{name}` here"),
-                            ),
-                            Label::new(redefined_definition, format!("`{name}` redefined here")),
-                        ])
-                        .help(format!(
-                            "`{name}` must only be defined once in this document."
-                        )),
-                    );
+                    let is_built_in = db.input(file_id).source_type().is_built_in();
+                    let is_scalar = matches!(ast_def, ast::Definition::ScalarTypeDefinition(_));
+
+                    if is_scalar && BUILT_IN_SCALARS.contains(&name) && !is_built_in {
+                        diagnostics.push(
+                            ApolloDiagnostic::new(
+                                db,
+                                redefined_definition.into(),
+                                DiagnosticData::BuiltInScalarDefinition,
+                            )
+                            .label(Label::new(
+                                redefined_definition,
+                                "remove this scalar definition",
+                            )),
+                        );
+                    } else {
+                        diagnostics.push(
+                            ApolloDiagnostic::new(
+                                db,
+                                redefined_definition.into(),
+                                DiagnosticData::UniqueDefinition {
+                                    ty: ty_,
+                                    name: name.to_string(),
+                                    original_definition: original_definition.into(),
+                                    redefined_definition: redefined_definition.into(),
+                                },
+                            )
+                            .labels([
+                                Label::new(
+                                    original_definition,
+                                    format!("previous definition of `{name}` here"),
+                                ),
+                                Label::new(
+                                    redefined_definition,
+                                    format!("`{name}` redefined here"),
+                                ),
+                            ])
+                            .help(format!(
+                                "`{name}` must only be defined once in this document."
+                            )),
+                        );
+                    }
                 }
                 Entry::Vacant(entry) => {
                     entry.insert((file_id, name_node));
