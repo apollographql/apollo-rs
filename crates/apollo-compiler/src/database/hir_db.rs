@@ -243,9 +243,6 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     /// - `db.is_subtype("Baz".into(), "InterfaceType".into()) // true`
     #[salsa::transparent]
     fn is_subtype(&self, abstract_type: String, maybe_subtype: String) -> bool;
-
-    #[salsa::invoke(implicit_fields)]
-    fn implicit_fields(&self, type_name: String) -> ImplicitFields;
 }
 
 fn type_system_definitions(db: &dyn HirDatabase) -> Arc<TypeSystemDefinitions> {
@@ -686,6 +683,7 @@ fn object_type_definition(
     let implements_interfaces_by_name =
         ByNameWithExtensions::new(&implements_interfaces, ImplementsInterface::interface);
     let is_introspection = INTROSPECTION_OBJECT_TYS.contains(&obj_def.name()?.text().as_str());
+    let implicit_fields = Arc::new(vec![type_field(), typename_field(), schema_field()]);
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -700,6 +698,7 @@ fn object_type_definition(
         fields_by_name,
         implements_interfaces_by_name,
         is_introspection,
+        implicit_fields,
     })
 }
 
@@ -837,6 +836,7 @@ fn union_definition(
     let union_members = union_members(union_def.union_member_types(), file_id);
     let loc = location(file_id, union_def.syntax());
     let members_by_name = ByNameWithExtensions::new(&union_members, UnionMember::name);
+    let implicit_fields = Arc::new(vec![typename_field()]);
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -848,6 +848,7 @@ fn union_definition(
         loc,
         extensions: Vec::new(),
         members_by_name,
+        implicit_fields,
     })
 }
 
@@ -908,6 +909,7 @@ fn interface_definition(
     let fields_by_name = ByNameWithExtensions::new(&fields_definition, FieldDefinition::name);
     let implements_interfaces_by_name =
         ByNameWithExtensions::new(&implements_interfaces, ImplementsInterface::interface);
+    let implicit_fields = Arc::new(vec![typename_field()]);
 
     // TODO(@goto-bus-stop) when a name is missing on this,
     // we might still want to produce a HIR node, so we can validate other parts of the definition
@@ -921,6 +923,7 @@ fn interface_definition(
         extensions: Vec::new(),
         fields_by_name,
         implements_interfaces_by_name,
+        implicit_fields,
     })
 }
 
@@ -1023,33 +1026,6 @@ fn extension(db: &dyn HirDatabase, def: ast::Definition, file_id: FileId) -> Opt
             input_object_extension(db, def, file_id).map(TypeExtension::InputObjectTypeExtension)
         }
         _ => None,
-    }
-}
-
-fn implicit_fields(db: &dyn HirDatabase, type_name: String) -> ImplicitFields {
-    let is_root_query = db
-        .schema()
-        .root_operations()
-        .any(|op| op.operation_ty().is_query() && op.named_type().name() == type_name);
-    match db.find_type_definition_by_name(type_name) {
-        Some(def) => match def {
-            TypeDefinition::ObjectTypeDefinition(_) => {
-                if is_root_query {
-                    ImplicitFields(Arc::new(vec![
-                        typename_field(),
-                        type_field(),
-                        schema_field(),
-                    ]))
-                } else {
-                    ImplicitFields(Arc::new(vec![typename_field()]))
-                }
-            }
-            TypeDefinition::InterfaceTypeDefinition(_) | TypeDefinition::UnionTypeDefinition(_) => {
-                ImplicitFields(Arc::new(vec![typename_field()]))
-            }
-            _ => ImplicitFields(Arc::new(Vec::new())),
-        },
-        None => ImplicitFields(Arc::new(Vec::new())),
     }
 }
 
