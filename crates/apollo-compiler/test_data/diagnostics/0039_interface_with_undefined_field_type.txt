@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            39: "0039_interface_with_undefined_field_type.graphql",
             0: "built_in_types.graphql",
+            39: "0039_interface_with_undefined_field_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -30,8 +30,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            39: "0039_interface_with_undefined_field_type.graphql",
             0: "built_in_types.graphql",
+            39: "0039_interface_with_undefined_field_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

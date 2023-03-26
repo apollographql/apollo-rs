@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            35: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
             0: "built_in_types.graphql",
+            35: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -30,8 +30,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            35: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
             0: "built_in_types.graphql",
+            35: "0035_object_type_definition_with_missing_implements_interfaces_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

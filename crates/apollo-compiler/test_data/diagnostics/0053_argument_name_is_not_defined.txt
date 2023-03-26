@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            53: "0053_argument_name_is_not_defined.graphql",
             0: "built_in_types.graphql",
+            53: "0053_argument_name_is_not_defined.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -40,8 +40,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            53: "0053_argument_name_is_not_defined.graphql",
             0: "built_in_types.graphql",
+            53: "0053_argument_name_is_not_defined.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -79,8 +79,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            53: "0053_argument_name_is_not_defined.graphql",
             0: "built_in_types.graphql",
+            53: "0053_argument_name_is_not_defined.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

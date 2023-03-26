@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            41: "0041_subscription_operation_with_undefined_fields.graphql",
             0: "built_in_types.graphql",
+            41: "0041_subscription_operation_with_undefined_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

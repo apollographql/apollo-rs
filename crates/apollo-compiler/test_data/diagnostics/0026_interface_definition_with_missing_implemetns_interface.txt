@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            26: "0026_interface_definition_with_missing_implemetns_interface.graphql",
             0: "built_in_types.graphql",
+            26: "0026_interface_definition_with_missing_implemetns_interface.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
