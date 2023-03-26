@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             6: "0006_subscription_with_multiple_root_fields_in_inline_fragments.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

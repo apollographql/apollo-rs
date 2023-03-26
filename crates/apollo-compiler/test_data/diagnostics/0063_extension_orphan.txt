@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             63: "0063_extension_orphan.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -30,8 +30,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             63: "0063_extension_orphan.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -59,8 +59,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             63: "0063_extension_orphan.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -88,8 +88,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             63: "0063_extension_orphan.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -117,8 +117,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             63: "0063_extension_orphan.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -146,8 +146,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             63: "0063_extension_orphan.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {

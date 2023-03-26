@@ -1,8 +1,8 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             69: "0069_subselection_of_object.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -38,8 +38,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             69: "0069_subselection_of_object.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -75,8 +75,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             69: "0069_subselection_of_object.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -112,8 +112,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             69: "0069_subselection_of_object.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -149,8 +149,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             69: "0069_subselection_of_object.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
@@ -186,8 +186,8 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
             69: "0069_subselection_of_object.graphql",
+            0: "built_in_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
