@@ -215,11 +215,6 @@ pub enum DiagnosticData {
         // current field that should be defined
         field: String,
     },
-    #[error("missing `{ty}` type")]
-    MissingType {
-        // current type that should be defined
-        ty: String,
-    },
     #[error("the required argument `{name}` is not provided")]
     RequiredArgument { name: String },
     #[error(

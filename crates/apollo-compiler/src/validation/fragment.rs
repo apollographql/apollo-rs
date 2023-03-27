@@ -75,8 +75,8 @@ pub fn validate_fragment_spread_type_existence(
                     ApolloDiagnostic::new(
                         db,
                         def.loc().into(),
-                        DiagnosticData::MissingType {
-                            ty: type_cond.into(),
+                        DiagnosticData::UndefinedDefinition { 
+                            name: type_cond.into(), 
                         },
                     )
                     .label(Label::new(
@@ -97,8 +97,8 @@ pub fn validate_fragment_spread_type_existence(
                         ApolloDiagnostic::new(
                             db,
                             inline_def.loc().into(),
-                            DiagnosticData::MissingType {
-                                ty: inline_type_cond.into(),
+                            DiagnosticData::UndefinedDefinition { 
+                                name: inline_type_cond.into(), 
                             },
                         )
                         .label(Label::new(
@@ -135,8 +135,8 @@ pub fn validate_fragment_spread_type_existence(
                                 ApolloDiagnostic::new(
                                     db,
                                     inline_fragment.loc().into(),
-                                    DiagnosticData::MissingType {
-                                        ty: inline_type_cond.into(),
+                                    DiagnosticData::UndefinedDefinition { 
+                                        name: inline_type_cond.into(), 
                                     },
                                 )
                                 .label(Label::new(
