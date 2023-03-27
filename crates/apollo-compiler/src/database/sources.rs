@@ -134,7 +134,7 @@ impl FileId {
         self.id
     }
 
-    /// Reset file ID back to 0, used to get consistent results in tests.
+    /// Reset file ID back to 1, used to get consistent results in tests.
     #[allow(unused)]
     pub(crate) fn reset() {
         NEXT.store(1, atomic::Ordering::SeqCst);
