@@ -64,26 +64,25 @@ pub fn validate_object_type_definition(
 
             for missing_field in field_diff {
                 let name = &missing_field.name;
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        object.loc().into(),
-                        DiagnosticData::MissingField {
-                            field: name.to_string(),
-                        },
-                        )
-                    .labels([
-                            Label::new(
-                                missing_field.loc,
-                                format!("`{name}` was originally defined here"),
-                                ),
-                                Label::new(
-                                    object.loc(),
-                                    format!("add `{name}` field to this object"),
-                                    ),
-                    ])
-                    .help("An object must provide all fields required by the interfaces it implements"),
-                    )
+                let mut labels = vec![Label::new(
+                    object.loc(),
+                    format!("add `{name}` field to this object"),
+                )];
+                if let Some(loc) = missing_field.loc {
+                    labels.push(Label::new(
+                        loc,
+                        format!("`{name}` was originally defined here"),
+                    ));
+                };
+                diagnostics.push(ApolloDiagnostic::new(
+                    db,
+                    object.loc().into(),
+                    DiagnosticData::MissingField {
+                        field: name.to_string(),
+                    },
+                )
+                .labels(labels)
+                .help("An object must provide all fields required by the interfaces it implements"))
             }
         }
     }

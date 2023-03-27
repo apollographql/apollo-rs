@@ -23,10 +23,10 @@ pub(crate) fn types_definitions_by_name(
         };
     }
     add!(scalars, ScalarTypeDefinition);
-    add!(object_types, ObjectTypeDefinition);
+    add!(object_types_with_built_ins, ObjectTypeDefinition);
     add!(interfaces, InterfaceTypeDefinition);
     add!(unions, UnionTypeDefinition);
-    add!(enums, EnumTypeDefinition);
+    add!(enums_with_built_ins, EnumTypeDefinition);
     add!(input_objects, InputObjectTypeDefinition);
     Arc::new(map)
 }
@@ -66,7 +66,7 @@ pub(crate) fn find_object_type_by_name(
     db: &dyn HirDatabase,
     name: String,
 ) -> Option<Arc<ObjectTypeDefinition>> {
-    db.object_types().get(&name).cloned()
+    db.object_types_with_built_ins().get(&name).cloned()
 }
 
 pub(crate) fn find_union_by_name(
@@ -80,7 +80,14 @@ pub(crate) fn find_enum_by_name(
     db: &dyn HirDatabase,
     name: String,
 ) -> Option<Arc<EnumTypeDefinition>> {
-    db.enums().get(&name).cloned()
+    db.enums_with_built_ins().get(&name).cloned()
+}
+
+pub(crate) fn find_scalar_by_name(
+    db: &dyn HirDatabase,
+    name: String,
+) -> Option<Arc<ScalarTypeDefinition>> {
+    db.scalars().get(&name).cloned()
 }
 
 pub(crate) fn find_interface_by_name(
@@ -309,7 +316,7 @@ pub(crate) fn subtype_map(db: &dyn HirDatabase) -> Arc<HashMap<String, HashSet<S
             .or_default()
             .insert(value.to_owned())
     };
-    for (name, definition) in &*db.object_types() {
+    for (name, definition) in &*db.object_types_with_built_ins() {
         for implements in definition.self_implements_interfaces() {
             add(implements.interface(), name);
         }

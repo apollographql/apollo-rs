@@ -1,0 +1,116 @@
+- DOCUMENT@0..213
+    - OBJECT_TYPE_DEFINITION@0..59
+        - type_KW@0..4 "type"
+        - WHITESPACE@4..5 " "
+        - NAME@5..10
+            - IDENT@5..10 "Query"
+        - WHITESPACE@10..11 " "
+        - FIELDS_DEFINITION@11..59
+            - L_CURLY@11..12 "{"
+            - WHITESPACE@12..15 "\n  "
+            - FIELD_DEFINITION@15..25
+                - NAME@15..17
+                    - IDENT@15..17 "id"
+                - COLON@17..18 ":"
+                - WHITESPACE@18..19 " "
+                - NAMED_TYPE@19..25
+                    - NAME@19..25
+                        - IDENT@19..25 "String"
+            - WHITESPACE@25..28 "\n  "
+            - FIELD_DEFINITION@28..40
+                - NAME@28..32
+                    - IDENT@28..32 "name"
+                - COLON@32..33 ":"
+                - WHITESPACE@33..34 " "
+                - NAMED_TYPE@34..40
+                    - NAME@34..40
+                        - IDENT@34..40 "String"
+            - WHITESPACE@40..43 "\n  "
+            - FIELD_DEFINITION@43..57
+                - NAME@43..51
+                    - IDENT@43..51 "birthday"
+                - COLON@51..52 ":"
+                - WHITESPACE@52..53 " "
+                - NAMED_TYPE@53..57
+                    - NAME@53..57
+                        - IDENT@53..57 "Date"
+            - WHITESPACE@57..58 "\n"
+            - R_CURLY@58..59 "}"
+    - WHITESPACE@59..61 "\n\n"
+    - SCALAR_TYPE_DEFINITION@61..106
+        - scalar_KW@61..67 "scalar"
+        - WHITESPACE@67..68 " "
+        - NAME@68..72
+            - IDENT@68..72 "Date"
+        - WHITESPACE@72..73 " "
+        - DIRECTIVES@73..106
+            - DIRECTIVE@73..106
+                - AT@73..74 "@"
+                - NAME@74..85
+                    - IDENT@74..85 "specifiedBy"
+                - ARGUMENTS@85..106
+                    - L_PAREN@85..86 "("
+                    - ARGUMENT@86..105
+                        - NAME@86..89
+                            - IDENT@86..89 "url"
+                        - COLON@89..90 ":"
+                        - WHITESPACE@90..91 " "
+                        - STRING_VALUE@91..105
+                            - STRING@91..105 "\"datespec.com\""
+                    - R_PAREN@105..106 ")"
+    - WHITESPACE@106..108 "\n\n"
+    - OPERATION_DEFINITION@108..213
+        - SELECTION_SET@108..213
+            - L_CURLY@108..109 "{"
+            - WHITESPACE@109..112 "\n  "
+            - FIELD@112..211
+                - NAME@112..118
+                    - IDENT@112..118 "__type"
+                - ARGUMENTS@118..132
+                    - L_PAREN@118..119 "("
+                    - ARGUMENT@119..131
+                        - NAME@119..123
+                            - IDENT@119..123 "name"
+                        - COLON@123..124 ":"
+                        - WHITESPACE@124..125 " "
+                        - STRING_VALUE@125..131
+                            - STRING@125..131 "\"User\""
+                    - R_PAREN@131..132 ")"
+                - WHITESPACE@132..133 " "
+                - SELECTION_SET@133..211
+                    - L_CURLY@133..134 "{"
+                    - WHITESPACE@134..139 "\n    "
+                    - FIELD@139..143
+                        - NAME@139..143
+                            - IDENT@139..143 "name"
+                    - WHITESPACE@143..148 "\n    "
+                    - FIELD@148..207
+                        - NAME@148..154
+                            - IDENT@148..154 "fields"
+                        - WHITESPACE@154..155 " "
+                        - SELECTION_SET@155..207
+                            - L_CURLY@155..156 "{"
+                            - WHITESPACE@156..163 "\n      "
+                            - FIELD@163..167
+                                - NAME@163..167
+                                    - IDENT@163..167 "name"
+                            - WHITESPACE@167..174 "\n      "
+                            - FIELD@174..201
+                                - NAME@174..178
+                                    - IDENT@174..178 "type"
+                                - WHITESPACE@178..179 " "
+                                - SELECTION_SET@179..201
+                                    - L_CURLY@179..180 "{"
+                                    - WHITESPACE@180..189 "\n        "
+                                    - FIELD@189..193
+                                        - NAME@189..193
+                                            - IDENT@189..193 "name"
+                                    - WHITESPACE@193..200 "\n      "
+                                    - R_CURLY@200..201 "}"
+                            - WHITESPACE@201..206 "\n    "
+                            - R_CURLY@206..207 "}"
+                    - WHITESPACE@207..210 "\n  "
+                    - R_CURLY@210..211 "}"
+            - WHITESPACE@211..212 "\n"
+            - R_CURLY@212..213 "}"
+recursion limit: 4096, high: 10

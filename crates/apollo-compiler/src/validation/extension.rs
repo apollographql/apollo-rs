@@ -43,30 +43,29 @@ pub fn validate_extensions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic>
                 // Definition/extension kinds are the same
             }
             (definition, extension) => {
-                let mut diagnostic = ApolloDiagnostic::new(
-                    db,
-                    extension.loc().into(),
-                    DiagnosticData::WrongTypeExtension {
-                        name: extension.name().into(),
-                        definition: definition.loc().map(|loc| loc.into()),
-                        extension: extension.loc().into(),
-                    },
-                )
-                .label(Label::new(
-                    extension.loc(),
-                    format!(
-                        "adding {} {}, but `{}` is {} {}",
-                        particle(extension.kind()),
-                        extension.kind(),
-                        extension.name(),
-                        particle(definition.kind()),
-                        definition.kind()
-                    ),
-                ));
-                if let Some(def_loc) = definition.loc() {
-                    diagnostic = diagnostic.label(Label::new(def_loc, "original type defined here"))
-                }
-                diagnostics.push(diagnostic);
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        extension.loc().into(),
+                        DiagnosticData::WrongTypeExtension {
+                            name: extension.name().into(),
+                            definition: definition.loc().into(),
+                            extension: extension.loc().into(),
+                        },
+                    )
+                    .label(Label::new(
+                        extension.loc(),
+                        format!(
+                            "adding {} {}, but `{}` is {} {}",
+                            particle(extension.kind()),
+                            extension.kind(),
+                            extension.name(),
+                            particle(definition.kind()),
+                            definition.kind()
+                        ),
+                    ))
+                    .label(Label::new(definition.loc(), "original type defined here")),
+                );
             }
         }
     }

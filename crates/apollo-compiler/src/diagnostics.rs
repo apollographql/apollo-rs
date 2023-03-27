@@ -191,7 +191,7 @@ pub enum DiagnosticData {
         /// Name of the type being extended
         name: String,
         /// Location of the original definition. This may be None when extending a builtin GraphQL type.
-        definition: Option<DiagnosticLocation>,
+        definition: DiagnosticLocation,
         /// Location of the extension
         extension: DiagnosticLocation,
     },
@@ -260,7 +260,7 @@ pub enum DiagnosticData {
         /// current location where the directive is used
         dir_loc: DirectiveLocation,
         /// The source location where the directive that's being used was defined.
-        directive_def: Option<DiagnosticLocation>,
+        directive_def: DiagnosticLocation,
     },
     #[error("non-repeatable directive {name} can only be used once per location")]
     UniqueDirective {

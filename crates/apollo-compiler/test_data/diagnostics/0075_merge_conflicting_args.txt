@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            71: "0075_merge_conflicting_args.graphql",
+            0: "built_in_types.graphql",
+            72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 71,
+                id: 72,
             },
             offset: 218,
             length: 33,
@@ -14,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 199,
                     length: 15,
@@ -24,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 234,
                     length: 16,
@@ -39,14 +40,14 @@
             field: "doesKnowCommand",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 183,
                 length: 32,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 218,
                 length: 33,
@@ -55,11 +56,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            71: "0075_merge_conflicting_args.graphql",
+            0: "built_in_types.graphql",
+            72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 71,
+                id: 72,
             },
             offset: 337,
             length: 40,
@@ -68,7 +70,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 318,
                     length: 15,
@@ -78,7 +80,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 353,
                     length: 23,
@@ -93,14 +95,14 @@
             field: "doesKnowCommand",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 302,
                 length: 32,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 337,
                 length: 40,
@@ -109,11 +111,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            71: "0075_merge_conflicting_args.graphql",
+            0: "built_in_types.graphql",
+            72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 71,
+                id: 72,
             },
             offset: 464,
             length: 36,
@@ -122,7 +125,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 441,
                     length: 19,
@@ -132,7 +135,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 480,
                     length: 19,
@@ -147,14 +150,14 @@
             field: "doesKnowCommand",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 425,
                 length: 36,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 464,
                 length: 36,
@@ -163,11 +166,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            71: "0075_merge_conflicting_args.graphql",
+            0: "built_in_types.graphql",
+            72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 71,
+                id: 72,
             },
             offset: 573,
             length: 15,
@@ -176,7 +180,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 554,
                     length: 15,
@@ -186,7 +190,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 573,
                     length: 15,
@@ -201,14 +205,14 @@
             field: "doesKnowCommand",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 538,
                 length: 32,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 573,
                 length: 15,
@@ -217,11 +221,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            71: "0075_merge_conflicting_args.graphql",
+            0: "built_in_types.graphql",
+            72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 71,
+                id: 72,
             },
             offset: 649,
             length: 18,
@@ -230,7 +235,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 641,
                     length: 4,
@@ -240,7 +245,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 649,
                     length: 18,
@@ -255,14 +260,14 @@
             field: "isAtLocation",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 628,
                 length: 18,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 649,
                 length: 18,

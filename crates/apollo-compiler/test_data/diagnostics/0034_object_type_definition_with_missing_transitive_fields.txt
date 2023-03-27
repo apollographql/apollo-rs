@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            33: "0034_object_type_definition_with_missing_transitive_fields.graphql",
+            0: "built_in_types.graphql",
+            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 33,
+                id: 34,
             },
             offset: 0,
             length: 56,
@@ -14,22 +15,22 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 33,
-                    },
-                    offset: 77,
-                    length: 7,
-                },
-                text: "`id` was originally defined here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 33,
+                        id: 34,
                     },
                     offset: 0,
                     length: 56,
                 },
                 text: "add `id` field to this object",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 34,
+                    },
+                    offset: 77,
+                    length: 7,
+                },
+                text: "`id` was originally defined here",
             },
         ],
         help: Some(
@@ -41,11 +42,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            33: "0034_object_type_definition_with_missing_transitive_fields.graphql",
+            0: "built_in_types.graphql",
+            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 33,
+                id: 34,
             },
             offset: 0,
             length: 56,
@@ -54,22 +56,22 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 33,
-                    },
-                    offset: 111,
-                    length: 10,
-                },
-                text: "`width` was originally defined here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 33,
+                        id: 34,
                     },
                     offset: 0,
                     length: 56,
                 },
                 text: "add `width` field to this object",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 34,
+                    },
+                    offset: 111,
+                    length: 10,
+                },
+                text: "`width` was originally defined here",
             },
         ],
         help: Some(

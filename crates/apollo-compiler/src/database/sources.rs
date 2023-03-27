@@ -8,6 +8,41 @@ pub enum SourceType {
     Schema,
     Query,
     Document,
+    BuiltIn,
+}
+
+impl SourceType {
+    /// Returns `true` if the source type is [`BuiltIn`].
+    ///
+    /// [`BuiltIn`]: SourceType::BuiltIn
+    #[must_use]
+    pub fn is_built_in(&self) -> bool {
+        matches!(self, Self::BuiltIn)
+    }
+
+    /// Returns `true` if the source type is [`Document`].
+    ///
+    /// [`Document`]: SourceType::Document
+    #[must_use]
+    pub fn is_document(&self) -> bool {
+        matches!(self, Self::Document)
+    }
+
+    /// Returns `true` if the source type is [`Query`].
+    ///
+    /// [`Query`]: SourceType::Query
+    #[must_use]
+    pub fn is_query(&self) -> bool {
+        matches!(self, Self::Query)
+    }
+
+    /// Returns `true` if the source type is [`Schema`].
+    ///
+    /// [`Schema`]: SourceType::Schema
+    #[must_use]
+    pub fn is_schema(&self) -> bool {
+        matches!(self, Self::Schema)
+    }
 }
 
 /// Represents a GraphQL source file.
@@ -48,6 +83,14 @@ impl Source {
             text: text.into(),
         }
     }
+    /// Create a GraphQL type system file with built in types.
+    pub(crate) fn built_in(filename: PathBuf, text: impl Into<Arc<str>>) -> Self {
+        Self {
+            ty: SourceType::BuiltIn,
+            filename,
+            text: text.into(),
+        }
+    }
 
     pub fn filename(&self) -> &Path {
         &self.filename
@@ -62,14 +105,20 @@ impl Source {
     }
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct FileId {
     id: u64,
 }
 
+impl From<u64> for FileId {
+    fn from(val: u64) -> Self {
+        Self { id: val }
+    }
+}
+
 /// The next file ID to use. This is global so file IDs do not conflict between different compiler
 /// instances.
-static NEXT: atomic::AtomicU64 = atomic::AtomicU64::new(0);
+static NEXT: atomic::AtomicU64 = atomic::AtomicU64::new(1);
 
 impl FileId {
     // Returning a different value every time does not sound like good `impl Default`
@@ -85,9 +134,9 @@ impl FileId {
         self.id
     }
 
-    /// Reset file ID back to 0, used to get consistent results in tests.
+    /// Reset file ID back to 1, used to get consistent results in tests.
     #[allow(unused)]
     pub(crate) fn reset() {
-        NEXT.store(0, atomic::Ordering::SeqCst);
+        NEXT.store(1, atomic::Ordering::SeqCst);
     }
 }
