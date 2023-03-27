@@ -14,8 +14,6 @@ use crate::hir::*;
 use crate::AstDatabase;
 use crate::InputDatabase;
 
-use super::document;
-
 const INTROSPECTION_OBJECT_TYS: [&str; 6] = [
     "__Schema",
     "__Type",
