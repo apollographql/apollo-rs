@@ -169,8 +169,6 @@ pub fn validate_fragment_on_composite_types(
     db: &dyn ValidationDatabase,
     file_id: FileId,
 ) -> Vec<ApolloDiagnostic> {
-    let mut detected_scalars = std::collections::HashSet::new();
-    let mut detected_inline_scalars = std::collections::HashSet::new();
     let mut invalid_fragments = std::collections::HashSet::new();
     let mut invalid_inline_fragments = std::collections::HashSet::new();
 
@@ -179,13 +177,14 @@ pub fn validate_fragment_on_composite_types(
         .values()
         .flat_map(|def| {
             let type_cond = def.type_condition();
+            let ty_def = db.find_type_definition_by_name(type_cond.to_owned());
+            let is_scalar = ty_def.map_or(false, |ty| ty.is_scalar_type_definition());
 
             let mut fragment_diagnostics = Vec::new();
 
-            if BUILT_IN_SCALARS.contains(&type_cond) && !detected_scalars.contains(type_cond) {
+            if is_scalar {
                 let name = def.name();
                 if invalid_fragments.insert((name.to_string(), type_cond.to_owned())) {
-                    detected_scalars.insert(type_cond.to_owned());
                     fragment_diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
@@ -205,15 +204,15 @@ pub fn validate_fragment_on_composite_types(
 
             for inline_def in def.selection_set().inline_fragments().iter() {
                 let inline_type_cond = inline_def.type_condition().unwrap_or_default();
+                let inline_ty_def = db.find_type_definition_by_name(inline_type_cond.to_owned());
+                let inline_is_scalar =
+                    inline_ty_def.map_or(false, |ty| ty.is_scalar_type_definition());
 
-                if BUILT_IN_SCALARS.contains(&inline_type_cond)
-                    && !detected_inline_scalars.contains(inline_type_cond)
-                {
+                if inline_is_scalar {
                     let inline_name = def.name().to_string();
                     if invalid_inline_fragments
                         .insert((inline_name.clone(), inline_type_cond.to_owned()))
                     {
-                        detected_inline_scalars.insert(inline_type_cond.to_owned());
                         fragment_diagnostics.push(
                             ApolloDiagnostic::new(
                                 db,
