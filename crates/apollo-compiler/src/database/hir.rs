@@ -2611,7 +2611,7 @@ impl UnionTypeDefinition {
         self.extensions.push(ext);
     }
 
-    pub fn implicit_fields(&self) -> &[FieldDefinition] {
+    pub(crate) fn implicit_fields(&self) -> &[FieldDefinition] {
         self.implicit_fields.as_ref()
     }
 }
