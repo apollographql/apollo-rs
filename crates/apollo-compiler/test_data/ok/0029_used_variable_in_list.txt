@@ -1,0 +1,119 @@
+- DOCUMENT@0..213
+    - OBJECT_TYPE_DEFINITION@0..65
+        - type_KW@0..4 "type"
+        - WHITESPACE@4..5 " "
+        - NAME@5..12
+            - IDENT@5..12 "Product"
+        - WHITESPACE@12..13 " "
+        - FIELDS_DEFINITION@13..65
+            - L_CURLY@13..14 "{"
+            - WHITESPACE@14..17 "\n  "
+            - FIELD_DEFINITION@17..63
+                - NAME@17..27
+                    - IDENT@17..27 "attributes"
+                - ARGUMENTS_DEFINITION@27..52
+                    - L_PAREN@27..28 "("
+                    - INPUT_VALUE_DEFINITION@28..51
+                        - NAME@28..40
+                            - IDENT@28..40 "includeNames"
+                        - COLON@40..41 ":"
+                        - WHITESPACE@41..42 " "
+                        - LIST_TYPE@42..51
+                            - L_BRACK@42..43 "["
+                            - NON_NULL_TYPE@43..50
+                                - NAMED_TYPE@43..49
+                                    - NAME@43..49
+                                        - IDENT@43..49 "String"
+                                - BANG@49..50 "!"
+                            - R_BRACK@50..51 "]"
+                    - R_PAREN@51..52 ")"
+                - COLON@52..53 ":"
+                - WHITESPACE@53..54 " "
+                - LIST_TYPE@54..63
+                    - L_BRACK@54..55 "["
+                    - NON_NULL_TYPE@55..62
+                        - NAMED_TYPE@55..61
+                            - NAME@55..61
+                                - IDENT@55..61 "String"
+                        - BANG@61..62 "!"
+                    - R_BRACK@62..63 "]"
+            - WHITESPACE@63..64 "\n"
+            - R_CURLY@64..65 "}"
+    - WHITESPACE@65..67 "\n\n"
+    - OBJECT_TYPE_DEFINITION@67..106
+        - type_KW@67..71 "type"
+        - WHITESPACE@71..72 " "
+        - NAME@72..77
+            - IDENT@72..77 "Query"
+        - WHITESPACE@77..78 " "
+        - FIELDS_DEFINITION@78..106
+            - L_CURLY@78..79 "{"
+            - WHITESPACE@79..82 "\n  "
+            - FIELD_DEFINITION@82..104
+                - NAME@82..93
+                    - IDENT@82..93 "topProducts"
+                - COLON@93..94 ":"
+                - WHITESPACE@94..95 " "
+                - LIST_TYPE@95..104
+                    - L_BRACK@95..96 "["
+                    - NAMED_TYPE@96..103
+                        - NAME@96..103
+                            - IDENT@96..103 "Product"
+                    - R_BRACK@103..104 "]"
+            - WHITESPACE@104..105 "\n"
+            - R_CURLY@105..106 "}"
+    - WHITESPACE@106..108 "\n\n"
+    - OPERATION_DEFINITION@108..212
+        - OPERATION_TYPE@108..113
+            - query_KW@108..113 "query"
+        - WHITESPACE@113..114 " "
+        - VARIABLE_DEFINITIONS@114..139
+            - L_PAREN@114..115 "("
+            - VARIABLE_DEFINITION@115..138
+                - VARIABLE@115..129
+                    - DOLLAR@115..116 "$"
+                    - NAME@116..129
+                        - IDENT@116..129 "attributeName"
+                - COLON@129..130 ":"
+                - WHITESPACE@130..131 " "
+                - NON_NULL_TYPE@131..138
+                    - NAMED_TYPE@131..137
+                        - NAME@131..137
+                            - IDENT@131..137 "String"
+                    - BANG@137..138 "!"
+            - R_PAREN@138..139 ")"
+        - WHITESPACE@139..140 " "
+        - SELECTION_SET@140..212
+            - L_CURLY@140..141 "{"
+            - WHITESPACE@141..144 "\n  "
+            - FIELD@144..209
+                - NAME@144..155
+                    - IDENT@144..155 "topProducts"
+                - WHITESPACE@155..156 " "
+                - SELECTION_SET@156..209
+                    - L_CURLY@156..157 "{"
+                    - WHITESPACE@157..163 " \n    "
+                    - FIELD@163..205
+                        - NAME@163..173
+                            - IDENT@163..173 "attributes"
+                        - ARGUMENTS@173..205
+                            - L_PAREN@173..174 "("
+                            - ARGUMENT@174..204
+                                - NAME@174..186
+                                    - IDENT@174..186 "includeNames"
+                                - COLON@186..187 ":"
+                                - WHITESPACE@187..188 " "
+                                - LIST_VALUE@188..204
+                                    - L_BRACK@188..189 "["
+                                    - VARIABLE@189..203
+                                        - DOLLAR@189..190 "$"
+                                        - NAME@190..203
+                                            - IDENT@190..203 "attributeName"
+                                    - R_BRACK@203..204 "]"
+                            - R_PAREN@204..205 ")"
+                    - WHITESPACE@205..208 "\n  "
+                    - R_CURLY@208..209 "}"
+            - WHITESPACE@209..211 " \n"
+            - R_CURLY@211..212 "}"
+    - WHITESPACE@212..213 "\n"
+recursion limit: 4096, high: 4
