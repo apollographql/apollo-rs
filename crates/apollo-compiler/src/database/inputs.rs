@@ -45,7 +45,11 @@ impl AriadneCache<FileId> for &SourceCache {
 impl std::fmt::Debug for SourceCache {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_map()
-            .entries(self.paths.iter().map(|(id, path)| (id.as_u64(), path)))
+            .entries({
+                let mut paths: Vec<_> = self.paths.iter().collect();
+                paths.sort_by(|a, b| a.0.cmp(b.0));
+                paths.into_iter().map(|(id, path)| (id.as_u64(), path))
+            })
             .finish()
     }
 }
@@ -74,6 +78,9 @@ pub trait InputDatabase {
     /// Get all file ids currently in the compiler.
     #[salsa::input]
     fn source_files(&self) -> Vec<FileId>;
+
+    /// Find source file by file name.
+    fn source_file(&self, path: PathBuf) -> Option<FileId>;
 
     /// Get the GraphQL source text for a file, split up into lines for
     /// printing diagnostics.
@@ -104,6 +111,13 @@ fn source_code(db: &dyn InputDatabase, file_id: FileId) -> Arc<str> {
     db.input(file_id).text()
 }
 
+fn source_file(db: &dyn InputDatabase, path: PathBuf) -> Option<FileId> {
+    db.source_files()
+        .iter()
+        .find(|id| db.input(**id).filename() == path)
+        .copied()
+}
+
 fn source_type(db: &dyn InputDatabase, file_id: FileId) -> SourceType {
     db.input(file_id).source_type()
 }
@@ -132,7 +146,7 @@ fn type_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {
         .filter(|source| {
             matches!(
                 db.source_type(*source),
-                SourceType::Schema | SourceType::Document
+                SourceType::Schema | SourceType::Document | SourceType::BuiltIn
             )
         })
         .collect()

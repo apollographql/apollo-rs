@@ -176,21 +176,24 @@ impl TypeDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
+    pub fn field(&self, db: &dyn HirDatabase, name: &str) -> Option<&FieldDefinition> {
         match self {
-            Self::ObjectTypeDefinition(def) => def.field(name),
+            Self::ObjectTypeDefinition(def) => def.field(db, name),
             Self::InterfaceTypeDefinition(def) => def.field(name),
+            Self::UnionTypeDefinition(def) => {
+                def.implicit_fields().iter().find(|f| f.name() == name)
+            }
             _ => None,
         }
     }
 
-    pub fn loc(&self) -> Option<HirNodeLocation> {
+    pub fn loc(&self) -> HirNodeLocation {
         match self {
-            Self::ObjectTypeDefinition(def) => Some(def.loc()),
-            Self::InterfaceTypeDefinition(def) => Some(def.loc()),
-            Self::UnionTypeDefinition(def) => Some(def.loc()),
-            Self::EnumTypeDefinition(def) => Some(def.loc()),
-            Self::InputObjectTypeDefinition(def) => Some(def.loc()),
+            Self::ObjectTypeDefinition(def) => def.loc(),
+            Self::InterfaceTypeDefinition(def) => def.loc(),
+            Self::UnionTypeDefinition(def) => def.loc(),
+            Self::EnumTypeDefinition(def) => def.loc(),
+            Self::InputObjectTypeDefinition(def) => def.loc(),
             Self::ScalarTypeDefinition(def) => def.loc(),
         }
     }
@@ -453,7 +456,7 @@ impl OperationDefinition {
             OperationType::Mutation => schema.mutation()?,
             OperationType::Subscription => schema.subscription()?,
         };
-        db.object_types().get(name).cloned()
+        db.object_types_with_built_ins().get(name).cloned()
     }
 
     /// Get a reference to the operation definition's variables.
@@ -803,7 +806,7 @@ pub struct DirectiveDefinition {
     pub(crate) arguments: ArgumentsDefinition,
     pub(crate) repeatable: bool,
     pub(crate) directive_locations: Arc<Vec<DirectiveLocation>>,
-    pub(crate) loc: Option<HirNodeLocation>,
+    pub(crate) loc: HirNodeLocation,
 }
 
 impl DirectiveDefinition {
@@ -838,7 +841,7 @@ impl DirectiveDefinition {
     }
 
     /// Get the AST location information for this HIR node.
-    pub fn loc(&self) -> Option<HirNodeLocation> {
+    pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
 
@@ -853,6 +856,15 @@ impl DirectiveDefinition {
             }),
             _ => None,
         }
+    }
+
+    /// Checks if current directive is one of built-in directives - `@skip`,
+    /// `@include`, `@deprecated`, `@specifiedBy`.
+    pub fn is_built_in(&self) -> bool {
+        matches!(
+            self.name(),
+            "skip" | "include" | "deprecated" | "specifiedBy"
+        )
     }
 }
 
@@ -1369,7 +1381,7 @@ impl Field {
     pub fn ty(&self, db: &dyn HirDatabase) -> Option<Type> {
         let def = db
             .find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())?
-            .field(self.name())?
+            .field(db, self.name())?
             .ty()
             .to_owned();
         Some(def)
@@ -1460,7 +1472,8 @@ impl Field {
         self.loc
     }
 
-    /// returns true if this is an introspection field (i.e. it's [`Self::name()`] is one of __type, or __schema).
+    /// Returns true if this is an introspection field (i.e. it's
+    /// [`Self::name()`] is one of __type, or __schema).
     pub fn is_introspection(&self) -> bool {
         let field_name = self.name();
         field_name == "__type" || field_name == "__schema" || field_name == "__typename"
@@ -1608,7 +1621,8 @@ impl FragmentSpread {
         self.loc
     }
 
-    /// Returns true if the fragment referenced by this spread exists and its [`SelectionSet`] is an introspection.
+    /// Returns true if the fragment referenced by this spread exists and its
+    /// [`SelectionSet`] is an introspection.
     pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
         let maybe_fragment = self.fragment(db);
         maybe_fragment.map_or(false, |fragment| {
@@ -1656,9 +1670,8 @@ impl Float {
     }
 }
 
-/// When some item (for example fields of an object type) have unique names
-/// and may be found on type extensions, this pre-computes where to find
-/// each item from its name
+/// This pre-computes where to find items such as fields of an object type on a
+/// type extension based on the item's name.
 #[derive(Clone, Debug, Eq)]
 pub(crate) struct ByNameWithExtensions {
     /// `(None, i)` designates `def.example[i]`.
@@ -1906,6 +1919,8 @@ pub struct ObjectTypeDefinition {
     pub(crate) extensions: Vec<Arc<ObjectTypeExtension>>,
     pub(crate) fields_by_name: ByNameWithExtensions,
     pub(crate) implements_interfaces_by_name: ByNameWithExtensions,
+    pub(crate) is_introspection: bool,
+    pub(crate) implicit_fields: Arc<Vec<FieldDefinition>>,
 }
 
 impl ObjectTypeDefinition {
@@ -1979,13 +1994,15 @@ impl ObjectTypeDefinition {
     }
 
     /// Find a field by its name, either in this object type definition or its extensions.
-    pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
-        self.fields_by_name.get(
-            name,
-            self.self_fields(),
-            self.extensions(),
-            ObjectTypeExtension::fields_definition,
-        )
+    pub fn field(&self, db: &dyn HirDatabase, name: &str) -> Option<&FieldDefinition> {
+        self.fields_by_name
+            .get(
+                name,
+                self.self_fields(),
+                self.extensions(),
+                ObjectTypeExtension::fields_definition,
+            )
+            .or_else(|| self.implicit_fields(db).iter().find(|f| f.name() == name))
     }
 
     /// Returns interfaces implemented by this object type definition,
@@ -2043,6 +2060,33 @@ impl ObjectTypeDefinition {
         );
         self.extensions.push(ext);
     }
+
+    /// Returns `true` if this Object Type Definition is one of the
+    /// introspection types:
+    ///
+    /// `__Schema`, `__Type`, `__Field`, `__InputValue`,
+    /// `__EnumValue`, `__Directive`
+    pub fn is_introspection(&self) -> bool {
+        self.is_introspection
+    }
+
+    pub(crate) fn implicit_fields(&self, db: &dyn HirDatabase) -> &[FieldDefinition] {
+        let is_root_query = db
+            .schema()
+            .root_operations()
+            .any(|op| op.operation_ty().is_query() && op.named_type().name() == self.name());
+        if is_root_query {
+            self.implicit_fields.as_ref()
+        } else {
+            let position = self
+                .implicit_fields
+                .iter()
+                .cloned()
+                .position(|f| f.name() == "__typename")
+                .unwrap();
+            &self.implicit_fields[position..position + 1]
+        }
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -2078,7 +2122,7 @@ pub struct FieldDefinition {
     pub(crate) arguments: ArgumentsDefinition,
     pub(crate) ty: Type,
     pub(crate) directives: Arc<Vec<Directive>>,
-    pub(crate) loc: HirNodeLocation,
+    pub(crate) loc: Option<HirNodeLocation>,
 }
 
 impl FieldDefinition {
@@ -2117,7 +2161,7 @@ impl FieldDefinition {
     }
 
     /// Get the AST location information for this HIR node.
-    pub fn loc(&self) -> HirNodeLocation {
+    pub fn loc(&self) -> Option<HirNodeLocation> {
         self.loc
     }
 
@@ -2223,7 +2267,7 @@ pub struct ScalarTypeDefinition {
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) built_in: bool,
-    pub(crate) loc: Option<HirNodeLocation>,
+    pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<ScalarTypeExtension>>,
 }
 
@@ -2287,7 +2331,7 @@ impl ScalarTypeDefinition {
     }
 
     /// Get the AST location information for this HIR node.
-    pub fn loc(&self) -> Option<HirNodeLocation> {
+    pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
 
@@ -2310,6 +2354,7 @@ pub struct EnumTypeDefinition {
     pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<EnumTypeExtension>>,
     pub(crate) values_by_name: ByNameWithExtensions,
+    pub(crate) is_introspection: bool,
 }
 
 impl EnumTypeDefinition {
@@ -2410,6 +2455,14 @@ impl EnumTypeDefinition {
         );
         self.extensions.push(ext);
     }
+
+    /// Returns `true` if this Object Type Definition is one of the
+    /// introspection types:
+    ///
+    /// `__TypeKind`, `__DirectiveLocation`
+    pub fn is_introspection(&self) -> bool {
+        self.is_introspection
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -2469,6 +2522,7 @@ pub struct UnionTypeDefinition {
     pub(crate) loc: HirNodeLocation,
     pub(crate) extensions: Vec<Arc<UnionTypeExtension>>,
     pub(crate) members_by_name: ByNameWithExtensions,
+    pub(crate) implicit_fields: Arc<Vec<FieldDefinition>>,
 }
 
 impl UnionTypeDefinition {
@@ -2570,6 +2624,10 @@ impl UnionTypeDefinition {
             .add_extension(next_index, ext.union_members(), UnionMember::name);
         self.extensions.push(ext);
     }
+
+    pub(crate) fn implicit_fields(&self) -> &[FieldDefinition] {
+        self.implicit_fields.as_ref()
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -2606,6 +2664,7 @@ pub struct InterfaceTypeDefinition {
     pub(crate) extensions: Vec<Arc<InterfaceTypeExtension>>,
     pub(crate) fields_by_name: ByNameWithExtensions,
     pub(crate) implements_interfaces_by_name: ByNameWithExtensions,
+    pub(crate) implicit_fields: Arc<Vec<FieldDefinition>>,
 }
 
 impl InterfaceTypeDefinition {
@@ -2711,12 +2770,14 @@ impl InterfaceTypeDefinition {
 
     /// Find a field by its name, either in this interface type definition or its extensions.
     pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
-        self.fields_by_name.get(
-            name,
-            self.self_fields(),
-            self.extensions(),
-            InterfaceTypeExtension::fields_definition,
-        )
+        self.fields_by_name
+            .get(
+                name,
+                self.self_fields(),
+                self.extensions(),
+                InterfaceTypeExtension::fields_definition,
+            )
+            .or_else(|| self.implicit_fields().iter().find(|f| f.name() == name))
     }
 
     /// Get the AST location information for this HIR node.
@@ -2742,6 +2803,10 @@ impl InterfaceTypeDefinition {
             ImplementsInterface::interface,
         );
         self.extensions.push(ext);
+    }
+
+    pub(crate) fn implicit_fields(&self) -> &[FieldDefinition] {
+        self.implicit_fields.as_ref()
     }
 }
 
@@ -3491,8 +3556,11 @@ mod tests {
             object.fields().map(|f| f.name()).collect::<Vec<_>>(),
             ["field", "field2", "field3"]
         );
-        assert_eq!(object.field("field").unwrap().ty().name(), "Int");
-        assert!(object.field("field4").is_none());
+        assert_eq!(
+            object.field(&compiler.db, "field").unwrap().ty().name(),
+            "Int"
+        );
+        assert!(object.field(&compiler.db, "field4").is_none());
 
         assert_eq!(
             object
@@ -3778,5 +3846,103 @@ mod tests {
             )
             .expect("IntrospectDeepFragments operation does not exist");
         assert!(!deep_introspect.is_introspection(&db));
+    }
+
+    #[test]
+    fn introspection_field_types() {
+        let input = r#"
+type Query {
+  id: String
+  name: String
+  birthday: Date
+}
+
+scalar Date @specifiedBy(url: "datespec.com")
+
+{
+  __type(name: "User") {
+    name
+    fields {
+      name
+      type {
+        name
+      }
+    }
+  }
+}
+        "#;
+        let mut compiler = ApolloCompiler::new();
+        let file_id = compiler.add_type_system(input, "ts.graphql");
+
+        let diagnostics = compiler.validate();
+        assert!(diagnostics.is_empty());
+
+        let db = compiler.db;
+        let op = db.find_operation(file_id, None).unwrap();
+        let ty_field = op
+            .selection_set()
+            .field("__type")
+            .unwrap()
+            .ty(&db)
+            .unwrap()
+            .name();
+
+        assert_eq!(ty_field, "__Type");
+    }
+
+    #[test]
+    fn built_in_types() {
+        let input = r#"
+type Query {
+  id: String
+  name: String
+  birthday: Date
+}
+        "#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(input, "ts.graphql");
+        let db = compiler.db;
+
+        // introspection types
+        assert!(db
+            .find_object_type_by_name("__Schema".to_string())
+            .is_some());
+        assert!(db.find_object_type_by_name("__Type".to_string()).is_some());
+        assert!(db.find_enum_by_name("__TypeKind".to_string()).is_some());
+        assert!(db.find_object_type_by_name("__Field".to_string()).is_some());
+        assert!(db
+            .find_object_type_by_name("__InputValue".to_string())
+            .is_some());
+        assert!(db
+            .find_object_type_by_name("__EnumValue".to_string())
+            .is_some());
+        assert!(db
+            .find_object_type_by_name("__Directive".to_string())
+            .is_some());
+        assert!(db
+            .find_enum_by_name("__DirectiveLocation".to_string())
+            .is_some());
+
+        // scalar types
+        assert!(db.find_scalar_by_name("Int".to_string()).is_some());
+        assert!(db.find_scalar_by_name("Float".to_string()).is_some());
+        assert!(db.find_scalar_by_name("Boolean".to_string()).is_some());
+        assert!(db.find_scalar_by_name("String".to_string()).is_some());
+        assert!(db.find_scalar_by_name("ID".to_string()).is_some());
+
+        // directive definitions
+        assert!(db
+            .find_directive_definition_by_name("specifiedBy".to_string())
+            .is_some());
+        assert!(db
+            .find_directive_definition_by_name("skip".to_string())
+            .is_some());
+        assert!(db
+            .find_directive_definition_by_name("include".to_string())
+            .is_some());
+        assert!(db
+            .find_directive_definition_by_name("deprecated".to_string())
+            .is_some());
     }
 }

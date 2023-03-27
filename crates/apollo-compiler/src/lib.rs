@@ -103,6 +103,20 @@ impl ApolloCompiler {
         file_id
     }
 
+    // This adds the introspection type system and any built-in graphql types.
+    fn add_implicit_types(&mut self) {
+        let f_name = "built_in_types.graphql";
+        if self.db.source_file(f_name.into()).is_none() {
+            let file_id = 0.into();
+            let mut sources = self.db.source_files();
+            sources.push(file_id);
+            let implicit_tys = include_str!("built_in_types.graphql");
+            self.db
+                .set_input(file_id, Source::built_in(f_name.into(), implicit_tys));
+            self.db.set_source_files(sources);
+        }
+    }
+
     /// Add a document with executable _and_ type system definitions and
     /// extensions to the compiler.
     ///
@@ -119,6 +133,7 @@ impl ApolloCompiler {
             )
         }
         let filename = path.as_ref().to_owned();
+        self.add_implicit_types();
         self.add_input(Source::document(filename, input))
     }
 
@@ -137,6 +152,7 @@ impl ApolloCompiler {
             )
         }
         let filename = path.as_ref().to_owned();
+        self.add_implicit_types();
         self.add_input(Source::schema(filename, input))
     }
 
@@ -253,6 +269,7 @@ query ExampleQuery {
         let mut compiler = ApolloCompiler::new();
         compiler.add_document(schema, "schema.graphql");
         compiler.add_executable(query, "query.graphql");
+        dbg!(compiler.db.source_files());
     }
 
     #[test]

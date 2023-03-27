@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            65: "0066_subselection_of_scalar.graphql",
+            0: "built_in_types.graphql",
+            66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 65,
+                id: 66,
             },
             offset: 28,
             length: 13,
@@ -14,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 28,
                     length: 13,
@@ -24,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 232,
                     length: 67,
@@ -37,11 +38,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            65: "0066_subselection_of_scalar.graphql",
+            0: "built_in_types.graphql",
+            66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 65,
+                id: 66,
             },
             offset: 44,
             length: 13,
@@ -50,7 +52,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 44,
                     length: 13,
@@ -60,7 +62,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 232,
                     length: 67,
@@ -73,11 +75,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            65: "0066_subselection_of_scalar.graphql",
+            0: "built_in_types.graphql",
+            66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 65,
+                id: 66,
             },
             offset: 60,
             length: 13,
@@ -86,7 +89,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 60,
                     length: 13,
@@ -96,7 +99,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 232,
                     length: 67,
@@ -109,11 +112,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            65: "0066_subselection_of_scalar.graphql",
+            0: "built_in_types.graphql",
+            66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 65,
+                id: 66,
             },
             offset: 76,
             length: 13,
@@ -122,7 +126,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 76,
                     length: 13,
@@ -132,7 +136,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 232,
                     length: 67,
@@ -145,11 +149,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            65: "0066_subselection_of_scalar.graphql",
+            0: "built_in_types.graphql",
+            66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 65,
+                id: 66,
             },
             offset: 92,
             length: 13,
@@ -158,7 +163,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 92,
                     length: 13,
@@ -168,7 +173,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 232,
                     length: 67,
@@ -181,11 +186,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            65: "0066_subselection_of_scalar.graphql",
+            0: "built_in_types.graphql",
+            66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 65,
+                id: 66,
             },
             offset: 108,
             length: 13,
@@ -194,7 +200,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 108,
                     length: 13,
@@ -204,7 +210,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 65,
+                        id: 66,
                     },
                     offset: 232,
                     length: 67,

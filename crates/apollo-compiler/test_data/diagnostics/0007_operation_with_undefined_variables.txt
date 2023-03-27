@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            6: "0007_operation_with_undefined_variables.graphql",
+            0: "built_in_types.graphql",
+            7: "0007_operation_with_undefined_variables.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 6,
+                id: 7,
             },
             offset: 42,
             length: 18,
@@ -14,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 6,
+                        id: 7,
                     },
                     offset: 42,
                     length: 18,

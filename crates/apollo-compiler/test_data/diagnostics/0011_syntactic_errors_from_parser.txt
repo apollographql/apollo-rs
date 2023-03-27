@@ -1,11 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            10: "0011_syntactic_errors_from_parser.graphql",
+            0: "built_in_types.graphql",
+            11: "0011_syntactic_errors_from_parser.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 10,
+                id: 11,
             },
             offset: 15,
             length: 1,
@@ -14,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 10,
+                        id: 11,
                     },
                     offset: 15,
                     length: 1,

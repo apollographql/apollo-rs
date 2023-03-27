@@ -1,20 +1,21 @@
 [
     ApolloDiagnostic {
         cache: {
-            75: "0079_directive_is_unique.graphql",
+            0: "built_in_types.graphql",
+            76: "0079_directive_is_unique.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 75,
+                id: 76,
             },
-            offset: 172,
+            offset: 164,
             length: 7,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 75,
+                        id: 76,
                     },
                     offset: 164,
                     length: 7,
@@ -24,9 +25,9 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 75,
+                        id: 76,
                     },
-                    offset: 172,
+                    offset: 164,
                     length: 7,
                 },
                 text: "directive unique called again here",
@@ -37,16 +38,16 @@
             name: "unique",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 75,
+                    id: 76,
                 },
                 offset: 164,
                 length: 7,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 75,
+                    id: 76,
                 },
-                offset: 172,
+                offset: 164,
                 length: 7,
             },
         },
