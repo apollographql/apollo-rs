@@ -847,15 +847,15 @@ impl DirectiveDefinition {
 
     /// Get the location information for the "head" of the directive definition, namely the
     /// `directive` keyword and the name.
-    pub(crate) fn head_loc(&self) -> Option<HirNodeLocation> {
-        match (self.loc, self.name_src().loc()) {
-            (Some(loc), Some(name_loc)) => Some(HirNodeLocation {
+    pub(crate) fn head_loc(&self) -> HirNodeLocation {
+        self.name_src()
+            .loc()
+            .map(|name_loc| HirNodeLocation {
                 // Adjust the node length to include the name
-                node_len: name_loc.end_offset() - loc.offset(),
-                ..loc
-            }),
-            _ => None,
-        }
+                node_len: name_loc.end_offset() - self.loc.offset(),
+                ..self.loc
+            })
+            .unwrap_or(self.loc)
     }
 
     /// Checks if current directive is one of built-in directives - `@skip`,

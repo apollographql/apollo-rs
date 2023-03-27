@@ -143,11 +143,11 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    directive_def.loc().unwrap().into(),
+                    directive_def.loc().into(),
                     DiagnosticData::RecursiveDefinition { name: name.clone() },
                 )
                 .label(Label::new(
-                    directive_def.head_loc().unwrap(),
+                    directive_def.head_loc(),
                     "recursive directive definition",
                 ))
                 .label(Label::new(directive.loc(), "refers to itself here")),
