@@ -5,7 +5,7 @@ use crate::{
 };
 use std::sync::Arc;
 
-const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
+use super::scalar::BUILT_IN_SCALARS;
 
 pub fn validate_fragment_spread(
     db: &dyn ValidationDatabase,
@@ -75,8 +75,8 @@ pub fn validate_fragment_spread_type_existence(
                     ApolloDiagnostic::new(
                         db,
                         def.loc().into(),
-                        DiagnosticData::UndefinedDefinition { 
-                            name: type_cond.into(), 
+                        DiagnosticData::UndefinedDefinition {
+                            name: type_cond.into(),
                         },
                     )
                     .label(Label::new(
@@ -97,8 +97,8 @@ pub fn validate_fragment_spread_type_existence(
                         ApolloDiagnostic::new(
                             db,
                             inline_def.loc().into(),
-                            DiagnosticData::UndefinedDefinition { 
-                                name: inline_type_cond.into(), 
+                            DiagnosticData::UndefinedDefinition {
+                                name: inline_type_cond.into(),
                             },
                         )
                         .label(Label::new(
@@ -135,8 +135,8 @@ pub fn validate_fragment_spread_type_existence(
                                 ApolloDiagnostic::new(
                                     db,
                                     inline_fragment.loc().into(),
-                                    DiagnosticData::UndefinedDefinition { 
-                                        name: inline_type_cond.into(), 
+                                    DiagnosticData::UndefinedDefinition {
+                                        name: inline_type_cond.into(),
                                     },
                                 )
                                 .label(Label::new(
@@ -158,9 +158,8 @@ pub fn validate_fragment_spread_type_existence(
         })
         .collect::<Vec<_>>();
 
-    let mut combined_diagnostics = Vec::with_capacity(
-        diagnostics.len() + operation_inline_fragment_diagnostics.len(),
-    );
+    let mut combined_diagnostics =
+        Vec::with_capacity(diagnostics.len() + operation_inline_fragment_diagnostics.len());
     combined_diagnostics.extend(diagnostics);
     combined_diagnostics.extend(operation_inline_fragment_diagnostics);
     combined_diagnostics
@@ -211,7 +210,9 @@ pub fn validate_fragment_on_composite_types(
                     && !detected_inline_scalars.contains(inline_type_cond)
                 {
                     let inline_name = def.name().to_string();
-                    if invalid_inline_fragments.insert((inline_name.clone(), inline_type_cond.to_owned())) {
+                    if invalid_inline_fragments
+                        .insert((inline_name.clone(), inline_type_cond.to_owned()))
+                    {
                         detected_inline_scalars.insert(inline_type_cond.to_owned());
                         fragment_diagnostics.push(
                             ApolloDiagnostic::new(
