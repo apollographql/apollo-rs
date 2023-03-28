@@ -115,7 +115,7 @@ New methods for every type which have a `directives` method:
 - validate non-repeatable directives in a given location by [goto-bus-stop] in [pull/488]
 - validate conflicting fields in a selection set (spec: fields can merge) by [goto-bus-stop] in [pull/470]
 - validate introspection fields in subscriptions by [gocamille] in [pull/438]
-- validate argument correctnes by [goto-bus-stop] in [pull/452]
+- validate required arguments by [goto-bus-stop] in [pull/452]
 - validate unique variables by [lrlna] in [pull/455]
 - validate variables are of input type by [lrlna] in [pull/455]
 - validate root operation type is of Object Type by [lrlna] in [pull/419]
