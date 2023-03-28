@@ -197,6 +197,7 @@ impl TypeDefinition {
             Self::ScalarTypeDefinition(def) => def.loc(),
         }
     }
+
     /// Returns `true` if the type definition is [`ScalarTypeDefinition`].
     ///
     /// [`ScalarTypeDefinition`]: TypeDefinition::ScalarTypeDefinition
@@ -842,6 +843,19 @@ impl DirectiveDefinition {
     /// Get the AST location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
+    }
+
+    /// Get the location information for the "head" of the directive definition, namely the
+    /// `directive` keyword and the name.
+    pub(crate) fn head_loc(&self) -> HirNodeLocation {
+        self.name_src()
+            .loc()
+            .map(|name_loc| HirNodeLocation {
+                // Adjust the node length to include the name
+                node_len: name_loc.end_offset() - self.loc.offset(),
+                ..self.loc
+            })
+            .unwrap_or(self.loc)
     }
 
     /// Checks if current directive is one of built-in directives - `@skip`,
@@ -2201,7 +2215,7 @@ impl InputValueDefinition {
         self.description.as_deref()
     }
 
-    /// Get a reference to input value definition's directives.
+    /// Return the directives used on this input value definition.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
     }
@@ -3348,6 +3362,11 @@ impl HirNodeLocation {
     /// Get source offset of the current node.
     pub fn offset(&self) -> usize {
         self.offset
+    }
+
+    /// Get the source offset of the end of the current node.
+    pub fn end_offset(&self) -> usize {
+        self.offset + self.node_len
     }
 
     /// Get node length.
