@@ -21,10 +21,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 # [0.7.1](https://crates.io/crates/apollo-compiler/0.7.1) - 2023-03-28
 
 ## Features
-- validate indirectly self-referential directives by [goto_bus_stop] in [pull/494]
+- validate indirectly self-referential directives by [goto-bus-stop] in [pull/494]
 
 ## Fixes
-- include built-in enum types in db.type_system() query by [Simon Sapin] in [pull/501]
+- include built-in enum types in `db.type_system()` query by [SimonSapin] in [pull/501]
 - `field.field_definition()` works for interface types by [zackangelo] in [pull/502]
 - validate used variables in lists and objects by [yanns] in [pull/497]
 
