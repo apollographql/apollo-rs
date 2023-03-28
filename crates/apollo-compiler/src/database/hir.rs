@@ -1,6 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
-    fmt, hash, iter,
+    fmt, hash,
     sync::Arc,
 };
 
@@ -1035,6 +1035,15 @@ impl Value {
             _ => false,
         }
     }
+
+    pub fn variables(&self) -> Vec<Variable> {
+        match self {
+            Value::Variable(var) => vec![var.clone()],
+            Value::List(values) => values.iter().flat_map(|v| v.variables()).collect(),
+            Value::Object(obj) => obj.iter().flat_map(|o| o.1.variables()).collect(),
+            _ => Vec::new(),
+        }
+    }
 }
 
 /// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
@@ -1423,17 +1432,6 @@ impl Field {
 
     /// Return an iterator over the variables used in arguments to this field and its directives.
     fn self_used_variables(&self) -> impl Iterator<Item = Variable> + '_ {
-        fn argument_variables(arg: &Argument) -> Box<dyn Iterator<Item = Variable> + '_> {
-            match arg.value() {
-                Value::Variable(var) => Box::new(iter::once(var.clone())),
-                Value::List(values) => Box::new(values.iter().filter_map(|v| match v {
-                    Value::Variable(var) => Some(var.clone()),
-                    _ => None,
-                })),
-                _ => Box::new(iter::empty()),
-            }
-        }
-
         self.arguments
             .iter()
             .chain(
@@ -1441,7 +1439,7 @@ impl Field {
                     .iter()
                     .flat_map(|directive| directive.arguments()),
             )
-            .flat_map(argument_variables)
+            .flat_map(|arg| arg.value().variables())
     }
 
     /// Get variables used in the field, including in sub-selections.
