@@ -3971,7 +3971,7 @@ type Query {
             .enums_with_built_ins()
             .contains_key("__TypeKind"));
     }
-    
+
     #[test]
     fn field_definition() {
         let input = r#"
