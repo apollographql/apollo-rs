@@ -1049,6 +1049,15 @@ impl Value {
             _ => false,
         }
     }
+
+    pub fn variables(&self) -> Vec<Variable> {
+        match self {
+            Value::Variable(var) => vec![var.clone()],
+            Value::List(values) => values.iter().flat_map(|v| v.variables()).collect(),
+            Value::Object(obj) => obj.iter().flat_map(|o| o.1.variables()).collect(),
+            _ => Vec::new(),
+        }
+    }
 }
 
 /// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
@@ -1444,10 +1453,7 @@ impl Field {
                     .iter()
                     .flat_map(|directive| directive.arguments()),
             )
-            .filter_map(|arg| match arg.value() {
-                Value::Variable(var) => Some(var.clone()),
-                _ => None,
-            })
+            .flat_map(|arg| arg.value().variables())
     }
 
     /// Get variables used in the field, including in sub-selections.
