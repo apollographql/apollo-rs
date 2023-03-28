@@ -3,4 +3,21 @@ type Query {
   field(arg: Int @invalidExample): String
 }
 
+# Simple, direct self-reference
 directive @invalidExample(arg: String @invalidExample) on ARGUMENT_DEFINITION
+
+# Some more nested self-references
+extend scalar String @deprecatedType(reason: "use OurCustomString instead")
+directive @deprecatedType(reason: String!) on OBJECT | INTERFACE | ENUM | SCALAR | UNION
+
+directive @loopA(arg: Boolean @loopB) on ARGUMENT_DEFINITION
+directive @loopB(arg: Boolean @loopC) on ARGUMENT_DEFINITION
+directive @loopC(arg: Boolean @loopA) on ARGUMENT_DEFINITION
+
+enum Enum { NON_RECURSIVE }
+extend enum Enum { RECURSIVE @wrong }
+input Name { value: String!, type: Enum }
+input InputObject { name: Name }
+directive @wrong(input: InputObject) on INPUT_FIELD_DEFINITION
+
+directive @thisOneShouldNotError(arg: Boolean @loopC) on FIELD
