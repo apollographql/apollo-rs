@@ -25,7 +25,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Fixes
 - include built-in enum types in db.type_system() query by [Simon Sapin] in [pull/501]
-- field.field_definition() works for interface types by [zackangelo] in [pull/502]
+- `field.field_definition()` works for interface types by [zackangelo] in [pull/502]
 - validate used variables in lists and objects by [yanns] in [pull/497]
 
 [SimonSapin]: https://github.com/SimonSapin
