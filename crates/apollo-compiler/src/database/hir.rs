@@ -3956,6 +3956,23 @@ type Query {
     }
 
     #[test]
+    fn built_in_types_in_type_system_hir() {
+        let mut compiler_1 = ApolloCompiler::new();
+        compiler_1.add_type_system("type Query { unused: Int }", "unused.graphql");
+
+        let mut compiler_2 = ApolloCompiler::new();
+        compiler_2.set_type_system_hir(compiler_1.db.type_system());
+        assert!(compiler_2
+            .db
+            .object_types_with_built_ins()
+            .contains_key("__Schema"));
+        assert!(compiler_2
+            .db
+            .enums_with_built_ins()
+            .contains_key("__TypeKind"));
+    }
+
+    #[test]
     fn field_definition() {
         let input = r#"
 schema {

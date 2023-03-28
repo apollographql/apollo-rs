@@ -288,7 +288,7 @@ fn type_system_definitions(db: &dyn HirDatabase) -> Arc<TypeSystemDefinitions> {
         objects: db.object_types_with_built_ins(),
         interfaces: db.interfaces(),
         unions: db.unions(),
-        enums: db.enums(),
+        enums: db.enums_with_built_ins(),
         input_objects: db.input_objects(),
         directives: db.directive_definitions(),
     })
