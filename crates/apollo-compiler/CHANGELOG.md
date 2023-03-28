@@ -18,7 +18,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [0.7.0](https://crates.io/crates/apollo-compiler/0.7.0) - 2023-03-27
+# [0.7.1](https://crates.io/crates/apollo-compiler/0.7.1) - 2023-03-28
+
+## Features
+- validate indirectly self-referential directives by [goto_bus_stop] in [pull/494]
+
+## Fixes
+- include built-in enum types in db.type_system() query by [Simon Sapin] in [pull/501]
+- field.field_definition() works for interface types by [zackangelo] in [pull/502]
+- validate used variables in lists and objects by [yanns] in [pull/497]
+
+[SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[yanns]: https://github.com/yanns
+[zackangelo]: https://github.com/zackangelo
+[pull/494]: https://github.com/apollographql/apollo-rs/pull/494
+[pull/497]: https://github.com/apollographql/apollo-rs/pull/497
+[pull/501]: https://github.com/apollographql/apollo-rs/pull/501
+[pull/502]: https://github.com/apollographql/apollo-rs/pull/502
+
+# [0.7.0](https://crates.io/crates/apollo-compiler/0.7.0) - 2023-03-28
 
 > Important: X breaking changes below, indicated by **BREAKING**
 
@@ -143,6 +162,7 @@ compiler context by [lrlna] in [pull/489]
 [lrlna]: https://github.com/lrlna
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [jregistr]: https://github.com/jregistr
+[yanns]: https://github.com/yanns
 [gocamille]: https://github.com/gocamille
 [erikwrede]: https://github.com/erikwrede
 [pull/414]: https://github.com/apollographql/apollo-rs/pull/414
