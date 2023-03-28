@@ -1380,11 +1380,14 @@ impl Field {
 
     /// Get field's original field definition.
     pub fn field_definition(&self, db: &dyn HirDatabase) -> Option<FieldDefinition> {
-        db.find_object_type_by_name(self.parent_obj.as_ref()?.to_string())?
-            .self_fields()
-            .iter()
-            .find(|field| field.name() == self.name())
-            .cloned()
+        let type_name = self.parent_obj.as_ref()?.to_string();
+        let type_def = db.find_type_definition_by_name(type_name)?;
+
+        match type_def {
+            TypeDefinition::ObjectTypeDefinition(obj) => obj.field(db, self.name()).cloned(),
+            TypeDefinition::InterfaceTypeDefinition(iface) => iface.field(self.name()).cloned(),
+            _ => None,
+        }
     }
 
     /// Get a reference to the field's arguments.
@@ -3925,5 +3928,76 @@ type Query {
         assert!(db
             .find_directive_definition_by_name("deprecated".to_string())
             .is_some());
+    }
+
+    #[test]
+    fn field_definition() {
+        let input = r#"
+schema {
+  query Query
+}
+
+type Query {
+  foo: String
+  creature: Creature
+}
+
+interface Creature {
+  name: String
+}
+
+query {
+  foo
+  creature {
+    name
+  }
+}
+        "#;
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_document(input, "test.graphql");
+        let db = &compiler.db;
+        let all_ops = db.all_operations();
+        let default_query_op = all_ops
+            .iter()
+            .find(|op| op.name().is_none())
+            .expect("default query not found");
+
+        let sel_set = default_query_op.selection_set();
+        let query_type = default_query_op
+            .object_type(&compiler.db)
+            .expect("query type not found");
+
+        let sel_foo_field_def = sel_set
+            .field("foo")
+            .expect("query.foo selection field not found")
+            .field_definition(db)
+            .expect("field_definition returned none for query.foo");
+
+        let query_foo_field_def = query_type
+            .field(db, "foo")
+            .expect("foo field not found on query type");
+
+        // assert that field_definition() returns a field def for object types
+        assert_eq!(&sel_foo_field_def, query_foo_field_def);
+
+        let creature_type = db
+            .find_interface_by_name("Creature".to_owned())
+            .expect("creature type not found");
+
+        let sel_creature_name_field_def = sel_set
+            .field("creature")
+            .expect("creature field not found on query selection")
+            .selection_set()
+            .field("name")
+            .expect("name field not found on creature selection")
+            .field_definition(db)
+            .expect("field definition not found on creature.name selection");
+
+        let hir_creature_field_def = creature_type
+            .field("name")
+            .expect("name field not found on creature type");
+
+        // assert that field_definition() also returns a field def for interface types
+        assert_eq!(hir_creature_field_def, &sel_creature_name_field_def)
     }
 }
