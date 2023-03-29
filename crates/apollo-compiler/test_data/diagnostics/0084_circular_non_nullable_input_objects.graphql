@@ -1,0 +1,23 @@
+type Query {
+    name: String
+    example(arg: First): Int
+}
+
+input First {
+  second: Second!
+  value: String
+}
+
+input Second {
+  third: Third!
+  value: String
+}
+
+input Third {
+  fourth: Fourth!
+  value: String
+}
+
+input Fourth {
+  first: First!
+}

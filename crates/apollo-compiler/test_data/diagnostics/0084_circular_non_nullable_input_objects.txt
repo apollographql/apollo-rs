@@ -1,0 +1,158 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            81: "0084_circular_non_nullable_input_objects.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 81,
+            },
+            offset: 62,
+            length: 49,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 81,
+                    },
+                    offset: 62,
+                    length: 49,
+                },
+                text: "cyclical input object definition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 81,
+                    },
+                    offset: 231,
+                    length: 13,
+                },
+                text: "refers to itself here",
+            },
+        ],
+        help: None,
+        data: RecursiveDefinition {
+            name: "First",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            81: "0084_circular_non_nullable_input_objects.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 81,
+            },
+            offset: 113,
+            length: 48,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 81,
+                    },
+                    offset: 113,
+                    length: 48,
+                },
+                text: "cyclical input object definition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 81,
+                    },
+                    offset: 78,
+                    length: 15,
+                },
+                text: "refers to itself here",
+            },
+        ],
+        help: None,
+        data: RecursiveDefinition {
+            name: "Second",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            81: "0084_circular_non_nullable_input_objects.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 81,
+            },
+            offset: 163,
+            length: 49,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 81,
+                    },
+                    offset: 163,
+                    length: 49,
+                },
+                text: "cyclical input object definition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 81,
+                    },
+                    offset: 130,
+                    length: 13,
+                },
+                text: "refers to itself here",
+            },
+        ],
+        help: None,
+        data: RecursiveDefinition {
+            name: "Third",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            81: "0084_circular_non_nullable_input_objects.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 81,
+            },
+            offset: 214,
+            length: 32,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 81,
+                    },
+                    offset: 214,
+                    length: 32,
+                },
+                text: "cyclical input object definition",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 81,
+                    },
+                    offset: 179,
+                    length: 15,
+                },
+                text: "refers to itself here",
+            },
+        ],
+        help: None,
+        data: RecursiveDefinition {
+            name: "Fourth",
+        },
+    },
+]
