@@ -501,6 +501,10 @@ fn unions(db: &dyn HirDatabase) -> ByName<UnionTypeDefinition> {
 }
 
 fn interfaces(db: &dyn HirDatabase) -> ByName<InterfaceTypeDefinition> {
+    if let Some(precomputed) = db.type_system_hir_input() {
+        // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
+        return precomputed.definitions.interfaces.clone();
+    }
     Arc::new(by_name_extensible!(
         db,
         interface_definition,

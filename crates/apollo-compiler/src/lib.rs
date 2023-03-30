@@ -1264,4 +1264,61 @@ type Query {
             assert_eq!(handle.join().unwrap(), "URL");
         }
     }
+
+    #[test]
+    fn interfaces_in_precomputed_hir() {
+        let schema = r#"
+        schema {
+            query: Query
+          }
+          
+          type Query {
+            peopleCount: Int!
+            person: Person!
+          }
+          
+          interface Pet {
+            name: String!
+          }
+          
+          type Dog implements Pet {
+            name: String!
+            dogBreed: DogBreed!
+          }
+          
+          type Cat implements Pet {
+            name: String!
+            catBreed: CatBreed!
+          }
+          
+          type Person {
+            firstName: String!
+            lastName: String!
+            age: Int
+            pets: [Pet!]!
+          }
+          
+          enum DogBreed {
+            CHIHUAHUA
+            RETRIEVER
+            LAB
+          }
+          
+          enum CatBreed {
+            TABBY
+            MIX
+          }
+        "#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(schema, "schema.graphql");
+
+        let type_system = compiler.db.type_system();
+        let mut another_compiler = ApolloCompiler::new();
+        another_compiler.set_type_system_hir(type_system);
+
+        let interfaces = another_compiler.db.interfaces();
+        assert_eq!(interfaces.len(), 1);
+        assert!(another_compiler.validate().is_empty())
+    }
 }
