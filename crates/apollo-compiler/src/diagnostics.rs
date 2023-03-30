@@ -285,6 +285,11 @@ pub enum DiagnosticData {
         original_selection: DiagnosticLocation,
         redefined_selection: DiagnosticLocation,
     },
+    #[error("cannot find fragment `{name}` in this document")]
+    UndefinedFragment {
+        /// Name of the fragment not in scope
+        name: String,
+    },
 }
 
 impl DiagnosticData {

@@ -167,6 +167,9 @@ pub trait ValidationDatabase:
     #[salsa::invoke(operation::validate_operation_definitions)]
     fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
+    #[salsa::invoke(fragment::validate_fragment_spread)]
+    fn validate_fragment_spread(&self, spread: Arc<FragmentSpread>) -> Vec<ApolloDiagnostic>;
+
     #[salsa::invoke(fragment::validate_fragment_definitions)]
     fn validate_fragment_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 

@@ -1,0 +1,31 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            81: "0084_fragment_spread_target_defined.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 81,
+            },
+            offset: 70,
+            length: 20,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 81,
+                    },
+                    offset: 70,
+                    length: 20,
+                },
+                text: "fragment `undefinedFragment` is not defined",
+            },
+        ],
+        help: None,
+        data: UndefinedFragment {
+            name: "undefinedFragment",
+        },
+    },
+]
