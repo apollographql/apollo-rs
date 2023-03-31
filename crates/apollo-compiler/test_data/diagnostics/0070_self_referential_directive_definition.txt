@@ -34,7 +34,7 @@
             },
         ],
         help: None,
-        data: RecursiveDefinition {
+        data: RecursiveDirectiveDefinition {
             name: "invalidExample",
         },
     },
@@ -73,7 +73,7 @@
             },
         ],
         help: None,
-        data: RecursiveDefinition {
+        data: RecursiveDirectiveDefinition {
             name: "deprecatedType",
         },
     },
@@ -112,7 +112,7 @@
             },
         ],
         help: None,
-        data: RecursiveDefinition {
+        data: RecursiveDirectiveDefinition {
             name: "loopA",
         },
     },
@@ -151,7 +151,7 @@
             },
         ],
         help: None,
-        data: RecursiveDefinition {
+        data: RecursiveDirectiveDefinition {
             name: "loopB",
         },
     },
@@ -190,7 +190,7 @@
             },
         ],
         help: None,
-        data: RecursiveDefinition {
+        data: RecursiveDirectiveDefinition {
             name: "loopC",
         },
     },
@@ -229,7 +229,7 @@
             },
         ],
         help: None,
-        data: RecursiveDefinition {
+        data: RecursiveDirectiveDefinition {
             name: "wrong",
         },
     },

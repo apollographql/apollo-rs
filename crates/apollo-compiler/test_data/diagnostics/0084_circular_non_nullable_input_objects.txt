@@ -34,7 +34,7 @@
             },
         ],
         help: None,
-        data: RecursiveDefinition {
+        data: RecursiveInputObjectDefinition {
             name: "First",
         },
     },
@@ -73,7 +73,7 @@
             },
         ],
         help: None,
-        data: RecursiveDefinition {
+        data: RecursiveInputObjectDefinition {
             name: "Second",
         },
     },
@@ -112,7 +112,7 @@
             },
         ],
         help: None,
-        data: RecursiveDefinition {
+        data: RecursiveInputObjectDefinition {
             name: "Third",
         },
     },
@@ -151,7 +151,7 @@
             },
         ],
         help: None,
-        data: RecursiveDefinition {
+        data: RecursiveInputObjectDefinition {
             name: "Fourth",
         },
     },
