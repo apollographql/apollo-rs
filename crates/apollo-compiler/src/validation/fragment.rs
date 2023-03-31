@@ -1,4 +1,39 @@
-use crate::{hir::DirectiveLocation, ApolloDiagnostic, FileId, ValidationDatabase};
+use crate::{
+    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
+    hir::{self, DirectiveLocation},
+    FileId, ValidationDatabase,
+};
+use std::sync::Arc;
+
+pub fn validate_fragment_spread(
+    db: &dyn ValidationDatabase,
+    spread: Arc<hir::FragmentSpread>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    diagnostics.extend(db.validate_directives(
+        spread.directives().to_vec(),
+        DirectiveLocation::FragmentSpread,
+    ));
+
+    if spread.fragment(db.upcast()).is_none() {
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                spread.loc().into(),
+                DiagnosticData::UndefinedFragment {
+                    name: spread.name().to_string(),
+                },
+            )
+            .labels(vec![Label::new(
+                spread.loc(),
+                format!("fragment `{}` is not defined", spread.name()),
+            )]),
+        );
+    }
+
+    diagnostics
+}
 
 pub fn validate_fragment_definitions(
     db: &dyn ValidationDatabase,
