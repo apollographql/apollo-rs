@@ -195,10 +195,12 @@ pub enum DiagnosticData {
         /// Location of the extension
         extension: DiagnosticLocation,
     },
-    #[error("{name} directive definition cannot reference itself")]
-    RecursiveDefinition { name: String },
+    #[error("`{name}` directive definition cannot reference itself")]
+    RecursiveDirectiveDefinition { name: String },
     #[error("interface {name} cannot implement itself")]
     RecursiveInterfaceDefinition { name: String },
+    #[error("`{name}` input object cannot reference itself")]
+    RecursiveInputObjectDefinition { name: String },
     #[error("values in an Enum Definition should be capitalized")]
     CapitalizedValue { value: String },
     #[error("fields must be unique in a definition")]

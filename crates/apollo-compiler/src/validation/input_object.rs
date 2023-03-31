@@ -27,22 +27,20 @@ impl FindRecursiveInputValue<'_> {
                 //
                 // Everything else may be a cyclical input value.
                 hir::Type::Named { name, loc: _ } => {
-                    if seen.contains(name) {
-                        return Err(def.clone());
-                    } else {
+                    if !seen.contains(name) {
                         if let Some(def) = self.db.find_input_object_by_name(name.into()) {
                             self.input_object_definition(seen.push(name.into()), def.as_ref())?
                         }
-                        Ok(())
+                    } else if seen.first() == Some(name) {
+                        return Err(def.clone());
                     }
+
+                    Ok(())
                 }
-                hir::Type::NonNull { ty: _, loc: _ } | hir::Type::List { ty: _, loc: _ } => Ok(()),
+                hir::Type::NonNull { .. } | hir::Type::List { .. } => Ok(()),
             },
-            hir::Type::List { ty: _ty, loc: _loc } => Ok(()),
-            hir::Type::Named {
-                name: _ty,
-                loc: _loc,
-            } => Ok(()),
+            hir::Type::List { .. } => Ok(()),
+            hir::Type::Named { .. } => Ok(()),
         };
     }
 
@@ -89,21 +87,23 @@ pub fn validate_input_object_definition(
     );
 
     if let Err(input_val) = FindRecursiveInputValue::check(db, input_obj.as_ref()) {
-        let mut diagnostic = ApolloDiagnostic::new(
-            db,
-            input_obj.loc().into(),
-            DiagnosticData::RecursiveDefinition {
-                name: input_obj.name().into(),
-            },
-        )
-        .label(Label::new(
+        let mut labels = vec![Label::new(
             input_obj.loc(),
             "cyclical input object definition",
-        ));
+        )];
         if let Some(loc) = input_val.loc() {
-            diagnostic = diagnostic.label(Label::new(loc, "refers to itself here"));
-        }
-        diagnostics.push(diagnostic);
+            labels.push(Label::new(loc, "refers to itself here"));
+        };
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                input_obj.loc().into(),
+                DiagnosticData::RecursiveInputObjectDefinition {
+                    name: input_obj.name().into(),
+                },
+            )
+            .labels(labels),
+        )
     }
 
     // Fields in an Input Object Definition must be unique
