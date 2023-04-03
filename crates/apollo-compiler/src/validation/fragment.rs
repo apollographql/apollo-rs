@@ -47,7 +47,7 @@ pub fn validate_fragment_definitions(
             def.directives().to_vec(),
             DirectiveLocation::FragmentDefinition,
         ));
-        diagnostics.extend(validate_fragment_spreads(db, file_id));
+        diagnostics.extend(db.validate_fragment_spreads(def.as_ref().clone()));
         diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
         diagnostics.extend(db.validate_fragment_used(file_id));
     }
@@ -57,17 +57,15 @@ pub fn validate_fragment_definitions(
 
 pub fn validate_fragment_spreads(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
+    def: FragmentDefinition,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-    for def in db.fragments(file_id).values() {
-        if let Err(diagnostic) = db.validate_fragment_spread_type_existence(def.as_ref().clone()) {
-            diagnostics.push(diagnostic)
-        };
-        if let Err(diagnostic) = db.validate_fragment_on_composite_types(def.as_ref().clone()) {
-            diagnostics.push(diagnostic)
-        };
-    }
+    if let Err(diagnostic) = db.validate_fragment_spread_type_existence(def.clone()) {
+        diagnostics.push(diagnostic)
+    };
+    if let Err(diagnostic) = db.validate_fragment_on_composite_types(def.clone()) {
+        diagnostics.push(diagnostic)
+    };
 
     diagnostics
 }
