@@ -17,6 +17,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.7.2](https://crates.io/crates/apollo-compiler/0.7.2) - 2023-04-03
+
+## Features
+- validate fragment spread target is defined, by [goto-bus-stop] in [pull/506]
+- validate circular input objects, by [lrlna] in [pull/505]
+
+## Fixes
+- `db.interfaces()` checks pre-computed hir for interfaces first, by [lrlna] in [de4baea]
+
+[lrlna]: https://github.com/lrlna
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[de4baea]: https://github.com/apollographql/apollo-rs/commit/de4baea13745089ace3821bccc30cf1c4008ba20
+[pull/505]: https://github.com/apollographql/apollo-rs/pull/505
+[pull/506]: https://github.com/apollographql/apollo-rs/pull/506
 
 # [0.7.1](https://crates.io/crates/apollo-compiler/0.7.1) - 2023-03-28
 
