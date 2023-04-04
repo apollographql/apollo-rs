@@ -6,7 +6,8 @@ use crate::{
 use std::{collections::HashSet, sync::Arc};
 
 /// Given a type definition, find all the types that can be used for fragment spreading.
-/// https://spec.graphql.org/October2021/#GetPossibleTypes()
+///
+/// Spec: https://spec.graphql.org/October2021/#GetPossibleTypes()
 pub fn get_possible_types(
     db: &dyn ValidationDatabase,
     ty: hir::TypeDefinition,
