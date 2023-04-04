@@ -1566,6 +1566,7 @@ impl InlineFragment {
 pub struct FragmentSpread {
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) parent_obj: Option<String>,
     pub(crate) loc: HirNodeLocation,
 }
 
@@ -1578,6 +1579,24 @@ impl FragmentSpread {
     /// Get the fragment definition this fragment spread is referencing.
     pub fn fragment(&self, db: &dyn HirDatabase) -> Option<Arc<FragmentDefinition>> {
         db.find_fragment_by_name(self.loc.file_id(), self.name().to_string())
+    }
+
+    /// Get the type this fragment is spread onto.
+    ///
+    /// ## Examples
+    /// ```graphql
+    /// type Query {
+    ///     field: X
+    /// }
+    /// query {
+    ///     ...fragment
+    ///     field { ...subFragment }
+    /// }
+    /// ```
+    /// `fragment.parent_type()` is `Query`.
+    /// `subFragment.parent_type()` is `X`.
+    pub fn parent_type(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
+        db.find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())
     }
 
     /// Return an iterator over the variables used in directives on this spread.

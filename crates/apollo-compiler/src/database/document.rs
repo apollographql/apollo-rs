@@ -354,9 +354,11 @@ pub(crate) fn is_subtype(
     abstract_type: String,
     maybe_subtype: String,
 ) -> bool {
-    db.subtype_map()
-        .get(&abstract_type)
-        .map_or(false, |set| set.contains(&maybe_subtype))
+    abstract_type == maybe_subtype
+        || db
+            .subtype_map()
+            .get(&abstract_type)
+            .map_or(false, |set| set.contains(&maybe_subtype))
 }
 
 #[cfg(test)]
@@ -484,6 +486,7 @@ type Query {
         }
 
         let ctx = gen_schema_types("union UnionType = Foo | Bar | Baz");
+        assert!(ctx.db.is_subtype("UnionType".into(), "UnionType".into()));
         assert!(ctx.db.is_subtype("UnionType".into(), "Foo".into()));
         assert!(ctx.db.is_subtype("UnionType".into(), "Bar".into()));
         assert!(ctx.db.is_subtype("UnionType".into(), "Baz".into()));
@@ -493,6 +496,7 @@ type Query {
         assert!(ctx.db.is_subtype("Foo".into(), "ObjectType".into()));
         assert!(ctx.db.is_subtype("Bar".into(), "ObjectType".into()));
         assert!(ctx.db.is_subtype("Baz".into(), "ObjectType".into()));
+        assert!(ctx.db.is_subtype("Foo".into(), "Foo".into()));
 
         let ctx = gen_schema_interfaces(
             "interface InterfaceType implements Foo & Bar & Baz { me: String }",

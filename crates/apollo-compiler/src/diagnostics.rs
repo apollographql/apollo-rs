@@ -292,6 +292,13 @@ pub enum DiagnosticData {
         /// Name of the fragment not in scope
         name: String,
     },
+    #[error("fragment cannot be applied to this type")]
+    InvalidFragmentSpread {
+        /// Fragment name or None if it's an inline fragment
+        name: Option<String>,
+        /// Type name the fragment is being applied to
+        type_name: String,
+    },
 }
 
 impl DiagnosticData {

@@ -16,7 +16,35 @@ pub fn validate_fragment_spread(
         DirectiveLocation::FragmentSpread,
     ));
 
-    if spread.fragment(db.upcast()).is_none() {
+    if let Some(fragment) = spread.fragment(db.upcast()) {
+        let cond = fragment.type_condition();
+        if let Some(parent_type) = spread.parent_type(db.upcast()) {
+            if !db.is_subtype(parent_type.name().to_string(), cond.to_string()) {
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        spread.loc().into(),
+                        DiagnosticData::InvalidFragmentSpread {
+                            name: Some(spread.name().to_string()),
+                            type_name: parent_type.name().to_string(),
+                        },
+                    )
+                    .label(Label::new(
+                        spread.loc(),
+                        format!("fragment `{}` cannot be applied", spread.name()),
+                    ))
+                    .label(Label::new(
+                        fragment.loc(),
+                        format!("fragment declared with type condition `{cond}` here"),
+                    ))
+                    .label(Label::new(
+                        parent_type.loc(),
+                        format!("type condition `{cond}` is not assignable to this type"),
+                    )),
+                );
+            }
+        }
+    } else {
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
