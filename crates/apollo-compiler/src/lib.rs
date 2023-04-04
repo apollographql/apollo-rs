@@ -75,6 +75,7 @@ impl ApolloCompiler {
     }
 
     /// Configure the recursion limit to use during parsing.
+    /// Recursion limit must be set prior to adding sources to the compiler.
     pub fn recursion_limit(mut self, limit: usize) -> Self {
         if !self.db.source_files().is_empty() {
             panic!(
@@ -87,6 +88,7 @@ impl ApolloCompiler {
     }
 
     /// Configure the token limit to use during parsing.
+    /// Token limit must be set prior to adding sources to the compiler.
     pub fn token_limit(mut self, limit: usize) -> Self {
         if !self.db.source_files().is_empty() {
             panic!(
