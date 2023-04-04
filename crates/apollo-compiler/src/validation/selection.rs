@@ -312,14 +312,12 @@ pub fn validate_selection(
             hir::Selection::Field(field) => {
                 diagnostics.extend(db.validate_field(field.clone()));
             }
-            // TODO handle fragment spreads on invalid parent types
-            hir::Selection::FragmentSpread(frag) => {
-                diagnostics.extend(db.validate_fragment_spread(Arc::clone(frag)));
+            hir::Selection::FragmentSpread(spread) => {
+                diagnostics.extend(db.validate_fragment_spread(Arc::clone(spread)));
             }
-            hir::Selection::InlineFragment(inline) => diagnostics.extend(db.validate_directives(
-                inline.directives().to_vec(),
-                hir::DirectiveLocation::InlineFragment,
-            )),
+            hir::Selection::InlineFragment(inline) => {
+                diagnostics.extend(db.validate_inline_fragment(Arc::clone(inline)));
+            }
         }
     }
 

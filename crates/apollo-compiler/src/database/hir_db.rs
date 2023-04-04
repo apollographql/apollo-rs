@@ -1537,7 +1537,7 @@ fn inline_fragment(
     let new_parent_obj = if let Some(type_condition) = type_condition.clone() {
         Some(type_condition.src().to_string())
     } else {
-        parent_obj
+        parent_obj.clone()
     };
     let selection_set: SelectionSet =
         selection_set(db, fragment.selection_set(), new_parent_obj, file_id);
@@ -1547,6 +1547,7 @@ fn inline_fragment(
         type_condition,
         directives,
         selection_set,
+        parent_obj,
         loc,
     };
     Arc::new(fragment_data)

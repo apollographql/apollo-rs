@@ -53,6 +53,109 @@ pub fn get_possible_types(
     }
 }
 
+pub fn validate_fragment_selection(
+    db: &dyn ValidationDatabase,
+    spread: hir::FragmentSelection,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let Some(cond) = spread.type_condition(db.upcast()) else {
+        // Returns None on invalid documents only
+        return diagnostics;
+    };
+    let Some(parent_type) = spread.parent_type(db.upcast()) else {
+        // We cannot check anything if the parent type is unknown.
+        return diagnostics;
+    };
+    let Some(cond_type) = db.find_type_definition_by_name(cond.clone()) else {
+        // We cannot check anything if the type condition refers to an unknown type.
+        return diagnostics;
+    };
+
+    let concrete_parent_types = db
+        .get_possible_types(parent_type.clone())
+        .into_iter()
+        .map(|ty| ty.name().to_string())
+        .collect::<HashSet<_>>();
+    let concrete_condition_types = db
+        .get_possible_types(cond_type.clone())
+        .into_iter()
+        .map(|ty| ty.name().to_string())
+        .collect::<HashSet<_>>();
+
+    println!("Parent types: {:?}", concrete_parent_types);
+    println!("Condition types: {:?}", concrete_condition_types);
+
+    let mut applicable_types = concrete_parent_types.intersection(&concrete_condition_types);
+    if applicable_types.next().is_none() {
+        // Report specific errors for the different kinds of fragments.
+        let diagnostic = match spread {
+            hir::FragmentSelection::FragmentSpread(spread) => {
+                // This unwrap is safe because the fragment definition must exist for `cond_type` to be `Some()`.
+                let fragment_definition = spread.fragment(db.upcast()).unwrap();
+
+                ApolloDiagnostic::new(
+                    db,
+                    spread.loc().into(),
+                    DiagnosticData::InvalidFragmentSpread {
+                        name: Some(spread.name().to_string()),
+                        type_name: parent_type.name().to_string(),
+                    },
+                )
+                .label(Label::new(
+                    spread.loc(),
+                    format!("fragment `{}` cannot be applied", spread.name()),
+                ))
+                .label(Label::new(
+                    fragment_definition.loc(),
+                    format!("fragment declared with type condition `{cond}` here"),
+                ))
+                .label(Label::new(
+                    parent_type.loc(),
+                    format!("type condition `{cond}` is not assignable to this type"),
+                ))
+            }
+            hir::FragmentSelection::InlineFragment(inline) => ApolloDiagnostic::new(
+                db,
+                inline.loc().into(),
+                DiagnosticData::InvalidFragmentSpread {
+                    name: None,
+                    type_name: parent_type.name().to_string(),
+                },
+            )
+            .label(Label::new(
+                inline.loc(),
+                format!("fragment applied with type condition `{cond}` here"),
+            ))
+            .label(Label::new(
+                parent_type.loc(),
+                format!("type condition `{cond}` is not assignable to this type"),
+            )),
+        };
+
+        diagnostics.push(diagnostic);
+    }
+
+    diagnostics
+}
+
+pub fn validate_inline_fragment(
+    db: &dyn ValidationDatabase,
+    inline: Arc<hir::InlineFragment>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    diagnostics.extend(db.validate_directives(
+        inline.directives().to_vec(),
+        DirectiveLocation::InlineFragment,
+    ));
+
+    diagnostics
+        .extend(db.validate_fragment_selection(hir::FragmentSelection::InlineFragment(inline)));
+
+    diagnostics
+}
+
 pub fn validate_fragment_spread(
     db: &dyn ValidationDatabase,
     spread: Arc<hir::FragmentSpread>,
@@ -64,49 +167,9 @@ pub fn validate_fragment_spread(
         DirectiveLocation::FragmentSpread,
     ));
 
-    if let Some(fragment) = spread.fragment(db.upcast()) {
-        let cond = fragment.type_condition();
-        let parent_type = spread.parent_type(db.upcast());
-        let cond_type = db.find_type_definition_by_name(cond.to_string());
-        if let (Some(parent_type), Some(cond_type)) = (parent_type, cond_type) {
-            let concrete_parent_types = db
-                .get_possible_types(parent_type.clone())
-                .into_iter()
-                .map(|ty| ty.name().to_string())
-                .collect::<HashSet<_>>();
-            let concrete_condition_types = db
-                .get_possible_types(cond_type.clone())
-                .into_iter()
-                .map(|ty| ty.name().to_string())
-                .collect::<HashSet<_>>();
-
-            let mut applicable_types =
-                concrete_parent_types.intersection(&concrete_condition_types);
-            if applicable_types.next().is_none() {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        spread.loc().into(),
-                        DiagnosticData::InvalidFragmentSpread {
-                            name: Some(spread.name().to_string()),
-                            type_name: parent_type.name().to_string(),
-                        },
-                    )
-                    .label(Label::new(
-                        spread.loc(),
-                        format!("fragment `{}` cannot be applied", spread.name()),
-                    ))
-                    .label(Label::new(
-                        fragment.loc(),
-                        format!("fragment declared with type condition `{cond}` here"),
-                    ))
-                    .label(Label::new(
-                        parent_type.loc(),
-                        format!("type condition `{cond}` is not assignable to this type"),
-                    )),
-                );
-            }
-        }
+    if spread.fragment(db.upcast()).is_some() {
+        diagnostics
+            .extend(db.validate_fragment_selection(hir::FragmentSelection::FragmentSpread(spread)))
     } else {
         diagnostics.push(
             ApolloDiagnostic::new(
