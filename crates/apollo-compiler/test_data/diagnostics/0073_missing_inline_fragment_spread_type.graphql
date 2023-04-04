@@ -1,0 +1,24 @@
+query Query {
+  interface {
+    ...invalidInlineFragment  
+    ... on MissingSecondType {
+      a
+    }
+  }
+}
+type Query {
+  interface: Interface
+}
+interface Interface {
+  a: String
+}
+
+fragment invalidInlineFragment on Interface {
+  a
+  ... on MissingType {
+      a
+      ... on AnotherType {
+          a
+      }
+  }
+}

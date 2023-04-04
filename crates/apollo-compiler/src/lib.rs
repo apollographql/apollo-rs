@@ -333,7 +333,7 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
         for diagnostic in &diagnostics {
             println!("{diagnostic}");
         }
-        assert!(diagnostics.is_empty());
+        assert_eq!(diagnostics.len(), 1);
 
         let operations = compiler.db.operations(document_id);
         let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
@@ -666,7 +666,7 @@ fragment vipCustomer on User {
         for diagnostic in &diagnostics {
             println!("{diagnostic}");
         }
-        assert!(diagnostics.is_empty());
+        assert_eq!(diagnostics.len(), 1);
 
         let op = compiler
             .db

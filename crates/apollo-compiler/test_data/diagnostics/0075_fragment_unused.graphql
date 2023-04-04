@@ -1,0 +1,16 @@
+query Query {
+    products {
+        inStock
+        name
+    }
+}
+type Query {
+    products: Product
+}
+type Product {
+    inStock: Boolean
+    name: String
+}
+fragment nameFragment on Product {
+    name
+}

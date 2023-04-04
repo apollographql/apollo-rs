@@ -178,7 +178,7 @@ type Products {
             println!("{error}")
         }
 
-        assert_eq!(diagnostics.len(), 2);
+        assert_eq!(diagnostics.len(), 3);
     }
 
     #[test]
@@ -252,6 +252,6 @@ type Product {
             println!("{error}")
         }
 
-        assert_eq!(diagnostics.len(), 2);
+        assert_eq!(diagnostics.len(), 4);
     }
 }
