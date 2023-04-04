@@ -1,0 +1,573 @@
+- DOCUMENT@0..1528
+    - INTERFACE_TYPE_DEFINITION@0..33
+        - interface_KW@0..9 "interface"
+        - WHITESPACE@9..10 " "
+        - NAME@10..13
+            - IDENT@10..13 "Pet"
+        - WHITESPACE@13..14 " "
+        - FIELDS_DEFINITION@14..33
+            - L_CURLY@14..15 "{"
+            - WHITESPACE@15..18 "\n  "
+            - FIELD_DEFINITION@18..31
+                - NAME@18..22
+                    - IDENT@18..22 "name"
+                - COLON@22..23 ":"
+                - WHITESPACE@23..24 " "
+                - NON_NULL_TYPE@24..31
+                    - NAMED_TYPE@24..30
+                        - NAME@24..30
+                            - IDENT@24..30 "String"
+                    - BANG@30..31 "!"
+            - WHITESPACE@31..32 "\n"
+            - R_CURLY@32..33 "}"
+    - WHITESPACE@33..35 "\n\n"
+    - OBJECT_TYPE_DEFINITION@35..96
+        - type_KW@35..39 "type"
+        - WHITESPACE@39..40 " "
+        - NAME@40..43
+            - IDENT@40..43 "Dog"
+        - WHITESPACE@43..44 " "
+        - IMPLEMENTS_INTERFACES@44..58
+            - implements_KW@44..54 "implements"
+            - WHITESPACE@54..55 " "
+            - NAMED_TYPE@55..58
+                - NAME@55..58
+                    - IDENT@55..58 "Pet"
+        - WHITESPACE@58..59 " "
+        - FIELDS_DEFINITION@59..96
+            - L_CURLY@59..60 "{"
+            - WHITESPACE@60..63 "\n  "
+            - FIELD_DEFINITION@63..76
+                - NAME@63..67
+                    - IDENT@63..67 "name"
+                - COLON@67..68 ":"
+                - WHITESPACE@68..69 " "
+                - NON_NULL_TYPE@69..76
+                    - NAMED_TYPE@69..75
+                        - NAME@69..75
+                            - IDENT@69..75 "String"
+                    - BANG@75..76 "!"
+            - WHITESPACE@76..79 "\n  "
+            - FIELD_DEFINITION@79..94
+                - NAME@79..89
+                    - IDENT@79..89 "barkVolume"
+                - COLON@89..90 ":"
+                - WHITESPACE@90..91 " "
+                - NAMED_TYPE@91..94
+                    - NAME@91..94
+                        - IDENT@91..94 "Int"
+            - WHITESPACE@94..95 "\n"
+            - R_CURLY@95..96 "}"
+    - WHITESPACE@96..98 "\n\n"
+    - OBJECT_TYPE_DEFINITION@98..159
+        - type_KW@98..102 "type"
+        - WHITESPACE@102..103 " "
+        - NAME@103..106
+            - IDENT@103..106 "Cat"
+        - WHITESPACE@106..107 " "
+        - IMPLEMENTS_INTERFACES@107..121
+            - implements_KW@107..117 "implements"
+            - WHITESPACE@117..118 " "
+            - NAMED_TYPE@118..121
+                - NAME@118..121
+                    - IDENT@118..121 "Pet"
+        - WHITESPACE@121..122 " "
+        - FIELDS_DEFINITION@122..159
+            - L_CURLY@122..123 "{"
+            - WHITESPACE@123..126 "\n  "
+            - FIELD_DEFINITION@126..139
+                - NAME@126..130
+                    - IDENT@126..130 "name"
+                - COLON@130..131 ":"
+                - WHITESPACE@131..132 " "
+                - NON_NULL_TYPE@132..139
+                    - NAMED_TYPE@132..138
+                        - NAME@132..138
+                            - IDENT@132..138 "String"
+                    - BANG@138..139 "!"
+            - WHITESPACE@139..142 "\n  "
+            - FIELD_DEFINITION@142..157
+                - NAME@142..152
+                    - IDENT@142..152 "meowVolume"
+                - COLON@152..153 ":"
+                - WHITESPACE@153..154 " "
+                - NAMED_TYPE@154..157
+                    - NAME@154..157
+                        - IDENT@154..157 "Int"
+            - WHITESPACE@157..158 "\n"
+            - R_CURLY@158..159 "}"
+    - WHITESPACE@159..161 "\n\n"
+    - UNION_TYPE_DEFINITION@161..187
+        - union_KW@161..166 "union"
+        - WHITESPACE@166..167 " "
+        - NAME@167..175
+            - IDENT@167..175 "CatOrDog"
+        - WHITESPACE@175..176 " "
+        - UNION_MEMBER_TYPES@176..187
+            - EQ@176..177 "="
+            - WHITESPACE@177..178 " "
+            - NAMED_TYPE@178..181
+                - NAME@178..181
+                    - IDENT@178..181 "Cat"
+            - WHITESPACE@181..182 " "
+            - PIPE@182..183 "|"
+            - WHITESPACE@183..184 " "
+            - NAMED_TYPE@184..187
+                - NAME@184..187
+                    - IDENT@184..187 "Dog"
+    - WHITESPACE@187..189 "\n\n"
+    - OBJECT_TYPE_DEFINITION@189..218
+        - type_KW@189..193 "type"
+        - WHITESPACE@193..194 " "
+        - NAME@194..199
+            - IDENT@194..199 "Human"
+        - WHITESPACE@199..200 " "
+        - FIELDS_DEFINITION@200..218
+            - L_CURLY@200..201 "{"
+            - WHITESPACE@201..204 "\n  "
+            - FIELD_DEFINITION@204..216
+                - NAME@204..208
+                    - IDENT@204..208 "pets"
+                - COLON@208..209 ":"
+                - WHITESPACE@209..210 " "
+                - LIST_TYPE@210..216
+                    - L_BRACK@210..211 "["
+                    - NON_NULL_TYPE@211..215
+                        - NAMED_TYPE@211..214
+                            - NAME@211..214
+                                - IDENT@211..214 "Pet"
+                        - BANG@214..215 "!"
+                    - R_BRACK@215..216 "]"
+            - WHITESPACE@216..217 "\n"
+            - R_CURLY@217..218 "}"
+    - WHITESPACE@218..220 "\n\n"
+    - UNION_TYPE_DEFINITION@220..250
+        - union_KW@220..225 "union"
+        - WHITESPACE@225..226 " "
+        - NAME@226..236
+            - IDENT@226..236 "DogOrHuman"
+        - WHITESPACE@236..237 " "
+        - UNION_MEMBER_TYPES@237..250
+            - EQ@237..238 "="
+            - WHITESPACE@238..239 " "
+            - NAMED_TYPE@239..242
+                - NAME@239..242
+                    - IDENT@239..242 "Dog"
+            - WHITESPACE@242..243 " "
+            - PIPE@243..244 "|"
+            - WHITESPACE@244..245 " "
+            - NAMED_TYPE@245..250
+                - NAME@245..250
+                    - IDENT@245..250 "Human"
+    - WHITESPACE@250..252 "\n\n"
+    - COMMENT@252..326 "# https://spec.graphql.org/October2021/#sec-Object-Spreads-In-Object-Scope"
+    - WHITESPACE@326..327 "\n"
+    - FRAGMENT_DEFINITION@327..392
+        - fragment_KW@327..335 "fragment"
+        - WHITESPACE@335..336 " "
+        - FRAGMENT_NAME@336..347
+            - NAME@336..347
+                - IDENT@336..347 "dogFragment"
+        - WHITESPACE@347..348 " "
+        - TYPE_CONDITION@348..354
+            - on_KW@348..350 "on"
+            - WHITESPACE@350..351 " "
+            - NAMED_TYPE@351..354
+                - NAME@351..354
+                    - IDENT@351..354 "Dog"
+        - WHITESPACE@354..355 " "
+        - SELECTION_SET@355..392
+            - L_CURLY@355..356 "{"
+            - WHITESPACE@356..359 "\n  "
+            - INLINE_FRAGMENT@359..390
+                - SPREAD@359..362 "..."
+                - WHITESPACE@362..363 " "
+                - TYPE_CONDITION@363..369
+                    - on_KW@363..365 "on"
+                    - WHITESPACE@365..366 " "
+                    - NAMED_TYPE@366..369
+                        - NAME@366..369
+                            - IDENT@366..369 "Dog"
+                - WHITESPACE@369..370 " "
+                - SELECTION_SET@370..390
+                    - L_CURLY@370..371 "{"
+                    - WHITESPACE@371..376 "\n    "
+                    - FIELD@376..386
+                        - NAME@376..386
+                            - IDENT@376..386 "barkVolume"
+                    - WHITESPACE@386..389 "\n  "
+                    - R_CURLY@389..390 "}"
+            - WHITESPACE@390..391 "\n"
+            - R_CURLY@391..392 "}"
+    - WHITESPACE@392..394 "\n\n"
+    - COMMENT@394..470 "# https://spec.graphql.org/October2021/#sec-Abstract-Spreads-in-Object-Scope"
+    - WHITESPACE@470..471 "\n"
+    - FRAGMENT_DEFINITION@471..513
+        - fragment_KW@471..479 "fragment"
+        - WHITESPACE@479..480 " "
+        - FRAGMENT_NAME@480..495
+            - NAME@480..495
+                - IDENT@480..495 "petNameFragment"
+        - WHITESPACE@495..496 " "
+        - TYPE_CONDITION@496..502
+            - on_KW@496..498 "on"
+            - WHITESPACE@498..499 " "
+            - NAMED_TYPE@499..502
+                - NAME@499..502
+                    - IDENT@499..502 "Pet"
+        - WHITESPACE@502..503 " "
+        - SELECTION_SET@503..513
+            - L_CURLY@503..504 "{"
+            - WHITESPACE@504..507 "\n  "
+            - FIELD@507..511
+                - NAME@507..511
+                    - IDENT@507..511 "name"
+            - WHITESPACE@511..512 "\n"
+            - R_CURLY@512..513 "}"
+    - WHITESPACE@513..515 "\n\n"
+    - FRAGMENT_DEFINITION@515..585
+        - fragment_KW@515..523 "fragment"
+        - WHITESPACE@523..524 " "
+        - FRAGMENT_NAME@524..553
+            - NAME@524..553
+                - IDENT@524..553 "interfaceWithinObjectFragment"
+        - WHITESPACE@553..554 " "
+        - TYPE_CONDITION@554..560
+            - on_KW@554..556 "on"
+            - WHITESPACE@556..557 " "
+            - NAMED_TYPE@557..560
+                - NAME@557..560
+                    - IDENT@557..560 "Dog"
+        - WHITESPACE@560..561 " "
+        - SELECTION_SET@561..585
+            - L_CURLY@561..562 "{"
+            - WHITESPACE@562..565 "\n  "
+            - FRAGMENT_SPREAD@565..583
+                - SPREAD@565..568 "..."
+                - FRAGMENT_NAME@568..583
+                    - NAME@568..583
+                        - IDENT@568..583 "petNameFragment"
+            - WHITESPACE@583..584 "\n"
+            - R_CURLY@584..585 "}"
+    - WHITESPACE@585..587 "\n\n"
+    - FRAGMENT_DEFINITION@587..666
+        - fragment_KW@587..595 "fragment"
+        - WHITESPACE@595..596 " "
+        - FRAGMENT_NAME@596..616
+            - NAME@596..616
+                - IDENT@596..616 "catOrDogNameFragment"
+        - WHITESPACE@616..617 " "
+        - TYPE_CONDITION@617..628
+            - on_KW@617..619 "on"
+            - WHITESPACE@619..620 " "
+            - NAMED_TYPE@620..628
+                - NAME@620..628
+                    - IDENT@620..628 "CatOrDog"
+        - WHITESPACE@628..629 " "
+        - SELECTION_SET@629..666
+            - L_CURLY@629..630 "{"
+            - WHITESPACE@630..633 "\n  "
+            - INLINE_FRAGMENT@633..664
+                - SPREAD@633..636 "..."
+                - WHITESPACE@636..637 " "
+                - TYPE_CONDITION@637..643
+                    - on_KW@637..639 "on"
+                    - WHITESPACE@639..640 " "
+                    - NAMED_TYPE@640..643
+                        - NAME@640..643
+                            - IDENT@640..643 "Cat"
+                - WHITESPACE@643..644 " "
+                - SELECTION_SET@644..664
+                    - L_CURLY@644..645 "{"
+                    - WHITESPACE@645..650 "\n    "
+                    - FIELD@650..660
+                        - NAME@650..660
+                            - IDENT@650..660 "meowVolume"
+                    - WHITESPACE@660..663 "\n  "
+                    - R_CURLY@663..664 "}"
+            - WHITESPACE@664..665 "\n"
+            - R_CURLY@665..666 "}"
+    - WHITESPACE@666..668 "\n\n"
+    - FRAGMENT_DEFINITION@668..737
+        - fragment_KW@668..676 "fragment"
+        - WHITESPACE@676..677 " "
+        - FRAGMENT_NAME@677..700
+            - NAME@677..700
+                - IDENT@677..700 "unionWithObjectFragment"
+        - WHITESPACE@700..701 " "
+        - TYPE_CONDITION@701..707
+            - on_KW@701..703 "on"
+            - WHITESPACE@703..704 " "
+            - NAMED_TYPE@704..707
+                - NAME@704..707
+                    - IDENT@704..707 "Dog"
+        - WHITESPACE@707..708 " "
+        - SELECTION_SET@708..737
+            - L_CURLY@708..709 "{"
+            - WHITESPACE@709..712 "\n  "
+            - FRAGMENT_SPREAD@712..735
+                - SPREAD@712..715 "..."
+                - FRAGMENT_NAME@715..735
+                    - NAME@715..735
+                        - IDENT@715..735 "catOrDogNameFragment"
+            - WHITESPACE@735..736 "\n"
+            - R_CURLY@736..737 "}"
+    - WHITESPACE@737..739 "\n\n"
+    - COMMENT@739..815 "# https://spec.graphql.org/October2021/#sec-Object-Spreads-In-Abstract-Scope"
+    - WHITESPACE@815..816 "\n"
+    - FRAGMENT_DEFINITION@816..888
+        - fragment_KW@816..824 "fragment"
+        - WHITESPACE@824..825 " "
+        - FRAGMENT_NAME@825..836
+            - NAME@825..836
+                - IDENT@825..836 "petFragment"
+        - WHITESPACE@836..837 " "
+        - TYPE_CONDITION@837..843
+            - on_KW@837..839 "on"
+            - WHITESPACE@839..840 " "
+            - NAMED_TYPE@840..843
+                - NAME@840..843
+                    - IDENT@840..843 "Pet"
+        - WHITESPACE@843..844 " "
+        - SELECTION_SET@844..888
+            - L_CURLY@844..845 "{"
+            - WHITESPACE@845..848 "\n  "
+            - FIELD@848..852
+                - NAME@848..852
+                    - IDENT@848..852 "name"
+            - WHITESPACE@852..855 "\n  "
+            - INLINE_FRAGMENT@855..886
+                - SPREAD@855..858 "..."
+                - WHITESPACE@858..859 " "
+                - TYPE_CONDITION@859..865
+                    - on_KW@859..861 "on"
+                    - WHITESPACE@861..862 " "
+                    - NAMED_TYPE@862..865
+                        - NAME@862..865
+                            - IDENT@862..865 "Dog"
+                - WHITESPACE@865..866 " "
+                - SELECTION_SET@866..886
+                    - L_CURLY@866..867 "{"
+                    - WHITESPACE@867..872 "\n    "
+                    - FIELD@872..882
+                        - NAME@872..882
+                            - IDENT@872..882 "barkVolume"
+                    - WHITESPACE@882..885 "\n  "
+                    - R_CURLY@885..886 "}"
+            - WHITESPACE@886..887 "\n"
+            - R_CURLY@887..888 "}"
+    - WHITESPACE@888..890 "\n\n"
+    - FRAGMENT_DEFINITION@890..965
+        - fragment_KW@890..898 "fragment"
+        - WHITESPACE@898..899 " "
+        - FRAGMENT_NAME@899..915
+            - NAME@899..915
+                - IDENT@899..915 "catOrDogFragment"
+        - WHITESPACE@915..916 " "
+        - TYPE_CONDITION@916..927
+            - on_KW@916..918 "on"
+            - WHITESPACE@918..919 " "
+            - NAMED_TYPE@919..927
+                - NAME@919..927
+                    - IDENT@919..927 "CatOrDog"
+        - WHITESPACE@927..928 " "
+        - SELECTION_SET@928..965
+            - L_CURLY@928..929 "{"
+            - WHITESPACE@929..932 "\n  "
+            - INLINE_FRAGMENT@932..963
+                - SPREAD@932..935 "..."
+                - WHITESPACE@935..936 " "
+                - TYPE_CONDITION@936..942
+                    - on_KW@936..938 "on"
+                    - WHITESPACE@938..939 " "
+                    - NAMED_TYPE@939..942
+                        - NAME@939..942
+                            - IDENT@939..942 "Cat"
+                - WHITESPACE@942..943 " "
+                - SELECTION_SET@943..963
+                    - L_CURLY@943..944 "{"
+                    - WHITESPACE@944..949 "\n    "
+                    - FIELD@949..959
+                        - NAME@949..959
+                            - IDENT@949..959 "meowVolume"
+                    - WHITESPACE@959..962 "\n  "
+                    - R_CURLY@962..963 "}"
+            - WHITESPACE@963..964 "\n"
+            - R_CURLY@964..965 "}"
+    - WHITESPACE@965..967 "\n\n"
+    - COMMENT@967..1045 "# https://spec.graphql.org/October2021/#sec-Abstract-Spreads-in-Abstract-Scope"
+    - WHITESPACE@1045..1046 "\n"
+    - FRAGMENT_DEFINITION@1046..1108
+        - fragment_KW@1046..1054 "fragment"
+        - WHITESPACE@1054..1055 " "
+        - FRAGMENT_NAME@1055..1073
+            - NAME@1055..1073
+                - IDENT@1055..1073 "unionWithInterface"
+        - WHITESPACE@1073..1074 " "
+        - TYPE_CONDITION@1074..1080
+            - on_KW@1074..1076 "on"
+            - WHITESPACE@1076..1077 " "
+            - NAMED_TYPE@1077..1080
+                - NAME@1077..1080
+                    - IDENT@1077..1080 "Pet"
+        - WHITESPACE@1080..1081 " "
+        - SELECTION_SET@1081..1108
+            - L_CURLY@1081..1082 "{"
+            - WHITESPACE@1082..1085 "\n  "
+            - FRAGMENT_SPREAD@1085..1106
+                - SPREAD@1085..1088 "..."
+                - FRAGMENT_NAME@1088..1106
+                    - NAME@1088..1106
+                        - IDENT@1088..1106 "dogOrHumanFragment"
+            - WHITESPACE@1106..1107 "\n"
+            - R_CURLY@1107..1108 "}"
+    - WHITESPACE@1108..1110 "\n\n"
+    - FRAGMENT_DEFINITION@1110..1189
+        - fragment_KW@1110..1118 "fragment"
+        - WHITESPACE@1118..1119 " "
+        - FRAGMENT_NAME@1119..1137
+            - NAME@1119..1137
+                - IDENT@1119..1137 "dogOrHumanFragment"
+        - WHITESPACE@1137..1138 " "
+        - TYPE_CONDITION@1138..1151
+            - on_KW@1138..1140 "on"
+            - WHITESPACE@1140..1141 " "
+            - NAMED_TYPE@1141..1151
+                - NAME@1141..1151
+                    - IDENT@1141..1151 "DogOrHuman"
+        - WHITESPACE@1151..1152 " "
+        - SELECTION_SET@1152..1189
+            - L_CURLY@1152..1153 "{"
+            - WHITESPACE@1153..1156 "\n  "
+            - INLINE_FRAGMENT@1156..1187
+                - SPREAD@1156..1159 "..."
+                - WHITESPACE@1159..1160 " "
+                - TYPE_CONDITION@1160..1166
+                    - on_KW@1160..1162 "on"
+                    - WHITESPACE@1162..1163 " "
+                    - NAMED_TYPE@1163..1166
+                        - NAME@1163..1166
+                            - IDENT@1163..1166 "Dog"
+                - WHITESPACE@1166..1167 " "
+                - SELECTION_SET@1167..1187
+                    - L_CURLY@1167..1168 "{"
+                    - WHITESPACE@1168..1173 "\n    "
+                    - FIELD@1173..1183
+                        - NAME@1173..1183
+                            - IDENT@1173..1183 "barkVolume"
+                    - WHITESPACE@1183..1186 "\n  "
+                    - R_CURLY@1186..1187 "}"
+            - WHITESPACE@1187..1188 "\n"
+            - R_CURLY@1188..1189 "}"
+    - WHITESPACE@1189..1191 "\n\n"
+    - COMMENT@1191..1318 "# https://spec.graphql.org/October2021/#sec-Abstract-Spreads-in-Abstract-Scope.Interface-Spreads-in-implemented-Interface-Scope"
+    - WHITESPACE@1318..1319 "\n"
+    - INTERFACE_TYPE_DEFINITION@1319..1347
+        - interface_KW@1319..1328 "interface"
+        - WHITESPACE@1328..1329 " "
+        - NAME@1329..1333
+            - IDENT@1329..1333 "Node"
+        - WHITESPACE@1333..1334 " "
+        - FIELDS_DEFINITION@1334..1347
+            - L_CURLY@1334..1335 "{"
+            - WHITESPACE@1335..1338 "\n  "
+            - FIELD_DEFINITION@1338..1345
+                - NAME@1338..1340
+                    - IDENT@1338..1340 "id"
+                - COLON@1340..1341 ":"
+                - WHITESPACE@1341..1342 " "
+                - NON_NULL_TYPE@1342..1345
+                    - NAMED_TYPE@1342..1344
+                        - NAME@1342..1344
+                            - IDENT@1342..1344 "ID"
+                    - BANG@1344..1345 "!"
+            - WHITESPACE@1345..1346 "\n"
+            - R_CURLY@1346..1347 "}"
+    - WHITESPACE@1347..1349 "\n\n"
+    - INTERFACE_TYPE_DEFINITION@1349..1411
+        - interface_KW@1349..1358 "interface"
+        - WHITESPACE@1358..1359 " "
+        - NAME@1359..1367
+            - IDENT@1359..1367 "Resource"
+        - WHITESPACE@1367..1368 " "
+        - IMPLEMENTS_INTERFACES@1368..1383
+            - implements_KW@1368..1378 "implements"
+            - WHITESPACE@1378..1379 " "
+            - NAMED_TYPE@1379..1383
+                - NAME@1379..1383
+                    - IDENT@1379..1383 "Node"
+        - WHITESPACE@1383..1384 " "
+        - FIELDS_DEFINITION@1384..1411
+            - L_CURLY@1384..1385 "{"
+            - WHITESPACE@1385..1388 "\n  "
+            - FIELD_DEFINITION@1388..1395
+                - NAME@1388..1390
+                    - IDENT@1388..1390 "id"
+                - COLON@1390..1391 ":"
+                - WHITESPACE@1391..1392 " "
+                - NON_NULL_TYPE@1392..1395
+                    - NAMED_TYPE@1392..1394
+                        - NAME@1392..1394
+                            - IDENT@1392..1394 "ID"
+                    - BANG@1394..1395 "!"
+            - WHITESPACE@1395..1398 "\n  "
+            - FIELD_DEFINITION@1398..1409
+                - NAME@1398..1401
+                    - IDENT@1398..1401 "url"
+                - COLON@1401..1402 ":"
+                - WHITESPACE@1402..1403 " "
+                - NAMED_TYPE@1403..1409
+                    - NAME@1403..1409
+                        - IDENT@1403..1409 "String"
+            - WHITESPACE@1409..1410 "\n"
+            - R_CURLY@1410..1411 "}"
+    - WHITESPACE@1411..1413 "\n\n"
+    - FRAGMENT_DEFINITION@1413..1478
+        - fragment_KW@1413..1421 "fragment"
+        - WHITESPACE@1421..1422 " "
+        - FRAGMENT_NAME@1422..1444
+            - NAME@1422..1444
+                - IDENT@1422..1444 "interfaceWithInterface"
+        - WHITESPACE@1444..1445 " "
+        - TYPE_CONDITION@1445..1452
+            - on_KW@1445..1447 "on"
+            - WHITESPACE@1447..1448 " "
+            - NAMED_TYPE@1448..1452
+                - NAME@1448..1452
+                    - IDENT@1448..1452 "Node"
+        - WHITESPACE@1452..1453 " "
+        - SELECTION_SET@1453..1478
+            - L_CURLY@1453..1454 "{"
+            - WHITESPACE@1454..1457 "\n  "
+            - FRAGMENT_SPREAD@1457..1476
+                - SPREAD@1457..1460 "..."
+                - FRAGMENT_NAME@1460..1476
+                    - NAME@1460..1476
+                        - IDENT@1460..1476 "resourceFragment"
+            - WHITESPACE@1476..1477 "\n"
+            - R_CURLY@1477..1478 "}"
+    - WHITESPACE@1478..1480 "\n\n"
+    - FRAGMENT_DEFINITION@1480..1527
+        - fragment_KW@1480..1488 "fragment"
+        - WHITESPACE@1488..1489 " "
+        - FRAGMENT_NAME@1489..1505
+            - NAME@1489..1505
+                - IDENT@1489..1505 "resourceFragment"
+        - WHITESPACE@1505..1506 " "
+        - TYPE_CONDITION@1506..1517
+            - on_KW@1506..1508 "on"
+            - WHITESPACE@1508..1509 " "
+            - NAMED_TYPE@1509..1517
+                - NAME@1509..1517
+                    - IDENT@1509..1517 "Resource"
+        - WHITESPACE@1517..1518 " "
+        - SELECTION_SET@1518..1527
+            - L_CURLY@1518..1519 "{"
+            - WHITESPACE@1519..1522 "\n  "
+            - FIELD@1522..1525
+                - NAME@1522..1525
+                    - IDENT@1522..1525 "url"
+            - WHITESPACE@1525..1526 "\n"
+            - R_CURLY@1526..1527 "}"
+    - WHITESPACE@1527..1528 "\n"
+recursion limit: 4096, high: 2

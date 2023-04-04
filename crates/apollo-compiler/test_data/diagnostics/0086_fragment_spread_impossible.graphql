@@ -49,9 +49,9 @@ fragment humanOrAlienFragment on HumanOrAlien {
 }
 
 fragment nonIntersectingInterfaces on Pet {
-  ...sentientFragment
+  ...sentientFragment2
 }
 
-fragment sentientFragment on Sentient {
+fragment sentientFragment2 on Sentient {
   name
 }

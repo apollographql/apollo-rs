@@ -167,6 +167,12 @@ pub trait ValidationDatabase:
     #[salsa::invoke(operation::validate_operation_definitions)]
     fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
+    /// Given a type definition, find all the types that can be used for fragment spreading.
+    ///
+    /// Spec: https://spec.graphql.org/October2021/#GetPossibleTypes()
+    #[salsa::invoke(fragment::get_possible_types)]
+    fn get_possible_types(&self, ty: TypeDefinition) -> Vec<TypeDefinition>;
+
     #[salsa::invoke(fragment::validate_fragment_spread)]
     fn validate_fragment_spread(&self, spread: Arc<FragmentSpread>) -> Vec<ApolloDiagnostic>;
 
