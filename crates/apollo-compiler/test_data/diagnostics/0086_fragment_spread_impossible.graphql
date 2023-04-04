@@ -1,0 +1,57 @@
+interface Sentient {
+  name: String!
+}
+
+interface Pet {
+  name: String!
+}
+
+type Dog implements Pet {
+  name: String!
+  barkVolume: Int
+}
+
+type Cat implements Pet {
+  name: String!
+  meowVolume: Int
+}
+
+union CatOrDog = Cat | Dog
+
+type Human implements Sentient {
+  name: String!
+  pets: [Pet!]
+}
+
+type Alien implements Sentient {
+  name: String!
+  homePlanet: String!
+}
+
+union HumanOrAlien = Human | Alien
+
+fragment catInDogFragmentInvalid on Dog {
+  ... on Cat {
+    meowVolume
+  }
+}
+
+fragment sentientFragment on Sentient {
+  ... on Dog {
+    barkVolume
+  }
+}
+
+fragment humanOrAlienFragment on HumanOrAlien {
+  ... on Cat {
+    meowVolume
+  }
+}
+
+fragment nonIntersectingInterfaces on Pet {
+  ...sentientFragment
+}
+
+fragment sentientFragment on Sentient {
+  name
+}
