@@ -34,7 +34,7 @@ use crate::{Directive, SelectionSet};
 ///     "#}
 /// );
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FragmentDefinition {
     name: String,
     type_condition: TypeCondition,

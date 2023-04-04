@@ -51,7 +51,7 @@ use crate::{Directive, FieldDefinition, StringValue};
 ///     "#}
 /// );
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ObjectDefinition {
     // Name must return a String.
     name: String,
