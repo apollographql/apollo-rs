@@ -78,7 +78,7 @@ pub fn validate_fragment_selection(
         .map(|ty| ty.name().to_string())
         .collect::<HashSet<_>>();
     let concrete_condition_types = db
-        .get_possible_types(cond_type.clone())
+        .get_possible_types(cond_type)
         .into_iter()
         .map(|ty| ty.name().to_string())
         .collect::<HashSet<_>>();
