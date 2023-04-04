@@ -197,7 +197,11 @@ pub trait ValidationDatabase:
     ) -> Result<(), ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_used)]
-    fn validate_fragment_used(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+    fn validate_fragment_used(
+        &self,
+        def: FragmentDefinition,
+        file_id: FileId,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(selection::validate_selection_set)]
     fn validate_selection_set(&self, sel_set: SelectionSet) -> Vec<ApolloDiagnostic>;

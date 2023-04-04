@@ -1,6 +1,6 @@
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::{self, DirectiveLocation, FragmentDefinition, HirNodeLocation},
+    hir::{DirectiveLocation, FragmentDefinition, HirNodeLocation, TypeDefinition},
     FileId, ValidationDatabase,
 };
 use std::sync::Arc;
@@ -53,7 +53,7 @@ pub fn validate_fragment_definitions(
             def.type_def(db.upcast()).clone(),
         ));
         diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
-        diagnostics.extend(db.validate_fragment_used(file_id));
+        diagnostics.extend(db.validate_fragment_used(def.as_ref().clone(), file_id));
     }
 
     diagnostics
@@ -147,62 +147,48 @@ pub fn validate_fragment_on_composite_types(
 
 pub fn validate_fragment_used(
     db: &dyn ValidationDatabase,
+    def: FragmentDefinition,
     file_id: FileId,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    let fragments = db.fragments(file_id);
-
     let operations = db.operations(file_id);
-    let op_len = operations.len();
+    let name = def.name();
 
     // Fragments must be used within the schema
     //
     // Returns Unused Fragment error.
-    if op_len > 0 {
-        for op in operations.iter() {
-            let fields = op.fields(db.upcast());
-            let fragment_spreads = fields
-                .iter()
-                .flat_map(|f| f.selection_set().fragment_spreads())
-                .map(|f| f.name().to_owned())
-                .collect::<Vec<_>>();
+    if operations.len() < 1 {
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                def.loc().into(),
+                DiagnosticData::UnusedFragment { name: name.into() },
+            )
+            .label(Label::new(def.loc(), format!("`{name}` is defined here"))),
+        )
+    }
 
-            for fragment in fragments.values() {
-                let name = fragment.name();
-                if !fragment_spreads.contains(&name.to_owned()) {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            fragment.loc().into(),
-                            DiagnosticData::UnusedFragment { name: name.into() },
-                        )
-                        .label(Label::new(
-                            fragment.loc(),
-                            format!("`{name}` is defined here"),
-                        ))
-                        .help(format!("Fragment `{name}` must be used in schema")),
-                    )
-                }
-            }
-        }
-    } else {
-        for fragment in fragments.values() {
-            let name = fragment.name();
+    for op in operations.iter() {
+        let fields = op.fields(db.upcast());
+        let fragment_spreads: Vec<String> = fields
+            .iter()
+            .flat_map(|f| f.selection_set().fragment_spreads())
+            .map(|f| f.name().to_owned())
+            .collect();
+
+        if !fragment_spreads.contains(&name.to_string()) {
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    fragment.loc().into(),
+                    def.loc().into(),
                     DiagnosticData::UnusedFragment { name: name.into() },
                 )
-                .label(Label::new(
-                    fragment.loc(),
-                    format!("`{name}` is defined here"),
-                )),
+                .label(Label::new(def.loc(), format!("`{name}` is defined here")))
+                .help(format!("fragment `{name}` must be used in an operation")),
             )
         }
     }
-
     diagnostics
 }
 
@@ -379,5 +365,50 @@ mod test {
         }
 
         assert_eq!(diagnostics.len(), 1)
+    }
+
+    #[test]
+    fn it_validates_fragment_is_used_in_nested_fragments() {
+        let input = r#"
+query IntrospectionQuery {
+  foo {
+    ...Bar
+    baz {
+      ...Quux
+    }
+  }
+}
+
+fragment Bar on Foo {
+  baz {
+    ...Quux
+  }
+}
+
+fragment Quux on Baz {
+  id
+}
+
+type Query {
+  foo: Foo
+}
+
+type Foo {
+  baz: Baz
+}
+
+type Baz {
+  id: ID
+}
+        "#;
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_document(input, "schema.graphql");
+
+        let diagnostics = compiler.validate();
+        for diagnostic in &diagnostics {
+            println!("{diagnostic}");
+        }
+
+        assert!(diagnostics.is_empty())
     }
 }
