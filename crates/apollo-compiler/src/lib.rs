@@ -279,7 +279,7 @@ query ExampleQuery($definedVariable: Int, $definedVariable2: Int) {
   topProducts(first: $definedVariable) {
     type
   }
-  ... vipCustomer
+  customer { ... vipCustomer }
 }
 
 fragment vipCustomer on User {
@@ -629,7 +629,9 @@ query getProduct {
   topProducts {
     type
   }
-  ... vipCustomer
+  customer {
+    ... vipCustomer
+  }
 }
 
 fragment vipCustomer on User {
