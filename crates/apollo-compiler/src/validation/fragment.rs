@@ -1,6 +1,6 @@
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::{self, DirectiveLocation, FragmentDefinition},
+    hir::{self, DirectiveLocation, FragmentDefinition, HirNodeLocation},
     FileId, ValidationDatabase,
 };
 use std::sync::Arc;
@@ -47,7 +47,11 @@ pub fn validate_fragment_definitions(
             def.directives().to_vec(),
             DirectiveLocation::FragmentDefinition,
         ));
-        diagnostics.extend(db.validate_fragment_spreads(def.as_ref().clone()));
+        diagnostics.extend(db.validate_fragment_spreads(
+            Some(def.type_condition().to_string()),
+            def.loc(),
+            def.type_def(db.upcast()).clone(),
+        ));
         diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
         diagnostics.extend(db.validate_fragment_used(file_id));
     }
@@ -57,13 +61,15 @@ pub fn validate_fragment_definitions(
 
 pub fn validate_fragment_spreads(
     db: &dyn ValidationDatabase,
-    def: FragmentDefinition,
+    type_cond: Option<String>,
+    loc: HirNodeLocation,
+    type_def: Option<TypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-    if let Err(diagnostic) = db.validate_fragment_spread_type_existence(def.clone()) {
+    if let Err(diagnostic) = db.validate_fragment_spread_type_existence(type_cond.clone(), loc) {
         diagnostics.push(diagnostic)
     };
-    if let Err(diagnostic) = db.validate_fragment_on_composite_types(def.clone()) {
+    if let Err(diagnostic) = db.validate_fragment_on_composite_types(type_cond, loc, type_def) {
         diagnostics.push(diagnostic)
     };
 
@@ -72,58 +78,71 @@ pub fn validate_fragment_spreads(
 
 pub fn validate_fragment_spread_type_existence(
     db: &dyn ValidationDatabase,
-    def: FragmentDefinition,
+    type_cond: Option<String>,
+    loc: HirNodeLocation,
 ) -> Result<(), ApolloDiagnostic> {
     let schema_types = db.types_definitions_by_name();
 
-    let type_cond = def.type_condition();
-
-    if !schema_types.contains_key(type_cond) {
-        return Err(ApolloDiagnostic::new(
-            db,
-            def.loc().into(),
-            DiagnosticData::UndefinedDefinition {
-                name: type_cond.into(),
-            },
-        )
-        .label(Label::new(
-            def.loc(),
-            format!("`{type_cond}` is defined here but not declared in the schema"),
-        ))
-        .help(format!(
-            "fragments must be specified on types that exist in the schema"
-        ))
-        .help(format!("consider defining `{type_cond}` in the schema")));
+    match type_cond {
+        Some(type_cond) => {
+            if !schema_types.contains_key(&type_cond) {
+                return Err(ApolloDiagnostic::new(
+                    db,
+                    loc.into(),
+                    DiagnosticData::InvalidFragment {
+                        ty: type_cond.clone().into(),
+                    },
+                )
+                .label(Label::new(
+                    loc,
+                    format!(
+                        "`{}` is defined here but not declared in the schema",
+                        &type_cond
+                    ),
+                ))
+                .help("fragments must be specified on types that exist in the schema".to_string())
+                .help(format!("consider defining `{}` in the schema", &type_cond)));
+            }
+        }
+        None => {
+            return Err(ApolloDiagnostic::new(
+                db,
+                loc.into(),
+                DiagnosticData::InvalidFragment { ty: None },
+            )
+            .label(Label::new(
+                loc,
+                "fragment target is defined here but not declared in the schema".to_string(),
+            )));
+        }
     }
     Ok(())
 }
 
 pub fn validate_fragment_on_composite_types(
     db: &dyn ValidationDatabase,
-    def: FragmentDefinition,
+    type_cond: Option<String>,
+    loc: HirNodeLocation,
+    type_def: Option<TypeDefinition>,
 ) -> Result<(), ApolloDiagnostic> {
-    let type_cond = def.type_condition();
-    let is_scalar = def
-        .type_def(db.upcast())
-        .map_or(false, |ty| ty.is_scalar_type_definition());
+    let is_scalar = type_def.map_or(false, |ty| ty.is_scalar_type_definition());
 
-    if is_scalar {
-        let name = def.name();
-
-        return Err(ApolloDiagnostic::new(
-            db,
-            def.loc().into(),
-            DiagnosticData::InvalidFragmentType {
-                name: name.into(),
-                ty: type_cond.into(),
-            },
-        )
-        .label(Label::new(
-            def.loc(),
-            format!("`{type_cond}` is defined here"),
-        )));
+    match type_cond {
+        Some(type_cond) => {
+            if is_scalar {
+                return Err(ApolloDiagnostic::new(
+                    db,
+                    loc.into(),
+                    DiagnosticData::InvalidFragmentTarget {
+                        ty: type_cond.clone(),
+                    },
+                )
+                .label(Label::new(loc, format!("`{type_cond}` is defined here"))));
+            }
+            Ok(())
+        }
+        None => Ok(()),
     }
-    Ok(())
 }
 
 pub fn validate_fragment_used(
@@ -179,8 +198,7 @@ pub fn validate_fragment_used(
                 .label(Label::new(
                     fragment.loc(),
                     format!("`{name}` is defined here"),
-                ))
-                .help(format!("Fragment `{name}` must be used in schema")),
+                )),
             )
         }
     }
@@ -272,7 +290,7 @@ mod test {
             ... on MissingType {
                 a
                 ... on AnotherType {
-
+                    a
                 }
             }
           }

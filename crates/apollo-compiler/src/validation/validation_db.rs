@@ -174,18 +174,26 @@ pub trait ValidationDatabase:
     fn validate_fragment_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_spreads)]
-    fn validate_fragment_spreads(&self, def: FragmentDefinition) -> Vec<ApolloDiagnostic>;
+    fn validate_fragment_spreads(
+        &self,
+        type_cond: Option<String>,
+        loc: HirNodeLocation,
+        type_def: Option<TypeDefinition>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_on_composite_types)]
     fn validate_fragment_on_composite_types(
         &self,
-        def: FragmentDefinition,
+        type_cond: Option<String>,
+        loc: HirNodeLocation,
+        type_def: Option<TypeDefinition>,
     ) -> Result<(), ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_spread_type_existence)]
     fn validate_fragment_spread_type_existence(
         &self,
-        def: FragmentDefinition,
+        type_cond: Option<String>,
+        loc: HirNodeLocation,
     ) -> Result<(), ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_used)]

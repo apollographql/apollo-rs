@@ -411,6 +411,15 @@ impl FragmentDefinition {
     pub fn variables(&self, db: &dyn HirDatabase) -> Vec<Variable> {
         self.selection_set.variables(db)
     }
+    /// Get fragments's type.
+    pub fn ty(&self, db: &dyn HirDatabase) -> Option<Type> {
+        let def = db
+            .find_type_definition_by_name(self.type_condition.to_string())?
+            .field(self.name())?
+            .ty()
+            .to_owned();
+        Some(def)
+    }
 
     pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
         db.find_type_definition_by_name(self.name().to_string())
@@ -1501,6 +1510,11 @@ impl InlineFragment {
     /// Get a reference to inline fragment's type condition.
     pub fn type_condition(&self) -> Option<&str> {
         self.type_condition.as_ref().map(|t| t.src())
+    }
+
+    /// Get inline fragments's type.
+    pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
+        db.find_type_definition_by_name(self.type_condition()?.to_string())
     }
 
     /// Get a reference to inline fragment's directives.
