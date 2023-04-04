@@ -656,6 +656,10 @@ fragment vipCustomer on User {
             .find_operation(query_id, Some("getProduct".into()));
         let fragment_in_op: Vec<crate::hir::FragmentDefinition> = op
             .unwrap()
+            .fields(&compiler.db)
+            .iter()
+            .find(|field| field.name() == "customer")
+            .unwrap()
             .selection_set()
             .selection()
             .iter()
