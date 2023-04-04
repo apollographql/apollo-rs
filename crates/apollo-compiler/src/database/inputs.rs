@@ -60,6 +60,10 @@ pub trait InputDatabase {
     #[salsa::input]
     fn recursion_limit(&self) -> Option<usize>;
 
+    /// Get the currently set token limit.
+    #[salsa::input]
+    fn token_limit(&self) -> Option<usize>;
+
     /// Get input source of the corresponding file.
     #[salsa::input]
     fn type_system_hir_input(&self) -> Option<Arc<TypeSystem>>;
