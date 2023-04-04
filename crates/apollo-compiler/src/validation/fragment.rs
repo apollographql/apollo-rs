@@ -83,9 +83,6 @@ pub fn validate_fragment_selection(
         .map(|ty| ty.name().to_string())
         .collect::<HashSet<_>>();
 
-    println!("Parent types: {:?}", concrete_parent_types);
-    println!("Condition types: {:?}", concrete_condition_types);
-
     let mut applicable_types = concrete_parent_types.intersection(&concrete_condition_types);
     if applicable_types.next().is_none() {
         // Report specific errors for the different kinds of fragments.
