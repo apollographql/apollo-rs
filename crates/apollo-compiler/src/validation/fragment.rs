@@ -1,6 +1,8 @@
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir, FileId, ValidationDatabase,
+    hir,
+    validation::RecursionStack,
+    FileId, ValidationDatabase,
 };
 use std::{collections::HashSet, sync::Arc};
 
@@ -11,45 +13,57 @@ pub fn get_possible_types(
     db: &dyn ValidationDatabase,
     ty: hir::TypeDefinition,
 ) -> Vec<hir::TypeDefinition> {
-    match &ty {
-        // 1. If `type` is an object type, return a set containing `type`.
-        hir::TypeDefinition::ObjectTypeDefinition(_) => vec![ty],
-        // 2. If `type` is an interface type, return the set of types implementing `type`.
-        hir::TypeDefinition::InterfaceTypeDefinition(intf) => {
-            let mut implementors = db
-                .subtype_map()
-                .get(intf.name())
-                .map(|names| {
+    fn get_possible_types_impl(
+        db: &dyn ValidationDatabase,
+        ty: hir::TypeDefinition,
+        seen: &mut RecursionStack<'_>,
+        output: &mut Vec<hir::TypeDefinition>,
+    ) {
+        match &ty {
+            // 1. If `type` is an object type, return a set containing `type`.
+            hir::TypeDefinition::ObjectTypeDefinition(_) => output.push(ty),
+            // 2. If `type` is an interface type, return the set of types implementing `type`.
+            hir::TypeDefinition::InterfaceTypeDefinition(intf) => {
+                // Prevent stack overflow if interface implements itself
+                if seen.contains(intf.name()) {
+                    return;
+                }
+
+                let subtype_map = db.subtype_map();
+                if let Some(names) = subtype_map.get(intf.name()) {
+                    let mut seen = seen.push(intf.name().to_string());
                     names
                         .iter()
                         .filter_map(|name| db.find_type_definition_by_name(name.to_string()))
-                        .flat_map(|ty| get_possible_types(db, ty))
-                        .collect::<Vec<_>>()
-                })
-                .unwrap_or_default();
+                        .for_each(|ty| get_possible_types_impl(db, ty, &mut seen, output))
+                }
+                output.push(ty);
+            }
+            // 3. If `type` is a union type, return the set of possible types of `type`.
+            hir::TypeDefinition::UnionTypeDefinition(union_) => {
+                // Prevent stack overflow if union is a member of itself
+                if seen.contains(union_.name()) {
+                    return;
+                }
 
-            implementors.push(ty);
-            implementors
-        }
-        // 3. If `type` is a union type, return the set of possible types of `type`.
-        hir::TypeDefinition::UnionTypeDefinition(union_) => {
-            let mut members = db
-                .subtype_map()
-                .get(union_.name())
-                .map(|names| {
+                let subtype_map = db.subtype_map();
+                if let Some(names) = subtype_map.get(union_.name()) {
+                    let mut seen = seen.push(union_.name().to_string());
                     names
                         .iter()
                         .filter_map(|name| db.find_type_definition_by_name(name.to_string()))
-                        .flat_map(|ty| get_possible_types(db, ty))
-                        .collect::<Vec<_>>()
-                })
-                .unwrap_or_default();
+                        .for_each(|ty| get_possible_types_impl(db, ty, &mut seen, output))
+                }
 
-            members.push(ty);
-            members
+                output.push(ty);
+            }
+            _ => (),
         }
-        _ => vec![],
     }
+
+    let mut output = vec![];
+    get_possible_types_impl(db, ty, &mut RecursionStack(&mut vec![]), &mut output);
+    output
 }
 
 pub fn validate_fragment_selection(
