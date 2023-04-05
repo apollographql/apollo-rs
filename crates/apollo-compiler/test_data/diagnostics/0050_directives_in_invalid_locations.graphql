@@ -2,7 +2,7 @@ query queryA($status: String @skip(if: true)) @skip(if: $foo){
   field
   response(status: $status) @deprecated
   human {
-    ... pet @directiveB
+    pets { ... pet @directiveB }
   }
 }
 

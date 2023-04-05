@@ -8,7 +8,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 1146,
+            offset: 1155,
             length: 18,
         },
         labels: [
@@ -17,7 +17,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 1146,
+                    offset: 1155,
                     length: 18,
                 },
                 text: "SCHEMA is not a valid location",
@@ -47,7 +47,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 1297,
+            offset: 1306,
             length: 11,
         },
         labels: [
@@ -56,7 +56,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 1297,
+                    offset: 1306,
                     length: 11,
                 },
                 text: "SCALAR is not a valid location",
@@ -66,7 +66,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 1388,
+                    offset: 1397,
                     length: 29,
                 },
                 text: "consider adding SCALAR directive location here",
@@ -82,7 +82,7 @@
                 file_id: FileId {
                     id: 50,
                 },
-                offset: 1388,
+                offset: 1397,
                 length: 29,
             },
         },
@@ -96,7 +96,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 832,
+            offset: 841,
             length: 11,
         },
         labels: [
@@ -105,7 +105,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 832,
+                    offset: 841,
                     length: 11,
                 },
                 text: "ENUM is not a valid location",
@@ -115,7 +115,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 1357,
+                    offset: 1366,
                     length: 30,
                 },
                 text: "consider adding ENUM directive location here",
@@ -131,7 +131,7 @@
                 file_id: FileId {
                     id: 50,
                 },
-                offset: 1357,
+                offset: 1366,
                 length: 30,
             },
         },
@@ -145,7 +145,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 854,
+            offset: 863,
             length: 11,
         },
         labels: [
@@ -154,7 +154,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 854,
+                    offset: 863,
                     length: 11,
                 },
                 text: "ENUM_VALUE is not a valid location",
@@ -164,7 +164,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 1357,
+                    offset: 1366,
                     length: 30,
                 },
                 text: "consider adding ENUM_VALUE directive location here",
@@ -180,7 +180,7 @@
                 file_id: FileId {
                     id: 50,
                 },
-                offset: 1357,
+                offset: 1366,
                 length: 30,
             },
         },
@@ -194,7 +194,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 750,
+            offset: 759,
             length: 11,
         },
         labels: [
@@ -203,7 +203,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 750,
+                    offset: 759,
                     length: 11,
                 },
                 text: "UNION is not a valid location",
@@ -213,7 +213,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 1388,
+                    offset: 1397,
                     length: 29,
                 },
                 text: "consider adding UNION directive location here",
@@ -229,7 +229,7 @@
                 file_id: FileId {
                     id: 50,
                 },
-                offset: 1388,
+                offset: 1397,
                 length: 29,
             },
         },
@@ -243,7 +243,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 436,
+            offset: 445,
             length: 15,
         },
         labels: [
@@ -252,7 +252,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 436,
+                    offset: 445,
                     length: 15,
                 },
                 text: "INTERFACE is not a valid location",
@@ -282,7 +282,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 660,
+            offset: 669,
             length: 18,
         },
         labels: [
@@ -291,7 +291,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 660,
+                    offset: 669,
                     length: 18,
                 },
                 text: "INPUT_OBJECT is not a valid location",
@@ -321,7 +321,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 697,
+            offset: 706,
             length: 18,
         },
         labels: [
@@ -330,7 +330,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 697,
+                    offset: 706,
                     length: 18,
                 },
                 text: "INPUT_FIELD_DEFINITION is not a valid location",
@@ -360,7 +360,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 513,
+            offset: 522,
             length: 11,
         },
         labels: [
@@ -369,7 +369,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 513,
+                    offset: 522,
                     length: 11,
                 },
                 text: "FIELD_DEFINITION is not a valid location",
@@ -379,7 +379,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 1388,
+                    offset: 1397,
                     length: 29,
                 },
                 text: "consider adding FIELD_DEFINITION directive location here",
@@ -395,7 +395,7 @@
                 file_id: FileId {
                     id: 50,
                 },
-                offset: 1388,
+                offset: 1397,
                 length: 29,
             },
         },
@@ -409,7 +409,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 897,
+            offset: 906,
             length: 11,
         },
         labels: [
@@ -418,7 +418,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 897,
+                    offset: 906,
                     length: 11,
                 },
                 text: "OBJECT is not a valid location",
@@ -448,7 +448,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 969,
+            offset: 978,
             length: 56,
         },
         labels: [
@@ -457,7 +457,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 969,
+                    offset: 978,
                     length: 56,
                 },
                 text: "ARGUMENT_DEFINITION is not a valid location",
@@ -604,7 +604,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 133,
+            offset: 140,
             length: 11,
         },
         labels: [
@@ -613,7 +613,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 133,
+                    offset: 140,
                     length: 11,
                 },
                 text: "FRAGMENT_SPREAD is not a valid location",
@@ -623,7 +623,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 1388,
+                    offset: 1397,
                     length: 29,
                 },
                 text: "consider adding FRAGMENT_SPREAD directive location here",
@@ -639,7 +639,7 @@
                 file_id: FileId {
                     id: 50,
                 },
-                offset: 1388,
+                offset: 1397,
                 length: 29,
             },
         },
@@ -653,59 +653,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 125,
-            length: 19,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 50,
-                    },
-                    offset: 125,
-                    length: 19,
-                },
-                text: "fragment `pet` cannot be applied",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 50,
-                    },
-                    offset: 152,
-                    length: 88,
-                },
-                text: "fragment declared with type condition `Cat` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 50,
-                    },
-                    offset: 775,
-                    length: 43,
-                },
-                text: "type condition `Cat` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: Some(
-                "pet",
-            ),
-            type_name: "Human",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 50,
-            },
-            offset: 269,
+            offset: 278,
             length: 11,
         },
         labels: [
@@ -714,7 +662,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 269,
+                    offset: 278,
                     length: 11,
                 },
                 text: "SUBSCRIPTION is not a valid location",
@@ -724,7 +672,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 1357,
+                    offset: 1366,
                     length: 30,
                 },
                 text: "consider adding SUBSCRIPTION directive location here",
@@ -740,7 +688,7 @@
                 file_id: FileId {
                     id: 50,
                 },
-                offset: 1357,
+                offset: 1366,
                 length: 30,
             },
         },
@@ -754,7 +702,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 345,
+            offset: 354,
             length: 15,
         },
         labels: [
@@ -763,7 +711,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 345,
+                    offset: 354,
                     length: 15,
                 },
                 text: "MUTATION is not a valid location",
@@ -793,7 +741,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 172,
+            offset: 181,
             length: 11,
         },
         labels: [
@@ -802,7 +750,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 172,
+                    offset: 181,
                     length: 11,
                 },
                 text: "FRAGMENT_DEFINITION is not a valid location",
@@ -812,7 +760,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 1388,
+                    offset: 1397,
                     length: 29,
                 },
                 text: "consider adding FRAGMENT_DEFINITION directive location here",
@@ -828,7 +776,7 @@
                 file_id: FileId {
                     id: 50,
                 },
-                offset: 1388,
+                offset: 1397,
                 length: 29,
             },
         },
@@ -842,7 +790,7 @@
             file_id: FileId {
                 id: 50,
             },
-            offset: 212,
+            offset: 221,
             length: 11,
         },
         labels: [
@@ -851,7 +799,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 212,
+                    offset: 221,
                     length: 11,
                 },
                 text: "INLINE_FRAGMENT is not a valid location",
@@ -861,7 +809,7 @@
                     file_id: FileId {
                         id: 50,
                     },
-                    offset: 1357,
+                    offset: 1366,
                     length: 30,
                 },
                 text: "consider adding INLINE_FRAGMENT directive location here",
@@ -877,7 +825,7 @@
                 file_id: FileId {
                     id: 50,
                 },
-                offset: 1357,
+                offset: 1366,
                 length: 30,
             },
         },

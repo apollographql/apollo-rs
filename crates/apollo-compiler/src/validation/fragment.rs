@@ -222,7 +222,7 @@ pub fn validate_fragment_type_condition(
         Some(type_cond) => {
             let type_def = db.find_type_definition_by_name(type_cond.clone());
             let is_composite = type_def
-                .clone()
+                .as_ref()
                 .map_or(false, |ty| ty.is_composite_definition());
 
             if !is_composite {
@@ -233,6 +233,10 @@ pub fn validate_fragment_type_condition(
                         ty: type_cond.clone(),
                     },
                 )
+                .label(Label::new(
+                    loc,
+                    "fragment declares unsupported type condition `{type_cond}`",
+                ))
                 .help("fragments cannot be defined on enums, scalars and input object");
                 if let Some(def) = type_def {
                     diagnostic = diagnostic.label(Label::new(
@@ -254,15 +258,10 @@ pub fn validate_fragment_type_condition(
                     )
                     .label(Label::new(
                         loc,
-                        format!(
-                            "`{}` is defined here but not declared in the schema",
-                            &type_cond
-                        ),
+                        format!("`{type_cond}` is defined here but not declared in the schema"),
                     ))
-                    .help(
-                        "fragments must be specified on types that exist in the schema".to_string(),
-                    )
-                    .help(format!("consider defining `{}` in the schema", &type_cond)),
+                    .help("fragments must be specified on types that exist in the schema")
+                    .help(format!("consider defining `{type_cond}` in the schema")),
                 );
             }
         }

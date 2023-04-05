@@ -9,7 +9,7 @@
                 id: 84,
             },
             offset: 52,
-            length: 15,
+            length: 25,
         },
         labels: [
             Label {
@@ -18,38 +18,23 @@
                         id: 84,
                     },
                     offset: 52,
-                    length: 15,
+                    length: 25,
                 },
-                text: "fragment `fragOnScalar` cannot be applied",
+                text: "field `price` of type `Int` is a scalar and cannot select any fields",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 84,
+                        id: 0,
                     },
-                    offset: 221,
-                    length: 39,
+                    offset: 2916,
+                    length: 150,
                 },
-                text: "fragment declared with type condition `Int` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 169,
-                    length: 50,
-                },
-                text: "type condition `Int` is not assignable to this type",
+                text: "`Int` declared here",
             },
         ],
         help: None,
-        data: InvalidFragmentSpread {
-            name: Some(
-                "fragOnScalar",
-            ),
-            type_name: "Product",
-        },
+        data: DisallowedSubselection,
     },
     ApolloDiagnostic {
         cache: {
@@ -60,10 +45,20 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 98,
+            offset: 108,
             length: 29,
         },
         labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 84,
+                    },
+                    offset: 108,
+                    length: 29,
+                },
+                text: "fragment declares unsupported type condition `{type_cond}`",
+            },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
@@ -91,7 +86,7 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 98,
+            offset: 108,
             length: 29,
         },
         labels: [
@@ -100,7 +95,7 @@
                     file_id: FileId {
                         id: 84,
                     },
-                    offset: 98,
+                    offset: 108,
                     length: 29,
                 },
                 text: "fragment applied with type condition `Int` here",
@@ -110,8 +105,8 @@
                     file_id: FileId {
                         id: 84,
                     },
-                    offset: 169,
-                    length: 50,
+                    offset: 179,
+                    length: 63,
                 },
                 text: "type condition `Int` is not assignable to this type",
             },
@@ -131,10 +126,20 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 221,
+            offset: 244,
             length: 39,
         },
         labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 84,
+                    },
+                    offset: 244,
+                    length: 39,
+                },
+                text: "fragment declares unsupported type condition `{type_cond}`",
+            },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
@@ -162,7 +167,7 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 254,
+            offset: 277,
             length: 4,
         },
         labels: [
@@ -171,7 +176,7 @@
                     file_id: FileId {
                         id: 84,
                     },
-                    offset: 254,
+                    offset: 277,
                     length: 4,
                 },
                 text: "`name` field is not defined",
@@ -203,10 +208,20 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 305,
+            offset: 328,
             length: 25,
         },
         labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 84,
+                    },
+                    offset: 328,
+                    length: 25,
+                },
+                text: "fragment declares unsupported type condition `{type_cond}`",
+            },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
@@ -234,7 +249,7 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 305,
+            offset: 328,
             length: 25,
         },
         labels: [
@@ -243,7 +258,7 @@
                     file_id: FileId {
                         id: 84,
                     },
-                    offset: 305,
+                    offset: 328,
                     length: 25,
                 },
                 text: "fragment applied with type condition `Int` here",
@@ -253,8 +268,8 @@
                     file_id: FileId {
                         id: 84,
                     },
-                    offset: 169,
-                    length: 50,
+                    offset: 179,
+                    length: 63,
                 },
                 text: "type condition `Int` is not assignable to this type",
             },
