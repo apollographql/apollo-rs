@@ -1,4 +1,4 @@
-- DOCUMENT@0..1528
+- DOCUMENT@0..1864
     - INTERFACE_TYPE_DEFINITION@0..33
         - interface_KW@0..9 "interface"
         - WHITESPACE@9..10 " "
@@ -569,5 +569,114 @@
                     - IDENT@1522..1525 "url"
             - WHITESPACE@1525..1526 "\n"
             - R_CURLY@1526..1527 "}"
-    - WHITESPACE@1527..1528 "\n"
-recursion limit: 4096, high: 2
+    - WHITESPACE@1527..1529 "\n\n"
+    - COMMENT@1529..1569 "# Make sure the above fragments are used"
+    - WHITESPACE@1569..1570 "\n"
+    - OBJECT_TYPE_DEFINITION@1570..1616
+        - type_KW@1570..1574 "type"
+        - WHITESPACE@1574..1575 " "
+        - NAME@1575..1580
+            - IDENT@1575..1580 "Query"
+        - WHITESPACE@1580..1581 " "
+        - FIELDS_DEFINITION@1581..1616
+            - L_CURLY@1581..1582 "{"
+            - WHITESPACE@1582..1585 "\n  "
+            - FIELD_DEFINITION@1585..1593
+                - NAME@1585..1588
+                    - IDENT@1585..1588 "pet"
+                - COLON@1588..1589 ":"
+                - WHITESPACE@1589..1590 " "
+                - NAMED_TYPE@1590..1593
+                    - NAME@1590..1593
+                        - IDENT@1590..1593 "Pet"
+            - WHITESPACE@1593..1596 "\n  "
+            - FIELD_DEFINITION@1596..1614
+                - NAME@1596..1604
+                    - IDENT@1596..1604 "resource"
+                - COLON@1604..1605 ":"
+                - WHITESPACE@1605..1606 " "
+                - NAMED_TYPE@1606..1614
+                    - NAME@1606..1614
+                        - IDENT@1606..1614 "Resource"
+            - WHITESPACE@1614..1615 "\n"
+            - R_CURLY@1615..1616 "}"
+    - WHITESPACE@1616..1617 "\n"
+    - OPERATION_DEFINITION@1617..1863
+        - OPERATION_TYPE@1617..1622
+            - query_KW@1617..1622 "query"
+        - WHITESPACE@1622..1623 " "
+        - NAME@1623..1638
+            - IDENT@1623..1638 "UseAllFragments"
+        - WHITESPACE@1638..1639 " "
+        - SELECTION_SET@1639..1863
+            - L_CURLY@1639..1640 "{"
+            - WHITESPACE@1640..1643 "\n  "
+            - FIELD@1643..1814
+                - NAME@1643..1646
+                    - IDENT@1643..1646 "pet"
+                - WHITESPACE@1646..1647 " "
+                - SELECTION_SET@1647..1814
+                    - L_CURLY@1647..1648 "{"
+                    - WHITESPACE@1648..1653 "\n    "
+                    - FRAGMENT_SPREAD@1653..1668
+                        - SPREAD@1653..1656 "..."
+                        - WHITESPACE@1656..1657 " "
+                        - FRAGMENT_NAME@1657..1668
+                            - NAME@1657..1668
+                                - IDENT@1657..1668 "dogFragment"
+                    - WHITESPACE@1668..1673 "\n    "
+                    - FRAGMENT_SPREAD@1673..1706
+                        - SPREAD@1673..1676 "..."
+                        - WHITESPACE@1676..1677 " "
+                        - FRAGMENT_NAME@1677..1706
+                            - NAME@1677..1706
+                                - IDENT@1677..1706 "interfaceWithinObjectFragment"
+                    - WHITESPACE@1706..1711 "\n    "
+                    - FRAGMENT_SPREAD@1711..1738
+                        - SPREAD@1711..1714 "..."
+                        - WHITESPACE@1714..1715 " "
+                        - FRAGMENT_NAME@1715..1738
+                            - NAME@1715..1738
+                                - IDENT@1715..1738 "unionWithObjectFragment"
+                    - WHITESPACE@1738..1743 "\n    "
+                    - FRAGMENT_SPREAD@1743..1758
+                        - SPREAD@1743..1746 "..."
+                        - WHITESPACE@1746..1747 " "
+                        - FRAGMENT_NAME@1747..1758
+                            - NAME@1747..1758
+                                - IDENT@1747..1758 "petFragment"
+                    - WHITESPACE@1758..1763 "\n    "
+                    - FRAGMENT_SPREAD@1763..1783
+                        - SPREAD@1763..1766 "..."
+                        - WHITESPACE@1766..1767 " "
+                        - FRAGMENT_NAME@1767..1783
+                            - NAME@1767..1783
+                                - IDENT@1767..1783 "catOrDogFragment"
+                    - WHITESPACE@1783..1788 "\n    "
+                    - FRAGMENT_SPREAD@1788..1810
+                        - SPREAD@1788..1791 "..."
+                        - WHITESPACE@1791..1792 " "
+                        - FRAGMENT_NAME@1792..1810
+                            - NAME@1792..1810
+                                - IDENT@1792..1810 "unionWithInterface"
+                    - WHITESPACE@1810..1813 "\n  "
+                    - R_CURLY@1813..1814 "}"
+            - WHITESPACE@1814..1817 "\n  "
+            - FIELD@1817..1861
+                - NAME@1817..1825
+                    - IDENT@1817..1825 "resource"
+                - WHITESPACE@1825..1826 " "
+                - SELECTION_SET@1826..1861
+                    - L_CURLY@1826..1827 "{"
+                    - WHITESPACE@1827..1832 "\n    "
+                    - FRAGMENT_SPREAD@1832..1857
+                        - SPREAD@1832..1835 "..."
+                        - FRAGMENT_NAME@1835..1857
+                            - NAME@1835..1857
+                                - IDENT@1835..1857 "interfaceWithInterface"
+                    - WHITESPACE@1857..1860 "\n  "
+                    - R_CURLY@1860..1861 "}"
+            - WHITESPACE@1861..1862 "\n"
+            - R_CURLY@1862..1863 "}"
+    - WHITESPACE@1863..1864 "\n"
+recursion limit: 4096, high: 5

@@ -88,3 +88,22 @@ fragment interfaceWithInterface on Node {
 fragment resourceFragment on Resource {
   url
 }
+
+# Make sure the above fragments are used
+type Query {
+  pet: Pet
+  resource: Resource
+}
+query UseAllFragments {
+  pet {
+    ... dogFragment
+    ... interfaceWithinObjectFragment
+    ... unionWithObjectFragment
+    ... petFragment
+    ... catOrDogFragment
+    ... unionWithInterface
+  }
+  resource {
+    ...interfaceWithInterface
+  }
+}
