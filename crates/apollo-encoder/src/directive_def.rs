@@ -30,7 +30,7 @@ use crate::{ArgumentsDefinition, InputValueDefinition, StringValue};
 /// "#
 /// );
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DirectiveDefinition {
     // Name must return a String.
     name: String,

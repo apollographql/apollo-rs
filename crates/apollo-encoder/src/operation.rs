@@ -51,7 +51,7 @@ use crate::{Directive, SelectionSet, VariableDefinition};
 ///     "#}
 /// );
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct OperationDefinition {
     operation_type: OperationType,
     name: Option<String>,
@@ -139,7 +139,7 @@ impl fmt::Display for OperationDefinition {
 ///     query | mutation | subscription
 ///
 /// Detailed documentation can be found in [GraphQL spec](https://spec.graphql.org/October2021/#OperationType).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum OperationType {
     /// Represents a query operation
     Query,
