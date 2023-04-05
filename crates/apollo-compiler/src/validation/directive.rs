@@ -171,19 +171,19 @@ pub fn validate_directives(
 
             if !is_repeatable {
                 // original loc must be Some
-                let loc = original.loc.expect("undefined original directive location");
+                let original_loc = original.loc.expect("undefined original directive location");
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
                         loc.into(),
                         DiagnosticData::UniqueDirective {
                             name: name.to_string(),
-                            original_call: loc.into(),
+                            original_call: original_loc.into(),
                             conflicting_call: loc.into(),
                         },
                     )
                     .label(Label::new(
-                        loc,
+                        original_loc,
                         format!("directive {name} first called here"),
                     ))
                     .label(Label::new(
