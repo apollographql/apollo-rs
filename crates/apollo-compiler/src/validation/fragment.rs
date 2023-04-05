@@ -113,10 +113,7 @@ pub fn validate_fragment_cycles(
                     name: def.name().to_string(),
                 },
             )
-            .label(Label::new(
-                def.head_loc(),
-                "recursive fragment definition",
-            ))
+            .label(Label::new(def.head_loc(), "recursive fragment definition"))
             .label(Label::new(cycle.loc(), "refers to itself here")),
         );
     }
