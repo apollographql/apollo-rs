@@ -2,11 +2,11 @@
     ApolloDiagnostic {
         cache: {
             0: "built_in_types.graphql",
-            83: "0086_fragment_spread_impossible.graphql",
+            87: "0090_fragment_spread_impossible.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 83,
+                id: 87,
             },
             offset: 450,
             length: 31,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 83,
+                        id: 87,
                     },
                     offset: 450,
                     length: 31,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 83,
+                        id: 87,
                     },
                     offset: 75,
                     length: 61,
@@ -42,11 +42,42 @@
     ApolloDiagnostic {
         cache: {
             0: "built_in_types.graphql",
-            83: "0086_fragment_spread_impossible.graphql",
+            87: "0090_fragment_spread_impossible.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 83,
+                id: 87,
+            },
+            offset: 406,
+            length: 77,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 406,
+                    length: 77,
+                },
+                text: "`catInDogFragmentInvalid` is defined here",
+            },
+        ],
+        help: Some(
+            "fragment `catInDogFragmentInvalid` must be used in an operation",
+        ),
+        data: UnusedFragment {
+            name: "catInDogFragmentInvalid",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            87: "0090_fragment_spread_impossible.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 87,
             },
             offset: 527,
             length: 31,
@@ -55,7 +86,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 83,
+                        id: 87,
                     },
                     offset: 527,
                     length: 31,
@@ -65,7 +96,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 83,
+                        id: 87,
                     },
                     offset: 0,
                     length: 38,
@@ -82,11 +113,42 @@
     ApolloDiagnostic {
         cache: {
             0: "built_in_types.graphql",
-            83: "0086_fragment_spread_impossible.graphql",
+            87: "0090_fragment_spread_impossible.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 83,
+                id: 87,
+            },
+            offset: 485,
+            length: 75,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 485,
+                    length: 75,
+                },
+                text: "`sentientFragment` is defined here",
+            },
+        ],
+        help: Some(
+            "fragment `sentientFragment` must be used in an operation",
+        ),
+        data: UnusedFragment {
+            name: "sentientFragment",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            87: "0090_fragment_spread_impossible.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 87,
             },
             offset: 612,
             length: 31,
@@ -95,7 +157,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 83,
+                        id: 87,
                     },
                     offset: 612,
                     length: 31,
@@ -105,7 +167,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 83,
+                        id: 87,
                     },
                     offset: 370,
                     length: 34,
@@ -122,11 +184,42 @@
     ApolloDiagnostic {
         cache: {
             0: "built_in_types.graphql",
-            83: "0086_fragment_spread_impossible.graphql",
+            87: "0090_fragment_spread_impossible.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 83,
+                id: 87,
+            },
+            offset: 562,
+            length: 83,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 562,
+                    length: 83,
+                },
+                text: "`humanOrAlienFragment` is defined here",
+            },
+        ],
+        help: Some(
+            "fragment `humanOrAlienFragment` must be used in an operation",
+        ),
+        data: UnusedFragment {
+            name: "humanOrAlienFragment",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            87: "0090_fragment_spread_impossible.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 87,
             },
             offset: 693,
             length: 20,
@@ -135,7 +228,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 83,
+                        id: 87,
                     },
                     offset: 693,
                     length: 20,
@@ -145,7 +238,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 83,
+                        id: 87,
                     },
                     offset: 717,
                     length: 49,
@@ -155,7 +248,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 83,
+                        id: 87,
                     },
                     offset: 40,
                     length: 33,
@@ -169,6 +262,37 @@
                 "sentientFragment2",
             ),
             type_name: "Pet",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            87: "0090_fragment_spread_impossible.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 87,
+            },
+            offset: 647,
+            length: 68,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 647,
+                    length: 68,
+                },
+                text: "`nonIntersectingInterfaces` is defined here",
+            },
+        ],
+        help: Some(
+            "fragment `nonIntersectingInterfaces` must be used in an operation",
+        ),
+        data: UnusedFragment {
+            name: "nonIntersectingInterfaces",
         },
     },
 ]

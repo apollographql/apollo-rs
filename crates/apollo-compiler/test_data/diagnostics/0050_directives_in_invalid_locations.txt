@@ -653,13 +653,8 @@
             file_id: FileId {
                 id: 50,
             },
-<<<<<<< HEAD
             offset: 125,
             length: 19,
-=======
-            offset: 133,
-            length: 11,
->>>>>>> main
         },
         labels: [
             Label {
@@ -667,24 +662,16 @@
                     file_id: FileId {
                         id: 50,
                     },
-<<<<<<< HEAD
                     offset: 125,
                     length: 19,
                 },
                 text: "fragment `pet` cannot be applied",
-=======
-                    offset: 133,
-                    length: 11,
-                },
-                text: "FRAGMENT_SPREAD is not a valid location",
->>>>>>> main
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 50,
                     },
-<<<<<<< HEAD
                     offset: 152,
                     length: 88,
                 },
@@ -707,27 +694,6 @@
                 "pet",
             ),
             type_name: "Human",
-=======
-                    offset: 1387,
-                    length: 29,
-                },
-                text: "consider adding FRAGMENT_SPREAD directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveB",
-            dir_loc: FragmentSpread,
-            directive_def: DiagnosticLocation {
-                file_id: FileId {
-                    id: 50,
-                },
-                offset: 1387,
-                length: 29,
-            },
->>>>>>> main
         },
     },
     ApolloDiagnostic {
@@ -739,11 +705,7 @@
             file_id: FileId {
                 id: 50,
             },
-<<<<<<< HEAD
             offset: 269,
-=======
-            offset: 268,
->>>>>>> main
             length: 11,
         },
         labels: [
