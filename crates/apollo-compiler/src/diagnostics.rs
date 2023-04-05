@@ -292,11 +292,6 @@ pub enum DiagnosticData {
         /// Name of the fragment not in scope
         name: String,
     },
-    #[error("`{name}` can not be declared on scalar types")]
-    InvalidFragmentType {
-        /// Name of the fragment
-        name: String,
-    },
     #[error("fragments must be specified on types that exist in the schema")]
     InvalidFragment {
         /// Name of the type on which the fragment is declared
