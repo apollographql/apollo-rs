@@ -13,6 +13,16 @@ fragment subFrag on Query {
 
 type Query {
   topProducts(first: Int): Product,
+  reviews: Review
+}
+
+type Review {
+  message: Message
+}
+
+type Message {
+  body: String
+  sender(attribute: String): String
 }
 
 type Product {

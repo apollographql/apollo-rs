@@ -7,6 +7,22 @@ type Dog {
   doesKnowCommand(dogCommand: DogCommand): Boolean
 }
 
+type Query {
+  pet: Dog
+}
+
+query queryPupper {
+  pet {
+    ...mergeIdenticalFieldsWithIdenticalArgs
+  }
+}
+
+query queryPupperAgain($dogCommand: DogCommand) {
+  pet {
+    ...mergeIdenticalFieldsWithIdenticalValues
+  }
+}
+
 fragment mergeIdenticalFieldsWithIdenticalArgs on Dog {
   doesKnowCommand(dogCommand: SIT)
   doesKnowCommand(dogCommand: SIT)

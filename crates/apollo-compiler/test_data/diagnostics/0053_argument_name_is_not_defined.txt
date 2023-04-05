@@ -8,7 +8,7 @@
             file_id: FileId {
                 id: 53,
             },
-            offset: 116,
+            offset: 176,
             length: 7,
         },
         labels: [
@@ -17,7 +17,7 @@
                     file_id: FileId {
                         id: 53,
                     },
-                    offset: 116,
+                    offset: 176,
                     length: 7,
                 },
                 text: "argument name not found",
@@ -47,7 +47,7 @@
             file_id: FileId {
                 id: 53,
             },
-            offset: 79,
+            offset: 133,
             length: 7,
         },
         labels: [
@@ -56,7 +56,7 @@
                     file_id: FileId {
                         id: 53,
                     },
-                    offset: 79,
+                    offset: 133,
                     length: 7,
                 },
                 text: "argument name not found",
@@ -86,7 +86,7 @@
             file_id: FileId {
                 id: 53,
             },
-            offset: 88,
+            offset: 142,
             length: 7,
         },
         labels: [
@@ -95,7 +95,7 @@
                     file_id: FileId {
                         id: 53,
                     },
-                    offset: 88,
+                    offset: 142,
                     length: 7,
                 },
                 text: "argument name not found",

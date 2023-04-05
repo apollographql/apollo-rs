@@ -160,6 +160,13 @@ query ExampleQuery {
 
 type Query {
   topProducts(first: Int): Products
+  me: User
+}
+
+type User {
+    id: ID
+    name: String
+    status(membership: String): String
 }
 
 type Products {
@@ -235,6 +242,13 @@ fragment fragmentOne on Query {
 type Query {
   topProducts: Product
   profilePic(size: Int): String
+  me: User
+}
+
+type User {
+    id: ID
+    name: String
+    status(membership: String): String
 }
 
 type Product {

@@ -29,7 +29,7 @@ use crate::{Directive, Type_, Value};
 ///     String::from(r#"$my_var: MyType = { first: 25, second: "test" }"#)
 /// );
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VariableDefinition {
     variable: String,
     ty: Type_,

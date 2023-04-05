@@ -292,12 +292,27 @@ pub enum DiagnosticData {
         /// Name of the fragment not in scope
         name: String,
     },
+    #[error("fragments must be specified on types that exist in the schema")]
+    InvalidFragment {
+        /// Name of the type on which the fragment is declared
+        ty: Option<String>,
+    },
+    #[error("fragments can not be declared on primitive types")]
+    InvalidFragmentTarget {
+        /// Name of the type on which the fragment is declared
+        ty: String,
+    },
     #[error("fragment cannot be applied to this type")]
     InvalidFragmentSpread {
         /// Fragment name or None if it's an inline fragment
         name: Option<String>,
         /// Type name the fragment is being applied to
         type_name: String,
+    },
+    #[error("fragment `{name}` must be used in an operation")]
+    UnusedFragment {
+        /// Name of the fragment
+        name: String,
     },
 }
 

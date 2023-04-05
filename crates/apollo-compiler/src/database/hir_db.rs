@@ -171,6 +171,8 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     #[salsa::invoke(document::find_input_object_by_name)]
     fn find_input_object_by_name(&self, name: String) -> Option<Arc<InputObjectTypeDefinition>>;
 
+    /// Returns a map of type definitions in a GraphQL schema,
+    /// Where the key is the type name and the value is a `TypeDefinition` representing the type.
     #[salsa::invoke(document::types_definitions_by_name)]
     fn types_definitions_by_name(&self) -> Arc<IndexMap<String, TypeDefinition>>;
 
@@ -1534,17 +1536,17 @@ fn inline_fragment(
         Some(name_hir_node(tc, file_id))
     });
     let directives = directives(fragment.directives(), file_id);
-    let new_parent_obj = if let Some(type_condition) = type_condition.clone() {
-        Some(type_condition.src().to_string())
-    } else {
-        parent_obj.clone()
-    };
+    let new_parent_obj = type_condition
+        .clone()
+        .map_or_else(|| parent_obj.clone(), |tc| Some(tc.src().to_string()));
     let selection_set: SelectionSet =
         selection_set(db, fragment.selection_set(), new_parent_obj, file_id);
     let loc = location(file_id, fragment.syntax());
 
     let fragment_data = InlineFragment {
-        type_condition,
+        // for implicit inline fragments, the type condition is implied to be
+        // that of the current scope
+        type_condition: type_condition.or(parent_obj.clone().map(|o| Name { src: o, loc: None })),
         directives,
         selection_set,
         parent_obj,

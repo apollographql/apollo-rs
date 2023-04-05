@@ -30,12 +30,14 @@ fn ast(db: &dyn AstDatabase, file_id: FileId) -> SyntaxTree {
     // which we don’t want to re-parse.
     let input = db.input(file_id).text();
 
-    let parser = ApolloParser::new(&input);
-    let parser = if let Some(limit) = db.recursion_limit() {
-        parser.recursion_limit(limit)
-    } else {
-        parser
+    let mut parser = ApolloParser::new(&input);
+    if let Some(limit) = db.recursion_limit() {
+        parser = parser.recursion_limit(limit)
     };
+    if let Some(limit) = db.token_limit() {
+        parser = parser.token_limit(limit)
+    };
+
     parser.parse()
 }
 
@@ -81,7 +83,7 @@ mod tests {
           }
         }
         "#;
-        let mut compiler = ApolloCompiler::with_recursion_limit(1);
+        let mut compiler = ApolloCompiler::new().recursion_limit(1);
         let doc_id = compiler.add_document(schema, "schema.graphql");
 
         let ast = compiler.db.ast(doc_id);
@@ -100,7 +102,7 @@ mod tests {
           }
         }
         "#;
-        let mut compiler = ApolloCompiler::with_recursion_limit(7);
+        let mut compiler = ApolloCompiler::new().recursion_limit(7);
         let doc_id = compiler.add_document(schema, "schema.graphql");
 
         let ast = compiler.db.ast(doc_id);
@@ -108,5 +110,67 @@ mod tests {
         assert_eq!(ast.recursion_limit().high, 4);
         assert_eq!(ast.errors().len(), 0);
         assert_eq!(ast.document().definitions().count(), 1);
+    }
+
+    #[test]
+    fn it_errors_when_selection_set_token_limit_is_exceeded() {
+        let schema = r#"
+        type Query {
+          field(arg1: Int, arg2: Int, arg3: Int, arg4: Int, arg5: Int, arg6: Int): Int
+        }
+        "#;
+        let mut compiler = ApolloCompiler::new().token_limit(18);
+        let doc_id = compiler.add_document(schema, "schema.graphql");
+
+        let ast = compiler.db.ast(doc_id);
+
+        assert_eq!(ast.errors().len(), 1);
+        assert_eq!(
+            ast.errors().next(),
+            Some(&apollo_parser::Error::limit(
+                "token limit reached, aborting lexing",
+                55
+            ))
+        );
+        assert_eq!(ast.document().definitions().count(), 1);
+    }
+
+    #[test]
+    fn it_errors_with_multiple_limits() {
+        let schema = r#"
+            query {
+                a {
+                    a {
+                        a {
+                            a
+                        }
+                    }
+                }
+            }
+        "#;
+        let mut compiler = ApolloCompiler::new().token_limit(22).recursion_limit(10);
+        let doc_id = compiler.add_document(schema, "schema.graphql");
+
+        let ast = compiler.db.ast(doc_id);
+
+        assert_eq!(ast.errors().len(), 1);
+        assert_eq!(
+            ast.errors().next(),
+            Some(&apollo_parser::Error::limit(
+                "token limit reached, aborting lexing",
+                170
+            ))
+        );
+
+        let mut compiler = ApolloCompiler::new().recursion_limit(3).token_limit(200);
+        let doc_id = compiler.add_document(schema, "schema.graphql");
+
+        let ast = compiler.db.ast(doc_id);
+
+        assert_eq!(ast.errors().len(), 1);
+        assert_eq!(
+            ast.errors().next(),
+            Some(&apollo_parser::Error::limit("parser limit(3) reached", 61))
+        );
     }
 }

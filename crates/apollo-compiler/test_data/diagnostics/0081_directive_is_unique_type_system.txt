@@ -8,7 +8,7 @@
             file_id: FileId {
                 id: 78,
             },
-            offset: 97,
+            offset: 112,
             length: 14,
         },
         labels: [
@@ -27,7 +27,7 @@
                     file_id: FileId {
                         id: 78,
                     },
-                    offset: 97,
+                    offset: 112,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -47,7 +47,7 @@
                 file_id: FileId {
                     id: 78,
                 },
-                offset: 97,
+                offset: 112,
                 length: 14,
             },
         },
@@ -61,7 +61,7 @@
             file_id: FileId {
                 id: 78,
             },
-            offset: 162,
+            offset: 177,
             length: 14,
         },
         labels: [
@@ -80,7 +80,7 @@
                     file_id: FileId {
                         id: 78,
                     },
-                    offset: 162,
+                    offset: 177,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -100,7 +100,7 @@
                 file_id: FileId {
                     id: 78,
                 },
-                offset: 162,
+                offset: 177,
                 length: 14,
             },
         },
@@ -114,7 +114,7 @@
             file_id: FileId {
                 id: 78,
             },
-            offset: 336,
+            offset: 351,
             length: 14,
         },
         labels: [
@@ -133,7 +133,7 @@
                     file_id: FileId {
                         id: 78,
                     },
-                    offset: 336,
+                    offset: 351,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -153,7 +153,7 @@
                 file_id: FileId {
                     id: 78,
                 },
-                offset: 336,
+                offset: 351,
                 length: 14,
             },
         },
@@ -167,7 +167,7 @@
             file_id: FileId {
                 id: 78,
             },
-            offset: 290,
+            offset: 305,
             length: 14,
         },
         labels: [
@@ -186,7 +186,7 @@
                     file_id: FileId {
                         id: 78,
                     },
-                    offset: 290,
+                    offset: 305,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -206,7 +206,7 @@
                 file_id: FileId {
                     id: 78,
                 },
-                offset: 290,
+                offset: 305,
                 length: 14,
             },
         },
@@ -220,7 +220,7 @@
             file_id: FileId {
                 id: 78,
             },
-            offset: 382,
+            offset: 397,
             length: 14,
         },
         labels: [
@@ -239,7 +239,7 @@
                     file_id: FileId {
                         id: 78,
                     },
-                    offset: 382,
+                    offset: 397,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -259,7 +259,7 @@
                 file_id: FileId {
                     id: 78,
                 },
-                offset: 382,
+                offset: 397,
                 length: 14,
             },
         },
@@ -273,7 +273,7 @@
             file_id: FileId {
                 id: 78,
             },
-            offset: 236,
+            offset: 251,
             length: 14,
         },
         labels: [
@@ -292,7 +292,7 @@
                     file_id: FileId {
                         id: 78,
                     },
-                    offset: 236,
+                    offset: 251,
                     length: 14,
                 },
                 text: "directive nonRepeatable called again here",
@@ -312,7 +312,7 @@
                 file_id: FileId {
                     id: 78,
                 },
-                offset: 236,
+                offset: 251,
                 length: 14,
             },
         },

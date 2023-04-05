@@ -8,7 +8,7 @@
             file_id: FileId {
                 id: 73,
             },
-            offset: 461,
+            offset: 555,
             length: 21,
         },
         labels: [
@@ -17,7 +17,7 @@
                     file_id: FileId {
                         id: 73,
                     },
-                    offset: 418,
+                    offset: 512,
                     length: 19,
                 },
                 text: "`someValue` has type `String!` here",
@@ -27,7 +27,7 @@
                     file_id: FileId {
                         id: 73,
                     },
-                    offset: 461,
+                    offset: 555,
                     length: 21,
                 },
                 text: "but the same field name has type `Int!` here",
@@ -40,14 +40,67 @@
                 file_id: FileId {
                     id: 73,
                 },
-                offset: 418,
+                offset: 512,
                 length: 19,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 73,
                 },
-                offset: 461,
+                offset: 555,
+                length: 21,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            73: "0076_merge_differing_responses.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 73,
+            },
+            offset: 555,
+            length: 21,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 73,
+                    },
+                    offset: 512,
+                    length: 19,
+                },
+                text: "`someValue` has type `String!` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 73,
+                    },
+                    offset: 555,
+                    length: 21,
+                },
+                text: "but the same field name has type `Int!` here",
+            },
+        ],
+        help: None,
+        data: ConflictingField {
+            field: "nickname",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 73,
+                },
+                offset: 512,
+                length: 19,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 73,
+                },
+                offset: 555,
                 length: 21,
             },
         },

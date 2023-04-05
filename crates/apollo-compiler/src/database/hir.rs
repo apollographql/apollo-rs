@@ -1591,6 +1591,11 @@ impl InlineFragment {
         db.find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())
     }
 
+    /// Get inline fragments's type definition.
+    pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
+        db.find_type_definition_by_name(self.type_condition()?.to_string())
+    }
+
     /// Get a reference to inline fragment's directives.
     pub fn directives(&self) -> &[Directive] {
         self.directives.as_ref()
