@@ -8,7 +8,7 @@
             file_id: FileId {
                 id: 76,
             },
-            offset: 164,
+            offset: 172,
             length: 7,
         },
         labels: [
@@ -27,7 +27,7 @@
                     file_id: FileId {
                         id: 76,
                     },
-                    offset: 164,
+                    offset: 172,
                     length: 7,
                 },
                 text: "directive unique called again here",
@@ -47,7 +47,7 @@
                 file_id: FileId {
                     id: 76,
                 },
-                offset: 164,
+                offset: 172,
                 length: 7,
             },
         },

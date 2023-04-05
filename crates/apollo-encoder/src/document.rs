@@ -73,7 +73,7 @@ use crate::{
 ///     "#}
 /// );
 /// ```
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Document {
     operation_definitions: Vec<OperationDefinition>,
     fragment_definitions: Vec<FragmentDefinition>,
