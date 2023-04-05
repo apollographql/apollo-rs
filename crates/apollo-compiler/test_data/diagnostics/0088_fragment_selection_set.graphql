@@ -1,0 +1,20 @@
+type Query {
+  name: String
+  topProducts: Product
+}
+
+type Product {
+  inStock: Boolean
+  name: String
+}
+
+query getProduct {
+    name
+    topProduct {
+        ...productFragment
+    }
+}
+
+fragment productFragment on Product {
+  notExistingField
+}

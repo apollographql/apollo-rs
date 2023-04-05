@@ -17,7 +17,7 @@ fragment Z on ComplicatedArgs {
     multipleReqs(req2: 1)
 }
 
-{
+query complicatedArgs {
   basic @skip @include(wrong: false) {
     a
   }
@@ -26,5 +26,11 @@ fragment Z on ComplicatedArgs {
     a: multipleReqs(req2: 1)
     b: multipleOptAndReq(req1: 1)
     c: multipleOptAndReq(opt1: 1, opt2: 1, req1: 1)
+  }
+}
+query complicatedArgsOnFragments {
+  complicatedArgs {
+    ...Y
+    ...Z
   }
 }

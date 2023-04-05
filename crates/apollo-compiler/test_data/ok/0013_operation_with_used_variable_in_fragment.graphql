@@ -2,11 +2,11 @@ query ExampleQuery($variable: Int) {
   topProducts {
     name
   }
-  ... multipleSubscriptions
+  ...multipleSubscriptions
 }
 
-fragment multipleSubscriptions on Subscription {
-  newMessage {
+fragment multipleSubscriptions on Review {
+  message {
     body
     sender(attribute: $variable)
   }
@@ -14,6 +14,16 @@ fragment multipleSubscriptions on Subscription {
 
 type Query {
   topProducts(first: Int): Product,
+  reviews: Review
+}
+
+type Review {
+  message: Message
+}
+
+type Message {
+  body: String
+  sender(attribute: String): String
 }
 
 type Product {

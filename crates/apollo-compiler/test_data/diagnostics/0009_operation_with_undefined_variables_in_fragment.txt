@@ -8,7 +8,7 @@
             file_id: FileId {
                 id: 9,
             },
-            offset: 192,
+            offset: 183,
             length: 6,
         },
         labels: [
@@ -17,7 +17,7 @@
                     file_id: FileId {
                         id: 9,
                     },
-                    offset: 192,
+                    offset: 183,
                     length: 6,
                 },
                 text: "not found in this scope",

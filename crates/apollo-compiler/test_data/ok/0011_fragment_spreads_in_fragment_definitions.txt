@@ -1,4 +1,4 @@
-- DOCUMENT@0..206
+- DOCUMENT@0..207
     - OPERATION_DEFINITION@0..51
         - OPERATION_TYPE@0..5
             - query_KW@0..5 "query"
@@ -142,4 +142,5 @@
                         - IDENT@202..204 "ID"
             - WHITESPACE@204..205 "\n"
             - R_CURLY@205..206 "}"
+    - WHITESPACE@206..207 "\n"
 recursion limit: 4096, high: 3

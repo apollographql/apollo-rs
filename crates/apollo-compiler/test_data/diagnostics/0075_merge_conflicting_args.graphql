@@ -8,6 +8,40 @@ type Dog {
   isAtLocation(x: Int, y: Int): Boolean
 }
 
+type Query {
+  pet: Dog
+}
+
+query queryPupperA {
+  pet {
+    ...conflictingArgsOnValues
+  }
+}
+
+query queryPupperB {
+  pet {
+    ...conflictingArgsValueAndVar
+  }
+}
+
+query queryPupperC {
+  pet {
+    ...conflictingArgsValueWithVars
+  }
+}
+
+query queryPupperD {
+  pet {
+    ...differingArgs
+  }
+}
+
+query queryPupperE {
+  pet {
+    ...conflictingArgs
+  }
+}
+
 fragment conflictingArgsOnValues on Dog {
   doesKnowCommand(dogCommand: SIT)
   doesKnowCommand(dogCommand: HEEL)
