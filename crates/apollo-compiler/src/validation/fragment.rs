@@ -144,7 +144,7 @@ pub fn validate_fragment_used(
             .selection()
             .iter()
             .any(|sel| is_fragment_used(sel.clone(), name))
-    }) & !fragments.values().into_iter().any(|op| {
+    }) & !fragments.values().any(|op| {
         op.selection_set()
             .selection()
             .iter()
