@@ -1,9 +1,6 @@
 query IntrospectionQuery {
   foo {
     ...Bar
-    baz {
-      ...Quux
-    }
   }
 }
 

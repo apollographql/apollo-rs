@@ -1,5 +1,5 @@
-- DOCUMENT@0..321
-    - OPERATION_DEFINITION@0..95
+- DOCUMENT@0..434
+    - OPERATION_DEFINITION@0..94
         - OPERATION_TYPE@0..5
             - query_KW@0..5 "query"
         - WHITESPACE@5..6 " "
@@ -19,7 +19,7 @@
                         - IDENT@30..33 "Int"
             - R_PAREN@33..34 ")"
         - WHITESPACE@34..35 " "
-        - SELECTION_SET@35..95
+        - SELECTION_SET@35..94
             - L_CURLY@35..36 "{"
             - WHITESPACE@36..39 "\n  "
             - FIELD@39..65
@@ -35,132 +35,200 @@
                     - WHITESPACE@61..64 "\n  "
                     - R_CURLY@64..65 "}"
             - WHITESPACE@65..68 "\n  "
-            - FRAGMENT_SPREAD@68..93
+            - FRAGMENT_SPREAD@68..92
                 - SPREAD@68..71 "..."
-                - WHITESPACE@71..72 " "
-                - FRAGMENT_NAME@72..93
-                    - NAME@72..93
-                        - IDENT@72..93 "multipleSubscriptions"
-            - WHITESPACE@93..94 "\n"
-            - R_CURLY@94..95 "}"
-    - WHITESPACE@95..97 "\n\n"
-    - FRAGMENT_DEFINITION@97..208
-        - fragment_KW@97..105 "fragment"
-        - WHITESPACE@105..106 " "
-        - FRAGMENT_NAME@106..127
-            - NAME@106..127
-                - IDENT@106..127 "multipleSubscriptions"
-        - WHITESPACE@127..128 " "
-        - TYPE_CONDITION@128..143
-            - on_KW@128..130 "on"
-            - WHITESPACE@130..131 " "
-            - NAMED_TYPE@131..143
-                - NAME@131..143
-                    - IDENT@131..143 "Subscription"
-        - WHITESPACE@143..144 " "
-        - SELECTION_SET@144..208
-            - L_CURLY@144..145 "{"
-            - WHITESPACE@145..148 "\n  "
-            - FIELD@148..206
-                - NAME@148..158
-                    - IDENT@148..158 "newMessage"
-                - WHITESPACE@158..159 " "
-                - SELECTION_SET@159..206
-                    - L_CURLY@159..160 "{"
-                    - WHITESPACE@160..165 "\n    "
-                    - FIELD@165..169
-                        - NAME@165..169
-                            - IDENT@165..169 "body"
-                    - WHITESPACE@169..174 "\n    "
-                    - FIELD@174..202
-                        - NAME@174..180
-                            - IDENT@174..180 "sender"
-                        - ARGUMENTS@180..202
-                            - L_PAREN@180..181 "("
-                            - ARGUMENT@181..201
-                                - NAME@181..190
-                                    - IDENT@181..190 "attribute"
-                                - COLON@190..191 ":"
-                                - WHITESPACE@191..192 " "
-                                - VARIABLE@192..201
-                                    - DOLLAR@192..193 "$"
-                                    - NAME@193..201
-                                        - IDENT@193..201 "variable"
-                            - R_PAREN@201..202 ")"
-                    - WHITESPACE@202..205 "\n  "
-                    - R_CURLY@205..206 "}"
-            - WHITESPACE@206..207 "\n"
-            - R_CURLY@207..208 "}"
-    - WHITESPACE@208..210 "\n\n"
-    - OBJECT_TYPE_DEFINITION@210..260
-        - type_KW@210..214 "type"
-        - WHITESPACE@214..215 " "
-        - NAME@215..220
-            - IDENT@215..220 "Query"
-        - WHITESPACE@220..221 " "
-        - FIELDS_DEFINITION@221..260
-            - L_CURLY@221..222 "{"
-            - WHITESPACE@222..225 "\n  "
-            - FIELD_DEFINITION@225..257
-                - NAME@225..236
-                    - IDENT@225..236 "topProducts"
-                - ARGUMENTS_DEFINITION@236..248
-                    - L_PAREN@236..237 "("
-                    - INPUT_VALUE_DEFINITION@237..247
-                        - NAME@237..242
-                            - IDENT@237..242 "first"
-                        - COLON@242..243 ":"
-                        - WHITESPACE@243..244 " "
-                        - NAMED_TYPE@244..247
-                            - NAME@244..247
-                                - IDENT@244..247 "Int"
-                    - R_PAREN@247..248 ")"
-                - COLON@248..249 ":"
-                - WHITESPACE@249..250 " "
-                - NAMED_TYPE@250..257
-                    - NAME@250..257
-                        - IDENT@250..257 "Product"
-            - COMMA@257..258 ","
-            - WHITESPACE@258..259 "\n"
-            - R_CURLY@259..260 "}"
-    - WHITESPACE@260..262 "\n\n"
-    - OBJECT_TYPE_DEFINITION@262..321
-        - type_KW@262..266 "type"
-        - WHITESPACE@266..267 " "
-        - NAME@267..274
-            - IDENT@267..274 "Product"
+                - FRAGMENT_NAME@71..92
+                    - NAME@71..92
+                        - IDENT@71..92 "multipleSubscriptions"
+            - WHITESPACE@92..93 "\n"
+            - R_CURLY@93..94 "}"
+    - WHITESPACE@94..96 "\n\n"
+    - FRAGMENT_DEFINITION@96..198
+        - fragment_KW@96..104 "fragment"
+        - WHITESPACE@104..105 " "
+        - FRAGMENT_NAME@105..126
+            - NAME@105..126
+                - IDENT@105..126 "multipleSubscriptions"
+        - WHITESPACE@126..127 " "
+        - TYPE_CONDITION@127..136
+            - on_KW@127..129 "on"
+            - WHITESPACE@129..130 " "
+            - NAMED_TYPE@130..136
+                - NAME@130..136
+                    - IDENT@130..136 "Review"
+        - WHITESPACE@136..137 " "
+        - SELECTION_SET@137..198
+            - L_CURLY@137..138 "{"
+            - WHITESPACE@138..141 "\n  "
+            - FIELD@141..196
+                - NAME@141..148
+                    - IDENT@141..148 "message"
+                - WHITESPACE@148..149 " "
+                - SELECTION_SET@149..196
+                    - L_CURLY@149..150 "{"
+                    - WHITESPACE@150..155 "\n    "
+                    - FIELD@155..159
+                        - NAME@155..159
+                            - IDENT@155..159 "body"
+                    - WHITESPACE@159..164 "\n    "
+                    - FIELD@164..192
+                        - NAME@164..170
+                            - IDENT@164..170 "sender"
+                        - ARGUMENTS@170..192
+                            - L_PAREN@170..171 "("
+                            - ARGUMENT@171..191
+                                - NAME@171..180
+                                    - IDENT@171..180 "attribute"
+                                - COLON@180..181 ":"
+                                - WHITESPACE@181..182 " "
+                                - VARIABLE@182..191
+                                    - DOLLAR@182..183 "$"
+                                    - NAME@183..191
+                                        - IDENT@183..191 "variable"
+                            - R_PAREN@191..192 ")"
+                    - WHITESPACE@192..195 "\n  "
+                    - R_CURLY@195..196 "}"
+            - WHITESPACE@196..197 "\n"
+            - R_CURLY@197..198 "}"
+    - WHITESPACE@198..200 "\n\n"
+    - OBJECT_TYPE_DEFINITION@200..268
+        - type_KW@200..204 "type"
+        - WHITESPACE@204..205 " "
+        - NAME@205..210
+            - IDENT@205..210 "Query"
+        - WHITESPACE@210..211 " "
+        - FIELDS_DEFINITION@211..268
+            - L_CURLY@211..212 "{"
+            - WHITESPACE@212..215 "\n  "
+            - FIELD_DEFINITION@215..247
+                - NAME@215..226
+                    - IDENT@215..226 "topProducts"
+                - ARGUMENTS_DEFINITION@226..238
+                    - L_PAREN@226..227 "("
+                    - INPUT_VALUE_DEFINITION@227..237
+                        - NAME@227..232
+                            - IDENT@227..232 "first"
+                        - COLON@232..233 ":"
+                        - WHITESPACE@233..234 " "
+                        - NAMED_TYPE@234..237
+                            - NAME@234..237
+                                - IDENT@234..237 "Int"
+                    - R_PAREN@237..238 ")"
+                - COLON@238..239 ":"
+                - WHITESPACE@239..240 " "
+                - NAMED_TYPE@240..247
+                    - NAME@240..247
+                        - IDENT@240..247 "Product"
+            - COMMA@247..248 ","
+            - WHITESPACE@248..251 "\n  "
+            - FIELD_DEFINITION@251..266
+                - NAME@251..258
+                    - IDENT@251..258 "reviews"
+                - COLON@258..259 ":"
+                - WHITESPACE@259..260 " "
+                - NAMED_TYPE@260..266
+                    - NAME@260..266
+                        - IDENT@260..266 "Review"
+            - WHITESPACE@266..267 "\n"
+            - R_CURLY@267..268 "}"
+    - WHITESPACE@268..270 "\n\n"
+    - OBJECT_TYPE_DEFINITION@270..304
+        - type_KW@270..274 "type"
         - WHITESPACE@274..275 " "
-        - FIELDS_DEFINITION@275..321
-            - L_CURLY@275..276 "{"
-            - WHITESPACE@276..279 "\n  "
-            - FIELD_DEFINITION@279..291
-                - NAME@279..283
-                    - IDENT@279..283 "name"
-                - COLON@283..284 ":"
-                - WHITESPACE@284..285 " "
-                - NAMED_TYPE@285..291
-                    - NAME@285..291
-                        - IDENT@285..291 "String"
-            - WHITESPACE@291..294 "\n  "
-            - FIELD_DEFINITION@294..319
-                - NAME@294..299
-                    - IDENT@294..299 "price"
-                - ARGUMENTS_DEFINITION@299..314
-                    - L_PAREN@299..300 "("
-                    - INPUT_VALUE_DEFINITION@300..313
-                        - NAME@300..308
-                            - IDENT@300..308 "setPrice"
-                        - COLON@308..309 ":"
-                        - WHITESPACE@309..310 " "
-                        - NAMED_TYPE@310..313
-                            - NAME@310..313
-                                - IDENT@310..313 "Int"
-                    - R_PAREN@313..314 ")"
-                - COLON@314..315 ":"
-                - WHITESPACE@315..316 " "
-                - NAMED_TYPE@316..319
-                    - NAME@316..319
-                        - IDENT@316..319 "Int"
-            - WHITESPACE@319..320 "\n"
-            - R_CURLY@320..321 "}"
+        - NAME@275..281
+            - IDENT@275..281 "Review"
+        - WHITESPACE@281..282 " "
+        - FIELDS_DEFINITION@282..304
+            - L_CURLY@282..283 "{"
+            - WHITESPACE@283..286 "\n  "
+            - FIELD_DEFINITION@286..302
+                - NAME@286..293
+                    - IDENT@286..293 "message"
+                - COLON@293..294 ":"
+                - WHITESPACE@294..295 " "
+                - NAMED_TYPE@295..302
+                    - NAME@295..302
+                        - IDENT@295..302 "Message"
+            - WHITESPACE@302..303 "\n"
+            - R_CURLY@303..304 "}"
+    - WHITESPACE@304..306 "\n\n"
+    - OBJECT_TYPE_DEFINITION@306..373
+        - type_KW@306..310 "type"
+        - WHITESPACE@310..311 " "
+        - NAME@311..318
+            - IDENT@311..318 "Message"
+        - WHITESPACE@318..319 " "
+        - FIELDS_DEFINITION@319..373
+            - L_CURLY@319..320 "{"
+            - WHITESPACE@320..323 "\n  "
+            - FIELD_DEFINITION@323..335
+                - NAME@323..327
+                    - IDENT@323..327 "body"
+                - COLON@327..328 ":"
+                - WHITESPACE@328..329 " "
+                - NAMED_TYPE@329..335
+                    - NAME@329..335
+                        - IDENT@329..335 "String"
+            - WHITESPACE@335..338 "\n  "
+            - FIELD_DEFINITION@338..371
+                - NAME@338..344
+                    - IDENT@338..344 "sender"
+                - ARGUMENTS_DEFINITION@344..363
+                    - L_PAREN@344..345 "("
+                    - INPUT_VALUE_DEFINITION@345..362
+                        - NAME@345..354
+                            - IDENT@345..354 "attribute"
+                        - COLON@354..355 ":"
+                        - WHITESPACE@355..356 " "
+                        - NAMED_TYPE@356..362
+                            - NAME@356..362
+                                - IDENT@356..362 "String"
+                    - R_PAREN@362..363 ")"
+                - COLON@363..364 ":"
+                - WHITESPACE@364..365 " "
+                - NAMED_TYPE@365..371
+                    - NAME@365..371
+                        - IDENT@365..371 "String"
+            - WHITESPACE@371..372 "\n"
+            - R_CURLY@372..373 "}"
+    - WHITESPACE@373..375 "\n\n"
+    - OBJECT_TYPE_DEFINITION@375..434
+        - type_KW@375..379 "type"
+        - WHITESPACE@379..380 " "
+        - NAME@380..387
+            - IDENT@380..387 "Product"
+        - WHITESPACE@387..388 " "
+        - FIELDS_DEFINITION@388..434
+            - L_CURLY@388..389 "{"
+            - WHITESPACE@389..392 "\n  "
+            - FIELD_DEFINITION@392..404
+                - NAME@392..396
+                    - IDENT@392..396 "name"
+                - COLON@396..397 ":"
+                - WHITESPACE@397..398 " "
+                - NAMED_TYPE@398..404
+                    - NAME@398..404
+                        - IDENT@398..404 "String"
+            - WHITESPACE@404..407 "\n  "
+            - FIELD_DEFINITION@407..432
+                - NAME@407..412
+                    - IDENT@407..412 "price"
+                - ARGUMENTS_DEFINITION@412..427
+                    - L_PAREN@412..413 "("
+                    - INPUT_VALUE_DEFINITION@413..426
+                        - NAME@413..421
+                            - IDENT@413..421 "setPrice"
+                        - COLON@421..422 ":"
+                        - WHITESPACE@422..423 " "
+                        - NAMED_TYPE@423..426
+                            - NAME@423..426
+                                - IDENT@423..426 "Int"
+                    - R_PAREN@426..427 ")"
+                - COLON@427..428 ":"
+                - WHITESPACE@428..429 " "
+                - NAMED_TYPE@429..432
+                    - NAME@429..432
+                        - IDENT@429..432 "Int"
+            - WHITESPACE@432..433 "\n"
+            - R_CURLY@433..434 "}"
 recursion limit: 4096, high: 5

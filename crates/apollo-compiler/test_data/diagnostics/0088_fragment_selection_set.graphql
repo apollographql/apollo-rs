@@ -8,6 +8,13 @@ type Product {
   name: String
 }
 
-fragment XY on Product {
+query getProduct {
+    name
+    topProduct {
+        ...productFragment
+    }
+}
+
+fragment productFragment on Product {
   notExistingField
 }

@@ -653,6 +653,55 @@
             file_id: FileId {
                 id: 50,
             },
+            offset: 133,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 133,
+                    length: 11,
+                },
+                text: "FRAGMENT_SPREAD is not a valid location",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 50,
+                    },
+                    offset: 1387,
+                    length: 29,
+                },
+                text: "consider adding FRAGMENT_SPREAD directive location here",
+            },
+        ],
+        help: Some(
+            "the directive must be used in a location that the service has declared support for",
+        ),
+        data: UnsupportedLocation {
+            name: "directiveB",
+            dir_loc: FragmentSpread,
+            directive_def: DiagnosticLocation {
+                file_id: FileId {
+                    id: 50,
+                },
+                offset: 1387,
+                length: 29,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            50: "0050_directives_in_invalid_locations.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 50,
+            },
             offset: 268,
             length: 11,
         },

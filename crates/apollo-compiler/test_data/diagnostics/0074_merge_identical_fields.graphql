@@ -1,6 +1,17 @@
+type Query {
+  pet: Dog
+}
+
 type Dog {
   nickname: String
-  name: String
+  name: String!
+}
+
+query queryPupper {
+  pet {
+    ...conflictingBecauseAlias
+    ...sameAliasesWithDifferentFieldTargets
+  }
 }
 
 fragment conflictingBecauseAlias on Dog {

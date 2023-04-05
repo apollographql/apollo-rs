@@ -160,6 +160,13 @@ query ExampleQuery {
 
 type Query {
   topProducts(first: Int): Products
+  me: User
+}
+
+type User {
+    id: ID
+    name: String
+    status(membership: String): String
 }
 
 type Products {
@@ -178,7 +185,7 @@ type Products {
             println!("{error}")
         }
 
-        assert_eq!(diagnostics.len(), 3);
+        assert_eq!(diagnostics.len(), 2);
     }
 
     #[test]
@@ -235,6 +242,13 @@ fragment fragmentOne on Query {
 type Query {
   topProducts: Product
   profilePic(size: Int): String
+  me: User
+}
+
+type User {
+    id: ID
+    name: String
+    status(membership: String): String
 }
 
 type Product {
@@ -252,6 +266,6 @@ type Product {
             println!("{error}")
         }
 
-        assert_eq!(diagnostics.len(), 4);
+        assert_eq!(diagnostics.len(), 2);
     }
 }

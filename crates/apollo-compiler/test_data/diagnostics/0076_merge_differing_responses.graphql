@@ -24,6 +24,16 @@ type Cat implements Pet {
   doesKnowCommand(catCommand: CatCommand!): Boolean!
 }
 
+type Query {
+  pet: Pet
+}
+
+query getPet {
+  pet {
+    ...conflictingDifferingResponses
+  }
+}
+
 fragment conflictingDifferingResponses on Pet {
   ... on Dog {
     someValue: nickname

@@ -1,10 +1,5 @@
 query getName {}
 
-fragment fragmentOne on Product {
-    name
-    birthday
-}
-
 type Query {
   topProducts(first: Int): Product,
 }
