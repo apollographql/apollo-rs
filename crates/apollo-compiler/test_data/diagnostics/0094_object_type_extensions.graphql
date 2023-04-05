@@ -1,0 +1,34 @@
+type UniqueNames {
+  name: String
+}
+extend type UniqueNames {
+  age: Int
+  age: Int
+}
+
+type ConflictingNames {
+  name: String
+}
+extend type ConflictingNames {
+  name: String
+}
+
+directive @nonRepeatable on OBJECT
+type UniqueDirective @nonRepeatable {
+  a: Int!
+}
+extend type UniqueDirective @nonRepeatable {
+  b: Int
+}
+
+interface Base {
+  name: String
+}
+type UniqueInterfaces implements Base {
+  name: String
+  nickname: String
+}
+extend type UniqueInterfaces implements Base {
+  name: String
+  age: Int
+}
