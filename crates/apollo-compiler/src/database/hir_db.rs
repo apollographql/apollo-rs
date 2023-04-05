@@ -1536,17 +1536,17 @@ fn inline_fragment(
         Some(name_hir_node(tc, file_id))
     });
     let directives = directives(fragment.directives(), file_id);
-    let new_parent_obj = if let Some(type_condition) = type_condition.clone() {
-        Some(type_condition.src().to_string())
-    } else {
-        parent_obj
-    };
+    let new_parent_obj = type_condition
+        .clone()
+        .map_or(parent_obj.clone(), |tc| Some(tc.src().to_string()));
     let selection_set: SelectionSet =
         selection_set(db, fragment.selection_set(), new_parent_obj, file_id);
     let loc = location(file_id, fragment.syntax());
 
     let fragment_data = InlineFragment {
-        type_condition,
+        // for implicit inline fragments, the type condition is implied to be
+        // that of the current scope
+        type_condition: type_condition.or(parent_obj.map(|o| Name { src: o, loc: None })),
         directives,
         selection_set,
         loc,

@@ -325,10 +325,9 @@ pub fn validate_selection(
                     inline.directives().to_vec(),
                     hir::DirectiveLocation::InlineFragment,
                 ));
-                diagnostics.extend(db.validate_fragment_spreads(
+                diagnostics.extend(db.validate_fragment_type_condition(
                     inline.type_condition().map(|t| t.to_string()),
                     inline.loc(),
-                    inline.type_def(db.upcast()).clone(),
                 ));
             }
         }

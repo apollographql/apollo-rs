@@ -302,12 +302,12 @@ pub enum DiagnosticData {
         /// Name of the type on which the fragment is declared
         ty: Option<String>,
     },
-    #[error("fragments can not be declared on scalar types")]
+    #[error("fragments can not be declared on primitive types")]
     InvalidFragmentTarget {
         /// Name of the type on which the fragment is declared
         ty: String,
     },
-    #[error("`{name}` must be used in an operation")]
+    #[error("fragment `{name}` must be used in an operation")]
     UnusedFragment {
         /// Name of the fragment
         name: String,
