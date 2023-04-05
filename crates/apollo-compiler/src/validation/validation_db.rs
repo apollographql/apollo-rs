@@ -173,6 +173,9 @@ pub trait ValidationDatabase:
     #[salsa::invoke(fragment::validate_fragment_definitions)]
     fn validate_fragment_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
+    #[salsa::invoke(fragment::validate_fragment_cycles)]
+    fn validate_fragment_cycles(&self, def: Arc<FragmentDefinition>) -> Vec<ApolloDiagnostic>;
+
     #[salsa::invoke(fragment::validate_fragment_type_condition)]
     fn validate_fragment_type_condition(
         &self,
@@ -183,7 +186,7 @@ pub trait ValidationDatabase:
     #[salsa::invoke(fragment::validate_fragment_used)]
     fn validate_fragment_used(
         &self,
-        def: FragmentDefinition,
+        def: Arc<FragmentDefinition>,
         file_id: FileId,
     ) -> Vec<ApolloDiagnostic>;
 

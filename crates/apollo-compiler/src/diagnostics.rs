@@ -201,6 +201,8 @@ pub enum DiagnosticData {
     RecursiveInterfaceDefinition { name: String },
     #[error("`{name}` input object cannot reference itself")]
     RecursiveInputObjectDefinition { name: String },
+    #[error("`{name}` fragment cannot reference itself")]
+    RecursiveFragmentDefinition { name: String },
     #[error("values in an Enum Definition should be capitalized")]
     CapitalizedValue { value: String },
     #[error("fields must be unique in a definition")]
