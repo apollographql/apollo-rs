@@ -300,4 +300,4 @@
                         - IDENT@591..598 "Boolean"
             - WHITESPACE@598..599 "\n"
             - R_CURLY@599..600 "}"
-recursion limit: 4096, high: 4
+recursion limit: 4096, high: 2
