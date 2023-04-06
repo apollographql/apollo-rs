@@ -56,4 +56,4 @@
                     - IDENT@168..177 "faveSnack"
             - WHITESPACE@177..178 "\n"
             - R_CURLY@178..179 "}"
-recursion limit: 4096, high: 13
+recursion limit: 4096, high: 4

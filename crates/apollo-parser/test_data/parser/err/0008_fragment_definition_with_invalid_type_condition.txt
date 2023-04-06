@@ -26,4 +26,4 @@
             - WHITESPACE@44..45 "\n"
             - R_CURLY@45..46 "}"
 - ERROR@22:26 "exptected 'on'" User
-recursion limit: 4096, high: 2
+recursion limit: 4096, high: 1
