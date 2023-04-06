@@ -1,6 +1,11 @@
 use apollo_compiler::ApolloCompiler;
 use std::io::Read;
 
+/// A simple program to run the validations implemented by apollo-compiler
+/// and report any errors.
+///
+/// To use, do:
+/// cargo run --example validate path/to/input.graphql
 fn main() {
     let (source, filename) = match std::env::args().nth(1).as_deref() {
         Some("-") | None => {
@@ -19,7 +24,9 @@ fn main() {
 
     let diagnostics = compiler.validate();
 
-    for diagnostic in diagnostics {
+    for diagnostic in &diagnostics {
         println!("{diagnostic}");
     }
+
+    std::process::exit(if diagnostics.is_empty() { 0 } else { 1 });
 }
