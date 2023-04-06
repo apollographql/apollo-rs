@@ -10,16 +10,7 @@ use crate::{
 /// *Field*:
 ///     Alias? Name Arguments? Directives? SelectionSet?
 pub(crate) fn field(p: &mut Parser) {
-    // We need to enforce recursion limits to prevent
-    // excessive resource consumption or (more seriously)
-    // stack overflows.
-    p.recursion_limit.consume();
-    if p.recursion_limit.limited() {
-        p.limit_err(format!("parser limit({}) reached", p.recursion_limit.limit));
-        return;
-    }
-
-    let guard = p.start_node(SyntaxKind::FIELD);
+    let _guard = p.start_node(SyntaxKind::FIELD);
 
     if let Some(TokenKind::Name) = p.peek() {
         if let Some(T![:]) = p.peek_n(2) {
@@ -40,19 +31,6 @@ pub(crate) fn field(p: &mut Parser) {
 
     if let Some(T!['{']) = p.peek() {
         selection::selection_set(p);
-    }
-
-    match p.peek() {
-        Some(TokenKind::Name) => {
-            guard.finish_node();
-
-            field(p)
-        }
-
-        Some(T!['}']) => {
-            guard.finish_node();
-        }
-        _ => guard.finish_node(),
     }
 }
 
