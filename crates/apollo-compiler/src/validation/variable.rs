@@ -6,7 +6,7 @@ use std::{
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self, VariableDefinition},
-    validation::ValidationSet,
+    validation::{RecursionStack, ValidationSet},
     ValidationDatabase,
 };
 

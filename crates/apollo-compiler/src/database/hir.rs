@@ -1136,6 +1136,7 @@ pub enum IntCoercionError {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Variable {
     pub(crate) name: String,
+    pub(crate) ty: Type,
     pub(crate) loc: HirNodeLocation,
 }
 
@@ -1143,6 +1144,11 @@ impl Variable {
     /// Get a reference to the argument's name.
     pub fn name(&self) -> &str {
         self.name.as_ref()
+    }
+
+    /// Get a reference to variable type, as defined in an operation definition.
+    pub fn ty(&self) -> &Type {
+        &self.ty
     }
 
     /// Get the AST location information for this HIR node.
