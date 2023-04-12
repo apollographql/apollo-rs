@@ -495,7 +495,7 @@ mod tests {
         let parser = Parser::new(source).recursion_limit(3).token_limit(200);
         let ast = parser.parse();
         let errors = ast.errors().collect::<Vec<_>>();
-        assert_eq!(errors, &[&Error::limit("parser limit(3) reached", 61),]);
+        assert_eq!(errors, &[&Error::limit("parser limit(3) reached", 121),]);
     }
 
     #[test]
@@ -522,8 +522,6 @@ mod tests {
         );
         assert_eq!(errors.next(), None);
 
-        // TODO(@goto-bus-stop) the comment is positioned wrong:
-        // https://github.com/apollographql/apollo-rs/issues/362
         let tree = expect![[r##"
             DOCUMENT@0..113
               WHITESPACE@0..13 "\n            "

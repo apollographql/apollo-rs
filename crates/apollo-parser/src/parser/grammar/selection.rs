@@ -312,7 +312,9 @@ query SomeQuery(
         let schema = r#"
         query {
           Q1 {
-            url
+            Q2 {
+              url
+            }
           }
         }
         "#;
@@ -330,7 +332,9 @@ query SomeQuery(
         let schema = r#"
         query {
           Q1 {
-            url
+            Q2 {
+              url
+            }
           }
         }
         "#;
@@ -338,7 +342,7 @@ query SomeQuery(
 
         let ast = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 4);
+        assert_eq!(ast.recursion_limit().high, 3);
         assert_eq!(ast.errors().len(), 0);
         assert_eq!(ast.document().definitions().count(), 1);
     }
@@ -347,9 +351,13 @@ query SomeQuery(
     fn it_errors_when_selection_set_recursion_limit_is_exceeded_with_inline_fragment() {
         let schema = r#"
         query {
-          ... on Page {
-            price
-            name
+          Q1 {
+            Q2 {
+              ... on Page {
+                price
+                name
+              }
+            }
           }
         }
         "#;
@@ -366,8 +374,12 @@ query SomeQuery(
     fn it_errors_when_selection_set_recursion_limit_is_exceeded_fragment_spread() {
         let schema = r#"
         query {
-          product {
-            ...Page
+          Q1 {
+            Q2 {
+              product {
+                ...Page
+              }
+            }
           }
         }
         "#;
@@ -403,7 +415,7 @@ query SomeQuery(
 
         assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().count(), 4);
+        assert_eq!(ast.document().definitions().count(), 2);
     }
 
     #[test]
@@ -411,7 +423,13 @@ query SomeQuery(
         let schema = r#"
         query {
           Q1 {
-            url
+            Q2 {
+              Q3 {
+                Q4 {
+                  Q5 { url }
+                }
+              }
+            }
           },
         }
         "#;
@@ -419,7 +437,7 @@ query SomeQuery(
 
         let ast = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 4);
+        assert_eq!(ast.recursion_limit().high, 6);
         assert_eq!(ast.errors().len(), 0);
         assert_eq!(ast.document().definitions().count(), 1);
     }
