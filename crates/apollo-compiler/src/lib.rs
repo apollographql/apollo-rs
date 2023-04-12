@@ -288,7 +288,6 @@ query ExampleQuery {
         let mut compiler = ApolloCompiler::new();
         compiler.add_document(schema, "schema.graphql");
         compiler.add_executable(query, "query.graphql");
-        dbg!(compiler.db.source_files());
     }
 
     #[test]

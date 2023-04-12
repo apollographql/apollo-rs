@@ -141,6 +141,8 @@ impl fmt::Display for ApolloDiagnostic {
 pub enum DiagnosticData {
     #[error("syntax error: {message}")]
     SyntaxError { message: String },
+    #[error("limit exceeded: {message}")]
+    LimitExceeded { message: String },
     #[error("expected identifier")]
     MissingIdent,
     #[error("the {ty} `{name}` is defined multiple times in the document")]

@@ -52,17 +52,31 @@ fn syntax_errors(db: &dyn AstDatabase) -> Vec<ApolloDiagnostic> {
             db.ast(file_id)
                 .errors()
                 .map(|err| {
-                    ApolloDiagnostic::new(
-                        db,
-                        (file_id, err.index(), err.data().len()).into(),
-                        DiagnosticData::SyntaxError {
-                            message: err.message().into(),
-                        },
-                    )
-                    .label(Label::new(
-                        (file_id, err.index(), err.data().len()),
-                        err.message(),
-                    ))
+                    if err.is_limit() {
+                        ApolloDiagnostic::new(
+                            db,
+                            (file_id, err.index(), err.data().len()).into(),
+                            DiagnosticData::LimitExceeded {
+                                message: err.message().into(),
+                            },
+                        )
+                        .label(Label::new(
+                            (file_id, err.index(), err.data().len()),
+                            err.message(),
+                        ))
+                    } else {
+                        ApolloDiagnostic::new(
+                            db,
+                            (file_id, err.index(), err.data().len()).into(),
+                            DiagnosticData::SyntaxError {
+                                message: err.message().into(),
+                            },
+                        )
+                        .label(Label::new(
+                            (file_id, err.index(), err.data().len()),
+                            err.message(),
+                        ))
+                    }
                 })
                 .collect::<Vec<ApolloDiagnostic>>()
         })
@@ -72,7 +86,7 @@ fn syntax_errors(db: &dyn AstDatabase) -> Vec<ApolloDiagnostic> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ApolloCompiler;
+    use crate::{ApolloCompiler, HirDatabase};
 
     #[test]
     fn it_errors_when_selection_set_recursion_limit_exceeded() {
@@ -172,5 +186,29 @@ mod tests {
             ast.errors().next(),
             Some(&apollo_parser::Error::limit("parser limit(3) reached", 61))
         );
+    }
+
+    #[test]
+    fn token_limit_with_multiple_sources() {
+        let schema = r#"
+type Query {
+    website: URL,
+    amount: Int
+}
+
+scalar URL @specifiedBy(url: "a.com");
+"#;
+        let query = "{ website }";
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(schema, "schema.graphql");
+        let ts = compiler.db.type_system();
+
+        let mut compiler2 = ApolloCompiler::new().token_limit(2);
+        compiler2.set_type_system_hir(ts);
+        compiler2.add_executable(query, "query.graphql");
+        let parser_errors = compiler2.db.syntax_errors();
+
+        assert_eq!(parser_errors.len(), 1);
     }
 }
