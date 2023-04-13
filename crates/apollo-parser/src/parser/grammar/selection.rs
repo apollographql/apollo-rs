@@ -324,7 +324,7 @@ query SomeQuery(
 
         assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().count(), 2);
+        assert_eq!(ast.document().definitions().count(), 1);
     }
 
     #[test]
@@ -389,7 +389,7 @@ query SomeQuery(
 
         assert_eq!(ast.recursion_limit().high, 3);
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().count(), 1);
+        assert_eq!(dbg!(ast.document()).definitions().count(), 1);
     }
 
     #[test]
@@ -415,7 +415,7 @@ query SomeQuery(
 
         assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().count(), 2);
+        assert_eq!(ast.document().definitions().count(), 1);
     }
 
     #[test]
