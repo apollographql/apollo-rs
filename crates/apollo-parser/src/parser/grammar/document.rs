@@ -14,6 +14,10 @@ pub(crate) fn document(p: &mut Parser) {
     let doc = p.start_node(SyntaxKind::DOCUMENT);
 
     while let Some(node) = p.peek() {
+        if p.recursion_limit.limited() {
+            break;
+        }
+
         match node {
             TokenKind::StringValue => {
                 let def = p.peek_data_n(2).unwrap();
