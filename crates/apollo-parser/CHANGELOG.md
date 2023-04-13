@@ -21,7 +21,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Fixes
 - **remove recursion in field parsing - [goto-bus-stop], [pull/519]**
   The `selection::selection_set` parser already supports parsing multiple fields.
-  This removes recursion from field parsing, which is unncessary.
+  This removes recursion from field parsing, reducing the risk of stack
+  overflow on queries with many fields.
 
   [goto-bus-stop]: https://github.com/goto-bus-stop
   [pull/519]: https://github.com/apollographql/apollo-rs/pull/519
