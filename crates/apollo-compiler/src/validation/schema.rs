@@ -29,6 +29,7 @@ pub fn validate_schema_definition(
     diagnostics.extend(db.validate_directives(
         schema_def.directives().cloned().collect(),
         hir::DirectiveLocation::Schema,
+        None,
     ));
 
     diagnostics

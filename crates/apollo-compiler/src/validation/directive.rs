@@ -146,13 +146,14 @@ pub fn validate_directives(
     db: &dyn ValidationDatabase,
     dirs: Vec<hir::Directive>,
     dir_loc: hir::DirectiveLocation,
+    parent_op: Option<hir::Name>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     let mut seen_dirs = HashSet::<ValidationSet>::new();
 
     for dir in dirs {
-        diagnostics.extend(db.validate_arguments(dir.arguments().to_vec()));
+        diagnostics.extend(db.validate_arguments(dir.arguments().to_vec(), parent_op.clone()));
 
         let name = dir.name();
         let loc = dir.loc();

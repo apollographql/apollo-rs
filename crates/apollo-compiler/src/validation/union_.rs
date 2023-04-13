@@ -24,6 +24,7 @@ pub fn validate_union_definition(
     let mut diagnostics = db.validate_directives(
         union_def.directives().cloned().collect(),
         hir::DirectiveLocation::Union,
+        None,
     );
 
     let mut seen: HashMap<&str, &UnionMember> = HashMap::new();

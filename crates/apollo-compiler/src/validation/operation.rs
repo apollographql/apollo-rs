@@ -13,14 +13,20 @@ pub fn validate_operation_definitions(
 
     let operations = db.operations(file_id);
     for def in operations.iter() {
-        diagnostics
-            .extend(db.validate_directives(def.directives().to_vec(), def.operation_ty().into()));
-        diagnostics.extend(db.validate_variable_definitions(def.variables.as_ref().clone()));
+        diagnostics.extend(db.validate_directives(
+            def.directives().to_vec(),
+            def.operation_ty().into(),
+            def.name.clone(),
+        ));
+        diagnostics.extend(
+            db.validate_variable_definitions(def.variables.as_ref().clone(), def.name.clone()),
+        );
 
         // Validate the Selection Set recursively
         // Check that the root type exists
         if def.object_type(db.upcast()).is_some() {
-            diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
+            diagnostics
+                .extend(db.validate_selection_set(def.selection_set().clone(), def.name.clone()));
         }
         diagnostics.extend(db.validate_unused_variable(def.clone()));
     }

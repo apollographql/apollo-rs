@@ -7,12 +7,14 @@ use std::sync::Arc;
 pub fn validate_fragment_spread(
     db: &dyn ValidationDatabase,
     spread: Arc<hir::FragmentSpread>,
+    parent_op: Option<hir::Name>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(db.validate_directives(
         spread.directives().to_vec(),
         hir::DirectiveLocation::FragmentSpread,
+        parent_op,
     ));
 
     if spread.fragment(db.upcast()).is_none() {
@@ -43,11 +45,12 @@ pub fn validate_fragment_definitions(
         diagnostics.extend(db.validate_directives(
             def.directives().to_vec(),
             hir::DirectiveLocation::FragmentDefinition,
+            None,
         ));
         diagnostics.extend(
             db.validate_fragment_type_condition(Some(def.type_condition().to_string()), def.loc()),
         );
-        diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
+        diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), None));
         diagnostics.extend(db.validate_fragment_used(def.as_ref().clone(), file_id));
     }
 

@@ -90,6 +90,7 @@ pub trait ValidationDatabase:
         &self,
         dirs: Vec<Directive>,
         loc: DirectiveLocation,
+        parent_op: Option<Name>,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(input_object::validate_input_object_definitions)]
@@ -145,7 +146,7 @@ pub trait ValidationDatabase:
     fn validate_field_definition(&self, field: FieldDefinition) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(field::validate_field)]
-    fn validate_field(&self, field: Arc<Field>) -> Vec<ApolloDiagnostic>;
+    fn validate_field(&self, field: Arc<Field>, parent_op: Option<Name>) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(field::validate_leaf_field_selection)]
     fn validate_leaf_field_selection(
@@ -162,13 +163,22 @@ pub trait ValidationDatabase:
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(argument::validate_arguments)]
-    fn validate_arguments(&self, arg: Vec<Argument>) -> Vec<ApolloDiagnostic>;
+    fn validate_arguments(
+        &self,
+        arg: Vec<Argument>,
+        parent_op: Option<Name>,
+        field_definition: FieldDefinition,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(operation::validate_operation_definitions)]
     fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_spread)]
-    fn validate_fragment_spread(&self, spread: Arc<FragmentSpread>) -> Vec<ApolloDiagnostic>;
+    fn validate_fragment_spread(
+        &self,
+        spread: Arc<FragmentSpread>,
+        parent_op: Option<Name>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_definitions)]
     fn validate_fragment_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
@@ -188,14 +198,25 @@ pub trait ValidationDatabase:
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(selection::validate_selection_set)]
-    fn validate_selection_set(&self, sel_set: SelectionSet) -> Vec<ApolloDiagnostic>;
+    fn validate_selection_set(
+        &self,
+        sel_set: SelectionSet,
+        parent_op: Option<Name>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(selection::validate_selection)]
-    fn validate_selection(&self, sel: Arc<Vec<Selection>>) -> Vec<ApolloDiagnostic>;
+    fn validate_selection(
+        &self,
+        sel: Arc<Vec<Selection>>,
+        parent_op: Option<Name>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(variable::validate_variable_definitions)]
-    fn validate_variable_definitions(&self, defs: Vec<VariableDefinition>)
-        -> Vec<ApolloDiagnostic>;
+    fn validate_variable_definitions(
+        &self,
+        defs: Vec<VariableDefinition>,
+        parent_op: Option<Name>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(variable::validate_unused_variables)]
     fn validate_unused_variable(&self, op: Arc<OperationDefinition>) -> Vec<ApolloDiagnostic>;

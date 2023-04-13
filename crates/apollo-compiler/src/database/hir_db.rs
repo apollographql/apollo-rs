@@ -1455,11 +1455,10 @@ fn argument(argument: ast::Argument, file_id: FileId) -> Option<Argument> {
     Some(Argument { name, value, loc })
 }
 
-fn value(val: ast::Value, file_id: FileId, vars: ) -> Option<Value> {
+fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
     let hir_val = match val {
         ast::Value::Variable(var) => Value::Variable(Variable {
             name: var.name()?.text().to_string(),
-            ty: 
             loc: location(file_id, var.syntax()),
         }),
         ast::Value::StringValue(string_val) => Value::String(string_val.into()),

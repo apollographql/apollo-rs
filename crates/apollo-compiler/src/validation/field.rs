@@ -9,70 +9,53 @@ use crate::{
 pub fn validate_field(
     db: &dyn ValidationDatabase,
     field: Arc<hir::Field>,
+    parent_op: Option<hir::Name>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics =
-        db.validate_directives(field.directives().to_vec(), hir::DirectiveLocation::Field);
+    let mut diagnostics = db.validate_directives(
+        field.directives().to_vec(),
+        hir::DirectiveLocation::Field,
+        parent_op.clone(),
+    );
 
     if !field.arguments().is_empty() {
-        diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
-    }
+        if let Some(field_definition) = field.field_definition(db.upcast()) {
+            diagnostics.extend(db.validate_arguments(
+                field.arguments().to_vec(),
+                parent_op.clone(),
+                field_definition,
+            ));
 
-    if let Some(field_definition) = field.field_definition(db.upcast()) {
-        for arg in field.arguments() {
-            let exists = field_definition
-                .arguments()
-                .input_values()
-                .iter()
-                .any(|arg_def| arg.name() == arg_def.name());
-
-            if !exists {
-                let mut labels = vec![Label::new(arg.loc, "argument name not found")];
-                if let Some(loc) = field_definition.loc {
-                    labels.push(Label::new(loc, "field declared here"));
+            for arg_def in field_definition.arguments().input_values() {
+                let arg_value = field
+                    .arguments()
+                    .iter()
+                    .find(|value| value.name() == arg_def.name());
+                let is_null = match arg_value {
+                    None => true,
+                    // Prevents explicitly providing `requiredArg: null`,
+                    // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
+                    // and it won't raise a validation error at this stage.
+                    Some(value) => value.value() == &hir::Value::Null,
                 };
-                diagnostics.push(
-                    ApolloDiagnostic::new(
+
+                if arg_def.is_required() && is_null {
+                    let mut diagnostic = ApolloDiagnostic::new(
                         db,
-                        arg.loc.into(),
-                        DiagnosticData::UndefinedArgument {
-                            name: arg.name().into(),
+                        field.loc.into(),
+                        DiagnosticData::RequiredArgument {
+                            name: arg_def.name().into(),
                         },
-                    )
-                    .labels(labels),
-                );
-            }
-        }
+                    );
+                    diagnostic = diagnostic.label(Label::new(
+                        field.loc,
+                        format!("missing value for argument `{}`", arg_def.name()),
+                    ));
+                    if let Some(loc) = arg_def.loc {
+                        diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
+                    }
 
-        for arg_def in field_definition.arguments().input_values() {
-            let arg_value = field
-                .arguments()
-                .iter()
-                .find(|value| value.name() == arg_def.name());
-            let is_null = match arg_value {
-                None => true,
-                // Prevents explicitly providing `requiredArg: null`,
-                // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
-                // and it won't raise a validation error at this stage.
-                Some(value) => value.value() == &hir::Value::Null,
-            };
-
-            if arg_def.is_required() && is_null {
-                let mut diagnostic = ApolloDiagnostic::new(
-                    db,
-                    field.loc.into(),
-                    DiagnosticData::RequiredArgument {
-                        name: arg_def.name().into(),
-                    },
-                );
-                diagnostic = diagnostic.label(Label::new(
-                    field.loc,
-                    format!("missing value for argument `{}`", arg_def.name()),
-                ));
-                if let Some(loc) = arg_def.loc {
-                    diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
+                    diagnostics.push(diagnostic);
                 }
-
-                diagnostics.push(diagnostic);
             }
         }
     }
@@ -81,7 +64,8 @@ pub fn validate_field(
     if let Some(field_type) = field_type {
         match db.validate_leaf_field_selection(field.clone(), field_type) {
             Err(diag) => diagnostics.push(diag),
-            Ok(_) => diagnostics.extend(db.validate_selection_set(field.selection_set().clone())),
+            Ok(_) => diagnostics
+                .extend(db.validate_selection_set(field.selection_set().clone(), parent_op)),
         }
     } else {
         let help = format!(
@@ -128,6 +112,7 @@ pub fn validate_field_definition(
     let mut diagnostics = db.validate_directives(
         field.directives().to_vec(),
         hir::DirectiveLocation::FieldDefinition,
+        None,
     );
 
     diagnostics.extend(db.validate_arguments_definition(

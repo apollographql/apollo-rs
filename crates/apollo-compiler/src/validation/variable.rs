@@ -6,13 +6,14 @@ use std::{
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self, VariableDefinition},
-    validation::{RecursionStack, ValidationSet},
+    validation::ValidationSet,
     ValidationDatabase,
 };
 
 pub fn validate_variable_definitions(
     db: &dyn ValidationDatabase,
     variables: Vec<hir::VariableDefinition>,
+    parent_op: Option<hir::Name>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -21,6 +22,7 @@ pub fn validate_variable_definitions(
         diagnostics.extend(db.validate_directives(
             variable.directives().to_vec(),
             hir::DirectiveLocation::VariableDefinition,
+            parent_op.clone(),
         ));
 
         let ty = variable.ty();

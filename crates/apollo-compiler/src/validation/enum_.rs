@@ -24,6 +24,7 @@ pub fn validate_enum_definition(
     let mut diagnostics = db.validate_directives(
         enum_def.directives().cloned().collect(),
         hir::DirectiveLocation::Enum,
+        None,
     );
 
     let mut seen: HashMap<&str, &EnumValueDefinition> = HashMap::new();
@@ -72,6 +73,7 @@ pub(crate) fn validate_enum_value(
     let mut diagnostics = db.validate_directives(
         enum_val.directives().to_vec(),
         hir::DirectiveLocation::EnumValue,
+        None,
     );
 
     // (convention) Values in an Enum Definition should be capitalized.

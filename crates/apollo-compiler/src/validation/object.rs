@@ -27,6 +27,7 @@ pub fn validate_object_type_definition(
     diagnostics.extend(db.validate_directives(
         object.directives().cloned().collect(),
         hir::DirectiveLocation::Object,
+        None,
     ));
 
     // Object Type field validations.
