@@ -17,6 +17,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.5.1](https://crates.io/crates/apollo-encoder/0.5.1) - 2023-04-13
+
+## Featues
+- **add `Clone` impl to encoder types - [zackangelo], [pull/515]**
+  Consistently derive `Clone` on all encoder types.  
+
+  [zackangelo]: https://github.com/zackangelo
+  [pull/515]: https://github.com/apollographql/apollo-rs/pull/515
+  
 # [0.5.0](https://crates.io/crates/apollo-encoder/0.5.0) - 2023-02-17
 
 ## BREAKING
