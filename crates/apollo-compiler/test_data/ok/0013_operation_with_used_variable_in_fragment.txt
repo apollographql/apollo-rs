@@ -231,4 +231,4 @@
                         - IDENT@429..432 "Int"
             - WHITESPACE@432..433 "\n"
             - R_CURLY@433..434 "}"
-recursion limit: 4096, high: 5
+recursion limit: 4096, high: 2

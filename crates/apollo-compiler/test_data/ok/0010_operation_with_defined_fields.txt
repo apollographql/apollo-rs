@@ -214,4 +214,4 @@
         - DIRECTIVE_LOCATIONS@413..429
             - DIRECTIVE_LOCATION@413..429
                 - FIELD_DEFINITION_KW@413..429 "FIELD_DEFINITION"
-recursion limit: 4096, high: 6
+recursion limit: 4096, high: 2

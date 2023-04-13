@@ -93,7 +93,9 @@ mod tests {
         let schema = r#"
         query {
           Q1 {
-            url
+            url {
+              hostname
+            }
           }
         }
         "#;
@@ -104,7 +106,7 @@ mod tests {
 
         assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().count(), 2);
+        assert_eq!(ast.document().definitions().count(), 1);
     }
 
     #[test]
@@ -112,7 +114,11 @@ mod tests {
         let schema = r#"
         query {
           Q1 {
-            url
+            Q2 {
+              Q3 {
+                url
+              }
+            }
           }
         }
         "#;
@@ -184,7 +190,7 @@ mod tests {
         assert_eq!(ast.errors().len(), 1);
         assert_eq!(
             ast.errors().next(),
-            Some(&apollo_parser::Error::limit("parser limit(3) reached", 61))
+            Some(&apollo_parser::Error::limit("parser limit(3) reached", 121))
         );
     }
 

@@ -51,4 +51,4 @@
                     - IDENT@113..117 "lion"
             - WHITESPACE@117..118 "\n"
             - R_CURLY@118..119 "}"
-recursion limit: 4096, high: 8
+recursion limit: 4096, high: 3

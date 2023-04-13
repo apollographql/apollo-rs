@@ -72,4 +72,4 @@
                     - IDENT@123..133 "__typename"
             - WHITESPACE@133..134 "\n"
             - R_CURLY@134..135 "}"
-recursion limit: 4096, high: 3
+recursion limit: 4096, high: 1
