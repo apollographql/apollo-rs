@@ -17,6 +17,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.5.1](https://crates.io/crates/apollo-parser/0.5.1) - 2023-04-13
+## Fixes
+- **remove recursion in field parsing - [goto-bus-stop], [pull/519]**
+  The `selection::selection_set` parser already supports parsing multiple fields.
+  This removes recursion from field parsing, reducing the risk of stack
+  overflow on queries with many fields.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/519]: https://github.com/apollographql/apollo-rs/pull/519
+
+
 # [0.5.0](https://crates.io/crates/apollo-parser/0.5.0) - 2023-02-16
 ## Features
 - **new `ast::Definition` methods - [goto-bus-stop], [pull/456]**
