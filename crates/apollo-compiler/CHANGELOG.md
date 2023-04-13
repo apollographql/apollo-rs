@@ -53,6 +53,7 @@ by [lrlna] in [pull/512]
 - use `LimitExceeded` diagnostic for limit related errors, by [lrlna] in [pull/520]
 
 [lrlna]: https://github.com/lrlna
+[gocamille]: https://github.com/gocamille
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/483]: https://github.com/apollographql/apollo-rs/pull/483
 [pull/512]: https://github.com/apollographql/apollo-rs/pull/512
