@@ -297,7 +297,7 @@ query ExampleQuery($definedVariable: Int, $definedVariable2: Int) {
   topProducts(first: $definedVariable) {
     type
   }
-  ... vipCustomer
+  customer { ... vipCustomer }
 }
 
 fragment vipCustomer on User {
@@ -647,7 +647,9 @@ query getProduct {
   topProducts {
     type
   }
-  ... vipCustomer
+  customer {
+    ... vipCustomer
+  }
 }
 
 fragment vipCustomer on User {
@@ -671,6 +673,10 @@ fragment vipCustomer on User {
             .db
             .find_operation(query_id, Some("getProduct".into()));
         let fragment_in_op: Vec<crate::hir::FragmentDefinition> = op
+            .unwrap()
+            .fields(&compiler.db)
+            .iter()
+            .find(|field| field.name() == "customer")
             .unwrap()
             .selection_set()
             .selection()

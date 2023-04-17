@@ -1,0 +1,112 @@
+interface Pet {
+  name: String!
+}
+
+type Dog implements Pet {
+  name: String!
+  barkVolume: Int
+}
+
+type Cat implements Pet {
+  name: String!
+  meowVolume: Int
+}
+
+union CatOrDog = Cat | Dog
+
+type Human {
+  pets: [Pet!]
+}
+
+union DogOrHuman = Dog | Human
+
+# https://spec.graphql.org/October2021/#sec-Object-Spreads-In-Object-Scope
+fragment dogFragment on Dog {
+  ... on Dog {
+    barkVolume
+  }
+}
+
+# https://spec.graphql.org/October2021/#sec-Abstract-Spreads-in-Object-Scope
+fragment petNameFragment on Pet {
+  name
+}
+
+fragment interfaceWithinObjectFragment on Dog {
+  ...petNameFragment
+}
+
+fragment catOrDogNameFragment on CatOrDog {
+  ... on Cat {
+    meowVolume
+  }
+}
+
+fragment unionWithObjectFragment on Dog {
+  ...catOrDogNameFragment
+}
+
+# https://spec.graphql.org/October2021/#sec-Object-Spreads-In-Abstract-Scope
+fragment petFragment on Pet {
+  name
+  ... on Dog {
+    barkVolume
+  }
+}
+
+fragment catOrDogFragment on CatOrDog {
+  ... on Cat {
+    meowVolume
+  }
+}
+
+# https://spec.graphql.org/October2021/#sec-Abstract-Spreads-in-Abstract-Scope
+fragment unionWithInterface on Pet {
+  ...dogOrHumanFragment
+}
+
+fragment dogOrHumanFragment on DogOrHuman {
+  ... on Dog {
+    barkVolume
+  }
+}
+
+# https://spec.graphql.org/October2021/#sec-Abstract-Spreads-in-Abstract-Scope.Interface-Spreads-in-implemented-Interface-Scope
+interface Node {
+  id: ID!
+}
+
+interface Resource implements Node {
+  id: ID!
+  url: String
+}
+
+fragment interfaceWithInterface on Node {
+  ...resourceFragment
+}
+
+fragment resourceFragment on Resource {
+  url
+}
+
+# Make sure the above fragments are used
+type Query {
+  pet: Pet
+  resource: Resource
+}
+query UseAllFragments {
+  pet {
+    ... dogFragment
+    ... interfaceWithinObjectFragment
+    ... unionWithObjectFragment
+    ... petFragment
+    ... catOrDogFragment
+    ... unionWithInterface
+  }
+  resource {
+    ...interfaceWithInterface
+    ... @skip(if: true) {
+      urlInInlineFragment: url
+    }
+  }
+}

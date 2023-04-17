@@ -1517,7 +1517,7 @@ fn selection(
             field(db, sel_field, parent_obj_ty, file_id).map(Selection::Field)
         }
         ast::Selection::FragmentSpread(fragment) => {
-            fragment_spread(fragment, file_id).map(Selection::FragmentSpread)
+            fragment_spread(db, fragment, parent_obj_ty, file_id).map(Selection::FragmentSpread)
         }
         ast::Selection::InlineFragment(fragment) => Some(Selection::InlineFragment(
             inline_fragment(db, fragment, parent_obj_ty, file_id),
@@ -1538,7 +1538,7 @@ fn inline_fragment(
     let directives = directives(fragment.directives(), file_id);
     let new_parent_obj = type_condition
         .clone()
-        .map_or(parent_obj.clone(), |tc| Some(tc.src().to_string()));
+        .map_or_else(|| parent_obj.clone(), |tc| Some(tc.src().to_string()));
     let selection_set: SelectionSet =
         selection_set(db, fragment.selection_set(), new_parent_obj, file_id);
     let loc = location(file_id, fragment.syntax());
@@ -1546,15 +1546,21 @@ fn inline_fragment(
     let fragment_data = InlineFragment {
         // for implicit inline fragments, the type condition is implied to be
         // that of the current scope
-        type_condition: type_condition.or(parent_obj.map(|o| Name { src: o, loc: None })),
+        type_condition: type_condition.or(parent_obj.clone().map(|o| Name { src: o, loc: None })),
         directives,
         selection_set,
+        parent_obj,
         loc,
     };
     Arc::new(fragment_data)
 }
 
-fn fragment_spread(fragment: ast::FragmentSpread, file_id: FileId) -> Option<Arc<FragmentSpread>> {
+fn fragment_spread(
+    _db: &dyn HirDatabase,
+    fragment: ast::FragmentSpread,
+    parent_obj: Option<String>,
+    file_id: FileId,
+) -> Option<Arc<FragmentSpread>> {
     let name = name(fragment.fragment_name()?.name(), file_id)?;
     let directives = directives(fragment.directives(), file_id);
     let loc = location(file_id, fragment.syntax());
@@ -1562,6 +1568,7 @@ fn fragment_spread(fragment: ast::FragmentSpread, file_id: FileId) -> Option<Arc
     let fragment_data = FragmentSpread {
         name,
         directives,
+        parent_obj,
         loc,
     };
     Some(Arc::new(fragment_data))

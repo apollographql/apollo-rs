@@ -98,29 +98,18 @@ use miette::Result;
 
 fn main() -> Result<()> {
     let schema_input = r#"
-    type Query {
-      topProducts: Product
-      customer: User
-    }
-
-    type Product {
-      type: String
-      price(setPrice: Int): Int
-    }
-
     type User {
       id: ID
       name: String
       profilePic(size: Int): URL
     }
 
+    schema { query: User }
+
     scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     "#;
     let query_input = r#"
-    query getProduct {
-      topProducts {
-          type
-      }
+    query getUser {
       ... vipCustomer
     }
 
@@ -142,8 +131,8 @@ fn main() -> Result<()> {
     }
     assert!(diagnostics.is_empty());
 
-    let op = compiler.db.find_operation(query_id, Some("getProduct".into()))
-        .expect("getProduct query does not exist");
+    let op = compiler.db.find_operation(query_id, Some("getUser".into()))
+        .expect("getUser query does not exist");
     let fragment_in_op: Vec<hir::FragmentDefinition> = op.selection_set().selection().iter().filter_map(|sel| match sel {
         hir::Selection::FragmentSpread(frag) => {
             Some(frag.fragment(&compiler.db)?.as_ref().clone())

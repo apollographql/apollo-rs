@@ -1,9 +1,9 @@
 query ExampleQuery {
   topProducts {
     name
-  }
-  ... on Product {
-      price(setPrice: $value)
+    ... on Product {
+        price(setPrice: $value)
+    }
   }
 }
 

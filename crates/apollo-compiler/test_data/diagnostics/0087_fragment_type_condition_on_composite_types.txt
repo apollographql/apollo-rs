@@ -8,41 +8,57 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 98,
+            offset: 52,
+            length: 25,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 84,
+                    },
+                    offset: 52,
+                    length: 25,
+                },
+                text: "field `price` of type `Int` is a scalar and cannot select any fields",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 0,
+                    },
+                    offset: 2916,
+                    length: 150,
+                },
+                text: "`Int` declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedSubselection,
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            84: "0087_fragment_type_condition_on_composite_types.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 84,
+            },
+            offset: 108,
             length: 29,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 0,
+                        id: 84,
                     },
-                    offset: 2916,
-                    length: 150,
+                    offset: 108,
+                    length: 29,
                 },
-                text: "`Int` is defined here",
+                text: "fragment declares unsupported type condition `{type_cond}`",
             },
-        ],
-        help: Some(
-            "fragments cannot be defined on enums, scalars and input object",
-        ),
-        data: InvalidFragmentTarget {
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            84: "0087_fragment_type_condition_on_composite_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 84,
-            },
-            offset: 221,
-            length: 39,
-        },
-        labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
@@ -70,7 +86,48 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 254,
+            offset: 244,
+            length: 39,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 84,
+                    },
+                    offset: 244,
+                    length: 39,
+                },
+                text: "fragment declares unsupported type condition `{type_cond}`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 0,
+                    },
+                    offset: 2916,
+                    length: 150,
+                },
+                text: "`Int` is defined here",
+            },
+        ],
+        help: Some(
+            "fragments cannot be defined on enums, scalars and input object",
+        ),
+        data: InvalidFragmentTarget {
+            ty: "Int",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            84: "0087_fragment_type_condition_on_composite_types.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 84,
+            },
+            offset: 277,
             length: 4,
         },
         labels: [
@@ -79,7 +136,7 @@
                     file_id: FileId {
                         id: 84,
                     },
-                    offset: 254,
+                    offset: 277,
                     length: 4,
                 },
                 text: "`name` field is not defined",
@@ -111,10 +168,20 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 305,
+            offset: 328,
             length: 25,
         },
         labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 84,
+                    },
+                    offset: 328,
+                    length: 25,
+                },
+                text: "fragment declares unsupported type condition `{type_cond}`",
+            },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {

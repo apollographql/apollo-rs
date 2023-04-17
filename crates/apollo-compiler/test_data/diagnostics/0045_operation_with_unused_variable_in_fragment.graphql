@@ -2,13 +2,11 @@ query ExampleQuery($variable: Int) {
   topProducts {
     name
   }
-  ... multipleSubscriptions
 }
 
-fragment multipleSubscriptions on Review {
-  message {
-    body
-    sender(attribute: $value)
+fragment unusedFrag on Query {
+  topProducts {
+    price(setPrice: $variable)
   }
 }
 

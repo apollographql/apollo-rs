@@ -28,33 +28,4 @@
             name: "value",
         },
     },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            9: "0009_operation_with_undefined_variables_in_fragment.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 9,
-            },
-            offset: 19,
-            length: 14,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 9,
-                    },
-                    offset: 19,
-                    length: 14,
-                },
-                text: "this variable is never used",
-            },
-        ],
-        help: None,
-        data: UnusedVariable {
-            name: "variable",
-        },
-    },
 ]

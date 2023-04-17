@@ -2,7 +2,7 @@ query Query {
   products {
     inStock
     name
-    ...fragOnScalar
+    price { ...fragOnScalar }
     ...inlineFragOnScalar
     ... on Int {
       name
@@ -13,6 +13,7 @@ type Query {
   products: Product
 }
 type Product {
+  price: Int
   inStock: Boolean
   name: String
 }

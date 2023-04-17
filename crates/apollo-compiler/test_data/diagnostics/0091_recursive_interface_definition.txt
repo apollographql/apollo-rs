@@ -2,61 +2,59 @@
     ApolloDiagnostic {
         cache: {
             0: "built_in_types.graphql",
-            45: "0045_operation_with_unused_variable_in_fragment.graphql",
+            88: "0091_recursive_interface_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 45,
+                id: 88,
             },
-            offset: 19,
-            length: 14,
+            offset: 23,
+            length: 1,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 45,
+                        id: 88,
                     },
-                    offset: 19,
-                    length: 14,
+                    offset: 23,
+                    length: 1,
                 },
-                text: "this variable is never used",
+                text: "A must also be implemented here",
             },
         ],
         help: None,
-        data: UnusedVariable {
-            name: "variable",
+        data: TransitiveImplementedInterfaces {
+            missing_interface: "A",
         },
     },
     ApolloDiagnostic {
         cache: {
             0: "built_in_types.graphql",
-            45: "0045_operation_with_unused_variable_in_fragment.graphql",
+            88: "0091_recursive_interface_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 45,
+                id: 88,
             },
-            offset: 69,
-            length: 83,
+            offset: 67,
+            length: 1,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 45,
+                        id: 88,
                     },
-                    offset: 69,
-                    length: 83,
+                    offset: 67,
+                    length: 1,
                 },
-                text: "`unusedFrag` is defined here",
+                text: "B must also be implemented here",
             },
         ],
-        help: Some(
-            "fragment `unusedFrag` must be used in an operation",
-        ),
-        data: UnusedFragment {
-            name: "unusedFrag",
+        help: None,
+        data: TransitiveImplementedInterfaces {
+            missing_interface: "B",
         },
     },
 ]

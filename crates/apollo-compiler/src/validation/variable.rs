@@ -149,13 +149,14 @@ query ExampleQuery {
     name
   }
 
-  ... on User {
-    id
-    name
-    profilePic(size: $dimensions)
-    status
+  me {
+    ... on User {
+      id
+      name
+      profilePic(size: $dimensions)
+      status
+    }
   }
-
 }
 
 type Query {
@@ -226,10 +227,12 @@ query ExampleQuery {
     name
   }
 
-  ... on User {
-    id
-    name
-    status(membership: $goldStatus)
+  me {
+    ... on User {
+      id
+      name
+      status(membership: $goldStatus)
+    }
   }
 
   ... fragmentOne

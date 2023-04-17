@@ -1354,6 +1354,73 @@ impl Selection {
     }
 }
 
+/// Represent both kinds of fragment selections: named and inline fragments.
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
+pub enum FragmentSelection {
+    FragmentSpread(Arc<FragmentSpread>),
+    InlineFragment(Arc<InlineFragment>),
+}
+
+impl FragmentSelection {
+    /// Get the name of this fragment's type condition.
+    ///
+    /// This returns `None` on the following invalid inputs:
+    /// - `self` is a named fragment spread, but the fragment it refers to is not defined
+    /// - `self` is an inline fragment without an explicit type condition, used in a selection set
+    ///   with a declared parent type that is not defined in the schema
+    pub fn type_condition(&self, db: &dyn HirDatabase) -> Option<String> {
+        match self {
+            FragmentSelection::FragmentSpread(spread) => spread
+                .fragment(db)
+                .map(|frag| frag.type_condition().to_string()),
+            FragmentSelection::InlineFragment(inline) => inline
+                .type_condition()
+                .or(inline.parent_obj.as_deref())
+                .map(ToString::to_string),
+        }
+    }
+
+    /// Get this fragment's selection set. This may be `None` if the fragment spread refers to an
+    /// undefined fragment.
+    pub fn selection_set(&self, db: &dyn HirDatabase) -> Option<SelectionSet> {
+        match self {
+            FragmentSelection::FragmentSpread(spread) => {
+                spread.fragment(db).map(|frag| frag.selection_set().clone())
+            }
+            FragmentSelection::InlineFragment(inline) => Some(inline.selection_set().clone()),
+        }
+    }
+
+    /// Get the type that this fragment is being spread onto.
+    ///
+    /// Returns `None` if the fragment is spread into a selection of an undefined field or type,
+    /// like in:
+    /// ```graphql
+    /// type Query {
+    ///   field: Int
+    /// }
+    /// query {
+    ///   nonExistentField {
+    ///     ... spreadToUnknownType
+    ///   }
+    /// }
+    /// ```
+    pub fn parent_type(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
+        match self {
+            FragmentSelection::FragmentSpread(spread) => spread.parent_type(db),
+            FragmentSelection::InlineFragment(inline) => inline.parent_type(db),
+        }
+    }
+
+    /// Get the AST location information for this HIR node.
+    pub fn loc(&self) -> HirNodeLocation {
+        match self {
+            FragmentSelection::FragmentSpread(fragment_spread) => fragment_spread.loc(),
+            FragmentSelection::InlineFragment(inline_fragment) => inline_fragment.loc(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Field {
     pub(crate) alias: Option<Arc<Alias>>,
@@ -1507,6 +1574,7 @@ pub struct InlineFragment {
     pub(crate) type_condition: Option<Name>,
     pub(crate) directives: Arc<Vec<Directive>>,
     pub(crate) selection_set: SelectionSet,
+    pub(crate) parent_obj: Option<String>,
     pub(crate) loc: HirNodeLocation,
 }
 
@@ -1514,6 +1582,26 @@ impl InlineFragment {
     /// Get a reference to inline fragment's type condition.
     pub fn type_condition(&self) -> Option<&str> {
         self.type_condition.as_ref().map(|t| t.src())
+    }
+
+    /// Get the type this fragment is spread onto.
+    ///
+    /// ## Examples
+    /// ```graphql
+    /// type Query {
+    ///     field: X
+    /// }
+    /// query {
+    ///     ... on Query { field } # spread A
+    ///     field {
+    ///         ... on X { subField } # spread B
+    ///     }
+    /// }
+    /// ```
+    /// `A.parent_type()` is `Query`.
+    /// `B.parent_type()` is `X`.
+    pub fn parent_type(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
+        db.find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())
     }
 
     /// Get inline fragments's type definition.
@@ -1584,6 +1672,7 @@ impl InlineFragment {
 pub struct FragmentSpread {
     pub(crate) name: Name,
     pub(crate) directives: Arc<Vec<Directive>>,
+    pub(crate) parent_obj: Option<String>,
     pub(crate) loc: HirNodeLocation,
 }
 
@@ -1596,6 +1685,24 @@ impl FragmentSpread {
     /// Get the fragment definition this fragment spread is referencing.
     pub fn fragment(&self, db: &dyn HirDatabase) -> Option<Arc<FragmentDefinition>> {
         db.find_fragment_by_name(self.loc.file_id(), self.name().to_string())
+    }
+
+    /// Get the type this fragment is spread onto.
+    ///
+    /// ## Examples
+    /// ```graphql
+    /// type Query {
+    ///     field: X
+    /// }
+    /// query {
+    ///     ...fragment
+    ///     field { ...subFragment }
+    /// }
+    /// ```
+    /// `fragment.parent_type()` is `Query`.
+    /// `subFragment.parent_type()` is `X`.
+    pub fn parent_type(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
+        db.find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())
     }
 
     /// Return an iterator over the variables used in directives on this spread.
