@@ -17,6 +17,50 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.8.0](https://crates.io/crates/apollo-compiler/0.8.0) - 2023-04-13
+## BREAKING
+There is now an API to set parser's token limits via `apollo-compiler`. To
+accommodate an additional limit, we changed the API to set several limits
+simultaneously.
+
+```rust
+let op = r#"
+    query {
+        a {
+            a {
+                a {
+                    a
+                }
+            }
+        }
+    }
+"#;
+let mut compiler = ApolloCompiler::new().token_limit(22).recursion_limit(10);
+compiler.add_executable(op, "op.graphql");
+let errors = compiler.db.syntax_errors();
+
+assert_eq!(errors.len(), 1)
+```
+by [lrlna] in [pull/512]
+
+## Features
+- validate fragment definitions are used, by [gocamille] in [pull/483]
+- validate fragment type condition exists in the type system and are declared on composite types, by [gocamille] in [pull/483]
+- validate fragment definitions do not contain cycles, by [goto-bus-stop] in [pull/518]
+
+## Fixes
+- fix duplicate directive location info, by [goto-bus-stop]  in [pull/516]
+- use `LimitExceeded` diagnostic for limit related errors, by [lrlna] in [pull/520]
+
+[lrlna]: https://github.com/lrlna
+[gocamille]: https://github.com/gocamille
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/483]: https://github.com/apollographql/apollo-rs/pull/483
+[pull/512]: https://github.com/apollographql/apollo-rs/pull/512
+[pull/516]: https://github.com/apollographql/apollo-rs/pull/516
+[pull/518]: https://github.com/apollographql/apollo-rs/pull/518
+[pull/520]: https://github.com/apollographql/apollo-rs/pull/520
+
 # [0.7.2](https://crates.io/crates/apollo-compiler/0.7.2) - 2023-04-03
 
 ## Features

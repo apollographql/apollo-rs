@@ -218,7 +218,72 @@ pub fn validate_fragment_definitions(
             db.validate_fragment_type_condition(Some(def.type_condition().to_string()), def.loc()),
         );
         diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
-        diagnostics.extend(db.validate_fragment_used(def.as_ref().clone(), file_id));
+        diagnostics.extend(db.validate_fragment_used(Arc::clone(def), file_id));
+
+        diagnostics.extend(db.validate_fragment_cycles(Arc::clone(def)));
+    }
+
+    diagnostics
+}
+
+pub fn validate_fragment_cycles(
+    db: &dyn ValidationDatabase,
+    def: Arc<hir::FragmentDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    fn detect_fragment_cycles(
+        db: &dyn ValidationDatabase,
+        selection_set: &hir::SelectionSet,
+        visited: &mut RecursionStack<'_>,
+    ) -> Result<(), hir::Selection> {
+        for selection in selection_set.selection() {
+            match selection {
+                hir::Selection::FragmentSpread(spread) => {
+                    if visited.contains(spread.name()) {
+                        if visited.first() == Some(spread.name()) {
+                            return Err(selection.clone());
+                        }
+                        continue;
+                    }
+
+                    if let Some(fragment) =
+                        db.find_fragment_by_name(spread.loc().file_id(), spread.name().to_string())
+                    {
+                        detect_fragment_cycles(
+                            db,
+                            fragment.selection_set(),
+                            &mut visited.push(fragment.name().to_string()),
+                        )?;
+                    }
+                }
+                hir::Selection::InlineFragment(inline) => {
+                    detect_fragment_cycles(db, inline.selection_set(), visited)?;
+                }
+                _ => {}
+            }
+        }
+
+        Ok(())
+    }
+
+    // Split RecursionStack initialisation for lifetime reasons
+    let mut visited = vec![];
+    let mut visited = RecursionStack(&mut visited);
+    let mut visited = visited.push(def.name().to_string());
+
+    if let Err(cycle) = detect_fragment_cycles(db, def.selection_set(), &mut visited) {
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                def.loc().into(),
+                DiagnosticData::RecursiveFragmentDefinition {
+                    name: def.name().to_string(),
+                },
+            )
+            .label(Label::new(def.head_loc(), "recursive fragment definition"))
+            .label(Label::new(cycle.loc(), "refers to itself here")),
+        );
     }
 
     diagnostics
@@ -296,7 +361,7 @@ pub fn validate_fragment_type_condition(
 
 pub fn validate_fragment_used(
     db: &dyn ValidationDatabase,
-    def: hir::FragmentDefinition,
+    def: Arc<hir::FragmentDefinition>,
     file_id: FileId,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();

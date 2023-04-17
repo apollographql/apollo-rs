@@ -1,6 +1,6 @@
 [package]
 name = "apollo-encoder"
-version = "0.5.0"
+version = "0.5.1"
 authors = [
     "Irina Shestak <shestak.irina@gmail.com>",
     "Benjamin Coenen <benjamin.coenen@apollographql.com>",
