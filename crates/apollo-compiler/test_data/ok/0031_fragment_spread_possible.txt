@@ -1,4 +1,4 @@
-- DOCUMENT@0..1864
+- DOCUMENT@0..1927
     - INTERFACE_TYPE_DEFINITION@0..33
         - interface_KW@0..9 "interface"
         - WHITESPACE@9..10 " "
@@ -601,14 +601,14 @@
             - WHITESPACE@1614..1615 "\n"
             - R_CURLY@1615..1616 "}"
     - WHITESPACE@1616..1617 "\n"
-    - OPERATION_DEFINITION@1617..1863
+    - OPERATION_DEFINITION@1617..1926
         - OPERATION_TYPE@1617..1622
             - query_KW@1617..1622 "query"
         - WHITESPACE@1622..1623 " "
         - NAME@1623..1638
             - IDENT@1623..1638 "UseAllFragments"
         - WHITESPACE@1638..1639 " "
-        - SELECTION_SET@1639..1863
+        - SELECTION_SET@1639..1926
             - L_CURLY@1639..1640 "{"
             - WHITESPACE@1640..1643 "\n  "
             - FIELD@1643..1814
@@ -662,11 +662,11 @@
                     - WHITESPACE@1810..1813 "\n  "
                     - R_CURLY@1813..1814 "}"
             - WHITESPACE@1814..1817 "\n  "
-            - FIELD@1817..1861
+            - FIELD@1817..1924
                 - NAME@1817..1825
                     - IDENT@1817..1825 "resource"
                 - WHITESPACE@1825..1826 " "
-                - SELECTION_SET@1826..1861
+                - SELECTION_SET@1826..1924
                     - L_CURLY@1826..1827 "{"
                     - WHITESPACE@1827..1832 "\n    "
                     - FRAGMENT_SPREAD@1832..1857
@@ -674,9 +674,42 @@
                         - FRAGMENT_NAME@1835..1857
                             - NAME@1835..1857
                                 - IDENT@1835..1857 "interfaceWithInterface"
-                    - WHITESPACE@1857..1860 "\n  "
-                    - R_CURLY@1860..1861 "}"
-            - WHITESPACE@1861..1862 "\n"
-            - R_CURLY@1862..1863 "}"
-    - WHITESPACE@1863..1864 "\n"
+                    - WHITESPACE@1857..1862 "\n    "
+                    - INLINE_FRAGMENT@1862..1920
+                        - SPREAD@1862..1865 "..."
+                        - WHITESPACE@1865..1866 " "
+                        - DIRECTIVES@1866..1881
+                            - DIRECTIVE@1866..1881
+                                - AT@1866..1867 "@"
+                                - NAME@1867..1871
+                                    - IDENT@1867..1871 "skip"
+                                - ARGUMENTS@1871..1881
+                                    - L_PAREN@1871..1872 "("
+                                    - ARGUMENT@1872..1880
+                                        - NAME@1872..1874
+                                            - IDENT@1872..1874 "if"
+                                        - COLON@1874..1875 ":"
+                                        - WHITESPACE@1875..1876 " "
+                                        - BOOLEAN_VALUE@1876..1880
+                                            - true_KW@1876..1880 "true"
+                                    - R_PAREN@1880..1881 ")"
+                        - WHITESPACE@1881..1882 " "
+                        - SELECTION_SET@1882..1920
+                            - L_CURLY@1882..1883 "{"
+                            - WHITESPACE@1883..1890 "\n      "
+                            - FIELD@1890..1914
+                                - ALIAS@1890..1910
+                                    - NAME@1890..1909
+                                        - IDENT@1890..1909 "urlInInlineFragment"
+                                    - COLON@1909..1910 ":"
+                                - WHITESPACE@1910..1911 " "
+                                - NAME@1911..1914
+                                    - IDENT@1911..1914 "url"
+                            - WHITESPACE@1914..1919 "\n    "
+                            - R_CURLY@1919..1920 "}"
+                    - WHITESPACE@1920..1923 "\n  "
+                    - R_CURLY@1923..1924 "}"
+            - WHITESPACE@1924..1925 "\n"
+            - R_CURLY@1925..1926 "}"
+    - WHITESPACE@1926..1927 "\n"
 recursion limit: 4096, high: 3

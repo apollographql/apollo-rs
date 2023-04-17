@@ -105,5 +105,8 @@ query UseAllFragments {
   }
   resource {
     ...interfaceWithInterface
+    ... @skip(if: true) {
+      urlInInlineFragment: url
+    }
   }
 }
