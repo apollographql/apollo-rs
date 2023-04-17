@@ -160,13 +160,19 @@ pub fn validate_inline_fragment(
         hir::DirectiveLocation::InlineFragment,
     ));
 
-    diagnostics.extend(db.validate_fragment_type_condition(
+    let type_cond_diagnostics = db.validate_fragment_type_condition(
         inline.type_condition().map(|t| t.to_string()),
         inline.loc(),
-    ));
+    );
+    let has_type_error = !type_cond_diagnostics.is_empty();
+    diagnostics.extend(type_cond_diagnostics);
 
-    diagnostics
-        .extend(db.validate_fragment_selection(hir::FragmentSelection::InlineFragment(inline)));
+    // If there was an error with the type condition, it makes no sense to validate the selection,
+    // as every field would be an error.
+    if !has_type_error {
+        diagnostics
+            .extend(db.validate_fragment_selection(hir::FragmentSelection::InlineFragment(inline)));
+    }
 
     diagnostics
 }

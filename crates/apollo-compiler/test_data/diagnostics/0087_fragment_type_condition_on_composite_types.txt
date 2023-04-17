@@ -86,46 +86,6 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 108,
-            length: 29,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 108,
-                    length: 29,
-                },
-                text: "fragment applied with type condition `Int` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 179,
-                    length: 63,
-                },
-                text: "type condition `Int` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: None,
-            type_name: "Product",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            84: "0087_fragment_type_condition_on_composite_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 84,
-            },
             offset: 244,
             length: 39,
         },
@@ -238,46 +198,6 @@
         ),
         data: InvalidFragmentTarget {
             ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            84: "0087_fragment_type_condition_on_composite_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 84,
-            },
-            offset: 328,
-            length: 25,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 328,
-                    length: 25,
-                },
-                text: "fragment applied with type condition `Int` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 179,
-                    length: 63,
-                },
-                text: "type condition `Int` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: None,
-            type_name: "Product",
         },
     },
 ]
