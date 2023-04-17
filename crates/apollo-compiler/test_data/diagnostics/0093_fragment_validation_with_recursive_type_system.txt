@@ -1,0 +1,60 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            90: "0093_fragment_validation_with_recursive_type_system.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 90,
+            },
+            offset: 96,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 90,
+                    },
+                    offset: 96,
+                    length: 1,
+                },
+                text: "A must also be implemented here",
+            },
+        ],
+        help: None,
+        data: TransitiveImplementedInterfaces {
+            missing_interface: "A",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            90: "0093_fragment_validation_with_recursive_type_system.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 90,
+            },
+            offset: 139,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 90,
+                    },
+                    offset: 139,
+                    length: 1,
+                },
+                text: "B must also be implemented here",
+            },
+        ],
+        help: None,
+        data: TransitiveImplementedInterfaces {
+            missing_interface: "B",
+        },
+    },
+]
