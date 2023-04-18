@@ -71,11 +71,10 @@ pub fn validate_object_type_definition(
     // the implemented interface.
     //
     // Returns a Missing Field error.
-    for implements_interface in object.self_implements_interfaces().iter() {
+    for implements_interface in object.implements_interfaces() {
         if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
             let implements_interface_fields: HashSet<ValidationSet> = interface
-                .self_fields()
-                .iter()
+                .fields()
                 .map(|field| ValidationSet {
                     name: field.name().into(),
                     loc: field.loc(),
