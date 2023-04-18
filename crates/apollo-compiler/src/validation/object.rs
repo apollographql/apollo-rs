@@ -18,6 +18,18 @@ pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<Apol
     diagnostics
 }
 
+fn collect_nodes<'a, Item: Clone, Ext>(
+    base: &'a [Item],
+    extensions: &'a [Arc<Ext>],
+    method: impl Fn(&'a Ext) -> &'a [Item],
+) -> Vec<Item> {
+    let mut nodes = base.to_vec();
+    for ext in extensions {
+        nodes.extend(method(ext).iter().cloned());
+    }
+    nodes
+}
+
 pub fn validate_object_type_definition(
     db: &dyn ValidationDatabase,
     object: Arc<hir::ObjectTypeDefinition>,
@@ -30,7 +42,12 @@ pub fn validate_object_type_definition(
     ));
 
     // Object Type field validations.
-    diagnostics.extend(db.validate_field_definitions(object.self_fields().to_vec()));
+    let fields = collect_nodes(
+        object.self_fields(),
+        object.extensions(),
+        hir::ObjectTypeExtension::fields_definition,
+    );
+    diagnostics.extend(db.validate_field_definitions(fields));
 
     // Implements Interfaces validation.
     diagnostics
