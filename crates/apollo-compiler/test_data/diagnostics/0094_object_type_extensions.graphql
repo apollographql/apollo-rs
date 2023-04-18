@@ -29,6 +29,15 @@ type UniqueInterfaces implements Base {
   nickname: String
 }
 extend type UniqueInterfaces implements Base {
-  name: String
   age: Int
+}
+
+interface ExtendedInterface {
+  name: String
+}
+type ImplementsBaseButNotExtension implements ExtendedInterface {
+  name: String
+}
+extend interface ExtendedInterface {
+  fail: Boolean
 }

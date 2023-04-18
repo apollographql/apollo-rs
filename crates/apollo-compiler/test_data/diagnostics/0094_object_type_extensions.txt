@@ -171,8 +171,8 @@
             file_id: FileId {
                 id: 91,
             },
-            offset: 395,
-            length: 12,
+            offset: 537,
+            length: 82,
         },
         labels: [
             Label {
@@ -180,41 +180,27 @@
                     file_id: FileId {
                         id: 91,
                     },
-                    offset: 395,
-                    length: 12,
+                    offset: 537,
+                    length: 82,
                 },
-                text: "previous definition of `name` here",
+                text: "add `fail` field to this object",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 91,
                     },
-                    offset: 478,
-                    length: 12,
+                    offset: 659,
+                    length: 13,
                 },
-                text: "`name` redefined here",
+                text: "`fail` was originally defined here",
             },
         ],
         help: Some(
-            "`name` field must only be defined once in this input object definition.",
+            "An object must provide all fields required by the interfaces it implements",
         ),
-        data: UniqueField {
-            field: "name",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 91,
-                },
-                offset: 395,
-                length: 12,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 91,
-                },
-                offset: 478,
-                length: 12,
-            },
+        data: MissingField {
+            field: "fail",
         },
     },
 ]
