@@ -124,7 +124,7 @@ impl<'a> Parser<'a> {
         let builder = Rc::try_unwrap(self.builder)
             .expect("More than one reference to builder left")
             .into_inner();
-        builder.finish(self.errors, self.recursion_limit)
+        builder.finish(self.errors, self.recursion_limit, self.lexer.limit_tracker)
     }
 
     /// Check if the current token is `kind`.
@@ -586,5 +586,13 @@ mod tests {
             interface_def,
             Definition::InterfaceTypeDefinition(_)
         ));
+    }
+
+    #[test]
+    fn token_limit() {
+        let ast = Parser::new("type Query { a a a a a a a a a }")
+            .token_limit(100)
+            .parse();
+        assert_eq!(ast.token_limit().high, 25);
     }
 }

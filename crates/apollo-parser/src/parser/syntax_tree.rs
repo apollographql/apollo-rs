@@ -43,6 +43,7 @@ pub struct SyntaxTree {
     pub(crate) green: GreenNode,
     pub(crate) errors: Vec<crate::Error>,
     pub(crate) recursion_limit: LimitTracker,
+    pub(crate) token_limit: LimitTracker,
 }
 
 impl SyntaxTree {
@@ -54,6 +55,11 @@ impl SyntaxTree {
     /// Get the syntax tree's recursion limit.
     pub fn recursion_limit(&self) -> LimitTracker {
         self.recursion_limit
+    }
+
+    /// Get the syntax tree's token limit.
+    pub fn token_limit(&self) -> LimitTracker {
+        self.token_limit
     }
 
     pub fn green(&self) -> GreenNode {
@@ -156,13 +162,19 @@ impl SyntaxTreeBuilder {
         self.builder.token(rowan::SyntaxKind(kind as u16), text);
     }
 
-    pub(crate) fn finish(self, errors: Vec<Error>, recursion_limit: LimitTracker) -> SyntaxTree {
+    pub(crate) fn finish(
+        self,
+        errors: Vec<Error>,
+        recursion_limit: LimitTracker,
+        token_limit: LimitTracker,
+    ) -> SyntaxTree {
         SyntaxTree {
             green: self.builder.finish(),
             // TODO: keep the errors in the builder rather than pass it in here?
             errors,
-            // TODO: keep the recursion limit in the builder rather than pass it in here?
+            // TODO: keep the recursion and token limits in the builder rather than pass it in here?
             recursion_limit,
+            token_limit,
         }
     }
 }
