@@ -18,6 +18,18 @@ pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<Apol
     diagnostics
 }
 
+fn collect_nodes<'a, Item: Clone, Ext>(
+    base: &'a [Item],
+    extensions: &'a [Arc<Ext>],
+    method: impl Fn(&'a Ext) -> &'a [Item],
+) -> Vec<Item> {
+    let mut nodes = base.to_vec();
+    for ext in extensions {
+        nodes.extend(method(ext).iter().cloned());
+    }
+    nodes
+}
+
 pub fn validate_object_type_definition(
     db: &dyn ValidationDatabase,
     object: Arc<hir::ObjectTypeDefinition>,
@@ -29,31 +41,42 @@ pub fn validate_object_type_definition(
         hir::DirectiveLocation::Object,
     ));
 
-    // Object Type field validations.
-    diagnostics.extend(db.validate_field_definitions(object.self_fields().to_vec()));
-
-    // Implements Interfaces validation.
-    diagnostics
-        .extend(db.validate_implements_interfaces(object.self_implements_interfaces().to_vec()));
-
-    // When defining an interface that implements another interface, the
-    // implementing interface must define each field that is specified by
-    // the implemented interface.
-    //
-    // Returns a Missing Field error.
-    let fields: HashSet<ValidationSet> = object
-        .self_fields()
+    // Collect all fields, including duplicates
+    let field_definitions = collect_nodes(
+        object.self_fields(),
+        object.extensions(),
+        hir::ObjectTypeExtension::fields_definition,
+    );
+    let fields: HashSet<ValidationSet> = field_definitions
         .iter()
         .map(|field| ValidationSet {
             name: field.name().into(),
             loc: field.loc(),
         })
         .collect();
-    for implements_interface in object.self_implements_interfaces().iter() {
+
+    // Object Type field validations.
+    diagnostics.extend(db.validate_field_definitions(field_definitions));
+
+    // Implements Interfaces validation.
+    let implements_interfaces = collect_nodes(
+        object.self_implements_interfaces(),
+        object.extensions(),
+        hir::ObjectTypeExtension::implements_interfaces,
+    );
+    diagnostics.extend(
+        db.validate_implements_interfaces(object.name().to_string(), implements_interfaces),
+    );
+
+    // When defining an interface that implements another interface, the
+    // implementing interface must define each field that is specified by
+    // the implemented interface.
+    //
+    // Returns a Missing Field error.
+    for implements_interface in object.implements_interfaces() {
         if let Some(interface) = implements_interface.interface_definition(db.upcast()) {
             let implements_interface_fields: HashSet<ValidationSet> = interface
-                .self_fields()
-                .iter()
+                .fields()
                 .map(|field| ValidationSet {
                     name: field.name().into(),
                     loc: field.loc(),
