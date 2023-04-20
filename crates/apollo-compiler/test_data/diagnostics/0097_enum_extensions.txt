@@ -1,0 +1,114 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            94: "0097_enum_extensions.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 94,
+            },
+            offset: 93,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 94,
+                    },
+                    offset: 22,
+                    length: 8,
+                },
+                text: "previous definition of `MEMBER_2` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 94,
+                    },
+                    offset: 93,
+                    length: 8,
+                },
+                text: "`MEMBER_2` redefined here",
+            },
+        ],
+        help: Some(
+            "MEMBER_2 must only be defined once in this enum.",
+        ),
+        data: UniqueDefinition {
+            ty: "enum",
+            name: "MEMBER_2",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 94,
+                },
+                offset: 22,
+                length: 8,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 94,
+                },
+                offset: 93,
+                length: 8,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            94: "0097_enum_extensions.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 94,
+            },
+            offset: 104,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 94,
+                    },
+                    offset: 63,
+                    length: 8,
+                },
+                text: "previous definition of `MEMBER_4` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 94,
+                    },
+                    offset: 104,
+                    length: 8,
+                },
+                text: "`MEMBER_4` redefined here",
+            },
+        ],
+        help: Some(
+            "MEMBER_4 must only be defined once in this enum.",
+        ),
+        data: UniqueDefinition {
+            ty: "enum",
+            name: "MEMBER_4",
+            original_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 94,
+                },
+                offset: 63,
+                length: 8,
+            },
+            redefined_definition: DiagnosticLocation {
+                file_id: FileId {
+                    id: 94,
+                },
+                offset: 104,
+                length: 8,
+            },
+        },
+    },
+]
