@@ -1,4 +1,7 @@
-use std::{collections::HashSet, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
@@ -214,6 +217,32 @@ pub fn validate_implements_interfaces(
                 format!("{} must also be implemented here", undefined.name),
             )),
         );
+    }
+
+    let mut seen = HashMap::<&str, &ImplementsInterface>::new();
+    for impl_interface in &impl_interfaces {
+        let name = impl_interface.interface();
+        if let Some(original) = seen.get(&name) {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    impl_interface.loc().into(),
+                    DiagnosticData::DuplicateImplementsInterface {
+                        name: name.to_string(),
+                    },
+                )
+                .label(Label::new(
+                    original.loc(),
+                    format!("`{name}` interface implementation previously declared here"),
+                ))
+                .label(Label::new(
+                    impl_interface.loc(),
+                    format!("`{name}` interface implementation declared again here"),
+                )),
+            );
+        } else {
+            seen.insert(name, impl_interface);
+        }
     }
 
     diagnostics

@@ -171,6 +171,45 @@
             file_id: FileId {
                 id: 91,
             },
+            offset: 469,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 91,
+                    },
+                    offset: 386,
+                    length: 4,
+                },
+                text: "`Base` interface implementation previously declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 91,
+                    },
+                    offset: 469,
+                    length: 4,
+                },
+                text: "`Base` interface implementation declared again here",
+            },
+        ],
+        help: None,
+        data: DuplicateImplementsInterface {
+            name: "Base",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            91: "0094_object_type_extensions.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 91,
+            },
             offset: 537,
             length: 82,
         },
