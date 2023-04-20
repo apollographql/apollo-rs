@@ -552,8 +552,14 @@ fn operation_definition(
             None
         }
     });
-    let selection_set = selection_set(db, op_def.selection_set(), parent_object_ty, file_id);
-    let directives = directives(op_def.directives(), file_id);
+    let selection_set = selection_set(
+        db,
+        op_def.selection_set(),
+        parent_object_ty,
+        file_id,
+        variables,
+    );
+    let directives = directives(op_def.directives(), file_id, variables);
     let loc = location(file_id, op_def.syntax());
 
     Some(OperationDefinition {
@@ -602,7 +608,7 @@ fn schema_definition(
     file_id: FileId,
 ) -> Option<SchemaDefinition> {
     let description = description(schema_def.description());
-    let directives = directives(schema_def.directives(), file_id);
+    let directives = directives(schema_def.directives(), file_id, Default::default());
     let mut operations =
         root_operation_type_definition(schema_def.root_operation_type_definitions(), file_id);
     let loc = location(file_id, schema_def.syntax());
@@ -637,7 +643,7 @@ fn implicit_schema_definition(db: &dyn HirDatabase) -> SchemaDefinition {
 
 fn schema_extensions(db: &dyn HirDatabase) -> Vec<Arc<SchemaExtension>> {
     type_definitions(db, |_db, def: ast::SchemaExtension, file_id| {
-        let directives = directives(def.directives(), file_id);
+        let directives = directives(def.directives(), file_id, Default::default());
         let root_operation_type_definition = Arc::new(root_operation_type_definition(
             def.root_operation_type_definitions(),
             file_id,
@@ -718,7 +724,7 @@ fn object_type_definition(
     let description = description(obj_def.description());
     let name = name(obj_def.name(), file_id)?;
     let implements_interfaces = implements_interfaces(obj_def.implements_interfaces(), file_id);
-    let directives = directives(obj_def.directives(), file_id);
+    let directives = directives(obj_def.directives(), file_id, Default::default());
     let fields_definition = fields_definition(obj_def.fields_definition(), file_id);
     let loc = location(file_id, obj_def.syntax());
     let fields_by_name = ByNameWithExtensions::new(&fields_definition, FieldDefinition::name);
@@ -750,7 +756,7 @@ fn object_type_extension(
     file_id: FileId,
 ) -> Option<Arc<ObjectTypeExtension>> {
     Some(Arc::new(ObjectTypeExtension {
-        directives: directives(def.directives(), file_id),
+        directives: directives(def.directives(), file_id, Default::default()),
         name: name(def.name(), file_id)?,
         implements_interfaces: implements_interfaces(def.implements_interfaces(), file_id),
         fields_definition: fields_definition(def.fields_definition(), file_id),
@@ -765,7 +771,7 @@ fn scalar_definition(
 ) -> Option<ScalarTypeDefinition> {
     let description = description(scalar_def.description());
     let name = name(scalar_def.name(), file_id)?;
-    let directives = directives(scalar_def.directives(), file_id);
+    let directives = directives(scalar_def.directives(), file_id, Default::default());
     let loc = location(file_id, scalar_def.syntax());
     let built_in = db.input(file_id).source_type().is_built_in();
 
@@ -787,7 +793,7 @@ fn scalar_extension(
     file_id: FileId,
 ) -> Option<Arc<ScalarTypeExtension>> {
     Some(Arc::new(ScalarTypeExtension {
-        directives: directives(def.directives(), file_id),
+        directives: directives(def.directives(), file_id, Default::default()),
         name: name(def.name(), file_id)?,
         loc: location(file_id, def.syntax()),
     }))
@@ -800,7 +806,7 @@ fn enum_definition(
 ) -> Option<EnumTypeDefinition> {
     let description = description(enum_def.description());
     let name = name(enum_def.name(), file_id)?;
-    let directives = directives(enum_def.directives(), file_id);
+    let directives = directives(enum_def.directives(), file_id, Default::default());
     let enum_values_definition = enum_values_definition(enum_def.enum_values_definition(), file_id);
     let loc = location(file_id, enum_def.syntax());
     let values_by_name =
@@ -827,7 +833,7 @@ fn enum_extension(
     file_id: FileId,
 ) -> Option<Arc<EnumTypeExtension>> {
     Some(Arc::new(EnumTypeExtension {
-        directives: directives(def.directives(), file_id),
+        directives: directives(def.directives(), file_id, Default::default()),
         name: name(def.name(), file_id)?,
         enum_values_definition: enum_values_definition(def.enum_values_definition(), file_id),
         loc: location(file_id, def.syntax()),
@@ -856,7 +862,7 @@ fn enum_value_definition(
 ) -> Option<EnumValueDefinition> {
     let description = description(enum_value_def.description());
     let enum_value = enum_value(enum_value_def.enum_value(), file_id)?;
-    let directives = directives(enum_value_def.directives(), file_id);
+    let directives = directives(enum_value_def.directives(), file_id, Default::default());
     let loc = location(file_id, enum_value_def.syntax());
 
     Some(EnumValueDefinition {
@@ -874,7 +880,7 @@ fn union_definition(
 ) -> Option<UnionTypeDefinition> {
     let description = description(union_def.description());
     let name = name(union_def.name(), file_id)?;
-    let directives = directives(union_def.directives(), file_id);
+    let directives = directives(union_def.directives(), file_id, Default::default());
     let union_members = union_members(union_def.union_member_types(), file_id);
     let loc = location(file_id, union_def.syntax());
     let members_by_name = ByNameWithExtensions::new(&union_members, UnionMember::name);
@@ -899,7 +905,7 @@ fn union_extension(
     def: ast::UnionTypeExtension,
     file_id: FileId,
 ) -> Option<Arc<UnionTypeExtension>> {
-    let directives = directives(def.directives(), file_id);
+    let directives = directives(def.directives(), file_id, Default::default());
     let name = name(def.name(), file_id)?;
     let union_members = union_members(def.union_member_types(), file_id);
     let loc = location(file_id, def.syntax());
@@ -945,7 +951,7 @@ fn interface_definition(
     let name = name(interface_def.name(), file_id)?;
     let implements_interfaces =
         implements_interfaces(interface_def.implements_interfaces(), file_id);
-    let directives = directives(interface_def.directives(), file_id);
+    let directives = directives(interface_def.directives(), file_id, Default::default());
     let fields_definition = fields_definition(interface_def.fields_definition(), file_id);
     let loc = location(file_id, interface_def.syntax());
     let fields_by_name = ByNameWithExtensions::new(&fields_definition, FieldDefinition::name);
@@ -975,7 +981,7 @@ fn interface_extension(
     file_id: FileId,
 ) -> Option<Arc<InterfaceTypeExtension>> {
     Some(Arc::new(InterfaceTypeExtension {
-        directives: directives(def.directives(), file_id),
+        directives: directives(def.directives(), file_id, Default::default()),
         name: name(def.name(), file_id)?,
         implements_interfaces: implements_interfaces(def.implements_interfaces(), file_id),
         fields_definition: fields_definition(def.fields_definition(), file_id),
@@ -1014,7 +1020,7 @@ fn input_object_definition(
 ) -> Option<InputObjectTypeDefinition> {
     let description = description(input_obj.description());
     let name = name(input_obj.name(), file_id)?;
-    let directives = directives(input_obj.directives(), file_id);
+    let directives = directives(input_obj.directives(), file_id, Default::default());
     let input_fields_definition =
         input_fields_definition(input_obj.input_fields_definition(), file_id);
     let loc = location(file_id, input_obj.syntax());
@@ -1040,7 +1046,7 @@ fn input_object_extension(
     file_id: FileId,
 ) -> Option<Arc<InputObjectTypeExtension>> {
     Some(Arc::new(InputObjectTypeExtension {
-        directives: directives(def.directives(), file_id),
+        directives: directives(def.directives(), file_id, Default::default()),
         name: name(def.name(), file_id)?,
         input_fields_definition: input_fields_definition(def.input_fields_definition(), file_id),
         loc: location(file_id, def.syntax()),
@@ -1198,7 +1204,7 @@ fn field_definition(field: ast::FieldDefinition, file_id: FileId) -> Option<Fiel
     let name = name(field.name(), file_id)?;
     let arguments = arguments_definition(field.arguments_definition(), file_id);
     let ty = ty(field.ty()?, file_id)?;
-    let directives = directives(field.directives(), file_id);
+    let directives = directives(field.directives(), file_id, Default::default());
     let loc = location(file_id, field.syntax());
 
     Some(FieldDefinition {
@@ -1253,7 +1259,7 @@ fn input_value_definitions(
             let name = name(input.name(), file_id)?;
             let ty = ty(input.ty()?, file_id)?;
             let default_value = default_value(input.default_value(), file_id);
-            let directives = directives(input.directives(), file_id);
+            let directives = directives(input.directives(), file_id, Default::default());
             let loc = location(file_id, input.syntax());
 
             Some(InputValueDefinition {
@@ -1275,7 +1281,7 @@ fn default_value(
 ) -> Option<DefaultValue> {
     default_value
         .and_then(|val| val.value())
-        .and_then(|val| value(val, file_id))
+        .and_then(|val| value(val, file_id, Default::default()))
 }
 
 fn root_operation_type_definition(
@@ -1340,7 +1346,7 @@ fn variable_definition(
     file_id: FileId,
 ) -> Option<VariableDefinition> {
     let name = name(var.variable()?.name(), file_id)?;
-    let directives = directives(var.directives(), file_id);
+    let directives = directives(var.directives(), file_id, Default::default());
     let default_value = default_value(var.default_value(), file_id);
     let ty = ty(var.ty()?, file_id)?;
     let loc = location(file_id, var.syntax());
@@ -1409,12 +1415,16 @@ fn directive_locations(
     }
 }
 
-fn directives(directives: Option<ast::Directives>, file_id: FileId) -> Arc<Vec<Directive>> {
+fn directives(
+    directives: Option<ast::Directives>,
+    file_id: FileId,
+    variables: Arc<Vec<VariableDefinition>>,
+) -> Arc<Vec<Directive>> {
     match directives {
         Some(directives) => {
             let directives = directives
                 .directives()
-                .filter_map(|d| directive(d, file_id))
+                .filter_map(|d| directive(d, file_id, variables))
                 .collect();
             Arc::new(directives)
         }
@@ -1422,9 +1432,13 @@ fn directives(directives: Option<ast::Directives>, file_id: FileId) -> Arc<Vec<D
     }
 }
 
-fn directive(directive: ast::Directive, file_id: FileId) -> Option<Directive> {
+fn directive(
+    directive: ast::Directive,
+    file_id: FileId,
+    variables: Arc<Vec<VariableDefinition>>,
+) -> Option<Directive> {
     let name = name(directive.name(), file_id)?;
-    let arguments = arguments(directive.arguments(), file_id);
+    let arguments = arguments(directive.arguments(), file_id, variables);
     let loc = location(file_id, directive.syntax());
 
     Some(Directive {
@@ -1434,12 +1448,16 @@ fn directive(directive: ast::Directive, file_id: FileId) -> Option<Directive> {
     })
 }
 
-fn arguments(arguments: Option<ast::Arguments>, file_id: FileId) -> Arc<Vec<Argument>> {
+fn arguments(
+    arguments: Option<ast::Arguments>,
+    file_id: FileId,
+    variables: Arc<Vec<VariableDefinition>>,
+) -> Arc<Vec<Argument>> {
     match arguments {
         Some(arguments) => {
             let arguments = arguments
                 .arguments()
-                .filter_map(|a| argument(a, file_id))
+                .filter_map(|a| argument(a, file_id, variables))
                 .collect();
             Arc::new(arguments)
         }
@@ -1447,15 +1465,23 @@ fn arguments(arguments: Option<ast::Arguments>, file_id: FileId) -> Arc<Vec<Argu
     }
 }
 
-fn argument(argument: ast::Argument, file_id: FileId) -> Option<Argument> {
+fn argument(
+    argument: ast::Argument,
+    file_id: FileId,
+    variables: Arc<Vec<VariableDefinition>>,
+) -> Option<Argument> {
     let name = name(argument.name(), file_id)?;
-    let value = value(argument.value()?, file_id)?;
+    let value = value(argument.value()?, file_id, variables)?;
     let loc = location(file_id, argument.syntax());
 
     Some(Argument { name, value, loc })
 }
 
-fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
+fn value(
+    val: ast::Value,
+    file_id: FileId,
+    variables: Arc<Vec<VariableDefinition>>,
+) -> Option<Value> {
     let hir_val = match val {
         ast::Value::Variable(var) => Value::Variable(Variable {
             name: var.name()?.text().to_string(),
@@ -1469,7 +1495,10 @@ fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
         ast::Value::NullValue(_) => Value::Null,
         ast::Value::EnumValue(enum_) => Value::Enum(name(enum_.name(), file_id)?),
         ast::Value::ListValue(list) => {
-            let list: Vec<Value> = list.values().filter_map(|v| value(v, file_id)).collect();
+            let list: Vec<Value> = list
+                .values()
+                .filter_map(|v| value(v, file_id, variables))
+                .collect();
             Value::List(list)
         }
         ast::Value::ObjectValue(object) => {
@@ -1477,7 +1506,7 @@ fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
                 .object_fields()
                 .filter_map(|o| {
                     let name = name(o.name(), file_id)?;
-                    let value = value(o.value()?, file_id)?;
+                    let value = value(o.value()?, file_id, variables)?;
                     Some((name, value))
                 })
                 .collect();
@@ -1492,11 +1521,14 @@ fn selection_set(
     selections: Option<ast::SelectionSet>,
     parent_obj_ty: Option<String>,
     file_id: FileId,
+    variables: Arc<Vec<VariableDefinition>>,
 ) -> SelectionSet {
     let selection_set = match selections {
         Some(sel) => sel
             .selections()
-            .filter_map(|sel| selection(db, sel, parent_obj_ty.as_ref().cloned(), file_id))
+            .filter_map(|sel| {
+                selection(db, sel, parent_obj_ty.as_ref().cloned(), file_id, variables)
+            })
             .collect(),
         None => Vec::new(),
     };
@@ -1511,16 +1543,18 @@ fn selection(
     selection: ast::Selection,
     parent_obj_ty: Option<String>,
     file_id: FileId,
+    variables: Arc<Vec<VariableDefinition>>,
 ) -> Option<Selection> {
     match selection {
         ast::Selection::Field(sel_field) => {
-            field(db, sel_field, parent_obj_ty, file_id).map(Selection::Field)
+            field(db, sel_field, parent_obj_ty, file_id, variables).map(Selection::Field)
         }
         ast::Selection::FragmentSpread(fragment) => {
-            fragment_spread(db, fragment, parent_obj_ty, file_id).map(Selection::FragmentSpread)
+            fragment_spread(db, fragment, parent_obj_ty, file_id, variables)
+                .map(Selection::FragmentSpread)
         }
         ast::Selection::InlineFragment(fragment) => Some(Selection::InlineFragment(
-            inline_fragment(db, fragment, parent_obj_ty, file_id),
+            inline_fragment(db, fragment, parent_obj_ty, file_id, variables),
         )),
     }
 }
@@ -1530,17 +1564,23 @@ fn inline_fragment(
     fragment: ast::InlineFragment,
     parent_obj: Option<String>,
     file_id: FileId,
+    variables: Arc<Vec<VariableDefinition>>,
 ) -> Arc<InlineFragment> {
     let type_condition = fragment.type_condition().and_then(|tc| {
         let tc = tc.named_type()?.name()?;
         Some(name_hir_node(tc, file_id))
     });
-    let directives = directives(fragment.directives(), file_id);
+    let directives = directives(fragment.directives(), file_id, variables);
     let new_parent_obj = type_condition
         .clone()
         .map_or_else(|| parent_obj.clone(), |tc| Some(tc.src().to_string()));
-    let selection_set: SelectionSet =
-        selection_set(db, fragment.selection_set(), new_parent_obj, file_id);
+    let selection_set: SelectionSet = selection_set(
+        db,
+        fragment.selection_set(),
+        new_parent_obj,
+        file_id,
+        variables,
+    );
     let loc = location(file_id, fragment.syntax());
 
     let fragment_data = InlineFragment {
@@ -1560,9 +1600,10 @@ fn fragment_spread(
     fragment: ast::FragmentSpread,
     parent_obj: Option<String>,
     file_id: FileId,
+    variables: Arc<Vec<VariableDefinition>>,
 ) -> Option<Arc<FragmentSpread>> {
     let name = name(fragment.fragment_name()?.name(), file_id)?;
-    let directives = directives(fragment.directives(), file_id);
+    let directives = directives(fragment.directives(), file_id, variables);
     let loc = location(file_id, fragment.syntax());
 
     let fragment_data = FragmentSpread {
@@ -1579,13 +1620,20 @@ fn field(
     field: ast::Field,
     parent_obj: Option<String>,
     file_id: FileId,
+    variables: Arc<Vec<VariableDefinition>>,
 ) -> Option<Arc<Field>> {
     let name = name(field.name(), file_id)?;
     let alias = alias(field.alias());
     let new_parent_obj = parent_ty(db, name.src(), parent_obj.clone());
-    let selection_set = selection_set(db, field.selection_set(), new_parent_obj, file_id);
-    let directives = directives(field.directives(), file_id);
-    let arguments = arguments(field.arguments(), file_id);
+    let selection_set = selection_set(
+        db,
+        field.selection_set(),
+        new_parent_obj,
+        file_id,
+        variables,
+    );
+    let directives = directives(field.directives(), file_id, variables);
+    let arguments = arguments(field.arguments(), file_id, variables);
     let loc = location(file_id, field.syntax());
 
     let field_data = Field {
