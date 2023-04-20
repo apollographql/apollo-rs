@@ -1,0 +1,11 @@
+# Any non-repeatable directives provided must not already apply to the original Schema.
+directive @nonRepeatable on SCHEMA
+
+type Query {
+  viewCount: Int!
+}
+
+schema @nonRepeatable {
+  query: Query
+}
+extend schema @nonRepeatable
