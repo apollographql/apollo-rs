@@ -57,7 +57,7 @@ pub fn validate_enum_definition(
                     db,
                     redefined_definition.into(),
                     DiagnosticData::UniqueDefinition {
-                        ty: "enum",
+                        ty: "enum value",
                         name: value.into(),
                         original_definition: original_definition.into(),
                         redefined_definition: redefined_definition.into(),

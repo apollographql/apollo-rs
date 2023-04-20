@@ -90,7 +90,7 @@
             "MEMBER_2 must only be defined once in this enum.",
         ),
         data: UniqueDefinition {
-            ty: "enum",
+            ty: "enum value",
             name: "MEMBER_2",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
@@ -146,7 +146,7 @@
             "MEMBER_4 must only be defined once in this enum.",
         ),
         data: UniqueDefinition {
-            ty: "enum",
+            ty: "enum value",
             name: "MEMBER_4",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
