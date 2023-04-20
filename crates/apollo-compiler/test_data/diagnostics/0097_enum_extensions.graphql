@@ -1,14 +1,16 @@
+directive @nonRepeatable on ENUM
+
 enum E {
   MEMBER_1
   MEMBER_2
 }
 
-extend enum E {
+extend enum E @nonRepeatable {
   MEMBER_3
   MEMBER_4
 }
 
-extend enum E {
+extend enum E @nonRepeatable {
   MEMBER_2
   MEMBER_4
 }

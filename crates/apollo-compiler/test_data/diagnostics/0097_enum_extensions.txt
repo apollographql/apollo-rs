@@ -8,7 +8,60 @@
             file_id: FileId {
                 id: 94,
             },
-            offset: 93,
+            offset: 138,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 94,
+                    },
+                    offset: 82,
+                    length: 14,
+                },
+                text: "directive nonRepeatable first called here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 94,
+                    },
+                    offset: 138,
+                    length: 14,
+                },
+                text: "directive nonRepeatable called again here",
+            },
+        ],
+        help: None,
+        data: UniqueDirective {
+            name: "nonRepeatable",
+            original_call: DiagnosticLocation {
+                file_id: FileId {
+                    id: 94,
+                },
+                offset: 82,
+                length: 14,
+            },
+            conflicting_call: DiagnosticLocation {
+                file_id: FileId {
+                    id: 94,
+                },
+                offset: 138,
+                length: 14,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            94: "0097_enum_extensions.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 94,
+            },
+            offset: 157,
             length: 8,
         },
         labels: [
@@ -17,7 +70,7 @@
                     file_id: FileId {
                         id: 94,
                     },
-                    offset: 22,
+                    offset: 56,
                     length: 8,
                 },
                 text: "previous definition of `MEMBER_2` here",
@@ -27,7 +80,7 @@
                     file_id: FileId {
                         id: 94,
                     },
-                    offset: 93,
+                    offset: 157,
                     length: 8,
                 },
                 text: "`MEMBER_2` redefined here",
@@ -43,14 +96,14 @@
                 file_id: FileId {
                     id: 94,
                 },
-                offset: 22,
+                offset: 56,
                 length: 8,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 94,
                 },
-                offset: 93,
+                offset: 157,
                 length: 8,
             },
         },
@@ -64,7 +117,7 @@
             file_id: FileId {
                 id: 94,
             },
-            offset: 104,
+            offset: 168,
             length: 8,
         },
         labels: [
@@ -73,7 +126,7 @@
                     file_id: FileId {
                         id: 94,
                     },
-                    offset: 63,
+                    offset: 112,
                     length: 8,
                 },
                 text: "previous definition of `MEMBER_4` here",
@@ -83,7 +136,7 @@
                     file_id: FileId {
                         id: 94,
                     },
-                    offset: 104,
+                    offset: 168,
                     length: 8,
                 },
                 text: "`MEMBER_4` redefined here",
@@ -99,14 +152,14 @@
                 file_id: FileId {
                     id: 94,
                 },
-                offset: 63,
+                offset: 112,
                 length: 8,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 94,
                 },
-                offset: 104,
+                offset: 168,
                 length: 8,
             },
         },
