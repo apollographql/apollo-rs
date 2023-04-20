@@ -73,9 +73,10 @@ pub fn validate_interface_definition(
     diagnostics.extend(db.validate_field_definitions(interface_def.self_fields().to_vec()));
 
     // Implements Interfaceds validation.
-    diagnostics.extend(
-        db.validate_implements_interfaces(interface_def.self_implements_interfaces().to_vec()),
-    );
+    diagnostics.extend(db.validate_implements_interfaces(
+        interface_def.name().to_string(),
+        interface_def.self_implements_interfaces().to_vec(),
+    ));
 
     // When defining an interface that implements another interface, the
     // implementing interface must define each field that is specified by
@@ -134,6 +135,7 @@ pub fn validate_interface_definition(
 
 pub fn validate_implements_interfaces(
     db: &dyn ValidationDatabase,
+    implementor_name: String,
     impl_interfaces: Vec<ImplementsInterface>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
@@ -228,7 +230,8 @@ pub fn validate_implements_interfaces(
                     db,
                     impl_interface.loc().into(),
                     DiagnosticData::DuplicateImplementsInterface {
-                        name: name.to_string(),
+                        ty: implementor_name.clone(),
+                        interface: name.to_string(),
                     },
                 )
                 .label(Label::new(

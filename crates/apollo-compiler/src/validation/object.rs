@@ -64,7 +64,9 @@ pub fn validate_object_type_definition(
         object.extensions(),
         hir::ObjectTypeExtension::implements_interfaces,
     );
-    diagnostics.extend(db.validate_implements_interfaces(implements_interfaces));
+    diagnostics.extend(
+        db.validate_implements_interfaces(object.name().to_string(), implements_interfaces),
+    );
 
     // When defining an interface that implements another interface, the
     // implementing interface must define each field that is specified by

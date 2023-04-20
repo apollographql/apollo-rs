@@ -79,6 +79,7 @@ pub trait ValidationDatabase:
     #[salsa::invoke(interface::validate_implements_interfaces)]
     fn validate_implements_interfaces(
         &self,
+        implementor_name: String,
         impl_interfaces: Vec<ImplementsInterface>,
     ) -> Vec<ApolloDiagnostic>;
 

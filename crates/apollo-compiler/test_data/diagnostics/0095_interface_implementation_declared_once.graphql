@@ -10,3 +10,13 @@ type Extended implements Intf {
   field: String
 }
 extend type Extended implements Intf
+
+interface SubIntf implements Intf & Intf {
+  field: String
+}
+
+# TODO(@goto-bus-stop): support interface extensions in validation
+# interface ExtendedIntf implements Intf {
+#   field: String
+# }
+# extend interface ExtendedIntf implements Intf

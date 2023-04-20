@@ -221,8 +221,8 @@ pub enum DiagnosticData {
     },
     #[error("the required argument `{name}` is not provided")]
     RequiredArgument { name: String },
-    #[error("`implements` declarations must be unique")]
-    DuplicateImplementsInterface { name: String },
+    #[error("type `{ty}` can only implement interface `{interface}` once")]
+    DuplicateImplementsInterface { ty: String, interface: String },
     #[error(
         "Transitively implemented interfaces must also be defined on an implementing interface or object"
     )]

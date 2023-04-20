@@ -198,7 +198,8 @@
         ],
         help: None,
         data: DuplicateImplementsInterface {
-            name: "Base",
+            ty: "UniqueInterfaces",
+            interface: "Base",
         },
     },
     ApolloDiagnostic {
