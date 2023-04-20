@@ -31,6 +31,7 @@ pub fn validate_arguments(
         let name = arg.name();
 
         if let hir::Value::Variable(var) = arg.value() {
+            // get the variable definition type as it's defined on an executable definition
             let var_ty = defined_vars.iter().find_map(|v| {
                 if v.name() == var.name() {
                     Some(v.ty())
@@ -38,6 +39,7 @@ pub fn validate_arguments(
                     None
                 }
             });
+            // get the argument type as it's defined in the type system
         }
 
         if let Some(prev_arg) = seen.get(name) {
