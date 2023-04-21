@@ -37,7 +37,7 @@
             "CAT must only be defined once in this enum.",
         ),
         data: UniqueDefinition {
-            ty: "enum",
+            ty: "enum value",
             name: "CAT",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
@@ -93,7 +93,7 @@
             "THRIVE_PET_FOODS must only be defined once in this enum.",
         ),
         data: UniqueDefinition {
-            ty: "enum",
+            ty: "enum value",
             name: "THRIVE_PET_FOODS",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
