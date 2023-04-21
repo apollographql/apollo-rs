@@ -25,6 +25,18 @@ pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
     diagnostics
 }
 
+fn collect_nodes<'a, Item: Clone, Ext>(
+    base: &'a [Item],
+    extensions: &'a [Arc<Ext>],
+    method: impl Fn(&'a Ext) -> &'a [Item],
+) -> Vec<Item> {
+    let mut nodes = base.to_vec();
+    for ext in extensions {
+        nodes.extend(method(ext).iter().cloned());
+    }
+    nodes
+}
+
 pub fn validate_interface_definition(
     db: &dyn ValidationDatabase,
     interface_def: Arc<hir::InterfaceTypeDefinition>,
@@ -70,13 +82,22 @@ pub fn validate_interface_definition(
     }
 
     // Interface Type field validation.
-    diagnostics.extend(db.validate_field_definitions(interface_def.self_fields().to_vec()));
+    let field_definitions = collect_nodes(
+        interface_def.self_fields(),
+        interface_def.extensions(),
+        hir::InterfaceTypeExtension::fields_definition,
+    );
+    diagnostics.extend(db.validate_field_definitions(field_definitions));
 
     // Implements Interfaceds validation.
-    diagnostics.extend(db.validate_implements_interfaces(
-        interface_def.name().to_string(),
-        interface_def.self_implements_interfaces().to_vec(),
-    ));
+    let implements_interfaces = collect_nodes(
+        interface_def.self_implements_interfaces(),
+        interface_def.extensions(),
+        hir::InterfaceTypeExtension::implements_interfaces,
+    );
+    diagnostics.extend(
+        db.validate_implements_interfaces(interface_def.name().to_string(), implements_interfaces),
+    );
 
     // When defining an interface that implements another interface, the
     // implementing interface must define each field that is specified by
@@ -84,18 +105,16 @@ pub fn validate_interface_definition(
     //
     // Returns a Missing Field error.
     let fields: HashSet<ValidationSet> = interface_def
-        .self_fields()
-        .iter()
+        .fields()
         .map(|field| ValidationSet {
             name: field.name().into(),
             loc: field.loc(),
         })
         .collect();
-    for implements_interface in interface_def.self_implements_interfaces().iter() {
+    for implements_interface in interface_def.implements_interfaces() {
         if let Some(super_interface) = implements_interface.interface_definition(db.upcast()) {
             let implements_interface_fields: HashSet<ValidationSet> = super_interface
-                .self_fields()
-                .iter()
+                .fields()
                 .map(|field| ValidationSet {
                     name: field.name().into(),
                     loc: field.loc(),
