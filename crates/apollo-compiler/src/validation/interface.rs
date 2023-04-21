@@ -82,7 +82,12 @@ pub fn validate_interface_definition(
     }
 
     // Interface Type field validation.
-    diagnostics.extend(db.validate_field_definitions(interface_def.self_fields().to_vec()));
+    let field_definitions = collect_nodes(
+        interface_def.self_fields(),
+        interface_def.extensions(),
+        hir::InterfaceTypeExtension::fields_definition,
+    );
+    diagnostics.extend(db.validate_field_definitions(field_definitions));
 
     // Implements Interfaceds validation.
     let implements_interfaces = collect_nodes(
