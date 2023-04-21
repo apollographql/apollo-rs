@@ -25,7 +25,7 @@ apollo-compiler = { path = "../apollo-compiler", version = "0.6.0", optional = t
 thiserror = "1.0.37"
 
 [features]
-default = ["apollo-parser"]
+default = ["apollo-parser", "apollo-compiler"]
 
 [dev-dependencies]
 pretty_assertions = "0.7.1"
