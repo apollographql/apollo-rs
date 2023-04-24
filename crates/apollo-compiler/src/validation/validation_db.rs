@@ -146,7 +146,11 @@ pub trait ValidationDatabase:
     fn validate_field_definition(&self, field: FieldDefinition) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(field::validate_field)]
-    fn validate_field(&self, field: Arc<Field>) -> Vec<ApolloDiagnostic>;
+    fn validate_field(
+        &self,
+        field: Arc<Field>,
+        vars: Arc<Vec<VariableDefinition>>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(field::validate_leaf_field_selection)]
     fn validate_leaf_field_selection(
@@ -204,10 +208,18 @@ pub trait ValidationDatabase:
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(selection::validate_selection_set)]
-    fn validate_selection_set(&self, sel_set: SelectionSet) -> Vec<ApolloDiagnostic>;
+    fn validate_selection_set(
+        &self,
+        sel_set: SelectionSet,
+        vars: Arc<Vec<VariableDefinition>>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(selection::validate_selection)]
-    fn validate_selection(&self, sel: Arc<Vec<Selection>>) -> Vec<ApolloDiagnostic>;
+    fn validate_selection(
+        &self,
+        sel: Arc<Vec<Selection>>,
+        vars: Arc<Vec<VariableDefinition>>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(variable::validate_variable_definitions)]
     fn validate_variable_definitions(&self, defs: Vec<VariableDefinition>)

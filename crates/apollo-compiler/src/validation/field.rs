@@ -9,6 +9,7 @@ use crate::{
 pub fn validate_field(
     db: &dyn ValidationDatabase,
     field: Arc<hir::Field>,
+    vars: Arc<Vec<hir::VariableDefinition>>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics =
         db.validate_directives(field.directives().to_vec(), hir::DirectiveLocation::Field);
@@ -40,6 +41,55 @@ pub fn validate_field(
                     )
                     .labels(labels),
                 );
+            }
+
+            for arg in field.arguments() {
+                if let hir::Value::Variable(var) = arg.value() {
+                    // Let var_def be the VariableDefinition named
+                    // variableName defined within operation.
+                    let var_def = vars.iter().find(|v| v.name() == var.name());
+                    // Let var_usage be the input value where the original
+                    // argument for the current variable usage is defined.
+                    let var_usage = field_definition
+                        .arguments()
+                        .input_values()
+                        .iter()
+                        .find(|val| val.name() == arg.name());
+                    // 1. Let variableType be the expected type of variableDefinition.
+                    let var_ty = var_def.map(|v| v.ty());
+                    // 2. Let locationType be the expected type of the Argument,
+                    // ObjectField, or ListValue entry where variableUsage is
+                    // located.
+                    let loc_ty = var_usage.map(|v| v.ty());
+                    // 3. if locationType is a non-null type AND variableType is
+                    // NOT a non-null type:
+                    if loc_ty.is_some()
+                        && var_ty.is_some()
+                        && loc_ty.unwrap().is_non_null()
+                        && !var_ty.unwrap().is_non_null()
+                    {
+                        // 3.a. let hasNonNullVariableDefaultValue be true
+                        // if a default value exists for variableDefinition
+                        // and is not the value null.
+                        let has_non_null_default_value = var_def.iter().any(|var| {
+                            var.default_value().is_some()
+                                && (var.default_value().unwrap() != &hir::Value::Null)
+                        });
+                        // 3.b. Let hasLocationDefaultValue be true if a default
+                        // value exists for the Argument or ObjectField where
+                        // variableUsage is located.
+                        let has_location_default_value = var_usage.iter().any(|val| {
+                            val.default_value().is_some()
+                                && (val.default_value().unwrap() != &hir::Value::Null)
+                        });
+                        // 3.c. If hasNonNullVariableDefaultValue is NOT true
+                        // AND hasLocationDefaultValue is NOT true, return
+                        // false.
+
+                        // 3.d. Let nullableLocationType be the unwrapped
+                        // nullable type of locationType.
+                    }
+                }
             }
         }
 
