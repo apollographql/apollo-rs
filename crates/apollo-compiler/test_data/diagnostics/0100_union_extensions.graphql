@@ -1,0 +1,17 @@
+scalar ThisIsAScalar @specifiedBy(url: "https://example.com")
+
+type WithFieldA { a: String }
+type WithFieldB { b: String }
+
+# Extension can't add a non-object type
+union NonObjectType = WithFieldA | WithFieldB
+extend union NonObjectType = ThisIsAScalar
+
+# Extension can't add duplicate members
+union DuplicateMembers = WithFieldA
+extend union DuplicateMembers = WithFieldA | WithFieldB
+
+# Extension can't add duplicate directives
+directive @nonRepeatable on UNION
+union DuplicateDirective @nonRepeatable = WithFieldA
+extend union DuplicateDirective @nonRepeatable = WithFieldB
