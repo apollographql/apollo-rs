@@ -17,6 +17,15 @@ pub fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiag
     diagnostics
 }
 
+fn iter_with_extensions<'a, Item, Ext>(
+    base: &'a [Item],
+    extensions: &'a [Arc<Ext>],
+    method: impl Fn(&'a Ext) -> &'a [Item],
+) -> impl Iterator<Item = &'a Item> {
+    base.iter()
+        .chain(extensions.iter().flat_map(move |ext| method(ext).iter()))
+}
+
 pub fn validate_union_definition(
     db: &dyn ValidationDatabase,
     union_def: Arc<hir::UnionTypeDefinition>,
@@ -26,8 +35,13 @@ pub fn validate_union_definition(
         hir::DirectiveLocation::Union,
     );
 
+    let union_members = iter_with_extensions(
+        union_def.self_members(),
+        union_def.extensions(),
+        hir::UnionTypeExtension::union_members,
+    );
     let mut seen: HashMap<&str, &UnionMember> = HashMap::new();
-    for union_member in union_def.self_members().iter() {
+    for union_member in union_members {
         let name = union_member.name();
         let redefined_definition = union_member.loc();
         // A Union type must include one or more unique member types.
