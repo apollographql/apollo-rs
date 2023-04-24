@@ -396,8 +396,83 @@ pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
 pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    if db.source_type(file_id).is_executable() {
+        let document = db.ast(file_id).document();
+        for def in document.definitions() {
+            if !def.is_executable_definition() {
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        (file_id, def.syntax().text_range()).into(),
+                        DiagnosticData::ExecutableDefinition { kind: def.kind() },
+                    )
+                    .label(Label::new(
+                        (file_id, def.syntax().text_range()),
+                        "not supported in executable documents",
+                    )),
+                );
+            }
+        }
+    }
+
     diagnostics.extend(db.validate_operation_definitions(file_id));
     diagnostics.extend(db.validate_fragment_definitions(file_id));
 
     diagnostics
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ApolloCompiler;
+
+    #[test]
+    fn executable_and_type_system_definitions() {
+        let input_type_system = r#"
+type Query {
+    name: String
+}
+"#;
+        let input_executable = r#"
+fragment q on Query { name }
+query {
+    ...q
+}
+"#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(input_type_system, "schema.graphql");
+        compiler.add_executable(input_executable, "query.graphql");
+
+        let diagnostics = compiler.validate();
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn executable_definition_does_not_contain_type_system_definitions() {
+        let input_type_system = r#"
+type Query {
+    name: String
+}
+"#;
+        let input_executable = r#"
+type Object {
+    notAllowed: Boolean!
+}
+fragment q on Query { name }
+query {
+    ...q
+}
+"#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(input_type_system, "schema.graphql");
+        compiler.add_executable(input_executable, "query.graphql");
+
+        let diagnostics = compiler.validate();
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(
+            diagnostics[0].data.to_string(),
+            "executable documents must not contain ObjectTypeDefinition"
+        );
+    }
 }

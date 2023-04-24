@@ -145,6 +145,8 @@ pub enum DiagnosticData {
     LimitExceeded { message: String },
     #[error("expected identifier")]
     MissingIdent,
+    #[error("executable documents must not contain {kind}")]
+    ExecutableDefinition { kind: &'static str },
     #[error("the {ty} `{name}` is defined multiple times in the document")]
     UniqueDefinition {
         ty: &'static str,

@@ -162,7 +162,7 @@ fn executable_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {
         .filter(|source| {
             matches!(
                 db.source_type(*source),
-                SourceType::Query | SourceType::Document
+                SourceType::Executable | SourceType::Document
             )
         })
         .collect()
