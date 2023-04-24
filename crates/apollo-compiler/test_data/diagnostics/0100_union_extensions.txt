@@ -2,11 +2,11 @@
     ApolloDiagnostic {
         cache: {
             0: "built_in_types.graphql",
-            96: "0100_union_extensions.graphql",
+            97: "0100_union_extensions.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 96,
+                id: 97,
             },
             offset: 239,
             length: 13,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 96,
+                        id: 97,
                     },
                     offset: 239,
                     length: 13,
@@ -34,11 +34,11 @@
     ApolloDiagnostic {
         cache: {
             0: "built_in_types.graphql",
-            96: "0100_union_extensions.graphql",
+            97: "0100_union_extensions.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 96,
+                id: 97,
             },
             offset: 362,
             length: 10,
@@ -47,7 +47,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 96,
+                        id: 97,
                     },
                     offset: 319,
                     length: 10,
@@ -57,7 +57,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 96,
+                        id: 97,
                     },
                     offset: 362,
                     length: 10,
@@ -73,14 +73,14 @@
             name: "WithFieldA",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 96,
+                    id: 97,
                 },
                 offset: 319,
                 length: 10,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 96,
+                    id: 97,
                 },
                 offset: 362,
                 length: 10,
@@ -90,11 +90,11 @@
     ApolloDiagnostic {
         cache: {
             0: "built_in_types.graphql",
-            96: "0100_union_extensions.graphql",
+            97: "0100_union_extensions.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 96,
+                id: 97,
             },
             offset: 549,
             length: 14,
@@ -103,7 +103,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 96,
+                        id: 97,
                     },
                     offset: 489,
                     length: 14,
@@ -113,7 +113,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 96,
+                        id: 97,
                     },
                     offset: 549,
                     length: 14,
@@ -126,14 +126,14 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 96,
+                    id: 97,
                 },
                 offset: 489,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 96,
+                    id: 97,
                 },
                 offset: 549,
                 length: 14,
