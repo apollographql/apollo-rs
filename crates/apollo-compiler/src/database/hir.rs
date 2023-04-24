@@ -2608,6 +2608,10 @@ pub struct EnumValueDefinition {
 }
 
 impl EnumValueDefinition {
+    /// Get a reference to enum value description.
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
     /// Get a reference to enum value definition's enum value
     pub fn enum_value(&self) -> &str {
         self.enum_value.src()

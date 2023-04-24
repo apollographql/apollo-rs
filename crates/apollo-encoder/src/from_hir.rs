@@ -23,6 +23,30 @@ impl TryFrom<&hir::ObjectTypeDefinition> for ObjectDefinition {
             def.interface(interface.interface().to_owned());
         }
 
+        for field in value.self_fields() {
+            def.field(field.try_into()?);
+        }
+
+        for directive in value.self_directives() {
+            def.directive(directive.try_into()?);
+        }
+
+        Ok(def)
+    }
+}
+
+impl TryFrom<&hir::ObjectTypeExtension> for ObjectDefinition {
+    type Error = FromHirError;
+
+    fn try_from(value: &hir::ObjectTypeExtension) -> Result<Self, Self::Error> {
+        let name = value.name().to_owned();
+        let mut def = ObjectDefinition::new(name);
+        def.extend();
+
+        for interface in value.implements_interfaces() {
+            def.interface(interface.interface().to_owned());
+        }
+
         for field in value.fields_definition() {
             def.field(field.try_into()?);
         }
@@ -45,6 +69,30 @@ impl TryFrom<&hir::InterfaceTypeDefinition> for InterfaceDefinition {
         if let Some(description) = value.description().map(str::to_string) {
             def.description(description);
         }
+
+        for interface in value.implements_interfaces() {
+            def.interface(interface.interface().to_owned());
+        }
+
+        for field in value.self_fields() {
+            def.field(field.try_into()?);
+        }
+
+        for directive in value.self_directives() {
+            def.directive(directive.try_into()?);
+        }
+
+        Ok(def)
+    }
+}
+
+impl TryFrom<&hir::InterfaceTypeExtension> for InterfaceDefinition {
+    type Error = FromHirError;
+
+    fn try_from(value: &hir::InterfaceTypeExtension) -> Result<Self, Self::Error> {
+        let name = value.name().to_owned();
+        let mut def = InterfaceDefinition::new(name);
+        def.extend();
 
         for interface in value.implements_interfaces() {
             def.interface(interface.interface().to_owned());
@@ -73,6 +121,22 @@ impl TryFrom<&hir::ScalarTypeDefinition> for ScalarDefinition {
             def.description(description);
         }
 
+        for directive in value.self_directives() {
+            def.directive(directive.try_into()?);
+        }
+
+        Ok(def)
+    }
+}
+
+impl TryFrom<&hir::ScalarTypeExtension> for ScalarDefinition {
+    type Error = FromHirError;
+
+    fn try_from(value: &hir::ScalarTypeExtension) -> Result<Self, Self::Error> {
+        let name = value.name().to_owned();
+        let mut def = ScalarDefinition::new(name);
+        def.extend();
+
         for directive in value.directives() {
             def.directive(directive.try_into()?);
         }
@@ -92,6 +156,26 @@ impl TryFrom<&hir::UnionTypeDefinition> for UnionDefinition {
             def.description(description);
         }
 
+        for member in value.members() {
+            def.member(member.name().to_owned());
+        }
+
+        for directive in value.self_directives() {
+            def.directive(directive.try_into()?);
+        }
+
+        Ok(def)
+    }
+}
+
+impl TryFrom<&hir::UnionTypeExtension> for UnionDefinition {
+    type Error = FromHirError;
+
+    fn try_from(value: &hir::UnionTypeExtension) -> Result<Self, Self::Error> {
+        let name = value.name().to_owned();
+        let mut def = UnionDefinition::new(name);
+        def.extend();
+
         for member in value.union_members() {
             def.member(member.name().to_owned());
         }
@@ -110,6 +194,26 @@ impl TryFrom<&hir::EnumTypeDefinition> for EnumDefinition {
     fn try_from(value: &hir::EnumTypeDefinition) -> Result<Self, Self::Error> {
         let name = value.name().to_owned();
         let mut def = EnumDefinition::new(name);
+
+        for value in value.self_values() {
+            def.value(value.try_into()?);
+        }
+
+        for directive in value.self_directives() {
+            def.directive(directive.try_into()?);
+        }
+
+        Ok(def)
+    }
+}
+
+impl TryFrom<&hir::EnumTypeExtension> for EnumDefinition {
+    type Error = FromHirError;
+
+    fn try_from(value: &hir::EnumTypeExtension) -> Result<Self, Self::Error> {
+        let name = value.name().to_owned();
+        let mut def = EnumDefinition::new(name);
+        def.extend();
 
         for value in value.enum_values_definition() {
             def.value(value.try_into()?);
@@ -152,6 +256,26 @@ impl TryFrom<&hir::InputObjectTypeDefinition> for InputObjectDefinition {
         if let Some(description) = value.description().map(str::to_string) {
             def.description(description);
         }
+
+        for directive in value.self_directives() {
+            def.directive(directive.try_into()?);
+        }
+
+        for input_field in value.self_fields() {
+            def.field(input_field.try_into()?);
+        }
+
+        Ok(def)
+    }
+}
+
+impl TryFrom<&hir::InputObjectTypeExtension> for InputObjectDefinition {
+    type Error = FromHirError;
+
+    fn try_from(value: &hir::InputObjectTypeExtension) -> Result<Self, Self::Error> {
+        let name = value.name().to_owned();
+        let mut def = InputObjectDefinition::new(name);
+        def.extend();
 
         for directive in value.directives() {
             def.directive(directive.try_into()?);
