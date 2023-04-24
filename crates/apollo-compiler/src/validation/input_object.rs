@@ -77,6 +77,18 @@ pub fn validate_input_object_definitions(db: &dyn ValidationDatabase) -> Vec<Apo
     diagnostics
 }
 
+fn collect_nodes<'a, Item: Clone, Ext>(
+    base: &'a [Item],
+    extensions: &'a [Arc<Ext>],
+    method: impl Fn(&'a Ext) -> &'a [Item],
+) -> Vec<Item> {
+    let mut nodes = base.to_vec();
+    for ext in extensions {
+        nodes.extend(method(ext).iter().cloned());
+    }
+    nodes
+}
+
 pub fn validate_input_object_definition(
     db: &dyn ValidationDatabase,
     input_obj: Arc<hir::InputObjectTypeDefinition>,
@@ -109,8 +121,13 @@ pub fn validate_input_object_definition(
     // Fields in an Input Object Definition must be unique
     //
     // Returns Unique Definition error.
+    let fields = collect_nodes(
+        input_obj.input_fields_definition.as_ref(),
+        input_obj.extensions(),
+        hir::InputObjectTypeExtension::input_fields_definition,
+    );
     diagnostics.extend(db.validate_input_values(
-        input_obj.input_fields_definition.clone(),
+        Arc::new(fields),
         hir::DirectiveLocation::InputFieldDefinition,
     ));
 
