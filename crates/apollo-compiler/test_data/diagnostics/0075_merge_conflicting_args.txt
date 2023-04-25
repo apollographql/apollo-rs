@@ -27,7 +27,11 @@
                     file_id: FileId {
                         id: 72,
                     },
+<<<<<<< HEAD
                     offset: 722,
+=======
+                    offset: 653,
+>>>>>>> 507f174c (adjust test)
                     length: 16,
                 },
                 text: "but a different value here",
@@ -75,7 +79,7 @@
                     offset: 685,
                     length: 15,
                 },
-                text: "field `doesKnowCommand` provides one argument value here",
+                text: "field `isAtLocation` is selected with argument `x` here",
             },
             Label {
                 location: DiagnosticLocation {
@@ -85,14 +89,14 @@
                     offset: 722,
                     length: 16,
                 },
-                text: "but a different value here",
+                text: "but argument `x` is not provided here",
             },
         ],
         help: Some(
             "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
         ),
         data: ConflictingField {
-            field: "doesKnowCommand",
+            field: "isAtLocation",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 72,

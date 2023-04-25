@@ -3,13 +3,25 @@ enum DogCommand {
     HEEL
   }
 
+<<<<<<< HEAD
   type Dog {
     doesKnowCommand(dogCommand: DogCommand): Boolean
     isAtLocation(x: Int, y: Int): Boolean
+=======
+query queryPupperB($dogCommand: DogCommand) {
+  pet {
+    ...conflictingArgsValueAndVar
+>>>>>>> 507f174c (adjust test)
   }
 
+<<<<<<< HEAD
   type Query {
     pet: Dog
+=======
+query queryPupperC($varOne: DogCommand, $varTwo: DogCommand) {
+  pet {
+    ...conflictingArgsValueWithVars
+>>>>>>> 507f174c (adjust test)
   }
 
   query queryPupperA {

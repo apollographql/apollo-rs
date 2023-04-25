@@ -323,11 +323,7 @@ pub enum DiagnosticData {
         name: String,
     },
     #[error(
-<<<<<<< HEAD
         "variable `{var_name}` cannot be used for argument `{arg_name}` as their types mismatch"
-=======
-        "variable `{var_name}` cannot be use for argument `{arg_name}` as their types mismatch"
->>>>>>> 2ae7ca5e (feat(compiler): is variable usage allowed)
     )]
     DisallowedVariableUsage {
         /// Name of the variable being used in an argument
