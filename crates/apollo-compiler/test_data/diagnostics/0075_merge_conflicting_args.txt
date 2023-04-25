@@ -257,35 +257,6 @@
             file_id: FileId {
                 id: 72,
             },
-            offset: 347,
-            length: 19,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 347,
-                    length: 19,
-                },
-                text: "this variable is never used",
-            },
-        ],
-        help: None,
-        data: UnusedVariable {
-            name: "varOne",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
             offset: 368,
             length: 19,
         },
@@ -304,6 +275,35 @@
         help: None,
         data: UnusedVariable {
             name: "varTwo",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            72: "0075_merge_conflicting_args.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 72,
+            },
+            offset: 347,
+            length: 19,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 72,
+                    },
+                    offset: 347,
+                    length: 19,
+                },
+                text: "this variable is never used",
+            },
+        ],
+        help: None,
+        data: UnusedVariable {
+            name: "varOne",
         },
     },
     ApolloDiagnostic {
