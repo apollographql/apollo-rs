@@ -18,6 +18,8 @@ pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
         diagnostics.extend(db.validate_directives(
             def.directives().cloned().collect(),
             hir::DirectiveLocation::Interface,
+            // interfaces don't use variables
+            Arc::new(Vec::new()),
         ));
         diagnostics.extend(db.validate_interface_definition(def.clone()));
     }

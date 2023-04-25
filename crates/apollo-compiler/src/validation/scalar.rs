@@ -47,6 +47,8 @@ pub fn validate_scalar_definition(
         diagnostics.extend(db.validate_directives(
             scalar_def.directives().cloned().collect(),
             DirectiveLocation::Scalar,
+            // scalars don't use variables
+            Arc::new(Vec::new()),
         ));
     }
 

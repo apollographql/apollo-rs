@@ -9,86 +9,53 @@ use crate::{
 pub fn validate_field(
     db: &dyn ValidationDatabase,
     field: Arc<hir::Field>,
-    vars: Arc<Vec<hir::VariableDefinition>>,
+    var_defs: Arc<Vec<hir::VariableDefinition>>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics =
-        db.validate_directives(field.directives().to_vec(), hir::DirectiveLocation::Field);
-
-    if !field.arguments().is_empty() {
-        diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
-    }
+    let mut diagnostics = db.validate_directives(
+        field.directives().to_vec(),
+        hir::DirectiveLocation::Field,
+        var_defs.clone(),
+    );
 
     if let Some(field_definition) = field.field_definition(db.upcast()) {
-        for arg in field.arguments() {
-            let exists = field_definition
-                .arguments()
-                .input_values()
-                .iter()
-                .any(|arg_def| arg.name() == arg_def.name());
-
-            if !exists {
-                let mut labels = vec![Label::new(arg.loc, "argument name not found")];
-                if let Some(loc) = field_definition.loc {
-                    labels.push(Label::new(loc, "field declared here"));
-                };
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        arg.loc.into(),
-                        DiagnosticData::UndefinedArgument {
-                            name: arg.name().into(),
-                        },
-                    )
-                    .labels(labels),
-                );
-            }
-
+        if !field.arguments().is_empty() {
+            diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
             for arg in field.arguments() {
-                if let hir::Value::Variable(var) = arg.value() {
-                    // Let var_def be the VariableDefinition named
-                    // variableName defined within operation.
-                    let var_def = vars.iter().find(|v| v.name() == var.name());
-                    // Let var_usage be the input value where the original
-                    // argument for the current variable usage is defined.
-                    let var_usage = field_definition
-                        .arguments()
-                        .input_values()
-                        .iter()
-                        .find(|val| val.name() == arg.name());
-                    // 1. Let variableType be the expected type of variableDefinition.
-                    let var_ty = var_def.map(|v| v.ty());
-                    // 2. Let locationType be the expected type of the Argument,
-                    // ObjectField, or ListValue entry where variableUsage is
-                    // located.
-                    let loc_ty = var_usage.map(|v| v.ty());
-                    // 3. if locationType is a non-null type AND variableType is
-                    // NOT a non-null type:
-                    if loc_ty.is_some()
-                        && var_ty.is_some()
-                        && loc_ty.unwrap().is_non_null()
-                        && !var_ty.unwrap().is_non_null()
-                    {
-                        // 3.a. let hasNonNullVariableDefaultValue be true
-                        // if a default value exists for variableDefinition
-                        // and is not the value null.
-                        let has_non_null_default_value = var_def.iter().any(|var| {
-                            var.default_value().is_some()
-                                && (var.default_value().unwrap() != &hir::Value::Null)
-                        });
-                        // 3.b. Let hasLocationDefaultValue be true if a default
-                        // value exists for the Argument or ObjectField where
-                        // variableUsage is located.
-                        let has_location_default_value = var_usage.iter().any(|val| {
-                            val.default_value().is_some()
-                                && (val.default_value().unwrap() != &hir::Value::Null)
-                        });
-                        // 3.c. If hasNonNullVariableDefaultValue is NOT true
-                        // AND hasLocationDefaultValue is NOT true, return
-                        // false.
+                let exists = field_definition
+                    .arguments()
+                    .input_values()
+                    .iter()
+                    .any(|arg_def| arg.name() == arg_def.name());
 
-                        // 3.d. Let nullableLocationType be the unwrapped
-                        // nullable type of locationType.
-                    }
+                if !exists {
+                    let mut labels = vec![Label::new(arg.loc, "argument name not found")];
+                    if let Some(loc) = field_definition.loc {
+                        labels.push(Label::new(loc, "field declared here"));
+                    };
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            arg.loc.into(),
+                            DiagnosticData::UndefinedArgument {
+                                name: arg.name().into(),
+                            },
+                        )
+                        .labels(labels),
+                    );
+                }
+                // Let var_usage be the input value where the original
+                // argument for the current variable usage is defined.
+                let var_usage = field_definition
+                    .arguments()
+                    .input_values()
+                    .iter()
+                    .find(|val| val.name() == arg.name())
+                    .cloned();
+                if let Some(diag) = db
+                    .validate_variable_usage(var_usage, var_defs.clone(), arg.clone())
+                    .err()
+                {
+                    diagnostics.push(diag)
                 }
             }
         }
@@ -131,7 +98,8 @@ pub fn validate_field(
     if let Some(field_type) = field_type {
         match db.validate_leaf_field_selection(field.clone(), field_type) {
             Err(diag) => diagnostics.push(diag),
-            Ok(_) => diagnostics.extend(db.validate_selection_set(field.selection_set().clone())),
+            Ok(_) => diagnostics
+                .extend(db.validate_selection_set(field.selection_set().clone(), var_defs)),
         }
     } else {
         let help = format!(
@@ -178,6 +146,8 @@ pub fn validate_field_definition(
     let mut diagnostics = db.validate_directives(
         field.directives().to_vec(),
         hir::DirectiveLocation::FieldDefinition,
+        // field definitions don't have variables
+        Arc::new(Vec::new()),
     );
 
     diagnostics.extend(db.validate_arguments_definition(

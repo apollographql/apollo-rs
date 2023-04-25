@@ -304,20 +304,22 @@ pub(crate) fn fields_in_set_can_merge(
 pub fn validate_selection(
     db: &dyn ValidationDatabase,
     selection: Arc<Vec<hir::Selection>>,
-    vars: Arc<Vec<hir::VariableDefinition>>,
+    var_defs: Arc<Vec<hir::VariableDefinition>>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for sel in selection.iter() {
         match sel {
             hir::Selection::Field(field) => {
-                diagnostics.extend(db.validate_field(field.clone(), vars));
+                diagnostics.extend(db.validate_field(field.clone(), var_defs.clone()));
             }
             hir::Selection::FragmentSpread(spread) => {
-                diagnostics.extend(db.validate_fragment_spread(Arc::clone(spread)));
+                diagnostics
+                    .extend(db.validate_fragment_spread(Arc::clone(spread), var_defs.clone()));
             }
             hir::Selection::InlineFragment(inline) => {
-                diagnostics.extend(db.validate_inline_fragment(Arc::clone(inline)));
+                diagnostics
+                    .extend(db.validate_inline_fragment(Arc::clone(inline), var_defs.clone()));
             }
         }
     }

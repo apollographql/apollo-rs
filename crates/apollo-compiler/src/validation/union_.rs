@@ -33,6 +33,8 @@ pub fn validate_union_definition(
     let mut diagnostics = db.validate_directives(
         union_def.directives().cloned().collect(),
         hir::DirectiveLocation::Union,
+        // unions don't use variables
+        Arc::new(Vec::new()),
     );
 
     let union_members = iter_with_extensions(

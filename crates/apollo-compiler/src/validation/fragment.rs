@@ -152,12 +152,14 @@ pub fn validate_fragment_selection(
 pub fn validate_inline_fragment(
     db: &dyn ValidationDatabase,
     inline: Arc<hir::InlineFragment>,
+    var_defs: Arc<Vec<hir::VariableDefinition>>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(db.validate_directives(
         inline.directives().to_vec(),
         hir::DirectiveLocation::InlineFragment,
+        var_defs.clone(),
     ));
 
     let type_cond_diagnostics = db.validate_fragment_type_condition(
@@ -167,6 +169,7 @@ pub fn validate_inline_fragment(
     let has_type_error = !type_cond_diagnostics.is_empty();
     diagnostics.extend(type_cond_diagnostics);
 
+    diagnostics.extend(db.validate_selection_set(inline.selection_set.clone(), var_defs));
     // If there was an error with the type condition, it makes no sense to validate the selection,
     // as every field would be an error.
     if !has_type_error {
@@ -180,54 +183,60 @@ pub fn validate_inline_fragment(
 pub fn validate_fragment_spread(
     db: &dyn ValidationDatabase,
     spread: Arc<hir::FragmentSpread>,
+    var_defs: Arc<Vec<hir::VariableDefinition>>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(db.validate_directives(
         spread.directives().to_vec(),
         hir::DirectiveLocation::FragmentSpread,
+        var_defs.clone(),
     ));
 
-    if spread.fragment(db.upcast()).is_some() {
-        diagnostics
-            .extend(db.validate_fragment_selection(hir::FragmentSelection::FragmentSpread(spread)))
-    } else {
-        diagnostics.push(
-            ApolloDiagnostic::new(
-                db,
-                spread.loc().into(),
-                DiagnosticData::UndefinedFragment {
-                    name: spread.name().to_string(),
-                },
-            )
-            .labels(vec![Label::new(
-                spread.loc(),
-                format!("fragment `{}` is not defined", spread.name()),
-            )]),
-        );
+    match spread.fragment(db.upcast()) {
+        Some(def) => {
+            diagnostics.extend(
+                db.validate_fragment_selection(hir::FragmentSelection::FragmentSpread(spread)),
+            );
+            diagnostics.extend(db.validate_fragment_definition(def, var_defs));
+        }
+        None => {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    spread.loc().into(),
+                    DiagnosticData::UndefinedFragment {
+                        name: spread.name().to_string(),
+                    },
+                )
+                .labels(vec![Label::new(
+                    spread.loc(),
+                    format!("fragment `{}` is not defined", spread.name()),
+                )]),
+            );
+        }
     }
 
     diagnostics
 }
 
-pub fn validate_fragment_definitions(
+pub fn validate_fragment_definition(
     db: &dyn ValidationDatabase,
-    file_id: FileId,
+    def: Arc<hir::FragmentDefinition>,
+    var_defs: Arc<Vec<hir::VariableDefinition>>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-    for def in db.fragments(file_id).values() {
-        diagnostics.extend(db.validate_directives(
-            def.directives().to_vec(),
-            hir::DirectiveLocation::FragmentDefinition,
-        ));
-        diagnostics.extend(
-            db.validate_fragment_type_condition(Some(def.type_condition().to_string()), def.loc()),
-        );
-        diagnostics.extend(db.validate_selection_set(def.selection_set().clone()));
-        diagnostics.extend(db.validate_fragment_used(Arc::clone(def), file_id));
+    diagnostics.extend(db.validate_directives(
+        def.directives().to_vec(),
+        hir::DirectiveLocation::FragmentDefinition,
+        var_defs.clone(),
+    ));
+    diagnostics.extend(
+        db.validate_fragment_type_condition(Some(def.type_condition().to_string()), def.loc()),
+    );
+    diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), var_defs));
 
-        diagnostics.extend(db.validate_fragment_cycles(Arc::clone(def)));
-    }
+    diagnostics.extend(db.validate_fragment_cycles(def));
 
     diagnostics
 }
