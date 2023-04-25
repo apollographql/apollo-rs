@@ -33,6 +33,8 @@ pub fn validate_enum_definition(
     let mut diagnostics = db.validate_directives(
         enum_def.directives().cloned().collect(),
         hir::DirectiveLocation::Enum,
+        // enums don't use variables
+        Arc::new(Vec::new()),
     );
 
     let enum_values = iter_with_extensions(
@@ -87,6 +89,8 @@ pub(crate) fn validate_enum_value(
     let mut diagnostics = db.validate_directives(
         enum_val.directives().to_vec(),
         hir::DirectiveLocation::EnumValue,
+        // enum values don't use variables
+        Arc::new(Vec::new()),
     );
 
     // (convention) Values in an Enum Definition should be capitalized.

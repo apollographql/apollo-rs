@@ -96,6 +96,8 @@ pub fn validate_input_object_definition(
     let mut diagnostics = db.validate_directives(
         input_obj.directives().cloned().collect(),
         hir::DirectiveLocation::InputObject,
+        // input objects don't use variables
+        Arc::new(Vec::new()),
     );
 
     if let Err(input_val) = FindRecursiveInputValue::check(db, input_obj.as_ref()) {
@@ -144,7 +146,12 @@ pub fn validate_input_values(
     let mut seen: HashMap<&str, &hir::InputValueDefinition> = HashMap::new();
 
     for input_value in input_values.iter() {
-        diagnostics.extend(db.validate_directives(input_value.directives().to_vec(), dir_loc));
+        diagnostics.extend(db.validate_directives(
+            input_value.directives().to_vec(),
+            dir_loc,
+            // input values don't use variables
+            Arc::new(Vec::new()),
+        ));
 
         let name = input_value.name();
         if let Some(prev_value) = seen.get(name) {

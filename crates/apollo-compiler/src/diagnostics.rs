@@ -322,6 +322,15 @@ pub enum DiagnosticData {
         /// Name of the fragment
         name: String,
     },
+    #[error(
+        "variable `{var_name}` cannot be use for argument `{arg_name}` as their types mismatch"
+    )]
+    DisallowedVariableUsage {
+        /// Name of the variable being used in an argument
+        var_name: String,
+        /// Name of the argument where variable is used
+        arg_name: String,
+    },
 }
 
 impl DiagnosticData {

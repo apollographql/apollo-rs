@@ -91,6 +91,7 @@ pub trait ValidationDatabase:
         &self,
         dirs: Vec<Directive>,
         loc: DirectiveLocation,
+        var_defs: Arc<Vec<VariableDefinition>>,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(input_object::validate_input_object_definitions)]
@@ -169,6 +170,14 @@ pub trait ValidationDatabase:
     #[salsa::invoke(argument::validate_arguments)]
     fn validate_arguments(&self, arg: Vec<Argument>) -> Vec<ApolloDiagnostic>;
 
+    #[salsa::invoke(variable::validate_variable_usage)]
+    fn validate_variable_usage(
+        &self,
+        var_usage: Option<InputValueDefinition>,
+        var_defs: Arc<Vec<VariableDefinition>>,
+        arg: Argument,
+    ) -> Result<(), ApolloDiagnostic>;
+
     #[salsa::invoke(operation::validate_operation_definitions)]
     fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
@@ -182,13 +191,25 @@ pub trait ValidationDatabase:
     fn validate_fragment_selection(&self, spread: FragmentSelection) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_spread)]
-    fn validate_fragment_spread(&self, spread: Arc<FragmentSpread>) -> Vec<ApolloDiagnostic>;
+    fn validate_fragment_spread(
+        &self,
+        spread: Arc<FragmentSpread>,
+        var_defs: Arc<Vec<VariableDefinition>>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_inline_fragment)]
-    fn validate_inline_fragment(&self, inline: Arc<InlineFragment>) -> Vec<ApolloDiagnostic>;
+    fn validate_inline_fragment(
+        &self,
+        inline: Arc<InlineFragment>,
+        var_defs: Arc<Vec<VariableDefinition>>,
+    ) -> Vec<ApolloDiagnostic>;
 
-    #[salsa::invoke(fragment::validate_fragment_definitions)]
-    fn validate_fragment_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+    #[salsa::invoke(fragment::validate_fragment_definition)]
+    fn validate_fragment_definition(
+        &self,
+        def: Arc<FragmentDefinition>,
+        var_defs: Arc<Vec<VariableDefinition>>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_cycles)]
     fn validate_fragment_cycles(&self, def: Arc<FragmentDefinition>) -> Vec<ApolloDiagnostic>;
@@ -428,7 +449,9 @@ pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<
     }
 
     diagnostics.extend(db.validate_operation_definitions(file_id));
-    diagnostics.extend(db.validate_fragment_definitions(file_id));
+    for def in db.fragments(file_id).values() {
+        diagnostics.extend(db.validate_fragment_used(Arc::clone(def), file_id));
+    }
 
     diagnostics
 }
