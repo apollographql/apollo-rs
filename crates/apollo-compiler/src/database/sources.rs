@@ -6,7 +6,7 @@ use std::{
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum SourceType {
     Schema,
-    Query,
+    Executable,
     Document,
     BuiltIn,
 }
@@ -28,12 +28,12 @@ impl SourceType {
         matches!(self, Self::Document)
     }
 
-    /// Returns `true` if the source type is [`Query`].
+    /// Returns `true` if the source type is [`Executable`].
     ///
-    /// [`Query`]: SourceType::Query
+    /// [`Executable`]: SourceType::Executable
     #[must_use]
-    pub fn is_query(&self) -> bool {
-        matches!(self, Self::Query)
+    pub fn is_executable(&self) -> bool {
+        matches!(self, Self::Executable)
     }
 
     /// Returns `true` if the source type is [`Schema`].
@@ -66,7 +66,7 @@ impl Source {
     /// Create a GraphQL executable source file.
     pub fn executable(filename: PathBuf, text: impl Into<Arc<str>>) -> Self {
         Self {
-            ty: SourceType::Query,
+            ty: SourceType::Executable,
             filename,
             text: text.into(),
         }

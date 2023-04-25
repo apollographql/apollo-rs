@@ -103,6 +103,35 @@ impl ast::Definition {
         }
     }
 
+    pub fn kind(&self) -> &'static str {
+        match self {
+            ast::Definition::OperationDefinition(_) => "OperationDefinition",
+            ast::Definition::FragmentDefinition(_) => "FragmentDefinition",
+            ast::Definition::DirectiveDefinition(_) => "DirectiveDefinition",
+            ast::Definition::ScalarTypeDefinition(_) => "ScalarTypeDefinition",
+            ast::Definition::ObjectTypeDefinition(_) => "ObjectTypeDefinition",
+            ast::Definition::InterfaceTypeDefinition(_) => "InterfaceTypeDefinition",
+            ast::Definition::UnionTypeDefinition(_) => "UnionTypeDefinition",
+            ast::Definition::EnumTypeDefinition(_) => "EnumTypeDefinition",
+            ast::Definition::InputObjectTypeDefinition(_) => "InputObjectTypeDefinition",
+            ast::Definition::SchemaDefinition(_) => "SchemaDefinition",
+            ast::Definition::SchemaExtension(_) => "SchemaExtension",
+            ast::Definition::ScalarTypeExtension(_) => "ScalarTypeExtension",
+            ast::Definition::ObjectTypeExtension(_) => "ObjectTypeExtension",
+            ast::Definition::InterfaceTypeExtension(_) => "InterfaceTypeExtension",
+            ast::Definition::UnionTypeExtension(_) => "UnionTypeExtension",
+            ast::Definition::EnumTypeExtension(_) => "EnumTypeExtension",
+            ast::Definition::InputObjectTypeExtension(_) => "InputObjectTypeExtension",
+        }
+    }
+
+    pub fn is_executable_definition(&self) -> bool {
+        matches!(
+            self,
+            Self::OperationDefinition(_) | Self::FragmentDefinition(_)
+        )
+    }
+
     pub fn is_extension_definition(&self) -> bool {
         matches!(
             self,
