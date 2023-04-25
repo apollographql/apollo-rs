@@ -170,6 +170,14 @@ pub trait ValidationDatabase:
     #[salsa::invoke(argument::validate_arguments)]
     fn validate_arguments(&self, arg: Vec<Argument>) -> Vec<ApolloDiagnostic>;
 
+    #[salsa::invoke(variable::validate_variable_usage)]
+    fn validate_variable_usage(
+        &self,
+        var_usage: Option<InputValueDefinition>,
+        var_defs: Arc<Vec<VariableDefinition>>,
+        arg: Argument,
+    ) -> Result<(), ApolloDiagnostic>;
+
     #[salsa::invoke(operation::validate_operation_definitions)]
     fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
@@ -197,7 +205,6 @@ pub trait ValidationDatabase:
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_definition)]
-    #[salsa::transparent]
     fn validate_fragment_definition(
         &self,
         def: Arc<FragmentDefinition>,
