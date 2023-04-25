@@ -40,45 +40,4 @@
             field: "topProduct",
         },
     },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            85: "0088_fragment_selection_set.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 85,
-            },
-            offset: 227,
-            length: 16,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 85,
-                    },
-                    offset: 227,
-                    length: 16,
-                },
-                text: "`notExistingField` field is not defined",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 85,
-                    },
-                    offset: 54,
-                    length: 50,
-                },
-                text: "`Product` declared here",
-            },
-        ],
-        help: Some(
-            "`notExistingField` is not defined on `Product` type",
-        ),
-        data: UndefinedField {
-            field: "notExistingField",
-        },
-    },
 ]

@@ -231,7 +231,13 @@ fn is_variable_usage_allowed(
 
         // 3.d. Let nullable_location_ty be the unwrapped
         // nullable type of location_ty.
-        // let nullable_location_type = location_ty.unwrap().name();
+        match location_ty {
+            hir::Type::NonNull { ty: loc_ty, .. } => {
+                return are_types_compatible(loc_ty, variable_ty)
+            }
+            hir::Type::List { ty: loc_ty, .. } => return are_types_compatible(loc_ty, variable_ty),
+            hir::Type::Named { .. } => return are_types_compatible(location_ty, variable_ty),
+        }
     }
 
     are_types_compatible(location_ty, variable_ty)
@@ -267,7 +273,7 @@ fn are_types_compatible(location_ty: &hir::Type, variable_ty: &hir::Type) -> boo
             // 4. Otherwise, if variable_ty is a list type, return false.
             hir::Type::List { .. } => false,
             // 5. Return true if variable_ty and location_ty are identical, otherwise false.
-            hir::Type::Named { name: var_name, .. } => var_name == loc_name,
+            hir::Type::Named { name: var_name, .. } => return var_name == loc_name,
         },
         // 3.Otherwise, if location_ty is a list type:
         hir::Type::List {

@@ -8,46 +8,6 @@
             file_id: FileId {
                 id: 87,
             },
-            offset: 450,
-            length: 31,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 450,
-                    length: 31,
-                },
-                text: "fragment applied with type condition `Cat` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 75,
-                    length: 61,
-                },
-                text: "type condition `Cat` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: None,
-            type_name: "Dog",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
             offset: 406,
             length: 77,
         },
@@ -68,46 +28,6 @@
         ),
         data: UnusedFragment {
             name: "catInDogFragmentInvalid",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 527,
-            length: 31,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 527,
-                    length: 31,
-                },
-                text: "fragment applied with type condition `Dog` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 0,
-                    length: 38,
-                },
-                text: "type condition `Dog` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: None,
-            type_name: "Sentient",
         },
     },
     ApolloDiagnostic {
@@ -150,46 +70,6 @@
             file_id: FileId {
                 id: 87,
             },
-            offset: 612,
-            length: 31,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 612,
-                    length: 31,
-                },
-                text: "fragment applied with type condition `Cat` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 370,
-                    length: 34,
-                },
-                text: "type condition `Cat` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: None,
-            type_name: "HumanOrAlien",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
             offset: 562,
             length: 83,
         },
@@ -210,58 +90,6 @@
         ),
         data: UnusedFragment {
             name: "humanOrAlienFragment",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 693,
-            length: 20,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 693,
-                    length: 20,
-                },
-                text: "fragment `sentientFragment2` cannot be applied",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 717,
-                    length: 49,
-                },
-                text: "fragment declared with type condition `Sentient` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 40,
-                    length: 33,
-                },
-                text: "type condition `Sentient` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: Some(
-                "sentientFragment2",
-            ),
-            type_name: "Pet",
         },
     },
     ApolloDiagnostic {
