@@ -108,21 +108,6 @@ pub fn validate_unused_variables(
         })
         .collect();
     let mut diagnostics = Vec::new();
-    // let undefined_vars = used_vars.difference(&defined_vars);
-    // let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
-    //     .map(|undefined_var| {
-    //         // undefined var location is always Some
-    //         let loc = undefined_var.loc.expect("missing location information");
-    //         ApolloDiagnostic::new(
-    //             db,
-    //             loc.into(),
-    //             DiagnosticData::UndefinedDefinition {
-    //                 name: undefined_var.name.clone(),
-    //             },
-    //         )
-    //         .label(Label::new(loc, "not found in this scope"))
-    //     })
-    //     .collect();
 
     let unused_vars = defined_vars.difference(&used_vars);
     diagnostics.extend(unused_vars.map(|unused_var| {
