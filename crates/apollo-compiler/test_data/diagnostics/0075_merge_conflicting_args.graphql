@@ -18,13 +18,13 @@ query queryPupperA {
   }
 }
 
-query queryPupperB {
+query queryPupperB($dogCommand: DogCommand) {
   pet {
     ...conflictingArgsValueAndVar
   }
 }
 
-query queryPupperC {
+query queryPupperC($varOne: DogCommand, $varTwo: DogCommand) {
   pet {
     ...conflictingArgsValueWithVars
   }
