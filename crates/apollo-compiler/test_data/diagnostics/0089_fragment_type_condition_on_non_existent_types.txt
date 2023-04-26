@@ -8,7 +8,7 @@
             file_id: FileId {
                 id: 86,
             },
-            offset: 309,
+            offset: 301,
             length: 55,
         },
         labels: [
@@ -17,38 +17,7 @@
                     file_id: FileId {
                         id: 86,
                     },
-                    offset: 309,
-                    length: 55,
-                },
-                text: "fragment declares unsupported type condition `{type_cond}`",
-            },
-        ],
-        help: Some(
-            "fragments cannot be defined on enums, scalars and input object",
-        ),
-        data: InvalidFragmentTarget {
-            ty: "Interface2",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 309,
-            length: 55,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 309,
+                    offset: 301,
                     length: 55,
                 },
                 text: "`Interface2` is defined here but not declared in the schema",
@@ -72,38 +41,7 @@
             file_id: FileId {
                 id: 86,
             },
-            offset: 361,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 361,
-                    length: 1,
-                },
-                text: "`a` field is not defined",
-            },
-        ],
-        help: Some(
-            "`a` is not defined on `Interface2` type",
-        ),
-        data: UndefinedField {
-            field: "a",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 275,
+            offset: 267,
             length: 30,
         },
         labels: [
@@ -112,38 +50,7 @@
                     file_id: FileId {
                         id: 86,
                     },
-                    offset: 275,
-                    length: 30,
-                },
-                text: "fragment declares unsupported type condition `{type_cond}`",
-            },
-        ],
-        help: Some(
-            "fragments cannot be defined on enums, scalars and input object",
-        ),
-        data: InvalidFragmentTarget {
-            ty: "MissingType",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 275,
-            length: 30,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 275,
+                    offset: 267,
                     length: 30,
                 },
                 text: "`MissingType` is defined here but not declared in the schema",
@@ -167,8 +74,8 @@
             file_id: FileId {
                 id: 86,
             },
-            offset: 300,
-            length: 1,
+            offset: 93,
+            length: 40,
         },
         labels: [
             Label {
@@ -176,70 +83,8 @@
                     file_id: FileId {
                         id: 86,
                     },
-                    offset: 300,
-                    length: 1,
-                },
-                text: "`a` field is not defined",
-            },
-        ],
-        help: Some(
-            "`a` is not defined on `MissingType` type",
-        ),
-        data: UndefinedField {
-            field: "a",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 97,
-            length: 44,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 97,
-                    length: 44,
-                },
-                text: "fragment declares unsupported type condition `{type_cond}`",
-            },
-        ],
-        help: Some(
-            "fragments cannot be defined on enums, scalars and input object",
-        ),
-        data: InvalidFragmentTarget {
-            ty: "MissingSecondType",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 97,
-            length: 44,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 97,
-                    length: 44,
+                    offset: 93,
+                    length: 40,
                 },
                 text: "`MissingSecondType` is defined here but not declared in the schema",
             },
@@ -251,37 +96,6 @@
             ty: Some(
                 "MissingSecondType",
             ),
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 132,
-            length: 1,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 132,
-                    length: 1,
-                },
-                text: "`a` field is not defined",
-            },
-        ],
-        help: Some(
-            "`a` is not defined on `MissingSecondType` type",
-        ),
-        data: UndefinedField {
-            field: "a",
         },
     },
 ]
