@@ -27,11 +27,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-<<<<<<< HEAD
                     offset: 722,
-=======
-                    offset: 653,
->>>>>>> 507f174c (adjust test)
                     length: 16,
                 },
                 text: "but a different value here",
@@ -241,7 +237,6 @@
                     file_id: FileId {
                         id: 72,
                     },
-<<<<<<< HEAD
                     offset: 943,
                     length: 19,
                 },
@@ -277,17 +272,6 @@
                 offset: 968,
                 length: 36,
             },
-=======
-                    offset: 403,
-                    length: 31,
-                },
-                text: "fragment `conflictingArgsValueWithVars` is not defined",
-            },
-        ],
-        help: None,
-        data: UndefinedFragment {
-            name: "conflictingArgsValueWithVars",
->>>>>>> a45b9813 (test for mismatched variables)
         },
     },
     ApolloDiagnostic {
@@ -299,13 +283,8 @@
             file_id: FileId {
                 id: 72,
             },
-<<<<<<< HEAD
             offset: 968,
             length: 36,
-=======
-            offset: 368,
-            length: 19,
->>>>>>> a45b9813 (test for mismatched variables)
         },
         labels: [
             Label {
@@ -359,40 +338,7 @@
             file_id: FileId {
                 id: 72,
             },
-<<<<<<< HEAD
             offset: 1085,
-=======
-            offset: 347,
-            length: 19,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 347,
-                    length: 19,
-                },
-                text: "this variable is never used",
-            },
-        ],
-        help: None,
-        data: UnusedVariable {
-            name: "varOne",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
-            offset: 992,
->>>>>>> a45b9813 (test for mismatched variables)
             length: 15,
         },
         labels: [

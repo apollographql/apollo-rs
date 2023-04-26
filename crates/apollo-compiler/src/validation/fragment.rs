@@ -169,7 +169,6 @@ pub fn validate_inline_fragment(
     let has_type_error = !type_cond_diagnostics.is_empty();
     diagnostics.extend(type_cond_diagnostics);
 
-    diagnostics.extend(db.validate_selection_set(inline.selection_set.clone(), var_defs));
     // If there was an error with the type condition, it makes no sense to validate the selection,
     // as every field would be an error.
     if !has_type_error {
