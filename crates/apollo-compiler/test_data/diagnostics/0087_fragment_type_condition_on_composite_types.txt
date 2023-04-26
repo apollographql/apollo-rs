@@ -57,7 +57,7 @@
                     offset: 328,
                     length: 25,
                 },
-                text: "fragment declares unsupported type condition `{type_cond}`",
+                text: "fragment declares unsupported type condition `Int`",
             },
             Label {
                 location: DiagnosticLocation {
@@ -75,47 +75,6 @@
         ),
         data: InvalidFragmentTarget {
             ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            84: "0087_fragment_type_condition_on_composite_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 84,
-            },
-            offset: 345,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 345,
-                    length: 4,
-                },
-                text: "`name` field is not defined",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 0,
-                    },
-                    offset: 2916,
-                    length: 150,
-                },
-                text: "`Int` declared here",
-            },
-        ],
-        help: Some(
-            "`name` is not defined on `Int` type",
-        ),
-        data: UndefinedField {
-            field: "name",
         },
     },
     ApolloDiagnostic {
@@ -139,7 +98,7 @@
                     offset: 108,
                     length: 29,
                 },
-                text: "fragment declares unsupported type condition `{type_cond}`",
+                text: "fragment declares unsupported type condition `Int`",
             },
             Label {
                 location: DiagnosticLocation {
@@ -157,47 +116,6 @@
         ),
         data: InvalidFragmentTarget {
             ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            84: "0087_fragment_type_condition_on_composite_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 84,
-            },
-            offset: 127,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 127,
-                    length: 4,
-                },
-                text: "`name` field is not defined",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 0,
-                    },
-                    offset: 2916,
-                    length: 150,
-                },
-                text: "`Int` declared here",
-            },
-        ],
-        help: Some(
-            "`name` is not defined on `Int` type",
-        ),
-        data: UndefinedField {
-            field: "name",
         },
     },
 ]

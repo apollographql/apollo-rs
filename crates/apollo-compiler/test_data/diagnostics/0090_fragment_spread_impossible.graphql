@@ -1,3 +1,7 @@
+type Query {
+    human: Human
+}
+
 interface Sentient {
   name: String!
 }
@@ -29,6 +33,16 @@ type Alien implements Sentient {
 }
 
 union HumanOrAlien = Human | Alien
+
+query getHuman {
+    human {
+        ...catInDogFragmentInvalid
+        ...sentientFragment
+        ...humanOrAlienFragment
+        ...nonIntersectingInterfaces
+        ...sentientFragment2
+    }
+}
 
 fragment catInDogFragmentInvalid on Dog {
   ... on Cat {
