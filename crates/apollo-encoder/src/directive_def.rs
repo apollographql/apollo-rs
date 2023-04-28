@@ -185,7 +185,7 @@ directive @infer(cat: [SpaceProgram]) on OBJECT
         directive.arg(arg);
 
         assert_eq!(
-            dbg!(directive.to_string()),
+            directive.to_string(),
             r#""Infer field types from field values."
 directive @infer(
     "Space Program for flying cats"
