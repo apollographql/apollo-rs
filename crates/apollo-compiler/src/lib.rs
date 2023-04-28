@@ -68,6 +68,7 @@ pub type Snapshot = salsa::Snapshot<RootDatabase>;
 /// }
 /// assert!(diagnostics.is_empty());
 /// ```
+#[allow(clippy::new_without_default)]
 impl ApolloCompiler {
     /// Create a new instance of Apollo Compiler.
     pub fn new() -> Self {
