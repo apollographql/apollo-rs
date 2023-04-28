@@ -85,7 +85,7 @@ pub fn validate_interface_definition(
     let field_definitions = collect_nodes(
         interface_def.self_fields(),
         interface_def.extensions(),
-        hir::InterfaceTypeExtension::fields_definition,
+        hir::InterfaceTypeExtension::fields,
     );
     diagnostics.extend(db.validate_field_definitions(field_definitions));
 

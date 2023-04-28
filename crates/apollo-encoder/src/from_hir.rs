@@ -47,7 +47,7 @@ impl TryFrom<&hir::ObjectTypeExtension> for ObjectDefinition {
             def.interface(interface.interface().to_owned());
         }
 
-        for field in value.fields_definition() {
+        for field in value.fields() {
             def.field(field.try_into()?);
         }
 
@@ -98,7 +98,7 @@ impl TryFrom<&hir::InterfaceTypeExtension> for InterfaceDefinition {
             def.interface(interface.interface().to_owned());
         }
 
-        for field in value.fields_definition() {
+        for field in value.fields() {
             def.field(field.try_into()?);
         }
 
@@ -176,7 +176,7 @@ impl TryFrom<&hir::UnionTypeExtension> for UnionDefinition {
         let mut def = UnionDefinition::new(name);
         def.extend();
 
-        for member in value.union_members() {
+        for member in value.members() {
             def.member(member.name().to_owned());
         }
 
@@ -215,7 +215,7 @@ impl TryFrom<&hir::EnumTypeExtension> for EnumDefinition {
         let mut def = EnumDefinition::new(name);
         def.extend();
 
-        for value in value.enum_values_definition() {
+        for value in value.values() {
             def.value(value.try_into()?);
         }
 
@@ -281,7 +281,7 @@ impl TryFrom<&hir::InputObjectTypeExtension> for InputObjectDefinition {
             def.directive(directive.try_into()?);
         }
 
-        for input_field in value.input_fields_definition() {
+        for input_field in value.fields() {
             def.field(input_field.try_into()?);
         }
 

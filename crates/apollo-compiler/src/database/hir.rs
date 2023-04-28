@@ -2123,7 +2123,7 @@ impl ObjectTypeDefinition {
         self.fields_by_name.iter(
             self.self_fields(),
             self.extensions(),
-            ObjectTypeExtension::fields_definition,
+            ObjectTypeExtension::fields,
         )
     }
 
@@ -2134,7 +2134,7 @@ impl ObjectTypeDefinition {
                 name,
                 self.self_fields(),
                 self.extensions(),
-                ObjectTypeExtension::fields_definition,
+                ObjectTypeExtension::fields,
             )
             .or_else(|| self.implicit_fields(db).iter().find(|f| f.name() == name))
     }
@@ -2182,11 +2182,8 @@ impl ObjectTypeDefinition {
 
     pub(crate) fn push_extension(&mut self, ext: Arc<ObjectTypeExtension>) {
         let next_index = self.extensions.len();
-        self.fields_by_name.add_extension(
-            next_index,
-            ext.fields_definition(),
-            FieldDefinition::name,
-        );
+        self.fields_by_name
+            .add_extension(next_index, ext.fields(), FieldDefinition::name);
         self.implements_interfaces_by_name.add_extension(
             next_index,
             ext.implements_interfaces(),
@@ -2556,7 +2553,7 @@ impl EnumTypeDefinition {
         self.values_by_name.iter(
             self.self_values(),
             self.extensions(),
-            EnumTypeExtension::enum_values_definition,
+            EnumTypeExtension::values,
         )
     }
 
@@ -2566,7 +2563,7 @@ impl EnumTypeDefinition {
             name,
             self.self_values(),
             self.extensions(),
-            EnumTypeExtension::enum_values_definition,
+            EnumTypeExtension::values,
         )
     }
 
@@ -2584,7 +2581,7 @@ impl EnumTypeDefinition {
         let next_index = self.extensions.len();
         self.values_by_name.add_extension(
             next_index,
-            ext.enum_values_definition(),
+            ext.values(),
             EnumValueDefinition::enum_value,
         );
         self.extensions.push(ext);
@@ -2725,7 +2722,7 @@ impl UnionTypeDefinition {
         self.members_by_name.iter(
             self.self_members(),
             self.extensions(),
-            UnionTypeExtension::union_members,
+            UnionTypeExtension::members,
         )
     }
 
@@ -2737,7 +2734,7 @@ impl UnionTypeDefinition {
                 name,
                 self.self_members(),
                 self.extensions(),
-                UnionTypeExtension::union_members,
+                UnionTypeExtension::members,
             )
             .is_some()
     }
@@ -2755,7 +2752,7 @@ impl UnionTypeDefinition {
     pub(crate) fn push_extension(&mut self, ext: Arc<UnionTypeExtension>) {
         let next_index = self.extensions.len();
         self.members_by_name
-            .add_extension(next_index, ext.union_members(), UnionMember::name);
+            .add_extension(next_index, ext.members(), UnionMember::name);
         self.extensions.push(ext);
     }
 
@@ -2898,7 +2895,7 @@ impl InterfaceTypeDefinition {
         self.fields_by_name.iter(
             self.self_fields(),
             self.extensions(),
-            InterfaceTypeExtension::fields_definition,
+            InterfaceTypeExtension::fields,
         )
     }
 
@@ -2909,7 +2906,7 @@ impl InterfaceTypeDefinition {
                 name,
                 self.self_fields(),
                 self.extensions(),
-                InterfaceTypeExtension::fields_definition,
+                InterfaceTypeExtension::fields,
             )
             .or_else(|| self.implicit_fields().iter().find(|f| f.name() == name))
     }
@@ -2926,11 +2923,8 @@ impl InterfaceTypeDefinition {
 
     pub(crate) fn push_extension(&mut self, ext: Arc<InterfaceTypeExtension>) {
         let next_index = self.extensions.len();
-        self.fields_by_name.add_extension(
-            next_index,
-            ext.fields_definition(),
-            FieldDefinition::name,
-        );
+        self.fields_by_name
+            .add_extension(next_index, ext.fields(), FieldDefinition::name);
         self.implements_interfaces_by_name.add_extension(
             next_index,
             ext.implements_interfaces(),
@@ -3021,7 +3015,7 @@ impl InputObjectTypeDefinition {
         self.input_fields_by_name.iter(
             self.self_fields(),
             self.extensions(),
-            InputObjectTypeExtension::input_fields_definition,
+            InputObjectTypeExtension::fields,
         )
     }
 
@@ -3031,7 +3025,7 @@ impl InputObjectTypeDefinition {
             name,
             self.self_fields(),
             self.extensions(),
-            InputObjectTypeExtension::input_fields_definition,
+            InputObjectTypeExtension::fields,
         )
     }
 
@@ -3049,7 +3043,7 @@ impl InputObjectTypeDefinition {
         let next_index = self.extensions.len();
         self.input_fields_by_name.add_extension(
             next_index,
-            ext.input_fields_definition(),
+            ext.fields(),
             InputValueDefinition::name,
         );
         self.extensions.push(ext);
@@ -3224,13 +3218,13 @@ impl ObjectTypeExtension {
     }
 
     /// Get a reference to the object type definition's field definitions.
-    pub fn fields_definition(&self) -> &[FieldDefinition] {
+    pub fn fields(&self) -> &[FieldDefinition] {
         self.fields_definition.as_ref()
     }
 
     /// Find a field in object type definition.
     pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
-        self.fields_definition().iter().find(|f| f.name() == name)
+        self.fields().iter().find(|f| f.name() == name)
     }
 
     /// Get a reference to object type definition's implements interfaces vector.
@@ -3294,13 +3288,13 @@ impl InterfaceTypeExtension {
     }
 
     /// Get a reference to interface definition's fields.
-    pub fn fields_definition(&self) -> &[FieldDefinition] {
+    pub fn fields(&self) -> &[FieldDefinition] {
         self.fields_definition.as_ref()
     }
 
     /// Find a field in interface face definition.
     pub fn field(&self, name: &str) -> Option<&FieldDefinition> {
-        self.fields_definition().iter().find(|f| f.name() == name)
+        self.fields().iter().find(|f| f.name() == name)
     }
 
     /// Get the AST location information for this HIR node.
@@ -3354,7 +3348,7 @@ impl UnionTypeExtension {
     }
 
     /// Get a reference to union definition's union members.
-    pub fn union_members(&self) -> &[UnionMember] {
+    pub fn members(&self) -> &[UnionMember] {
         self.union_members.as_ref()
     }
 
@@ -3408,7 +3402,7 @@ impl EnumTypeExtension {
     }
 
     /// Get a reference to enum definition's enum values definition vector.
-    pub fn enum_values_definition(&self) -> &[EnumValueDefinition] {
+    pub fn values(&self) -> &[EnumValueDefinition] {
         self.enum_values_definition.as_ref()
     }
 
@@ -3461,7 +3455,7 @@ impl InputObjectTypeExtension {
             .filter(move |directive| directive.name() == name)
     }
 
-    pub fn input_fields_definition(&self) -> &[InputValueDefinition] {
+    pub fn fields(&self) -> &[InputValueDefinition] {
         self.input_fields_definition.as_ref()
     }
 
