@@ -1,12 +1,9 @@
 use std::fmt::{self, Write};
 
 /// Write and optionally escape a character inside a GraphQL string value.
-fn write_character<const IS_BLOCK_STRING: bool>(
-    c: char,
-    f: &mut fmt::Formatter<'_>,
-) -> fmt::Result {
+fn write_character(c: char, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match c {
-        '"' if !IS_BLOCK_STRING => f.write_str(r#"\""#),
+        '"' => f.write_str(r#"\""#),
         '\u{0008}' => f.write_str(r#"\b"#),
         '\u{000c}' => f.write_str(r#"\f"#),
         '\n' => f.write_str(r#"\n"#),
@@ -28,7 +25,7 @@ struct BlockStringFormatter<'a> {
     indent: usize,
 }
 
-/// Write one line of a block string value, escaping characters.
+/// Write one line of a block string value, escaping characters as necessary.
 fn write_block_string_line(line: &'_ str, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let mut char_iter = line.char_indices();
 
@@ -44,7 +41,7 @@ fn write_block_string_line(line: &'_ str, f: &mut fmt::Formatter<'_>) -> fmt::Re
             continue;
         }
 
-        write_character::<true>(c, f)?;
+        f.write_char(c)?;
     }
 
     Ok(())
@@ -52,8 +49,8 @@ fn write_block_string_line(line: &'_ str, f: &mut fmt::Formatter<'_>) -> fmt::Re
 
 impl fmt::Display for BlockStringFormatter<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // Rust's `lines()` iterator does not consider \r as line terminators,
-        // while graphql does. We ignore that because we'll just output an escaped \\r.
+        let indent = " ".repeat(self.indent);
+
         let input_is_single_line = self.string.lines().nth(1).is_none();
         // Should not end with a character that would change the meaning of the end quotes
         let input_has_dangerous_tail = self.string.ends_with(['"', '\\']);
@@ -61,21 +58,18 @@ impl fmt::Display for BlockStringFormatter<'_> {
             self.string.chars().count() < 70 && input_is_single_line && !input_has_dangerous_tail;
 
         if use_single_line {
-            // TODO(@goto-bus-stop) would prefer not to indent here
-            write!(f, "{:indent$}\"\"\"", "", indent = self.indent)?;
+            write!(f, "{indent}\"\"\"")?;
             write_block_string_line(self.string, f)?;
             write!(f, "\"\"\"")?;
         } else {
-            // TODO(@goto-bus-stop) would prefer not to indent here
-            write!(f, "{:indent$}\"\"\"", "", indent = self.indent)?;
+            write!(f, "{indent}\"\"\"")?;
             for line in self.string.lines() {
-                write!(f, "\n{:indent$}", "", indent = self.indent)?;
-                for c in line.chars() {
-                    write_character::<true>(c, f)?;
-                }
+                write!(f, "\n{indent}")?;
+                write_block_string_line(line, f)?;
             }
-            write!(f, "\n{:indent$}\"\"\"", "", indent = self.indent)?;
+            write!(f, "\n{indent}\"\"\"")?;
         }
+
         Ok(())
     }
 }
@@ -87,7 +81,7 @@ impl fmt::Display for StringFormatter<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_char('"')?;
         for c in self.0.chars() {
-            write_character::<false>(c, f)?;
+            write_character(c, f)?;
         }
         f.write_char('"')?;
         Ok(())
@@ -156,9 +150,10 @@ impl fmt::Display for StringValue {
     }
 }
 
-/// For multi-line strings and strings containing ", use a block string.
+/// For multi-line strings and strings containing ", try to use a block string.
+/// It's not possible to use a block string if characters would need to be escaped.
 fn should_use_block_string(s: &str) -> bool {
-    s.contains(['"', '\n', '\r'])
+    s.contains(['"', '\n']) && s.lines().all(|line| !line.contains(char::is_control))
 }
 
 #[cfg(test)]
@@ -228,12 +223,26 @@ plant corner, pile of clothes.
 
         assert_eq!(
             desc.to_string(),
-            r#""""Favourite cat nap spots include:\rplant corner,\rpile of clothes.""""#,
+            r#""Favourite cat nap spots include:\rplant corner,\rpile of clothes.""#,
         );
     }
 
     #[test]
     fn it_encodes_indented_desciption() {
+        let desc = StringValue::Field {
+            source: "Favourite cat nap spots include:\n  plant corner,\n  pile of clothes."
+                .to_string(),
+        };
+
+        assert_eq!(
+            desc.to_string(),
+            r#"  """
+  Favourite cat nap spots include:
+    plant corner,
+    pile of clothes.
+  """"#,
+        );
+
         let desc = StringValue::Field {
             source: "Favourite cat nap spots include:\r\n  plant corner,\r\n  pile of clothes."
                 .to_string(),
@@ -255,7 +264,7 @@ plant corner, pile of clothes.
 
         assert_eq!(
             desc.to_string(),
-            r#"  """Favourite cat nap spots include:\r  plant corner,\r  pile of clothes.""""#,
+            r#"  "Favourite cat nap spots include:\r  plant corner,\r  pile of clothes.""#,
         );
     }
 
@@ -322,13 +331,10 @@ ends with "
         let source = "multi-line\nwith control \u{009c} character\n :)".to_string();
 
         let desc = StringValue::Top { source };
+        println!("{desc}");
         assert_eq!(
             desc.to_string(),
-            r#""""
-multi-line
-with control \u009c character
- :)
-""""#
+            r#""multi-line\nwith control \u009c character\n :)""#
         );
     }
 }
