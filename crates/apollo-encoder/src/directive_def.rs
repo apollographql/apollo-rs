@@ -84,7 +84,7 @@ impl DirectiveDefinition {
 impl fmt::Display for DirectiveDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
-            write!(f, "{description}")?;
+            writeln!(f, "{description}")?;
         }
         write!(f, "directive @{}", self.name)?;
 
@@ -185,7 +185,7 @@ directive @infer(cat: [SpaceProgram]) on OBJECT
         directive.arg(arg);
 
         assert_eq!(
-            directive.to_string(),
+            dbg!(directive.to_string()),
             r#""Infer field types from field values."
 directive @infer(
     "Space Program for flying cats"

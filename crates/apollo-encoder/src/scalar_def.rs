@@ -68,7 +68,7 @@ impl fmt::Display for ScalarDefinition {
         if self.extend {
             write!(f, "extend ")?;
         } else if let Some(description) = &self.description {
-            write!(f, "{description}")?;
+            writeln!(f, "{description}")?;
         }
 
         write!(f, "scalar {}", self.name)?;

@@ -113,7 +113,7 @@ impl fmt::Display for ObjectDefinition {
             write!(f, "extend ")?;
         // No description when it's a extension
         } else if let Some(description) = &self.description {
-            write!(f, "{description}")?;
+            writeln!(f, "{description}")?;
         }
 
         write!(f, "type {}", &self.name)?;

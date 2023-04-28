@@ -1,4 +1,56 @@
-use std::fmt;
+use std::fmt::{self, Write};
+
+/// Format a string as a """block string""".
+#[derive(Debug)]
+struct BlockStringFormatter<'a> {
+    string: &'a str,
+    /// Indentation for the whole block string: it expects to be printed
+    /// on its own line, and the caller is responsible for ensuring that.
+    indent: usize,
+}
+impl fmt::Display for BlockStringFormatter<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:indent$}\"\"\"", "", indent = self.indent)?;
+        let mut consecutive_quotes = 0;
+        for line in self.string.lines() {
+            write!(f, "\n{:indent$}", "", indent = self.indent)?;
+            for c in line.chars() {
+                if c == '"' {
+                    consecutive_quotes += 1;
+                    if consecutive_quotes >= 3 {
+                        f.write_char('\\')?;
+                    }
+                } else {
+                    consecutive_quotes = 0;
+                }
+                if c == '\\' {
+                    // Escape escape characters.
+                    f.write_char('\\')?;
+                }
+                f.write_char(c)?;
+            }
+        }
+        write!(f, "\n{:indent$}\"\"\"", "", indent = self.indent)?;
+        Ok(())
+    }
+}
+
+/// Format a string, handling escape sequences.
+#[derive(Debug)]
+struct StringFormatter<'a>(&'a str);
+impl fmt::Display for StringFormatter<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_char('"')?;
+        for c in self.0.chars() {
+            if matches!(c, '"' | '\\' | '\n' | '\t' | '\r') {
+                f.write_char('\\')?;
+            }
+            f.write_char(c)?;
+        }
+        f.write_char('"')?;
+        Ok(())
+    }
+}
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 /// Convenience enum to create a Description. Can be a `Top` level, a `Field`
@@ -26,70 +78,46 @@ pub enum StringValue {
 
 impl fmt::Display for StringValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            StringValue::Top { source } => {
-                if is_block_string_character(source) {
-                    writeln!(f, "\"\"\"\n{}\n\"\"\"", trim_double_quotes(source))?
-                } else {
-                    writeln!(f, "\"{source}\"")?
+        let source = match self {
+            StringValue::Top { source }
+            | StringValue::Field { source }
+            | StringValue::Input { source } => source,
+        };
+        // TODO(@goto-bus-stop): We could instead pass in the indentation as a
+        // fmt parameter whenever a StringValue is printed.
+        let indent = match self {
+            StringValue::Top { .. } => 0,
+            StringValue::Field { .. } => 2,
+            StringValue::Input { .. } => 4,
+        };
+
+        if should_use_block_string(source) {
+            write!(
+                f,
+                "{}",
+                BlockStringFormatter {
+                    string: source,
+                    indent,
                 }
-            }
-            StringValue::Field { source } => {
-                if is_block_string_character(source) {
-                    write!(f, "  \"\"\"")?;
-                    let desc = trim_double_quotes(source);
-                    for line in desc.lines() {
-                        write!(f, "\n  {line}")?;
-                    }
-                    writeln!(f, "\n  \"\"\"")?;
-                } else {
-                    writeln!(f, "  \"{source}\"")?
-                }
-            }
-            StringValue::Input { source } => {
-                if is_block_string_character(source) {
-                    write!(f, "\"\"\"")?;
-                    let desc = trim_double_quotes(source);
-                    for line in desc.lines() {
-                        write!(f, "\n    {line}")?;
-                    }
-                    write!(f, "\n    \"\"\"")?
-                } else {
-                    write!(f, "\"{source}\"")?
-                }
-            }
+            )
+        } else {
+            // TODO(@goto-bus-stop) We should probably not prepend the indentation here
+            // but let the caller handle it
+            write!(
+                f,
+                "{:indent$}{string}",
+                "",
+                indent = indent,
+                string = StringFormatter(source),
+            )
         }
-        write!(f, "")
     }
 }
 
-#[allow(clippy::nonminimal_bool)]
-fn trim_double_quotes(description: &str) -> String {
-    let desc_len = description.len();
-    if desc_len < 2 {
-        return description.to_string();
-    }
-
-    if !description.starts_with('\"') || !description.ends_with('\"') {
-        return description.to_string();
-    }
-
-    description
-        .chars()
-        .enumerate()
-        .filter_map(|(i, c)| {
-            if (i == 0 && c == '"') || (i == desc_len - 1 && c == '"') {
-                None
-            } else {
-                Some(c)
-            }
-        })
-        .collect()
+fn should_use_block_string(s: &str) -> bool {
+    s.contains(['"', '\n', '\r'])
 }
 
-fn is_block_string_character(s: &str) -> bool {
-    s.contains('\n') || s.contains('"') || s.contains('\r')
-}
 #[cfg(test)]
 mod test {
     use super::*;
@@ -103,39 +131,36 @@ mod test {
 
         assert_eq!(
             desc.to_string(),
-            r#""Favourite cat nap spots include: plant corner, pile of clothes."
-"#
+            r#""Favourite cat nap spots include: plant corner, pile of clothes.""#
         );
     }
 
     #[test]
     fn it_encodes_description_with_quotations() {
         let desc = StringValue::Top {
-            source: "\"Favourite \"cat\" nap spots include: plant corner, pile of clothes.\""
+            source: r#""Favourite "cat" nap spots include: plant corner, pile of clothes.""#
                 .to_string(),
         };
 
         assert_eq!(
             desc.to_string(),
             r#""""
-Favourite "cat" nap spots include: plant corner, pile of clothes.
-"""
-"#
+"Favourite "cat" nap spots include: plant corner, pile of clothes."
+""""#
         );
     }
 
     #[test]
     fn it_encodes_description_with_other_languages() {
         let desc = StringValue::Top {
-            source: "котя(猫, ねこ, قطة) любить дрімати в \"кутку\" з рослинами".to_string(),
+            source: r#"котя(猫, ねこ, قطة) любить дрімати в "кутку" з рослинами"#.to_string(),
         };
 
         assert_eq!(
             desc.to_string(),
             r#""""
 котя(猫, ねこ, قطة) любить дрімати в "кутку" з рослинами
-"""
-"#
+""""#
         );
     }
 
@@ -150,8 +175,7 @@ Favourite "cat" nap spots include: plant corner, pile of clothes.
             r#""""
 Favourite cat nap spots include:
 plant corner, pile of clothes.
-"""
-"#
+""""#
         );
     }
 
@@ -164,7 +188,7 @@ plant corner, pile of clothes.
         assert_eq!(
             desc.to_string(),
             String::from(
-                "\"\"\"\nFavourite cat nap spots include:\rplant corner,\rpile of clothes.\n\"\"\"\n"
+                "\"\"\"\nFavourite cat nap spots include:\rplant corner,\rpile of clothes.\n\"\"\""
             )
         );
     }
@@ -179,8 +203,43 @@ plant corner, pile of clothes.
         assert_eq!(
             desc.to_string(),
             String::from(
-                "  \"\"\"\n  Favourite cat nap spots include:\r  plant corner,\r  pile of clothes.\n  \"\"\"\n"
+                "  \"\"\"\n  Favourite cat nap spots include:\r  plant corner,\r  pile of clothes.\n  \"\"\""
             )
+        );
+    }
+
+    #[test]
+    fn it_encodes_ends_with_quote() {
+        let source = r#"ends with ""#.to_string();
+
+        let desc = StringValue::Top {
+            source: source.clone(),
+        };
+        assert_eq!(
+            desc.to_string(),
+            r#""""
+ends with "
+""""#
+        );
+
+        let desc = StringValue::Field {
+            source: source.clone(),
+        };
+        assert_eq!(
+            desc.to_string(),
+            r#"  """
+  ends with "
+  """"#
+        );
+
+        let desc = StringValue::Input {
+            source: source.clone(),
+        };
+        assert_eq!(
+            desc.to_string(),
+            r#"    """
+    ends with "
+    """"#
         );
     }
 }
