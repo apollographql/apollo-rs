@@ -21,6 +21,7 @@ pub struct FileWatcher {
     manifest: HashMap<PathBuf, FileId>,
 }
 
+#[allow(clippy::new_without_default)]
 impl FileWatcher {
     pub fn new() -> Self {
         Self {
