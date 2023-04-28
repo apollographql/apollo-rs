@@ -1,13 +1,18 @@
 use std::fmt::{self, Write};
 
-fn write_character(c: char, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+/// Write and optionally escape a character inside a GraphQL string value.
+fn write_character<const IS_BLOCK_STRING: bool>(
+    c: char,
+    f: &mut fmt::Formatter<'_>,
+) -> fmt::Result {
     match c {
-        // '"' => f.write_str(r#"\""#),
+        '"' if !IS_BLOCK_STRING => f.write_str(r#"\""#),
         '\n' => f.write_str(r#"\n"#),
         '\r' => f.write_str(r#"\r"#),
         '\t' => f.write_str(r#"\t"#),
         '\\' => f.write_str(r#"\\"#),
         c if c.is_control() => write!(f, "{}", c.escape_unicode()),
+        // Other unicode chars are written as is
         c => write!(f, "{c}"),
     }
 }
@@ -24,22 +29,25 @@ impl fmt::Display for BlockStringFormatter<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:indent$}\"\"\"", "", indent = self.indent)?;
 
+        let input_is_single_line = self.string.lines().nth(1).is_none();
+        // Should not end with a character that would change the meaning of the end quotes """
+        let input_has_dangerous_tail = self.string.ends_with(['"', '\\']);
         let use_single_line =
-            // Only one line of content
-            self.string.lines().nth(1).is_none()
-            // Should not end with a character that would change the meaning of the end quotes """
-            && !self.string.ends_with(['"', '\\']);
+            self.string.chars().count() < 70 && input_is_single_line && !input_has_dangerous_tail;
 
         if use_single_line {
             for c in self.string.chars() {
-                write_character(c, f)?;
+                write_character::<true>(c, f)?;
             }
             f.write_str(r#"""""#)?;
         } else {
+            // We don't use `split_line_terminator` here so we just output \r as an escaped "\\r".
+            // \r was only used on old macs so it's not really relevant in $current_year. We only
+            // support it as input for spec compliance.
             for line in self.string.lines() {
                 write!(f, "\n{:indent$}", "", indent = self.indent)?;
                 for c in line.chars() {
-                    write_character(c, f)?;
+                    write_character::<true>(c, f)?;
                 }
             }
             write!(f, "\n{:indent$}\"\"\"", "", indent = self.indent)?;
@@ -55,10 +63,7 @@ impl fmt::Display for StringFormatter<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_char('"')?;
         for c in self.0.chars() {
-            if matches!(c, '"' | '\\' | '\n' | '\t' | '\r') {
-                f.write_char('\\')?;
-            }
-            f.write_char(c)?;
+            write_character::<false>(c, f)?;
         }
         f.write_char('"')?;
         Ok(())
@@ -182,7 +187,6 @@ mod test {
             source: "Favourite cat nap spots include:\nplant corner, pile of clothes.".to_string(),
         };
 
-        println!("{desc}");
         assert_eq!(
             desc.to_string(),
             r#""""
@@ -200,22 +204,34 @@ plant corner, pile of clothes.
 
         assert_eq!(
             desc.to_string(),
-            "\"\"\"\nFavourite cat nap spots include:\rplant corner,\rpile of clothes.\n\"\"\""
+            r#""""Favourite cat nap spots include:\rplant corner,\rpile of clothes.""""#,
         );
     }
 
     #[test]
     fn it_encodes_indented_desciption() {
         let desc = StringValue::Field {
+            source: "Favourite cat nap spots include:\r\n  plant corner,\r\n  pile of clothes."
+                .to_string(),
+        };
+
+        assert_eq!(
+            desc.to_string(),
+            r#"  """
+  Favourite cat nap spots include:
+    plant corner,
+    pile of clothes.
+  """"#,
+        );
+
+        let desc = StringValue::Field {
             source: "Favourite cat nap spots include:\r  plant corner,\r  pile of clothes."
                 .to_string(),
         };
 
         assert_eq!(
-            dbg!(desc.to_string()),
-            String::from(
-                "  \"\"\"\n  Favourite cat nap spots include:\r  plant corner,\r  pile of clothes.\n  \"\"\""
-            )
+            desc.to_string(),
+            r#"  """Favourite cat nap spots include:\r  plant corner,\r  pile of clothes.""""#,
         );
     }
 
