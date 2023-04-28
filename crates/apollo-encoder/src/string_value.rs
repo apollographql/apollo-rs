@@ -232,9 +232,7 @@ ends with "
   """"#
         );
 
-        let desc = StringValue::Input {
-            source: source.clone(),
-        };
+        let desc = StringValue::Input { source };
         assert_eq!(
             desc.to_string(),
             r#"    """
