@@ -21,7 +21,7 @@ pub struct ApolloCompiler {
 /// A read-only, `Sync` snapshot of the database.
 pub type Snapshot = salsa::Snapshot<RootDatabase>;
 
-/// Apollo compiler creates a context around your GraphQL. It creates refernces
+/// Apollo compiler creates a context around your GraphQL. It creates references
 /// between various GraphQL types in scope.
 ///
 /// ## Example
@@ -242,19 +242,6 @@ impl ApolloCompiler {
     /// ```
     pub fn validate(&self) -> Vec<ApolloDiagnostic> {
         self.db.validate()
-    }
-}
-
-impl Default for ApolloCompiler {
-    fn default() -> Self {
-        let mut db = RootDatabase::default();
-        // TODO(@goto-bus-stop) can we make salsa fill in these defaults for us…?
-        db.set_recursion_limit(None);
-        db.set_token_limit(None);
-        db.set_type_system_hir_input(None);
-        db.set_source_files(vec![]);
-
-        Self { db }
     }
 }
 
