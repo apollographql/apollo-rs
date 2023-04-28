@@ -7,6 +7,8 @@ fn write_character<const IS_BLOCK_STRING: bool>(
 ) -> fmt::Result {
     match c {
         '"' if !IS_BLOCK_STRING => f.write_str(r#"\""#),
+        '\u{0008}' => f.write_str(r#"\b"#),
+        '\u{000c}' => f.write_str(r#"\f"#),
         '\n' => f.write_str(r#"\n"#),
         '\r' => f.write_str(r#"\r"#),
         '\t' => f.write_str(r#"\t"#),
