@@ -1,5 +1,17 @@
 use std::fmt::{self, Write};
 
+fn write_character(c: char, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match c {
+        // '"' => f.write_str(r#"\""#),
+        '\n' => f.write_str(r#"\n"#),
+        '\r' => f.write_str(r#"\r"#),
+        '\t' => f.write_str(r#"\t"#),
+        '\\' => f.write_str(r#"\\"#),
+        c if c.is_control() => write!(f, "{}", c.escape_unicode()),
+        c => write!(f, "{c}"),
+    }
+}
+
 /// Format a string as a """block string""".
 #[derive(Debug)]
 struct BlockStringFormatter<'a> {
@@ -11,26 +23,27 @@ struct BlockStringFormatter<'a> {
 impl fmt::Display for BlockStringFormatter<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:indent$}\"\"\"", "", indent = self.indent)?;
-        let mut consecutive_quotes = 0;
-        for line in self.string.lines() {
-            write!(f, "\n{:indent$}", "", indent = self.indent)?;
-            for c in line.chars() {
-                if c == '"' {
-                    consecutive_quotes += 1;
-                    if consecutive_quotes >= 3 {
-                        f.write_char('\\')?;
-                    }
-                } else {
-                    consecutive_quotes = 0;
-                }
-                if c == '\\' {
-                    // Escape escape characters.
-                    f.write_char('\\')?;
-                }
-                f.write_char(c)?;
+
+        let use_single_line =
+            // Only one line of content
+            self.string.lines().nth(1).is_none()
+            // Should not end with a character that would change the meaning of the end quotes """
+            && !self.string.ends_with(['"', '\\']);
+
+        if use_single_line {
+            for c in self.string.chars() {
+                write_character(c, f)?;
             }
+            f.write_str(r#"""""#)?;
+        } else {
+            for line in self.string.lines() {
+                write!(f, "\n{:indent$}", "", indent = self.indent)?;
+                for c in line.chars() {
+                    write_character(c, f)?;
+                }
+            }
+            write!(f, "\n{:indent$}\"\"\"", "", indent = self.indent)?;
         }
-        write!(f, "\n{:indent$}\"\"\"", "", indent = self.indent)?;
         Ok(())
     }
 }
@@ -114,6 +127,7 @@ impl fmt::Display for StringValue {
     }
 }
 
+/// For multi-line strings and strings containing ", use a block string.
 fn should_use_block_string(s: &str) -> bool {
     s.contains(['"', '\n', '\r'])
 }
@@ -158,9 +172,7 @@ mod test {
 
         assert_eq!(
             desc.to_string(),
-            r#""""
-котя(猫, ねこ, قطة) любить дрімати в "кутку" з рослинами
-""""#
+            r#""""котя(猫, ねこ, قطة) любить дрімати в "кутку" з рослинами""""#
         );
     }
 
@@ -170,6 +182,7 @@ mod test {
             source: "Favourite cat nap spots include:\nplant corner, pile of clothes.".to_string(),
         };
 
+        println!("{desc}");
         assert_eq!(
             desc.to_string(),
             r#""""
@@ -187,9 +200,7 @@ plant corner, pile of clothes.
 
         assert_eq!(
             desc.to_string(),
-            String::from(
-                "\"\"\"\nFavourite cat nap spots include:\rplant corner,\rpile of clothes.\n\"\"\""
-            )
+            "\"\"\"\nFavourite cat nap spots include:\rplant corner,\rpile of clothes.\n\"\"\""
         );
     }
 
@@ -201,7 +212,7 @@ plant corner, pile of clothes.
         };
 
         assert_eq!(
-            desc.to_string(),
+            dbg!(desc.to_string()),
             String::from(
                 "  \"\"\"\n  Favourite cat nap spots include:\r  plant corner,\r  pile of clothes.\n  \"\"\""
             )

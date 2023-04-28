@@ -332,9 +332,7 @@ mod tests {
             r#"  spaceCat(
     "The type of treats given in space"
     treat: Treat,
-    """
-    Optimal age of a "space" cat
-    """
+    """Optimal age of a "space" cat"""
     age: Int
   ): Cat"#
         );
