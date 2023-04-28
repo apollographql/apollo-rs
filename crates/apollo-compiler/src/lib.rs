@@ -71,7 +71,14 @@ pub type Snapshot = salsa::Snapshot<RootDatabase>;
 impl ApolloCompiler {
     /// Create a new instance of Apollo Compiler.
     pub fn new() -> Self {
-        Default::default()
+        let mut db = RootDatabase::default();
+        // TODO(@goto-bus-stop) can we make salsa fill in these defaults for us…?
+        db.set_recursion_limit(None);
+        db.set_token_limit(None);
+        db.set_type_system_hir_input(None);
+        db.set_source_files(vec![]);
+
+        Self { db }
     }
 
     /// Configure the recursion limit to use during parsing.
