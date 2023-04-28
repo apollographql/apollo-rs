@@ -11,7 +11,7 @@ fn write_character<const IS_BLOCK_STRING: bool>(
         '\r' => f.write_str(r#"\r"#),
         '\t' => f.write_str(r#"\t"#),
         '\\' => f.write_str(r#"\\"#),
-        c if c.is_control() => write!(f, "{}", c.escape_unicode()),
+        c if c.is_control() => write!(f, "\\u{:04.x}", c as u32),
         // Other unicode chars are written as is
         c => write!(f, "{c}"),
     }
@@ -25,25 +25,47 @@ struct BlockStringFormatter<'a> {
     /// on its own line, and the caller is responsible for ensuring that.
     indent: usize,
 }
+
+/// Write one line of a block string value, escaping characters.
+fn write_block_string_line(line: &'_ str, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let mut char_iter = line.char_indices();
+
+    while let Some((pos, c)) = char_iter.next() {
+        // Output """ as \"""
+        if c == '"' && line.get(pos..pos + 3) == Some("\"\"\"") {
+            // We know there will be two more " characters.
+            // Skip them so we can output """""" as \"""\""" instead of as \"\"\"\"""
+            char_iter.next();
+            char_iter.next();
+
+            f.write_str("\\\"\"\"")?;
+            continue;
+        }
+
+        write_character::<true>(c, f)?;
+    }
+
+    Ok(())
+}
+
 impl fmt::Display for BlockStringFormatter<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:indent$}\"\"\"", "", indent = self.indent)?;
-
+        // Rust's `lines()` iterator does not consider \r as line terminators,
+        // while graphql does. We ignore that because we'll just output an escaped \\r.
         let input_is_single_line = self.string.lines().nth(1).is_none();
-        // Should not end with a character that would change the meaning of the end quotes """
+        // Should not end with a character that would change the meaning of the end quotes
         let input_has_dangerous_tail = self.string.ends_with(['"', '\\']);
         let use_single_line =
             self.string.chars().count() < 70 && input_is_single_line && !input_has_dangerous_tail;
 
         if use_single_line {
-            for c in self.string.chars() {
-                write_character::<true>(c, f)?;
-            }
-            f.write_str(r#"""""#)?;
+            // TODO(@goto-bus-stop) would prefer not to indent here
+            write!(f, "{:indent$}\"\"\"", "", indent = self.indent)?;
+            write_block_string_line(&self.string, f)?;
+            write!(f, "\"\"\"")?;
         } else {
-            // We don't use `split_line_terminator` here so we just output \r as an escaped "\\r".
-            // \r was only used on old macs so it's not really relevant in $current_year. We only
-            // support it as input for spec compliance.
+            // TODO(@goto-bus-stop) would prefer not to indent here
+            write!(f, "{:indent$}\"\"\"", "", indent = self.indent)?;
             for line in self.string.lines() {
                 write!(f, "\n{:indent$}", "", indent = self.indent)?;
                 for c in line.chars() {
@@ -265,6 +287,46 @@ ends with "
             r#"    """
     ends with "
     """"#
+        );
+    }
+
+    #[test]
+    fn it_encodes_triple_quotes() {
+        let source = r#"this """ has """ triple """ quotes"#.to_string();
+
+        let desc = StringValue::Top { source };
+        assert_eq!(
+            desc.to_string(),
+            r#""""this \""" has \""" triple \""" quotes""""#
+        );
+
+        let source = r#"this """ has """" many """"""" quotes"#.to_string();
+
+        let desc = StringValue::Top { source };
+        println!("{desc}");
+        assert_eq!(
+            desc.to_string(),
+            r#""""this \""" has \"""" many \"""\"""" quotes""""#
+        );
+    }
+
+    #[test]
+    fn it_encodes_control_characters() {
+        let source = "control \u{009c} character".to_string();
+
+        let desc = StringValue::Top { source };
+        assert_eq!(desc.to_string(), r#""control \u009c character""#);
+
+        let source = "multi-line\nwith control \u{009c} character\n :)".to_string();
+
+        let desc = StringValue::Top { source };
+        assert_eq!(
+            desc.to_string(),
+            r#""""
+multi-line
+with control \u009c character
+ :)
+""""#
         );
     }
 }
