@@ -13,7 +13,7 @@ fn write_character<const IS_BLOCK_STRING: bool>(
         '\r' => f.write_str(r#"\r"#),
         '\t' => f.write_str(r#"\t"#),
         '\\' => f.write_str(r#"\\"#),
-        c if c.is_control() => write!(f, "\\u{:04.x}", c as u32),
+        c if c.is_control() => write!(f, "\\u{:04x}", c as u32),
         // Other unicode chars are written as is
         c => write!(f, "{c}"),
     }
@@ -63,7 +63,7 @@ impl fmt::Display for BlockStringFormatter<'_> {
         if use_single_line {
             // TODO(@goto-bus-stop) would prefer not to indent here
             write!(f, "{:indent$}\"\"\"", "", indent = self.indent)?;
-            write_block_string_line(&self.string, f)?;
+            write_block_string_line(self.string, f)?;
             write!(f, "\"\"\"")?;
         } else {
             // TODO(@goto-bus-stop) would prefer not to indent here
