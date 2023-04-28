@@ -341,7 +341,7 @@ pub(crate) fn subtype_map(db: &dyn HirDatabase) -> Arc<HashMap<String, HashSet<S
             add(name, member.name());
         }
         for extension in definition.extensions() {
-            for member in extension.union_members() {
+            for member in extension.members() {
                 add(name, member.name());
             }
         }
