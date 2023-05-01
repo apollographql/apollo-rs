@@ -245,8 +245,6 @@ pub fn validate_fragment_definition(
         diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), var_defs));
     }
 
-    diagnostics.extend(db.validate_fragment_cycles(def));
-
     diagnostics
 }
 

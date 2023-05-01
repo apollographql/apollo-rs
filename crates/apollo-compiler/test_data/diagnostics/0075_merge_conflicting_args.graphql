@@ -2,6 +2,7 @@ enum DogCommand {
     SIT
     HEEL
   }
+<<<<<<< HEAD
 
 <<<<<<< HEAD
   type Dog {
@@ -24,16 +25,33 @@ query queryPupperC($varOne: DogCommand, $varTwo: DogCommand) {
 >>>>>>> 507f174c (adjust test)
   }
 
+=======
+  
+  type Dog {
+    doesKnowCommand(dogCommand: DogCommand): Boolean
+    isAtLocation(x: Int, y: Int): Boolean
+  }
+  
+  type Query {
+    pet: Dog
+  }
+  
+>>>>>>> f967282d (fix recursive fragment spread cycles 🙏)
   query queryPupperA {
     pet {
       ...conflictingArgsOnValues
     }
   }
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> f967282d (fix recursive fragment spread cycles 🙏)
   query queryPupperB($dogCommand: DogCommand) {
     pet {
       ...conflictingArgsValueAndVar
     }
+<<<<<<< HEAD
   }
 
   query queryPupperC($varOne: DogCommand, $varTwo: DogCommand) {
@@ -54,26 +72,64 @@ query queryPupperC($varOne: DogCommand, $varTwo: DogCommand) {
     }
   }
 
+=======
+  }
+  
+  query queryPupperC($varOne: DogCommand, $varTwo: DogCommand) {
+    pet {
+      ...conflictingArgsWithVars
+    }
+  }
+  
+  query queryPupperD {
+    pet {
+      ...differingArgs
+    }
+  }
+  
+  query queryPupperE {
+    pet {
+      ...conflictingArgs
+    }
+  }
+
+>>>>>>> f967282d (fix recursive fragment spread cycles 🙏)
   fragment conflictingArgsOnValues on Dog {
     doesKnowCommand(dogCommand: SIT)
     doesKnowCommand(dogCommand: HEEL)
   }
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> f967282d (fix recursive fragment spread cycles 🙏)
   fragment conflictingArgsValueAndVar on Dog {
     doesKnowCommand(dogCommand: SIT)
     doesKnowCommand(dogCommand: $dogCommand)
   }
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> f967282d (fix recursive fragment spread cycles 🙏)
   fragment conflictingArgsWithVars on Dog {
     doesKnowCommand(dogCommand: $varOne)
     doesKnowCommand(dogCommand: $varTwo)
   }
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> f967282d (fix recursive fragment spread cycles 🙏)
   fragment differingArgs on Dog {
     doesKnowCommand(dogCommand: SIT)
     doesKnowCommand
   }
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> f967282d (fix recursive fragment spread cycles 🙏)
   fragment conflictingArgs on Dog {
     isAtLocation(x: 0)
     isAtLocation(y: 0)
