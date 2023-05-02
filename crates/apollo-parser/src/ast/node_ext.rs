@@ -152,6 +152,7 @@ impl From<ast::StringValue> for String {
     }
 }
 
+/// Handle escaped characters in a StringValue. Panics on invalid escape sequences.
 fn unescape_string(input: &str) -> String {
     let mut output = String::with_capacity(input.len());
 
@@ -195,6 +196,8 @@ fn unescape_string(input: &str) -> String {
 impl From<&'_ ast::StringValue> for String {
     fn from(val: &'_ ast::StringValue) -> Self {
         let text = text_of_first_token(val.syntax());
+        // Would panic if the contents are invalid, but the lexer already guarantees that the
+        // string is valid.
         unescape_string(text.trim_start_matches('"').trim_end_matches('"'))
     }
 }
