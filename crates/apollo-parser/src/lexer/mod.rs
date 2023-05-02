@@ -163,14 +163,11 @@ impl Cursor<'_> {
         let mut buf = String::new();
         buf.push(first_char); // the first " we already matched on
 
-        let c = match self.bump() {
-            None => {
-                return Err(Error::new(
-                    "unexpected end of data while lexing string value",
-                    "\"".to_string(),
-                ));
-            }
-            Some(c) => c,
+        let Some(c) = self.bump() else {
+            return Err(Error::new(
+                "unexpected end of data while lexing string value",
+                "\"".to_string(),
+            ));
         };
 
         match c {
@@ -178,12 +175,42 @@ impl Cursor<'_> {
             t => {
                 buf.push(t);
                 let mut was_backslash = t == '\\';
+                let mut unicode_chars_left = 0;
 
                 while !self.is_eof() {
                     let c = self.bump().unwrap();
 
-                    if was_backslash && !is_escaped_char(c) && c != 'u' {
-                        self.add_err(Error::new("unexpected escaped character", c.to_string()));
+                    if unicode_chars_left > 0 {
+                        unicode_chars_left -= 1;
+
+                        if c == '"' {
+                            buf.push('"');
+                            self.add_err(Error::new(
+                                "incomplete unicode escape sequence",
+                                c.to_string(),
+                            ));
+                            break;
+                        }
+
+                        if !c.is_ascii_hexdigit() {
+                            self.add_err(Error::new(
+                                "invalid unicode escape sequence",
+                                c.to_string(),
+                            ));
+                        }
+                    }
+
+                    if was_backslash {
+                        match c {
+                            'u' => unicode_chars_left = 4,
+                            c if is_escaped_char(c) => (),
+                            c => {
+                                self.add_err(Error::new(
+                                    "unexpected escaped character",
+                                    c.to_string(),
+                                ));
+                            }
+                        }
                     }
 
                     buf.push(c);

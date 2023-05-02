@@ -67,8 +67,8 @@ fn assert_errors_are_absent(errors: &[Error], path: &Path) {
             "errors: {}",
             errors
                 .iter()
-                .map(|e| e.message())
-                .collect::<Vec<&str>>()
+                .map(|e| e.to_string())
+                .collect::<Vec<_>>()
                 .join("\n")
         );
         panic!("There should be no errors in the file {:?}", path.display(),);

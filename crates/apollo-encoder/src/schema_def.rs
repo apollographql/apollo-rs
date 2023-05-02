@@ -104,7 +104,7 @@ impl fmt::Display for SchemaDefinition {
             write!(f, "extend ")?;
         // No description when it's an extension schema
         } else if let Some(description) = &self.description {
-            write!(f, "{description}")?;
+            writeln!(f, "{description}")?;
         }
 
         write!(f, "schema")?;

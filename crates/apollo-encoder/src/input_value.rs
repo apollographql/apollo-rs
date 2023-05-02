@@ -79,7 +79,7 @@ impl fmt::Display for InputValueDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.description {
             Some(description) => {
-                writeln!(f, "\n    {description}")?;
+                writeln!(f, "\n{description}")?;
 
                 write!(f, "    {}: {}", self.name, self.type_)?;
             }
