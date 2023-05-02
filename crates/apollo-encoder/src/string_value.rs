@@ -51,24 +51,12 @@ impl fmt::Display for BlockStringFormatter<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let indent = " ".repeat(self.indent);
 
-        let input_is_single_line = self.string.lines().nth(1).is_none();
-        // Should not end with a character that would change the meaning of the end quotes
-        let input_has_dangerous_tail = self.string.ends_with(['"', '\\']);
-        let use_single_line =
-            self.string.chars().count() < 70 && input_is_single_line && !input_has_dangerous_tail;
-
-        if use_single_line {
-            write!(f, "{indent}\"\"\"")?;
-            write_block_string_line(self.string, f)?;
-            write!(f, "\"\"\"")?;
-        } else {
-            write!(f, "{indent}\"\"\"")?;
-            for line in self.string.lines() {
-                write!(f, "\n{indent}")?;
-                write_block_string_line(line, f)?;
-            }
-            write!(f, "\n{indent}\"\"\"")?;
+        write!(f, "{indent}\"\"\"")?;
+        for line in self.string.lines() {
+            write!(f, "\n{indent}")?;
+            write_block_string_line(line, f)?;
         }
+        write!(f, "\n{indent}\"\"\"")?;
 
         Ok(())
     }
@@ -196,7 +184,9 @@ mod test {
 
         assert_eq!(
             desc.to_string(),
-            r#""""котя(猫, ねこ, قطة) любить дрімати в "кутку" з рослинами""""#
+            r#""""
+котя(猫, ねこ, قطة) любить дрімати в "кутку" з рослинами
+""""#
         );
     }
 
@@ -308,7 +298,9 @@ ends with "
         let desc = StringValue::Top { source };
         assert_eq!(
             desc.to_string(),
-            r#""""this \""" has \""" triple \""" quotes""""#
+            r#""""
+this \""" has \""" triple \""" quotes
+""""#
         );
 
         let source = r#"this """ has """" many """"""" quotes"#.to_string();
@@ -317,7 +309,9 @@ ends with "
         println!("{desc}");
         assert_eq!(
             desc.to_string(),
-            r#""""this \""" has \"""" many \"""\"""" quotes""""#
+            r#""""
+this \""" has \"""" many \"""\"""" quotes
+""""#
         );
     }
 
