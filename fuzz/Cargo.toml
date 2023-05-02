@@ -22,9 +22,6 @@ env_logger = "0.10.0"
 log = "0.4.14"
 similar-asserts = "1.5.0"
 
-[dependencies.apollo-parser]
-path = "../crates/apollo-parser"
-
 [[bin]]
 name = "parser"
 path = "fuzz_targets/parser.rs"
@@ -40,5 +37,11 @@ doc = false
 [[bin]]
 name = "reparse"
 path = "fuzz_targets/reparse.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "strings"
+path = "fuzz_targets/strings.rs"
 test = false
 doc = false
