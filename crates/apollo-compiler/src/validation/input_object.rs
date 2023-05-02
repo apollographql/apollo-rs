@@ -124,7 +124,7 @@ pub fn validate_input_object_definition(
     let fields = collect_nodes(
         input_obj.input_fields_definition.as_ref(),
         input_obj.extensions(),
-        hir::InputObjectTypeExtension::input_fields_definition,
+        hir::InputObjectTypeExtension::fields,
     );
     diagnostics.extend(db.validate_input_values(
         Arc::new(fields),
