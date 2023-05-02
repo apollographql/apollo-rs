@@ -192,7 +192,7 @@ impl Cursor<'_> {
                             break;
                         }
 
-                        if !c.is_digit(16) {
+                        if !c.is_ascii_hexdigit() {
                             self.add_err(Error::new(
                                 "invalid unicode escape sequence",
                                 c.to_string(),
