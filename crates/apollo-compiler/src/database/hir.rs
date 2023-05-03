@@ -1071,9 +1071,41 @@ impl Value {
             _ => Vec::new(),
         }
     }
+
+    pub fn coerce(&self, db: &dyn HirDatabase, ty: &TypeDefinition) -> &Value {
+        match self {
+            Value::Variable(_) => todo!(),
+            Value::Int(_) => todo!(),
+            Value::Float(_) => todo!(),
+            Value::String(_) => todo!(),
+            Value::Boolean(_) => todo!(),
+            Value::Null => todo!(),
+            Value::Enum(_) => todo!(),
+            Value::List(_) => todo!(),
+            Value::Object(_) => todo!(),
+        }
+
+        self
+    }
 }
 
-impl TryFrom<Value> for 
+// impl TryFrom<Value> for Type {
+//     type Error = &'static str;
+//
+//     fn try_from(val: Value) -> Result<Self, Self::Error> {
+//         match val {
+//             Value::Variable(var) => todo!(),
+//             Value::Int(i) => todo!(),
+//             Value::Float(f) => todo!(),
+//             Value::String(s) => todo!(),
+//             Value::Boolean(b) => todo!(),
+//             Value::Null => todo!(),
+//             Value::Enum(e) => todo!(),
+//             Value::List(li) => todo!(),
+//             Value::Object(obj) => todo!(),
+//         }
+//     }
+// }
 
 /// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
 ///

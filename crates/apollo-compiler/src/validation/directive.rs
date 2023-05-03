@@ -229,12 +229,26 @@ pub fn validate_directives(
                     .find(|val| arg.name() == val.name())
                     .cloned();
 
+                // @b(a: true)
                 if let Some(input_val) = input_val {
                     if let Some(diag) = db
                         .validate_variable_usage(input_val.clone(), var_defs.clone(), arg.clone())
                         .err()
                     {
                         diagnostics.push(diag)
+                    } else {
+                        let ty = input_val.ty().type_def(db.upcast());
+                        match arg.value() {
+                            hir::Value::Variable(_) => todo!(),
+                            hir::Value::Int(_) => todo!(),
+                            hir::Value::Float(_) => todo!(),
+                            hir::Value::String(_) => todo!(),
+                            hir::Value::Boolean(_) => todo!(),
+                            hir::Value::Null => todo!(),
+                            hir::Value::Enum(_) => todo!(),
+                            hir::Value::List(_) => todo!(),
+                            hir::Value::Object(_) => todo!(), //
+                        }
                     }
                 } else {
                     diagnostics.push(
