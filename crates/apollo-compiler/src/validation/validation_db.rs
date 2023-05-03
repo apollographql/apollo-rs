@@ -246,7 +246,7 @@ pub trait ValidationDatabase:
     #[salsa::invoke(variable::validate_variable_usage)]
     fn validate_variable_usage(
         &self,
-        var_usage: Option<InputValueDefinition>,
+        var_usage: InputValueDefinition,
         var_defs: Arc<Vec<VariableDefinition>>,
         arg: Argument,
     ) -> Result<(), ApolloDiagnostic>;
