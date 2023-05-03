@@ -21,13 +21,23 @@ pub fn validate_field(
         if !field.arguments().is_empty() {
             diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
             for arg in field.arguments() {
-                let exists = field_definition
+                let input_val = field_definition
                     .arguments()
                     .input_values()
                     .iter()
-                    .any(|arg_def| arg.name() == arg_def.name());
-
-                if !exists {
+                    .find(|val| arg.name() == val.name())
+                    .cloned();
+                if let Some(input_val) = input_val {
+                    if let Some(diag) = db
+                        .validate_variable_usage(input_val.clone(), var_defs.clone(), arg.clone())
+                        .err()
+                    {
+                        diagnostics.push(diag)
+                    } else {
+                        let defined_arg_ty = arg.value();
+                        let schema_ty = input_val.ty();
+                    }
+                } else {
                     let mut labels = vec![Label::new(arg.loc, "argument name not found")];
                     if let Some(loc) = field_definition.loc {
                         labels.push(Label::new(loc, "field declared here"));
@@ -42,20 +52,6 @@ pub fn validate_field(
                         )
                         .labels(labels),
                     );
-                }
-                // Let var_usage be the input value where the original
-                // argument for the current variable usage is defined.
-                let var_usage = field_definition
-                    .arguments()
-                    .input_values()
-                    .iter()
-                    .find(|val| val.name() == arg.name())
-                    .cloned();
-                if let Some(diag) = db
-                    .validate_variable_usage(var_usage, var_defs.clone(), arg.clone())
-                    .err()
-                {
-                    diagnostics.push(diag)
                 }
             }
         }
