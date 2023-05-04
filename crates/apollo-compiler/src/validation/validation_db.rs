@@ -475,4 +475,69 @@ query {
             "executable documents must not contain ObjectTypeDefinition"
         );
     }
+
+    #[test]
+    fn executable_definition_with_cycles_do_not_overflow_stack() {
+        let input_type_system = r#"
+type Query {
+    name: String
+}
+"#;
+
+        let input_executable = r#"
+{
+    ...q
+}
+fragment q on Query {
+    ...q
+}
+"#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(input_type_system, "schema.graphql");
+        compiler.add_executable(input_executable, "query.graphql");
+
+        let diagnostics = compiler.validate();
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(
+            diagnostics[0].data.to_string(),
+            "`q` fragment cannot reference itself"
+        );
+    }
+
+    #[test]
+    fn executable_definition_with_nested_cycles_do_not_overflow_stack() {
+        let input_type_system = r#"
+type Query {
+    obj: TestObject
+}
+
+type TestObject {
+    name: String
+}
+"#;
+
+        let input_executable = r#"
+{
+    obj {
+        ...q
+    }
+}
+
+fragment q on TestObject {
+    ...q
+}
+"#;
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(input_type_system, "schema.graphql");
+        compiler.add_executable(input_executable, "query.graphql");
+
+        let diagnostics = compiler.validate();
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(
+            diagnostics[0].data.to_string(),
+            "`q` fragment cannot reference itself"
+        );
+    }
 }

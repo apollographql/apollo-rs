@@ -529,6 +529,11 @@ impl OperationDefinition {
         db.operation_fragment_spread_fields(self.selection_set.clone())
     }
 
+    /// Get all fragment definitions referenced by the operation.
+    pub fn fragment_references(&self, db: &dyn HirDatabase) -> Arc<Vec<Arc<FragmentDefinition>>> {
+        db.operation_fragment_references(self.selection_set.clone())
+    }
+
     /// Get the AST location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
