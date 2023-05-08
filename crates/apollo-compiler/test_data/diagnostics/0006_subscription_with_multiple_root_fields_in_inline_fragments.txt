@@ -8,47 +8,6 @@
             file_id: FileId {
                 id: 6,
             },
-            offset: 116,
-            length: 25,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 6,
-                    },
-                    offset: 116,
-                    length: 25,
-                },
-                text: "`disallowedSecondRootField` field is not defined",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 6,
-                    },
-                    offset: 151,
-                    length: 42,
-                },
-                text: "`Subscription` declared here",
-            },
-        ],
-        help: Some(
-            "`disallowedSecondRootField` is not defined on `Subscription` type",
-        ),
-        data: UndefinedField {
-            field: "disallowedSecondRootField",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            6: "0006_subscription_with_multiple_root_fields_in_inline_fragments.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 6,
-            },
             offset: 0,
             length: 149,
         },
