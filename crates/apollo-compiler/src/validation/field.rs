@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
+    hir::{self, TypeDefinition, Value},
     validation::ValidationDatabase,
 };
 
@@ -34,8 +34,9 @@ pub fn validate_field(
                     {
                         diagnostics.push(diag)
                     } else {
-                        let defined_arg_ty = arg.value();
-                        let schema_ty = input_val.ty();
+                        let defined_arg_ty = arg.value.clone();
+                        let type_def = input_val.ty().type_def(db.upcast());
+                        is_value_coercible(type_def, defined_arg_ty);
                     }
                 } else {
                     let mut labels = vec![Label::new(arg.loc, "argument name not found")];
@@ -289,4 +290,55 @@ pub fn validate_leaf_field_selection(
             type_def.loc(),
             format!("`{tname}` declared here"),
         )))
+}
+
+pub fn is_value_coercible(
+    type_def: Option<hir::TypeDefinition>,
+    defined_arg_ty: hir::Value,
+) -> bool {
+    if let Some(type_def) = type_def {
+        match (defined_arg_ty, type_def.clone()) {
+            (Value::List(li), _) => {
+                return li
+                    .iter()
+                    .all(|val| is_value_coercible(Some(type_def.clone()), val.clone()))
+            }
+            (Value::Float(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
+                return scalar.is_float()
+            }
+            (Value::Int(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
+                return scalar.is_int() || scalar.is_float() || scalar.is_id()
+            }
+            (Value::String(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
+                return scalar.is_string() || scalar.is_id()
+            }
+            (Value::Boolean(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
+                return scalar.is_boolean()
+            }
+            (Value::Null, TypeDefinition::ScalarTypeDefinition(_)) => return true,
+            (Value::Variable(_), TypeDefinition::ScalarTypeDefinition(_)) => todo!(),
+            (_, TypeDefinition::ScalarTypeDefinition(_)) => return false,
+            (Value::Null, TypeDefinition::EnumTypeDefinition(_)) => return true,
+            (Value::String(str), TypeDefinition::EnumTypeDefinition(enum_)) => {
+                return enum_.values().any(|val| val.enum_value() == str)
+            }
+            (Value::Variable(_), TypeDefinition::EnumTypeDefinition(_)) => todo!(),
+            (_, TypeDefinition::EnumTypeDefinition(_)) => return false,
+            (Value::Object(obj), TypeDefinition::InputObjectTypeDefinition(input_obj)) => {
+                return input_obj.fields().all(|f| {
+                    obj.iter().all(|(name, val)| {
+                        if f.name() == name.src() {
+                            is_value_coercible(f.ty().type_def(db.upcast()), val.clone());
+                        }
+                        false
+                    })
+                })
+            }
+            (Value::Variable(_), TypeDefinition::InputObjectTypeDefinition(_)) => todo!(),
+            (_, TypeDefinition::InputObjectTypeDefinition(_)) => return false,
+            _ => return false,
+        }
+    }
+
+    false
 }

@@ -1071,22 +1071,6 @@ impl Value {
             _ => Vec::new(),
         }
     }
-
-    pub fn is_value_coerceable(&self, db: &dyn HirDatabase, ty: &TypeDefinition) -> bool {
-        match self {
-            Value::Variable(_) => todo!(),
-            Value::Int(i) => if ty.is_scalar_type_definition() && ty.name() == "Int" {},
-            Value::Float(_) => todo!(),
-            Value::String(_) => todo!(),
-            Value::Boolean(_) => todo!(),
-            Value::Null => todo!(),
-            Value::Enum(_) => todo!(),
-            Value::List(_) => todo!(),
-            Value::Object(_) => todo!(),
-        }
-
-        true
-    }
 }
 
 // impl TryFrom<Value> for Type {
