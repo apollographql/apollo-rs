@@ -200,8 +200,7 @@ fn is_variable_usage_allowed(
         // 3.a. let hasNonNullVariableDefaultValue be true
         // if a default value exists for variableDefinition
         // and is not the value null.
-        let has_non_null_default_value = var_def.default_value().is_some()
-            && (var_def.default_value().unwrap() != &hir::Value::Null);
+        let has_non_null_default_value = matches!(var_def.default_value(), Some(&hir::Value::Null));
         // 3.b. Let hasLocationDefaultValue be true if a default
         // value exists for the Argument or ObjectField where
         // variableUsage is located.
@@ -218,6 +217,7 @@ fn is_variable_usage_allowed(
         // nullable type of location_ty.
         match location_ty {
             hir::Type::NonNull { ty: loc_ty, .. } => {
+                // 3.e. Return AreTypesCompatible(variableType, nullableLocationType).
                 return are_types_compatible(loc_ty, variable_ty)
             }
             hir::Type::List { ty: loc_ty, .. } => return are_types_compatible(loc_ty, variable_ty),
