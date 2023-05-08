@@ -47,7 +47,7 @@
             file_id: FileId {
                 id: 89,
             },
-            offset: 147,
+            offset: 104,
             length: 42,
         },
         labels: [
@@ -56,7 +56,7 @@
                     file_id: FileId {
                         id: 89,
                     },
-                    offset: 147,
+                    offset: 104,
                     length: 14,
                 },
                 text: "recursive fragment definition",
@@ -66,7 +66,7 @@
                     file_id: FileId {
                         id: 89,
                     },
-                    offset: 136,
+                    offset: 222,
                     length: 8,
                 },
                 text: "refers to itself here",
@@ -74,46 +74,7 @@
         ],
         help: None,
         data: RecursiveFragmentDefinition {
-            name: "fragB",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            89: "0092_recursive_fragment_spread.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 89,
-            },
-            offset: 190,
-            length: 42,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 89,
-                    },
-                    offset: 190,
-                    length: 14,
-                },
-                text: "recursive fragment definition",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 89,
-                    },
-                    offset: 179,
-                    length: 8,
-                },
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveFragmentDefinition {
-            name: "fragC",
+            name: "fragA",
         },
     },
 ]

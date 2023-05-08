@@ -9,37 +9,54 @@ use crate::{
 pub fn validate_field(
     db: &dyn ValidationDatabase,
     field: Arc<hir::Field>,
+    var_defs: Arc<Vec<hir::VariableDefinition>>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics =
-        db.validate_directives(field.directives().to_vec(), hir::DirectiveLocation::Field);
-
-    if !field.arguments().is_empty() {
-        diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
-    }
+    let mut diagnostics = db.validate_directives(
+        field.directives().to_vec(),
+        hir::DirectiveLocation::Field,
+        var_defs.clone(),
+    );
 
     if let Some(field_definition) = field.field_definition(db.upcast()) {
-        for arg in field.arguments() {
-            let exists = field_definition
-                .arguments()
-                .input_values()
-                .iter()
-                .any(|arg_def| arg.name() == arg_def.name());
+        if !field.arguments().is_empty() {
+            diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
+            for arg in field.arguments() {
+                let exists = field_definition
+                    .arguments()
+                    .input_values()
+                    .iter()
+                    .any(|arg_def| arg.name() == arg_def.name());
 
-            if !exists {
-                let mut labels = vec![Label::new(arg.loc, "argument name not found")];
-                if let Some(loc) = field_definition.loc {
-                    labels.push(Label::new(loc, "field declared here"));
-                };
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        arg.loc.into(),
-                        DiagnosticData::UndefinedArgument {
-                            name: arg.name().into(),
-                        },
-                    )
-                    .labels(labels),
-                );
+                if !exists {
+                    let mut labels = vec![Label::new(arg.loc, "argument name not found")];
+                    if let Some(loc) = field_definition.loc {
+                        labels.push(Label::new(loc, "field declared here"));
+                    };
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            arg.loc.into(),
+                            DiagnosticData::UndefinedArgument {
+                                name: arg.name().into(),
+                            },
+                        )
+                        .labels(labels),
+                    );
+                }
+                // Let var_usage be the input value where the original
+                // argument for the current variable usage is defined.
+                let var_usage = field_definition
+                    .arguments()
+                    .input_values()
+                    .iter()
+                    .find(|val| val.name() == arg.name())
+                    .cloned();
+                if let Some(diag) = db
+                    .validate_variable_usage(var_usage, var_defs.clone(), arg.clone())
+                    .err()
+                {
+                    diagnostics.push(diag)
+                }
             }
         }
 
@@ -81,7 +98,8 @@ pub fn validate_field(
     if let Some(field_type) = field_type {
         match db.validate_leaf_field_selection(field.clone(), field_type) {
             Err(diag) => diagnostics.push(diag),
-            Ok(_) => diagnostics.extend(db.validate_selection_set(field.selection_set().clone())),
+            Ok(_) => diagnostics
+                .extend(db.validate_selection_set(field.selection_set().clone(), var_defs)),
         }
     } else {
         let help = format!(
@@ -128,6 +146,8 @@ pub fn validate_field_definition(
     let mut diagnostics = db.validate_directives(
         field.directives().to_vec(),
         hir::DirectiveLocation::FieldDefinition,
+        // field definitions don't have variables
+        Arc::new(Vec::new()),
     );
 
     diagnostics.extend(db.validate_arguments_definition(

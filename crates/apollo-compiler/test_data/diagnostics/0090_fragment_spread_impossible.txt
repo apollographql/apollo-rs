@@ -8,7 +8,59 @@
             file_id: FileId {
                 id: 87,
             },
-            offset: 450,
+            offset: 476,
+            length: 26,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 476,
+                    length: 26,
+                },
+                text: "fragment `catInDogFragmentInvalid` cannot be applied",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 638,
+                    length: 77,
+                },
+                text: "fragment declared with type condition `Dog` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 262,
+                    length: 65,
+                },
+                text: "type condition `Dog` is not assignable to this type",
+            },
+        ],
+        help: None,
+        data: InvalidFragmentSpread {
+            name: Some(
+                "catInDogFragmentInvalid",
+            ),
+            type_name: "Human",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            87: "0090_fragment_spread_impossible.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 87,
+            },
+            offset: 682,
             length: 31,
         },
         labels: [
@@ -17,7 +69,7 @@
                     file_id: FileId {
                         id: 87,
                     },
-                    offset: 450,
+                    offset: 682,
                     length: 31,
                 },
                 text: "fragment applied with type condition `Cat` here",
@@ -27,7 +79,7 @@
                     file_id: FileId {
                         id: 87,
                     },
-                    offset: 75,
+                    offset: 108,
                     length: 61,
                 },
                 text: "type condition `Cat` is not assignable to this type",
@@ -48,38 +100,7 @@
             file_id: FileId {
                 id: 87,
             },
-            offset: 406,
-            length: 77,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 406,
-                    length: 77,
-                },
-                text: "`catInDogFragmentInvalid` is defined here",
-            },
-        ],
-        help: Some(
-            "fragment `catInDogFragmentInvalid` must be used in an operation",
-        ),
-        data: UnusedFragment {
-            name: "catInDogFragmentInvalid",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 527,
+            offset: 759,
             length: 31,
         },
         labels: [
@@ -88,7 +109,7 @@
                     file_id: FileId {
                         id: 87,
                     },
-                    offset: 527,
+                    offset: 759,
                     length: 31,
                 },
                 text: "fragment applied with type condition `Dog` here",
@@ -98,7 +119,7 @@
                     file_id: FileId {
                         id: 87,
                     },
-                    offset: 0,
+                    offset: 33,
                     length: 38,
                 },
                 text: "type condition `Dog` is not assignable to this type",
@@ -119,38 +140,7 @@
             file_id: FileId {
                 id: 87,
             },
-            offset: 485,
-            length: 75,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 485,
-                    length: 75,
-                },
-                text: "`sentientFragment` is defined here",
-            },
-        ],
-        help: Some(
-            "fragment `sentientFragment` must be used in an operation",
-        ),
-        data: UnusedFragment {
-            name: "sentientFragment",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 612,
+            offset: 844,
             length: 31,
         },
         labels: [
@@ -159,7 +149,7 @@
                     file_id: FileId {
                         id: 87,
                     },
-                    offset: 612,
+                    offset: 844,
                     length: 31,
                 },
                 text: "fragment applied with type condition `Cat` here",
@@ -169,7 +159,7 @@
                     file_id: FileId {
                         id: 87,
                     },
-                    offset: 370,
+                    offset: 403,
                     length: 34,
                 },
                 text: "type condition `Cat` is not assignable to this type",
@@ -190,8 +180,8 @@
             file_id: FileId {
                 id: 87,
             },
-            offset: 562,
-            length: 83,
+            offset: 571,
+            length: 28,
         },
         labels: [
             Label {
@@ -199,17 +189,38 @@
                     file_id: FileId {
                         id: 87,
                     },
-                    offset: 562,
-                    length: 83,
+                    offset: 571,
+                    length: 28,
                 },
-                text: "`humanOrAlienFragment` is defined here",
+                text: "fragment `nonIntersectingInterfaces` cannot be applied",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 879,
+                    length: 68,
+                },
+                text: "fragment declared with type condition `Pet` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 262,
+                    length: 65,
+                },
+                text: "type condition `Pet` is not assignable to this type",
             },
         ],
-        help: Some(
-            "fragment `humanOrAlienFragment` must be used in an operation",
-        ),
-        data: UnusedFragment {
-            name: "humanOrAlienFragment",
+        help: None,
+        data: InvalidFragmentSpread {
+            name: Some(
+                "nonIntersectingInterfaces",
+            ),
+            type_name: "Human",
         },
     },
     ApolloDiagnostic {
@@ -221,7 +232,7 @@
             file_id: FileId {
                 id: 87,
             },
-            offset: 693,
+            offset: 925,
             length: 20,
         },
         labels: [
@@ -230,7 +241,7 @@
                     file_id: FileId {
                         id: 87,
                     },
-                    offset: 693,
+                    offset: 925,
                     length: 20,
                 },
                 text: "fragment `sentientFragment2` cannot be applied",
@@ -240,7 +251,7 @@
                     file_id: FileId {
                         id: 87,
                     },
-                    offset: 717,
+                    offset: 949,
                     length: 49,
                 },
                 text: "fragment declared with type condition `Sentient` here",
@@ -250,7 +261,7 @@
                     file_id: FileId {
                         id: 87,
                     },
-                    offset: 40,
+                    offset: 73,
                     length: 33,
                 },
                 text: "type condition `Sentient` is not assignable to this type",
@@ -262,37 +273,6 @@
                 "sentientFragment2",
             ),
             type_name: "Pet",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 647,
-            length: 68,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 647,
-                    length: 68,
-                },
-                text: "`nonIntersectingInterfaces` is defined here",
-            },
-        ],
-        help: Some(
-            "fragment `nonIntersectingInterfaces` must be used in an operation",
-        ),
-        data: UnusedFragment {
-            name: "nonIntersectingInterfaces",
         },
     },
 ]

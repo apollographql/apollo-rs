@@ -45,129 +45,6 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 108,
-            length: 29,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 108,
-                    length: 29,
-                },
-                text: "fragment declares unsupported type condition `{type_cond}`",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 0,
-                    },
-                    offset: 2916,
-                    length: 150,
-                },
-                text: "`Int` is defined here",
-            },
-        ],
-        help: Some(
-            "fragments cannot be defined on enums, scalars and input object",
-        ),
-        data: InvalidFragmentTarget {
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            84: "0087_fragment_type_condition_on_composite_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 84,
-            },
-            offset: 244,
-            length: 39,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 244,
-                    length: 39,
-                },
-                text: "fragment declares unsupported type condition `{type_cond}`",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 0,
-                    },
-                    offset: 2916,
-                    length: 150,
-                },
-                text: "`Int` is defined here",
-            },
-        ],
-        help: Some(
-            "fragments cannot be defined on enums, scalars and input object",
-        ),
-        data: InvalidFragmentTarget {
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            84: "0087_fragment_type_condition_on_composite_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 84,
-            },
-            offset: 277,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 277,
-                    length: 4,
-                },
-                text: "`name` field is not defined",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 0,
-                    },
-                    offset: 2916,
-                    length: 150,
-                },
-                text: "`Int` declared here",
-            },
-        ],
-        help: Some(
-            "`name` is not defined on `Int` type",
-        ),
-        data: UndefinedField {
-            field: "name",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            84: "0087_fragment_type_condition_on_composite_types.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 84,
-            },
             offset: 328,
             length: 25,
         },
@@ -180,7 +57,48 @@
                     offset: 328,
                     length: 25,
                 },
-                text: "fragment declares unsupported type condition `{type_cond}`",
+                text: "fragment declares unsupported type condition `Int`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 0,
+                    },
+                    offset: 2916,
+                    length: 150,
+                },
+                text: "`Int` is defined here",
+            },
+        ],
+        help: Some(
+            "fragments cannot be defined on enums, scalars and input object",
+        ),
+        data: InvalidFragmentTarget {
+            ty: "Int",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            84: "0087_fragment_type_condition_on_composite_types.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 84,
+            },
+            offset: 108,
+            length: 29,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 84,
+                    },
+                    offset: 108,
+                    length: 29,
+                },
+                text: "fragment declares unsupported type condition `Int`",
             },
             Label {
                 location: DiagnosticLocation {

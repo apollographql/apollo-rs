@@ -1,68 +1,68 @@
 enum DogCommand {
-  SIT
-  HEEL
-}
-
-type Dog {
-  doesKnowCommand(dogCommand: DogCommand): Boolean
-  isAtLocation(x: Int, y: Int): Boolean
-}
-
-type Query {
-  pet: Dog
-}
-
-query queryPupperA {
-  pet {
-    ...conflictingArgsOnValues
+    SIT
+    HEEL
   }
-}
 
-query queryPupperB {
-  pet {
-    ...conflictingArgsValueAndVar
+  type Dog {
+    doesKnowCommand(dogCommand: DogCommand): Boolean
+    isAtLocation(x: Int, y: Int): Boolean
   }
-}
 
-query queryPupperC {
-  pet {
-    ...conflictingArgsValueWithVars
+  type Query {
+    pet: Dog
   }
-}
 
-query queryPupperD {
-  pet {
-    ...differingArgs
+  query queryPupperA {
+    pet {
+      ...conflictingArgsOnValues
+    }
   }
-}
 
-query queryPupperE {
-  pet {
-    ...conflictingArgs
+  query queryPupperB($dogCommand: DogCommand) {
+    pet {
+      ...conflictingArgsValueAndVar
+    }
   }
-}
 
-fragment conflictingArgsOnValues on Dog {
-  doesKnowCommand(dogCommand: SIT)
-  doesKnowCommand(dogCommand: HEEL)
-}
+  query queryPupperC($varOne: DogCommand, $varTwo: DogCommand) {
+    pet {
+    ...conflictingArgsWithVars
+    }
+  }
 
-fragment conflictingArgsValueAndVar on Dog {
-  doesKnowCommand(dogCommand: SIT)
-  doesKnowCommand(dogCommand: $dogCommand)
-}
+  query queryPupperD {
+    pet {
+      ...differingArgs
+    }
+  }
 
-fragment conflictingArgsWithVars on Dog {
-  doesKnowCommand(dogCommand: $varOne)
-  doesKnowCommand(dogCommand: $varTwo)
-}
+  query queryPupperE {
+    pet {
+      ...conflictingArgs
+    }
+  }
 
-fragment differingArgs on Dog {
-  doesKnowCommand(dogCommand: SIT)
-  doesKnowCommand
-}
+  fragment conflictingArgsOnValues on Dog {
+    doesKnowCommand(dogCommand: SIT)
+    doesKnowCommand(dogCommand: HEEL)
+  }
 
-fragment conflictingArgs on Dog {
-  isAtLocation(x: 0)
-  isAtLocation(y: 0)
-}
+  fragment conflictingArgsValueAndVar on Dog {
+    doesKnowCommand(dogCommand: SIT)
+    doesKnowCommand(dogCommand: $dogCommand)
+  }
+
+  fragment conflictingArgsWithVars on Dog {
+    doesKnowCommand(dogCommand: $varOne)
+    doesKnowCommand(dogCommand: $varTwo)
+  }
+
+  fragment differingArgs on Dog {
+    doesKnowCommand(dogCommand: SIT)
+    doesKnowCommand
+  }
+
+  fragment conflictingArgs on Dog {
+    isAtLocation(x: 0)
+    isAtLocation(y: 0)
+  }

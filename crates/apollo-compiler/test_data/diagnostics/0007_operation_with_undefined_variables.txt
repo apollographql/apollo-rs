@@ -8,8 +8,8 @@
             file_id: FileId {
                 id: 7,
             },
-            offset: 42,
-            length: 18,
+            offset: 35,
+            length: 25,
         },
         labels: [
             Label {

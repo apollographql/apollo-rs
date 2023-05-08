@@ -38,6 +38,22 @@ or the same in powershell:
 $env:UPDATE_EXPECT=1; cargo test --package apollo-parser
 ```
 
+To run compiler tests _and_ let the testing framework make changes to the incorrect files on a unix system:
+
+```bash
+env UPDATE_EXPECT=1 cargo test --package apollo-compiler
+```
+or the same in powershell:
+```bash
+$env:UPDATE_EXPECT=1; cargo test --package apollo-compiler
+```
+
+You can also run individual test files from the `test_data` directory in 
+`apollo-compiler` crate. The output will be the current file's validation diagnostics:
+```bash
+cargo run --example validate /path/to/test/file
+```
+
 To format your code:
 ```bash
 rustup component add rustfmt

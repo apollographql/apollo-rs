@@ -40,6 +40,46 @@
             file_id: FileId {
                 id: 56,
             },
+            offset: 55,
+            length: 18,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 15,
+                    length: 9,
+                },
+                text: "variable `cat` of type `Cat` is declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 55,
+                    length: 18,
+                },
+                text: "argument `atOtherHomes` of type `Boolean` is declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedVariableUsage {
+            var_name: "cat",
+            arg_name: "atOtherHomes",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 56,
+            },
             offset: 101,
             length: 10,
         },
@@ -61,6 +101,46 @@
         data: InputType {
             name: "dog",
             ty: "ObjectTypeDefinition",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 56,
+            },
+            offset: 142,
+            length: 18,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 101,
+                    length: 10,
+                },
+                text: "variable `dog` of type `Dog!` is declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 142,
+                    length: 18,
+                },
+                text: "argument `atOtherHomes` of type `Boolean` is declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedVariableUsage {
+            var_name: "dog",
+            arg_name: "atOtherHomes",
         },
     },
     ApolloDiagnostic {
@@ -104,6 +184,46 @@
             file_id: FileId {
                 id: 56,
             },
+            offset: 220,
+            length: 21,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 190,
+                    length: 12,
+                },
+                text: "variable `pets` of type `[Pet]` is declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 220,
+                    length: 21,
+                },
+                text: "argument `booleanListArg` of type `[Boolean!]` is declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedVariableUsage {
+            var_name: "pets",
+            arg_name: "booleanListArg",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 56,
+            },
             offset: 266,
             length: 19,
         },
@@ -136,6 +256,46 @@
             file_id: FileId {
                 id: 56,
             },
+            offset: 316,
+            length: 23,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 266,
+                    length: 19,
+                },
+                text: "variable `catOrDog` of type `CatOrDog` is declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 316,
+                    length: 23,
+                },
+                text: "argument `atOtherHomes` of type `Boolean` is declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedVariableUsage {
+            var_name: "catOrDog",
+            arg_name: "atOtherHomes",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 56,
+            },
             offset: 369,
             length: 17,
         },
@@ -154,6 +314,46 @@
         help: None,
         data: UndefinedDefinition {
             name: "Dragon",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            56: "0056_variables_are_input_types.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 56,
+            },
+            offset: 417,
+            length: 23,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 369,
+                    length: 17,
+                },
+                text: "variable `catOrDog` of type `Dragon` is declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 56,
+                    },
+                    offset: 417,
+                    length: 23,
+                },
+                text: "argument `atOtherHomes` of type `Boolean` is declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedVariableUsage {
+            var_name: "catOrDog",
+            arg_name: "atOtherHomes",
         },
     },
 ]

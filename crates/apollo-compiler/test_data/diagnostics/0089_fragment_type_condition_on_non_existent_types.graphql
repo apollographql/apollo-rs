@@ -1,10 +1,10 @@
 query Query {
   interface {
     ...invalidFragmentCondition
-    ...invalidInlineFragment  
-      ... on MissingSecondType {
-        a
-      }
+    ...invalidInlineFragment
+    ... on MissingSecondType {
+      a
+    }
   }
 }
 type Query {
