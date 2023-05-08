@@ -40,7 +40,7 @@ pub fn validate_enum_definition(
     let enum_values = iter_with_extensions(
         enum_def.self_values(),
         enum_def.extensions(),
-        hir::EnumTypeExtension::enum_values_definition,
+        hir::EnumTypeExtension::values,
     );
 
     let mut seen: HashMap<&str, &EnumValueDefinition> = HashMap::new();

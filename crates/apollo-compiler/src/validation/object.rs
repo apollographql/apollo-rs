@@ -47,7 +47,7 @@ pub fn validate_object_type_definition(
     let field_definitions = collect_nodes(
         object.self_fields(),
         object.extensions(),
-        hir::ObjectTypeExtension::fields_definition,
+        hir::ObjectTypeExtension::fields,
     );
     let fields: HashSet<ValidationSet> = field_definitions
         .iter()

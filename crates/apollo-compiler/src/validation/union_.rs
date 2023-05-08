@@ -40,7 +40,7 @@ pub fn validate_union_definition(
     let union_members = iter_with_extensions(
         union_def.self_members(),
         union_def.extensions(),
-        hir::UnionTypeExtension::union_members,
+        hir::UnionTypeExtension::members,
     );
     let mut seen: HashMap<&str, &UnionMember> = HashMap::new();
     for union_member in union_members {

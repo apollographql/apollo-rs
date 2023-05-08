@@ -237,7 +237,11 @@ pub fn validate_fragment_definition(
     let has_type_error = !type_cond_diagnostics.is_empty();
     diagnostics.extend(type_cond_diagnostics);
 
-    if !has_type_error {
+    let fragment_cycles_diagnostics = db.validate_fragment_cycles(def.clone());
+    let has_cycles = !fragment_cycles_diagnostics.is_empty();
+    diagnostics.extend(fragment_cycles_diagnostics);
+
+    if !has_type_error && !has_cycles {
         diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), var_defs));
     }
 
