@@ -1072,10 +1072,10 @@ impl Value {
         }
     }
 
-    pub fn coerce(&self, db: &dyn HirDatabase, ty: &TypeDefinition) -> &Value {
+    pub fn is_value_coerceable(&self, db: &dyn HirDatabase, ty: &TypeDefinition) -> bool {
         match self {
             Value::Variable(_) => todo!(),
-            Value::Int(_) => todo!(),
+            Value::Int(i) => if ty.is_scalar_type_definition() && ty.name() == "Int" {},
             Value::Float(_) => todo!(),
             Value::String(_) => todo!(),
             Value::Boolean(_) => todo!(),
@@ -1085,7 +1085,7 @@ impl Value {
             Value::Object(_) => todo!(),
         }
 
-        self
+        true
     }
 }
 
@@ -2490,11 +2490,6 @@ impl ScalarTypeDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Returns true if the current scalar is a GraphQL built in.
-    pub fn is_built_in(&self) -> bool {
-        self.built_in
-    }
-
     /// Get the AST location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
@@ -2507,6 +2502,36 @@ impl ScalarTypeDefinition {
 
     pub(crate) fn push_extension(&mut self, ext: Arc<ScalarTypeExtension>) {
         self.extensions.push(ext);
+    }
+
+    /// Returns true if the current scalar is a GraphQL built in.
+    pub fn is_built_in(&self) -> bool {
+        self.built_in
+    }
+
+    /// Returns true if the current scalar is the built in Int type.
+    pub fn is_int(&self) -> bool {
+        self.name() == "Int" && self.built_in
+    }
+
+    /// Returns true if the current scalar is the built in Boolean type.
+    pub fn is_boolean(&self) -> bool {
+        self.name() == "Boolean" && self.built_in
+    }
+
+    /// Returns true if the current scalar is the built in String type.
+    pub fn is_string(&self) -> bool {
+        self.name() == "String" && self.built_in
+    }
+
+    /// Returns true if the current scalar is the built in Float type.
+    pub fn is_float(&self) -> bool {
+        self.name() == "Float" && self.built_in
+    }
+
+    /// Returns true if the current scalar is the built in ID type.
+    pub fn is_id(&self) -> bool {
+        self.name() == "ID" && self.built_in
     }
 }
 
