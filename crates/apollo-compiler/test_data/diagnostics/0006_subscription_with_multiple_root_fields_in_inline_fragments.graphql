@@ -10,6 +10,7 @@ subscription sub {
 
 type Subscription {
   newMessage: Result
+  disallowedSecondRootField: String
 }
 
 type Result {

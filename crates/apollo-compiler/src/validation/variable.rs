@@ -21,6 +21,9 @@ pub fn validate_variable_definitions(
         diagnostics.extend(db.validate_directives(
             variable.directives().to_vec(),
             hir::DirectiveLocation::VariableDefinition,
+            // let's assume that variable definitions cannot reference other
+            // variables and provide them as arguments to directives
+            Arc::new(Vec::new()),
         ));
 
         let ty = variable.ty();
@@ -104,21 +107,7 @@ pub fn validate_unused_variables(
             loc: Some(var.loc()),
         })
         .collect();
-    let undefined_vars = used_vars.difference(&defined_vars);
-    let mut diagnostics: Vec<ApolloDiagnostic> = undefined_vars
-        .map(|undefined_var| {
-            // undefined var location is always Some
-            let loc = undefined_var.loc.expect("missing location information");
-            ApolloDiagnostic::new(
-                db,
-                loc.into(),
-                DiagnosticData::UndefinedDefinition {
-                    name: undefined_var.name.clone(),
-                },
-            )
-            .label(Label::new(loc, "not found in this scope"))
-        })
-        .collect();
+    let mut diagnostics = Vec::new();
 
     let unused_vars = defined_vars.difference(&used_vars);
     diagnostics.extend(unused_vars.map(|unused_var| {
@@ -135,6 +124,167 @@ pub fn validate_unused_variables(
     }));
 
     diagnostics
+}
+
+pub fn validate_variable_usage(
+    db: &dyn ValidationDatabase,
+    var_usage: Option<hir::InputValueDefinition>,
+    var_defs: Arc<Vec<hir::VariableDefinition>>,
+    arg: hir::Argument,
+) -> Result<(), ApolloDiagnostic> {
+    if let hir::Value::Variable(var) = arg.value() {
+        // Let var_def be the VariableDefinition named
+        // variable_name defined within operation.
+        let var_def = var_defs.iter().find(|v| v.name() == var.name());
+        if let Some(var_def) = var_def {
+            if let Some(var_usage) = var_usage {
+                let is_allowed = is_variable_usage_allowed(var_def, &var_usage);
+                if !is_allowed {
+                    return Err(ApolloDiagnostic::new(
+                        db,
+                        arg.loc.into(),
+                        DiagnosticData::DisallowedVariableUsage {
+                            var_name: var_def.name().into(),
+                            arg_name: arg.name().into(),
+                        },
+                    )
+                    .labels([
+                        Label::new(
+                            var_def.loc,
+                            format!(
+                                "variable `{}` of type `{}` is declared here",
+                                var_def.name(),
+                                var_def.ty(),
+                            ),
+                        ),
+                        Label::new(
+                            arg.loc,
+                            format!(
+                                "argument `{}` of type `{}` is declared here",
+                                arg.name(),
+                                var_usage.ty()
+                            ),
+                        ),
+                    ]));
+                }
+            }
+        } else {
+            return Err(ApolloDiagnostic::new(
+                db,
+                arg.loc().into(),
+                DiagnosticData::UndefinedDefinition {
+                    name: var.name().into(),
+                },
+            )
+            .label(Label::new(var.loc(), "not found in this scope")));
+        }
+    }
+    // It's super confusing to produce a diagnostic here if either the
+    // location_ty or variable_ty is missing, so just return Ok(());
+    Ok(())
+}
+
+fn is_variable_usage_allowed(
+    var_def: &hir::VariableDefinition,
+    var_usage: &hir::InputValueDefinition,
+) -> bool {
+    // 1. Let variable_ty be the expected type of variable_def.
+    let variable_ty = var_def.ty();
+    // 2. Let location_ty be the expected type of the Argument,
+    // ObjectField, or ListValue entry where variableUsage is
+    // located.
+    let location_ty = var_usage.ty();
+    // 3. if location_ty is a non-null type AND variable_ty is
+    // NOT a non-null type:
+    if location_ty.is_non_null() && !variable_ty.is_non_null() {
+        // 3.a. let hasNonNullVariableDefaultValue be true
+        // if a default value exists for variableDefinition
+        // and is not the value null.
+        let has_non_null_default_value =
+            !(matches!(var_def.default_value(), Some(&hir::Value::Null)));
+        // 3.b. Let hasLocationDefaultValue be true if a default
+        // value exists for the Argument or ObjectField where
+        // variableUsage is located.
+        let has_location_default_value =
+            !(matches!(var_usage.default_value(), Some(&hir::Value::Null)));
+        // 3.c. If hasNonNullVariableDefaultValue is NOT true
+        // AND hasLocationDefaultValue is NOT true, return
+        // false.
+        if !has_non_null_default_value && !has_location_default_value {
+            return false;
+        }
+
+        // 3.d. Let nullable_location_ty be the unwrapped
+        // nullable type of location_ty.
+        match location_ty {
+            hir::Type::NonNull { ty: loc_ty, .. } => {
+                // 3.e. Return AreTypesCompatible(variableType, nullableLocationType).
+                return are_types_compatible(variable_ty, loc_ty);
+            }
+            hir::Type::List { ty: loc_ty, .. } => return are_types_compatible(variable_ty, loc_ty),
+            hir::Type::Named { .. } => return are_types_compatible(variable_ty, location_ty),
+        }
+    }
+
+    are_types_compatible(variable_ty, location_ty)
+}
+
+fn are_types_compatible(variable_ty: &hir::Type, location_ty: &hir::Type) -> bool {
+    match (location_ty, variable_ty) {
+        // 1. If location_ty is a non-null type:
+        // 1.a. If variable_ty is NOT a non-null type, return false.
+        (hir::Type::NonNull { .. }, hir::Type::Named { .. } | hir::Type::List { .. }) => {
+            return false
+        }
+        // 1.b. Let nullable_location_ty be the unwrapped nullable type of location_ty.
+        // 1.c. Let nullable_variable_type be the unwrapped nullable type of variable_ty.
+        // 1.d. Return AreTypesCompatible(nullable_variable_ty, nullable_location_ty).
+        (
+            hir::Type::NonNull {
+                ty: nullable_location_ty,
+                ..
+            },
+            hir::Type::NonNull {
+                ty: nullable_variable_ty,
+                ..
+            },
+        ) => return are_types_compatible(nullable_variable_ty, nullable_location_ty),
+        // 2. Otherwise, if variable_ty is a non-null type:
+        // 2.a. Let nullable_variable_ty be the nullable type of variable_ty.
+        // 2.b. Return are_types_compatible(nullable_variable_ty, location_ty).
+        (
+            hir::Type::Named { .. },
+            hir::Type::NonNull {
+                ty: nullable_variable_ty,
+                ..
+            },
+        ) => are_types_compatible(nullable_variable_ty, location_ty),
+        // 3.Otherwise, if location_ty is a list type:
+        // 3.a. If variable_ty is NOT a list type, return false.
+        (hir::Type::List { .. }, hir::Type::Named { .. } | hir::Type::NonNull { .. }) => {
+            return false
+        }
+        // 3.b.Let item_location_ty be the unwrapped item type of location_ty.
+        // 3.c. Let item_variable_ty be the unwrapped item type of variable_ty.
+        // 3.d. Return AreTypesCompatible(item_variable_ty, item_location_ty).
+        (
+            hir::Type::List {
+                ty: item_location_ty,
+                ..
+            },
+            hir::Type::List {
+                ty: item_variable_ty,
+                ..
+            },
+        ) => return are_types_compatible(item_location_ty, item_variable_ty),
+        // 4. Otherwise, if variable_ty is a list type, return false.
+        (hir::Type::Named { .. }, hir::Type::List { .. }) => false,
+        // 5. Return true if variable_ty and location_ty are identical, otherwise false.
+        (hir::Type::Named { name: loc_name, .. }, hir::Type::Named { name: var_name, .. }) => {
+            return var_name == loc_name
+        }
+    };
+    false
 }
 
 #[cfg(test)]
@@ -167,6 +317,7 @@ type Query {
 type User {
     id: ID
     name: String
+    profilePic(size: Int): String
     status(membership: String): String
 }
 

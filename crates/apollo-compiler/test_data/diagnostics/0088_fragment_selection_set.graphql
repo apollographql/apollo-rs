@@ -13,6 +13,9 @@ query getProduct {
     topProduct {
         ...productFragment
     }
+    topProducts {
+        ...productFragment
+    }
 }
 
 fragment productFragment on Product {

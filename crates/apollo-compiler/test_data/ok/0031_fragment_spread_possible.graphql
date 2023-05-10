@@ -94,6 +94,7 @@ type Query {
   pet: Pet
   resource: Resource
 }
+
 query UseAllFragments {
   pet {
     ... dogFragment

@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
@@ -146,6 +146,7 @@ pub fn validate_directives(
     db: &dyn ValidationDatabase,
     dirs: Vec<hir::Directive>,
     dir_loc: hir::DirectiveLocation,
+    var_defs: Arc<Vec<hir::VariableDefinition>>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -239,6 +240,21 @@ pub fn validate_directives(
                         .label(Label::new(arg.loc, "argument by this name not found"))
                         .label(Label::new(loc, "directive declared here")),
                     );
+                }
+
+                // Let var_usage be the input value where the original
+                // argument for the current variable usage is defined.
+                let var_usage = directive_definition
+                    .arguments()
+                    .input_values()
+                    .iter()
+                    .find(|val| val.name() == arg.name())
+                    .cloned();
+                if let Some(diag) = db
+                    .validate_variable_usage(var_usage, var_defs.clone(), arg.clone())
+                    .err()
+                {
+                    diagnostics.push(diag)
                 }
             }
 

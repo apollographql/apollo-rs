@@ -1,0 +1,82 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            98: "0101_mismatched_variable_usage.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 98,
+            },
+            offset: 79,
+            length: 19,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 29,
+                    length: 12,
+                },
+                text: "variable `intArg` of type `Int` is declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 79,
+                    length: 19,
+                },
+                text: "argument `booleanArg` of type `Boolean` is declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedVariableUsage {
+            var_name: "intArg",
+            arg_name: "booleanArg",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            98: "0101_mismatched_variable_usage.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 98,
+            },
+            offset: 208,
+            length: 27,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 144,
+                    length: 26,
+                },
+                text: "variable `booleanListArg` of type `[Boolean]` is declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 208,
+                    length: 27,
+                },
+                text: "argument `booleanArg` of type `Boolean` is declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedVariableUsage {
+            var_name: "booleanListArg",
+            arg_name: "booleanArg",
+        },
+    },
+]

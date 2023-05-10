@@ -1,4 +1,4 @@
-query queryA($status: String @skip(if: true)) @skip(if: $foo){
+query queryA($status: String @skip(if: true)) @skip(if: false){
   field
   response(status: $status) @deprecated
   human {

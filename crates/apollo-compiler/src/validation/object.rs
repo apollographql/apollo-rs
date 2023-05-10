@@ -39,6 +39,8 @@ pub fn validate_object_type_definition(
     diagnostics.extend(db.validate_directives(
         object.directives().cloned().collect(),
         hir::DirectiveLocation::Object,
+        // objects don't use variables
+        Arc::new(Vec::new()),
     ));
 
     // Collect all fields, including duplicates

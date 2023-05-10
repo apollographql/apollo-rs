@@ -1,0 +1,58 @@
+query intCannotGoIntoBoolean($intArg: Int) {
+  arguments {
+    booleanArgField(booleanArg: $intArg)
+  }
+}
+
+query booleanListCannotGoIntoBoolean($booleanListArg: [Boolean]) {
+  arguments {
+    booleanArgField(booleanArg: $booleanListArg)
+  }
+}
+
+query booleanArgQuery($booleanArg: Boolean) {
+  arguments {
+    nonNullBooleanArgField(nonNullBooleanArg: $booleanArg)
+  }
+}
+
+query listToNonNullList($booleanList: [Boolean]) {
+  arguments {
+    nonNullBooleanListField(nonNullBooleanListArg: $booleanList)
+  }
+}
+
+fragment nonNullIntArgFieldFrag on Arguments {
+    nonNullIntArgField(nonNullIntArg: $intArg)
+}
+
+query fragmentNonNullIntArgField($intArg: Int) {
+    arguments {
+        ...nonNullIntArgFieldFrag
+    }
+}
+
+fragment outerFrag on Arguments {
+    ...nonNullIntArgFieldInnerFrag
+}
+
+fragment nonNullIntArgFieldInnerFrag on Arguments {
+    nonNullIntArgField(nonNullIntArg: $intArg)
+}
+
+query doubleNestedFragmentNonNullIntArgField($intArg: Int) {
+    arguments {
+        ...outerFrag
+    }
+}
+
+type Query {
+    arguments: Arguments
+}
+
+type Arguments {
+    booleanArgField(booleanArg: Boolean): Boolean
+    nonNullIntArgField(nonNullIntArg: Int!): Int
+    nonNullBooleanArgField(nonNullBooleanArg: Boolean!): Boolean
+    nonNullBooleanListField(nonNullBooleanListArg: [Boolean]!): Boolean
+}
