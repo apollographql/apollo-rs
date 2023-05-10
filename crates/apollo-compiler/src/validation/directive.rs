@@ -239,7 +239,7 @@ pub fn validate_directives(
                     } else {
                         let defined_arg_ty = arg.value.clone();
                         let type_def = input_val.ty().type_def(db.upcast());
-                        super::field::is_value_coercible(type_def, defined_arg_ty);
+                        db.is_value_coercible(type_def, defined_arg_ty, var_defs.clone());
                     }
                 } else {
                     diagnostics.push(

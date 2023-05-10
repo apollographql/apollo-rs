@@ -1,0 +1,58 @@
+type ComplicatedArgs {
+  # TODO List
+  # TODO Coercion
+  # TODO NotNulls
+  intArgField(intArg: Int): String
+  nonNullIntArgField(nonNullIntArg: Int!): String
+  stringArgField(stringArg: String): String
+  booleanArgField(booleanArg: Boolean): String
+  enumArgField(enumArg: FurColor): String
+  floatArgField(floatArg: Float): String
+  idArgField(idArg: ID): String
+  stringListArgField(stringListArg: [String]): String
+  stringListNonNullArgField(stringListNonNullArg: [String!]): String
+  complexArgField(complexArg: ComplexInput): String
+  multipleReqs(req1: Int!, req2: Int!): String
+  nonNullFieldWithDefault(arg: Int! = 0): String
+  multipleOpts(opt1: Int = 0, opt2: Int = 0): String
+  multipleOptAndReq(req1: Int!, req2: Int!, opt1: Int = 0, opt2: Int = 0): String
+}
+
+type Query {
+    complicatedArgs: ComplicatedArgs
+}
+
+query goodIntValue {
+  complicatedArgs {
+    intArgField(intArg: 2)
+  }
+}
+query goodNegativeIntValue{
+  complicatedArgs {
+    intArgField(intArg: -2)
+  }
+}
+
+query goodBooleanValue {
+  complicatedArgs {
+    booleanArgField(booleanArg: true)
+  }
+}
+
+query goodStringValue {
+  complicatedArgs {
+    stringArgField(stringArg: "foo")
+  }
+}
+
+query goodFloatValue {
+  complicatedArgs {
+    floatArgField(floatArg: 1.1)
+  }
+}
+
+query goodNegativeFloatValue {
+  complicatedArgs {
+    floatArgField(floatArg: -1.1)
+  }
+}

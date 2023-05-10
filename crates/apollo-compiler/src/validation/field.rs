@@ -36,7 +36,21 @@ pub fn validate_field(
                     } else {
                         let defined_arg_ty = arg.value.clone();
                         let type_def = input_val.ty().type_def(db.upcast());
-                        is_value_coercible(type_def, defined_arg_ty);
+                        let is_coercible = db.is_value_coercible(
+                            type_def.clone(),
+                            defined_arg_ty.clone(),
+                            var_defs.clone(),
+                        );
+                        if !is_coercible {
+                            diagnostics.push(ApolloDiagnostic::new(
+                                db,
+                                arg.loc.into(),
+                                DiagnosticData::UnsupportedType {
+                                    value: defined_arg_ty.value_name().into(),
+                                    ty: type_def.unwrap().name().into(),
+                                },
+                            ))
+                        }
                     }
                 } else {
                     let mut labels = vec![Label::new(arg.loc, "argument name not found")];
@@ -293,52 +307,72 @@ pub fn validate_leaf_field_selection(
 }
 
 pub fn is_value_coercible(
+    db: &dyn ValidationDatabase,
     type_def: Option<hir::TypeDefinition>,
     defined_arg_ty: hir::Value,
+    var_defs: Arc<Vec<hir::VariableDefinition>>,
 ) -> bool {
     if let Some(type_def) = type_def {
-        match (defined_arg_ty, type_def.clone()) {
-            (Value::List(li), _) => {
-                return li
-                    .iter()
-                    .all(|val| is_value_coercible(Some(type_def.clone()), val.clone()))
+        return match (defined_arg_ty, type_def.clone()) {
+            (
+                Value::List(li),
+                TypeDefinition::EnumTypeDefinition(_)
+                | TypeDefinition::ScalarTypeDefinition(_)
+                | TypeDefinition::InputObjectTypeDefinition(_),
+            ) => li.iter().all(|val| {
+                db.is_value_coercible(Some(type_def.clone()), val.clone(), var_defs.clone())
+            }),
+            (
+                Value::Variable(var),
+                TypeDefinition::EnumTypeDefinition(_)
+                | TypeDefinition::ScalarTypeDefinition(_)
+                | TypeDefinition::InputObjectTypeDefinition(_),
+            ) => {
+                let var_def = var_defs.iter().find(|v| v.name() == var.name());
+                if let Some(var_def) = var_def {
+                    // we don't have the actual variable values here, so just
+                    // compare if two Types are the same
+                    var_def.ty().name() == type_def.name()
+                } else {
+                    false
+                }
             }
-            (Value::Float(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
-                return scalar.is_float()
-            }
+            (Value::Float(_), TypeDefinition::ScalarTypeDefinition(scalar)) => scalar.is_float(),
             (Value::Int(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
-                return scalar.is_int() || scalar.is_float() || scalar.is_id()
+                scalar.is_int() || scalar.is_float() || scalar.is_id()
             }
             (Value::String(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
-                return scalar.is_string() || scalar.is_id()
+                scalar.is_string() || scalar.is_id()
             }
             (Value::Boolean(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
-                return scalar.is_boolean()
+                scalar.is_boolean()
             }
-            (Value::Null, TypeDefinition::ScalarTypeDefinition(_)) => return true,
-            (Value::Variable(_), TypeDefinition::ScalarTypeDefinition(_)) => todo!(),
-            (_, TypeDefinition::ScalarTypeDefinition(_)) => return false,
-            (Value::Null, TypeDefinition::EnumTypeDefinition(_)) => return true,
+            (
+                Value::Null,
+                TypeDefinition::ScalarTypeDefinition(_) | TypeDefinition::EnumTypeDefinition(_),
+            ) => true,
+            (_, TypeDefinition::ScalarTypeDefinition(_)) => false,
             (Value::String(str), TypeDefinition::EnumTypeDefinition(enum_)) => {
-                return enum_.values().any(|val| val.enum_value() == str)
+                enum_.values().any(|val| val.enum_value() == str)
             }
-            (Value::Variable(_), TypeDefinition::EnumTypeDefinition(_)) => todo!(),
-            (_, TypeDefinition::EnumTypeDefinition(_)) => return false,
+            (_, TypeDefinition::EnumTypeDefinition(_)) => false,
             (Value::Object(obj), TypeDefinition::InputObjectTypeDefinition(input_obj)) => {
-                return input_obj.fields().all(|f| {
-                    obj.iter().all(|(name, val)| {
+                input_obj.fields().all(|f| {
+                    obj.iter().any(|(name, val)| {
                         if f.name() == name.src() {
-                            is_value_coercible(f.ty().type_def(db.upcast()), val.clone());
+                            db.is_value_coercible(
+                                f.ty().type_def(db.upcast()),
+                                val.clone(),
+                                var_defs.clone(),
+                            );
                         }
                         false
                     })
                 })
             }
-            (Value::Variable(_), TypeDefinition::InputObjectTypeDefinition(_)) => todo!(),
-            (_, TypeDefinition::InputObjectTypeDefinition(_)) => return false,
-            _ => return false,
-        }
+            _ => false,
+        };
+    } else {
+        false
     }
-
-    false
 }

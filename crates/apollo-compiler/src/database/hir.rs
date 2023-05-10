@@ -1071,25 +1071,21 @@ impl Value {
             _ => Vec::new(),
         }
     }
-}
 
-// impl TryFrom<Value> for Type {
-//     type Error = &'static str;
-//
-//     fn try_from(val: Value) -> Result<Self, Self::Error> {
-//         match val {
-//             Value::Variable(var) => todo!(),
-//             Value::Int(i) => todo!(),
-//             Value::Float(f) => todo!(),
-//             Value::String(s) => todo!(),
-//             Value::Boolean(b) => todo!(),
-//             Value::Null => todo!(),
-//             Value::Enum(e) => todo!(),
-//             Value::List(li) => todo!(),
-//             Value::Object(obj) => todo!(),
-//         }
-//     }
-// }
+    pub fn value_name(&self) -> &str {
+        match self {
+            Value::Variable(_) => "Variable",
+            Value::Int(_) => "Int",
+            Value::Float(_) => "Float",
+            Value::String(_) => "String",
+            Value::Boolean(_) => "Boolaen",
+            Value::Null => "Null",
+            Value::Enum(_) => "Enum",
+            Value::List(_) => "List",
+            Value::Object(_) => "Object",
+        }
+    }
+}
 
 /// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
 ///
