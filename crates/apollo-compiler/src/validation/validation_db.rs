@@ -255,7 +255,7 @@ pub trait ValidationDatabase:
     #[salsa::invoke(field::is_value_coercible)]
     fn is_value_coercible(
         &self,
-        type_def: Option<TypeDefinition>,
+        type_def: TypeDefinition,
         defined_arg_ty: Value,
         var_defs: Arc<Vec<VariableDefinition>>,
     ) -> bool;

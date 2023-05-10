@@ -87,3 +87,185 @@ query stringIntoInt {
 #    intArgField(intArg: 829384293849283498239482938)
 #  }
 #}
+
+query unquotedStringIntoInt {
+  complicatedArgs {
+    intArgField(intArg: FOO)
+  }
+}
+
+query simpleFloatIntoInt {
+  complicatedArgs {
+    intArgField(intArg: 3.0)
+  }
+}
+
+query floatIntoInt {
+  complicatedArgs {
+    intArgField(intArg: 3.333)
+  }
+}
+
+query stringIntoFloat {
+  complicatedArgs {
+    floatArgField(floatArg: "3.333")
+  }
+}
+
+query booleanIntoFloat {
+  complicatedArgs {
+    floatArgField(floatArg: true)
+  }
+}
+
+query unquotedIntoFloat {
+  complicatedArgs {
+    floatArgField(floatArg: FOO)
+  }
+}
+
+query intIntoBoolean {
+  complicatedArgs {
+    booleanArgField(booleanArg: 2)
+  }
+}
+
+query floatIntoBoolean {
+  complicatedArgs {
+    booleanArgField(booleanArg: 1.0)
+  }
+}
+
+query stringIntoBoolean {
+  complicatedArgs {
+    booleanArgField(booleanArg: "true")
+  }
+}
+
+query unquotedIntoBoolean {
+  complicatedArgs {
+    booleanArgField(booleanArg: TRUE)
+  }
+}
+
+query floatIntoId {
+  complicatedArgs {
+    idArgField(idArg: 1.0)
+  }
+}
+
+query booleanIntoID {
+  complicatedArgs {
+    idArgField(idArg: true)
+  }
+}
+
+query unquotedIntoID {
+  complicatedArgs {
+    idArgField(idArg: SOMETHING)
+  }
+}
+
+# Invalid Enum Value
+query intIntoEnum {
+  dog {
+    doesKnowCommand(dogCommand: 2)
+  }
+}
+
+query floatIntoEnum {
+  dog {
+    doesKnowCommand(dogCommand: 1.0)
+  }
+}
+
+# query stringIntoEnum {
+#   dog {
+#     doesKnowCommand(dogCommand: "SIT")
+#   }
+# }
+
+query booleanIntoEnum {
+  dog {
+    doesKnowCommand(dogCommand: true)
+  }
+}
+
+# query unknownEnumValueIntoEnum {
+#   dog {
+#     doesKnowCommand(dogCommand: JUGGLE)
+#   }
+# }
+
+# query differentCaseEnumValueIntoEnum {
+#   dog {
+#     doesKnowCommand(dogCommand: sit)
+#   }
+# }
+
+# query incorrectListItemType {
+#   complicatedArgs {
+#     stringListArgField(stringListArg: ["one", 2])
+#   }
+# }
+
+query singleValueOfIncorrectType {
+  complicatedArgs {
+    stringListArgField(stringListArg: 1)
+  }
+}
+
+# Invalid non-nullable value
+query incorrectValueType {
+  complicatedArgs {
+    multipleReqs(req2: "two", req1: "one")
+  }
+}
+
+query incorrectValueAndMissingArgument {
+  complicatedArgs {
+    multipleReqs(req1: "one")
+  }
+}
+
+query nullValue {
+  complicatedArgs {
+    multipleReqs(req1: null)
+  }
+}
+
+query partialObjectRequiredFieldCanBeFalse {
+  complicatedArgs {
+    complexArgField(complexArg: { requiredField: false })
+  }
+}
+
+query partialObjectIncludingRequired {
+  complicatedArgs {
+    complexArgField(complexArg: { requiredField: true, intField: 4 })
+  }
+}
+
+query fullObject {
+  complicatedArgs {
+    complexArgField(complexArg: {
+      requiredField: true,
+      intField: 4,
+      stringField: "foo",
+      booleanField: false,
+      stringListField: ["one", "two"]
+    })
+  }
+}
+
+query fullObjectWithFieldsInDifferentOrder {
+  complicatedArgs {
+    complexArgField(complexArg: {
+      stringListField: ["one", "two"],
+      booleanField: false,
+      requiredField: true,
+      stringField: "foo",
+      intField: 4,
+    })
+  }
+}

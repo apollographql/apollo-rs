@@ -45,6 +45,8 @@ enum DogCommand {
 type Dog {
   doesKnowCommand(dogCommand: DogCommand): Boolean
   name(surname: Boolean): String
+  isHouseTrained(atOtherHomes: Boolean = true): Boolean
+
 }
 
 type Query {
@@ -128,3 +130,135 @@ query nullIntoNullableType {
     intArgField(intArg: null)
   }
 }
+
+query goodListValue {
+  complicatedArgs {
+    stringListArgField(stringListArg: ["one", null, "two"])
+  }
+}
+
+query emptyListValue {
+  complicatedArgs {
+    stringListArgField(stringListArg: [])
+  }
+}
+
+query nullListValue {
+  complicatedArgs {
+    stringListArgField(stringListArg: null)
+  }
+}
+
+query singleValueIntoList {
+  complicatedArgs {
+    stringListArgField(stringListArg: "one")
+  }
+}
+
+# Valid Non-Nullable Value
+query argOnOptionalArg {
+  dog {
+    isHouseTrained(atOtherHomes: true)
+  }
+}
+
+query noArgOnOptionalArg {
+  dog {
+    isHouseTrained
+  }
+}
+
+query multipleArgs {
+  complicatedArgs {
+    multipleReqs(req1: 1, req2: 2)
+  }
+}
+
+query multiplArgsReverseOrder {
+  complicatedArgs {
+    multipleReqs(req2: 2, req1: 1)
+  }
+}
+
+query noArgsOnMultipleOptional {
+  complicatedArgs {
+    multipleOpts
+  }
+}
+
+query oneArgOnMultipleOptional {
+  complicatedArgs {
+    multipleOpts(opt1: 1)
+  }
+}
+
+query secondArgOnMultipleOptional {
+  complicatedArgs {
+    multipleOpts(opt2: 1)
+  }
+}
+
+query multipleRequiredArgsOnMixedList {
+  complicatedArgs {
+    multipleOptAndReq(req1: 3, req2: 4)
+  }
+}
+
+query multipleRequiredAndOneOptionalArgOnMixedList {
+  complicatedArgs {
+    multipleOptAndReq(req1: 3, req2: 4, opt1: 5)
+  }
+}
+
+query AllRequiredAndOptionalArgsOnMixedList {
+  complicatedArgs {
+    multipleOptAndReq(req1: 3, req2: 4, opt1: 5, opt2: 6)
+  }
+}
+
+# Valid input object value
+query optionalArgDespiteRequiredFieldInType {
+  complicatedArgs {
+    complexArgField
+  }
+}
+
+query partialObjectOnlyRequired {
+  complicatedArgs {
+    complexArgField(complexArg: { requiredField: true })
+  }
+}
+
+# InvalidInputObjectValue
+# query partialObjectMissingRequired {
+#   complicatedArgs {
+#     complexArgField(complexArg: { intField: 4 })
+#   }
+# }
+
+# query partialObjectInvalidFieldType {
+#   complicatedArgs {
+#     complexArgField(complexArg: {
+#       stringListField: ["one", 2],
+#       requiredField: true,
+#     })
+#   }
+# }
+
+# query partialObjectNullToNonNullField {
+#   complicatedArgs {
+#     complexArgField(complexArg: {
+#       requiredField: true,
+#       nonNullField: null,
+#     })
+#   }
+# }
+#
+# query partialObjectUnknownFieldArg {
+#   complicatedArgs {
+#     complexArgField(complexArg: {
+#       requiredField: true,
+#       invalidField: "value"
+#     })
+#   }
+# }
