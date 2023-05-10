@@ -272,7 +272,7 @@ pub enum DiagnosticData {
         /// The source location where the directive that's being used was defined.
         directive_def: DiagnosticLocation,
     },
-    #[error("{value} must be coercible to {ty}")]
+    #[error("{ty} cannot be represented by a {value} value")]
     UnsupportedValueType {
         // input value
         value: String,

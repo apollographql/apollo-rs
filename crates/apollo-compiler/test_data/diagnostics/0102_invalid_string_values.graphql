@@ -52,79 +52,38 @@ type Query {
     dog: Dog
 }
 
-query goodIntValue {
+query intIntoString {
   complicatedArgs {
-    intArgField(intArg: 2)
-  }
-}
-query goodNegativeIntValue{
-  complicatedArgs {
-    intArgField(intArg: -2)
+    stringArgField(stringArg: 1)
   }
 }
 
-query goodBooleanValue {
+query floatIntoString {
   complicatedArgs {
-    booleanArgField(booleanArg: true)
+    stringArgField(stringArg: 1.0)
   }
 }
 
-query goodStringValue {
+query booleanIntoString {
   complicatedArgs {
-    stringArgField(stringArg: "foo")
+    stringArgField(stringArg: true)
   }
 }
 
-query goodFloatValue {
+query unquotedStringIntoString {
   complicatedArgs {
-    floatArgField(floatArg: 1.1)
+    stringArgField(stringArg: BAR)
   }
 }
 
-query goodNegativeFloatValue {
+query stringIntoInt {
   complicatedArgs {
-    floatArgField(floatArg: -1.1)
+    intArgField(intArg: "3")
   }
 }
 
-query intIntoFloat {
-  complicatedArgs {
-    floatArgField(floatArg: 1)
-  }
-}
-
-query intIntoID {
-  complicatedArgs {
-    idArgField(idArg: 1)
-  }
-}
-
-query stringIntoID {
-  complicatedArgs {
-    idArgField(idArg: "someIdString")
-  }
-}
-
-query goodEnumValue {
-  dog {
-    doesKnowCommand(dogCommand: SIT)
-  }
-}
-
-query enumWithUndefinedValue {
-  complicatedArgs {
-    enumArgField(enumArg: UNKNOWN)
-  }
-}
-
-query enumWithNullValue {
-  complicatedArgs {
-    enumArgField(enumArg: null)
-  }
-}
-
-query nullIntoNullableType {
-  complicatedArgs {
-    intArgField(intArg: null)
-  }
-}
+#query bigIntIntoInt {
+#  complicatedArgs {
+#    intArgField(intArg: 829384293849283498239482938)
+#  }
+#}

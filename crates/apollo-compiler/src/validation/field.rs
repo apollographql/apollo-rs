@@ -42,14 +42,29 @@ pub fn validate_field(
                             var_defs.clone(),
                         );
                         if !is_coercible {
-                            diagnostics.push(ApolloDiagnostic::new(
-                                db,
-                                arg.loc.into(),
-                                DiagnosticData::UnsupportedValueType {
-                                    value: defined_arg_ty.value_name().into(),
-                                    ty: type_def.unwrap().name().into(),
-                                },
-                            ))
+                            diagnostics.push(
+                                ApolloDiagnostic::new(
+                                    db,
+                                    arg.loc.into(),
+                                    DiagnosticData::UnsupportedValueType {
+                                        value: defined_arg_ty.value_name().into(),
+                                        ty: input_val.ty().name(),
+                                    },
+                                )
+                                .labels([
+                                    Label::new(
+                                        input_val.ty().loc().unwrap(),
+                                        "field declared here",
+                                    ),
+                                    Label::new(
+                                        arg.loc,
+                                        format!(
+                                            "argument declared here is of {} type",
+                                            defined_arg_ty.value_name()
+                                        ),
+                                    ),
+                                ]),
+                            )
                         }
                     }
                 } else {
