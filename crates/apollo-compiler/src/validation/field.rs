@@ -45,7 +45,7 @@ pub fn validate_field(
                             diagnostics.push(ApolloDiagnostic::new(
                                 db,
                                 arg.loc.into(),
-                                DiagnosticData::UnsupportedType {
+                                DiagnosticData::UnsupportedValueType {
                                     value: defined_arg_ty.value_name().into(),
                                     ty: type_def.unwrap().name().into(),
                                 },
@@ -354,6 +354,9 @@ pub fn is_value_coercible(
             (_, TypeDefinition::ScalarTypeDefinition(_)) => false,
             (Value::String(str), TypeDefinition::EnumTypeDefinition(enum_)) => {
                 enum_.values().any(|val| val.enum_value() == str)
+            }
+            (Value::Enum(enum_val), TypeDefinition::EnumTypeDefinition(enum_)) => {
+                enum_.values().any(|val| val.enum_value() == enum_val.src())
             }
             (_, TypeDefinition::EnumTypeDefinition(_)) => false,
             (Value::Object(obj), TypeDefinition::InputObjectTypeDefinition(input_obj)) => {

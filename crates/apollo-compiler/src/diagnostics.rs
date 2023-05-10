@@ -273,7 +273,7 @@ pub enum DiagnosticData {
         directive_def: DiagnosticLocation,
     },
     #[error("{value} must be coercible to {ty}")]
-    UnsupportedType {
+    UnsupportedValueType {
         // input value
         value: String,
         // defined type
