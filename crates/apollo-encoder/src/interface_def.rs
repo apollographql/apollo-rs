@@ -133,7 +133,7 @@ impl fmt::Display for InterfaceDefinition {
         } else {
             // No description when it's a extension
             if let Some(description) = &self.description {
-                write!(f, "{description}")?;
+                writeln!(f, "{description}")?;
             }
         }
 

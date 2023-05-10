@@ -1,0 +1,202 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 1282,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 186,
+                    length: 6,
+                },
+                text: "field declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 1282,
+                    length: 12,
+                },
+                text: "argument declared here is of Int type",
+            },
+        ],
+        help: None,
+        data: UnsupportedValueType {
+            value: "Int",
+            ty: "String",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 1366,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 186,
+                    length: 6,
+                },
+                text: "field declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 1366,
+                    length: 14,
+                },
+                text: "argument declared here is of Float type",
+            },
+        ],
+        help: None,
+        data: UnsupportedValueType {
+            value: "Float",
+            ty: "String",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 1454,
+            length: 15,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 186,
+                    length: 6,
+                },
+                text: "field declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 1454,
+                    length: 15,
+                },
+                text: "argument declared here is of Boolean type",
+            },
+        ],
+        help: None,
+        data: UnsupportedValueType {
+            value: "Boolean",
+            ty: "String",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 1550,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 186,
+                    length: 6,
+                },
+                text: "field declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 1550,
+                    length: 14,
+                },
+                text: "argument declared here is of Enum type",
+            },
+        ],
+        help: None,
+        data: UnsupportedValueType {
+            value: "Enum",
+            ty: "String",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 1631,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 95,
+                    length: 3,
+                },
+                text: "field declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 1631,
+                    length: 11,
+                },
+                text: "argument declared here is of String type",
+            },
+        ],
+        help: None,
+        data: UnsupportedValueType {
+            value: "String",
+            ty: "Int",
+        },
+    },
+]

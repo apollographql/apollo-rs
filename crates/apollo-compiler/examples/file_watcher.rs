@@ -12,16 +12,16 @@ use notify::{watcher, DebouncedEvent, RecursiveMode, Watcher};
 
 fn main() -> Result<()> {
     let dir = Path::new("crates/apollo-compiler/examples/documents");
-    let mut watcher = FileWatcher::default();
+    let mut watcher = FileWatcher::new();
     watcher.watch(dir)
 }
 
-#[derive(Default)]
 pub struct FileWatcher {
     compiler: ApolloCompiler,
     manifest: HashMap<PathBuf, FileId>,
 }
 
+#[allow(clippy::new_without_default)]
 impl FileWatcher {
     pub fn new() -> Self {
         Self {

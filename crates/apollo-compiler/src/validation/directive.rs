@@ -237,18 +237,9 @@ pub fn validate_directives(
                     {
                         diagnostics.push(diag)
                     } else {
-                        let ty = input_val.ty().type_def(db.upcast());
-                        match arg.value() {
-                            hir::Value::Variable(_) => todo!(),
-                            hir::Value::Int(_) => todo!(),
-                            hir::Value::Float(_) => todo!(),
-                            hir::Value::String(_) => todo!(),
-                            hir::Value::Boolean(_) => todo!(),
-                            hir::Value::Null => todo!(),
-                            hir::Value::Enum(_) => todo!(),
-                            hir::Value::List(_) => todo!(),
-                            hir::Value::Object(_) => todo!(), //
-                        }
+                        let defined_arg_ty = arg.value.clone();
+                        let type_def = input_val.ty().type_def(db.upcast());
+                        db.is_value_coercible(type_def, defined_arg_ty, var_defs.clone());
                     }
                 } else {
                     diagnostics.push(

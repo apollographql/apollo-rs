@@ -1,0 +1,1079 @@
+- DOCUMENT@0..2302
+    - OBJECT_TYPE_DEFINITION@0..771
+        - type_KW@0..4 "type"
+        - WHITESPACE@4..5 " "
+        - NAME@5..20
+            - IDENT@5..20 "ComplicatedArgs"
+        - WHITESPACE@20..21 " "
+        - FIELDS_DEFINITION@21..771
+            - L_CURLY@21..22 "{"
+            - WHITESPACE@22..25 "\n  "
+            - COMMENT@25..36 "# TODO List"
+            - WHITESPACE@36..39 "\n  "
+            - COMMENT@39..54 "# TODO Coercion"
+            - WHITESPACE@54..57 "\n  "
+            - COMMENT@57..72 "# TODO NotNulls"
+            - WHITESPACE@72..75 "\n  "
+            - FIELD_DEFINITION@75..107
+                - NAME@75..86
+                    - IDENT@75..86 "intArgField"
+                - ARGUMENTS_DEFINITION@86..99
+                    - L_PAREN@86..87 "("
+                    - INPUT_VALUE_DEFINITION@87..98
+                        - NAME@87..93
+                            - IDENT@87..93 "intArg"
+                        - COLON@93..94 ":"
+                        - WHITESPACE@94..95 " "
+                        - NAMED_TYPE@95..98
+                            - NAME@95..98
+                                - IDENT@95..98 "Int"
+                    - R_PAREN@98..99 ")"
+                - COLON@99..100 ":"
+                - WHITESPACE@100..101 " "
+                - NAMED_TYPE@101..107
+                    - NAME@101..107
+                        - IDENT@101..107 "String"
+            - WHITESPACE@107..110 "\n  "
+            - FIELD_DEFINITION@110..157
+                - NAME@110..128
+                    - IDENT@110..128 "nonNullIntArgField"
+                - ARGUMENTS_DEFINITION@128..149
+                    - L_PAREN@128..129 "("
+                    - INPUT_VALUE_DEFINITION@129..148
+                        - NAME@129..142
+                            - IDENT@129..142 "nonNullIntArg"
+                        - COLON@142..143 ":"
+                        - WHITESPACE@143..144 " "
+                        - NON_NULL_TYPE@144..148
+                            - NAMED_TYPE@144..147
+                                - NAME@144..147
+                                    - IDENT@144..147 "Int"
+                            - BANG@147..148 "!"
+                    - R_PAREN@148..149 ")"
+                - COLON@149..150 ":"
+                - WHITESPACE@150..151 " "
+                - NAMED_TYPE@151..157
+                    - NAME@151..157
+                        - IDENT@151..157 "String"
+            - WHITESPACE@157..160 "\n  "
+            - FIELD_DEFINITION@160..201
+                - NAME@160..174
+                    - IDENT@160..174 "stringArgField"
+                - ARGUMENTS_DEFINITION@174..193
+                    - L_PAREN@174..175 "("
+                    - INPUT_VALUE_DEFINITION@175..192
+                        - NAME@175..184
+                            - IDENT@175..184 "stringArg"
+                        - COLON@184..185 ":"
+                        - WHITESPACE@185..186 " "
+                        - NAMED_TYPE@186..192
+                            - NAME@186..192
+                                - IDENT@186..192 "String"
+                    - R_PAREN@192..193 ")"
+                - COLON@193..194 ":"
+                - WHITESPACE@194..195 " "
+                - NAMED_TYPE@195..201
+                    - NAME@195..201
+                        - IDENT@195..201 "String"
+            - WHITESPACE@201..204 "\n  "
+            - FIELD_DEFINITION@204..248
+                - NAME@204..219
+                    - IDENT@204..219 "booleanArgField"
+                - ARGUMENTS_DEFINITION@219..240
+                    - L_PAREN@219..220 "("
+                    - INPUT_VALUE_DEFINITION@220..239
+                        - NAME@220..230
+                            - IDENT@220..230 "booleanArg"
+                        - COLON@230..231 ":"
+                        - WHITESPACE@231..232 " "
+                        - NAMED_TYPE@232..239
+                            - NAME@232..239
+                                - IDENT@232..239 "Boolean"
+                    - R_PAREN@239..240 ")"
+                - COLON@240..241 ":"
+                - WHITESPACE@241..242 " "
+                - NAMED_TYPE@242..248
+                    - NAME@242..248
+                        - IDENT@242..248 "String"
+            - WHITESPACE@248..251 "\n  "
+            - FIELD_DEFINITION@251..290
+                - NAME@251..263
+                    - IDENT@251..263 "enumArgField"
+                - ARGUMENTS_DEFINITION@263..282
+                    - L_PAREN@263..264 "("
+                    - INPUT_VALUE_DEFINITION@264..281
+                        - NAME@264..271
+                            - IDENT@264..271 "enumArg"
+                        - COLON@271..272 ":"
+                        - WHITESPACE@272..273 " "
+                        - NAMED_TYPE@273..281
+                            - NAME@273..281
+                                - IDENT@273..281 "FurColor"
+                    - R_PAREN@281..282 ")"
+                - COLON@282..283 ":"
+                - WHITESPACE@283..284 " "
+                - NAMED_TYPE@284..290
+                    - NAME@284..290
+                        - IDENT@284..290 "String"
+            - WHITESPACE@290..293 "\n  "
+            - FIELD_DEFINITION@293..331
+                - NAME@293..306
+                    - IDENT@293..306 "floatArgField"
+                - ARGUMENTS_DEFINITION@306..323
+                    - L_PAREN@306..307 "("
+                    - INPUT_VALUE_DEFINITION@307..322
+                        - NAME@307..315
+                            - IDENT@307..315 "floatArg"
+                        - COLON@315..316 ":"
+                        - WHITESPACE@316..317 " "
+                        - NAMED_TYPE@317..322
+                            - NAME@317..322
+                                - IDENT@317..322 "Float"
+                    - R_PAREN@322..323 ")"
+                - COLON@323..324 ":"
+                - WHITESPACE@324..325 " "
+                - NAMED_TYPE@325..331
+                    - NAME@325..331
+                        - IDENT@325..331 "String"
+            - WHITESPACE@331..334 "\n  "
+            - FIELD_DEFINITION@334..363
+                - NAME@334..344
+                    - IDENT@334..344 "idArgField"
+                - ARGUMENTS_DEFINITION@344..355
+                    - L_PAREN@344..345 "("
+                    - INPUT_VALUE_DEFINITION@345..354
+                        - NAME@345..350
+                            - IDENT@345..350 "idArg"
+                        - COLON@350..351 ":"
+                        - WHITESPACE@351..352 " "
+                        - NAMED_TYPE@352..354
+                            - NAME@352..354
+                                - IDENT@352..354 "ID"
+                    - R_PAREN@354..355 ")"
+                - COLON@355..356 ":"
+                - WHITESPACE@356..357 " "
+                - NAMED_TYPE@357..363
+                    - NAME@357..363
+                        - IDENT@357..363 "String"
+            - WHITESPACE@363..366 "\n  "
+            - FIELD_DEFINITION@366..417
+                - NAME@366..384
+                    - IDENT@366..384 "stringListArgField"
+                - ARGUMENTS_DEFINITION@384..409
+                    - L_PAREN@384..385 "("
+                    - INPUT_VALUE_DEFINITION@385..408
+                        - NAME@385..398
+                            - IDENT@385..398 "stringListArg"
+                        - COLON@398..399 ":"
+                        - WHITESPACE@399..400 " "
+                        - LIST_TYPE@400..408
+                            - L_BRACK@400..401 "["
+                            - NAMED_TYPE@401..407
+                                - NAME@401..407
+                                    - IDENT@401..407 "String"
+                            - R_BRACK@407..408 "]"
+                    - R_PAREN@408..409 ")"
+                - COLON@409..410 ":"
+                - WHITESPACE@410..411 " "
+                - NAMED_TYPE@411..417
+                    - NAME@411..417
+                        - IDENT@411..417 "String"
+            - WHITESPACE@417..420 "\n  "
+            - FIELD_DEFINITION@420..486
+                - NAME@420..445
+                    - IDENT@420..445 "stringListNonNullArgField"
+                - ARGUMENTS_DEFINITION@445..478
+                    - L_PAREN@445..446 "("
+                    - INPUT_VALUE_DEFINITION@446..477
+                        - NAME@446..466
+                            - IDENT@446..466 "stringListNonNullArg"
+                        - COLON@466..467 ":"
+                        - WHITESPACE@467..468 " "
+                        - LIST_TYPE@468..477
+                            - L_BRACK@468..469 "["
+                            - NON_NULL_TYPE@469..476
+                                - NAMED_TYPE@469..475
+                                    - NAME@469..475
+                                        - IDENT@469..475 "String"
+                                - BANG@475..476 "!"
+                            - R_BRACK@476..477 "]"
+                    - R_PAREN@477..478 ")"
+                - COLON@478..479 ":"
+                - WHITESPACE@479..480 " "
+                - NAMED_TYPE@480..486
+                    - NAME@480..486
+                        - IDENT@480..486 "String"
+            - WHITESPACE@486..489 "\n  "
+            - FIELD_DEFINITION@489..538
+                - NAME@489..504
+                    - IDENT@489..504 "complexArgField"
+                - ARGUMENTS_DEFINITION@504..530
+                    - L_PAREN@504..505 "("
+                    - INPUT_VALUE_DEFINITION@505..529
+                        - NAME@505..515
+                            - IDENT@505..515 "complexArg"
+                        - COLON@515..516 ":"
+                        - WHITESPACE@516..517 " "
+                        - NAMED_TYPE@517..529
+                            - NAME@517..529
+                                - IDENT@517..529 "ComplexInput"
+                    - R_PAREN@529..530 ")"
+                - COLON@530..531 ":"
+                - WHITESPACE@531..532 " "
+                - NAMED_TYPE@532..538
+                    - NAME@532..538
+                        - IDENT@532..538 "String"
+            - WHITESPACE@538..541 "\n  "
+            - FIELD_DEFINITION@541..585
+                - NAME@541..553
+                    - IDENT@541..553 "multipleReqs"
+                - ARGUMENTS_DEFINITION@553..577
+                    - L_PAREN@553..554 "("
+                    - INPUT_VALUE_DEFINITION@554..564
+                        - NAME@554..558
+                            - IDENT@554..558 "req1"
+                        - COLON@558..559 ":"
+                        - WHITESPACE@559..560 " "
+                        - NON_NULL_TYPE@560..564
+                            - NAMED_TYPE@560..563
+                                - NAME@560..563
+                                    - IDENT@560..563 "Int"
+                            - BANG@563..564 "!"
+                    - COMMA@564..565 ","
+                    - WHITESPACE@565..566 " "
+                    - INPUT_VALUE_DEFINITION@566..576
+                        - NAME@566..570
+                            - IDENT@566..570 "req2"
+                        - COLON@570..571 ":"
+                        - WHITESPACE@571..572 " "
+                        - NON_NULL_TYPE@572..576
+                            - NAMED_TYPE@572..575
+                                - NAME@572..575
+                                    - IDENT@572..575 "Int"
+                            - BANG@575..576 "!"
+                    - R_PAREN@576..577 ")"
+                - COLON@577..578 ":"
+                - WHITESPACE@578..579 " "
+                - NAMED_TYPE@579..585
+                    - NAME@579..585
+                        - IDENT@579..585 "String"
+            - WHITESPACE@585..588 "\n  "
+            - FIELD_DEFINITION@588..634
+                - NAME@588..611
+                    - IDENT@588..611 "nonNullFieldWithDefault"
+                - ARGUMENTS_DEFINITION@611..626
+                    - L_PAREN@611..612 "("
+                    - INPUT_VALUE_DEFINITION@612..625
+                        - NAME@612..615
+                            - IDENT@612..615 "arg"
+                        - COLON@615..616 ":"
+                        - WHITESPACE@616..617 " "
+                        - NON_NULL_TYPE@617..621
+                            - NAMED_TYPE@617..620
+                                - NAME@617..620
+                                    - IDENT@617..620 "Int"
+                            - BANG@620..621 "!"
+                        - WHITESPACE@621..622 " "
+                        - DEFAULT_VALUE@622..625
+                            - EQ@622..623 "="
+                            - WHITESPACE@623..624 " "
+                            - INT_VALUE@624..625
+                                - INT@624..625 "0"
+                    - R_PAREN@625..626 ")"
+                - COLON@626..627 ":"
+                - WHITESPACE@627..628 " "
+                - NAMED_TYPE@628..634
+                    - NAME@628..634
+                        - IDENT@628..634 "String"
+            - WHITESPACE@634..637 "\n  "
+            - FIELD_DEFINITION@637..687
+                - NAME@637..649
+                    - IDENT@637..649 "multipleOpts"
+                - ARGUMENTS_DEFINITION@649..679
+                    - L_PAREN@649..650 "("
+                    - INPUT_VALUE_DEFINITION@650..663
+                        - NAME@650..654
+                            - IDENT@650..654 "opt1"
+                        - COLON@654..655 ":"
+                        - WHITESPACE@655..656 " "
+                        - NAMED_TYPE@656..659
+                            - NAME@656..659
+                                - IDENT@656..659 "Int"
+                        - WHITESPACE@659..660 " "
+                        - DEFAULT_VALUE@660..663
+                            - EQ@660..661 "="
+                            - WHITESPACE@661..662 " "
+                            - INT_VALUE@662..663
+                                - INT@662..663 "0"
+                    - COMMA@663..664 ","
+                    - WHITESPACE@664..665 " "
+                    - INPUT_VALUE_DEFINITION@665..678
+                        - NAME@665..669
+                            - IDENT@665..669 "opt2"
+                        - COLON@669..670 ":"
+                        - WHITESPACE@670..671 " "
+                        - NAMED_TYPE@671..674
+                            - NAME@671..674
+                                - IDENT@671..674 "Int"
+                        - WHITESPACE@674..675 " "
+                        - DEFAULT_VALUE@675..678
+                            - EQ@675..676 "="
+                            - WHITESPACE@676..677 " "
+                            - INT_VALUE@677..678
+                                - INT@677..678 "0"
+                    - R_PAREN@678..679 ")"
+                - COLON@679..680 ":"
+                - WHITESPACE@680..681 " "
+                - NAMED_TYPE@681..687
+                    - NAME@681..687
+                        - IDENT@681..687 "String"
+            - WHITESPACE@687..690 "\n  "
+            - FIELD_DEFINITION@690..769
+                - NAME@690..707
+                    - IDENT@690..707 "multipleOptAndReq"
+                - ARGUMENTS_DEFINITION@707..761
+                    - L_PAREN@707..708 "("
+                    - INPUT_VALUE_DEFINITION@708..718
+                        - NAME@708..712
+                            - IDENT@708..712 "req1"
+                        - COLON@712..713 ":"
+                        - WHITESPACE@713..714 " "
+                        - NON_NULL_TYPE@714..718
+                            - NAMED_TYPE@714..717
+                                - NAME@714..717
+                                    - IDENT@714..717 "Int"
+                            - BANG@717..718 "!"
+                    - COMMA@718..719 ","
+                    - WHITESPACE@719..720 " "
+                    - INPUT_VALUE_DEFINITION@720..730
+                        - NAME@720..724
+                            - IDENT@720..724 "req2"
+                        - COLON@724..725 ":"
+                        - WHITESPACE@725..726 " "
+                        - NON_NULL_TYPE@726..730
+                            - NAMED_TYPE@726..729
+                                - NAME@726..729
+                                    - IDENT@726..729 "Int"
+                            - BANG@729..730 "!"
+                    - COMMA@730..731 ","
+                    - WHITESPACE@731..732 " "
+                    - INPUT_VALUE_DEFINITION@732..745
+                        - NAME@732..736
+                            - IDENT@732..736 "opt1"
+                        - COLON@736..737 ":"
+                        - WHITESPACE@737..738 " "
+                        - NAMED_TYPE@738..741
+                            - NAME@738..741
+                                - IDENT@738..741 "Int"
+                        - WHITESPACE@741..742 " "
+                        - DEFAULT_VALUE@742..745
+                            - EQ@742..743 "="
+                            - WHITESPACE@743..744 " "
+                            - INT_VALUE@744..745
+                                - INT@744..745 "0"
+                    - COMMA@745..746 ","
+                    - WHITESPACE@746..747 " "
+                    - INPUT_VALUE_DEFINITION@747..760
+                        - NAME@747..751
+                            - IDENT@747..751 "opt2"
+                        - COLON@751..752 ":"
+                        - WHITESPACE@752..753 " "
+                        - NAMED_TYPE@753..756
+                            - NAME@753..756
+                                - IDENT@753..756 "Int"
+                        - WHITESPACE@756..757 " "
+                        - DEFAULT_VALUE@757..760
+                            - EQ@757..758 "="
+                            - WHITESPACE@758..759 " "
+                            - INT_VALUE@759..760
+                                - INT@759..760 "0"
+                    - R_PAREN@760..761 ")"
+                - COLON@761..762 ":"
+                - WHITESPACE@762..763 " "
+                - NAMED_TYPE@763..769
+                    - NAME@763..769
+                        - IDENT@763..769 "String"
+            - WHITESPACE@769..770 "\n"
+            - R_CURLY@770..771 "}"
+    - WHITESPACE@771..773 "\n\n"
+    - ENUM_TYPE_DEFINITION@773..841
+        - enum_KW@773..777 "enum"
+        - WHITESPACE@777..778 " "
+        - NAME@778..786
+            - IDENT@778..786 "FurColor"
+        - WHITESPACE@786..787 " "
+        - ENUM_VALUES_DEFINITION@787..841
+            - L_CURLY@787..788 "{"
+            - WHITESPACE@788..791 "\n  "
+            - ENUM_VALUE_DEFINITION@791..796
+                - ENUM_VALUE@791..796
+                    - NAME@791..796
+                        - IDENT@791..796 "BROWN"
+            - WHITESPACE@796..799 "\n  "
+            - ENUM_VALUE_DEFINITION@799..804
+                - ENUM_VALUE@799..804
+                    - NAME@799..804
+                        - IDENT@799..804 "BLACK"
+            - WHITESPACE@804..807 "\n  "
+            - ENUM_VALUE_DEFINITION@807..810
+                - ENUM_VALUE@807..810
+                    - NAME@807..810
+                        - IDENT@807..810 "TAN"
+            - WHITESPACE@810..813 "\n  "
+            - ENUM_VALUE_DEFINITION@813..820
+                - ENUM_VALUE@813..820
+                    - NAME@813..820
+                        - IDENT@813..820 "SPOTTED"
+            - WHITESPACE@820..823 "\n  "
+            - ENUM_VALUE_DEFINITION@823..829
+                - ENUM_VALUE@823..829
+                    - NAME@823..829
+                        - IDENT@823..829 "NO_FUR"
+            - WHITESPACE@829..832 "\n  "
+            - ENUM_VALUE_DEFINITION@832..839
+                - ENUM_VALUE@832..839
+                    - NAME@832..839
+                        - IDENT@832..839 "UNKNOWN"
+            - WHITESPACE@839..840 "\n"
+            - R_CURLY@840..841 "}"
+    - WHITESPACE@841..843 "\n\n"
+    - INPUT_OBJECT_TYPE_DEFINITION@843..1014
+        - input_KW@843..848 "input"
+        - WHITESPACE@848..849 " "
+        - NAME@849..861
+            - IDENT@849..861 "ComplexInput"
+        - WHITESPACE@861..862 " "
+        - INPUT_FIELDS_DEFINITION@862..1014
+            - L_CURLY@862..863 "{"
+            - WHITESPACE@863..866 "\n  "
+            - INPUT_VALUE_DEFINITION@866..889
+                - NAME@866..879
+                    - IDENT@866..879 "requiredField"
+                - COLON@879..880 ":"
+                - WHITESPACE@880..881 " "
+                - NON_NULL_TYPE@881..889
+                    - NAMED_TYPE@881..888
+                        - NAME@881..888
+                            - IDENT@881..888 "Boolean"
+                    - BANG@888..889 "!"
+            - WHITESPACE@889..892 "\n  "
+            - INPUT_VALUE_DEFINITION@892..922
+                - NAME@892..904
+                    - IDENT@892..904 "nonNullField"
+                - COLON@904..905 ":"
+                - WHITESPACE@905..906 " "
+                - NON_NULL_TYPE@906..914
+                    - NAMED_TYPE@906..913
+                        - NAME@906..913
+                            - IDENT@906..913 "Boolean"
+                    - BANG@913..914 "!"
+                - WHITESPACE@914..915 " "
+                - DEFAULT_VALUE@915..922
+                    - EQ@915..916 "="
+                    - WHITESPACE@916..917 " "
+                    - BOOLEAN_VALUE@917..922
+                        - false_KW@917..922 "false"
+            - WHITESPACE@922..925 "\n  "
+            - INPUT_VALUE_DEFINITION@925..938
+                - NAME@925..933
+                    - IDENT@925..933 "intField"
+                - COLON@933..934 ":"
+                - WHITESPACE@934..935 " "
+                - NAMED_TYPE@935..938
+                    - NAME@935..938
+                        - IDENT@935..938 "Int"
+            - WHITESPACE@938..941 "\n  "
+            - INPUT_VALUE_DEFINITION@941..960
+                - NAME@941..952
+                    - IDENT@941..952 "stringField"
+                - COLON@952..953 ":"
+                - WHITESPACE@953..954 " "
+                - NAMED_TYPE@954..960
+                    - NAME@954..960
+                        - IDENT@954..960 "String"
+            - WHITESPACE@960..963 "\n  "
+            - INPUT_VALUE_DEFINITION@963..984
+                - NAME@963..975
+                    - IDENT@963..975 "booleanField"
+                - COLON@975..976 ":"
+                - WHITESPACE@976..977 " "
+                - NAMED_TYPE@977..984
+                    - NAME@977..984
+                        - IDENT@977..984 "Boolean"
+            - WHITESPACE@984..987 "\n  "
+            - INPUT_VALUE_DEFINITION@987..1012
+                - NAME@987..1002
+                    - IDENT@987..1002 "stringListField"
+                - COLON@1002..1003 ":"
+                - WHITESPACE@1003..1004 " "
+                - LIST_TYPE@1004..1012
+                    - L_BRACK@1004..1005 "["
+                    - NAMED_TYPE@1005..1011
+                        - NAME@1005..1011
+                            - IDENT@1005..1011 "String"
+                    - R_BRACK@1011..1012 "]"
+            - WHITESPACE@1012..1013 "\n"
+            - R_CURLY@1013..1014 "}"
+    - WHITESPACE@1014..1016 "\n\n"
+    - ENUM_TYPE_DEFINITION@1016..1055
+        - enum_KW@1016..1020 "enum"
+        - WHITESPACE@1020..1021 " "
+        - NAME@1021..1031
+            - IDENT@1021..1031 "DogCommand"
+        - WHITESPACE@1031..1032 " "
+        - ENUM_VALUES_DEFINITION@1032..1055
+            - L_CURLY@1032..1033 "{"
+            - WHITESPACE@1033..1036 "\n  "
+            - ENUM_VALUE_DEFINITION@1036..1039
+                - ENUM_VALUE@1036..1039
+                    - NAME@1036..1039
+                        - IDENT@1036..1039 "SIT"
+            - WHITESPACE@1039..1042 "\n  "
+            - ENUM_VALUE_DEFINITION@1042..1046
+                - ENUM_VALUE@1042..1046
+                    - NAME@1042..1046
+                        - IDENT@1042..1046 "HEEL"
+            - WHITESPACE@1046..1049 "\n  "
+            - ENUM_VALUE_DEFINITION@1049..1053
+                - ENUM_VALUE@1049..1053
+                    - NAME@1049..1053
+                        - IDENT@1049..1053 "DOWN"
+            - WHITESPACE@1053..1054 "\n"
+            - R_CURLY@1054..1055 "}"
+    - WHITESPACE@1055..1057 "\n\n"
+    - OBJECT_TYPE_DEFINITION@1057..1153
+        - type_KW@1057..1061 "type"
+        - WHITESPACE@1061..1062 " "
+        - NAME@1062..1065
+            - IDENT@1062..1065 "Dog"
+        - WHITESPACE@1065..1066 " "
+        - FIELDS_DEFINITION@1066..1153
+            - L_CURLY@1066..1067 "{"
+            - WHITESPACE@1067..1070 "\n  "
+            - FIELD_DEFINITION@1070..1118
+                - NAME@1070..1085
+                    - IDENT@1070..1085 "doesKnowCommand"
+                - ARGUMENTS_DEFINITION@1085..1109
+                    - L_PAREN@1085..1086 "("
+                    - INPUT_VALUE_DEFINITION@1086..1108
+                        - NAME@1086..1096
+                            - IDENT@1086..1096 "dogCommand"
+                        - COLON@1096..1097 ":"
+                        - WHITESPACE@1097..1098 " "
+                        - NAMED_TYPE@1098..1108
+                            - NAME@1098..1108
+                                - IDENT@1098..1108 "DogCommand"
+                    - R_PAREN@1108..1109 ")"
+                - COLON@1109..1110 ":"
+                - WHITESPACE@1110..1111 " "
+                - NAMED_TYPE@1111..1118
+                    - NAME@1111..1118
+                        - IDENT@1111..1118 "Boolean"
+            - WHITESPACE@1118..1121 "\n  "
+            - FIELD_DEFINITION@1121..1151
+                - NAME@1121..1125
+                    - IDENT@1121..1125 "name"
+                - ARGUMENTS_DEFINITION@1125..1143
+                    - L_PAREN@1125..1126 "("
+                    - INPUT_VALUE_DEFINITION@1126..1142
+                        - NAME@1126..1133
+                            - IDENT@1126..1133 "surname"
+                        - COLON@1133..1134 ":"
+                        - WHITESPACE@1134..1135 " "
+                        - NAMED_TYPE@1135..1142
+                            - NAME@1135..1142
+                                - IDENT@1135..1142 "Boolean"
+                    - R_PAREN@1142..1143 ")"
+                - COLON@1143..1144 ":"
+                - WHITESPACE@1144..1145 " "
+                - NAMED_TYPE@1145..1151
+                    - NAME@1145..1151
+                        - IDENT@1145..1151 "String"
+            - WHITESPACE@1151..1152 "\n"
+            - R_CURLY@1152..1153 "}"
+    - WHITESPACE@1153..1155 "\n\n"
+    - OBJECT_TYPE_DEFINITION@1155..1219
+        - type_KW@1155..1159 "type"
+        - WHITESPACE@1159..1160 " "
+        - NAME@1160..1165
+            - IDENT@1160..1165 "Query"
+        - WHITESPACE@1165..1166 " "
+        - FIELDS_DEFINITION@1166..1219
+            - L_CURLY@1166..1167 "{"
+            - WHITESPACE@1167..1172 "\n    "
+            - FIELD_DEFINITION@1172..1204
+                - NAME@1172..1187
+                    - IDENT@1172..1187 "complicatedArgs"
+                - COLON@1187..1188 ":"
+                - WHITESPACE@1188..1189 " "
+                - NAMED_TYPE@1189..1204
+                    - NAME@1189..1204
+                        - IDENT@1189..1204 "ComplicatedArgs"
+            - WHITESPACE@1204..1209 "\n    "
+            - FIELD_DEFINITION@1209..1217
+                - NAME@1209..1212
+                    - IDENT@1209..1212 "dog"
+                - COLON@1212..1213 ":"
+                - WHITESPACE@1213..1214 " "
+                - NAMED_TYPE@1214..1217
+                    - NAME@1214..1217
+                        - IDENT@1214..1217 "Dog"
+            - WHITESPACE@1217..1218 "\n"
+            - R_CURLY@1218..1219 "}"
+    - WHITESPACE@1219..1221 "\n\n"
+    - OPERATION_DEFINITION@1221..1294
+        - OPERATION_TYPE@1221..1226
+            - query_KW@1221..1226 "query"
+        - WHITESPACE@1226..1227 " "
+        - NAME@1227..1239
+            - IDENT@1227..1239 "goodIntValue"
+        - WHITESPACE@1239..1240 " "
+        - SELECTION_SET@1240..1294
+            - L_CURLY@1240..1241 "{"
+            - WHITESPACE@1241..1244 "\n  "
+            - FIELD@1244..1292
+                - NAME@1244..1259
+                    - IDENT@1244..1259 "complicatedArgs"
+                - WHITESPACE@1259..1260 " "
+                - SELECTION_SET@1260..1292
+                    - L_CURLY@1260..1261 "{"
+                    - WHITESPACE@1261..1266 "\n    "
+                    - FIELD@1266..1288
+                        - NAME@1266..1277
+                            - IDENT@1266..1277 "intArgField"
+                        - ARGUMENTS@1277..1288
+                            - L_PAREN@1277..1278 "("
+                            - ARGUMENT@1278..1287
+                                - NAME@1278..1284
+                                    - IDENT@1278..1284 "intArg"
+                                - COLON@1284..1285 ":"
+                                - WHITESPACE@1285..1286 " "
+                                - INT_VALUE@1286..1287
+                                    - INT@1286..1287 "2"
+                            - R_PAREN@1287..1288 ")"
+                    - WHITESPACE@1288..1291 "\n  "
+                    - R_CURLY@1291..1292 "}"
+            - WHITESPACE@1292..1293 "\n"
+            - R_CURLY@1293..1294 "}"
+    - WHITESPACE@1294..1295 "\n"
+    - OPERATION_DEFINITION@1295..1376
+        - OPERATION_TYPE@1295..1300
+            - query_KW@1295..1300 "query"
+        - WHITESPACE@1300..1301 " "
+        - NAME@1301..1321
+            - IDENT@1301..1321 "goodNegativeIntValue"
+        - SELECTION_SET@1321..1376
+            - L_CURLY@1321..1322 "{"
+            - WHITESPACE@1322..1325 "\n  "
+            - FIELD@1325..1374
+                - NAME@1325..1340
+                    - IDENT@1325..1340 "complicatedArgs"
+                - WHITESPACE@1340..1341 " "
+                - SELECTION_SET@1341..1374
+                    - L_CURLY@1341..1342 "{"
+                    - WHITESPACE@1342..1347 "\n    "
+                    - FIELD@1347..1370
+                        - NAME@1347..1358
+                            - IDENT@1347..1358 "intArgField"
+                        - ARGUMENTS@1358..1370
+                            - L_PAREN@1358..1359 "("
+                            - ARGUMENT@1359..1369
+                                - NAME@1359..1365
+                                    - IDENT@1359..1365 "intArg"
+                                - COLON@1365..1366 ":"
+                                - WHITESPACE@1366..1367 " "
+                                - INT_VALUE@1367..1369
+                                    - INT@1367..1369 "-2"
+                            - R_PAREN@1369..1370 ")"
+                    - WHITESPACE@1370..1373 "\n  "
+                    - R_CURLY@1373..1374 "}"
+            - WHITESPACE@1374..1375 "\n"
+            - R_CURLY@1375..1376 "}"
+    - WHITESPACE@1376..1378 "\n\n"
+    - OPERATION_DEFINITION@1378..1466
+        - OPERATION_TYPE@1378..1383
+            - query_KW@1378..1383 "query"
+        - WHITESPACE@1383..1384 " "
+        - NAME@1384..1400
+            - IDENT@1384..1400 "goodBooleanValue"
+        - WHITESPACE@1400..1401 " "
+        - SELECTION_SET@1401..1466
+            - L_CURLY@1401..1402 "{"
+            - WHITESPACE@1402..1405 "\n  "
+            - FIELD@1405..1464
+                - NAME@1405..1420
+                    - IDENT@1405..1420 "complicatedArgs"
+                - WHITESPACE@1420..1421 " "
+                - SELECTION_SET@1421..1464
+                    - L_CURLY@1421..1422 "{"
+                    - WHITESPACE@1422..1427 "\n    "
+                    - FIELD@1427..1460
+                        - NAME@1427..1442
+                            - IDENT@1427..1442 "booleanArgField"
+                        - ARGUMENTS@1442..1460
+                            - L_PAREN@1442..1443 "("
+                            - ARGUMENT@1443..1459
+                                - NAME@1443..1453
+                                    - IDENT@1443..1453 "booleanArg"
+                                - COLON@1453..1454 ":"
+                                - WHITESPACE@1454..1455 " "
+                                - BOOLEAN_VALUE@1455..1459
+                                    - true_KW@1455..1459 "true"
+                            - R_PAREN@1459..1460 ")"
+                    - WHITESPACE@1460..1463 "\n  "
+                    - R_CURLY@1463..1464 "}"
+            - WHITESPACE@1464..1465 "\n"
+            - R_CURLY@1465..1466 "}"
+    - WHITESPACE@1466..1468 "\n\n"
+    - OPERATION_DEFINITION@1468..1554
+        - OPERATION_TYPE@1468..1473
+            - query_KW@1468..1473 "query"
+        - WHITESPACE@1473..1474 " "
+        - NAME@1474..1489
+            - IDENT@1474..1489 "goodStringValue"
+        - WHITESPACE@1489..1490 " "
+        - SELECTION_SET@1490..1554
+            - L_CURLY@1490..1491 "{"
+            - WHITESPACE@1491..1494 "\n  "
+            - FIELD@1494..1552
+                - NAME@1494..1509
+                    - IDENT@1494..1509 "complicatedArgs"
+                - WHITESPACE@1509..1510 " "
+                - SELECTION_SET@1510..1552
+                    - L_CURLY@1510..1511 "{"
+                    - WHITESPACE@1511..1516 "\n    "
+                    - FIELD@1516..1548
+                        - NAME@1516..1530
+                            - IDENT@1516..1530 "stringArgField"
+                        - ARGUMENTS@1530..1548
+                            - L_PAREN@1530..1531 "("
+                            - ARGUMENT@1531..1547
+                                - NAME@1531..1540
+                                    - IDENT@1531..1540 "stringArg"
+                                - COLON@1540..1541 ":"
+                                - WHITESPACE@1541..1542 " "
+                                - STRING_VALUE@1542..1547
+                                    - STRING@1542..1547 "\"foo\""
+                            - R_PAREN@1547..1548 ")"
+                    - WHITESPACE@1548..1551 "\n  "
+                    - R_CURLY@1551..1552 "}"
+            - WHITESPACE@1552..1553 "\n"
+            - R_CURLY@1553..1554 "}"
+    - WHITESPACE@1554..1556 "\n\n"
+    - OPERATION_DEFINITION@1556..1637
+        - OPERATION_TYPE@1556..1561
+            - query_KW@1556..1561 "query"
+        - WHITESPACE@1561..1562 " "
+        - NAME@1562..1576
+            - IDENT@1562..1576 "goodFloatValue"
+        - WHITESPACE@1576..1577 " "
+        - SELECTION_SET@1577..1637
+            - L_CURLY@1577..1578 "{"
+            - WHITESPACE@1578..1581 "\n  "
+            - FIELD@1581..1635
+                - NAME@1581..1596
+                    - IDENT@1581..1596 "complicatedArgs"
+                - WHITESPACE@1596..1597 " "
+                - SELECTION_SET@1597..1635
+                    - L_CURLY@1597..1598 "{"
+                    - WHITESPACE@1598..1603 "\n    "
+                    - FIELD@1603..1631
+                        - NAME@1603..1616
+                            - IDENT@1603..1616 "floatArgField"
+                        - ARGUMENTS@1616..1631
+                            - L_PAREN@1616..1617 "("
+                            - ARGUMENT@1617..1630
+                                - NAME@1617..1625
+                                    - IDENT@1617..1625 "floatArg"
+                                - COLON@1625..1626 ":"
+                                - WHITESPACE@1626..1627 " "
+                                - FLOAT_VALUE@1627..1630
+                                    - FLOAT@1627..1630 "1.1"
+                            - R_PAREN@1630..1631 ")"
+                    - WHITESPACE@1631..1634 "\n  "
+                    - R_CURLY@1634..1635 "}"
+            - WHITESPACE@1635..1636 "\n"
+            - R_CURLY@1636..1637 "}"
+    - WHITESPACE@1637..1639 "\n\n"
+    - OPERATION_DEFINITION@1639..1729
+        - OPERATION_TYPE@1639..1644
+            - query_KW@1639..1644 "query"
+        - WHITESPACE@1644..1645 " "
+        - NAME@1645..1667
+            - IDENT@1645..1667 "goodNegativeFloatValue"
+        - WHITESPACE@1667..1668 " "
+        - SELECTION_SET@1668..1729
+            - L_CURLY@1668..1669 "{"
+            - WHITESPACE@1669..1672 "\n  "
+            - FIELD@1672..1727
+                - NAME@1672..1687
+                    - IDENT@1672..1687 "complicatedArgs"
+                - WHITESPACE@1687..1688 " "
+                - SELECTION_SET@1688..1727
+                    - L_CURLY@1688..1689 "{"
+                    - WHITESPACE@1689..1694 "\n    "
+                    - FIELD@1694..1723
+                        - NAME@1694..1707
+                            - IDENT@1694..1707 "floatArgField"
+                        - ARGUMENTS@1707..1723
+                            - L_PAREN@1707..1708 "("
+                            - ARGUMENT@1708..1722
+                                - NAME@1708..1716
+                                    - IDENT@1708..1716 "floatArg"
+                                - COLON@1716..1717 ":"
+                                - WHITESPACE@1717..1718 " "
+                                - FLOAT_VALUE@1718..1722
+                                    - FLOAT@1718..1722 "-1.1"
+                            - R_PAREN@1722..1723 ")"
+                    - WHITESPACE@1723..1726 "\n  "
+                    - R_CURLY@1726..1727 "}"
+            - WHITESPACE@1727..1728 "\n"
+            - R_CURLY@1728..1729 "}"
+    - WHITESPACE@1729..1731 "\n\n"
+    - OPERATION_DEFINITION@1731..1808
+        - OPERATION_TYPE@1731..1736
+            - query_KW@1731..1736 "query"
+        - WHITESPACE@1736..1737 " "
+        - NAME@1737..1749
+            - IDENT@1737..1749 "intIntoFloat"
+        - WHITESPACE@1749..1750 " "
+        - SELECTION_SET@1750..1808
+            - L_CURLY@1750..1751 "{"
+            - WHITESPACE@1751..1754 "\n  "
+            - FIELD@1754..1806
+                - NAME@1754..1769
+                    - IDENT@1754..1769 "complicatedArgs"
+                - WHITESPACE@1769..1770 " "
+                - SELECTION_SET@1770..1806
+                    - L_CURLY@1770..1771 "{"
+                    - WHITESPACE@1771..1776 "\n    "
+                    - FIELD@1776..1802
+                        - NAME@1776..1789
+                            - IDENT@1776..1789 "floatArgField"
+                        - ARGUMENTS@1789..1802
+                            - L_PAREN@1789..1790 "("
+                            - ARGUMENT@1790..1801
+                                - NAME@1790..1798
+                                    - IDENT@1790..1798 "floatArg"
+                                - COLON@1798..1799 ":"
+                                - WHITESPACE@1799..1800 " "
+                                - INT_VALUE@1800..1801
+                                    - INT@1800..1801 "1"
+                            - R_PAREN@1801..1802 ")"
+                    - WHITESPACE@1802..1805 "\n  "
+                    - R_CURLY@1805..1806 "}"
+            - WHITESPACE@1806..1807 "\n"
+            - R_CURLY@1807..1808 "}"
+    - WHITESPACE@1808..1810 "\n\n"
+    - OPERATION_DEFINITION@1810..1878
+        - OPERATION_TYPE@1810..1815
+            - query_KW@1810..1815 "query"
+        - WHITESPACE@1815..1816 " "
+        - NAME@1816..1825
+            - IDENT@1816..1825 "intIntoID"
+        - WHITESPACE@1825..1826 " "
+        - SELECTION_SET@1826..1878
+            - L_CURLY@1826..1827 "{"
+            - WHITESPACE@1827..1830 "\n  "
+            - FIELD@1830..1876
+                - NAME@1830..1845
+                    - IDENT@1830..1845 "complicatedArgs"
+                - WHITESPACE@1845..1846 " "
+                - SELECTION_SET@1846..1876
+                    - L_CURLY@1846..1847 "{"
+                    - WHITESPACE@1847..1852 "\n    "
+                    - FIELD@1852..1872
+                        - NAME@1852..1862
+                            - IDENT@1852..1862 "idArgField"
+                        - ARGUMENTS@1862..1872
+                            - L_PAREN@1862..1863 "("
+                            - ARGUMENT@1863..1871
+                                - NAME@1863..1868
+                                    - IDENT@1863..1868 "idArg"
+                                - COLON@1868..1869 ":"
+                                - WHITESPACE@1869..1870 " "
+                                - INT_VALUE@1870..1871
+                                    - INT@1870..1871 "1"
+                            - R_PAREN@1871..1872 ")"
+                    - WHITESPACE@1872..1875 "\n  "
+                    - R_CURLY@1875..1876 "}"
+            - WHITESPACE@1876..1877 "\n"
+            - R_CURLY@1877..1878 "}"
+    - WHITESPACE@1878..1880 "\n\n"
+    - OPERATION_DEFINITION@1880..1964
+        - OPERATION_TYPE@1880..1885
+            - query_KW@1880..1885 "query"
+        - WHITESPACE@1885..1886 " "
+        - NAME@1886..1898
+            - IDENT@1886..1898 "stringIntoID"
+        - WHITESPACE@1898..1899 " "
+        - SELECTION_SET@1899..1964
+            - L_CURLY@1899..1900 "{"
+            - WHITESPACE@1900..1903 "\n  "
+            - FIELD@1903..1962
+                - NAME@1903..1918
+                    - IDENT@1903..1918 "complicatedArgs"
+                - WHITESPACE@1918..1919 " "
+                - SELECTION_SET@1919..1962
+                    - L_CURLY@1919..1920 "{"
+                    - WHITESPACE@1920..1925 "\n    "
+                    - FIELD@1925..1958
+                        - NAME@1925..1935
+                            - IDENT@1925..1935 "idArgField"
+                        - ARGUMENTS@1935..1958
+                            - L_PAREN@1935..1936 "("
+                            - ARGUMENT@1936..1957
+                                - NAME@1936..1941
+                                    - IDENT@1936..1941 "idArg"
+                                - COLON@1941..1942 ":"
+                                - WHITESPACE@1942..1943 " "
+                                - STRING_VALUE@1943..1957
+                                    - STRING@1943..1957 "\"someIdString\""
+                            - R_PAREN@1957..1958 ")"
+                    - WHITESPACE@1958..1961 "\n  "
+                    - R_CURLY@1961..1962 "}"
+            - WHITESPACE@1962..1963 "\n"
+            - R_CURLY@1963..1964 "}"
+    - WHITESPACE@1964..1966 "\n\n"
+    - OPERATION_DEFINITION@1966..2038
+        - OPERATION_TYPE@1966..1971
+            - query_KW@1966..1971 "query"
+        - WHITESPACE@1971..1972 " "
+        - NAME@1972..1985
+            - IDENT@1972..1985 "goodEnumValue"
+        - WHITESPACE@1985..1986 " "
+        - SELECTION_SET@1986..2038
+            - L_CURLY@1986..1987 "{"
+            - WHITESPACE@1987..1990 "\n  "
+            - FIELD@1990..2036
+                - NAME@1990..1993
+                    - IDENT@1990..1993 "dog"
+                - WHITESPACE@1993..1994 " "
+                - SELECTION_SET@1994..2036
+                    - L_CURLY@1994..1995 "{"
+                    - WHITESPACE@1995..2000 "\n    "
+                    - FIELD@2000..2032
+                        - NAME@2000..2015
+                            - IDENT@2000..2015 "doesKnowCommand"
+                        - ARGUMENTS@2015..2032
+                            - L_PAREN@2015..2016 "("
+                            - ARGUMENT@2016..2031
+                                - NAME@2016..2026
+                                    - IDENT@2016..2026 "dogCommand"
+                                - COLON@2026..2027 ":"
+                                - WHITESPACE@2027..2028 " "
+                                - ENUM_VALUE@2028..2031
+                                    - NAME@2028..2031
+                                        - IDENT@2028..2031 "SIT"
+                            - R_PAREN@2031..2032 ")"
+                    - WHITESPACE@2032..2035 "\n  "
+                    - R_CURLY@2035..2036 "}"
+            - WHITESPACE@2036..2037 "\n"
+            - R_CURLY@2037..2038 "}"
+    - WHITESPACE@2038..2040 "\n\n"
+    - OPERATION_DEFINITION@2040..2131
+        - OPERATION_TYPE@2040..2045
+            - query_KW@2040..2045 "query"
+        - WHITESPACE@2045..2046 " "
+        - NAME@2046..2068
+            - IDENT@2046..2068 "enumWithUndefinedValue"
+        - WHITESPACE@2068..2069 " "
+        - SELECTION_SET@2069..2131
+            - L_CURLY@2069..2070 "{"
+            - WHITESPACE@2070..2073 "\n  "
+            - FIELD@2073..2129
+                - NAME@2073..2088
+                    - IDENT@2073..2088 "complicatedArgs"
+                - WHITESPACE@2088..2089 " "
+                - SELECTION_SET@2089..2129
+                    - L_CURLY@2089..2090 "{"
+                    - WHITESPACE@2090..2095 "\n    "
+                    - FIELD@2095..2125
+                        - NAME@2095..2107
+                            - IDENT@2095..2107 "enumArgField"
+                        - ARGUMENTS@2107..2125
+                            - L_PAREN@2107..2108 "("
+                            - ARGUMENT@2108..2124
+                                - NAME@2108..2115
+                                    - IDENT@2108..2115 "enumArg"
+                                - COLON@2115..2116 ":"
+                                - WHITESPACE@2116..2117 " "
+                                - ENUM_VALUE@2117..2124
+                                    - NAME@2117..2124
+                                        - IDENT@2117..2124 "UNKNOWN"
+                            - R_PAREN@2124..2125 ")"
+                    - WHITESPACE@2125..2128 "\n  "
+                    - R_CURLY@2128..2129 "}"
+            - WHITESPACE@2129..2130 "\n"
+            - R_CURLY@2130..2131 "}"
+    - WHITESPACE@2131..2133 "\n\n"
+    - OPERATION_DEFINITION@2133..2216
+        - OPERATION_TYPE@2133..2138
+            - query_KW@2133..2138 "query"
+        - WHITESPACE@2138..2139 " "
+        - NAME@2139..2156
+            - IDENT@2139..2156 "enumWithNullValue"
+        - WHITESPACE@2156..2157 " "
+        - SELECTION_SET@2157..2216
+            - L_CURLY@2157..2158 "{"
+            - WHITESPACE@2158..2161 "\n  "
+            - FIELD@2161..2214
+                - NAME@2161..2176
+                    - IDENT@2161..2176 "complicatedArgs"
+                - WHITESPACE@2176..2177 " "
+                - SELECTION_SET@2177..2214
+                    - L_CURLY@2177..2178 "{"
+                    - WHITESPACE@2178..2183 "\n    "
+                    - FIELD@2183..2210
+                        - NAME@2183..2195
+                            - IDENT@2183..2195 "enumArgField"
+                        - ARGUMENTS@2195..2210
+                            - L_PAREN@2195..2196 "("
+                            - ARGUMENT@2196..2209
+                                - NAME@2196..2203
+                                    - IDENT@2196..2203 "enumArg"
+                                - COLON@2203..2204 ":"
+                                - WHITESPACE@2204..2205 " "
+                                - NULL_VALUE@2205..2209
+                                    - null_KW@2205..2209 "null"
+                            - R_PAREN@2209..2210 ")"
+                    - WHITESPACE@2210..2213 "\n  "
+                    - R_CURLY@2213..2214 "}"
+            - WHITESPACE@2214..2215 "\n"
+            - R_CURLY@2215..2216 "}"
+    - WHITESPACE@2216..2218 "\n\n"
+    - OPERATION_DEFINITION@2218..2302
+        - OPERATION_TYPE@2218..2223
+            - query_KW@2218..2223 "query"
+        - WHITESPACE@2223..2224 " "
+        - NAME@2224..2244
+            - IDENT@2224..2244 "nullIntoNullableType"
+        - WHITESPACE@2244..2245 " "
+        - SELECTION_SET@2245..2302
+            - L_CURLY@2245..2246 "{"
+            - WHITESPACE@2246..2249 "\n  "
+            - FIELD@2249..2300
+                - NAME@2249..2264
+                    - IDENT@2249..2264 "complicatedArgs"
+                - WHITESPACE@2264..2265 " "
+                - SELECTION_SET@2265..2300
+                    - L_CURLY@2265..2266 "{"
+                    - WHITESPACE@2266..2271 "\n    "
+                    - FIELD@2271..2296
+                        - NAME@2271..2282
+                            - IDENT@2271..2282 "intArgField"
+                        - ARGUMENTS@2282..2296
+                            - L_PAREN@2282..2283 "("
+                            - ARGUMENT@2283..2295
+                                - NAME@2283..2289
+                                    - IDENT@2283..2289 "intArg"
+                                - COLON@2289..2290 ":"
+                                - WHITESPACE@2290..2291 " "
+                                - NULL_VALUE@2291..2295
+                                    - null_KW@2291..2295 "null"
+                            - R_PAREN@2295..2296 ")"
+                    - WHITESPACE@2296..2299 "\n  "
+                    - R_CURLY@2299..2300 "}"
+            - WHITESPACE@2300..2301 "\n"
+            - R_CURLY@2301..2302 "}"
+recursion limit: 4096, high: 2

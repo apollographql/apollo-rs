@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
+    hir::{self, TypeDefinition, Value},
     validation::ValidationDatabase,
 };
 
@@ -34,8 +34,38 @@ pub fn validate_field(
                     {
                         diagnostics.push(diag)
                     } else {
-                        let defined_arg_ty = arg.value();
-                        let schema_ty = input_val.ty();
+                        let defined_arg_ty = arg.value.clone();
+                        let type_def = input_val.ty().type_def(db.upcast());
+                        let is_coercible = db.is_value_coercible(
+                            type_def.clone(),
+                            defined_arg_ty.clone(),
+                            var_defs.clone(),
+                        );
+                        if !is_coercible {
+                            diagnostics.push(
+                                ApolloDiagnostic::new(
+                                    db,
+                                    arg.loc.into(),
+                                    DiagnosticData::UnsupportedValueType {
+                                        value: defined_arg_ty.value_name().into(),
+                                        ty: input_val.ty().name(),
+                                    },
+                                )
+                                .labels([
+                                    Label::new(
+                                        input_val.ty().loc().unwrap(),
+                                        "field declared here",
+                                    ),
+                                    Label::new(
+                                        arg.loc,
+                                        format!(
+                                            "argument declared here is of {} type",
+                                            defined_arg_ty.value_name()
+                                        ),
+                                    ),
+                                ]),
+                            )
+                        }
                     }
                 } else {
                     let mut labels = vec![Label::new(arg.loc, "argument name not found")];
@@ -289,4 +319,79 @@ pub fn validate_leaf_field_selection(
             type_def.loc(),
             format!("`{tname}` declared here"),
         )))
+}
+
+pub fn is_value_coercible(
+    db: &dyn ValidationDatabase,
+    type_def: Option<hir::TypeDefinition>,
+    defined_arg_ty: hir::Value,
+    var_defs: Arc<Vec<hir::VariableDefinition>>,
+) -> bool {
+    if let Some(type_def) = type_def {
+        return match (defined_arg_ty, type_def.clone()) {
+            (
+                Value::List(li),
+                TypeDefinition::EnumTypeDefinition(_)
+                | TypeDefinition::ScalarTypeDefinition(_)
+                | TypeDefinition::InputObjectTypeDefinition(_),
+            ) => li.iter().all(|val| {
+                db.is_value_coercible(Some(type_def.clone()), val.clone(), var_defs.clone())
+            }),
+            (
+                Value::Variable(var),
+                TypeDefinition::EnumTypeDefinition(_)
+                | TypeDefinition::ScalarTypeDefinition(_)
+                | TypeDefinition::InputObjectTypeDefinition(_),
+            ) => {
+                let var_def = var_defs.iter().find(|v| v.name() == var.name());
+                if let Some(var_def) = var_def {
+                    // we don't have the actual variable values here, so just
+                    // compare if two Types are the same
+                    var_def.ty().name() == type_def.name()
+                } else {
+                    false
+                }
+            }
+            (Value::Float(_), TypeDefinition::ScalarTypeDefinition(scalar)) => scalar.is_float(),
+            (Value::Int(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
+                scalar.is_int() || scalar.is_float() || scalar.is_id()
+            }
+            (Value::String(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
+                scalar.is_string() || scalar.is_id()
+            }
+            (Value::Boolean(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
+                scalar.is_boolean()
+            }
+            (
+                Value::Null,
+                TypeDefinition::ScalarTypeDefinition(_) | TypeDefinition::EnumTypeDefinition(_),
+            ) => true,
+            (_, TypeDefinition::ScalarTypeDefinition(_)) => false,
+            (Value::String(str), TypeDefinition::EnumTypeDefinition(enum_)) => {
+                enum_.values().any(|val| val.enum_value() == str)
+            }
+            (Value::Enum(enum_val), TypeDefinition::EnumTypeDefinition(enum_)) => {
+                enum_.values().any(|val| val.enum_value() == enum_val.src())
+            }
+            (_, TypeDefinition::EnumTypeDefinition(_)) => false,
+            (Value::Object(obj), TypeDefinition::InputObjectTypeDefinition(input_obj)) => {
+                input_obj.fields().all(|f| {
+                    obj.iter().any(|(name, val)| {
+                        if f.name() == name.src() {
+                            db.is_value_coercible(
+                                f.ty().type_def(db.upcast()),
+                                val.clone(),
+                                var_defs.clone(),
+                            )
+                        } else {
+                            false
+                        }
+                    })
+                })
+            }
+            _ => false,
+        };
+    } else {
+        false
+    }
 }

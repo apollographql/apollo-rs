@@ -251,6 +251,15 @@ pub trait ValidationDatabase:
         arg: Argument,
     ) -> Result<(), ApolloDiagnostic>;
 
+    #[salsa::transparent]
+    #[salsa::invoke(field::is_value_coercible)]
+    fn is_value_coercible(
+        &self,
+        type_def: Option<TypeDefinition>,
+        defined_arg_ty: Value,
+        var_defs: Arc<Vec<VariableDefinition>>,
+    ) -> bool;
+
     /// Check if two fields will output the same type.
     ///
     /// If the two fields output different types, returns an `Err` containing diagnostic information.

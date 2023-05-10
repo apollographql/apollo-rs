@@ -152,12 +152,53 @@ impl From<ast::StringValue> for String {
     }
 }
 
+/// Handle escaped characters in a StringValue. Panics on invalid escape sequences.
+fn unescape_string(input: &str) -> String {
+    let mut output = String::with_capacity(input.len());
+
+    let mut iter = input.chars();
+    while let Some(c) = iter.next() {
+        match c {
+            '\\' => {
+                let Some(c2) = iter.next() else {
+                    output.push(c);
+                    break;
+                };
+
+                let mut unicode = || {
+                    // 1. Let value be the 16-bit hexadecimal value represented
+                    // by the sequence of hexadecimal digits within EscapedUnicode.
+                    let value = iter.by_ref().take(4).fold(0, |acc, c| {
+                        let digit = c.to_digit(16).unwrap();
+                        (acc << 4) + digit
+                    });
+                    // 2. Return the code point value.
+                    char::from_u32(value).unwrap()
+                };
+
+                match c2 {
+                    'b' => output.push('\u{0008}'),
+                    'f' => output.push('\u{000c}'),
+                    'n' => output.push('\n'),
+                    't' => output.push('\t'),
+                    '"' | '\\' => output.push(c2),
+                    'u' => output.push(unicode()),
+                    _ => (),
+                }
+            }
+            _ => output.push(c),
+        }
+    }
+
+    output
+}
+
 impl From<&'_ ast::StringValue> for String {
     fn from(val: &'_ ast::StringValue) -> Self {
         let text = text_of_first_token(val.syntax());
-        text.trim_start_matches('"')
-            .trim_end_matches('"')
-            .to_string()
+        // Would panic if the contents are invalid, but the lexer already guarantees that the
+        // string is valid.
+        unescape_string(text.trim_start_matches('"').trim_end_matches('"'))
     }
 }
 

@@ -272,6 +272,13 @@ pub enum DiagnosticData {
         /// The source location where the directive that's being used was defined.
         directive_def: DiagnosticLocation,
     },
+    #[error("{ty} cannot be represented by a {value} value")]
+    UnsupportedValueType {
+        // input value
+        value: String,
+        // defined type
+        ty: String,
+    },
     #[error("non-repeatable directive {name} can only be used once per location")]
     UniqueDirective {
         /// Name of the non-unique directive.

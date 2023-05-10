@@ -1029,6 +1029,25 @@ pub enum Value {
     Object(Vec<(Name, Value)>),
 }
 
+// impl fmt::Display for Value {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         match self {
+//             Value::Variable(var) => write!(f, "{}", var.name()),
+//             Value::Int(int) => write!(f, "{}", int.get()),
+//             Value::Float(flt) => write!(f, "{}", flt.get()),
+//             Value::String(s) => write!(f, "{}", s),
+//             Value::Boolean(b) => write!(f, "{}", b),
+//             Value::Null => write!(f, "null"),
+//             Value::Enum(enum_) => write!(f, "{}", enum_.src),
+//             Value::List(li) => li.iter().map(|val| write!(f, "{}", val)).collect(),
+//             Value::Object(obj) => obj
+//                 .iter()
+//                 .map(|(name, val)| write!(f, "{}: {}", name.src(), val))
+//                 .collect(),
+//         }
+//     }
+// }
+
 impl Value {
     /// Returns `true` if the value is [`Variable`].
     ///
@@ -1072,20 +1091,18 @@ impl Value {
         }
     }
 
-    pub fn is_value_coerceable(&self, db: &dyn HirDatabase, ty: &TypeDefinition) -> bool {
+    pub fn value_name(&self) -> &str {
         match self {
-            Value::Variable(_) => todo!(),
-            Value::Int(i) => if ty.is_scalar_type_definition() && ty.name() == "Int" {},
-            Value::Float(_) => todo!(),
-            Value::String(_) => todo!(),
-            Value::Boolean(_) => todo!(),
-            Value::Null => todo!(),
-            Value::Enum(_) => todo!(),
-            Value::List(_) => todo!(),
-            Value::Object(_) => todo!(),
+            Value::Variable(_) => "Variable",
+            Value::Int(_) => "Int",
+            Value::Float(_) => "Float",
+            Value::String(_) => "String",
+            Value::Boolean(_) => "Boolean",
+            Value::Null => "Null",
+            Value::Enum(_) => "Enum",
+            Value::List(_) => "List",
+            Value::Object(_) => "Object",
         }
-
-        true
     }
 }
 

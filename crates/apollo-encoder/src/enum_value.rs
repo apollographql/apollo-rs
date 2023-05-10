@@ -66,7 +66,7 @@ impl EnumValue {
 impl fmt::Display for EnumValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(description) = &self.description {
-            write!(f, "{description}")?;
+            writeln!(f, "{description}")?;
         }
         write!(f, "  {}", self.name)?;
 
