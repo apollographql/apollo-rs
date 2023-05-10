@@ -17,6 +17,31 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.5.2](https://crates.io/crates/apollo-parser/0.5.2) - 2023-05-10
+
+## Features
+- **add `SyntaxTree::token_limit` - [SimonSapin], [pull/525]**
+  This enables finding out how many tokens were present in a succesful parse,
+  which can be useful to choose where to set the limit.
+
+- **add `Definition::kind() -> &str` and  `Definition::is_executable_definition()` - [goto-bus-stop], [pull/535]**
+  These are new methods on the `Definition` AST node. `kind()` returns the kind
+  of definition (eg. "ScalarTypeExtension") and `is_executable_definition()`
+  returns true for operation definitions and fragment definitions.
+
+[SimonSapin]: https://github.com/SimonSapin
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/525]: https://github.com/apollographql/apollo-rs/pull/525
+[pull/535]: https://github.com/apollographql/apollo-rs/pull/535
+
+## Fixes
+- **handle escape sequences when reading string contents - [goto-bus-stop], [pull/541]**
+  The `String::from(StringValue)` implementation now turns escape sequences like
+  `\n` and `\u2764` into their literal characters.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/541]: https://github.com/apollographql/apollo-rs/pull/541
+
 # [0.5.1](https://crates.io/crates/apollo-parser/0.5.1) - 2023-04-13
 ## Fixes
 - **remove recursion in field parsing - [goto-bus-stop], [pull/519]**
