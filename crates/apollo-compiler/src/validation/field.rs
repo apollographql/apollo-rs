@@ -367,9 +367,10 @@ pub fn is_value_coercible(
                                 f.ty().type_def(db.upcast()),
                                 val.clone(),
                                 var_defs.clone(),
-                            );
+                            )
+                        } else {
+                            false
                         }
-                        false
                     })
                 })
             }
