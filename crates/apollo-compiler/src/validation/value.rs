@@ -97,7 +97,7 @@ pub fn value_of_correct_type(
         },
         Value::String { .. } => match &type_def {
             TypeDefinition::ScalarTypeDefinition(scalar) => {
-                if !scalar.is_string() && !scalar.is_id() {
+                if scalar.is_int() || scalar.is_float() || scalar.is_boolean() {
                     diagnostics.push(unsupported_type!(db, val, type_def));
                 }
             }
@@ -112,7 +112,7 @@ pub fn value_of_correct_type(
             _ => diagnostics.push(unsupported_type!(db, val, type_def)),
         },
         Value::Null { .. } => {
-            if !type_def.is_enum_type_definition() || !type_def.is_scalar_type_definition() {
+            if !type_def.is_enum_type_definition() && !type_def.is_scalar_type_definition() {
                 diagnostics.push(unsupported_type!(db, val, type_def));
             }
         }

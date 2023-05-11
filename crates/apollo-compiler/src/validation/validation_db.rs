@@ -544,8 +544,8 @@ fragment q on Query {
         compiler.add_executable(input_executable, "query.graphql");
 
         let diagnostics = compiler.validate();
-        // TODO(@goto-bus-stop) this should be 1, but both uses of ...q cause a report
-        assert_eq!(diagnostics.len(), 2);
+
+        assert_eq!(diagnostics.len(), 1);
         assert_eq!(
             diagnostics[0].data.to_string(),
             "`q` fragment cannot reference itself"
@@ -581,8 +581,8 @@ fragment q on TestObject {
         compiler.add_executable(input_executable, "query.graphql");
 
         let diagnostics = compiler.validate();
-        // TODO(@goto-bus-stop) this should be 1, but both uses of ...q cause a report
-        assert_eq!(diagnostics.len(), 2);
+
+        assert_eq!(diagnostics.len(), 1);
         assert_eq!(
             diagnostics[0].data.to_string(),
             "`q` fragment cannot reference itself"

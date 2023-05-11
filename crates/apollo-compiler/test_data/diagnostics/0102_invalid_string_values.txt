@@ -8,27 +8,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 1282,
-            length: 12,
+            offset: 1293,
+            length: 1,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 186,
-                    length: 6,
+                    offset: 3293,
+                    length: 203,
                 },
-                text: "field declared here",
+                text: "field declared here as String type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 1282,
-                    length: 12,
+                    offset: 1293,
+                    length: 1,
                 },
                 text: "argument declared here is of Int type",
             },
@@ -48,27 +48,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 1366,
-            length: 14,
+            offset: 1377,
+            length: 3,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 186,
-                    length: 6,
+                    offset: 3293,
+                    length: 203,
                 },
-                text: "field declared here",
+                text: "field declared here as String type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 1366,
-                    length: 14,
+                    offset: 1377,
+                    length: 3,
                 },
                 text: "argument declared here is of Float type",
             },
@@ -88,27 +88,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 1454,
-            length: 15,
+            offset: 1465,
+            length: 4,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 186,
-                    length: 6,
+                    offset: 3293,
+                    length: 203,
                 },
-                text: "field declared here",
+                text: "field declared here as String type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 1454,
-                    length: 15,
+                    offset: 1465,
+                    length: 4,
                 },
                 text: "argument declared here is of Boolean type",
             },
@@ -128,27 +128,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 1550,
-            length: 14,
+            offset: 1561,
+            length: 3,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 186,
-                    length: 6,
+                    offset: 3293,
+                    length: 203,
                 },
-                text: "field declared here",
+                text: "field declared here as String type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 1550,
-                    length: 14,
+                    offset: 1561,
+                    length: 3,
                 },
                 text: "argument declared here is of Enum type",
             },
@@ -168,27 +168,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 1631,
-            length: 11,
+            offset: 1639,
+            length: 3,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 95,
-                    length: 3,
+                    offset: 2963,
+                    length: 150,
                 },
-                text: "field declared here",
+                text: "field declared here as Int type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 1631,
-                    length: 11,
+                    offset: 1639,
+                    length: 3,
                 },
                 text: "argument declared here is of String type",
             },
@@ -208,8 +208,8 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 1824,
-            length: 11,
+            offset: 1717,
+            length: 27,
         },
         labels: [
             Label {
@@ -217,18 +217,47 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 95,
-                    length: 3,
+                    offset: 1717,
+                    length: 27,
                 },
-                text: "field declared here",
+                text: "cannot be coerced to an 32-bit integer",
+            },
+        ],
+        help: None,
+        data: IntCoercionError {
+            value: "829384293849283500000000000",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 1827,
+            length: 3,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 0,
+                    },
+                    offset: 2963,
+                    length: 150,
+                },
+                text: "field declared here as Int type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 1824,
-                    length: 11,
+                    offset: 1827,
+                    length: 3,
                 },
                 text: "argument declared here is of Enum type",
             },
@@ -248,27 +277,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 1907,
-            length: 11,
+            offset: 1910,
+            length: 3,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 95,
-                    length: 3,
+                    offset: 2963,
+                    length: 150,
                 },
-                text: "field declared here",
+                text: "field declared here as Int type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 1907,
-                    length: 11,
+                    offset: 1910,
+                    length: 3,
                 },
                 text: "argument declared here is of Float type",
             },
@@ -288,67 +317,67 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 1984,
-            length: 13,
+            offset: 1987,
+            length: 5,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 95,
-                    length: 3,
+                    offset: 2963,
+                    length: 150,
                 },
-                text: "field declared here",
+                text: "field declared here as Int type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 1984,
-                    length: 13,
-                },
-                text: "argument declared here is of Float type",
-            },
-        ],
-        help: None,
-        data: UnsupportedValueType {
-            value: "Float",
-            ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2068,
-            length: 17,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 317,
+                    offset: 1987,
                     length: 5,
                 },
-                text: "field declared here",
+                text: "argument declared here is of Float type",
+            },
+        ],
+        help: None,
+        data: UnsupportedValueType {
+            value: "Float",
+            ty: "Int",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 2073,
+            length: 7,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 0,
+                    },
+                    offset: 3115,
+                    length: 176,
+                },
+                text: "field declared here as Float type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 2068,
-                    length: 17,
+                    offset: 2073,
+                    length: 7,
                 },
                 text: "argument declared here is of String type",
             },
@@ -368,27 +397,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 2157,
-            length: 14,
+            offset: 2162,
+            length: 4,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 317,
-                    length: 5,
+                    offset: 3115,
+                    length: 176,
                 },
-                text: "field declared here",
+                text: "field declared here as Float type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 2157,
-                    length: 14,
+                    offset: 2162,
+                    length: 4,
                 },
                 text: "argument declared here is of Boolean type",
             },
@@ -408,27 +437,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 2244,
-            length: 13,
+            offset: 2249,
+            length: 3,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 317,
-                    length: 5,
+                    offset: 3115,
+                    length: 176,
                 },
-                text: "field declared here",
+                text: "field declared here as Float type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 2244,
-                    length: 13,
+                    offset: 2249,
+                    length: 3,
                 },
                 text: "argument declared here is of Enum type",
             },
@@ -448,27 +477,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 2329,
-            length: 13,
+            offset: 2336,
+            length: 1,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 232,
-                    length: 7,
+                    offset: 3498,
+                    length: 72,
                 },
-                text: "field declared here",
+                text: "field declared here as Boolean type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 2329,
-                    length: 13,
+                    offset: 2336,
+                    length: 1,
                 },
                 text: "argument declared here is of Int type",
             },
@@ -488,27 +517,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 2416,
-            length: 15,
+            offset: 2423,
+            length: 3,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 232,
-                    length: 7,
+                    offset: 3498,
+                    length: 72,
                 },
-                text: "field declared here",
+                text: "field declared here as Boolean type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 2416,
-                    length: 15,
+                    offset: 2423,
+                    length: 3,
                 },
                 text: "argument declared here is of Float type",
             },
@@ -528,27 +557,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 2506,
-            length: 18,
+            offset: 2513,
+            length: 6,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 232,
-                    length: 7,
+                    offset: 3498,
+                    length: 72,
                 },
-                text: "field declared here",
+                text: "field declared here as Boolean type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 2506,
-                    length: 18,
+                    offset: 2513,
+                    length: 6,
                 },
                 text: "argument declared here is of String type",
             },
@@ -568,27 +597,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 2601,
-            length: 16,
+            offset: 2608,
+            length: 4,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 232,
-                    length: 7,
+                    offset: 3498,
+                    length: 72,
                 },
-                text: "field declared here",
+                text: "field declared here as Boolean type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 2601,
-                    length: 16,
+                    offset: 2608,
+                    length: 4,
                 },
                 text: "argument declared here is of Enum type",
             },
@@ -608,27 +637,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 2681,
-            length: 10,
+            offset: 2683,
+            length: 3,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 352,
-                    length: 2,
+                    offset: 3572,
+                    length: 352,
                 },
-                text: "field declared here",
+                text: "field declared here as ID type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 2681,
-                    length: 10,
+                    offset: 2683,
+                    length: 3,
                 },
                 text: "argument declared here is of Float type",
             },
@@ -648,27 +677,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 2757,
-            length: 11,
+            offset: 2759,
+            length: 4,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 352,
-                    length: 2,
+                    offset: 3572,
+                    length: 352,
                 },
-                text: "field declared here",
+                text: "field declared here as ID type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 2757,
-                    length: 11,
+                    offset: 2759,
+                    length: 4,
                 },
                 text: "argument declared here is of Boolean type",
             },
@@ -688,27 +717,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 2835,
-            length: 16,
+            offset: 2837,
+            length: 9,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 352,
-                    length: 2,
+                    offset: 3572,
+                    length: 352,
                 },
-                text: "field declared here",
+                text: "field declared here as ID type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 2835,
-                    length: 16,
+                    offset: 2837,
+                    length: 9,
                 },
                 text: "argument declared here is of Enum type",
             },
@@ -728,8 +757,8 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 2929,
-            length: 13,
+            offset: 2936,
+            length: 1,
         },
         labels: [
             Label {
@@ -737,18 +766,18 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 1098,
-                    length: 10,
+                    offset: 1016,
+                    length: 39,
                 },
-                text: "field declared here",
+                text: "field declared here as DogCommand type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 2929,
-                    length: 13,
+                    offset: 2936,
+                    length: 1,
                 },
                 text: "argument declared here is of Int type",
             },
@@ -768,8 +797,8 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 3001,
-            length: 15,
+            offset: 3008,
+            length: 3,
         },
         labels: [
             Label {
@@ -777,18 +806,18 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 1098,
-                    length: 10,
+                    offset: 1016,
+                    length: 39,
                 },
-                text: "field declared here",
+                text: "field declared here as DogCommand type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 3001,
-                    length: 15,
+                    offset: 3008,
+                    length: 3,
                 },
                 text: "argument declared here is of Float type",
             },
@@ -808,8 +837,8 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 3164,
-            length: 16,
+            offset: 3083,
+            length: 5,
         },
         labels: [
             Label {
@@ -817,18 +846,58 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 1098,
-                    length: 10,
+                    offset: 1016,
+                    length: 39,
                 },
-                text: "field declared here",
+                text: "field declared here as DogCommand type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 3164,
-                    length: 16,
+                    offset: 3083,
+                    length: 5,
+                },
+                text: "argument declared here is of String type",
+            },
+        ],
+        help: None,
+        data: UnsupportedValueType {
+            value: "String",
+            ty: "DogCommand",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 3161,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 1016,
+                    length: 39,
+                },
+                text: "field declared here as DogCommand type",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 3161,
+                    length: 4,
                 },
                 text: "argument declared here is of Boolean type",
             },
@@ -848,8 +917,8 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 3583,
-            length: 16,
+            offset: 3247,
+            length: 6,
         },
         labels: [
             Label {
@@ -857,18 +926,78 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 400,
-                    length: 8,
+                    offset: 3247,
+                    length: 6,
                 },
-                text: "field declared here",
+                text: "does not exist on `DogCommand` type",
+            },
+        ],
+        help: None,
+        data: UndefinedValue {
+            value: "JUGGLE",
+            definition: "DogCommand",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 3341,
+            length: 3,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 3341,
+                    length: 3,
+                },
+                text: "does not exist on `DogCommand` type",
+            },
+        ],
+        help: None,
+        data: UndefinedValue {
+            value: "sit",
+            definition: "DogCommand",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 3449,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 0,
+                    },
+                    offset: 3293,
+                    length: 203,
+                },
+                text: "field declared here as String type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 3583,
-                    length: 16,
+                    offset: 3449,
+                    length: 1,
                 },
                 text: "argument declared here is of Int type",
             },
@@ -888,27 +1017,67 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 3701,
-            length: 11,
+            offset: 3553,
+            length: 1,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 572,
-                    length: 3,
+                    offset: 3293,
+                    length: 203,
                 },
-                text: "field declared here",
+                text: "field declared here as String type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 3701,
-                    length: 11,
+                    offset: 3553,
+                    length: 1,
+                },
+                text: "argument declared here is of Int type",
+            },
+        ],
+        help: None,
+        data: UnsupportedValueType {
+            value: "Int",
+            ty: "String",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 3662,
+            length: 5,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 0,
+                    },
+                    offset: 2963,
+                    length: 150,
+                },
+                text: "field declared here as Int type",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 3662,
+                    length: 5,
                 },
                 text: "argument declared here is of String type",
             },
@@ -928,27 +1097,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 3714,
-            length: 11,
+            offset: 3675,
+            length: 5,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 560,
-                    length: 3,
+                    offset: 2963,
+                    length: 150,
                 },
-                text: "field declared here",
+                text: "field declared here as Int type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 3714,
-                    length: 11,
+                    offset: 3675,
+                    length: 5,
                 },
                 text: "argument declared here is of String type",
             },
@@ -968,27 +1137,27 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 3812,
-            length: 11,
+            offset: 3773,
+            length: 5,
         },
         labels: [
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 99,
+                        id: 0,
                     },
-                    offset: 560,
-                    length: 3,
+                    offset: 2963,
+                    length: 150,
                 },
-                text: "field declared here",
+                text: "field declared here as Int type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 3812,
-                    length: 11,
+                    offset: 3773,
+                    length: 5,
                 },
                 text: "argument declared here is of String type",
             },
@@ -1008,7 +1177,7 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 3799,
+            offset: 3754,
             length: 25,
         },
         labels: [
@@ -1017,7 +1186,7 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 3799,
+                    offset: 3754,
                     length: 25,
                 },
                 text: "missing value for argument `req2`",
@@ -1047,7 +1216,7 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 3874,
+            offset: 3829,
             length: 24,
         },
         labels: [
@@ -1056,7 +1225,7 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 3874,
+                    offset: 3829,
                     length: 24,
                 },
                 text: "missing value for argument `req1`",
@@ -1086,7 +1255,7 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 3874,
+            offset: 3829,
             length: 24,
         },
         labels: [
@@ -1095,7 +1264,7 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 3874,
+                    offset: 3829,
                     length: 24,
                 },
                 text: "missing value for argument `req2`",
@@ -1114,6 +1283,115 @@
         help: None,
         data: RequiredArgument {
             name: "req2",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 3973,
+            length: 15,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 3973,
+                    length: 15,
+                },
+                text: "missing value for argument `requiredField`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 881,
+                    length: 7,
+                },
+                text: "argument defined here",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "requiredField",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 4120,
+            length: 1,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 0,
+                    },
+                    offset: 3293,
+                    length: 203,
+                },
+                text: "field declared here as String type",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 4120,
+                    length: 1,
+                },
+                text: "argument declared here is of Int type",
+            },
+        ],
+        help: None,
+        data: UnsupportedValueType {
+            value: "Int",
+            ty: "String",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 4464,
+            length: 7,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 4464,
+                    length: 7,
+                },
+                text: "does not exist on `ComplexInput` type",
+            },
+        ],
+        help: None,
+        data: UndefinedValue {
+            value: "invalidField",
+            definition: "ComplexInput",
         },
     },
 ]
