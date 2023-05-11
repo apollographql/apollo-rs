@@ -1087,10 +1087,10 @@ impl Value {
     pub fn loc(&self) -> HirNodeLocation {
         match self {
             Value::Variable(var) => var.loc(),
-            Value::Int { value: ty, loc } => *loc,
-            Value::Float { value: ty, loc } => *loc,
-            Value::String { value: ty, loc } => *loc,
-            Value::Boolean { value: ty, loc } => *loc,
+            Value::Int { value, loc } => *loc,
+            Value::Float { value, loc } => *loc,
+            Value::String { value, loc } => *loc,
+            Value::Boolean { value, loc } => *loc,
             Value::Null { loc } => *loc,
             Value::Enum { value: ty, loc } => *loc,
             Value::List(_) => todo!(),
