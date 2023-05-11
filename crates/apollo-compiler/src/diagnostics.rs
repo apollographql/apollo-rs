@@ -190,6 +190,18 @@ pub enum DiagnosticData {
         /// Name of the type not in scope
         name: String,
     },
+    #[error("cannot find fragment `{name}` in this document")]
+    UndefinedFragment {
+        /// Name of the fragment not in scope
+        name: String,
+    },
+    #[error("value `{value}` does not exist on `{definition}` enum")]
+    UndefinedEnumValue {
+        /// Value of the enum that doesn't exist
+        value: String,
+        /// Enum definition
+        definition: String,
+    },
     #[error("type extension for `{name}` is the wrong kind")]
     WrongTypeExtension {
         /// Name of the type being extended
@@ -301,11 +313,6 @@ pub enum DiagnosticData {
         field: String,
         original_selection: DiagnosticLocation,
         redefined_selection: DiagnosticLocation,
-    },
-    #[error("cannot find fragment `{name}` in this document")]
-    UndefinedFragment {
-        /// Name of the fragment not in scope
-        name: String,
     },
     #[error("fragments must be specified on types that exist in the schema")]
     InvalidFragment {

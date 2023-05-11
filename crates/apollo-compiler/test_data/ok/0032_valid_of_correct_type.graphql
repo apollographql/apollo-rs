@@ -229,36 +229,38 @@ query partialObjectOnlyRequired {
   }
 }
 
-# InvalidInputObjectValue
-# query partialObjectMissingRequired {
-#   complicatedArgs {
-#     complexArgField(complexArg: { intField: 4 })
-#   }
-# }
+query partialObjectRequiredFieldCanBeFalse {
+  complicatedArgs {
+    complexArgField(complexArg: { requiredField: false })
+  }
+}
 
-# query partialObjectInvalidFieldType {
-#   complicatedArgs {
-#     complexArgField(complexArg: {
-#       stringListField: ["one", 2],
-#       requiredField: true,
-#     })
-#   }
-# }
+query partialObjectIncludingRequired {
+  complicatedArgs {
+    complexArgField(complexArg: { requiredField: true, intField: 4 })
+  }
+}
 
-# query partialObjectNullToNonNullField {
-#   complicatedArgs {
-#     complexArgField(complexArg: {
-#       requiredField: true,
-#       nonNullField: null,
-#     })
-#   }
-# }
-#
-# query partialObjectUnknownFieldArg {
-#   complicatedArgs {
-#     complexArgField(complexArg: {
-#       requiredField: true,
-#       invalidField: "value"
-#     })
-#   }
-# }
+query fullObject {
+  complicatedArgs {
+    complexArgField(complexArg: {
+      requiredField: true,
+      intField: 4,
+      stringField: "foo",
+      booleanField: false,
+      stringListField: ["one", "two"]
+    })
+  }
+}
+
+query fullObjectWithFieldsInDifferentOrder {
+  complicatedArgs {
+    complexArgField(complexArg: {
+      stringListField: ["one", "two"],
+      booleanField: false,
+      requiredField: true,
+      stringField: "foo",
+      intField: 4,
+    })
+  }
+}

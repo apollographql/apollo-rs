@@ -199,12 +199,12 @@ fn is_variable_usage_allowed(
         // if a default value exists for variableDefinition
         // and is not the value null.
         let has_non_null_default_value =
-            !(matches!(var_def.default_value(), Some(&hir::Value::Null)));
+            !(matches!(var_def.default_value(), Some(&hir::Value::Null { .. })));
         // 3.b. Let hasLocationDefaultValue be true if a default
         // value exists for the Argument or ObjectField where
         // variableUsage is located.
         let has_location_default_value =
-            !(matches!(var_usage.default_value(), Some(&hir::Value::Null)));
+            !(matches!(var_usage.default_value(), Some(&hir::Value::Null { .. })));
         // 3.c. If hasNonNullVariableDefaultValue is NOT true
         // AND hasLocationDefaultValue is NOT true, return
         // false.

@@ -179,11 +179,11 @@ query floatIntoEnum {
   }
 }
 
-# query stringIntoEnum {
-#   dog {
-#     doesKnowCommand(dogCommand: "SIT")
-#   }
-# }
+query stringIntoEnum {
+  dog {
+    doesKnowCommand(dogCommand: "SIT")
+  }
+}
 
 query booleanIntoEnum {
   dog {
@@ -234,38 +234,42 @@ query nullValue {
   }
 }
 
-query partialObjectRequiredFieldCanBeFalse {
-  complicatedArgs {
-    complexArgField(complexArg: { requiredField: false })
-  }
-}
+# InvalidInputObjectValue
+# query partialObjectMissingField {
+#   complicatedArgs {
+#     complexArgField(complexArg: { intField: 4 })
+#   }
+# }
 
-query partialObjectIncludingRequired {
-  complicatedArgs {
-    complexArgField(complexArg: { requiredField: true, intField: 4 })
-  }
-}
-
-query fullObject {
+# query partialObjectMissingRequired {
+#   complicatedArgs {
+#     complexArgField(complexArg: { intField: 4 })
+#   }
+# }
+#
+query partialObjectInvalidFieldType {
   complicatedArgs {
     complexArgField(complexArg: {
+      stringListField: ["one", 2],
       requiredField: true,
-      intField: 4,
-      stringField: "foo",
-      booleanField: false,
-      stringListField: ["one", "two"]
     })
   }
 }
 
-query fullObjectWithFieldsInDifferentOrder {
-  complicatedArgs {
-    complexArgField(complexArg: {
-      stringListField: ["one", "two"],
-      booleanField: false,
-      requiredField: true,
-      stringField: "foo",
-      intField: 4,
-    })
-  }
-}
+# query partialObjectNullToNonNullField {
+#   complicatedArgs {
+#     complexArgField(complexArg: {
+#       requiredField: true,
+#       nonNullField: null,
+#     })
+#   }
+# }
+#
+# query partialObjectUnknownFieldArg {
+#   complicatedArgs {
+#     complexArgField(complexArg: {
+#       requiredField: true,
+#       invalidField: "value"
+#     })
+#   }
+# }

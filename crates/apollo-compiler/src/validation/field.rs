@@ -33,41 +33,13 @@ pub fn validate_field(
                         .err()
                     {
                         diagnostics.push(diag)
-                    } else {
-                        let defined_arg_ty = arg.value.clone();
-                        let type_def = input_val.ty().type_def(db.upcast());
-                        if let Some(type_def) = type_def {
-                            let is_coercible = db.is_value_coercible(
-                                type_def.clone(),
-                                defined_arg_ty.clone(),
-                                var_defs.clone(),
-                            );
-                            if !is_coercible {
-                                diagnostics.push(
-                                    ApolloDiagnostic::new(
-                                        db,
-                                        arg.loc.into(),
-                                        DiagnosticData::UnsupportedValueType {
-                                            value: defined_arg_ty.value_name().into(),
-                                            ty: input_val.ty().name(),
-                                        },
-                                    )
-                                    .labels([
-                                        Label::new(
-                                            input_val.ty().loc().unwrap(),
-                                            "field declared here",
-                                        ),
-                                        Label::new(
-                                            arg.loc,
-                                            format!(
-                                                "argument declared here is of {} type",
-                                                defined_arg_ty.value_name()
-                                            ),
-                                        ),
-                                    ]),
-                                )
-                            }
-                        }
+                    } else if let Some(type_def) = input_val.ty().type_def(db.upcast()) {
+                        let value_of_correct_type = db.value_of_correct_type(
+                            type_def.clone(),
+                            arg.value().clone(),
+                            var_defs.clone(),
+                        );
+                        value_of_correct_type.map_err(|diag| diagnostics.extend(diag));
                     }
                 } else {
                     let mut labels = vec![Label::new(arg.loc, "argument name not found")];
@@ -98,7 +70,7 @@ pub fn validate_field(
                 // Prevents explicitly providing `requiredArg: null`,
                 // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
                 // and it won't raise a validation error at this stage.
-                Some(value) => value.value() == &hir::Value::Null,
+                Some(value) => value.value() == &hir::Value::Null { loc },
             };
 
             if arg_def.is_required() && is_null {
@@ -323,13 +295,36 @@ pub fn validate_leaf_field_selection(
         )))
 }
 
-pub fn is_value_coercible(
+pub fn value_of_correct_type(
     db: &dyn ValidationDatabase,
     type_def: hir::TypeDefinition,
-    defined_arg_ty: hir::Value,
+    value: Value,
     var_defs: Arc<Vec<hir::VariableDefinition>>,
-) -> bool {
-    return match (defined_arg_ty, type_def.clone()) {
+) -> Result<(), Vec<ApolloDiagnostic>> {
+    macro_rules! unsupported_type {
+        ($db: expr, $value: expr, $type_def: expr) => {{
+            vec![ApolloDiagnostic::new(
+                db,
+                value.loc().into(),
+                DiagnosticData::UnsupportedValueType {
+                    value: value.value_name().into(),
+                    ty: type_def.name().into(),
+                },
+            )
+            .labels([
+                Label::new(
+                    type_def.loc(),
+                    format!("field declared here as {} type", type_def.name()),
+                ),
+                Label::new(
+                    value.loc(),
+                    format!("argument declared here is of {} type", value.value_name()),
+                ),
+            ])]
+        }};
+    }
+
+    return match (value, type_def.clone()) {
         (
             Value::List(li),
             TypeDefinition::EnumTypeDefinition(_)
@@ -337,7 +332,8 @@ pub fn is_value_coercible(
             | TypeDefinition::InputObjectTypeDefinition(_),
         ) => li
             .iter()
-            .all(|val| db.is_value_coercible(type_def.clone(), val.clone(), var_defs.clone())),
+            .map(|val| db.value_of_correct_type(type_def.clone(), value.clone(), var_defs.clone()))
+            .collect(),
         (
             Value::Variable(var),
             TypeDefinition::EnumTypeDefinition(_)
@@ -348,63 +344,91 @@ pub fn is_value_coercible(
             if let Some(var_def) = var_def {
                 // we don't have the actual variable values here, so just
                 // compare if two Types are the same
-                var_def.ty().name() == type_def.name()
+                if var_def.ty().name() != type_def.name() {
+                    return Err(unsupported_type!(db, value, type_def));
+                } else {
+                    return Ok(());
+                }
             } else {
-                false
+                return Err(unsupported_type!(db, value, type_def));
             }
         }
-        (Value::Float(_), TypeDefinition::ScalarTypeDefinition(scalar)) => scalar.is_float(),
-        (Value::Int(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
-            scalar.is_int() || scalar.is_float() || scalar.is_id()
+        (Value::Float { .. }, TypeDefinition::ScalarTypeDefinition(scalar)) => {
+            if !scalar.is_float() {
+                return Err(unsupported_type!(db, value, type_def));
+            }
+            Ok(())
         }
-        (Value::String(_), TypeDefinition::ScalarTypeDefinition(scalar)) => {
-            scalar.is_string() || scalar.is_id()
+        (Value::Int { .. }, TypeDefinition::ScalarTypeDefinition(scalar)) => {
+            if !scalar.is_int() || !scalar.is_float() || !scalar.is_id() {
+                return Err(unsupported_type!(db, value, type_def));
+            }
+            Ok(())
         }
-        (Value::Boolean(_), TypeDefinition::ScalarTypeDefinition(scalar)) => scalar.is_boolean(),
+        (Value::String { .. }, TypeDefinition::ScalarTypeDefinition(scalar)) => {
+            if !scalar.is_string() || !scalar.is_id() {
+                return Err(unsupported_type!(db, value, type_def));
+            }
+            Ok(())
+        }
+        (Value::Boolean { .. }, TypeDefinition::ScalarTypeDefinition(scalar)) => {
+            if !scalar.is_boolean() {
+                return Err(unsupported_type!(db, value, type_def));
+            }
+            Ok(())
+        }
         (
-            Value::Null,
+            Value::Null { .. },
             TypeDefinition::ScalarTypeDefinition(_) | TypeDefinition::EnumTypeDefinition(_),
-        ) => true,
-        (_, TypeDefinition::ScalarTypeDefinition(_)) => false,
-        (Value::String(str), TypeDefinition::EnumTypeDefinition(enum_)) => {
-            enum_.values().any(|val| val.enum_value() == str)
+        ) => Ok(()),
+        (_, TypeDefinition::ScalarTypeDefinition(_)) => {
+            return Err(unsupported_type!(db, value, type_def))
         }
-        (Value::Enum(enum_val), TypeDefinition::EnumTypeDefinition(enum_)) => {
-            enum_.values().any(|val| val.enum_value() == enum_val.src())
+        (
+            Value::Enum {
+                value: enum_val, ..
+            },
+            TypeDefinition::EnumTypeDefinition(enum_),
+        ) => {
+            let errors: Vec<ApolloDiagnostic> = enum_
+                .values()
+                .filter_map(|val| {
+                    if val.enum_value() != enum_val.src() {
+                        Some(ApolloDiagnostic::new(
+                            db,
+                            value.loc().into(),
+                            DiagnosticData::UndefinedEnumValue {
+                                value: value.value_name().into(),
+                                definition: type_def.name().into(),
+                            },
+                        ))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            return Err(errors);
         }
-        (_, TypeDefinition::EnumTypeDefinition(_)) => false,
-        (Value::Object(obj), TypeDefinition::InputObjectTypeDefinition(input_obj)) => {
-            input_obj.fields().any(|f| {
-                obj.iter().any(|(name, val)| {
+        (_, TypeDefinition::EnumTypeDefinition(_)) => {
+            return Err(unsupported_type!(db, arg, type_def))
+        }
+        (Value::Object(obj), TypeDefinition::InputObjectTypeDefinition(input_obj)) => input_obj
+            .fields()
+            .flat_map(|f| {
+                obj.iter().map(|(name, val)| {
                     if f.name() == name.src() {
                         if let Some(type_def) = f.ty().type_def(db.upcast()) {
-                            db.is_value_coercible(type_def, val.clone(), var_defs.clone())
+                            db.value_of_correct_type(type_def, value.clone(), var_defs.clone())
                         } else {
-                            false
+                            Err(unsupported_type!(db, arg, type_def))
                         }
                     } else {
-                        false
+                        Err(unsupported_type!(db, arg, type_def))
                     }
                 })
             })
-        }
-        _ => false,
+            .collect(),
+        _ => return Err(unsupported_type!(db, arg, type_def)),
     };
 }
-
-// macro_rules! unsupported_type {
-//     ($ty: ident, $value: ident) => {{
-//
-//     }}
-// }
-//
-// macro_rules! by_name {
-//     ($db: ident, $convert: expr) => {{
-//         let mut map = IndexMap::new();
-//         for def in type_definitions($db, $convert) {
-//             let name = def.name().to_owned();
-//             map.entry(name).or_insert_with(|| Arc::new(def));
-//         }
-//         map
-//     }};
-// }

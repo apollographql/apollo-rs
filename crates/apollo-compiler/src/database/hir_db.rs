@@ -1461,13 +1461,30 @@ fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
             name: var.name()?.text().to_string(),
             loc: location(file_id, var.syntax()),
         }),
-        ast::Value::StringValue(string_val) => Value::String(string_val.into()),
+        ast::Value::StringValue(string_val) => Value::String {
+            value: string_val.into(),
+            loc: location(file_id, string_val.syntax()),
+        },
         // TODO(@goto-bus-stop) do not unwrap
-        ast::Value::FloatValue(float) => Value::Float(Float::new(float.try_into().unwrap())),
-        ast::Value::IntValue(int) => Value::Int(Float::new(f64::try_from(int).unwrap())),
-        ast::Value::BooleanValue(bool) => Value::Boolean(bool.try_into().unwrap()),
-        ast::Value::NullValue(_) => Value::Null,
-        ast::Value::EnumValue(enum_) => Value::Enum(name(enum_.name(), file_id)?),
+        ast::Value::FloatValue(float) => Value::Float {
+            value: Float::new(float.try_into().unwrap()),
+            loc: location(file_id, float.syntax()),
+        },
+        ast::Value::IntValue(int) => Value::Int {
+            value: Float::new(f64::try_from(int).unwrap()),
+            loc: location(file_id, int.syntax()),
+        },
+        ast::Value::BooleanValue(bool) => Value::Boolean {
+            value: bool.try_into().unwrap(),
+            loc: location(file_id, bool.syntax()),
+        },
+        ast::Value::NullValue(null) => Value::Null {
+            loc: location(file_id, null.syntax()),
+        },
+        ast::Value::EnumValue(enum_) => Value::Enum {
+            value: name(enum_.name(), file_id)?,
+            loc: location(file_id, enum_.syntax()),
+        },
         ast::Value::ListValue(list) => {
             let list: Vec<Value> = list.values().filter_map(|v| value(v, file_id)).collect();
             Value::List(list)

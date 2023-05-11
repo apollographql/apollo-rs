@@ -1019,34 +1019,15 @@ pub enum Value {
     // All i32 values can be represented exactly in f64,
     // so conversion to an Int input value is still exact:
     // https://spec.graphql.org/draft/#sec-Int.Input-Coercion
-    Int(Float),
-    Float(Float),
-    String(String),
-    Boolean(bool),
-    Null,
-    Enum(Name),
+    Int { value: Float, loc: HirNodeLocation },
+    Float { value: Float, loc: HirNodeLocation },
+    String { value: String, loc: HirNodeLocation },
+    Boolean { value: bool, loc: HirNodeLocation },
+    Null { loc: HirNodeLocation },
+    Enum { value: Name, loc: HirNodeLocation },
     List(Vec<Value>),
     Object(Vec<(Name, Value)>),
 }
-
-// impl fmt::Display for Value {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         match self {
-//             Value::Variable(var) => write!(f, "{}", var.name()),
-//             Value::Int(int) => write!(f, "{}", int.get()),
-//             Value::Float(flt) => write!(f, "{}", flt.get()),
-//             Value::String(s) => write!(f, "{}", s),
-//             Value::Boolean(b) => write!(f, "{}", b),
-//             Value::Null => write!(f, "null"),
-//             Value::Enum(enum_) => write!(f, "{}", enum_.src),
-//             Value::List(li) => li.iter().map(|val| write!(f, "{}", val)).collect(),
-//             Value::Object(obj) => obj
-//                 .iter()
-//                 .map(|(name, val)| write!(f, "{}: {}", name.src(), val))
-//                 .collect(),
-//         }
-//     }
-// }
 
 impl Value {
     /// Returns `true` if the value is [`Variable`].
@@ -1054,7 +1035,7 @@ impl Value {
     /// [`Variable`]: Value::Variable
     #[must_use]
     pub fn is_variable(&self) -> bool {
-        matches!(self, Self::Variable(..))
+        matches!(self, Self::Variable { .. })
     }
 
     /// Returns `true` if `other` represents the same value as `self`. This is different from the
@@ -1062,13 +1043,20 @@ impl Value {
     pub fn is_same_value(&self, other: &Value) -> bool {
         match (self, other) {
             (Value::Variable(left), Value::Variable(right)) => left.name() == right.name(),
-            (Value::Int(left) | Value::Float(left), Value::Int(right) | Value::Float(right)) => {
+            (
+                Value::Int { value: left, .. } | Value::Float { value: left, .. },
+                Value::Int { value: right, .. } | Value::Float { value: right, .. },
+            ) => left == right,
+            (Value::String { value: left, .. }, Value::String { value: right, .. }) => {
                 left == right
             }
-            (Value::String(left), Value::String(right)) => left == right,
-            (Value::Boolean(left), Value::Boolean(right)) => left == right,
-            (Value::Null, Value::Null) => true,
-            (Value::Enum(left), Value::Enum(right)) => left.src() == right.src(),
+            (Value::Boolean { value: left, .. }, Value::Boolean { value: right, .. }) => {
+                left == right
+            }
+            (Value::Null { .. }, Value::Null { .. }) => true,
+            (Value::Enum { value: left, .. }, Value::Enum { value: right, .. }) => {
+                left.src() == right.src()
+            }
             (Value::List(left), Value::List(right)) if left.len() == right.len() => left
                 .iter()
                 .zip(right)
@@ -1079,6 +1067,21 @@ impl Value {
                 })
             }
             _ => false,
+        }
+    }
+
+    /// Get current value's location.
+    pub fn loc(&self) -> HirNodeLocation {
+        match self {
+            Value::Variable(var) => var.loc(),
+            Value::Int { value: ty, loc } => *loc,
+            Value::Float { value: ty, loc } => *loc,
+            Value::String { value: ty, loc } => *loc,
+            Value::Boolean { value: ty, loc } => *loc,
+            Value::Null { loc } => *loc,
+            Value::Enum { value: ty, loc } => *loc,
+            Value::List(_) => todo!(),
+            Value::Object(_) => todo!(),
         }
     }
 
@@ -1093,36 +1096,18 @@ impl Value {
 
     pub fn value_name(&self) -> &str {
         match self {
-            Value::Variable(_) => "Variable",
-            Value::Int(_) => "Int",
-            Value::Float(_) => "Float",
-            Value::String(_) => "String",
-            Value::Boolean(_) => "Boolean",
-            Value::Null => "Null",
-            Value::Enum(_) => "Enum",
+            Value::Variable { .. } => "Variable",
+            Value::Int { .. } => "Int",
+            Value::Float { .. } => "Float",
+            Value::String { .. } => "String",
+            Value::Boolean { .. } => "Boolean",
+            Value::Null { .. } => "Null",
+            Value::Enum { .. } => "Enum",
             Value::List(_) => "List",
             Value::Object(_) => "Object",
         }
     }
 }
-
-// impl TryFrom<Value> for Type {
-//     type Error = &'static str;
-//
-//     fn try_from(val: Value) -> Result<Self, Self::Error> {
-//         match val {
-//             Value::Variable(var) => todo!(),
-//             Value::Int(i) => todo!(),
-//             Value::Float(f) => todo!(),
-//             Value::String(s) => todo!(),
-//             Value::Boolean(b) => todo!(),
-//             Value::Null => todo!(),
-//             Value::Enum(e) => todo!(),
-//             Value::List(li) => todo!(),
-//             Value::Object(obj) => todo!(),
-//         }
-//     }
-// }
 
 /// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
 ///
@@ -1143,7 +1128,7 @@ impl TryFrom<&'_ Value> for f64 {
     type Error = FloatCoercionError;
 
     fn try_from(value: &'_ Value) -> Result<Self, Self::Error> {
-        if let Value::Int(float) | Value::Float(float) = value {
+        if let Value::Int { value: float, .. } | Value::Float { value: float, .. } = value {
             // FIXME: what does "a value outside the available precision" mean?
             // Should coercion fail when f64 does not have enough mantissa bits
             // to represent the source token exactly?
@@ -1177,7 +1162,7 @@ impl TryFrom<&'_ Value> for i32 {
     type Error = IntCoercionError;
 
     fn try_from(value: &'_ Value) -> Result<Self, Self::Error> {
-        if let Value::Int(float) = value {
+        if let Value::Int { value: float, .. } = value {
             // The parser emitted an `ast::IntValue` instead of `ast::FloatValue`
             // so we already know `float` does not have a frational part.
             float

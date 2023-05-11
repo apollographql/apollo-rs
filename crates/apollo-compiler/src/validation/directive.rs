@@ -236,12 +236,13 @@ pub fn validate_directives(
                         .err()
                     {
                         diagnostics.push(diag)
-                    } else {
-                        let defined_arg_ty = arg.value.clone();
-                        let type_def = input_val.ty().type_def(db.upcast());
-                        if let Some(type_def) = type_def {
-                            db.is_value_coercible(type_def, defined_arg_ty, var_defs.clone());
-                        }
+                    } else if let Some(type_def) = input_val.ty().type_def(db.upcast()) {
+                        let value_of_correct_type = db.value_of_correct_type(
+                            type_def.clone(),
+                            arg.value().clone(),
+                            var_defs.clone(),
+                        );
+                        value_of_correct_type.map_err(|diag| diagnostics.extend(diag));
                     }
                 } else {
                     diagnostics.push(
@@ -267,7 +268,7 @@ pub fn validate_directives(
                     // Prevents explicitly providing `requiredArg: null`,
                     // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
                     // and it won't raise a validation error at this stage.
-                    Some(value) => value.value() == &hir::Value::Null,
+                    Some(value) => value.value() == &hir::Value::Null { loc },
                 };
 
                 if arg_def.is_required() && is_null {
