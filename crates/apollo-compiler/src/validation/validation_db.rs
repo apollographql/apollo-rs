@@ -7,7 +7,7 @@ use crate::{
     hir::*,
     validation::{
         argument, directive, enum_, extension, fragment, input_object, interface, object,
-        operation, scalar, schema, selection, union_, variable,
+        operation, scalar, schema, selection, union_, value, variable,
     },
     AstDatabase, FileId, HirDatabase, InputDatabase,
 };
@@ -252,7 +252,7 @@ pub trait ValidationDatabase:
     ) -> Result<(), ApolloDiagnostic>;
 
     #[salsa::transparent]
-    #[salsa::invoke(field::value_of_correct_type)]
+    #[salsa::invoke(value::value_of_correct_type)]
     fn value_of_correct_type(
         &self,
         type_def: TypeDefinition,
