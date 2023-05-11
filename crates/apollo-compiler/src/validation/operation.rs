@@ -174,7 +174,12 @@ pub fn validate_query_operations(
             queries
                 .iter()
                 .filter_map(|op| {
-                    if !op.is_introspection(db.upcast()) {
+                    let has_cycles = op
+                        .fragment_references(db.upcast())
+                        .iter()
+                        .any(|fragment| !db.validate_fragment_cycles(fragment.clone()).is_empty());
+
+                    if !has_cycles && !op.is_introspection(db.upcast()) {
                         let diagnostic = ApolloDiagnostic::new(
                             db,
                             op.loc().into(),

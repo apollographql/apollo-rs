@@ -206,6 +206,13 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     #[salsa::invoke(document::operation_fragment_spread_fields)]
     fn operation_fragment_spread_fields(&self, selection_set: SelectionSet) -> Arc<Vec<Field>>;
 
+    /// Return all fragment definitions referenced in the operation.
+    #[salsa::invoke(document::operation_fragment_references)]
+    fn operation_fragment_references(
+        &self,
+        selection_set: SelectionSet,
+    ) -> Arc<Vec<Arc<FragmentDefinition>>>;
+
     /// Return the fields that `selection_set` selects including visiting fragments and inline fragments.
     #[salsa::invoke(document::flattened_operation_fields)]
     fn flattened_operation_fields(&self, selection_set: SelectionSet) -> Vec<Arc<Field>>;
