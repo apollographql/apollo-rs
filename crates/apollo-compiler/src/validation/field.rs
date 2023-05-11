@@ -70,7 +70,7 @@ pub fn validate_field(
                 // Prevents explicitly providing `requiredArg: null`,
                 // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
                 // and it won't raise a validation error at this stage.
-                Some(value) => value.value() == &hir::Value::Null { loc },
+                Some(value) => value.value().is_null(),
             };
 
             if arg_def.is_required() && is_null {
@@ -332,7 +332,7 @@ pub fn value_of_correct_type(
             | TypeDefinition::InputObjectTypeDefinition(_),
         ) => li
             .iter()
-            .map(|val| db.value_of_correct_type(type_def.clone(), value.clone(), var_defs.clone()))
+            .map(|val| db.value_of_correct_type(type_def.clone(), val.clone(), var_defs.clone()))
             .collect(),
         (
             Value::Variable(var),
@@ -345,35 +345,35 @@ pub fn value_of_correct_type(
                 // we don't have the actual variable values here, so just
                 // compare if two Types are the same
                 if var_def.ty().name() != type_def.name() {
-                    return Err(unsupported_type!(db, value, type_def));
+                    return Err(unsupported_type!(db, value.clone(), type_def));
                 } else {
                     return Ok(());
                 }
             } else {
-                return Err(unsupported_type!(db, value, type_def));
+                return Err(unsupported_type!(db, value.clone(), type_def));
             }
         }
         (Value::Float { .. }, TypeDefinition::ScalarTypeDefinition(scalar)) => {
             if !scalar.is_float() {
-                return Err(unsupported_type!(db, value, type_def));
+                return Err(unsupported_type!(db, value.clone(), type_def));
             }
             Ok(())
         }
         (Value::Int { .. }, TypeDefinition::ScalarTypeDefinition(scalar)) => {
             if !scalar.is_int() || !scalar.is_float() || !scalar.is_id() {
-                return Err(unsupported_type!(db, value, type_def));
+                return Err(unsupported_type!(db, value.clone(), type_def));
             }
             Ok(())
         }
         (Value::String { .. }, TypeDefinition::ScalarTypeDefinition(scalar)) => {
             if !scalar.is_string() || !scalar.is_id() {
-                return Err(unsupported_type!(db, value, type_def));
+                return Err(unsupported_type!(db, value.clone(), type_def));
             }
             Ok(())
         }
         (Value::Boolean { .. }, TypeDefinition::ScalarTypeDefinition(scalar)) => {
             if !scalar.is_boolean() {
-                return Err(unsupported_type!(db, value, type_def));
+                return Err(unsupported_type!(db, value.clone(), type_def));
             }
             Ok(())
         }
@@ -382,7 +382,7 @@ pub fn value_of_correct_type(
             TypeDefinition::ScalarTypeDefinition(_) | TypeDefinition::EnumTypeDefinition(_),
         ) => Ok(()),
         (_, TypeDefinition::ScalarTypeDefinition(_)) => {
-            return Err(unsupported_type!(db, value, type_def))
+            return Err(unsupported_type!(db, value.clone(), type_def))
         }
         (
             Value::Enum {
@@ -398,7 +398,7 @@ pub fn value_of_correct_type(
                             db,
                             value.loc().into(),
                             DiagnosticData::UndefinedEnumValue {
-                                value: value.value_name().into(),
+                                value: val.enum_value().into(),
                                 definition: type_def.name().into(),
                             },
                         ))
@@ -411,7 +411,7 @@ pub fn value_of_correct_type(
             return Err(errors);
         }
         (_, TypeDefinition::EnumTypeDefinition(_)) => {
-            return Err(unsupported_type!(db, arg, type_def))
+            return Err(unsupported_type!(db, value.clone(), type_def))
         }
         (Value::Object(obj), TypeDefinition::InputObjectTypeDefinition(input_obj)) => input_obj
             .fields()
@@ -419,16 +419,16 @@ pub fn value_of_correct_type(
                 obj.iter().map(|(name, val)| {
                     if f.name() == name.src() {
                         if let Some(type_def) = f.ty().type_def(db.upcast()) {
-                            db.value_of_correct_type(type_def, value.clone(), var_defs.clone())
+                            db.value_of_correct_type(type_def, val.clone(), var_defs.clone())
                         } else {
-                            Err(unsupported_type!(db, arg, type_def))
+                            Err(unsupported_type!(db, val.clone(), type_def))
                         }
                     } else {
-                        Err(unsupported_type!(db, arg, type_def))
+                        Err(unsupported_type!(db, val.clone(), type_def))
                     }
                 })
             })
             .collect(),
-        _ => return Err(unsupported_type!(db, arg, type_def)),
+        _ => return Err(unsupported_type!(db, value.clone(), type_def)),
     };
 }

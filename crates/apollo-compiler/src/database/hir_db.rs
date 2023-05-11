@@ -1469,28 +1469,28 @@ fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
             loc: location(file_id, var.syntax()),
         }),
         ast::Value::StringValue(string_val) => Value::String {
-            value: string_val.into(),
             loc: location(file_id, string_val.syntax()),
+            value: string_val.into(),
         },
         // TODO(@goto-bus-stop) do not unwrap
         ast::Value::FloatValue(float) => Value::Float {
-            value: Float::new(float.try_into().unwrap()),
             loc: location(file_id, float.syntax()),
+            value: Float::new(float.try_into().unwrap()),
         },
         ast::Value::IntValue(int) => Value::Int {
-            value: Float::new(f64::try_from(int).unwrap()),
             loc: location(file_id, int.syntax()),
+            value: Float::new(f64::try_from(int).unwrap()),
         },
         ast::Value::BooleanValue(bool) => Value::Boolean {
-            value: bool.try_into().unwrap(),
             loc: location(file_id, bool.syntax()),
+            value: bool.try_into().unwrap(),
         },
         ast::Value::NullValue(null) => Value::Null {
             loc: location(file_id, null.syntax()),
         },
         ast::Value::EnumValue(enum_) => Value::Enum {
-            value: name(enum_.name(), file_id)?,
             loc: location(file_id, enum_.syntax()),
+            value: name(enum_.name(), file_id)?,
         },
         ast::Value::ListValue(list) => {
             let list: Vec<Value> = list.values().filter_map(|v| value(v, file_id)).collect();

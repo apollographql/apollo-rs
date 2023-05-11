@@ -268,7 +268,7 @@ pub fn validate_directives(
                     // Prevents explicitly providing `requiredArg: null`,
                     // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
                     // and it won't raise a validation error at this stage.
-                    Some(value) => value.value() == &hir::Value::Null { loc },
+                    Some(value) => value.value().is_null(),
                 };
 
                 if arg_def.is_required() && is_null {

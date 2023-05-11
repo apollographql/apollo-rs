@@ -1043,6 +1043,14 @@ impl Value {
         matches!(self, Self::Variable { .. })
     }
 
+    /// Returns `true` if the value is [`Null`].
+    ///
+    /// [`Null`]: Value::Null
+    #[must_use]
+    pub fn is_null(&self) -> bool {
+        matches!(self, Self::Null { .. })
+    }
+
     /// Returns `true` if `other` represents the same value as `self`. This is different from the
     /// `Eq` implementation as it ignores location information.
     pub fn is_same_value(&self, other: &Value) -> bool {
