@@ -394,20 +394,20 @@ impl TryFrom<&hir::Value> for Value {
             hir::Value::Variable(v) => Value::Variable(v.name().to_owned()),
 
             //TODO look more closely at int conversion
-            hir::Value::Int(i) => {
+            hir::Value::Int { value: i, .. } => {
                 Value::Int(i.to_i32_checked().ok_or(FromHirError::FloatCoercionError)?)
             }
-            hir::Value::Float(f) => Value::Float(f.get()),
-            hir::Value::String(s) => Value::String(s.clone()),
-            hir::Value::Boolean(b) => Value::Boolean(*b),
-            hir::Value::Null => Value::Null,
-            hir::Value::Enum(e) => Value::Enum(e.src().to_owned()),
-            hir::Value::List(l) => Value::List(
+            hir::Value::Float { value: f, .. } => Value::Float(f.get()),
+            hir::Value::String { value: s, .. } => Value::String(s.clone()),
+            hir::Value::Boolean { value: b, .. } => Value::Boolean(*b),
+            hir::Value::Null { .. } => Value::Null,
+            hir::Value::Enum { value: e, .. } => Value::Enum(e.src().to_owned()),
+            hir::Value::List { value: l, .. } => Value::List(
                 l.iter()
                     .map(TryInto::<Value>::try_into)
                     .collect::<Result<Vec<_>, FromHirError>>()?,
             ),
-            hir::Value::Object(fields) => Value::Object(
+            hir::Value::Object { value: fields, .. } => Value::Object(
                 fields
                     .iter()
                     .map(|(n, v)| v.try_into().map(|v: Value| (n.src().to_owned(), v)))
