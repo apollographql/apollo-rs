@@ -199,6 +199,21 @@ pub(crate) fn operation_inline_fragment_fields(
     Arc::new(fields)
 }
 
+pub(crate) fn operation_fragment_references(
+    db: &dyn HirDatabase,
+    selection_set: SelectionSet,
+) -> Arc<Vec<Arc<FragmentDefinition>>> {
+    let fields = selection_set
+        .selection()
+        .iter()
+        .filter_map(|sel| match sel {
+            Selection::FragmentSpread(fragment_spread) => Some(fragment_spread.fragment(db)?),
+            _ => None,
+        })
+        .collect();
+    Arc::new(fields)
+}
+
 pub(crate) fn operation_fragment_spread_fields(
     db: &dyn HirDatabase,
     selection_set: SelectionSet,
