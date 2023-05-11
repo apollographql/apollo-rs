@@ -292,11 +292,11 @@ pub(crate) fn selection_variables(
 pub(crate) fn get_field_variable_value(val: Value) -> Vec<Variable> {
     match val {
         Value::Variable(var) => vec![var],
-        Value::List(list) => list
+        Value::List { value: list, .. } => list
             .iter()
             .flat_map(|val| get_field_variable_value(val.clone()))
             .collect(),
-        Value::Object(obj) => obj
+        Value::Object { value: obj, .. } => obj
             .iter()
             .flat_map(|val| get_field_variable_value(val.1.clone()))
             .collect(),

@@ -1493,8 +1493,11 @@ fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
             value: name(enum_.name(), file_id)?,
         },
         ast::Value::ListValue(list) => {
-            let list: Vec<Value> = list.values().filter_map(|v| value(v, file_id)).collect();
-            Value::List(list)
+            let li: Vec<Value> = list.values().filter_map(|v| value(v, file_id)).collect();
+            Value::List {
+                loc: location(file_id, list.syntax()),
+                value: li,
+            }
         }
         ast::Value::ObjectValue(object) => {
             let object_values: Vec<(Name, Value)> = object
@@ -1505,7 +1508,10 @@ fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
                     Some((name, value))
                 })
                 .collect();
-            Value::Object(object_values)
+            Value::Object {
+                loc: location(file_id, object.syntax()),
+                value: object_values,
+            }
         }
     };
     Some(hir_val)

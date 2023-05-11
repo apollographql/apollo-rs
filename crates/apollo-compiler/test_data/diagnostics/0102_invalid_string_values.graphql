@@ -82,11 +82,11 @@ query stringIntoInt {
   }
 }
 
-#query bigIntIntoInt {
-#  complicatedArgs {
-#    intArgField(intArg: 829384293849283498239482938)
-#  }
-#}
+query bigIntIntoInt {
+  complicatedArgs {
+    intArgField(intArg: 829384293849283498239482938)
+  }
+}
 
 query unquotedStringIntoInt {
   complicatedArgs {
@@ -191,23 +191,23 @@ query booleanIntoEnum {
   }
 }
 
-# query unknownEnumValueIntoEnum {
-#   dog {
-#     doesKnowCommand(dogCommand: JUGGLE)
-#   }
-# }
+query unknownEnumValueIntoEnum {
+  dog {
+    doesKnowCommand(dogCommand: JUGGLE)
+  }
+}
 
-# query differentCaseEnumValueIntoEnum {
-#   dog {
-#     doesKnowCommand(dogCommand: sit)
-#   }
-# }
+query differentCaseEnumValueIntoEnum {
+  dog {
+    doesKnowCommand(dogCommand: sit)
+  }
+}
 
-# query incorrectListItemType {
-#   complicatedArgs {
-#     stringListArgField(stringListArg: ["one", 2])
-#   }
-# }
+query incorrectListItemType {
+  complicatedArgs {
+    stringListArgField(stringListArg: ["one", 2])
+  }
+}
 
 query singleValueOfIncorrectType {
   complicatedArgs {
@@ -235,18 +235,12 @@ query nullValue {
 }
 
 # InvalidInputObjectValue
-# query partialObjectMissingField {
-#   complicatedArgs {
-#     complexArgField(complexArg: { intField: 4 })
-#   }
-# }
+query partialObjectMissingField {
+  complicatedArgs {
+    complexArgField(complexArg: { intField: 4 })
+  }
+}
 
-# query partialObjectMissingRequired {
-#   complicatedArgs {
-#     complexArgField(complexArg: { intField: 4 })
-#   }
-# }
-#
 query partialObjectInvalidFieldType {
   complicatedArgs {
     complexArgField(complexArg: {
@@ -256,20 +250,20 @@ query partialObjectInvalidFieldType {
   }
 }
 
-# query partialObjectNullToNonNullField {
-#   complicatedArgs {
-#     complexArgField(complexArg: {
-#       requiredField: true,
-#       nonNullField: null,
-#     })
-#   }
-# }
-#
-# query partialObjectUnknownFieldArg {
-#   complicatedArgs {
-#     complexArgField(complexArg: {
-#       requiredField: true,
-#       invalidField: "value"
-#     })
-#   }
-# }
+query partialObjectNullToNonNullField {
+  complicatedArgs {
+    complexArgField(complexArg: {
+      requiredField: true,
+      nonNullField: null,
+    })
+  }
+}
+
+query partialObjectUnknownFieldArg {
+  complicatedArgs {
+    complexArgField(complexArg: {
+      requiredField: true,
+      invalidField: "value"
+    })
+  }
+}

@@ -59,6 +59,7 @@ query goodIntValue {
     intArgField(intArg: 2)
   }
 }
+
 query goodNegativeIntValue{
   complicatedArgs {
     intArgField(intArg: -2)

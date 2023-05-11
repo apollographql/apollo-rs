@@ -195,11 +195,11 @@ pub enum DiagnosticData {
         /// Name of the fragment not in scope
         name: String,
     },
-    #[error("value `{value}` does not exist on `{definition}` enum")]
-    UndefinedEnumValue {
+    #[error("value `{value}` does not exist on `{definition}` type")]
+    UndefinedValue {
         /// Value of the enum that doesn't exist
         value: String,
-        /// Enum definition
+        /// type definition
         definition: String,
     },
     #[error("type extension for `{name}` is the wrong kind")]
@@ -290,6 +290,11 @@ pub enum DiagnosticData {
         value: String,
         // defined type
         ty: String,
+    },
+    #[error("int cannot represent non 32-bit signed integer value")]
+    IntCoercionError {
+        /// The int value that cannot be coerced
+        value: String,
     },
     #[error("non-repeatable directive {name} can only be used once per location")]
     UniqueDirective {

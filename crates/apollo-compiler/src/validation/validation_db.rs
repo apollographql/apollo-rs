@@ -252,11 +252,11 @@ pub trait ValidationDatabase:
     ) -> Result<(), ApolloDiagnostic>;
 
     #[salsa::transparent]
-    #[salsa::invoke(value::value_of_correct_type)]
-    fn value_of_correct_type(
+    #[salsa::invoke(value::validate_values)]
+    fn validate_values(
         &self,
-        type_def: TypeDefinition,
-        val: Value,
+        ty: &Type,
+        arg: &Argument,
         var_defs: Arc<Vec<VariableDefinition>>,
     ) -> Result<(), Vec<ApolloDiagnostic>>;
 

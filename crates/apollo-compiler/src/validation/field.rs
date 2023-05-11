@@ -33,13 +33,13 @@ pub fn validate_field(
                         .err()
                     {
                         diagnostics.push(diag)
-                    } else if let Some(type_def) = input_val.ty().type_def(db.upcast()) {
-                        let value_of_correct_type = db.value_of_correct_type(
-                            type_def.clone(),
-                            arg.value().clone(),
-                            var_defs.clone(),
-                        );
-                        value_of_correct_type.map_err(|diag| diagnostics.extend(diag));
+                    } else {
+                        let value_of_correct_type =
+                            db.validate_values(input_val.ty(), arg, var_defs.clone());
+
+                        if let Err(diag) = value_of_correct_type {
+                            diagnostics.extend(diag);
+                        }
                     }
                 } else {
                     let mut labels = vec![Label::new(arg.loc, "argument name not found")];

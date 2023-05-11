@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use apollo_parser::ast::Type;
-
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self, TypeDefinition, Value},
@@ -14,7 +12,7 @@ macro_rules! unsupported_type {
             $db,
             $value.loc().into(),
             DiagnosticData::UnsupportedValueType {
-                value: $value.value_name().into(),
+                value: $value.value_kind().into(),
                 ty: $type_def.name().into(),
             },
         )
@@ -25,27 +23,39 @@ macro_rules! unsupported_type {
             ),
             Label::new(
                 $value.loc(),
-                format!("argument declared here is of {} type", $value.value_name()),
+                format!("argument declared here is of {} type", $value.value_kind()),
             ),
         ])
     }};
 }
-pub fn value_of_correct_type(
+pub fn validate_values(
     db: &dyn ValidationDatabase,
-    type_def: hir::TypeDefinition,
-    val: Value,
+    ty: &hir::Type,
+    arg: &hir::Argument,
     var_defs: Arc<Vec<hir::VariableDefinition>>,
 ) -> Result<(), Vec<ApolloDiagnostic>> {
     let mut diagnostics = Vec::new();
-    value_of_correct_type_2(db, type_def, val, var_defs, &mut diagnostics);
+    let type_def = ty.type_def(db.upcast());
 
-    match diagnostics.len() {
-        0 => Ok(()),
-        _ => Err(diagnostics),
+    if let Some(type_def) = type_def {
+        value_of_correct_type(
+            db,
+            type_def,
+            arg.value().clone(),
+            var_defs,
+            &mut diagnostics,
+        );
+
+        match diagnostics.len() {
+            0 => Ok(()),
+            _ => Err(diagnostics),
+        }
+    } else {
+        Ok(())
     }
 }
 
-pub fn value_of_correct_type_2(
+pub fn value_of_correct_type(
     db: &dyn ValidationDatabase,
     type_def: hir::TypeDefinition,
     val: Value,
@@ -53,9 +63,25 @@ pub fn value_of_correct_type_2(
     diagnostics: &mut Vec<ApolloDiagnostic>,
 ) {
     match val {
-        Value::Int { .. } => match &type_def {
+        Value::Int { value: int, .. } => match &type_def {
             TypeDefinition::ScalarTypeDefinition(scalar) => {
-                if !scalar.is_int() || !scalar.is_float() || !scalar.is_id() {
+                if scalar.is_int() || scalar.is_float() || scalar.is_id() {
+                    if int.to_i32_checked().is_none() {
+                        diagnostics.push(
+                            ApolloDiagnostic::new(
+                                db,
+                                val.loc().into(),
+                                DiagnosticData::IntCoercionError {
+                                    value: int.get().to_string(),
+                                },
+                            )
+                            .label(Label::new(
+                                val.loc(),
+                                "cannot be coerced to an 32-bit integer",
+                            )),
+                        )
+                    }
+                } else {
                     diagnostics.push(unsupported_type!(db, val, type_def));
                 }
             }
@@ -71,7 +97,7 @@ pub fn value_of_correct_type_2(
         },
         Value::String { .. } => match &type_def {
             TypeDefinition::ScalarTypeDefinition(scalar) => {
-                if !scalar.is_string() || !scalar.is_id() {
+                if !scalar.is_string() && !scalar.is_id() {
                     diagnostics.push(unsupported_type!(db, val, type_def));
                 }
             }
@@ -106,25 +132,32 @@ pub fn value_of_correct_type_2(
             _ => diagnostics.push(unsupported_type!(db, val, type_def)),
         },
         Value::Enum { ref value, loc } => match &type_def {
-            TypeDefinition::EnumTypeDefinition(enum_) => enum_.values().for_each(|v| {
-                if v.enum_value() != value.src() {
-                    diagnostics.push(ApolloDiagnostic::new(
-                        db,
-                        loc.into(),
-                        DiagnosticData::UndefinedEnumValue {
-                            value: v.enum_value().into(),
-                            definition: type_def.name().into(),
-                        },
-                    ))
+            TypeDefinition::EnumTypeDefinition(enum_) => {
+                let enum_val = enum_.values().find(|v| v.enum_value() == value.src());
+                if enum_val.is_none() {
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            loc.into(),
+                            DiagnosticData::UndefinedValue {
+                                value: value.src().into(),
+                                definition: type_def.name().into(),
+                            },
+                        )
+                        .label(Label::new(
+                            val.loc(),
+                            format!("does not exist on `{}` type", type_def.name()),
+                        )),
+                    );
                 }
-            }),
+            }
             _ => diagnostics.push(unsupported_type!(db, val, type_def)),
         },
-        Value::List(ref li) => match &type_def {
+        Value::List { value: ref li, .. } => match &type_def {
             TypeDefinition::ScalarTypeDefinition(_)
             | TypeDefinition::EnumTypeDefinition(_)
             | TypeDefinition::InputObjectTypeDefinition(_) => li.iter().for_each(|v| {
-                value_of_correct_type_2(
+                value_of_correct_type(
                     db,
                     type_def.clone(),
                     v.clone(),
@@ -134,24 +167,68 @@ pub fn value_of_correct_type_2(
             }),
             _ => diagnostics.push(unsupported_type!(db, val, type_def)),
         },
-        Value::Object(ref obj) => match &type_def {
+        Value::Object { value: ref obj, .. } => match &type_def {
             TypeDefinition::InputObjectTypeDefinition(input_obj) => {
+                let undefined_field = obj.iter().find_map(|(name, value)| {
+                    let is_undefined = !input_obj.fields().any(|f| f.name() == name.src());
+                    if is_undefined {
+                        return Some((name, value));
+                    }
+                    None
+                });
+
+                if let Some((name, value)) = undefined_field {
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            value.loc().into(),
+                            DiagnosticData::UndefinedValue {
+                                value: name.src().into(),
+                                definition: type_def.name().into(),
+                            },
+                        )
+                        .label(Label::new(
+                            value.loc(),
+                            format!("does not exist on `{}` type", type_def.name()),
+                        )),
+                    );
+                }
+
                 input_obj.fields().for_each(|f| {
+                    let ty = f.ty();
+                    let is_missing = !obj.iter().any(|(name, ..)| f.name() == name.src());
+
+                    if (ty.is_non_null() && f.default_value().is_none()) && is_missing {
+                        let mut diagnostic = ApolloDiagnostic::new(
+                            db,
+                            val.loc().into(),
+                            DiagnosticData::RequiredArgument {
+                                name: f.name().into(),
+                            },
+                        );
+                        diagnostic = diagnostic.label(Label::new(
+                            val.loc(),
+                            format!("missing value for argument `{}`", f.name()),
+                        ));
+                        if let Some(loc) = ty.loc() {
+                            diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
+                        }
+
+                        diagnostics.push(diagnostic)
+                    }
+
                     obj.iter().for_each(|(name, v)| {
-                        if f.name() == name.src() {
-                            if let Some(type_def) = f.ty().type_def(db.upcast()) {
-                                value_of_correct_type_2(
+                        let type_def = ty.type_def(db.upcast());
+                        if name.src() == f.name() {
+                            if let Some(type_def) = type_def {
+                                value_of_correct_type(
                                     db,
-                                    type_def.clone(),
+                                    type_def,
                                     v.clone(),
                                     var_defs.clone(),
                                     diagnostics,
                                 )
-                            } else {
-                                diagnostics.push(unsupported_type!(db, val, type_def))
                             }
-                        } else {
-                            diagnostics.push(unsupported_type!(db, val, type_def))
                         }
                     })
                 })

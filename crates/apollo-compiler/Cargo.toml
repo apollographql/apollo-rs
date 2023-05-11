@@ -35,9 +35,9 @@ miette = "5.0"
 notify = "4.0.0"
 criterion = "0.3.0"
 pretty_assertions = "0.7.1"
-apollo-encoder = { path = "../apollo-encoder", version = "0.5.1", features = [
-  "apollo-compiler",
-] }
+#apollo-encoder = { path = "../apollo-encoder", version = "0.5.1", features = [
+#  "apollo-compiler",
+#] }
 
 [[bench]]
 name = "multi-source"
