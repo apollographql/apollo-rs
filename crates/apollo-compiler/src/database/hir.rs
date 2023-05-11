@@ -1286,11 +1286,31 @@ impl SelectionSet {
 
     /// Returns true if all the [`Selection`]s in this selection set are themselves introspections.
     pub fn is_introspection(&self, db: &dyn HirDatabase) -> bool {
-        self.selection().iter().all(|selection| match selection {
-            Selection::Field(field) => field.is_introspection(),
-            Selection::FragmentSpread(spread) => spread.is_introspection(db),
-            Selection::InlineFragment(inline) => inline.is_introspection(db),
-        })
+        fn is_introspection_impl(
+            db: &dyn HirDatabase,
+            set: &SelectionSet,
+            seen_fragments: &mut HashSet<Arc<FragmentDefinition>>,
+        ) -> bool {
+            set.selection().iter().all(|selection| match selection {
+                Selection::Field(field) => field.is_introspection(),
+                Selection::FragmentSpread(spread) => {
+                    let maybe_fragment = spread.fragment(db);
+                    maybe_fragment.map_or(false, |fragment| {
+                        if seen_fragments.contains(&fragment) {
+                            false
+                        } else {
+                            seen_fragments.insert(Arc::clone(&fragment));
+                            is_introspection_impl(db, &fragment.selection_set, seen_fragments)
+                        }
+                    })
+                }
+                Selection::InlineFragment(inline) => {
+                    is_introspection_impl(db, &inline.selection_set, seen_fragments)
+                }
+            })
+        }
+
+        is_introspection_impl(db, self, &mut HashSet::new())
     }
 
     /// Create a selection set for the concatenation of two selection sets' fields.
