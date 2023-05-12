@@ -12,7 +12,7 @@ macro_rules! unsupported_type {
             $db,
             $value.loc().into(),
             DiagnosticData::UnsupportedValueType {
-                value: $value.value_kind().into(),
+                value: $value.kind().into(),
                 ty: $type_def.name().into(),
             },
         )
@@ -23,7 +23,7 @@ macro_rules! unsupported_type {
             ),
             Label::new(
                 $value.loc(),
-                format!("argument declared here is of {} type", $value.value_kind()),
+                format!("argument declared here is of {} type", $value.kind()),
             ),
         ])
     }};
@@ -54,6 +54,14 @@ pub fn value_of_correct_type(
     let type_def = ty.type_def(db.upcast());
     if let Some(type_def) = type_def {
         match val {
+            // When expected as an input type, only integer input values are
+            // accepted. All other input values, including strings with numeric
+            // content, must raise a request error indicating an incorrect
+            // type. If the integer input value represents a value less than
+            // -231 or greater than or equal to 231, a request error should be
+            // raised.
+            // When expected as an input type, any string (such as "4") or
+            // integer (such as 4 or -4) input value should be coerced to ID
             Value::Int { value: int, .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(scalar) => {
                     if scalar.is_int() || scalar.is_float() || scalar.is_id() {
@@ -78,6 +86,10 @@ pub fn value_of_correct_type(
                 }
                 _ => diagnostics.push(unsupported_type!(db, val, ty)),
             },
+            // When expected as an input type, both integer and float input
+            // values are accepted. All other input values, including strings
+            // with numeric content, must raise a request error indicating an
+            // incorrect type.
             Value::Float { .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(scalar) => {
                     if !scalar.is_float() {
@@ -86,6 +98,11 @@ pub fn value_of_correct_type(
                 }
                 _ => diagnostics.push(unsupported_type!(db, val, ty)),
             },
+            // When expected as an input type, only valid Unicode string input
+            // values are accepted. All other input values must raise a request
+            // error indicating an incorrect type.
+            // When expected as an input type, any string (such as "4") or
+            // integer (such as 4 or -4) input value should be coerced to ID
             Value::String { .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(scalar) => {
                     if scalar.is_int() || scalar.is_float() || scalar.is_boolean() {
@@ -94,6 +111,9 @@ pub fn value_of_correct_type(
                 }
                 _ => diagnostics.push(unsupported_type!(db, val, ty)),
             },
+            // When expected as an input type, only boolean input values are
+            // accepted. All other input values must raise a request error
+            // indicating an incorrect type.
             Value::Boolean { .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(scalar) => {
                     if !scalar.is_boolean() {
@@ -130,6 +150,9 @@ pub fn value_of_correct_type(
                 }
                 _ => diagnostics.push(unsupported_type!(db, val, ty)),
             },
+            // GraphQL has a constant literal to represent enum input values.
+            // GraphQL string literals must not be accepted as an enum input and
+            // instead raise a request error.
             Value::Enum { ref value, loc } => match &type_def {
                 TypeDefinition::EnumTypeDefinition(enum_) => {
                     let enum_val = enum_.values().find(|v| v.enum_value() == value.src());
@@ -152,6 +175,14 @@ pub fn value_of_correct_type(
                 }
                 _ => diagnostics.push(unsupported_type!(db, val, ty)),
             },
+            // When expected as an input, list values are accepted only when
+            // each item in the list can be accepted by the list’s item type.
+            //
+            // If the value passed as an input to a list type is not a list and
+            // not the null value, then the result of input coercion is a list
+            // of size one, where the single item value is the result of input
+            // coercion for the list’s item type on the provided value (note
+            // this may apply recursively for nested lists).
             Value::List { value: ref li, .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(_)
                 | TypeDefinition::EnumTypeDefinition(_)
@@ -170,6 +201,8 @@ pub fn value_of_correct_type(
                         None
                     });
 
+                    // Add a diagnostic if a value does not exist on the input
+                    // object type
                     if let Some((name, value)) = undefined_field {
                         diagnostics.push(
                             ApolloDiagnostic::new(
@@ -191,6 +224,8 @@ pub fn value_of_correct_type(
                         let ty = f.ty();
                         let is_missing = !obj.iter().any(|(name, ..)| f.name() == name.src());
 
+                        // If no default value is provided and the input object
+                        // field’s type is non-null, an error should be raised
                         if (ty.is_non_null() && f.default_value().is_none()) && is_missing {
                             let mut diagnostic = ApolloDiagnostic::new(
                                 db,

@@ -1125,7 +1125,7 @@ impl Value {
         }
     }
 
-    pub fn value_kind(&self) -> &str {
+    pub fn kind(&self) -> &str {
         match self {
             Value::Variable { .. } => "Variable",
             Value::Int { .. } => "Int",
