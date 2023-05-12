@@ -29,7 +29,7 @@ Add this to your `Cargo.toml` to start using `apollo-parser`:
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-parser = "0.5.2"
+apollo-parser = "0.5.3"
 ```
 
 Or using [cargo-edit]:

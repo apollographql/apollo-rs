@@ -17,6 +17,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.5.3](https://crates.io/crates/apollo-parser/0.5.3) - 2023-05-12
+## Fixes
+- **variable definition list cannot be empty - [lrlna], [pull/553] fixing [issue/546]**
+  We previously allowed an operation with an empty variable definition list,
+  which is incorrect. This change provides a fix.
+
+[lrlna]: https://github.com/lrlna
+[issue/546]: https://github.com/apollographql/apollo-rs/pull/546
+[pull/553]: https://github.com/apollographql/apollo-rs/pull/553
+
 # [0.5.2](https://crates.io/crates/apollo-parser/0.5.2) - 2023-05-10
 
 ## Features
