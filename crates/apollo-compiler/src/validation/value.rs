@@ -246,14 +246,11 @@ pub fn value_of_correct_type(
                             diagnostics.push(diagnostic)
                         }
 
-                        obj.iter().for_each(|(name, v)| {
-                            let type_def = ty.type_def(db.upcast());
-                            if name.src() == f.name() {
-                                if let Some(_def) = type_def {
-                                    value_of_correct_type(db, ty, v, var_defs.clone(), diagnostics)
-                                }
-                            }
-                        })
+                        let used_val = obj.iter().find(|(name, ..)| name.src() == f.name());
+
+                        if let Some((_, v)) = used_val {
+                            value_of_correct_type(db, ty, v, var_defs.clone(), diagnostics);
+                        }
                     })
                 }
                 _ => diagnostics.push(unsupported_type!(db, val, ty)),
