@@ -193,12 +193,8 @@ pub fn value_of_correct_type(
             },
             Value::Object { value: ref obj, .. } => match &type_def {
                 TypeDefinition::InputObjectTypeDefinition(input_obj) => {
-                    let undefined_field = obj.iter().find_map(|(name, value)| {
-                        let is_undefined = !input_obj.fields().any(|f| f.name() == name.src());
-                        if is_undefined {
-                            return Some((name, value));
-                        }
-                        None
+                    let undefined_field = obj.iter().find(|(name, value)| {
+                        !input_obj.fields().any(|f| f.name() == name.src())
                     });
 
                     // Add a diagnostic if a value does not exist on the input
