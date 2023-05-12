@@ -11,9 +11,10 @@ pub(crate) fn variable_definitions(p: &mut Parser) {
     let _g = p.start_node(SyntaxKind::VARIABLE_DEFINITIONS);
     p.bump(S!['(']);
 
-    // TODO @lrlna error: expected a variable definition to follow an opening brace
     if let Some(T![$]) = p.peek() {
         variable_definition(p, false);
+    } else {
+        p.err("expected a Variable Definition")
     }
     p.expect(T![')'], S![')']);
 }
