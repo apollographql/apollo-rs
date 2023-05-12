@@ -222,13 +222,29 @@ pub fn validate_directives(
             }
 
             for arg in dir.arguments() {
-                let exists = directive_definition
+                let input_val = directive_definition
                     .arguments()
                     .input_values()
                     .iter()
-                    .any(|arg_def| arg.name() == arg_def.name());
+                    .find(|val| arg.name() == val.name())
+                    .cloned();
 
-                if !exists {
+                // @b(a: true)
+                if let Some(input_val) = input_val {
+                    if let Some(diag) = db
+                        .validate_variable_usage(input_val.clone(), var_defs.clone(), arg.clone())
+                        .err()
+                    {
+                        diagnostics.push(diag)
+                    } else {
+                        let value_of_correct_type =
+                            db.validate_values(input_val.ty(), arg, var_defs.clone());
+
+                        if let Err(diag) = value_of_correct_type {
+                            diagnostics.extend(diag);
+                        }
+                    }
+                } else {
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
@@ -241,23 +257,7 @@ pub fn validate_directives(
                         .label(Label::new(loc, "directive declared here")),
                     );
                 }
-
-                // Let var_usage be the input value where the original
-                // argument for the current variable usage is defined.
-                let var_usage = directive_definition
-                    .arguments()
-                    .input_values()
-                    .iter()
-                    .find(|val| val.name() == arg.name())
-                    .cloned();
-                if let Some(diag) = db
-                    .validate_variable_usage(var_usage, var_defs.clone(), arg.clone())
-                    .err()
-                {
-                    diagnostics.push(diag)
-                }
             }
-
             for arg_def in directive_definition.arguments().input_values() {
                 let arg_value = dir
                     .arguments()
@@ -268,7 +268,7 @@ pub fn validate_directives(
                     // Prevents explicitly providing `requiredArg: null`,
                     // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
                     // and it won't raise a validation error at this stage.
-                    Some(value) => value.value() == &hir::Value::Null,
+                    Some(value) => value.value().is_null(),
                 };
 
                 if arg_def.is_required() && is_null {

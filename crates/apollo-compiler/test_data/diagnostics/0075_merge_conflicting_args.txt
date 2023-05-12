@@ -8,7 +8,7 @@
             file_id: FileId {
                 id: 72,
             },
-            offset: 706,
+            offset: 630,
             length: 33,
         },
         labels: [
@@ -17,7 +17,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 685,
+                    offset: 611,
                     length: 15,
                 },
                 text: "field `doesKnowCommand` provides one argument value here",
@@ -27,7 +27,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 722,
+                    offset: 646,
                     length: 16,
                 },
                 text: "but a different value here",
@@ -42,14 +42,14 @@
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 669,
+                offset: 595,
                 length: 32,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 706,
+                offset: 630,
                 length: 33,
             },
         },
@@ -63,7 +63,7 @@
             file_id: FileId {
                 id: 72,
             },
-            offset: 706,
+            offset: 630,
             length: 33,
         },
         labels: [
@@ -72,7 +72,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 685,
+                    offset: 611,
                     length: 15,
                 },
                 text: "field `doesKnowCommand` provides one argument value here",
@@ -82,7 +82,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 722,
+                    offset: 646,
                     length: 16,
                 },
                 text: "but a different value here",
@@ -97,14 +97,14 @@
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 669,
+                offset: 595,
                 length: 32,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 706,
+                offset: 630,
                 length: 33,
             },
         },
@@ -118,7 +118,7 @@
             file_id: FileId {
                 id: 72,
             },
-            offset: 833,
+            offset: 749,
             length: 40,
         },
         labels: [
@@ -127,7 +127,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 812,
+                    offset: 730,
                     length: 15,
                 },
                 text: "field `doesKnowCommand` provides one argument value here",
@@ -137,7 +137,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 849,
+                    offset: 765,
                     length: 23,
                 },
                 text: "but a different value here",
@@ -152,14 +152,14 @@
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 796,
+                offset: 714,
                 length: 32,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 833,
+                offset: 749,
                 length: 40,
             },
         },
@@ -173,7 +173,7 @@
             file_id: FileId {
                 id: 72,
             },
-            offset: 833,
+            offset: 749,
             length: 40,
         },
         labels: [
@@ -182,7 +182,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 812,
+                    offset: 730,
                     length: 15,
                 },
                 text: "field `doesKnowCommand` provides one argument value here",
@@ -192,7 +192,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 849,
+                    offset: 765,
                     length: 23,
                 },
                 text: "but a different value here",
@@ -207,14 +207,14 @@
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 796,
+                offset: 714,
                 length: 32,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 833,
+                offset: 749,
                 length: 40,
             },
         },
@@ -228,7 +228,7 @@
             file_id: FileId {
                 id: 72,
             },
-            offset: 968,
+            offset: 876,
             length: 36,
         },
         labels: [
@@ -237,7 +237,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 943,
+                    offset: 853,
                     length: 19,
                 },
                 text: "field `doesKnowCommand` provides one argument value here",
@@ -247,7 +247,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 984,
+                    offset: 892,
                     length: 19,
                 },
                 text: "but a different value here",
@@ -262,14 +262,14 @@
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 927,
+                offset: 837,
                 length: 36,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 968,
+                offset: 876,
                 length: 36,
             },
         },
@@ -283,7 +283,7 @@
             file_id: FileId {
                 id: 72,
             },
-            offset: 968,
+            offset: 876,
             length: 36,
         },
         labels: [
@@ -292,7 +292,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 943,
+                    offset: 853,
                     length: 19,
                 },
                 text: "field `doesKnowCommand` provides one argument value here",
@@ -302,7 +302,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 984,
+                    offset: 892,
                     length: 19,
                 },
                 text: "but a different value here",
@@ -317,14 +317,14 @@
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 927,
+                offset: 837,
                 length: 36,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 968,
+                offset: 876,
                 length: 36,
             },
         },
@@ -338,7 +338,7 @@
             file_id: FileId {
                 id: 72,
             },
-            offset: 1085,
+            offset: 985,
             length: 15,
         },
         labels: [
@@ -347,7 +347,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 1064,
+                    offset: 966,
                     length: 15,
                 },
                 text: "field `doesKnowCommand` is selected with argument `dogCommand` here",
@@ -357,7 +357,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 1085,
+                    offset: 985,
                     length: 15,
                 },
                 text: "but argument `dogCommand` is not provided here",
@@ -372,14 +372,14 @@
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 1048,
+                offset: 950,
                 length: 32,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 1085,
+                offset: 985,
                 length: 15,
             },
         },
@@ -393,7 +393,7 @@
             file_id: FileId {
                 id: 72,
             },
-            offset: 1085,
+            offset: 985,
             length: 15,
         },
         labels: [
@@ -402,7 +402,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 1064,
+                    offset: 966,
                     length: 15,
                 },
                 text: "field `doesKnowCommand` is selected with argument `dogCommand` here",
@@ -412,7 +412,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 1085,
+                    offset: 985,
                     length: 15,
                 },
                 text: "but argument `dogCommand` is not provided here",
@@ -427,14 +427,14 @@
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 1048,
+                offset: 950,
                 length: 32,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 1085,
+                offset: 985,
                 length: 15,
             },
         },
@@ -448,7 +448,7 @@
             file_id: FileId {
                 id: 72,
             },
-            offset: 1169,
+            offset: 1061,
             length: 18,
         },
         labels: [
@@ -457,7 +457,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 1159,
+                    offset: 1053,
                     length: 4,
                 },
                 text: "field `isAtLocation` is selected with argument `x` here",
@@ -467,7 +467,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 1169,
+                    offset: 1061,
                     length: 18,
                 },
                 text: "but argument `x` is not provided here",
@@ -482,14 +482,14 @@
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 1146,
+                offset: 1040,
                 length: 18,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 1169,
+                offset: 1061,
                 length: 18,
             },
         },
@@ -503,7 +503,7 @@
             file_id: FileId {
                 id: 72,
             },
-            offset: 1169,
+            offset: 1061,
             length: 18,
         },
         labels: [
@@ -512,7 +512,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 1159,
+                    offset: 1053,
                     length: 4,
                 },
                 text: "field `isAtLocation` is selected with argument `x` here",
@@ -522,7 +522,7 @@
                     file_id: FileId {
                         id: 72,
                     },
-                    offset: 1169,
+                    offset: 1061,
                     length: 18,
                 },
                 text: "but argument `x` is not provided here",
@@ -537,14 +537,14 @@
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 1146,
+                offset: 1040,
                 length: 18,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
                     id: 72,
                 },
-                offset: 1169,
+                offset: 1061,
                 length: 18,
             },
         },

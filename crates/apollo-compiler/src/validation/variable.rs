@@ -128,7 +128,7 @@ pub fn validate_unused_variables(
 
 pub fn validate_variable_usage(
     db: &dyn ValidationDatabase,
-    var_usage: Option<hir::InputValueDefinition>,
+    var_usage: hir::InputValueDefinition,
     var_defs: Arc<Vec<hir::VariableDefinition>>,
     arg: hir::Argument,
 ) -> Result<(), ApolloDiagnostic> {
@@ -137,36 +137,34 @@ pub fn validate_variable_usage(
         // variable_name defined within operation.
         let var_def = var_defs.iter().find(|v| v.name() == var.name());
         if let Some(var_def) = var_def {
-            if let Some(var_usage) = var_usage {
-                let is_allowed = is_variable_usage_allowed(var_def, &var_usage);
-                if !is_allowed {
-                    return Err(ApolloDiagnostic::new(
-                        db,
-                        arg.loc.into(),
-                        DiagnosticData::DisallowedVariableUsage {
-                            var_name: var_def.name().into(),
-                            arg_name: arg.name().into(),
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            var_def.loc,
-                            format!(
-                                "variable `{}` of type `{}` is declared here",
-                                var_def.name(),
-                                var_def.ty(),
-                            ),
+            let is_allowed = is_variable_usage_allowed(var_def, &var_usage);
+            if !is_allowed {
+                return Err(ApolloDiagnostic::new(
+                    db,
+                    arg.loc.into(),
+                    DiagnosticData::DisallowedVariableUsage {
+                        var_name: var_def.name().into(),
+                        arg_name: arg.name().into(),
+                    },
+                )
+                .labels([
+                    Label::new(
+                        var_def.loc,
+                        format!(
+                            "variable `{}` of type `{}` is declared here",
+                            var_def.name(),
+                            var_def.ty(),
                         ),
-                        Label::new(
-                            arg.loc,
-                            format!(
-                                "argument `{}` of type `{}` is declared here",
-                                arg.name(),
-                                var_usage.ty()
-                            ),
+                    ),
+                    Label::new(
+                        arg.loc,
+                        format!(
+                            "argument `{}` of type `{}` is declared here",
+                            arg.name(),
+                            var_usage.ty()
                         ),
-                    ]));
-                }
+                    ),
+                ]));
             }
         } else {
             return Err(ApolloDiagnostic::new(
@@ -201,12 +199,12 @@ fn is_variable_usage_allowed(
         // if a default value exists for variableDefinition
         // and is not the value null.
         let has_non_null_default_value =
-            !(matches!(var_def.default_value(), Some(&hir::Value::Null)));
+            !(matches!(var_def.default_value(), Some(&hir::Value::Null { .. })));
         // 3.b. Let hasLocationDefaultValue be true if a default
         // value exists for the Argument or ObjectField where
         // variableUsage is located.
         let has_location_default_value =
-            !(matches!(var_usage.default_value(), Some(&hir::Value::Null)));
+            !(matches!(var_usage.default_value(), Some(&hir::Value::Null { .. })));
         // 3.c. If hasNonNullVariableDefaultValue is NOT true
         // AND hasLocationDefaultValue is NOT true, return
         // false.

@@ -190,6 +190,18 @@ pub enum DiagnosticData {
         /// Name of the type not in scope
         name: String,
     },
+    #[error("cannot find fragment `{name}` in this document")]
+    UndefinedFragment {
+        /// Name of the fragment not in scope
+        name: String,
+    },
+    #[error("value `{value}` does not exist on `{definition}` type")]
+    UndefinedValue {
+        /// Value of the enum that doesn't exist
+        value: String,
+        /// type definition
+        definition: String,
+    },
     #[error("type extension for `{name}` is the wrong kind")]
     WrongTypeExtension {
         /// Name of the type being extended
@@ -272,6 +284,18 @@ pub enum DiagnosticData {
         /// The source location where the directive that's being used was defined.
         directive_def: DiagnosticLocation,
     },
+    #[error("{ty} cannot be represented by a {value} value")]
+    UnsupportedValueType {
+        // input value
+        value: String,
+        // defined type
+        ty: String,
+    },
+    #[error("int cannot represent non 32-bit signed integer value")]
+    IntCoercionError {
+        /// The int value that cannot be coerced
+        value: String,
+    },
     #[error("non-repeatable directive {name} can only be used once per location")]
     UniqueDirective {
         /// Name of the non-unique directive.
@@ -294,11 +318,6 @@ pub enum DiagnosticData {
         field: String,
         original_selection: DiagnosticLocation,
         redefined_selection: DiagnosticLocation,
-    },
-    #[error("cannot find fragment `{name}` in this document")]
-    UndefinedFragment {
-        /// Name of the fragment not in scope
-        name: String,
     },
     #[error("fragments must be specified on types that exist in the schema")]
     InvalidFragment {

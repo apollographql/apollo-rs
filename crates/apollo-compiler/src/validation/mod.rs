@@ -14,6 +14,7 @@ mod scalar;
 mod schema;
 mod selection;
 mod union_;
+mod value;
 mod variable;
 
 pub use validation_db::{ValidationDatabase, ValidationStorage};

@@ -1468,16 +1468,36 @@ fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
             name: var.name()?.text().to_string(),
             loc: location(file_id, var.syntax()),
         }),
-        ast::Value::StringValue(string_val) => Value::String(string_val.into()),
+        ast::Value::StringValue(string_val) => Value::String {
+            loc: location(file_id, string_val.syntax()),
+            value: string_val.into(),
+        },
         // TODO(@goto-bus-stop) do not unwrap
-        ast::Value::FloatValue(float) => Value::Float(Float::new(float.try_into().unwrap())),
-        ast::Value::IntValue(int) => Value::Int(Float::new(f64::try_from(int).unwrap())),
-        ast::Value::BooleanValue(bool) => Value::Boolean(bool.try_into().unwrap()),
-        ast::Value::NullValue(_) => Value::Null,
-        ast::Value::EnumValue(enum_) => Value::Enum(name(enum_.name(), file_id)?),
+        ast::Value::FloatValue(float) => Value::Float {
+            loc: location(file_id, float.syntax()),
+            value: Float::new(float.try_into().unwrap()),
+        },
+        ast::Value::IntValue(int) => Value::Int {
+            loc: location(file_id, int.syntax()),
+            value: Float::new(f64::try_from(int).unwrap()),
+        },
+        ast::Value::BooleanValue(bool) => Value::Boolean {
+            loc: location(file_id, bool.syntax()),
+            value: bool.try_into().unwrap(),
+        },
+        ast::Value::NullValue(null) => Value::Null {
+            loc: location(file_id, null.syntax()),
+        },
+        ast::Value::EnumValue(enum_) => Value::Enum {
+            loc: location(file_id, enum_.syntax()),
+            value: name(enum_.name(), file_id)?,
+        },
         ast::Value::ListValue(list) => {
-            let list: Vec<Value> = list.values().filter_map(|v| value(v, file_id)).collect();
-            Value::List(list)
+            let li: Vec<Value> = list.values().filter_map(|v| value(v, file_id)).collect();
+            Value::List {
+                loc: location(file_id, list.syntax()),
+                value: li,
+            }
         }
         ast::Value::ObjectValue(object) => {
             let object_values: Vec<(Name, Value)> = object
@@ -1488,7 +1508,10 @@ fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
                     Some((name, value))
                 })
                 .collect();
-            Value::Object(object_values)
+            Value::Object {
+                loc: location(file_id, object.syntax()),
+                value: object_values,
+            }
         }
     };
     Some(hir_val)

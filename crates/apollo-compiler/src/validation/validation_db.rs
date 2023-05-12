@@ -7,7 +7,7 @@ use crate::{
     hir::*,
     validation::{
         argument, directive, enum_, extension, fragment, input_object, interface, object,
-        operation, scalar, schema, selection, union_, variable,
+        operation, scalar, schema, selection, union_, value, variable,
     },
     AstDatabase, FileId, HirDatabase, InputDatabase,
 };
@@ -246,10 +246,19 @@ pub trait ValidationDatabase:
     #[salsa::invoke(variable::validate_variable_usage)]
     fn validate_variable_usage(
         &self,
-        var_usage: Option<InputValueDefinition>,
+        var_usage: InputValueDefinition,
         var_defs: Arc<Vec<VariableDefinition>>,
         arg: Argument,
     ) -> Result<(), ApolloDiagnostic>;
+
+    #[salsa::transparent]
+    #[salsa::invoke(value::validate_values)]
+    fn validate_values(
+        &self,
+        ty: &Type,
+        arg: &Argument,
+        var_defs: Arc<Vec<VariableDefinition>>,
+    ) -> Result<(), Vec<ApolloDiagnostic>>;
 
     /// Check if two fields will output the same type.
     ///
@@ -535,8 +544,8 @@ fragment q on Query {
         compiler.add_executable(input_executable, "query.graphql");
 
         let diagnostics = compiler.validate();
-        // TODO(@goto-bus-stop) this should be 1, but both uses of ...q cause a report
-        assert_eq!(diagnostics.len(), 2);
+
+        assert_eq!(diagnostics.len(), 1);
         assert_eq!(
             diagnostics[0].data.to_string(),
             "`q` fragment cannot reference itself"
@@ -572,8 +581,8 @@ fragment q on TestObject {
         compiler.add_executable(input_executable, "query.graphql");
 
         let diagnostics = compiler.validate();
-        // TODO(@goto-bus-stop) this should be 1, but both uses of ...q cause a report
-        assert_eq!(diagnostics.len(), 2);
+
+        assert_eq!(diagnostics.len(), 1);
         assert_eq!(
             diagnostics[0].data.to_string(),
             "`q` fragment cannot reference itself"
