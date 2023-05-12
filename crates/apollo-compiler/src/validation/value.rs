@@ -105,6 +105,10 @@ pub fn value_of_correct_type(
             // integer (such as 4 or -4) input value should be coerced to ID
             Value::String { .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(scalar) => {
+                    // specifically return diagnostics for ints, floats, and
+                    // booleans.
+                    // string, ids and custom scalars are ok, and
+                    // don't need a diagnostic.
                     if scalar.is_int() || scalar.is_float() || scalar.is_boolean() {
                         diagnostics.push(unsupported_type!(db, val, ty));
                     }
@@ -193,9 +197,9 @@ pub fn value_of_correct_type(
             },
             Value::Object { value: ref obj, .. } => match &type_def {
                 TypeDefinition::InputObjectTypeDefinition(input_obj) => {
-                    let undefined_field = obj.iter().find(|(name, value)| {
-                        !input_obj.fields().any(|f| f.name() == name.src())
-                    });
+                    let undefined_field = obj
+                        .iter()
+                        .find(|(name, ..)| !input_obj.fields().any(|f| f.name() == name.src()));
 
                     // Add a diagnostic if a value does not exist on the input
                     // object type
