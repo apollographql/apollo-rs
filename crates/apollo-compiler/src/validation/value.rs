@@ -126,6 +126,14 @@ pub fn value_of_correct_type(
                     // compare if two Types are the same
                     if var_def.ty().name() != type_def.name() {
                         diagnostics.push(unsupported_type!(db, val.clone(), type_def));
+                    } else if let Some(default_value) = var_def.default_value() {
+                        value_of_correct_type(
+                            db,
+                            type_def,
+                            default_value.clone(),
+                            var_defs,
+                            diagnostics,
+                        )
                     }
                 }
             }
