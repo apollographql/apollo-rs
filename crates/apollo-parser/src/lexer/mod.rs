@@ -258,7 +258,7 @@ impl<'a> Cursor<'a> {
                         c => {
                             return Err(Error::new(
                                 format!("Unexpected character \"{}\"", c),
-                                c.to_string(),
+                                self.current_str().to_string(),
                             ))
                         }
                     };

@@ -7,7 +7,6 @@ use crate::Error;
 pub(crate) struct Cursor<'a> {
     index: usize,
     offset: usize,
-    prev: usize,
     source: &'a str,
     chars: CharIndices<'a>,
     pending: Option<char>,
@@ -19,7 +18,6 @@ impl<'a> Cursor<'a> {
         Cursor {
             index: 0,
             offset: 0,
-            prev: 0,
             pending: None,
             source: input,
             chars: input.char_indices(),
@@ -31,10 +29,6 @@ impl<'a> Cursor<'a> {
 impl<'a> Cursor<'a> {
     pub(crate) fn index(&self) -> usize {
         self.index
-    }
-
-    fn eof(&self) -> bool {
-        self.offset == self.source.len()
     }
 
     pub(crate) fn pending(&self) -> bool {
@@ -57,19 +51,22 @@ impl<'a> Cursor<'a> {
     /// Moves to the next character.
     pub(crate) fn current_str(&mut self) -> &'a str {
         self.pending = None;
-        if self.eof() {
-            return self.source.get(self.index..).unwrap();
-        }
-        let slice = self.source.get(self.index..=self.offset).unwrap();
 
-        self.index = self.offset;
         if let Some((pos, next)) = self.chars.next() {
+            let current = self.index;
+
             self.index = pos;
             self.offset = pos;
             self.pending = Some(next);
-        }
 
-        slice
+            self.source.get(current..pos)
+        } else {
+            let current = self.index;
+            self.index = self.source.len() - 1;
+
+            self.source.get(current..)
+        }
+        .unwrap()
     }
 
     /// Moves to the next character.
@@ -83,7 +80,6 @@ impl<'a> Cursor<'a> {
         }
 
         let (pos, c) = self.chars.next()?;
-        self.prev = self.offset;
         self.offset = pos;
 
         Some(c)
@@ -96,7 +92,6 @@ impl<'a> Cursor<'a> {
         }
 
         if let Some((pos, c_in)) = self.chars.next() {
-            self.prev = self.offset;
             self.offset = pos;
 
             if c_in == c {

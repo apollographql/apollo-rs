@@ -1,0 +1,7 @@
+  mutation {
+      messageSender(
+          message: "some ok outer string "Tráfico" more ok outer string",
+      ) {
+        delivered
+  }
+}
