@@ -19,7 +19,7 @@
 
 ## Getting started
 Add the dependency to start using `apollo-encoder`:
-```
+```bash
 cargo add apollo-encoder
 ```
 

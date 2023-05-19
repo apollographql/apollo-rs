@@ -26,7 +26,7 @@
 
 ## Getting started
 Add the dependency to start using `apollo-parser`:
-```
+```bash
 cargo add apollo-parser
 ```
 
