@@ -16,6 +16,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 ## Documentation -->
+# [0.9.1](https://crates.io/crates/apollo-compiler/0.9.1) - 2023-05-17
+
+## Fixes
+- Update the apollo-parser dependency version, by [goto-bus-stop] in [pull/559]
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/559]: https://github.com/apollographql/apollo-rs/pull/559
+
 # [0.9.0](https://crates.io/crates/apollo-compiler/0.9.0) - 2023-05-12
 
 This release completes GraphQL validation specification, making the compiler spec-compliant.
