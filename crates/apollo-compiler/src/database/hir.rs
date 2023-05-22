@@ -1154,6 +1154,45 @@ impl Value {
     pub fn is_null(&self) -> bool {
         matches!(self, Self::Null { .. })
     }
+
+    /// Returns an `i32` if the value is a number and can be represented as an i32.
+    #[must_use]
+    pub fn as_i32(&self) -> Option<i32> {
+        i32::try_from(self).ok()
+    }
+
+    /// Returns an `f64` if the value is a number and can be represented as an f64.
+    #[must_use]
+    pub fn as_f64(&self) -> Option<f64> {
+        f64::try_from(self).ok()
+    }
+
+    /// Returns a `str` if the value is a string.
+    #[must_use]
+    pub fn as_str(&self) -> Option<&'_ str> {
+        match self {
+            Value::String { value, .. } => Some(value),
+            _ => None,
+        }
+    }
+
+    /// Returns true/false if the value is a boolean.
+    #[must_use]
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            Value::Boolean { value, .. } => Some(*value),
+            _ => None,
+        }
+    }
+
+    /// Returns the inner list if the value is a List type.
+    #[must_use]
+    pub fn as_list(&self) -> Option<&Vec<Value>> {
+        match self {
+            Value::List { value, .. } => Some(value),
+            _ => None,
+        }
+    }
 }
 
 /// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
@@ -4288,5 +4327,37 @@ query {
 
         // assert that field_definition() also returns a field def for interface types
         assert_eq!(hir_creature_field_def, &sel_creature_name_field_def)
+    }
+
+    #[test]
+    fn values() {
+        let mut compiler = ApolloCompiler::new();
+        let input = r#"
+            {
+                field(
+                    float: 1.234,
+                    int: 1234,
+                    string: "some text",
+                    bool: true,
+                )
+            }
+        "#;
+        let id = compiler.add_executable(input, "test.graphql");
+        let op = compiler.db.find_operation(id, None).unwrap();
+        let field = &op.fields(&compiler.db)[0];
+
+        let args = field.arguments();
+        assert_eq!(args[0].value.as_f64(), Some(1.234));
+        assert_eq!(args[0].value.as_i32(), None);
+        assert_eq!(args[0].value.as_str(), None);
+        assert_eq!(args[1].value.as_i32(), Some(1234));
+        assert_eq!(args[1].value.as_f64(), Some(1234.0));
+        assert_eq!(args[1].value.as_str(), None);
+        assert_eq!(args[2].value.as_str(), Some("some text"));
+        assert_eq!(args[2].value.as_bool(), None);
+        assert_eq!(args[2].value.as_i32(), None);
+        assert_eq!(args[3].value.as_bool(), Some(true));
+        assert_eq!(args[3].value.as_f64(), None);
+        assert_eq!(args[3].value.as_i32(), None);
     }
 }
