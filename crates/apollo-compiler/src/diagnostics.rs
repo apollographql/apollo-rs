@@ -190,6 +190,11 @@ pub enum DiagnosticData {
         /// Name of the type not in scope
         name: String,
     },
+    #[error("variable `{name}` is not defined")]
+    UndefinedVariable {
+        /// Name of the variable not in scope
+        name: String,
+    },
     #[error("cannot find fragment `{name}` in this document")]
     UndefinedFragment {
         /// Name of the fragment not in scope
