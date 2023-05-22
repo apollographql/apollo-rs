@@ -170,7 +170,7 @@ pub fn validate_variable_usage(
             return Err(ApolloDiagnostic::new(
                 db,
                 arg.loc().into(),
-                DiagnosticData::UndefinedDefinition {
+                DiagnosticData::UndefinedVariable {
                     name: var.name().into(),
                 },
             )
