@@ -1193,6 +1193,26 @@ impl Value {
             _ => None,
         }
     }
+
+    /// Returns a keys/values list if the value is an input object.
+    #[must_use]
+    pub fn as_object(&self) -> Option<&Vec<(Name, Value)>> {
+        match self {
+            Value::Object { value, .. } => Some(value),
+            _ => None,
+        }
+    }
+
+    /// Returns the [`hir::Variable`] if the value is a variable reference.
+    ///
+    /// [`hir::Variable`]: Variable
+    #[must_use]
+    pub fn as_variable(&self) -> Option<&Variable> {
+        match self {
+            Value::Variable(var) => Some(var),
+            _ => None,
+        }
+    }
 }
 
 /// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
@@ -4333,12 +4353,13 @@ query {
     fn values() {
         let mut compiler = ApolloCompiler::new();
         let input = r#"
-            {
+            query ($arg: Int!) {
                 field(
                     float: 1.234,
                     int: 1234,
                     string: "some text",
                     bool: true,
+                    variable: $arg,
                 )
             }
         "#;
@@ -4359,5 +4380,9 @@ query {
         assert_eq!(args[3].value.as_bool(), Some(true));
         assert_eq!(args[3].value.as_f64(), None);
         assert_eq!(args[3].value.as_i32(), None);
+        assert!(args[4].value.as_variable().is_some());
+        assert!(args[4].value.as_bool().is_none());
+        assert!(args[4].value.as_f64().is_none());
+        assert!(args[4].value.as_i32().is_none());
     }
 }
