@@ -249,7 +249,7 @@ fn are_types_compatible(variable_ty: &hir::Type, location_ty: &hir::Type) -> boo
         // 2.a. Let nullable_variable_ty be the nullable type of variable_ty.
         // 2.b. Return are_types_compatible(nullable_variable_ty, location_ty).
         (
-            hir::Type::Named { .. },
+            _,
             hir::Type::NonNull {
                 ty: nullable_variable_ty,
                 ..
@@ -257,7 +257,7 @@ fn are_types_compatible(variable_ty: &hir::Type, location_ty: &hir::Type) -> boo
         ) => are_types_compatible(nullable_variable_ty, location_ty),
         // 3.Otherwise, if location_ty is a list type:
         // 3.a. If variable_ty is NOT a list type, return false.
-        (hir::Type::List { .. }, hir::Type::Named { .. } | hir::Type::NonNull { .. }) => false,
+        (hir::Type::List { .. }, hir::Type::Named { .. }) => false,
         // 3.b.Let item_location_ty be the unwrapped item type of location_ty.
         // 3.c. Let item_variable_ty be the unwrapped item type of variable_ty.
         // 3.d. Return AreTypesCompatible(item_variable_ty, item_location_ty).
@@ -270,7 +270,7 @@ fn are_types_compatible(variable_ty: &hir::Type, location_ty: &hir::Type) -> boo
                 ty: item_variable_ty,
                 ..
             },
-        ) => are_types_compatible(item_location_ty, item_variable_ty),
+        ) => are_types_compatible(item_variable_ty, item_location_ty),
         // 4. Otherwise, if variable_ty is a list type, return false.
         (hir::Type::Named { .. }, hir::Type::List { .. }) => false,
         // 5. Return true if variable_ty and location_ty are identical, otherwise false.
