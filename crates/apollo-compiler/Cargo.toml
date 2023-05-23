@@ -18,7 +18,7 @@ edition = "2021"
 
 [dependencies]
 apollo-parser = { path = "../apollo-parser", version = "0.5.3" }
-ariadne = { package = "apollo-ariadne", version = "0.2.0-alpha.0" }
+ariadne = "0.2.0"
 indexmap = "1.9.2"
 rowan = "0.15.5"
 salsa = "0.16.1"
