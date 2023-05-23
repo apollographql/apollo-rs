@@ -230,7 +230,6 @@ pub fn value_of_correct_type(
                         let is_null = obj
                             .iter()
                             .any(|(name, value)| f.name() == name.src() && value.is_null());
-                        dbg!(is_null);
 
                         // If the input object field type is non_null, and no
                         // default value is provided, or if the value provided
