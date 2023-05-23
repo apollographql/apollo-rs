@@ -1,0 +1,14 @@
+query nullableStringArg($nonNullableVar: String!) {
+  arguments {
+    nullableString(nullableString: $nonNullableVar)
+  }
+}
+
+type Query {
+    arguments: Arguments
+}
+
+type Arguments {
+    nullableString(nullableString: String): String
+}
+

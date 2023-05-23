@@ -1,0 +1,105 @@
+- DOCUMENT@0..237
+    - OPERATION_DEFINITION@0..123
+        - OPERATION_TYPE@0..5
+            - query_KW@0..5 "query"
+        - WHITESPACE@5..6 " "
+        - NAME@6..23
+            - IDENT@6..23 "nullableStringArg"
+        - VARIABLE_DEFINITIONS@23..49
+            - L_PAREN@23..24 "("
+            - VARIABLE_DEFINITION@24..48
+                - VARIABLE@24..39
+                    - DOLLAR@24..25 "$"
+                    - NAME@25..39
+                        - IDENT@25..39 "nonNullableVar"
+                - COLON@39..40 ":"
+                - WHITESPACE@40..41 " "
+                - NON_NULL_TYPE@41..48
+                    - NAMED_TYPE@41..47
+                        - NAME@41..47
+                            - IDENT@41..47 "String"
+                    - BANG@47..48 "!"
+            - R_PAREN@48..49 ")"
+        - WHITESPACE@49..50 " "
+        - SELECTION_SET@50..123
+            - L_CURLY@50..51 "{"
+            - WHITESPACE@51..54 "\n  "
+            - FIELD@54..121
+                - NAME@54..63
+                    - IDENT@54..63 "arguments"
+                - WHITESPACE@63..64 " "
+                - SELECTION_SET@64..121
+                    - L_CURLY@64..65 "{"
+                    - WHITESPACE@65..70 "\n    "
+                    - FIELD@70..117
+                        - NAME@70..84
+                            - IDENT@70..84 "nullableString"
+                        - ARGUMENTS@84..117
+                            - L_PAREN@84..85 "("
+                            - ARGUMENT@85..116
+                                - NAME@85..99
+                                    - IDENT@85..99 "nullableString"
+                                - COLON@99..100 ":"
+                                - WHITESPACE@100..101 " "
+                                - VARIABLE@101..116
+                                    - DOLLAR@101..102 "$"
+                                    - NAME@102..116
+                                        - IDENT@102..116 "nonNullableVar"
+                            - R_PAREN@116..117 ")"
+                    - WHITESPACE@117..120 "\n  "
+                    - R_CURLY@120..121 "}"
+            - WHITESPACE@121..122 "\n"
+            - R_CURLY@122..123 "}"
+    - WHITESPACE@123..125 "\n\n"
+    - OBJECT_TYPE_DEFINITION@125..164
+        - type_KW@125..129 "type"
+        - WHITESPACE@129..130 " "
+        - NAME@130..135
+            - IDENT@130..135 "Query"
+        - WHITESPACE@135..136 " "
+        - FIELDS_DEFINITION@136..164
+            - L_CURLY@136..137 "{"
+            - WHITESPACE@137..142 "\n    "
+            - FIELD_DEFINITION@142..162
+                - NAME@142..151
+                    - IDENT@142..151 "arguments"
+                - COLON@151..152 ":"
+                - WHITESPACE@152..153 " "
+                - NAMED_TYPE@153..162
+                    - NAME@153..162
+                        - IDENT@153..162 "Arguments"
+            - WHITESPACE@162..163 "\n"
+            - R_CURLY@163..164 "}"
+    - WHITESPACE@164..166 "\n\n"
+    - OBJECT_TYPE_DEFINITION@166..235
+        - type_KW@166..170 "type"
+        - WHITESPACE@170..171 " "
+        - NAME@171..180
+            - IDENT@171..180 "Arguments"
+        - WHITESPACE@180..181 " "
+        - FIELDS_DEFINITION@181..235
+            - L_CURLY@181..182 "{"
+            - WHITESPACE@182..187 "\n    "
+            - FIELD_DEFINITION@187..233
+                - NAME@187..201
+                    - IDENT@187..201 "nullableString"
+                - ARGUMENTS_DEFINITION@201..225
+                    - L_PAREN@201..202 "("
+                    - INPUT_VALUE_DEFINITION@202..224
+                        - NAME@202..216
+                            - IDENT@202..216 "nullableString"
+                        - COLON@216..217 ":"
+                        - WHITESPACE@217..218 " "
+                        - NAMED_TYPE@218..224
+                            - NAME@218..224
+                                - IDENT@218..224 "String"
+                    - R_PAREN@224..225 ")"
+                - COLON@225..226 ":"
+                - WHITESPACE@226..227 " "
+                - NAMED_TYPE@227..233
+                    - NAME@227..233
+                        - IDENT@227..233 "String"
+            - WHITESPACE@233..234 "\n"
+            - R_CURLY@234..235 "}"
+    - WHITESPACE@235..237 "\n\n"
+recursion limit: 4096, high: 2
