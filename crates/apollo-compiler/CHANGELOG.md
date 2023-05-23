@@ -16,6 +16,40 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 ## Documentation -->
+# [0.9.2](https://crates.io/crates/apollo-compiler/0.9.2) - 2023-05-23
+
+## Features
+- add `as_$type()` methods to `hir::Value`, by [goto-bus-stop] in [pull/564]
+
+  These methods simplify casting the `hir::Value` enum to single Rust types.
+  Added methods:
+
+  - `hir::Value::as_i32() -> Option<i32>`
+  - `hir::Value::as_f64() -> Option<f64>`
+  - `hir::Value::as_str() -> Option<&str>`
+  - `hir::Value::as_bool() -> Option<bool>`
+  - `hir::Value::as_list() -> Option<&Vec<Value>>`
+  - `hir::Value::as_object() -> Option<&Vec<(Name, Value)>>`
+  - `hir::Value::as_variable() -> Option<&Variable>`
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/564]: https://github.com/apollographql/apollo-rs/pull/564
+
+## Fixes
+-  non-nullable variables should be accepted for nullable args, by [lrlna] in [pull/565]
+
+   Fixes several `null`-related issues from 0.9.0.
+
+-  add an `UndefinedVariable` diagnostic, by [goto-bus-stop] in [pull/563]
+
+   Previously undefined variables were reported with an `UndefinedDefinition` diagnostic.
+   Splitting it up lets us provide a better error message for missing variables.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[lrlna]: https://github.com/lrlna
+[pull/563]: https://github.com/apollographql/apollo-rs/pull/563
+[pull/565]: https://github.com/apollographql/apollo-rs/pull/565
+
 # [0.9.1](https://crates.io/crates/apollo-compiler/0.9.1) - 2023-05-19
 
 ## Fixes
