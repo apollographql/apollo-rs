@@ -104,7 +104,7 @@ pub(crate) fn same_response_shape(
         }
         // 6. Assert: typeA and typeB are both composite types.
         (def_a, def_b) if def_a.is_composite_definition() && def_b.is_composite_definition() => {
-            let merged_set = field_a.selection_set().merge(field_b.selection_set());
+            let merged_set = field_a.selection_set().concat(field_b.selection_set());
             let fields = db.flattened_operation_fields(merged_set);
             let grouped_by_name = group_fields_by_name(fields);
 
@@ -284,7 +284,7 @@ pub(crate) fn fields_in_set_can_merge(
                     continue;
                 }
                 // 2biii. Let mergedSet be the result of adding the selection set of fieldA and the selection set of fieldB.
-                let merged_set = field_a.selection_set().merge(field_b.selection_set());
+                let merged_set = field_a.selection_set().concat(field_b.selection_set());
                 // 2biv. FieldsInSetCanMerge(mergedSet) must be true.
                 if let Err(sub_diagnostics) = db.fields_in_set_can_merge(merged_set) {
                     diagnostics.extend(sub_diagnostics);
