@@ -16,6 +16,22 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 ## Documentation -->
+# [0.9.3](https://crates.io/crates/apollo-compiler/0.9.3) - 2023-05-26
+
+## Fixes
+- fix nullable / non-nullable validations inside lists, by [lrlna] in [pull/567]
+
+  Providing a variable of type `[Int!]!` to an argument of type `[Int]` is now allowed.
+
+[lrlna]: https://github.com/lrlna
+[pull/567]: https://github.com/apollographql/apollo-rs/pull/567
+
+## Maintenance
+- use official ariadne release, by [goto-bus-stop] in [pull/568]
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/568]: https://github.com/apollographql/apollo-rs/pull/568
+
 # [0.9.2](https://crates.io/crates/apollo-compiler/0.9.2) - 2023-05-23
 
 ## Features
