@@ -80,7 +80,7 @@ pub fn value_of_correct_type(
                                 )),
                             )
                         }
-                    } else {
+                    } else if scalar.is_string() || scalar.is_boolean() {
                         diagnostics.push(unsupported_type!(db, val, ty));
                     }
                 }
@@ -92,7 +92,11 @@ pub fn value_of_correct_type(
             // incorrect type.
             Value::Float { .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(scalar) => {
-                    if !scalar.is_float() {
+                    if scalar.is_id()
+                        || scalar.is_int()
+                        || scalar.is_string()
+                        || scalar.is_boolean()
+                    {
                         diagnostics.push(unsupported_type!(db, val, ty));
                     }
                 }
@@ -120,7 +124,8 @@ pub fn value_of_correct_type(
             // indicating an incorrect type.
             Value::Boolean { .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(scalar) => {
-                    if !scalar.is_boolean() {
+                    if scalar.is_int() || scalar.is_id() || scalar.is_string() || scalar.is_float()
+                    {
                         diagnostics.push(unsupported_type!(db, val, ty));
                     }
                 }
