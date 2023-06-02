@@ -92,11 +92,7 @@ pub fn value_of_correct_type(
             // incorrect type.
             Value::Float { .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(scalar) => {
-                    if scalar.is_id()
-                        || scalar.is_int()
-                        || scalar.is_string()
-                        || scalar.is_boolean()
-                    {
+                    if !scalar.is_float() && !scalar.is_custom() {
                         diagnostics.push(unsupported_type!(db, val, ty));
                     }
                 }
@@ -113,7 +109,7 @@ pub fn value_of_correct_type(
                     // booleans.
                     // string, ids and custom scalars are ok, and
                     // don't need a diagnostic.
-                    if scalar.is_int() || scalar.is_float() || scalar.is_boolean() {
+                    if !scalar.is_string() && !scalar.is_id() && !scalar.is_custom() {
                         diagnostics.push(unsupported_type!(db, val, ty));
                     }
                 }
@@ -124,8 +120,7 @@ pub fn value_of_correct_type(
             // indicating an incorrect type.
             Value::Boolean { .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(scalar) => {
-                    if scalar.is_int() || scalar.is_id() || scalar.is_string() || scalar.is_float()
-                    {
+                    if !scalar.is_boolean() && !scalar.is_custom() {
                         diagnostics.push(unsupported_type!(db, val, ty));
                     }
                 }
