@@ -2632,6 +2632,11 @@ impl ScalarTypeDefinition {
         self.extensions.push(ext);
     }
 
+    /// Returns true if the current scalar is a custom scalar.
+    pub fn is_custom(&self) -> bool {
+        !self.built_in
+    }
+
     /// Returns true if the current scalar is a GraphQL built in.
     pub fn is_built_in(&self) -> bool {
         self.built_in
