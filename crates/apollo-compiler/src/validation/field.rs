@@ -113,6 +113,7 @@ pub fn validate_field(
             field.loc().into(),
             DiagnosticData::UndefinedField {
                 field: fname.into(),
+                ty: field.parent_obj.clone().unwrap(),
             },
         )
         .label(Label::new(

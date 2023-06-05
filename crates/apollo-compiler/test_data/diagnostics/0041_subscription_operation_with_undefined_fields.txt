@@ -38,6 +38,7 @@
         ),
         data: UndefinedField {
             field: "undefinedSubscriptionField",
+            ty: "Subscription",
         },
     },
 ]
