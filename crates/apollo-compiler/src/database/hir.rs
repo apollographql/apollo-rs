@@ -1454,7 +1454,7 @@ impl SelectionSet {
     ///
     /// This does not deduplicate fields: if the two selection sets both select a field `a`, the
     /// merged set will select field `a` twice.
-    pub fn merge(&self, other: &SelectionSet) -> SelectionSet {
+    pub fn concat(&self, other: &SelectionSet) -> SelectionSet {
         let mut merged: Vec<Selection> =
             Vec::with_capacity(self.selection.len() + other.selection.len());
         merged.append(&mut self.selection.as_ref().clone());
