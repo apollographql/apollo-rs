@@ -2134,6 +2134,19 @@ impl SchemaDefinition {
         &self.extensions
     }
 
+    /// Returns the name of the object type for the root operation of the given kind,
+    /// defined either on this schema defintion or its extensions.
+    ///
+    /// The corresponding object type definition can be found
+    /// at [`compiler.db.object_types().get(name)`][HirDatabase::object_types].
+    pub fn root_operation_name(&self, ty: OperationType) -> Option<&str> {
+        match ty {
+            OperationType::Query => self.query(),
+            OperationType::Mutation => self.mutation(),
+            OperationType::Subscription => self.subscription(),
+        }
+    }
+
     /// Returns the name of the object type for the `query` root operation,
     /// defined either on this schema defintion or its extensions.
     ///

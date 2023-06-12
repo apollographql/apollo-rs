@@ -16,6 +16,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 ## Documentation -->
+
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+## Features
+- add `root_operation_name(OperationType)` helper method on `hir::SchemaDefinition` by [SimonSapin] in [pull/579]
+
+[pull/579]: https://github.com/apollographql/apollo-rs/pull/579
+
 # [0.9.4](https://crates.io/crates/apollo-compiler/0.9.4) - 2023-06-05
 
 ## Features
