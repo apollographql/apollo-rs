@@ -16,6 +16,55 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 ## Documentation -->
+# [0.9.4](https://crates.io/crates/apollo-compiler/0.9.4) - 2023-06-05
+
+## Features
+- accept any primitive value type for custom scalar validation, by [lrlna] in [pull/575]
+
+  If you provide a value to a custom scalar in your GraphQL source text, apollo-compiler
+  now accepts any value type. Previously it was not possible to write values for custom
+  scalars into a query or schema because the value you wrote would never match the custom
+  scalar type.
+
+  This now works:
+  ```graphql
+  scalar UserID @specifiedBy(url: "https://my-app.net/api-docs/users#id")
+  type Query {
+    username (id: UserID): String
+  }
+  ```
+  ```graphql
+  {
+    username(id: 575)
+  }
+  ```
+
+- add type name to the `UndefinedField` diagnostic data, by [goto-bus-stop] in [pull/577]
+
+  When querying a field that does not exist, the type name that's being queried is stored on
+  the diagnostic, so you can use it when handling the error.
+
+[lrlna]: https://github.com/lrlna
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/575]: https://github.com/apollographql/apollo-rs/pull/575
+[pull/577]: https://github.com/apollographql/apollo-rs/pull/577
+
+# [0.9.3](https://crates.io/crates/apollo-compiler/0.9.3) - 2023-05-26
+
+## Fixes
+- fix nullable / non-nullable validations inside lists, by [lrlna] in [pull/567]
+
+  Providing a variable of type `[Int!]!` to an argument of type `[Int]` is now allowed.
+
+[lrlna]: https://github.com/lrlna
+[pull/567]: https://github.com/apollographql/apollo-rs/pull/567
+
+## Maintenance
+- use official ariadne release, by [goto-bus-stop] in [pull/568]
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/568]: https://github.com/apollographql/apollo-rs/pull/568
+
 # [0.9.2](https://crates.io/crates/apollo-compiler/0.9.2) - 2023-05-23
 
 ## Features

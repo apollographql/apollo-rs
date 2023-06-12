@@ -178,10 +178,12 @@ pub enum DiagnosticData {
         // current operation type: subscription, mutation, query
         ty: &'static str,
     },
-    #[error("cannot query `{field}` field")]
+    #[error("cannot query field `{field}` on type `{ty}`")]
     UndefinedField {
         /// Field name
         field: String,
+        /// Type name being queried
+        ty: String,
     },
     #[error("the argument `{name}` is not supported")]
     UndefinedArgument { name: String },
