@@ -8,7 +8,10 @@ use std::{
 
 use anyhow::{anyhow, Result};
 use apollo_compiler::{ApolloCompiler, FileId};
-use notify::{watcher, DebouncedEvent, RecursiveMode, Watcher};
+use notify_debouncer_full::{
+    new_debouncer,
+    notify::{EventKind, RecursiveMode, Watcher},
+};
 
 fn main() -> Result<()> {
     let dir = Path::new("crates/apollo-compiler/examples/documents");
@@ -44,72 +47,87 @@ impl FileWatcher {
 
         self.validate();
 
-        self.watch_broadcast(dir)
+        self.watch_broadcast(dir.as_ref())
     }
 
-    fn watch_broadcast(&mut self, dir: impl AsRef<Path>) -> Result<()> {
+    fn watch_broadcast(&mut self, dir: &Path) -> Result<()> {
         let (broadcaster, listener) = channel();
-        let mut watcher = watcher(broadcaster, Duration::from_secs(1))?;
-        watcher.watch(&dir, RecursiveMode::NonRecursive)?;
-        println!("watching {} for changes", dir.as_ref().display());
+        let mut watcher = new_debouncer(Duration::from_secs(1), None, move |res| match res {
+            Ok(events) => {
+                for event in events {
+                    broadcaster.send(Ok(event)).unwrap();
+                }
+            }
+            Err(errors) => {
+                for error in errors {
+                    broadcaster.send(Err(error)).unwrap();
+                }
+            }
+        })?;
+        watcher.watcher().watch(&dir, RecursiveMode::NonRecursive)?;
+        println!("watching {} for changes", dir.display());
         loop {
             match listener.recv() {
-                Ok(event) => match &event {
-                    DebouncedEvent::NoticeWrite(path) => {
-                        println!("changes detected in {}", &path.display())
-                    }
-                    DebouncedEvent::Create(path) => match fs::read_to_string(path) {
-                        Ok(contents) => {
-                            println!("detected a new file {}", &path.display());
-                            let file_id = self.manifest.get(path);
-                            if let Some(file_id) = file_id {
-                                self.compiler.update_document(*file_id, &contents);
-                            } else {
-                                self.add_document(contents, path.to_path_buf())?;
+                Ok(Ok(event)) => {
+                    for path in event.paths {
+                        match event.kind {
+                            EventKind::Any => {
+                                println!("changes detected in {}", path.display())
                             }
-                            self.validate();
-                        }
-                        Err(e) => {
-                            println!(
-                                "could not read {} from disk, {:?}",
-                                &dir.as_ref().display(),
-                                Some(anyhow!("{}", e)),
-                            );
-                        }
-                    },
-                    DebouncedEvent::Write(path) => {
-                        match fs::read_to_string(path) {
-                            Ok(contents) => {
-                                let file_id = self.manifest.get(path);
-                                if let Some(file_id) = file_id {
-                                    self.compiler.update_document(*file_id, &contents);
-                                } else {
-                                    self.add_document(contents, path.to_path_buf())?;
+                            EventKind::Create(_) => match fs::read_to_string(&path) {
+                                Ok(contents) => {
+                                    println!("detected a new file {}", path.display());
+                                    let file_id = self.manifest.get(&path);
+                                    if let Some(file_id) = file_id {
+                                        self.compiler.update_document(*file_id, &contents);
+                                    } else {
+                                        self.add_document(contents, path)?;
+                                    }
+                                    self.validate();
                                 }
-                                self.validate();
+                                Err(e) => {
+                                    println!(
+                                        "could not read {} from disk, {:?}",
+                                        dir.display(),
+                                        Some(anyhow!("{}", e)),
+                                    );
+                                }
+                            },
+                            EventKind::Modify(_) => {
+                                match fs::read_to_string(&path) {
+                                    Ok(contents) => {
+                                        let file_id = self.manifest.get(&path);
+                                        if let Some(file_id) = file_id {
+                                            self.compiler.update_document(*file_id, &contents);
+                                        } else {
+                                            self.add_document(contents, path)?;
+                                        }
+                                        self.validate();
+                                    }
+                                    Err(e) => {
+                                        println!(
+                                            "could not read {} from disk, {:?}",
+                                            dir.display(),
+                                            Some(anyhow!("{}", e)),
+                                        );
+                                    }
+                                };
                             }
-                            Err(e) => {
-                                println!(
-                                    "could not read {} from disk, {:?}",
-                                    &dir.as_ref().display(),
-                                    Some(anyhow!("{}", e)),
-                                );
-                            }
-                        };
+                            _ => {}
+                        }
                     }
-                    DebouncedEvent::Error(e, _) => {
-                        println!(
-                            "unknown error while watching {},  {:?}",
-                            &dir.as_ref().display(),
-                            Some(anyhow!("{}", e)),
-                        );
-                    }
-                    _ => {}
-                },
+                }
+                Ok(Err(e)) => {
+                    println!(
+                        "unknown error while watching {},  {:?}",
+                        &dir.display(),
+                        Some(anyhow!("{}", e)),
+                    );
+                }
                 Err(e) => {
                     println!(
                         "unknown error while watching {},  {:?}",
-                        &dir.as_ref().display(),
+                        &dir.display(),
                         Some(anyhow!("{}", e)),
                     );
                 }
