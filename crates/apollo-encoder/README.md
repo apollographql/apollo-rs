@@ -80,7 +80,7 @@ Older version may or may not be compatible.
 
   assert_eq!(
       document.to_string(),
-      indoc! { r#"
+      indoc! {r#"
           query HeroForEpisode {
             hero {
               name
@@ -141,23 +141,22 @@ document.union(union_def);
 
 assert_eq!(
     document.to_string(),
-    indoc! { r#"
-"A union of all pets represented within a household."
-union Pet = Cat | Dog
-"""
-Favourite cat
-nap spots.
-"""
-enum NapSpots {
-  "Top bunk of a cat tree."
-  CatTree
-  Bed
-  CardboardBox @deprecated(reason: "Box was recycled.")
-}
-"Ensures cats get treats."
-directive @provideTreat on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
-
-"#}
+    indoc! {r#"
+        "A union of all pets represented within a household."
+        union Pet = Cat | Dog
+        """
+        Favourite cat
+        nap spots.
+        """
+        enum NapSpots {
+          "Top bunk of a cat tree."
+          CatTree
+          Bed
+          CardboardBox @deprecated(reason: "Box was recycled.")
+        }
+        "Ensures cats get treats."
+        directive @provideTreat on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+    "#},
 );
 ```
 ## License
