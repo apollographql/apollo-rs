@@ -1782,7 +1782,7 @@ impl InlineFragment {
     ///
     /// let query = compiler.db.find_operation(id, None)?;
     /// let a = &query.selection_set().inline_fragments()[0];
-    /// let b = &query.selection_set().fields()[0].selection_set().inline_fragments()[0];
+    /// let b = &query.selection_set().field("field")?.selection_set().inline_fragments()[0];
     /// assert_eq!(a.parent_type(&compiler.db)?.name(), "Query");
     /// assert_eq!(b.parent_type(&compiler.db)?.name(), "Intf");
     /// # Some(()) }
@@ -1824,7 +1824,7 @@ impl InlineFragment {
     ///
     /// let query = compiler.db.find_operation(id, None)?;
     /// let a = &query.selection_set().inline_fragments()[0];
-    /// let b = &query.selection_set().fields()[0].selection_set().inline_fragments()[0];
+    /// let b = &query.selection_set().field("field")?.selection_set().inline_fragments()[0];
     /// assert_eq!(a.type_def(&compiler.db)?.name(), "Query");
     /// assert_eq!(b.type_def(&compiler.db)?.name(), "X");
     /// # Some(()) }
