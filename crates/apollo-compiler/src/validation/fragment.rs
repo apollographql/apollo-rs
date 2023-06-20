@@ -162,10 +162,11 @@ pub fn validate_inline_fragment(
         var_defs.clone(),
     ));
 
-    let type_cond_diagnostics = db.validate_fragment_type_condition(
-        inline.type_condition().map(|t| t.to_string()),
-        inline.loc(),
-    );
+    let type_cond_diagnostics = if let Some(t) = inline.type_condition() {
+        db.validate_fragment_type_condition(t.to_string(), inline.loc())
+    } else {
+        Default::default()
+    };
     let has_type_error = !type_cond_diagnostics.is_empty();
     diagnostics.extend(type_cond_diagnostics);
 
@@ -233,7 +234,7 @@ pub fn validate_fragment_definition(
     ));
 
     let type_cond_diagnostics =
-        db.validate_fragment_type_condition(Some(def.type_condition().to_string()), def.loc());
+        db.validate_fragment_type_condition(def.type_condition().to_string(), def.loc());
     let has_type_error = !type_cond_diagnostics.is_empty();
     diagnostics.extend(type_cond_diagnostics);
 
@@ -313,70 +314,56 @@ pub fn validate_fragment_cycles(
 
 pub fn validate_fragment_type_condition(
     db: &dyn ValidationDatabase,
-    type_cond: Option<String>,
+    type_cond: String,
     loc: hir::HirNodeLocation,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     let schema_types = db.types_definitions_by_name();
 
-    match type_cond {
-        Some(type_cond) => {
-            let type_def = db.find_type_definition_by_name(type_cond.clone());
-            let is_composite = type_def
-                .as_ref()
-                .map_or(false, |ty| ty.is_composite_definition());
+    let type_def = db.find_type_definition_by_name(type_cond.clone());
+    let is_composite = type_def
+        .as_ref()
+        .map_or(false, |ty| ty.is_composite_definition());
 
-            if !schema_types.contains_key(&type_cond) {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        loc.into(),
-                        DiagnosticData::InvalidFragment {
-                            ty: type_cond.clone().into(),
-                        },
-                    )
-                    .label(Label::new(
-                        loc,
-                        format!("`{type_cond}` is defined here but not declared in the schema"),
-                    ))
-                    .help("fragments must be specified on types that exist in the schema")
-                    .help(format!("consider defining `{type_cond}` in the schema")),
-                );
-            } else if !is_composite {
-                let mut diagnostic = ApolloDiagnostic::new(
-                    db,
-                    loc.into(),
-                    DiagnosticData::InvalidFragmentTarget {
-                        ty: type_cond.clone(),
-                    },
-                )
-                .label(Label::new(
-                    loc,
-                    format!(
-                        "fragment declares unsupported type condition `{}`",
-                        type_cond
-                    ),
-                ))
-                .help("fragments cannot be defined on enums, scalars and input object");
-                if let Some(def) = type_def {
-                    diagnostic = diagnostic.label(Label::new(
-                        def.loc(),
-                        format!("`{type_cond}` is defined here"),
-                    ))
-                }
-                diagnostics.push(diagnostic)
-            }
+    if !schema_types.contains_key(&type_cond) {
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                loc.into(),
+                DiagnosticData::InvalidFragment {
+                    ty: type_cond.clone().into(),
+                },
+            )
+            .label(Label::new(
+                loc,
+                format!("`{type_cond}` is defined here but not declared in the schema"),
+            ))
+            .help("fragments must be specified on types that exist in the schema")
+            .help(format!("consider defining `{type_cond}` in the schema")),
+        );
+    } else if !is_composite {
+        let mut diagnostic = ApolloDiagnostic::new(
+            db,
+            loc.into(),
+            DiagnosticData::InvalidFragmentTarget {
+                ty: type_cond.clone(),
+            },
+        )
+        .label(Label::new(
+            loc,
+            format!(
+                "fragment declares unsupported type condition `{}`",
+                type_cond
+            ),
+        ))
+        .help("fragments cannot be defined on enums, scalars and input object");
+        if let Some(def) = type_def {
+            diagnostic = diagnostic.label(Label::new(
+                def.loc(),
+                format!("`{type_cond}` is defined here"),
+            ))
         }
-        None => {
-            diagnostics.push(
-                ApolloDiagnostic::new(db, loc.into(), DiagnosticData::InvalidFragment { ty: None })
-                    .label(Label::new(
-                        loc,
-                        "fragment target is defined here but not declared in the schema"
-                            .to_string(),
-                    )),
-            );
-        }
+        diagnostics.push(diagnostic)
     }
 
     diagnostics
