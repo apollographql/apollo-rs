@@ -1749,26 +1749,41 @@ impl InlineFragment {
     /// Get the type this fragment is spread onto.
     ///
     /// ## Examples
-    /// ```graphql
-    /// type Query {
-    ///     field: X
-    /// }
-    /// query {
-    ///     ... on Query { field } # spread A
-    ///     field {
-    ///         ... on X { subField } # spread B
+    /// ```rust
+    /// # fn main() { example().expect("unexpected None") }
+    /// # fn example() -> Option<()> { use apollo_compiler::*;
+    /// let mut compiler = ApolloCompiler::new();
+    /// compiler.add_type_system(r#"
+    ///     type X {
+    ///         subField: Int!
     ///     }
-    /// }
+    ///     type Query {
+    ///         field: X
+    ///     }
+    /// "#, "schema.graphql");
+    /// let id = compiler.add_executable(r#"
+    ///     query {
+    ///         ... on Query { field } # spread A
+    ///         field {
+    ///             ... on X { subField } # spread B
+    ///         }
+    ///     }
+    /// "#, "query.graphql");
+    /// let query = compiler.db.find_operation(id, None)?;
+    /// let a = &query.selection_set().inline_fragments()[0];
+    /// let b = &query.selection_set().fields()[0].selection_set().inline_fragments()[0];
+    /// assert_eq!(
+    ///     a.parent_type(&compiler.db)?.name(),
+    ///     "Query",
+    /// );
+    /// assert_eq!(
+    ///     b.parent_type(&compiler.db)?.name(),
+    ///     "X",
+    /// );
+    /// # Some(()) }
     /// ```
-    /// `A.parent_type()` is `Query`.
-    /// `B.parent_type()` is `X`.
     pub fn parent_type(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
         db.find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())
-    }
-
-    /// Get inline fragments's type definition.
-    pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
-        db.find_type_definition_by_name(self.type_condition()?.to_string())
     }
 
     /// Get a reference to inline fragment's directives.
