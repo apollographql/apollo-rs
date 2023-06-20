@@ -1746,29 +1746,95 @@ impl InlineFragment {
         self.type_condition.as_ref().map(|t| t.src())
     }
 
-    /// Get the type this fragment is spread onto.
+    /// Get the type this inline fragment is spread onto.
+    ///
+    /// This method does not look up type conditions, so in the example below `b.parent_type()`
+    /// returns the type for "Intf", not "X". To look up the type that an inline fragment *applies*
+    /// to, use [`InlineFragment::type_def`][InlineFragment::type_def].
     ///
     /// ## Examples
-    /// ```graphql
-    /// type Query {
-    ///     field: X
-    /// }
-    /// query {
-    ///     ... on Query { field } # spread A
-    ///     field {
-    ///         ... on X { subField } # spread B
+    /// ```rust
+    /// # fn main() { example().expect("unexpected None") }
+    /// # fn example() -> Option<()> { use apollo_compiler::*;
+    /// # use apollo_compiler::validation::ValidationDatabase;
+    /// let mut compiler = ApolloCompiler::new();
+    /// compiler.add_type_system(r#"
+    ///     interface Intf {
+    ///         subField: Int!
     ///     }
-    /// }
+    ///     type X implements Intf {
+    ///         subField: Int!
+    ///         subField2: Int!
+    ///     }
+    ///     type Query {
+    ///         field: Intf
+    ///     }
+    /// "#, "schema.graphql");
+    /// let id = compiler.add_executable(r#"
+    ///     query {
+    ///         ... on Query { field { subField } } # spread A
+    ///         field {
+    ///             ... on X { subField2 } # spread B
+    ///         }
+    ///     }
+    /// "#, "query.graphql");
+    /// # assert!(compiler.db.validate().is_empty());
+    ///
+    /// let query = compiler.db.find_operation(id, None)?;
+    /// let a = &query.selection_set().inline_fragments()[0];
+    /// let b = &query.selection_set().field("field")?.selection_set().inline_fragments()[0];
+    /// assert_eq!(a.parent_type(&compiler.db)?.name(), "Query");
+    /// assert_eq!(b.parent_type(&compiler.db)?.name(), "Intf");
+    /// # Some(()) }
     /// ```
-    /// `A.parent_type()` is `Query`.
-    /// `B.parent_type()` is `X`.
     pub fn parent_type(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
         db.find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())
     }
 
-    /// Get inline fragments's type definition.
+    /// Get the type this inline fragment applies to: the type condition, or the parent type if a
+    /// type condition is not given.
+    ///
+    /// ## Examples
+    /// ```rust
+    /// # fn main() { example().expect("unexpected None") }
+    /// # fn example() -> Option<()> { use apollo_compiler::*;
+    /// # use apollo_compiler::validation::ValidationDatabase;
+    /// let mut compiler = ApolloCompiler::new();
+    /// compiler.add_type_system(r#"
+    ///     interface Intf {
+    ///         subField: Int!
+    ///     }
+    ///     type X implements Intf {
+    ///         subField: Int!
+    ///         subField2: Int!
+    ///     }
+    ///     type Query {
+    ///         field: Intf
+    ///     }
+    /// "#, "schema.graphql");
+    /// let id = compiler.add_executable(r#"
+    ///     query {
+    ///         ... on Query { field { subField } } # spread A
+    ///         field {
+    ///             ... on X { subField2 } # spread B
+    ///         }
+    ///     }
+    /// "#, "query.graphql");
+    /// # assert!(compiler.db.validate().is_empty());
+    ///
+    /// let query = compiler.db.find_operation(id, None)?;
+    /// let a = &query.selection_set().inline_fragments()[0];
+    /// let b = &query.selection_set().field("field")?.selection_set().inline_fragments()[0];
+    /// assert_eq!(a.type_def(&compiler.db)?.name(), "Query");
+    /// assert_eq!(b.type_def(&compiler.db)?.name(), "X");
+    /// # Some(()) }
+    /// ```
     pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
-        db.find_type_definition_by_name(self.type_condition()?.to_string())
+        db.find_type_definition_by_name(
+            self.type_condition()
+                .or(self.parent_obj.as_deref())?
+                .to_string(),
+        )
     }
 
     /// Get a reference to inline fragment's directives.
