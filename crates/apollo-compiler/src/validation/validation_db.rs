@@ -210,7 +210,7 @@ pub trait ValidationDatabase:
     #[salsa::invoke(fragment::validate_fragment_type_condition)]
     fn validate_fragment_type_condition(
         &self,
-        type_cond: Option<String>,
+        type_cond: String,
         loc: HirNodeLocation,
     ) -> Vec<ApolloDiagnostic>;
 
