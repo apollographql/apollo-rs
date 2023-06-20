@@ -1,4 +1,4 @@
-- DOCUMENT@0..6146
+- DOCUMENT@0..6369
     - OBJECT_TYPE_DEFINITION@0..816
         - type_KW@0..4 "type"
         - WHITESPACE@4..5 " "
@@ -2716,4 +2716,96 @@
                     - R_CURLY@6142..6143 "}"
             - WHITESPACE@6143..6145 "\n\n"
             - R_CURLY@6145..6146 "}"
+    - WHITESPACE@6146..6148 "\n\n"
+    - OPERATION_DEFINITION@6148..6265
+        - OPERATION_TYPE@6148..6153
+            - query_KW@6148..6153 "query"
+        - WHITESPACE@6153..6154 " "
+        - NAME@6154..6190
+            - IDENT@6154..6190 "customScalarWithArbitraryInputObject"
+        - WHITESPACE@6190..6191 " "
+        - SELECTION_SET@6191..6265
+            - L_CURLY@6191..6192 "{"
+            - WHITESPACE@6192..6195 "\n  "
+            - FIELD@6195..6263
+                - NAME@6195..6210
+                    - IDENT@6195..6210 "complicatedArgs"
+                - WHITESPACE@6210..6211 " "
+                - SELECTION_SET@6211..6263
+                    - L_CURLY@6211..6212 "{"
+                    - WHITESPACE@6212..6217 "\n    "
+                    - FIELD@6217..6259
+                        - NAME@6217..6229
+                            - IDENT@6217..6229 "customScalar"
+                        - ARGUMENTS@6229..6259
+                            - L_PAREN@6229..6230 "("
+                            - ARGUMENT@6230..6258
+                                - NAME@6230..6242
+                                    - IDENT@6230..6242 "customScalar"
+                                - COLON@6242..6243 ":"
+                                - WHITESPACE@6243..6244 " "
+                                - OBJECT_VALUE@6244..6258
+                                    - L_CURLY@6244..6245 "{"
+                                    - WHITESPACE@6245..6246 " "
+                                    - OBJECT_FIELD@6246..6256
+                                        - NAME@6246..6248
+                                            - IDENT@6246..6248 "as"
+                                        - COLON@6248..6249 ":"
+                                        - WHITESPACE@6249..6250 " "
+                                        - STRING_VALUE@6250..6256
+                                            - STRING@6250..6256 "\"@key\""
+                                    - WHITESPACE@6256..6257 " "
+                                    - R_CURLY@6257..6258 "}"
+                            - R_PAREN@6258..6259 ")"
+                    - WHITESPACE@6259..6262 "\n  "
+                    - R_CURLY@6262..6263 "}"
+            - WHITESPACE@6263..6264 "\n"
+            - R_CURLY@6264..6265 "}"
+    - WHITESPACE@6265..6267 "\n\n"
+    - OPERATION_DEFINITION@6267..6368
+        - OPERATION_TYPE@6267..6272
+            - query_KW@6267..6272 "query"
+        - WHITESPACE@6272..6273 " "
+        - NAME@6273..6298
+            - IDENT@6273..6298 "customScalarWithListValue"
+        - WHITESPACE@6298..6299 " "
+        - SELECTION_SET@6299..6368
+            - L_CURLY@6299..6300 "{"
+            - WHITESPACE@6300..6303 "\n  "
+            - FIELD@6303..6366
+                - NAME@6303..6318
+                    - IDENT@6303..6318 "complicatedArgs"
+                - WHITESPACE@6318..6319 " "
+                - SELECTION_SET@6319..6366
+                    - L_CURLY@6319..6320 "{"
+                    - WHITESPACE@6320..6325 "\n    "
+                    - FIELD@6325..6362
+                        - NAME@6325..6337
+                            - IDENT@6325..6337 "customScalar"
+                        - ARGUMENTS@6337..6362
+                            - L_PAREN@6337..6338 "("
+                            - ARGUMENT@6338..6361
+                                - NAME@6338..6350
+                                    - IDENT@6338..6350 "customScalar"
+                                - COLON@6350..6351 ":"
+                                - WHITESPACE@6351..6352 " "
+                                - LIST_VALUE@6352..6361
+                                    - L_BRACK@6352..6353 "["
+                                    - INT_VALUE@6353..6354
+                                        - INT@6353..6354 "0"
+                                    - COMMA@6354..6355 ","
+                                    - WHITESPACE@6355..6356 " "
+                                    - INT_VALUE@6356..6357
+                                        - INT@6356..6357 "1"
+                                    - COMMA@6357..6358 ","
+                                    - WHITESPACE@6358..6359 " "
+                                    - INT_VALUE@6359..6360
+                                        - INT@6359..6360 "2"
+                                    - R_BRACK@6360..6361 "]"
+                            - R_PAREN@6361..6362 ")"
+                    - WHITESPACE@6362..6365 "\n  "
+                    - R_CURLY@6365..6366 "}"
+            - WHITESPACE@6366..6367 "\n"
+            - R_CURLY@6367..6368 "}"
+    - WHITESPACE@6368..6369 "\n"
 recursion limit: 4096, high: 3
