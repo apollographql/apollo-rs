@@ -295,9 +295,9 @@ pub fn validate_directives(
                 ApolloDiagnostic::new(
                     db,
                     loc.into(),
-                    DiagnosticData::UndefinedDefinition { name: name.into() },
+                    DiagnosticData::UndefinedDirective { name: name.into() },
                 )
-                .label(Label::new(loc, "not found in this scope")),
+                .label(Label::new(loc, "directive not defined")),
             )
         }
     }
