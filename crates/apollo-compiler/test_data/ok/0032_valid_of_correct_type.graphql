@@ -346,3 +346,15 @@ query customScalarWithVariableValue($custom: Custom = 4) {
   }
 
 }
+
+query customScalarWithArbitraryInputObject {
+  complicatedArgs {
+    customScalar(customScalar: { as: "@key" })
+  }
+}
+
+query customScalarWithListValue {
+  complicatedArgs {
+    customScalar(customScalar: [0, 1, 2])
+  }
+}
