@@ -17,12 +17,43 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation -->
 
-# [x.x.x] (unreleased) - 2023-mm-dd
+# [0.10.0](https://crates.io/crates/apollo-compiler/0.10.0) - 2023-06-20
+
+## BREAKING
+- `SelectionSet::merge` is renamed to `SelectionSet::concat` to clarify that it doesn't do field merging, by [goto-bus-stop] in [pull/570]
+- `hir::InlineFragment::type_condition` now only returns `Some()` if a type condition was explicitly specified, by [goto-bus-stop] in [pull/586]
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/570]: https://github.com/apollographql/apollo-rs/pull/570
+[pull/586]: https://github.com/apollographql/apollo-rs/pull/586
 
 ## Features
 - add `root_operation_name(OperationType)` helper method on `hir::SchemaDefinition` by [SimonSapin] in [pull/579]
+- add an `UndefinedDirective` diagnostic type, by [goto-bus-stop] in [pull/587]
 
+  This is used for directives instead of `UndefinedDefinition`.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
 [pull/579]: https://github.com/apollographql/apollo-rs/pull/579
+[pull/587]: https://github.com/apollographql/apollo-rs/pull/587
+
+## Fixes
+- accept objects as values for custom scalars, by [goto-bus-stop] in [pull/585]
+
+  The GraphQL spec is not entirely clear on this, but this is used in the real world with things
+  like the `_Any` type in Apollo Federation.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/585]: https://github.com/apollographql/apollo-rs/pull/585
+
+## Maintenance
+- update dependencies, by [goto-bus-stop] in [commit/daf918b]
+- add a test for validation with `set_type_system_hir()`, by [goto-bus-stop] in [pull/583]
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[commit/daf918b]: https://github.com/apollographql/apollo-rs/commit/daf918b62a19242bf1b8863dd598ac2912a7074e
+[pull/583]: https://github.com/apollographql/apollo-rs/pull/583
 
 # [0.9.4](https://crates.io/crates/apollo-compiler/0.9.4) - 2023-06-05
 
