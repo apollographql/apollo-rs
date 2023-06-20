@@ -1576,7 +1576,7 @@ fn inline_fragment(
     let fragment_data = InlineFragment {
         // for implicit inline fragments, the type condition is implied to be
         // that of the current scope
-        type_condition: type_condition.or(parent_obj.clone().map(|o| Name { src: o, loc: None })),
+        type_condition,
         directives,
         selection_set,
         parent_obj,
