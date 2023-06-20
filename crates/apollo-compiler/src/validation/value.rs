@@ -200,6 +200,7 @@ pub fn value_of_correct_type(
                 _ => diagnostics.push(unsupported_type!(db, val, ty)),
             },
             Value::Object { value: ref obj, .. } => match &type_def {
+                TypeDefinition::ScalarTypeDefinition(scalar) if scalar.is_custom() => (),
                 TypeDefinition::InputObjectTypeDefinition(input_obj) => {
                     let undefined_field = obj
                         .iter()
