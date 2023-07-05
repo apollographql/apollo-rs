@@ -178,16 +178,28 @@ pub enum DiagnosticData {
         // current operation type: subscription, mutation, query
         ty: &'static str,
     },
-    #[error("cannot query `{field}` field")]
+    #[error("cannot query field `{field}` on type `{ty}`")]
     UndefinedField {
         /// Field name
         field: String,
+        /// Type name being queried
+        ty: String,
     },
     #[error("the argument `{name}` is not supported")]
     UndefinedArgument { name: String },
     #[error("cannot find type `{name}` in this document")]
     UndefinedDefinition {
         /// Name of the type not in scope
+        name: String,
+    },
+    #[error("cannot find directive `{name}` in this document")]
+    UndefinedDirective {
+        /// Name of the missing directive
+        name: String,
+    },
+    #[error("variable `{name}` is not defined")]
+    UndefinedVariable {
+        /// Name of the variable not in scope
         name: String,
     },
     #[error("cannot find fragment `{name}` in this document")]

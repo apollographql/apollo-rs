@@ -25,16 +25,17 @@
 * GraphQL parser
 
 ## Getting started
-Add this to your `Cargo.toml` to start using `apollo-parser`:
+Add the dependency to start using `apollo-parser`:
+```bash
+cargo add apollo-parser
+```
+
+Or add this to your `Cargo.toml` for a manual installation:
+
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
 apollo-parser = "0.5.3"
-```
-
-Or using [cargo-edit]:
-```bash
-cargo add apollo-parser
 ```
 
 ## Rust versions
@@ -160,7 +161,6 @@ Licensed under either of
 
 at your option.
 
-[cargo-edit]: https://github.com/killercup/cargo-edit
 [apollo-rs: spec-compliant GraphQL Tools in Rust]: https://www.apollographql.com/blog/announcement/tooling/apollo-rs-graphql-tools-in-rust/
 [examples directory]: https://github.com/apollographql/apollo-rs/tree/main/crates/apollo-parser/examples
 [Get field names in an object]: https://github.com/apollographql/apollo-rs#get-field-names-in-an-object

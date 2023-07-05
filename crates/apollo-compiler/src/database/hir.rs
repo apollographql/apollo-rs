@@ -1154,6 +1154,65 @@ impl Value {
     pub fn is_null(&self) -> bool {
         matches!(self, Self::Null { .. })
     }
+
+    /// Returns an `i32` if the value is a number and can be represented as an i32.
+    #[must_use]
+    pub fn as_i32(&self) -> Option<i32> {
+        i32::try_from(self).ok()
+    }
+
+    /// Returns an `f64` if the value is a number and can be represented as an f64.
+    #[must_use]
+    pub fn as_f64(&self) -> Option<f64> {
+        f64::try_from(self).ok()
+    }
+
+    /// Returns a `str` if the value is a string.
+    #[must_use]
+    pub fn as_str(&self) -> Option<&'_ str> {
+        match self {
+            Value::String { value, .. } => Some(value),
+            _ => None,
+        }
+    }
+
+    /// Returns true/false if the value is a boolean.
+    #[must_use]
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            Value::Boolean { value, .. } => Some(*value),
+            _ => None,
+        }
+    }
+
+    /// Returns the inner list if the value is a List type.
+    #[must_use]
+    pub fn as_list(&self) -> Option<&Vec<Value>> {
+        match self {
+            Value::List { value, .. } => Some(value),
+            _ => None,
+        }
+    }
+
+    /// Returns a keys/values list if the value is an input object.
+    #[must_use]
+    pub fn as_object(&self) -> Option<&Vec<(Name, Value)>> {
+        match self {
+            Value::Object { value, .. } => Some(value),
+            _ => None,
+        }
+    }
+
+    /// Returns the [`hir::Variable`] if the value is a variable reference.
+    ///
+    /// [`hir::Variable`]: Variable
+    #[must_use]
+    pub fn as_variable(&self) -> Option<&Variable> {
+        match self {
+            Value::Variable(var) => Some(var),
+            _ => None,
+        }
+    }
 }
 
 /// Coerce to a `Float` input type (from either `Float` or `Int` syntax)
@@ -1395,7 +1454,7 @@ impl SelectionSet {
     ///
     /// This does not deduplicate fields: if the two selection sets both select a field `a`, the
     /// merged set will select field `a` twice.
-    pub fn merge(&self, other: &SelectionSet) -> SelectionSet {
+    pub fn concat(&self, other: &SelectionSet) -> SelectionSet {
         let mut merged: Vec<Selection> =
             Vec::with_capacity(self.selection.len() + other.selection.len());
         merged.append(&mut self.selection.as_ref().clone());
@@ -1687,29 +1746,95 @@ impl InlineFragment {
         self.type_condition.as_ref().map(|t| t.src())
     }
 
-    /// Get the type this fragment is spread onto.
+    /// Get the type this inline fragment is spread onto.
+    ///
+    /// This method does not look up type conditions, so in the example below `b.parent_type()`
+    /// returns the type for "Intf", not "X". To look up the type that an inline fragment *applies*
+    /// to, use [`InlineFragment::type_def`][InlineFragment::type_def].
     ///
     /// ## Examples
-    /// ```graphql
-    /// type Query {
-    ///     field: X
-    /// }
-    /// query {
-    ///     ... on Query { field } # spread A
-    ///     field {
-    ///         ... on X { subField } # spread B
+    /// ```rust
+    /// # fn main() { example().expect("unexpected None") }
+    /// # fn example() -> Option<()> { use apollo_compiler::*;
+    /// # use apollo_compiler::validation::ValidationDatabase;
+    /// let mut compiler = ApolloCompiler::new();
+    /// compiler.add_type_system(r#"
+    ///     interface Intf {
+    ///         subField: Int!
     ///     }
-    /// }
+    ///     type X implements Intf {
+    ///         subField: Int!
+    ///         subField2: Int!
+    ///     }
+    ///     type Query {
+    ///         field: Intf
+    ///     }
+    /// "#, "schema.graphql");
+    /// let id = compiler.add_executable(r#"
+    ///     query {
+    ///         ... on Query { field { subField } } # spread A
+    ///         field {
+    ///             ... on X { subField2 } # spread B
+    ///         }
+    ///     }
+    /// "#, "query.graphql");
+    /// # assert!(compiler.db.validate().is_empty());
+    ///
+    /// let query = compiler.db.find_operation(id, None)?;
+    /// let a = &query.selection_set().inline_fragments()[0];
+    /// let b = &query.selection_set().field("field")?.selection_set().inline_fragments()[0];
+    /// assert_eq!(a.parent_type(&compiler.db)?.name(), "Query");
+    /// assert_eq!(b.parent_type(&compiler.db)?.name(), "Intf");
+    /// # Some(()) }
     /// ```
-    /// `A.parent_type()` is `Query`.
-    /// `B.parent_type()` is `X`.
     pub fn parent_type(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
         db.find_type_definition_by_name(self.parent_obj.as_ref()?.to_string())
     }
 
-    /// Get inline fragments's type definition.
+    /// Get the type this inline fragment applies to: the type condition, or the parent type if a
+    /// type condition is not given.
+    ///
+    /// ## Examples
+    /// ```rust
+    /// # fn main() { example().expect("unexpected None") }
+    /// # fn example() -> Option<()> { use apollo_compiler::*;
+    /// # use apollo_compiler::validation::ValidationDatabase;
+    /// let mut compiler = ApolloCompiler::new();
+    /// compiler.add_type_system(r#"
+    ///     interface Intf {
+    ///         subField: Int!
+    ///     }
+    ///     type X implements Intf {
+    ///         subField: Int!
+    ///         subField2: Int!
+    ///     }
+    ///     type Query {
+    ///         field: Intf
+    ///     }
+    /// "#, "schema.graphql");
+    /// let id = compiler.add_executable(r#"
+    ///     query {
+    ///         ... on Query { field { subField } } # spread A
+    ///         field {
+    ///             ... on X { subField2 } # spread B
+    ///         }
+    ///     }
+    /// "#, "query.graphql");
+    /// # assert!(compiler.db.validate().is_empty());
+    ///
+    /// let query = compiler.db.find_operation(id, None)?;
+    /// let a = &query.selection_set().inline_fragments()[0];
+    /// let b = &query.selection_set().field("field")?.selection_set().inline_fragments()[0];
+    /// assert_eq!(a.type_def(&compiler.db)?.name(), "Query");
+    /// assert_eq!(b.type_def(&compiler.db)?.name(), "X");
+    /// # Some(()) }
+    /// ```
     pub fn type_def(&self, db: &dyn HirDatabase) -> Option<TypeDefinition> {
-        db.find_type_definition_by_name(self.type_condition()?.to_string())
+        db.find_type_definition_by_name(
+            self.type_condition()
+                .or(self.parent_obj.as_deref())?
+                .to_string(),
+        )
     }
 
     /// Get a reference to inline fragment's directives.
@@ -2073,6 +2198,19 @@ impl SchemaDefinition {
     /// Extensions that apply to this definition
     pub fn extensions(&self) -> &[Arc<SchemaExtension>] {
         &self.extensions
+    }
+
+    /// Returns the name of the object type for the root operation of the given kind,
+    /// defined either on this schema defintion or its extensions.
+    ///
+    /// The corresponding object type definition can be found
+    /// at [`compiler.db.object_types().get(name)`][HirDatabase::object_types].
+    pub fn root_operation_name(&self, ty: OperationType) -> Option<&str> {
+        match ty {
+            OperationType::Query => self.query(),
+            OperationType::Mutation => self.mutation(),
+            OperationType::Subscription => self.subscription(),
+        }
     }
 
     /// Returns the name of the object type for the `query` root operation,
@@ -2571,6 +2709,11 @@ impl ScalarTypeDefinition {
 
     pub(crate) fn push_extension(&mut self, ext: Arc<ScalarTypeExtension>) {
         self.extensions.push(ext);
+    }
+
+    /// Returns true if the current scalar is a custom scalar.
+    pub fn is_custom(&self) -> bool {
+        !self.built_in
     }
 
     /// Returns true if the current scalar is a GraphQL built in.
@@ -4288,5 +4431,42 @@ query {
 
         // assert that field_definition() also returns a field def for interface types
         assert_eq!(hir_creature_field_def, &sel_creature_name_field_def)
+    }
+
+    #[test]
+    fn values() {
+        let mut compiler = ApolloCompiler::new();
+        let input = r#"
+            query ($arg: Int!) {
+                field(
+                    float: 1.234,
+                    int: 1234,
+                    string: "some text",
+                    bool: true,
+                    variable: $arg,
+                )
+            }
+        "#;
+        let id = compiler.add_executable(input, "test.graphql");
+        let op = compiler.db.find_operation(id, None).unwrap();
+        let field = &op.fields(&compiler.db)[0];
+
+        let args = field.arguments();
+        assert_eq!(args[0].value.as_f64(), Some(1.234));
+        assert_eq!(args[0].value.as_i32(), None);
+        assert_eq!(args[0].value.as_str(), None);
+        assert_eq!(args[1].value.as_i32(), Some(1234));
+        assert_eq!(args[1].value.as_f64(), Some(1234.0));
+        assert_eq!(args[1].value.as_str(), None);
+        assert_eq!(args[2].value.as_str(), Some("some text"));
+        assert_eq!(args[2].value.as_bool(), None);
+        assert_eq!(args[2].value.as_i32(), None);
+        assert_eq!(args[3].value.as_bool(), Some(true));
+        assert_eq!(args[3].value.as_f64(), None);
+        assert_eq!(args[3].value.as_i32(), None);
+        assert!(args[4].value.as_variable().is_some());
+        assert!(args[4].value.as_bool().is_none());
+        assert!(args[4].value.as_f64().is_none());
+        assert!(args[4].value.as_i32().is_none());
     }
 }

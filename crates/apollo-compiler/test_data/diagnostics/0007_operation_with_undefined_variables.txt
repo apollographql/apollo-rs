@@ -24,7 +24,7 @@
             },
         ],
         help: None,
-        data: UndefinedDefinition {
+        data: UndefinedVariable {
             name: "undefinedVariable",
         },
     },

@@ -96,6 +96,7 @@
         ),
         data: UndefinedField {
             field: "undefinedMutationField",
+            ty: "Mutation",
         },
     },
 ]

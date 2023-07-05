@@ -38,6 +38,7 @@
         ),
         data: UndefinedField {
             field: "size",
+            ty: "Query",
         },
     },
     ApolloDiagnostic {
@@ -79,6 +80,7 @@
         ),
         data: UndefinedField {
             field: "weight",
+            ty: "Query",
         },
     },
 ]

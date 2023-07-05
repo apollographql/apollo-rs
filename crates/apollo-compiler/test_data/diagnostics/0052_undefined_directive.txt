@@ -20,11 +20,11 @@
                     offset: 46,
                     length: 11,
                 },
-                text: "not found in this scope",
+                text: "directive not defined",
             },
         ],
         help: None,
-        data: UndefinedDefinition {
+        data: UndefinedDirective {
             name: "directiveA",
         },
     },

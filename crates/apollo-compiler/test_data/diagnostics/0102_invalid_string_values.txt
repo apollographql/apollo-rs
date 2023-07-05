@@ -1483,8 +1483,8 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 5071,
-            length: 10,
+            offset: 4955,
+            length: 39,
         },
         labels: [
             Label {
@@ -1492,26 +1492,25 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 4895,
-                    length: 15,
+                    offset: 4955,
+                    length: 39,
                 },
-                text: "variable `a` of type `Int!` is declared here",
+                text: "missing value for argument `requiredField`",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 5071,
-                    length: 10,
+                    offset: 882,
+                    length: 7,
                 },
-                text: "argument `intArg` of type `Int` is declared here",
+                text: "argument defined here",
             },
         ],
         help: None,
-        data: DisallowedVariableUsage {
-            var_name: "a",
-            arg_name: "intArg",
+        data: RequiredArgument {
+            name: "requiredField",
         },
     },
     ApolloDiagnostic {
@@ -1523,8 +1522,8 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 5102,
-            length: 13,
+            offset: 4906,
+            length: 4,
         },
         labels: [
             Label {
@@ -1532,26 +1531,66 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 4914,
-                    length: 18,
+                    offset: 4899,
+                    length: 3,
                 },
-                text: "variable `b` of type `String!` is declared here",
+                text: "field declared here as Int type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 5102,
-                    length: 13,
+                    offset: 4906,
+                    length: 4,
                 },
-                text: "argument `stringArg` of type `String` is declared here",
+                text: "argument declared here is of Null type",
             },
         ],
         help: None,
-        data: DisallowedVariableUsage {
-            var_name: "b",
-            arg_name: "stringArg",
+        data: UnsupportedValueType {
+            value: "Null",
+            ty: "Int",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 4928,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 4918,
+                    length: 6,
+                },
+                text: "field declared here as String type",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 4928,
+                    length: 4,
+                },
+                text: "argument declared here is of Null type",
+            },
+        ],
+        help: None,
+        data: UnsupportedValueType {
+            value: "Null",
+            ty: "String",
         },
     },
     ApolloDiagnostic {

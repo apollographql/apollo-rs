@@ -17,9 +17,28 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.6.0](https://crates.io/crates/apollo-encoder/0.6.0) - 2023-06-20
+
+## BREAKING
+- **apollo-compiler@0.10.0 - [goto-bus-stop], [pull/588]**
+
+  This updates the version of `apollo-compiler` required by the `TryFrom`
+  implementations in this crate.
+
+  [goto-bus-stop]: https://github.com/goto-bus-stop
+  [pull/588]: https://github.com/apollographql/apollo-rs/pull/588
+
+## Fixes
+- **schema extension without fields skips empty block - [dariuszkuc], [pull/582]**
+
+  Prevents outputting the invalid code `extend schema {}`.
+
+  [dariuszkuc]: https://github.com/dariuszkuc
+  [pull/582]: https://github.com/apollographql/apollo-rs/pull/582
+
 # [0.5.1](https://crates.io/crates/apollo-encoder/0.5.1) - 2023-04-13
 
-## Featues
+## Features
 - **add `Clone` impl to encoder types - [zackangelo], [pull/515]**
   Consistently derive `Clone` on all encoder types.  
 

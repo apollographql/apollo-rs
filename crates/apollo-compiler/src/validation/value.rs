@@ -80,7 +80,7 @@ pub fn value_of_correct_type(
                                 )),
                             )
                         }
-                    } else {
+                    } else if scalar.is_string() || scalar.is_boolean() {
                         diagnostics.push(unsupported_type!(db, val, ty));
                     }
                 }
@@ -92,7 +92,7 @@ pub fn value_of_correct_type(
             // incorrect type.
             Value::Float { .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(scalar) => {
-                    if !scalar.is_float() {
+                    if !scalar.is_float() && !scalar.is_custom() {
                         diagnostics.push(unsupported_type!(db, val, ty));
                     }
                 }
@@ -109,7 +109,7 @@ pub fn value_of_correct_type(
                     // booleans.
                     // string, ids and custom scalars are ok, and
                     // don't need a diagnostic.
-                    if scalar.is_int() || scalar.is_float() || scalar.is_boolean() {
+                    if !scalar.is_string() && !scalar.is_id() && !scalar.is_custom() {
                         diagnostics.push(unsupported_type!(db, val, ty));
                     }
                 }
@@ -120,7 +120,7 @@ pub fn value_of_correct_type(
             // indicating an incorrect type.
             Value::Boolean { .. } => match &type_def {
                 TypeDefinition::ScalarTypeDefinition(scalar) => {
-                    if !scalar.is_boolean() {
+                    if !scalar.is_boolean() && !scalar.is_custom() {
                         diagnostics.push(unsupported_type!(db, val, ty));
                     }
                 }
@@ -142,13 +142,17 @@ pub fn value_of_correct_type(
                         if var_def.ty().name() != type_def.name() {
                             diagnostics.push(unsupported_type!(db, val.clone(), ty));
                         } else if let Some(default_value) = var_def.default_value() {
-                            value_of_correct_type(
-                                db,
-                                var_def.ty(),
-                                default_value,
-                                var_defs.clone(),
-                                diagnostics,
-                            )
+                            if var_def.ty().is_non_null() && default_value.is_null() {
+                                diagnostics.push(unsupported_type!(db, default_value, var_def.ty()))
+                            } else {
+                                value_of_correct_type(
+                                    db,
+                                    var_def.ty(),
+                                    default_value,
+                                    var_defs.clone(),
+                                    diagnostics,
+                                )
+                            }
                         }
                     }
                 }
@@ -196,6 +200,7 @@ pub fn value_of_correct_type(
                 _ => diagnostics.push(unsupported_type!(db, val, ty)),
             },
             Value::Object { value: ref obj, .. } => match &type_def {
+                TypeDefinition::ScalarTypeDefinition(scalar) if scalar.is_custom() => (),
                 TypeDefinition::InputObjectTypeDefinition(input_obj) => {
                     let undefined_field = obj
                         .iter()
@@ -223,10 +228,17 @@ pub fn value_of_correct_type(
                     input_obj.fields().for_each(|f| {
                         let ty = f.ty();
                         let is_missing = !obj.iter().any(|(name, ..)| f.name() == name.src());
+                        let is_null = obj
+                            .iter()
+                            .any(|(name, value)| f.name() == name.src() && value.is_null());
 
-                        // If no default value is provided and the input object
-                        // field’s type is non-null, an error should be raised
-                        if (ty.is_non_null() && f.default_value().is_none()) && is_missing {
+                        // If the input object field type is non_null, and no
+                        // default value is provided, or if the value provided
+                        // is null or missing entirely, an error should be
+                        // raised.
+                        if (ty.is_non_null() && f.default_value().is_none())
+                            && (is_missing || is_null)
+                        {
                             let mut diagnostic = ApolloDiagnostic::new(
                                 db,
                                 val.loc().into(),

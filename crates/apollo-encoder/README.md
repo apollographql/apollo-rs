@@ -18,19 +18,17 @@
 </div>
 
 ## Getting started
+Add the dependency to start using `apollo-encoder`:
+```bash
+cargo add apollo-encoder
+```
 
-Add this to your `Cargo.toml` to start using `apollo-encoder`:
+Or add this to your `Cargo.toml` for a manual installation:
 
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
 apollo-encoder = "0.5.1"
-```
-
-Or using [cargo-edit]:
-
-```bash
-cargo add apollo-encoder
 ```
 
 ## Rust versions
@@ -82,7 +80,7 @@ Older version may or may not be compatible.
 
   assert_eq!(
       document.to_string(),
-      indoc! { r#"
+      indoc! {r#"
           query HeroForEpisode {
             hero {
               name
@@ -143,23 +141,22 @@ document.union(union_def);
 
 assert_eq!(
     document.to_string(),
-    indoc! { r#"
-"A union of all pets represented within a household."
-union Pet = Cat | Dog
-"""
-Favourite cat
-nap spots.
-"""
-enum NapSpots {
-  "Top bunk of a cat tree."
-  CatTree
-  Bed
-  CardboardBox @deprecated(reason: "Box was recycled.")
-}
-"Ensures cats get treats."
-directive @provideTreat on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
-
-"#}
+    indoc! {r#"
+        "A union of all pets represented within a household."
+        union Pet = Cat | Dog
+        """
+        Favourite cat
+        nap spots.
+        """
+        enum NapSpots {
+          "Top bunk of a cat tree."
+          CatTree
+          Bed
+          CardboardBox @deprecated(reason: "Box was recycled.")
+        }
+        "Ensures cats get treats."
+        directive @provideTreat on OBJECT | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+    "#},
 );
 ```
 ## License
@@ -171,4 +168,3 @@ Licensed under either of
 
 at your option.
 
-[cargo-edit]: https://github.com/killercup/cargo-edit

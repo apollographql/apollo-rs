@@ -11,12 +11,15 @@ type ComplicatedArgs {
   idArgField(idArg: ID): String
   stringListArgField(stringListArg: [String]): String
   stringListNonNullArgField(stringListNonNullArg: [String!]): String
+  customScalar(customScalar: Custom): String
   complexArgField(complexArg: ComplexInput): String
   multipleReqs(req1: Int!, req2: Int!): String
   nonNullFieldWithDefault(arg: Int! = 0): String
   multipleOpts(opt1: Int = 0, opt2: Int = 0): String
   multipleOptAndReq(req1: Int!, req2: Int!, opt1: Int = 0, opt2: Int = 0): String
 }
+
+scalar Custom @specifiedBy(url: "example.com")
 
 enum FurColor {
   BROWN
@@ -310,4 +313,48 @@ query variablesWithDefaultNullValues(
     stringArgField(stringArg: $b)
   }
 
+}
+
+# Custom Scalars
+query customScalarWithStringValue {
+  complicatedArgs {
+    customScalar(customScalar: "custom")
+  }
+}
+
+query customScalarWithIntValue {
+  complicatedArgs {
+    customScalar(customScalar: 4)
+  }
+}
+
+query customScalarWithBooleanValue {
+  complicatedArgs {
+    customScalar(customScalar: true)
+  }
+}
+
+query customScalarWithFloatValue {
+  complicatedArgs {
+    customScalar(customScalar: 4.4)
+  }
+}
+
+query customScalarWithVariableValue($custom: Custom = 4) {
+  complicatedArgs {
+    customScalar(customScalar: $custom)
+  }
+
+}
+
+query customScalarWithArbitraryInputObject {
+  complicatedArgs {
+    customScalar(customScalar: { as: "@key" })
+  }
+}
+
+query customScalarWithListValue {
+  complicatedArgs {
+    customScalar(customScalar: [0, 1, 2])
+  }
 }

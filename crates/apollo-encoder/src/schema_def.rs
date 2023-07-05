@@ -113,21 +113,25 @@ impl fmt::Display for SchemaDefinition {
             write!(f, " {directive}")?;
         }
 
-        writeln!(f, " {{")?;
+        if self.query.is_some() || self.mutation.is_some() || self.subscription.is_some() {
+            writeln!(f, " {{")?;
 
-        if let Some(query) = &self.query {
-            writeln!(f, "  query: {query}")?;
+            if let Some(query) = &self.query {
+                writeln!(f, "  query: {query}")?;
+            }
+
+            if let Some(mutation) = &self.mutation {
+                writeln!(f, "  mutation: {mutation}")?;
+            }
+
+            if let Some(subscription) = &self.subscription {
+                writeln!(f, "  subscription: {subscription}")?;
+            }
+
+            writeln!(f, "}}")
+        } else {
+            writeln!(f)
         }
-
-        if let Some(mutation) = &self.mutation {
-            writeln!(f, "  mutation: {mutation}")?;
-        }
-
-        if let Some(subscription) = &self.subscription {
-            writeln!(f, "  subscription: {subscription}")?;
-        }
-
-        writeln!(f, "}}")
     }
 }
 
@@ -174,5 +178,19 @@ mod tests {
             }
         "#}
         );
+    }
+
+    #[test]
+    fn it_encodes_extend_schema_with_directives_only() {
+        let mut schema_def = SchemaDefinition::new();
+        schema_def.directive(Directive::new("foo".to_string()));
+        schema_def.extend();
+
+        assert_eq!(
+            schema_def.to_string(),
+            indoc! { r#"
+            extend schema @foo
+        "#}
+        )
     }
 }

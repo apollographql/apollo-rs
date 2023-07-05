@@ -23,16 +23,17 @@
     * Validation is a work in progress, stay tuned for further validation rules implementation.
 
 ## Getting started
-Add this to your `Cargo.toml` to start using `apollo-compiler`:
+Add the dependency to start using `apollo-compiler`:
+```bash
+cargo add apollo-compiler
+```
+
+Or add this to your `Cargo.toml` for a manual installation:
+
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-compiler = "0.9.0"
-```
-
-Or using [cargo-edit]:
-```bash
-cargo add apollo-compiler
+apollo-compiler = "0.9.4"
 ```
 
 ## Rust versions
@@ -299,5 +300,4 @@ Licensed under either of
 
 at your option.
 
-[cargo-edit]: https://github.com/killercup/cargo-edit
 [`salsa`]: https://docs.rs/salsa/latest/salsa/

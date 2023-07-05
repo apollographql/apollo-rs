@@ -38,6 +38,7 @@
         ),
         data: UndefinedField {
             field: "__type",
+            ty: "MyMutationRootType",
         },
     },
 ]

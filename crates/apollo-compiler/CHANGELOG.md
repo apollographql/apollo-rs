@@ -16,6 +16,136 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 ## Documentation -->
+
+# [0.10.0](https://crates.io/crates/apollo-compiler/0.10.0) - 2023-06-20
+
+## BREAKING
+- `SelectionSet::merge` is renamed to `SelectionSet::concat` to clarify that it doesn't do field merging, by [goto-bus-stop] in [pull/570]
+- `hir::InlineFragment::type_condition` now only returns `Some()` if a type condition was explicitly specified, by [goto-bus-stop] in [pull/586]
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/570]: https://github.com/apollographql/apollo-rs/pull/570
+[pull/586]: https://github.com/apollographql/apollo-rs/pull/586
+
+## Features
+- add `root_operation_name(OperationType)` helper method on `hir::SchemaDefinition` by [SimonSapin] in [pull/579]
+- add an `UndefinedDirective` diagnostic type, by [goto-bus-stop] in [pull/587]
+
+  This is used for directives instead of `UndefinedDefinition`.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[SimonSapin]: https://github.com/SimonSapin
+[pull/579]: https://github.com/apollographql/apollo-rs/pull/579
+[pull/587]: https://github.com/apollographql/apollo-rs/pull/587
+
+## Fixes
+- accept objects as values for custom scalars, by [goto-bus-stop] in [pull/585]
+
+  The GraphQL spec is not entirely clear on this, but this is used in the real world with things
+  like the `_Any` type in Apollo Federation.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/585]: https://github.com/apollographql/apollo-rs/pull/585
+
+## Maintenance
+- update dependencies, by [goto-bus-stop] in [commit/daf918b]
+- add a test for validation with `set_type_system_hir()`, by [goto-bus-stop] in [pull/583]
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[commit/daf918b]: https://github.com/apollographql/apollo-rs/commit/daf918b62a19242bf1b8863dd598ac2912a7074e
+[pull/583]: https://github.com/apollographql/apollo-rs/pull/583
+
+# [0.9.4](https://crates.io/crates/apollo-compiler/0.9.4) - 2023-06-05
+
+## Features
+- accept any primitive value type for custom scalar validation, by [lrlna] in [pull/575]
+
+  If you provide a value to a custom scalar in your GraphQL source text, apollo-compiler
+  now accepts any value type. Previously it was not possible to write values for custom
+  scalars into a query or schema because the value you wrote would never match the custom
+  scalar type.
+
+  This now works:
+  ```graphql
+  scalar UserID @specifiedBy(url: "https://my-app.net/api-docs/users#id")
+  type Query {
+    username (id: UserID): String
+  }
+  ```
+  ```graphql
+  {
+    username(id: 575)
+  }
+  ```
+
+- add type name to the `UndefinedField` diagnostic data, by [goto-bus-stop] in [pull/577]
+
+  When querying a field that does not exist, the type name that's being queried is stored on
+  the diagnostic, so you can use it when handling the error.
+
+[lrlna]: https://github.com/lrlna
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/575]: https://github.com/apollographql/apollo-rs/pull/575
+[pull/577]: https://github.com/apollographql/apollo-rs/pull/577
+
+# [0.9.3](https://crates.io/crates/apollo-compiler/0.9.3) - 2023-05-26
+
+## Fixes
+- fix nullable / non-nullable validations inside lists, by [lrlna] in [pull/567]
+
+  Providing a variable of type `[Int!]!` to an argument of type `[Int]` is now allowed.
+
+[lrlna]: https://github.com/lrlna
+[pull/567]: https://github.com/apollographql/apollo-rs/pull/567
+
+## Maintenance
+- use official ariadne release, by [goto-bus-stop] in [pull/568]
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/568]: https://github.com/apollographql/apollo-rs/pull/568
+
+# [0.9.2](https://crates.io/crates/apollo-compiler/0.9.2) - 2023-05-23
+
+## Features
+- add `as_$type()` methods to `hir::Value`, by [goto-bus-stop] in [pull/564]
+
+  These methods simplify casting the `hir::Value` enum to single Rust types.
+  Added methods:
+
+  - `hir::Value::as_i32() -> Option<i32>`
+  - `hir::Value::as_f64() -> Option<f64>`
+  - `hir::Value::as_str() -> Option<&str>`
+  - `hir::Value::as_bool() -> Option<bool>`
+  - `hir::Value::as_list() -> Option<&Vec<Value>>`
+  - `hir::Value::as_object() -> Option<&Vec<(Name, Value)>>`
+  - `hir::Value::as_variable() -> Option<&Variable>`
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/564]: https://github.com/apollographql/apollo-rs/pull/564
+
+## Fixes
+-  non-nullable variables should be accepted for nullable args, by [lrlna] in [pull/565]
+
+   Fixes several `null`-related issues from 0.9.0.
+
+-  add an `UndefinedVariable` diagnostic, by [goto-bus-stop] in [pull/563]
+
+   Previously undefined variables were reported with an `UndefinedDefinition` diagnostic.
+   Splitting it up lets us provide a better error message for missing variables.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[lrlna]: https://github.com/lrlna
+[pull/563]: https://github.com/apollographql/apollo-rs/pull/563
+[pull/565]: https://github.com/apollographql/apollo-rs/pull/565
+
+# [0.9.1](https://crates.io/crates/apollo-compiler/0.9.1) - 2023-05-19
+
+## Fixes
+- Update the apollo-parser dependency version, by [goto-bus-stop] in [pull/559]
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/559]: https://github.com/apollographql/apollo-rs/pull/559
+
 # [0.9.0](https://crates.io/crates/apollo-compiler/0.9.0) - 2023-05-12
 
 This release completes GraphQL validation specification, making the compiler spec-compliant.
