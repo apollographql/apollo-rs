@@ -304,7 +304,7 @@ impl<'a> Cursor<'a> {
                             continue;
                         }
 
-                        if self.pending() {
+                        if self.is_pending() {
                             token.data = self.prev_str();
                         } else {
                             token.data = self.current_str();
@@ -544,7 +544,7 @@ impl<'a> Cursor<'a> {
                 ))
             }
             State::SpreadOperator => {
-                let data = if self.pending() {
+                let data = if self.is_pending() {
                     self.prev_str()
                 } else {
                     self.current_str()

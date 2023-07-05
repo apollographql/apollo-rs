@@ -27,11 +27,13 @@ impl<'a> Cursor<'a> {
 }
 
 impl<'a> Cursor<'a> {
+    /// Current place (index) in the cursor.
     pub(crate) fn index(&self) -> usize {
         self.index
     }
 
-    pub(crate) fn pending(&self) -> bool {
+    /// Return true if the current state is pending.
+    pub(crate) fn is_pending(&self) -> bool {
         self.pending.is_some()
     }
 
@@ -109,6 +111,7 @@ impl<'a> Cursor<'a> {
         self.err.clone()
     }
 
+    /// Drains the current pending characters.
     pub(crate) fn drain(&mut self) -> &'a str {
         self.pending = None;
         let start = self.index;
