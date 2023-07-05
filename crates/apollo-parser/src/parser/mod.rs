@@ -593,11 +593,11 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn token_limit() {
         let ast = Parser::new("type Query { a a a a a a a a a }")
             .token_limit(100)
             .parse();
-        assert_eq!(ast.token_limit().high, 25);
+        // token count includes EOF token.
+        assert_eq!(ast.token_limit().high, 26);
     }
 }
