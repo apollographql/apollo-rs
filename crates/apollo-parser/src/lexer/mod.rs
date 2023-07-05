@@ -34,6 +34,27 @@ pub struct Lexer<'a> {
     pub(crate) limit_tracker: LimitTracker,
 }
 
+#[derive(Debug)]
+enum State {
+    Start,
+    Done,
+    Ident,
+    StringLiteralEscapedUnicode(usize),
+    StringLiteral,
+    StringLiteralStart,
+    BlockStringLiteralEscapedUnicode(usize),
+    BlockStringLiteral,
+    BlockStringLiteralBackslash,
+    StringLiteralBackslash,
+    IntLiteral,
+    FloatLiteral,
+    ExponentLiteral,
+    Whitespace,
+    Comment,
+    SpreadOperator,
+    PlusMinus,
+}
+
 impl<'a> Lexer<'a> {
     /// Create a lexer for a GraphQL source text.
     ///
@@ -125,27 +146,6 @@ impl<'a> Iterator for Lexer<'a> {
 
 impl<'a> Cursor<'a> {
     fn advance(&mut self) -> Result<Token<'a>, Error> {
-        #[derive(Debug)]
-        enum State {
-            Start,
-            Done,
-            Ident,
-            StringLiteralEscapedUnicode(usize),
-            StringLiteral,
-            StringLiteralStart,
-            BlockStringLiteralEscapedUnicode(usize),
-            BlockStringLiteral,
-            BlockStringLiteralBackslash,
-            StringLiteralBackslash,
-            IntLiteral,
-            FloatLiteral,
-            ExponentLiteral,
-            Whitespace,
-            Comment,
-            SpreadOperator,
-            PlusMinus,
-        }
-
         let mut state = State::Start;
         let mut token = Token {
             kind: TokenKind::Eof,
