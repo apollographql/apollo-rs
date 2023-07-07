@@ -123,6 +123,11 @@ impl ApolloDiagnostic {
         self.labels.push(label);
         self
     }
+
+    pub fn get_line_column(&self) -> Option<(usize, usize)> {
+        self.cache
+            .get_line_column(self.location.file_id, self.location.offset)
+    }
 }
 
 impl fmt::Display for ApolloDiagnostic {

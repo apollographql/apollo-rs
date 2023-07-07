@@ -637,6 +637,7 @@ query {
             diagnostics[0].data.to_string(),
             "executable documents must not contain ObjectTypeDefinition"
         );
+        assert_eq!(diagnostics[0].get_line_column(), Some((1, 0)));
     }
 
     #[test]
@@ -741,6 +742,7 @@ type TestObject {
             diagnostics[0].data.to_string(),
             "cannot query field `nickname` on type `TestObject`"
         );
+        assert_eq!(diagnostics[0].get_line_column(), Some((4, 8)));
     }
 
     #[test]

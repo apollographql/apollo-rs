@@ -17,6 +17,15 @@ pub struct SourceCache {
     sources: HashMap<FileId, Arc<AriadneSource>>,
     paths: HashMap<FileId, PathBuf>,
 }
+
+impl SourceCache {
+    pub fn get_line_column(&self, id: FileId, index: usize) -> Option<(usize, usize)> {
+        let source = self.sources.get(&id)?;
+        let (_, line, column) = source.get_offset_line(index)?;
+        Some((line, column))
+    }
+}
+
 impl AriadneCache<FileId> for &SourceCache {
     fn fetch(&mut self, id: &FileId) -> Result<&AriadneSource, Box<dyn std::fmt::Debug>> {
         let source = self.sources.get(id);
@@ -31,12 +40,9 @@ impl AriadneCache<FileId> for &SourceCache {
         // Ref https://github.com/zesterer/ariadne/issues/10
         // Ariadne assumes the `id` is meaningful to users, but in apollo-rs it's
         // an incrementing integer, and file paths are stored separately.
-        self.paths
-            .get(id)
-            .and_then(|path| path.to_str())
-            .map(ToOwned::to_owned)
-            .map(Box::new)
-            .map(|bx| bx as Box<dyn std::fmt::Display + 'static>)
+        let path = self.paths.get(id)?;
+        let boxed = Box::new(path.to_str()?.to_string());
+        Some(boxed)
     }
 }
 
