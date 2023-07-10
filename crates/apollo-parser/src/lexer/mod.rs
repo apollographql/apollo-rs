@@ -113,7 +113,7 @@ impl<'a> Iterator for Lexer<'a> {
         }
 
         if self.input.is_empty() {
-            let mut eof = Token::new(TokenKind::Eof, "EOF");
+            let mut eof = Token::new(TokenKind::Eof, "");
             eof.index = self.index;
 
             self.finished = true;
@@ -149,7 +149,7 @@ impl<'a> Cursor<'a> {
         let mut state = State::Start;
         let mut token = Token {
             kind: TokenKind::Eof,
-            data: "EOF",
+            data: "",
             index: self.index(),
         };
 
@@ -653,5 +653,22 @@ type Query {
                 Error::limit("token limit reached, aborting lexing", 18),
             ],
         );
+    }
+
+    #[test]
+    fn stream_produces_original_input() {
+        let schema = r#"
+type Query {
+    name: String
+    format: String = "Y-m-d\\TH:i:sP"
+}
+        "#;
+
+        let lexer = Lexer::new(schema);
+        let processed_schema = lexer
+            .into_iter()
+            .fold(String::new(), |acc, token| acc + token.unwrap().data());
+
+        assert_eq!(schema, processed_schema);
     }
 }

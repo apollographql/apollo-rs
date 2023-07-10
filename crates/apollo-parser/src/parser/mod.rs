@@ -271,10 +271,11 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let message = format!("expected {kind:?}, got {data}");
         let err = if is_eof {
+            let message = format!("expected {kind:?}, got EOF");
             Error::eof(message, index)
         } else {
+            let message = format!("expected {kind:?}, got {data}");
             Error::with_loc(message, data, index)
         };
 
