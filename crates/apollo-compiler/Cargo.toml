@@ -30,7 +30,7 @@ uuid = { version = "1.1", features = ["serde", "v4", "js"] }
 
 [dev-dependencies]
 anyhow = "1.0"
-expect-test = "1.1"
+expect-test = "1.4"
 miette = "5.0"
 notify = "4.0.0"
 criterion = "0.5.0"
