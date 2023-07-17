@@ -21,7 +21,7 @@ rowan = "0.15.5"
 thiserror = "1.0.30"
 
 [dev-dependencies]
-indexmap = "1.9.2"
+indexmap = "2.0.0"
 miette = { version = "3.2.0", features = ["fancy"] }
 apollo-encoder = { path = "../apollo-encoder", version = "0.6.0", features = [
     "apollo-parser",
