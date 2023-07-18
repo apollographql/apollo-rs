@@ -8,10 +8,7 @@ use std::{
 
 use anyhow::{anyhow, Result};
 use apollo_compiler::{ApolloCompiler, FileId};
-use notify_debouncer_full::{
-    new_debouncer,
-    notify::{EventKind, RecursiveMode, Watcher},
-};
+use notify::{Config, EventKind, PollWatcher, RecursiveMode, Watcher};
 
 fn main() -> Result<()> {
     let dir = Path::new("crates/apollo-compiler/examples/documents");
@@ -52,51 +49,31 @@ impl FileWatcher {
 
     fn watch_broadcast(&mut self, dir: &Path) -> Result<()> {
         let (broadcaster, listener) = channel();
-        let mut watcher = new_debouncer(Duration::from_secs(1), None, move |res| match res {
-            Ok(events) => {
-                for event in events {
-                    broadcaster.send(Ok(event)).unwrap();
-                }
-            }
-            Err(errors) => {
-                for error in errors {
-                    broadcaster.send(Err(error)).unwrap();
-                }
-            }
-        })?;
-        watcher.watcher().watch(&dir, RecursiveMode::NonRecursive)?;
+        let mut watcher = PollWatcher::new(
+            move |res| {
+                broadcaster.send(res).unwrap();
+            },
+            Config::default().with_poll_interval(Duration::from_secs(1)),
+        )?;
+        watcher.watch(&dir, RecursiveMode::NonRecursive)?;
         println!("watching {} for changes", dir.display());
         loop {
             match listener.recv() {
                 Ok(Ok(event)) => {
                     for path in event.paths {
+                        if path.is_dir() {
+                            continue;
+                        }
+
                         match event.kind {
                             EventKind::Any => {
                                 println!("changes detected in {}", path.display())
                             }
-                            EventKind::Create(_) => match fs::read_to_string(&path) {
-                                Ok(contents) => {
-                                    println!("detected a new file {}", path.display());
-                                    let file_id = self.manifest.get(&path);
-                                    if let Some(file_id) = file_id {
-                                        self.compiler.update_document(*file_id, &contents);
-                                    } else {
-                                        self.add_document(contents, path)?;
-                                    }
-                                    self.validate();
-                                }
-                                Err(e) => {
-                                    println!(
-                                        "could not read {} from disk, {:?}",
-                                        dir.display(),
-                                        Some(anyhow!("{}", e)),
-                                    );
-                                }
-                            },
-                            EventKind::Modify(_) => {
+                            EventKind::Create(_) | EventKind::Modify(_) => {
                                 match fs::read_to_string(&path) {
                                     Ok(contents) => {
-                                        let file_id = self.manifest.get(&path);
+                                        println!("changes detected in {}", path.display());
+                                        let file_id = self.manifest.get(&fs::canonicalize(&path)?);
                                         if let Some(file_id) = file_id {
                                             self.compiler.update_document(*file_id, &contents);
                                         } else {
@@ -111,7 +88,7 @@ impl FileWatcher {
                                             Some(anyhow!("{}", e)),
                                         );
                                     }
-                                };
+                                }
                             }
                             _ => {}
                         }
@@ -141,7 +118,7 @@ impl FileWatcher {
         src_path: PathBuf,
     ) -> Result<(), anyhow::Error> {
         let file_id = self.compiler.add_document(&proposed_document, &src_path);
-        let full_path = fs::canonicalize(src_path)?;
+        let full_path = fs::canonicalize(&src_path)?;
         self.manifest.insert(full_path, file_id);
         Ok(())
     }
