@@ -270,7 +270,7 @@ impl TryFrom<&'_ ast::BooleanValue> for bool {
     }
 }
 
-fn text_of_first_token(node: &SyntaxNode) -> TokenText {
+pub(crate) fn text_of_first_token(node: &SyntaxNode) -> TokenText {
     let first_token = node
         .green()
         .children()

@@ -5,10 +5,13 @@ mod lexer;
 mod tests;
 
 pub mod ast;
+mod bowstring;
 mod error;
 mod limit;
+pub mod mir;
 mod parser;
 
+pub use crate::bowstring::BowString;
 pub use crate::lexer::Lexer;
 pub use crate::lexer::{Token, TokenKind};
 pub(crate) use crate::parser::{

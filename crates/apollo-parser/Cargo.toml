@@ -19,6 +19,7 @@ edition = "2021"
 [dependencies]
 rowan = "0.15.5"
 thiserror = "1.0.30"
+triomphe = "0.1.9"
 
 [dev-dependencies]
 indexmap = "2.0.0"

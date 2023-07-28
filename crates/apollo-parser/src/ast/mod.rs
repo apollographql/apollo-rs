@@ -113,6 +113,8 @@ pub use crate::{parser::SyntaxNodePtr, SyntaxNode};
 
 pub use generated::nodes::*;
 
+pub(crate) use node_ext::text_of_first_token;
+
 /// The main trait to go from untyped `SyntaxNode`  to a typed ast. The
 /// conversion itself has zero runtime cost: ast and syntax nodes have exactly
 /// the same representation: a pointer to the tree root and a pointer to the

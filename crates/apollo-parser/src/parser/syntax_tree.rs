@@ -76,6 +76,11 @@ impl SyntaxTree {
             syntax: self.syntax_node(),
         }
     }
+
+    /// Convert the AST to MIR
+    pub fn into_mir(self) -> crate::mir::Document {
+        self.document().into()
+    }
 }
 
 impl fmt::Debug for SyntaxTree {
