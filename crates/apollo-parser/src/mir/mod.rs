@@ -8,6 +8,7 @@ use crate::bowstring::BowString;
 use triomphe::Arc;
 
 mod from_ast;
+mod impls;
 
 // TODO: is it worth having `ExecutableDocument` and `TypeSystemDocument` Rust structs
 // with Rust enums that can only represent the corresponding definitions?
@@ -210,33 +211,6 @@ pub enum DirectiveLocation {
     InputFieldDefinition,
 }
 
-impl DirectiveLocation {
-    /// Get the name of this directive location as it would appear in GraphQL source code.
-    pub fn name(self) -> &'static str {
-        match self {
-            DirectiveLocation::Query => "QUERY",
-            DirectiveLocation::Mutation => "MUTATION",
-            DirectiveLocation::Subscription => "SUBSCRIPTION",
-            DirectiveLocation::Field => "FIELD",
-            DirectiveLocation::FragmentDefinition => "FRAGMENT_DEFINITION",
-            DirectiveLocation::FragmentSpread => "FRAGMENT_SPREAD",
-            DirectiveLocation::InlineFragment => "INLINE_FRAGMENT",
-            DirectiveLocation::VariableDefinition => "VARIABLE_DEFINITION",
-            DirectiveLocation::Schema => "SCHEMA",
-            DirectiveLocation::Scalar => "SCALAR",
-            DirectiveLocation::Object => "OBJECT",
-            DirectiveLocation::FieldDefinition => "FIELD_DEFINITION",
-            DirectiveLocation::ArgumentDefinition => "ARGUMENT_DEFINITION",
-            DirectiveLocation::Interface => "INTERFACE",
-            DirectiveLocation::Union => "UNION",
-            DirectiveLocation::Enum => "ENUM",
-            DirectiveLocation::EnumValue => "ENUM_VALUE",
-            DirectiveLocation::InputObject => "INPUT_OBJECT",
-            DirectiveLocation::InputFieldDefinition => "INPUT_FIELD_DEFINITION",
-        }
-    }
-}
-
 impl std::fmt::Display for DirectiveLocation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.name().fmt(f)
@@ -319,22 +293,22 @@ pub struct InlineFragment {
 
 #[derive(Clone, Debug)]
 pub enum Value {
-    NullValue,
-    EnumValue(Name),
+    Null,
+    Enum(Name),
     Variable(Name),
-    StringValue(
+    String(
         /// The value after escape sequences are resolved
         String,
     ),
-    FloatValue(f64),
-    IntValue(i32),
+    Float(f64),
+    Int(i32),
     /// Integer syntax (without a decimal point) but overflows `i32`.
     /// Valid in contexts where the expected GraphQL type is Float.
     BigInt(
         /// Must only contain ASCII decimal digits
         String,
     ),
-    BooleanValue(bool),
-    ListValue(Vec<Arc<Value>>), // TODO: is structural sharing useful here?
-    ObjectValue(Vec<(Name, Arc<Value>)>), // TODO: is structural sharing useful here?
+    Boolean(bool),
+    List(Vec<Arc<Value>>),           // TODO: is structural sharing useful here?
+    Object(Vec<(Name, Arc<Value>)>), // TODO: is structural sharing useful here?
 }

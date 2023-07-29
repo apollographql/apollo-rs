@@ -48,7 +48,7 @@ fn filter_document(document: &mut mir::Document) {
 fn filter_selection_set(selection_set: &mut Vec<Arc<mir::Selection>>) {
     selection_set.retain_mut(|selection| match Arc::make_mut(selection) {
         mir::Selection::Field(field) => {
-            let retain = !field.directives.iter().any(|dir| dir.name == "remove");
+            let retain = field.directive_by_name("remove").is_none();
             if retain {
                 filter_selection_set(&mut field.selection_set);
             }

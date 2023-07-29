@@ -600,24 +600,22 @@ impl Convert for ast::Value {
 
         Some(match self {
             A::Variable(v) => M::Variable(v.name()?.into()),
-            A::StringValue(v) => M::StringValue(String::from(v)),
-            A::FloatValue(v) => M::FloatValue(f64::try_from(v).ok()?),
+            A::StringValue(v) => M::String(String::from(v)),
+            A::FloatValue(v) => M::Float(f64::try_from(v).ok()?),
             A::IntValue(v) => {
                 if let Ok(i) = i32::try_from(v) {
-                    M::IntValue(i)
+                    M::Int(i)
                 } else {
                     let text = ast::text_of_first_token(v.syntax()).as_str().to_owned();
                     debug_assert!(text.chars().all(|c| c.is_ascii_digit()));
                     M::BigInt(text)
                 }
             }
-            A::BooleanValue(v) => M::BooleanValue(bool::try_from(v).ok()?),
-            A::NullValue(_) => M::NullValue,
-            A::EnumValue(v) => M::EnumValue(v.name()?.into()),
-            A::ListValue(v) => M::ListValue(collect(v.values())),
-            A::ObjectValue(v) => {
-                M::ObjectValue(v.object_fields().filter_map(|x| x.convert()).collect())
-            }
+            A::BooleanValue(v) => M::Boolean(bool::try_from(v).ok()?),
+            A::NullValue(_) => M::Null,
+            A::EnumValue(v) => M::Enum(v.name()?.into()),
+            A::ListValue(v) => M::List(collect(v.values())),
+            A::ObjectValue(v) => M::Object(v.object_fields().filter_map(|x| x.convert()).collect()),
         })
     }
 }
