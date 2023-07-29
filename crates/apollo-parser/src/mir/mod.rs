@@ -1,8 +1,19 @@
-//! # Middle-level Intermediate Representation
+//! # Middle-level Intermediate Representation (MIR)
 //!
 //! A data structure for documents matching the GraphQL grammar.
 //! Serializing it should produce a string that can be re-parsed losslessly
 //! and without syntax errors. (Although it may have validation errors.)
+//!
+//! The top-level type is [`Document`].
+//!
+//! ## Ownership and mutability
+//!
+//! MIR types are thread-safe: they implement [`Send`] and [`Sync`].
+//!
+//! [`triomphe::Arc`] is used for shared ownership.
+//! To modify a value behind `Arc`, use [`Arc::make_mut`] to get a mutable reference.
+//! This will clone the value if there were other `Arc`s pointing to it,
+//! leaving them unmodified (copy-on-write semantics).
 
 use crate::bowstring::BowString;
 use triomphe::Arc;
@@ -16,6 +27,13 @@ mod impls;
 pub struct Document {
     pub definitions: Vec<Arc<Definition>>,
 }
+
+const _: () = {
+    const fn assert_send<T: Send>() {}
+    const fn assert_sync<T: Sync>() {}
+    assert_send::<Document>();
+    assert_sync::<Document>();
+};
 
 /// An identifier
 pub type Name = BowString;
@@ -225,10 +243,10 @@ pub struct VariableDefinition {
     pub directives: Vec<Arc<Directive>>,
 }
 
-/// TODO: is it worth making memory-compact representation?
-/// Could be a `NamedType` with a https://crates.io/crates/smallbitvec
-/// whose length is the list nesting depth + 1,
-/// and whose bits represents whether each nested level is non-null.
+// TODO: is it worth making memory-compact representation?
+// Could be a `NamedType` with a https://crates.io/crates/smallbitvec
+// whose length is the list nesting depth + 1,
+// and whose bits represents whether each nested level is non-null.
 #[derive(Clone, Debug)]
 pub enum Type {
     Named(NamedType),
