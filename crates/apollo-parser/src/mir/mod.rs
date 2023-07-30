@@ -74,7 +74,7 @@ pub struct OperationDefinition {
 #[derive(Clone, Debug)]
 pub struct FragmentDefinition {
     pub name: Name,
-    pub type_condition: Option<NamedType>,
+    pub type_condition: NamedType,
     pub directives: Vec<Arc<Directive>>,
     pub selection_set: Vec<Arc<Selection>>,
 }

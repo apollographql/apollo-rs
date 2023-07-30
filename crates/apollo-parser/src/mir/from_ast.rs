@@ -112,7 +112,7 @@ impl Convert for ast::FragmentDefinition {
     fn convert(&self) -> Option<Self::Target> {
         Some(Self::Target {
             name: self.fragment_name()?.name()?.into(),
-            type_condition: self.type_condition().convert()?,
+            type_condition: self.type_condition()?.convert()?,
             directives: collect_opt(self.directives(), |x| x.directives()),
             selection_set: collect_opt(self.selection_set(), |x| x.selections()),
         })
