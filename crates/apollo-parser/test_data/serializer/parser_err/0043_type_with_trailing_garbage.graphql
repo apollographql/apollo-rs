@@ -1,0 +1,6 @@
+type Person {
+  id: ID!
+  appearedIn: [Film]
+  name: String
+  directed: [Film]
+}

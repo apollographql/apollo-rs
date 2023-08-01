@@ -1,0 +1,5 @@
+directive @delegateField(name: String!) repeatable on OBJECT | INTERFACE
+
+type Book @delegateField {
+  id: ID!
+}

@@ -67,7 +67,7 @@ pub use self::serialize::Serialize;
 
 // TODO: is it worth having `ExecutableDocument` and `TypeSystemDocument` Rust structs
 // with Rust enums that can only represent the corresponding definitions?
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Document {
     pub definitions: Vec<Arc<Definition>>,
 }
@@ -85,7 +85,7 @@ pub type Name = BowString;
 /// Refers to the name of a GraphQL type defined elsewhere
 pub type NamedType = Name;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Definition {
     OperationDefinition(OperationDefinition),
     FragmentDefinition(FragmentDefinition),
@@ -106,7 +106,7 @@ pub enum Definition {
     InputObjectTypeExtension(InputObjectTypeExtension),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct OperationDefinition {
     pub operation_type: OperationType,
     pub name: Option<Name>,
@@ -115,7 +115,7 @@ pub struct OperationDefinition {
     pub selection_set: Vec<Arc<Selection>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FragmentDefinition {
     pub name: Name,
     pub type_condition: NamedType,
@@ -123,7 +123,7 @@ pub struct FragmentDefinition {
     pub selection_set: Vec<Arc<Selection>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct DirectiveDefinition {
     pub description: Option<BowString>,
     pub name: Name,
@@ -132,21 +132,21 @@ pub struct DirectiveDefinition {
     pub locations: Vec<DirectiveLocation>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct SchemaDefinition {
     pub description: Option<BowString>,
     pub directives: Vec<Arc<Directive>>,
     pub root_operations: Vec<(OperationType, NamedType)>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ScalarTypeDefinition {
     pub description: Option<BowString>,
     pub name: Name,
     pub directives: Vec<Arc<Directive>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ObjectTypeDefinition {
     pub description: Option<BowString>,
     pub name: Name,
@@ -155,7 +155,7 @@ pub struct ObjectTypeDefinition {
     pub fields: Vec<Arc<FieldDefinition>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct InterfaceTypeDefinition {
     pub description: Option<BowString>,
     pub name: Name,
@@ -164,7 +164,7 @@ pub struct InterfaceTypeDefinition {
     pub fields: Vec<Arc<FieldDefinition>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct UnionTypeDefinition {
     pub description: Option<BowString>,
     pub name: Name,
@@ -172,7 +172,7 @@ pub struct UnionTypeDefinition {
     pub members: Vec<NamedType>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct EnumTypeDefinition {
     pub description: Option<BowString>,
     pub name: Name,
@@ -180,7 +180,7 @@ pub struct EnumTypeDefinition {
     pub values: Vec<Arc<EnumValueDefinition>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct InputObjectTypeDefinition {
     pub description: Option<BowString>,
     pub name: Name,
@@ -188,19 +188,19 @@ pub struct InputObjectTypeDefinition {
     pub fields: Vec<Arc<InputValueDefinition>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct SchemaExtension {
     pub directives: Vec<Arc<Directive>>,
     pub root_operations: Vec<(OperationType, NamedType)>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ScalarTypeExtension {
     pub name: Name,
     pub directives: Vec<Arc<Directive>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ObjectTypeExtension {
     pub name: Name,
     pub implements_interfaces: Vec<Name>,
@@ -208,7 +208,7 @@ pub struct ObjectTypeExtension {
     pub fields: Vec<Arc<FieldDefinition>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct InterfaceTypeExtension {
     pub name: Name,
     pub implements_interfaces: Vec<Name>,
@@ -216,28 +216,28 @@ pub struct InterfaceTypeExtension {
     pub fields: Vec<Arc<FieldDefinition>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct UnionTypeExtension {
     pub name: Name,
     pub directives: Vec<Arc<Directive>>,
     pub members: Vec<NamedType>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct EnumTypeExtension {
     pub name: Name,
     pub directives: Vec<Arc<Directive>>,
     pub values: Vec<Arc<EnumValueDefinition>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct InputObjectTypeExtension {
     pub name: Name,
     pub directives: Vec<Arc<Directive>>,
     pub fields: Vec<Arc<InputValueDefinition>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Directive {
     pub name: Name,
     pub arguments: Vec<(Name, Value)>,
@@ -273,7 +273,7 @@ pub enum DirectiveLocation {
     InputFieldDefinition,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct VariableDefinition {
     pub name: Name,
     pub ty: Type,
@@ -285,7 +285,7 @@ pub struct VariableDefinition {
 // Could be a `NamedType` with a https://crates.io/crates/smallbitvec
 // whose length is the list nesting depth + 1,
 // and whose bits represents whether each nested level is non-null.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Type {
     Named(NamedType),
     NonNullNamed(NamedType),
@@ -293,7 +293,7 @@ pub enum Type {
     NonNullList(Box<Type>),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FieldDefinition {
     pub description: Option<BowString>,
     pub name: Name,
@@ -302,7 +302,7 @@ pub struct FieldDefinition {
     pub directives: Vec<Arc<Directive>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct InputValueDefinition {
     pub description: Option<BowString>,
     pub name: Name,
@@ -311,21 +311,21 @@ pub struct InputValueDefinition {
     pub directives: Vec<Arc<Directive>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct EnumValueDefinition {
     pub description: Option<BowString>,
     pub value: Name,
     pub directives: Vec<Arc<Directive>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Selection {
     Field(Field),
     FragmentSpread(FragmentSpread),
     InlineFragment(InlineFragment),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Field {
     pub alias: Option<Name>,
     pub name: Name,
@@ -334,20 +334,20 @@ pub struct Field {
     pub selection_set: Vec<Arc<Selection>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FragmentSpread {
     pub fragment_name: Name,
     pub directives: Vec<Arc<Directive>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct InlineFragment {
     pub type_condition: Option<NamedType>,
     pub directives: Vec<Arc<Directive>>,
     pub selection_set: Vec<Arc<Selection>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     Null,
     Enum(Name),

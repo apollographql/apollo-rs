@@ -87,6 +87,33 @@ fn dump_tokens_and_errors(tokens: &[Token], errors: &[Error]) -> String {
     acc
 }
 
+#[test]
+fn serializer_tests() {
+    let test_data_dir = test_data_dir();
+    for subdir in ["ok", "err"] {
+        let input_dir = format!("parser/{subdir}");
+        let output_dir = test_data_dir
+            .join("serializer")
+            .join(format!("parser_{subdir}"));
+        let collected = collect_graphql_files(&test_data_dir, &[&input_dir]);
+        for (input_path, input) in collected {
+            let output_path = output_dir.join(input_path.file_name().unwrap());
+            let mir = Parser::new(&input).parse().into_mir();
+            let serialized = mir.to_string();
+            expect_file![output_path].assert_eq(&serialized);
+            let mir2 = Parser::new(&serialized).parse().into_mir();
+            if mir != mir2 {
+                panic!(
+                    "\
+                    Serialization does not round-trip:\n\
+                    {input}\n=>\n{mir:#?}\n=>\n{serialized}\n=>\n{mir2:#?}\n=>\n{mir2}\n\
+                "
+                );
+            }
+        }
+    }
+}
+
 /// Compares input code taken from a `.graphql` file in test_fixtures and its
 /// expected output in the corresponding `.txt` file.
 ///

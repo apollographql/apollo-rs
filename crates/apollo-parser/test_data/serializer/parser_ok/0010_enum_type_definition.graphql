@@ -1,0 +1,7 @@
+enum Direction @example {
+  "\n    description\n    "
+  NORTH
+  EAST
+  SOUTH
+  WEST
+}

@@ -1,0 +1,4 @@
+# Support files for `serializer_tests` in `../../src/tests.rs`
+
+`./parser_*/*.graphql` files are the expected outputs of
+parsing and re-serializing corresponding input files in `../parser/*/*.graphql`.

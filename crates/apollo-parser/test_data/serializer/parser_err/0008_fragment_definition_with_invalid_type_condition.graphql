@@ -1,0 +1,3 @@
+fragment friendFields on User @example {
+  id
+}

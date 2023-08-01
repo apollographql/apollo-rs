@@ -1,0 +1,8 @@
+{
+  pet
+  faveSnack
+}
+
+type Query {
+  name: String
+}
