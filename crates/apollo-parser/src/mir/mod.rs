@@ -14,12 +14,56 @@
 //! To modify a value behind `Arc`, use [`Arc::make_mut`] to get a mutable reference.
 //! This will clone the value if there were other `Arc`s pointing to it,
 //! leaving them unmodified (copy-on-write semantics).
+//!
+//! ## Parsing
+//!
+//! After parsing a string input with [`Parser`],
+//! MIR types can be converted from corresponding [AST types][crate::ast]
+//! with either [`TryFrom`] or (for [`Document`]) [`From`].
+//! When a syntax error causes a component not to be representable in MIR,
+//! that component is silently skipped.
+//! Where that is not possible, [`TryFrom`] returns an error.
+//! Callers are expected to check [`SyntaxTree::errors`] for syntax errors.
+//!
+//! ## Serialization
+//!
+//! MIR types implement the [`Display`] and [`ToString`] traits,
+//! serializing to GraphQL syntax with the default configuration (two space indentation).
+//! Their `serialize` method returns a builder whose methods set configuration.
+//! The builder similarly implements [`Display`] and [`ToString`].
+//!
+//! ## Example
+//!
+//! ```rust
+//! use apollo_parser::Parser;
+//!
+//! let input = "{
+//!     spline {
+//!         reticulation
+//!     }
+//! }";
+//! let parser = Parser::new(input);
+//! let ast = parser.parse();
+//! assert_eq!(0, ast.errors().len());
+//! let mir = ast.into_mir();
+//! assert_eq!(mir.serialize().no_indent().to_string(), "query { spline { reticulation } }");
+//! ```
+
+#[cfg(doc)]
+use crate::Parser;
+#[cfg(doc)]
+use crate::SyntaxTree;
+#[cfg(doc)]
+use std::fmt::Display;
 
 use crate::bowstring::BowString;
 use triomphe::Arc;
 
 mod from_ast;
 mod impls;
+mod serialize;
+
+pub use self::serialize::Serialize;
 
 // TODO: is it worth having `ExecutableDocument` and `TypeSystemDocument` Rust structs
 // with Rust enums that can only represent the corresponding definitions?
@@ -227,12 +271,6 @@ pub enum DirectiveLocation {
     EnumValue,
     InputObject,
     InputFieldDefinition,
-}
-
-impl std::fmt::Display for DirectiveLocation {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.name().fmt(f)
-    }
 }
 
 #[derive(Clone, Debug)]
