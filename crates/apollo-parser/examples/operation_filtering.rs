@@ -1,6 +1,6 @@
 use apollo_parser::mir;
+use apollo_parser::mir::Arc;
 use apollo_parser::Parser;
-use triomphe::Arc;
 
 fn main() {
     let input = r#"

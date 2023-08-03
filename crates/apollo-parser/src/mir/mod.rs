@@ -57,7 +57,7 @@ use crate::SyntaxTree;
 use std::fmt::Display;
 
 use crate::bowstring::BowString;
-use triomphe::Arc;
+pub use triomphe::Arc;
 
 mod from_ast;
 mod impls;
