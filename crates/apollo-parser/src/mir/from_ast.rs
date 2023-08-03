@@ -7,7 +7,10 @@ use triomphe::Arc;
 impl From<ast::Document> for mir::Document {
     fn from(value: ast::Document) -> Self {
         Self {
-            definitions: collect(value.definitions()),
+            definitions: value
+                .definitions()
+                .filter_map(|def| def.convert())
+                .collect(),
         }
     }
 }
@@ -26,7 +29,8 @@ where
     AstType: Convert<Target = MirType>,
 {
     iter.into_iter()
-        .filter_map(|value| Some(Arc::new(value.convert()?)))
+        .filter_map(|value| value.convert())
+        .map(Arc::new)
         .collect()
 }
 
@@ -65,24 +69,27 @@ impl Convert for ast::Definition {
     fn convert(&self) -> Option<Self::Target> {
         use ast::Definition as A;
         use mir::Definition as M;
+        fn arc<T>(x: T) -> Arc<T> {
+            Arc::new(x)
+        }
         Some(match self {
-            A::OperationDefinition(def) => M::OperationDefinition(def.convert()?),
-            A::FragmentDefinition(def) => M::FragmentDefinition(def.convert()?),
-            A::DirectiveDefinition(def) => M::DirectiveDefinition(def.convert()?),
-            A::SchemaDefinition(def) => M::SchemaDefinition(def.convert()?),
-            A::ScalarTypeDefinition(def) => M::ScalarTypeDefinition(def.convert()?),
-            A::ObjectTypeDefinition(def) => M::ObjectTypeDefinition(def.convert()?),
-            A::InterfaceTypeDefinition(def) => M::InterfaceTypeDefinition(def.convert()?),
-            A::UnionTypeDefinition(def) => M::UnionTypeDefinition(def.convert()?),
-            A::EnumTypeDefinition(def) => M::EnumTypeDefinition(def.convert()?),
-            A::InputObjectTypeDefinition(def) => M::InputObjectTypeDefinition(def.convert()?),
-            A::SchemaExtension(def) => M::SchemaExtension(def.convert()?),
-            A::ScalarTypeExtension(def) => M::ScalarTypeExtension(def.convert()?),
-            A::ObjectTypeExtension(def) => M::ObjectTypeExtension(def.convert()?),
-            A::InterfaceTypeExtension(def) => M::InterfaceTypeExtension(def.convert()?),
-            A::UnionTypeExtension(def) => M::UnionTypeExtension(def.convert()?),
-            A::EnumTypeExtension(def) => M::EnumTypeExtension(def.convert()?),
-            A::InputObjectTypeExtension(def) => M::InputObjectTypeExtension(def.convert()?),
+            A::OperationDefinition(def) => M::OperationDefinition(arc(def.convert()?)),
+            A::FragmentDefinition(def) => M::FragmentDefinition(arc(def.convert()?)),
+            A::DirectiveDefinition(def) => M::DirectiveDefinition(arc(def.convert()?)),
+            A::SchemaDefinition(def) => M::SchemaDefinition(arc(def.convert()?)),
+            A::ScalarTypeDefinition(def) => M::ScalarTypeDefinition(arc(def.convert()?)),
+            A::ObjectTypeDefinition(def) => M::ObjectTypeDefinition(arc(def.convert()?)),
+            A::InterfaceTypeDefinition(def) => M::InterfaceTypeDefinition(arc(def.convert()?)),
+            A::UnionTypeDefinition(def) => M::UnionTypeDefinition(arc(def.convert()?)),
+            A::EnumTypeDefinition(def) => M::EnumTypeDefinition(arc(def.convert()?)),
+            A::InputObjectTypeDefinition(def) => M::InputObjectTypeDefinition(arc(def.convert()?)),
+            A::SchemaExtension(def) => M::SchemaExtension(arc(def.convert()?)),
+            A::ScalarTypeExtension(def) => M::ScalarTypeExtension(arc(def.convert()?)),
+            A::ObjectTypeExtension(def) => M::ObjectTypeExtension(arc(def.convert()?)),
+            A::InterfaceTypeExtension(def) => M::InterfaceTypeExtension(arc(def.convert()?)),
+            A::UnionTypeExtension(def) => M::UnionTypeExtension(arc(def.convert()?)),
+            A::EnumTypeExtension(def) => M::EnumTypeExtension(arc(def.convert()?)),
+            A::InputObjectTypeExtension(def) => M::InputObjectTypeExtension(arc(def.convert()?)),
         })
     }
 }
@@ -101,7 +108,11 @@ impl Convert for ast::OperationDefinition {
             name: self.name().map(From::from),
             variables: collect_opt(self.variable_definitions(), |x| x.variable_definitions()),
             directives: collect_opt(self.directives(), |x| x.directives()),
-            selection_set: collect(self.selection_set()?.selections()),
+            selection_set: self
+                .selection_set()?
+                .selections()
+                .filter_map(|sel| sel.convert())
+                .collect(),
         })
     }
 }
@@ -114,7 +125,7 @@ impl Convert for ast::FragmentDefinition {
             name: self.fragment_name()?.name()?.into(),
             type_condition: self.type_condition()?.convert()?,
             directives: collect_opt(self.directives(), |x| x.directives()),
-            selection_set: collect_opt(self.selection_set(), |x| x.selections()),
+            selection_set: self.selection_set().convert()??,
         })
     }
 }
@@ -536,6 +547,18 @@ impl Convert for ast::EnumValueDefinition {
     }
 }
 
+impl Convert for ast::SelectionSet {
+    type Target = Vec<mir::Selection>;
+
+    fn convert(&self) -> Option<Self::Target> {
+        Some(
+            self.selections()
+                .filter_map(|selection| selection.convert())
+                .collect(),
+        )
+    }
+}
+
 impl Convert for ast::Selection {
     type Target = mir::Selection;
 
@@ -544,9 +567,9 @@ impl Convert for ast::Selection {
         use mir::Selection as M;
 
         Some(match self {
-            A::Field(x) => M::Field(x.convert()?),
-            A::FragmentSpread(x) => M::FragmentSpread(x.convert()?),
-            A::InlineFragment(x) => M::InlineFragment(x.convert()?),
+            A::Field(x) => M::Field(Arc::new(x.convert()?)),
+            A::FragmentSpread(x) => M::FragmentSpread(Arc::new(x.convert()?)),
+            A::InlineFragment(x) => M::InlineFragment(Arc::new(x.convert()?)),
         })
     }
 }
@@ -563,7 +586,8 @@ impl Convert for ast::Field {
                 .map(|x| x.arguments().filter_map(|arg| arg.convert()).collect())
                 .unwrap_or_default(),
             directives: collect_opt(self.directives(), |x| x.directives()),
-            selection_set: collect_opt(self.selection_set(), |x| x.selections()),
+            // Use an empty Vec for a field without sub-selections
+            selection_set: self.selection_set().convert()?.unwrap_or_default(),
         })
     }
 }
@@ -586,7 +610,7 @@ impl Convert for ast::InlineFragment {
         Some(Self::Target {
             type_condition: self.type_condition().convert()?,
             directives: collect_opt(self.directives(), |x| x.directives()),
-            selection_set: collect_opt(self.selection_set(), |x| x.selections()),
+            selection_set: self.selection_set().convert()??,
         })
     }
 }

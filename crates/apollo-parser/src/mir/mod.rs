@@ -69,7 +69,7 @@ pub use self::serialize::Serialize;
 // with Rust enums that can only represent the corresponding definitions?
 #[derive(Clone, Debug, PartialEq)]
 pub struct Document {
-    pub definitions: Vec<Arc<Definition>>,
+    pub definitions: Vec<Definition>,
 }
 
 const _: () = {
@@ -87,23 +87,23 @@ pub type NamedType = Name;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Definition {
-    OperationDefinition(OperationDefinition),
-    FragmentDefinition(FragmentDefinition),
-    DirectiveDefinition(DirectiveDefinition),
-    SchemaDefinition(SchemaDefinition),
-    ScalarTypeDefinition(ScalarTypeDefinition),
-    ObjectTypeDefinition(ObjectTypeDefinition),
-    InterfaceTypeDefinition(InterfaceTypeDefinition),
-    UnionTypeDefinition(UnionTypeDefinition),
-    EnumTypeDefinition(EnumTypeDefinition),
-    InputObjectTypeDefinition(InputObjectTypeDefinition),
-    SchemaExtension(SchemaExtension),
-    ScalarTypeExtension(ScalarTypeExtension),
-    ObjectTypeExtension(ObjectTypeExtension),
-    InterfaceTypeExtension(InterfaceTypeExtension),
-    UnionTypeExtension(UnionTypeExtension),
-    EnumTypeExtension(EnumTypeExtension),
-    InputObjectTypeExtension(InputObjectTypeExtension),
+    OperationDefinition(Arc<OperationDefinition>),
+    FragmentDefinition(Arc<FragmentDefinition>),
+    DirectiveDefinition(Arc<DirectiveDefinition>),
+    SchemaDefinition(Arc<SchemaDefinition>),
+    ScalarTypeDefinition(Arc<ScalarTypeDefinition>),
+    ObjectTypeDefinition(Arc<ObjectTypeDefinition>),
+    InterfaceTypeDefinition(Arc<InterfaceTypeDefinition>),
+    UnionTypeDefinition(Arc<UnionTypeDefinition>),
+    EnumTypeDefinition(Arc<EnumTypeDefinition>),
+    InputObjectTypeDefinition(Arc<InputObjectTypeDefinition>),
+    SchemaExtension(Arc<SchemaExtension>),
+    ScalarTypeExtension(Arc<ScalarTypeExtension>),
+    ObjectTypeExtension(Arc<ObjectTypeExtension>),
+    InterfaceTypeExtension(Arc<InterfaceTypeExtension>),
+    UnionTypeExtension(Arc<UnionTypeExtension>),
+    EnumTypeExtension(Arc<EnumTypeExtension>),
+    InputObjectTypeExtension(Arc<InputObjectTypeExtension>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -112,7 +112,7 @@ pub struct OperationDefinition {
     pub name: Option<Name>,
     pub variables: Vec<Arc<VariableDefinition>>,
     pub directives: Vec<Arc<Directive>>,
-    pub selection_set: Vec<Arc<Selection>>,
+    pub selection_set: Vec<Selection>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -120,7 +120,7 @@ pub struct FragmentDefinition {
     pub name: Name,
     pub type_condition: NamedType,
     pub directives: Vec<Arc<Directive>>,
-    pub selection_set: Vec<Arc<Selection>>,
+    pub selection_set: Vec<Selection>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -320,9 +320,9 @@ pub struct EnumValueDefinition {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Selection {
-    Field(Field),
-    FragmentSpread(FragmentSpread),
-    InlineFragment(InlineFragment),
+    Field(Arc<Field>),
+    FragmentSpread(Arc<FragmentSpread>),
+    InlineFragment(Arc<InlineFragment>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -331,7 +331,7 @@ pub struct Field {
     pub name: Name,
     pub arguments: Vec<(Name, Value)>,
     pub directives: Vec<Arc<Directive>>,
-    pub selection_set: Vec<Arc<Selection>>,
+    pub selection_set: Vec<Selection>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -344,7 +344,7 @@ pub struct FragmentSpread {
 pub struct InlineFragment {
     pub type_condition: Option<NamedType>,
     pub directives: Vec<Arc<Directive>>,
-    pub selection_set: Vec<Arc<Selection>>,
+    pub selection_set: Vec<Selection>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
