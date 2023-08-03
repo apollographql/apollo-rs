@@ -354,7 +354,7 @@ pub enum Value {
     Variable(Name),
     String(
         /// The value after escape sequences are resolved
-        String,
+        BowString,
     ),
     Float(f64),
     Int(i32),
@@ -362,7 +362,7 @@ pub enum Value {
     /// Valid in contexts where the expected GraphQL type is Float.
     BigInt(
         /// Must only contain ASCII decimal digits
-        String,
+        BowString,
     ),
     Boolean(bool),
     List(Vec<Arc<Value>>),           // TODO: is structural sharing useful here?

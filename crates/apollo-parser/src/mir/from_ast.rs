@@ -600,15 +600,16 @@ impl Convert for ast::Value {
 
         Some(match self {
             A::Variable(v) => M::Variable(v.name()?.into()),
-            A::StringValue(v) => M::String(String::from(v)),
+            A::StringValue(v) => M::String(String::from(v).into()),
             A::FloatValue(v) => M::Float(f64::try_from(v).ok()?),
             A::IntValue(v) => {
                 if let Ok(i) = i32::try_from(v) {
                     M::Int(i)
                 } else {
-                    let text = ast::text_of_first_token(v.syntax()).as_str().to_owned();
+                    let text = &ast::text_of_first_token(v.syntax());
+                    let text = text.as_str();
                     debug_assert!(text.chars().all(|c| c.is_ascii_digit()));
-                    M::BigInt(text)
+                    M::BigInt(text.into())
                 }
             }
             A::BooleanValue(v) => M::Boolean(bool::try_from(v).ok()?),
