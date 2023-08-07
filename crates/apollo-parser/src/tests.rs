@@ -13,6 +13,8 @@ use expect_test::expect_file;
 
 use crate::{Error, Lexer, Parser, Token};
 
+mod operation_filtering;
+
 // To run these tests and update files:
 // ```bash
 // env UPDATE_EXPECT=1 cargo test --package apollo-parser

@@ -1,7 +1,8 @@
-use apollo_parser::mir;
-use apollo_parser::Parser;
+use crate::mir;
+use crate::Parser;
 
-fn main() {
+#[test]
+fn mir_usage_example() {
     let input = r#"
         query {
             a(arg: 4)
@@ -25,9 +26,7 @@ fn main() {
         }
     "#;
     let ast = Parser::new(input).parse();
-    for error in ast.errors() {
-        println!("{}", error)
-    }
+    assert_eq!(ast.errors().as_slice(), []);
     let mut mir = ast.into_mir();
     filter_document(&mut mir);
     assert_eq!(
