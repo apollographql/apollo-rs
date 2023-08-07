@@ -95,6 +95,8 @@ impl<T> std::ops::Deref for Ref<T> {
     }
 }
 
+impl<T: Eq> Eq for Ref<T> {}
+
 impl<T: PartialEq> PartialEq for Ref<T> {
     fn eq(&self, other: &Self) -> bool {
         self.ptr_eq(other) // fast path
