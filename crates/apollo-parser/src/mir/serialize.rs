@@ -231,7 +231,7 @@ impl DirectiveDefinition {
 
 fn serialize_arguments_definition(
     state: &mut State,
-    arguments: &[Arc<InputValueDefinition>],
+    arguments: &[Ref<InputValueDefinition>],
 ) -> fmt::Result {
     if !arguments.is_empty() {
         let serialize_arguments = |state: &mut State| {
@@ -266,7 +266,7 @@ impl SchemaDefinition {
 
 fn serialize_schema(
     state: &mut State,
-    directives: &[Arc<Directive>],
+    directives: &[Ref<Directive>],
     root_operations: &[(OperationType, BowString)],
 ) -> fmt::Result {
     serialize_directives(state, directives)?;
@@ -313,8 +313,8 @@ fn serialize_object_type_like(
     state: &mut State,
     name: &str,
     implements_interfaces: &[BowString],
-    directives: &[Arc<Directive>],
-    fields: &[Arc<FieldDefinition>],
+    directives: &[Ref<Directive>],
+    fields: &[Ref<FieldDefinition>],
 ) -> Result<(), fmt::Error> {
     state.write(name)?;
     if let Some((first, rest)) = implements_interfaces.split_first() {
@@ -362,7 +362,7 @@ impl UnionTypeDefinition {
 fn serialize_union(
     state: &mut State,
     name: &str,
-    directives: &[Arc<Directive>],
+    directives: &[Ref<Directive>],
     members: &[BowString],
 ) -> fmt::Result {
     state.write(name)?;
@@ -500,7 +500,7 @@ impl InputObjectTypeExtension {
     }
 }
 
-fn serialize_directives(state: &mut State, directives: &[Arc<Directive>]) -> fmt::Result {
+fn serialize_directives(state: &mut State, directives: &[Ref<Directive>]) -> fmt::Result {
     for dir in directives {
         state.write(" ")?;
         dir.serialize_impl(state)?;

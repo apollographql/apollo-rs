@@ -1,5 +1,4 @@
 use apollo_parser::mir;
-use apollo_parser::mir::Arc;
 use apollo_parser::Parser;
 
 fn main() {
@@ -41,18 +40,16 @@ fn filter_document(document: &mut mir::Document) {
     for def in &mut document.definitions {
         match def {
             mir::Definition::OperationDefinition(op) => {
-                let op = Arc::make_mut(op);
                 assert!(
-                    filter_selection_set(&mut op.selection_set),
+                    filter_selection_set(&mut op.make_mut().selection_set),
                     "operation was emptied"
                 )
             }
             mir::Definition::FragmentDefinition(frag) => {
-                let frag = Arc::make_mut(frag);
                 // Left as an exercise to the reader:
                 // remove corresponding fragment spreads when a fragment becomes empty.
                 // May require a topological sort for spreads in other fragment definitions.
-                assert!(filter_selection_set(&mut frag.selection_set));
+                assert!(filter_selection_set(&mut frag.make_mut().selection_set));
             }
             _ => {}
         }
@@ -67,15 +64,13 @@ fn filter_selection_set(selection_set: &mut Vec<mir::Selection>) -> bool {
     selection_set.retain_mut(|selection| match selection {
         mir::Selection::Field(field) => {
             if field.directive_by_name("remove").is_none() {
-                let field = Arc::make_mut(field);
-                filter_selection_set(&mut field.selection_set)
+                filter_selection_set(&mut field.make_mut().selection_set)
             } else {
                 false
             }
         }
         mir::Selection::InlineFragment(inline_fragment) => {
-            let inline_fragment = Arc::make_mut(inline_fragment);
-            filter_selection_set(&mut inline_fragment.selection_set)
+            filter_selection_set(&mut inline_fragment.make_mut().selection_set)
         }
         mir::Selection::FragmentSpread(_) => true,
     });

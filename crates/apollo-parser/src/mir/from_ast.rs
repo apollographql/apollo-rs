@@ -1,8 +1,8 @@
+use super::Ref;
 use crate::ast;
 use crate::ast::AstNode;
 use crate::mir;
 use crate::BowString;
-use triomphe::Arc;
 
 impl From<ast::Document> for mir::Document {
     fn from(value: ast::Document) -> Self {
@@ -24,13 +24,13 @@ trait Convert {
 /// Convert and collect, silently skipping entries with conversion errors
 /// as they have corresponding parse errors in `SyntaxTree::errors`
 #[inline]
-fn collect<AstType, MirType>(iter: impl IntoIterator<Item = AstType>) -> Vec<Arc<MirType>>
+fn collect<AstType, MirType>(iter: impl IntoIterator<Item = AstType>) -> Vec<Ref<MirType>>
 where
     AstType: Convert<Target = MirType>,
 {
     iter.into_iter()
         .filter_map(|value| value.convert())
-        .map(Arc::new)
+        .map(Ref::new)
         .collect()
 }
 
@@ -38,7 +38,7 @@ where
 fn collect_opt<AstType1, AstType2, MirType, F, I>(
     opt: Option<AstType1>,
     convert: F,
-) -> Vec<Arc<MirType>>
+) -> Vec<Ref<MirType>>
 where
     F: FnOnce(AstType1) -> I,
     I: IntoIterator<Item = AstType2>,
@@ -69,8 +69,8 @@ impl Convert for ast::Definition {
     fn convert(&self) -> Option<Self::Target> {
         use ast::Definition as A;
         use mir::Definition as M;
-        fn arc<T>(x: T) -> Arc<T> {
-            Arc::new(x)
+        fn arc<T>(x: T) -> Ref<T> {
+            Ref::new(x)
         }
         Some(match self {
             A::OperationDefinition(def) => M::OperationDefinition(arc(def.convert()?)),
@@ -567,9 +567,9 @@ impl Convert for ast::Selection {
         use mir::Selection as M;
 
         Some(match self {
-            A::Field(x) => M::Field(Arc::new(x.convert()?)),
-            A::FragmentSpread(x) => M::FragmentSpread(Arc::new(x.convert()?)),
-            A::InlineFragment(x) => M::InlineFragment(Arc::new(x.convert()?)),
+            A::Field(x) => M::Field(Ref::new(x.convert()?)),
+            A::FragmentSpread(x) => M::FragmentSpread(Ref::new(x.convert()?)),
+            A::InlineFragment(x) => M::InlineFragment(Ref::new(x.convert()?)),
         })
     }
 }
@@ -646,11 +646,11 @@ impl Convert for ast::Value {
 }
 
 impl Convert for ast::ObjectField {
-    type Target = (mir::Name, Arc<mir::Value>);
+    type Target = (mir::Name, Ref<mir::Value>);
 
     fn convert(&self) -> Option<Self::Target> {
         let name = self.name()?.into();
-        let value = Arc::new(self.value()?.convert()?);
+        let value = Ref::new(self.value()?.convert()?);
         Some((name, value))
     }
 }
