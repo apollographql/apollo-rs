@@ -24,13 +24,18 @@ pub struct Ref<T>(Arc<RefInner<T>>);
 
 #[derive(Debug)]
 struct RefInner<T> {
-    location: Option<TextRange>,
+    /// `u32::MAX..u32::MAX`: unknown
+    location: TextRange,
     /// Zero: not computed yet
     cached_hash: AtomicU64,
     node: T,
 }
 
 const CACHED_HASH_NOT_COMPUTED_YET: u64 = 0;
+
+const _: () = {
+    assert!(std::mem::size_of::<RefInner<()>>() == 16);
+};
 
 impl<T: Clone> Clone for RefInner<T> {
     fn clone(&self) -> Self {
@@ -45,7 +50,7 @@ impl<T: Clone> Clone for RefInner<T> {
 impl<T> Ref<T> {
     pub fn new(node: T) -> Self {
         Self(Arc::new(RefInner {
-            location: None,
+            location: TextRange::new(u32::MAX.into(), u32::MAX.into()),
             cached_hash: AtomicU64::new(CACHED_HASH_NOT_COMPUTED_YET),
             node,
         }))
@@ -53,14 +58,18 @@ impl<T> Ref<T> {
 
     pub fn with_location(node: T, location: TextRange) -> Self {
         Self(Arc::new(RefInner {
-            location: Some(location),
+            location,
             cached_hash: AtomicU64::new(CACHED_HASH_NOT_COMPUTED_YET),
             node,
         }))
     }
 
     pub fn location(&self) -> Option<&TextRange> {
-        self.0.location.as_ref()
+        if u32::from(self.0.location.start()) != u32::MAX {
+            Some(&self.0.location)
+        } else {
+            None
+        }
     }
 
     pub fn make_mut(&mut self) -> &mut T
