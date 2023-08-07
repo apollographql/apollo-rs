@@ -37,7 +37,7 @@
 //! ```rust
 //! use apollo_parser::Parser;
 //!
-//! let input = "{
+//! let input = "query {
 //!     spline {
 //!         reticulation
 //!     }
@@ -46,7 +46,7 @@
 //! let ast = parser.parse();
 //! assert_eq!(0, ast.errors().len());
 //! let mir = ast.into_mir();
-//! assert_eq!(mir.serialize().no_indent().to_string(), "query { spline { reticulation } }");
+//! assert_eq!(mir.serialize().no_indent().to_string(), "{ spline { reticulation } }");
 //! ```
 
 #[cfg(doc)]
