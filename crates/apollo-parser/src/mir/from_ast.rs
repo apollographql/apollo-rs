@@ -635,7 +635,7 @@ impl Convert for ast::Value {
         Some(match self {
             A::Variable(v) => M::Variable(v.name()?.into()),
             A::StringValue(v) => M::String(String::from(v).into()),
-            A::FloatValue(v) => M::Float(f64::try_from(v).ok()?),
+            A::FloatValue(v) => M::Float(f64::try_from(v).ok()?.into()),
             A::IntValue(v) => {
                 if let Ok(i) = i32::try_from(v) {
                     M::Int(i)

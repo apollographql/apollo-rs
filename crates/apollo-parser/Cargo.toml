@@ -17,6 +17,7 @@ categories = [
 edition = "2021"
 
 [dependencies]
+ordered-float = { version = "3.7.0", features = ["std"] }
 rowan = "0.15.5"
 thiserror = "1.0.30"
 triomphe = "0.1.9"

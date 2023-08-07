@@ -233,7 +233,7 @@ impl Value {
 
     pub fn to_f64(&self) -> Option<f64> {
         match self {
-            Value::Float(value) => Some(*value),
+            Value::Float(value) => Some(**value),
             Value::BigInt(value) => {
                 if let Ok(f) = value.parse::<f64>() {
                     f.is_finite().then_some(f)
