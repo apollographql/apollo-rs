@@ -26,11 +26,15 @@ trait Convert {
 #[inline]
 fn collect<AstType, MirType>(iter: impl IntoIterator<Item = AstType>) -> Vec<Ref<MirType>>
 where
-    AstType: Convert<Target = MirType>,
+    AstType: AstNode + Convert<Target = MirType>,
 {
     iter.into_iter()
-        .filter_map(|value| value.convert())
-        .map(Ref::new)
+        .filter_map(|value| {
+            Some(Ref::with_location(
+                value.convert()?,
+                value.syntax().text_range(),
+            ))
+        })
         .collect()
 }
 
@@ -42,7 +46,7 @@ fn collect_opt<AstType1, AstType2, MirType, F, I>(
 where
     F: FnOnce(AstType1) -> I,
     I: IntoIterator<Item = AstType2>,
-    AstType2: Convert<Target = MirType>,
+    AstType2: AstNode + Convert<Target = MirType>,
 {
     if let Some(ast) = opt {
         collect(convert(ast))
@@ -69,27 +73,29 @@ impl Convert for ast::Definition {
     fn convert(&self) -> Option<Self::Target> {
         use ast::Definition as A;
         use mir::Definition as M;
-        fn arc<T>(x: T) -> Ref<T> {
-            Ref::new(x)
+        macro_rules! r {
+            ($def: ident) => {
+                Ref::with_location($def.convert()?, $def.syntax().text_range())
+            };
         }
         Some(match self {
-            A::OperationDefinition(def) => M::OperationDefinition(arc(def.convert()?)),
-            A::FragmentDefinition(def) => M::FragmentDefinition(arc(def.convert()?)),
-            A::DirectiveDefinition(def) => M::DirectiveDefinition(arc(def.convert()?)),
-            A::SchemaDefinition(def) => M::SchemaDefinition(arc(def.convert()?)),
-            A::ScalarTypeDefinition(def) => M::ScalarTypeDefinition(arc(def.convert()?)),
-            A::ObjectTypeDefinition(def) => M::ObjectTypeDefinition(arc(def.convert()?)),
-            A::InterfaceTypeDefinition(def) => M::InterfaceTypeDefinition(arc(def.convert()?)),
-            A::UnionTypeDefinition(def) => M::UnionTypeDefinition(arc(def.convert()?)),
-            A::EnumTypeDefinition(def) => M::EnumTypeDefinition(arc(def.convert()?)),
-            A::InputObjectTypeDefinition(def) => M::InputObjectTypeDefinition(arc(def.convert()?)),
-            A::SchemaExtension(def) => M::SchemaExtension(arc(def.convert()?)),
-            A::ScalarTypeExtension(def) => M::ScalarTypeExtension(arc(def.convert()?)),
-            A::ObjectTypeExtension(def) => M::ObjectTypeExtension(arc(def.convert()?)),
-            A::InterfaceTypeExtension(def) => M::InterfaceTypeExtension(arc(def.convert()?)),
-            A::UnionTypeExtension(def) => M::UnionTypeExtension(arc(def.convert()?)),
-            A::EnumTypeExtension(def) => M::EnumTypeExtension(arc(def.convert()?)),
-            A::InputObjectTypeExtension(def) => M::InputObjectTypeExtension(arc(def.convert()?)),
+            A::OperationDefinition(def) => M::OperationDefinition(r!(def)),
+            A::FragmentDefinition(def) => M::FragmentDefinition(r!(def)),
+            A::DirectiveDefinition(def) => M::DirectiveDefinition(r!(def)),
+            A::SchemaDefinition(def) => M::SchemaDefinition(r!(def)),
+            A::ScalarTypeDefinition(def) => M::ScalarTypeDefinition(r!(def)),
+            A::ObjectTypeDefinition(def) => M::ObjectTypeDefinition(r!(def)),
+            A::InterfaceTypeDefinition(def) => M::InterfaceTypeDefinition(r!(def)),
+            A::UnionTypeDefinition(def) => M::UnionTypeDefinition(r!(def)),
+            A::EnumTypeDefinition(def) => M::EnumTypeDefinition(r!(def)),
+            A::InputObjectTypeDefinition(def) => M::InputObjectTypeDefinition(r!(def)),
+            A::SchemaExtension(def) => M::SchemaExtension(r!(def)),
+            A::ScalarTypeExtension(def) => M::ScalarTypeExtension(r!(def)),
+            A::ObjectTypeExtension(def) => M::ObjectTypeExtension(r!(def)),
+            A::InterfaceTypeExtension(def) => M::InterfaceTypeExtension(r!(def)),
+            A::UnionTypeExtension(def) => M::UnionTypeExtension(r!(def)),
+            A::EnumTypeExtension(def) => M::EnumTypeExtension(r!(def)),
+            A::InputObjectTypeExtension(def) => M::InputObjectTypeExtension(r!(def)),
         })
     }
 }
@@ -567,9 +573,13 @@ impl Convert for ast::Selection {
         use mir::Selection as M;
 
         Some(match self {
-            A::Field(x) => M::Field(Ref::new(x.convert()?)),
-            A::FragmentSpread(x) => M::FragmentSpread(Ref::new(x.convert()?)),
-            A::InlineFragment(x) => M::InlineFragment(Ref::new(x.convert()?)),
+            A::Field(x) => M::Field(Ref::with_location(x.convert()?, x.syntax().text_range())),
+            A::FragmentSpread(x) => {
+                M::FragmentSpread(Ref::with_location(x.convert()?, x.syntax().text_range()))
+            }
+            A::InlineFragment(x) => {
+                M::InlineFragment(Ref::with_location(x.convert()?, x.syntax().text_range()))
+            }
         })
     }
 }
@@ -650,7 +660,7 @@ impl Convert for ast::ObjectField {
 
     fn convert(&self) -> Option<Self::Target> {
         let name = self.name()?.into();
-        let value = Ref::new(self.value()?.convert()?);
+        let value = Ref::with_location(self.value()?.convert()?, self.syntax().text_range());
         Some((name, value))
     }
 }
