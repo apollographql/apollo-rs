@@ -2,6 +2,7 @@
 
 pub mod database;
 pub mod diagnostics;
+pub mod hir2;
 #[cfg(test)]
 mod tests;
 pub mod validation;
