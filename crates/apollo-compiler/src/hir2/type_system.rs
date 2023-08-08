@@ -4,6 +4,7 @@ use apollo_parser::mir::Ref;
 use apollo_parser::BowString;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
+use std::sync::OnceLock;
 
 /// Results of analysis of type system definitions from any number of input files.
 ///
@@ -255,6 +256,71 @@ impl TypeSystem {
             Some(ty)
         } else {
             None
+        }
+    }
+
+    /// If the given name is an object type on interface type, return its field definitions
+    pub(crate) fn field_definitions(
+        &self,
+        name: &str,
+    ) -> Option<&IndexMap<Name, Ref<mir::FieldDefinition>>> {
+        match self.types.get(name)? {
+            Type::Object(ty) => Some(&ty.fields),
+            Type::Interface(ty) => Some(&ty.fields),
+            _ => None,
+        }
+    }
+
+    /// Return the meta-fields for a selection set.
+    ///
+    /// `is_root_operation` must be `Some` if and only if the selection set is the root of an operation.
+    pub(crate) fn meta_field_definitions(
+        is_root_operation_type: Option<mir::OperationType>,
+    ) -> &'static [Ref<mir::FieldDefinition>] {
+        static TYPENAME_FIELD: OnceLock<Ref<mir::FieldDefinition>> = OnceLock::new();
+        static ROOT_QUERY_FIELDS: OnceLock<[Ref<mir::FieldDefinition>; 3]> = OnceLock::new();
+        let typename_field = || {
+            TYPENAME_FIELD.get_or_init(|| {
+                // __typename: String!
+                Ref::new(mir::FieldDefinition {
+                    description: None,
+                    name: "__typename".into(),
+                    arguments: Vec::new(),
+                    ty: mir::Type::new_named("String").non_null(),
+                    directives: Vec::new(),
+                })
+            })
+        };
+        match is_root_operation_type {
+            Some(mir::OperationType::Query) => ROOT_QUERY_FIELDS.get_or_init(|| {
+                [
+                    typename_field().clone(),
+                    // __schema: __Schema!
+                    Ref::new(mir::FieldDefinition {
+                        description: None,
+                        name: "__schema".into(),
+                        arguments: Vec::new(),
+                        ty: mir::Type::new_named("__Schema").non_null(),
+                        directives: Vec::new(),
+                    }),
+                    // __type(name: String!): __Type
+                    Ref::new(mir::FieldDefinition {
+                        description: None,
+                        name: "__type".into(),
+                        arguments: vec![Ref::new(mir::InputValueDefinition {
+                            description: None,
+                            name: "name".into(),
+                            ty: mir::Type::new_named("String").non_null(),
+                            default_value: None,
+                            directives: Vec::new(),
+                        })],
+                        ty: mir::Type::new_named("__Type"),
+                        directives: Vec::new(),
+                    }),
+                ]
+            }),
+            Some(mir::OperationType::Subscription) => &[],
+            _ => std::slice::from_ref(typename_field()),
         }
     }
 }
