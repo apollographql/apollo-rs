@@ -1434,7 +1434,11 @@ impl SelectionSet {
                     let maybe_fragment = spread.fragment(db);
                     maybe_fragment.map_or(false, |fragment| {
                         if seen_fragments.contains(&fragment) {
-                            false
+                            // This isn't the first time we've seen this spread.
+                            // We trust that the first visit will find all
+                            // relevant fields and stop the recursion (without
+                            // affecting the overall `all` result).
+                            true
                         } else {
                             seen_fragments.insert(Arc::clone(&fragment));
                             is_introspection_impl(db, &fragment.selection_set, seen_fragments)
@@ -4245,6 +4249,64 @@ mod tests {
             )
             .expect("IntrospectDeepFragments operation does not exist");
         assert!(!deep_introspect.is_introspection(&db));
+    }
+
+    #[test]
+    fn is_introspection_repeated_fragment() {
+        let query_input_indirect = r#"
+          query IntrospectRepeatedIndirectFragment {
+            ...A
+            ...B
+          }
+
+          fragment A on Root { ...C }
+          fragment B on Root { ...C }
+
+          fragment C on Root {
+            __schema {
+              types {
+                name
+              }
+            }
+          }
+        "#;
+
+        let query_input_direct = r#"
+          query IntrospectRepeatedDirectFragment {
+            ...C
+            ...C
+          }
+
+          fragment C on Root {
+            __schema {
+              types {
+                name
+              }
+            }
+          }
+        "#;
+
+        let mut compiler = ApolloCompiler::new();
+        let query_id_indirect = compiler.add_executable(query_input_indirect, "indirect.graphql");
+        let query_id_direct = compiler.add_executable(query_input_direct, "direct.graphql");
+
+        let db = compiler.db;
+
+        let indirect: Arc<OperationDefinition> = db
+            .find_operation(
+                query_id_indirect,
+                Some("IntrospectRepeatedIndirectFragment".into()),
+            )
+            .expect("IntrospectRepeatedIndirectFragment operation does not exist");
+        assert!(indirect.is_introspection(&db));
+
+        let direct: Arc<OperationDefinition> = db
+            .find_operation(
+                query_id_direct,
+                Some("IntrospectRepeatedDirectFragment".into()),
+            )
+            .expect("IntrospectRepeatedDirectFragment operation does not exist");
+        assert!(direct.is_introspection(&db));
     }
 
     #[test]
