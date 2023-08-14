@@ -11,7 +11,7 @@ macro_rules! directive_methods {
         pub fn directives_by_name<'def: 'name, 'name>(
             &'def self,
             name: &'name str,
-        ) -> impl Iterator<Item = &'def Ref<Directive>> + 'name {
+        ) -> impl Iterator<Item = &'def Harc<Ranged<Directive>>> + 'name {
             self.directives.iter().filter(move |dir| dir.name == name)
         }
 
@@ -19,7 +19,7 @@ macro_rules! directive_methods {
         ///
         /// This method is best for non-repeatable directives. For repeatable directives,
         /// see [`directives_by_name`][Self::directives_by_name] (plural)
-        pub fn directive_by_name(&self, name: &str) -> Option<&Ref<Directive>> {
+        pub fn directive_by_name(&self, name: &str) -> Option<&Harc<Ranged<Directive>>> {
             self.directives_by_name(name).next()
         }
     };
@@ -262,7 +262,7 @@ impl Value {
         }
     }
 
-    pub fn as_list(&self) -> Option<&[Ref<Value>]> {
+    pub fn as_list(&self) -> Option<&[Harc<Ranged<Value>>]> {
         if let Value::List(value) = self {
             Some(value)
         } else {
@@ -270,7 +270,7 @@ impl Value {
         }
     }
 
-    pub fn as_object(&self) -> Option<&[(Name, Ref<Value>)]> {
+    pub fn as_object(&self) -> Option<&[(Name, Harc<Ranged<Value>>)]> {
         if let Value::Object(value) = self {
             Some(value)
         } else {

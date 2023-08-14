@@ -1,6 +1,7 @@
 use apollo_parser::mir;
+use apollo_parser::mir::Harc;
 use apollo_parser::mir::Name;
-use apollo_parser::mir::Ref;
+use apollo_parser::mir::Ranged;
 use apollo_parser::BowString;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
@@ -13,14 +14,14 @@ use std::sync::OnceLock;
 #[derive(Clone, Debug)]
 pub struct TypeSystem {
     pub schema: Schema,
-    pub directives: IndexMap<Name, Ref<mir::DirectiveDefinition>>,
+    pub directives: IndexMap<Name, Harc<Ranged<mir::DirectiveDefinition>>>,
     pub types: IndexMap<mir::NamedType, Type>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Schema {
     pub description: Option<BowString>,
-    pub directives: Vec<Ref<mir::Directive>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
     /// Name of the object type for the `query` root operation
     pub query: Option<mir::NamedType>,
     /// Name of the object type for the `mutation` root operation
@@ -43,44 +44,44 @@ pub enum Type {
 #[derive(Clone, Debug)]
 pub struct ScalarType {
     pub description: Option<BowString>,
-    pub directives: Vec<Ref<mir::Directive>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct ObjectType {
     pub description: Option<BowString>,
     pub implements_interfaces: IndexSet<Name>,
-    pub directives: Vec<Ref<mir::Directive>>,
-    pub fields: IndexMap<Name, Ref<mir::FieldDefinition>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
+    pub fields: IndexMap<Name, Harc<Ranged<mir::FieldDefinition>>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct InterfaceType {
     pub description: Option<BowString>,
     pub implements_interfaces: IndexSet<Name>,
-    pub directives: Vec<Ref<mir::Directive>>,
-    pub fields: IndexMap<Name, Ref<mir::FieldDefinition>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
+    pub fields: IndexMap<Name, Harc<Ranged<mir::FieldDefinition>>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct UnionType {
     pub description: Option<BowString>,
-    pub directives: Vec<Ref<mir::Directive>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
     pub members: IndexSet<mir::NamedType>,
 }
 
 #[derive(Clone, Debug)]
 pub struct EnumType {
     pub description: Option<BowString>,
-    pub directives: Vec<Ref<mir::Directive>>,
-    pub values: IndexMap<Name, Ref<mir::EnumValueDefinition>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
+    pub values: IndexMap<Name, Harc<Ranged<mir::EnumValueDefinition>>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct InputObjectType {
     pub description: Option<BowString>,
-    pub directives: Vec<Ref<mir::Directive>>,
-    pub fields: IndexMap<Name, Ref<mir::InputValueDefinition>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
+    pub fields: IndexMap<Name, Harc<Ranged<mir::InputValueDefinition>>>,
 }
 
 impl TypeSystem {
@@ -263,7 +264,7 @@ impl TypeSystem {
     pub(crate) fn field_definitions(
         &self,
         name: &str,
-    ) -> Option<&IndexMap<Name, Ref<mir::FieldDefinition>>> {
+    ) -> Option<&IndexMap<Name, Harc<Ranged<mir::FieldDefinition>>>> {
         match self.types.get(name)? {
             Type::Object(ty) => Some(&ty.fields),
             Type::Interface(ty) => Some(&ty.fields),
@@ -276,19 +277,20 @@ impl TypeSystem {
     /// `is_root_operation` must be `Some` if and only if the selection set is the root of an operation.
     pub(crate) fn meta_field_definitions(
         is_root_operation_type: Option<mir::OperationType>,
-    ) -> &'static [Ref<mir::FieldDefinition>] {
-        static TYPENAME_FIELD: OnceLock<Ref<mir::FieldDefinition>> = OnceLock::new();
-        static ROOT_QUERY_FIELDS: OnceLock<[Ref<mir::FieldDefinition>; 3]> = OnceLock::new();
+    ) -> &'static [Harc<Ranged<mir::FieldDefinition>>] {
+        static TYPENAME_FIELD: OnceLock<Harc<Ranged<mir::FieldDefinition>>> = OnceLock::new();
+        static ROOT_QUERY_FIELDS: OnceLock<[Harc<Ranged<mir::FieldDefinition>>; 3]> =
+            OnceLock::new();
         let typename_field = || {
             TYPENAME_FIELD.get_or_init(|| {
                 // __typename: String!
-                Ref::new(mir::FieldDefinition {
+                Harc::new(Ranged::no_location(mir::FieldDefinition {
                     description: None,
                     name: "__typename".into(),
                     arguments: Vec::new(),
                     ty: mir::Type::new_named("String").non_null(),
                     directives: Vec::new(),
-                })
+                }))
             })
         };
         match is_root_operation_type {
@@ -296,27 +298,29 @@ impl TypeSystem {
                 [
                     typename_field().clone(),
                     // __schema: __Schema!
-                    Ref::new(mir::FieldDefinition {
+                    Harc::new(Ranged::no_location(mir::FieldDefinition {
                         description: None,
                         name: "__schema".into(),
                         arguments: Vec::new(),
                         ty: mir::Type::new_named("__Schema").non_null(),
                         directives: Vec::new(),
-                    }),
+                    })),
                     // __type(name: String!): __Type
-                    Ref::new(mir::FieldDefinition {
+                    Harc::new(Ranged::no_location(mir::FieldDefinition {
                         description: None,
                         name: "__type".into(),
-                        arguments: vec![Ref::new(mir::InputValueDefinition {
-                            description: None,
-                            name: "name".into(),
-                            ty: mir::Type::new_named("String").non_null(),
-                            default_value: None,
-                            directives: Vec::new(),
-                        })],
+                        arguments: vec![Harc::new(Ranged::no_location(
+                            mir::InputValueDefinition {
+                                description: None,
+                                name: "name".into(),
+                                ty: mir::Type::new_named("String").non_null(),
+                                default_value: None,
+                                directives: Vec::new(),
+                            },
+                        ))],
                         ty: mir::Type::new_named("__Type"),
                         directives: Vec::new(),
-                    }),
+                    })),
                 ]
             }),
             Some(mir::OperationType::Subscription) => &[],

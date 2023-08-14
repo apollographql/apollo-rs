@@ -1,8 +1,9 @@
 use super::type_system::TypeSystem;
 use apollo_parser::mir;
+use apollo_parser::mir::Harc;
 use apollo_parser::mir::Name;
 use apollo_parser::mir::OperationType;
-use apollo_parser::mir::Ref;
+use apollo_parser::mir::Ranged;
 use indexmap::map::Entry;
 use indexmap::IndexMap;
 
@@ -19,15 +20,15 @@ pub struct Operation {
     pub operation_type: OperationType,
     /// The name of the object type for this root operation
     pub ty: mir::NamedType,
-    pub variables: Vec<Ref<mir::VariableDefinition>>,
-    pub directives: Vec<Ref<mir::Directive>>,
+    pub variables: Vec<Harc<Ranged<mir::VariableDefinition>>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
     pub selection_set: Vec<Selection>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Fragment {
     pub type_condition: mir::NamedType,
-    pub directives: Vec<Ref<mir::Directive>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
     pub selection_set: Vec<Selection>,
 }
 
@@ -45,20 +46,20 @@ pub struct Field {
     pub alias: Option<Name>,
     pub name: Name,
     pub arguments: Vec<(Name, mir::Value)>,
-    pub directives: Vec<Ref<mir::Directive>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
     pub selection_set: Vec<Selection>,
 }
 
 #[derive(Clone, Debug)]
 pub struct FragmentSpread {
     pub fragment_name: Name,
-    pub directives: Vec<Ref<mir::Directive>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct InlineFragment {
     pub type_condition: Option<mir::NamedType>,
-    pub directives: Vec<Ref<mir::Directive>>,
+    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
     pub selection_set: Vec<Selection>,
 }
 
@@ -169,7 +170,7 @@ impl Selection {
         type_system: &TypeSystem,
         parent_is_root_operation: Option<OperationType>,
         parent_type: &Name,
-        parent_fields_def: Option<&IndexMap<Name, Ref<mir::FieldDefinition>>>,
+        parent_fields_def: Option<&IndexMap<Name, Harc<Ranged<mir::FieldDefinition>>>>,
         selection: &mir::Selection,
     ) -> Result<Selection, TypeError> {
         Ok(match selection {

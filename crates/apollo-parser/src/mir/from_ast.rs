@@ -1,8 +1,10 @@
-use super::Ref;
 use crate::ast;
 use crate::ast::AstNode;
 use crate::mir;
+use crate::mir::Harc;
+use crate::mir::Ranged;
 use crate::BowString;
+use crate::SyntaxNode;
 
 impl From<ast::Document> for mir::Document {
     fn from(value: ast::Document) -> Self {
@@ -15,6 +17,10 @@ impl From<ast::Document> for mir::Document {
     }
 }
 
+fn with_location<T>(node: T, syntax_node: &SyntaxNode) -> Harc<Ranged<T>> {
+    Harc::new(Ranged::with_location(node, syntax_node.text_range()))
+}
+
 /// Similar to `TryFrom`, but with an `Option` return type because AST uses Option a lot.
 trait Convert {
     type Target;
@@ -24,17 +30,12 @@ trait Convert {
 /// Convert and collect, silently skipping entries with conversion errors
 /// as they have corresponding parse errors in `SyntaxTree::errors`
 #[inline]
-fn collect<AstType, MirType>(iter: impl IntoIterator<Item = AstType>) -> Vec<Ref<MirType>>
+fn collect<AstType, MirType>(iter: impl IntoIterator<Item = AstType>) -> Vec<Harc<Ranged<MirType>>>
 where
     AstType: AstNode + Convert<Target = MirType>,
 {
     iter.into_iter()
-        .filter_map(|value| {
-            Some(Ref::with_location(
-                value.convert()?,
-                value.syntax().text_range(),
-            ))
-        })
+        .filter_map(|value| Some(with_location(value.convert()?, value.syntax())))
         .collect()
 }
 
@@ -42,7 +43,7 @@ where
 fn collect_opt<AstType1, AstType2, MirType, F, I>(
     opt: Option<AstType1>,
     convert: F,
-) -> Vec<Ref<MirType>>
+) -> Vec<Harc<Ranged<MirType>>>
 where
     F: FnOnce(AstType1) -> I,
     I: IntoIterator<Item = AstType2>,
@@ -75,7 +76,7 @@ impl Convert for ast::Definition {
         use mir::Definition as M;
         macro_rules! r {
             ($def: ident) => {
-                Ref::with_location($def.convert()?, $def.syntax().text_range())
+                with_location($def.convert()?, $def.syntax())
             };
         }
         Some(match self {
@@ -573,13 +574,9 @@ impl Convert for ast::Selection {
         use mir::Selection as M;
 
         Some(match self {
-            A::Field(x) => M::Field(Ref::with_location(x.convert()?, x.syntax().text_range())),
-            A::FragmentSpread(x) => {
-                M::FragmentSpread(Ref::with_location(x.convert()?, x.syntax().text_range()))
-            }
-            A::InlineFragment(x) => {
-                M::InlineFragment(Ref::with_location(x.convert()?, x.syntax().text_range()))
-            }
+            A::Field(x) => M::Field(with_location(x.convert()?, x.syntax())),
+            A::FragmentSpread(x) => M::FragmentSpread(with_location(x.convert()?, x.syntax())),
+            A::InlineFragment(x) => M::InlineFragment(with_location(x.convert()?, x.syntax())),
         })
     }
 }
@@ -656,11 +653,11 @@ impl Convert for ast::Value {
 }
 
 impl Convert for ast::ObjectField {
-    type Target = (mir::Name, Ref<mir::Value>);
+    type Target = (mir::Name, Harc<Ranged<mir::Value>>);
 
     fn convert(&self) -> Option<Self::Target> {
         let name = self.name()?.into();
-        let value = Ref::with_location(self.value()?.convert()?, self.syntax().text_range());
+        let value = with_location(self.value()?.convert()?, self.syntax());
         Some((name, value))
     }
 }
