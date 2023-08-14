@@ -1,10 +1,13 @@
+use crate::hir2::Located;
+use crate::hir2::LocatedBorrow;
+use crate::FileId;
 use apollo_parser::mir;
 use apollo_parser::mir::Harc;
 use apollo_parser::mir::Name;
 use apollo_parser::mir::Ranged;
-use apollo_parser::BowString;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
+use std::num::NonZeroU32;
 use std::sync::OnceLock;
 
 /// Results of analysis of type system definitions from any number of input files.
@@ -14,14 +17,30 @@ use std::sync::OnceLock;
 #[derive(Clone, Debug)]
 pub struct TypeSystem {
     pub schema: Schema,
-    pub directives: IndexMap<Name, Harc<Ranged<mir::DirectiveDefinition>>>,
+    pub directives: IndexMap<Name, Located<mir::DirectiveDefinition>>,
     pub types: IndexMap<mir::NamedType, Type>,
 }
 
+#[derive(Debug, Clone)]
+enum ComponentIndex {
+    InDefinition {
+        index: u32,
+    },
+    InExtension {
+        extension_index_plus_one: NonZeroU32,
+        index: u32,
+    },
+}
+
+const _: () = {
+    assert!(std::mem::size_of::<ComponentIndex>() == 8);
+};
+
 #[derive(Clone, Debug)]
 pub struct Schema {
-    pub description: Option<BowString>,
-    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
+    pub definition: Option<Located<mir::SchemaDefinition>>,
+    pub extensions: Vec<Located<mir::SchemaExtension>>,
+
     /// Name of the object type for the `query` root operation
     pub query: Option<mir::NamedType>,
     /// Name of the object type for the `mutation` root operation
@@ -43,98 +62,163 @@ pub enum Type {
 
 #[derive(Clone, Debug)]
 pub struct ScalarType {
-    pub description: Option<BowString>,
-    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
+    pub definition: Located<mir::ScalarTypeDefinition>,
+    pub extensions: Vec<Located<mir::ScalarTypeExtension>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct ObjectType {
-    pub description: Option<BowString>,
+    pub definition: Located<mir::ObjectTypeDefinition>,
+    pub extensions: Vec<Located<mir::ObjectTypeExtension>>,
+
     pub implements_interfaces: IndexSet<Name>,
-    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
-    pub fields: IndexMap<Name, Harc<Ranged<mir::FieldDefinition>>>,
+    fields: IndexMap<Name, ComponentIndex>,
 }
 
 #[derive(Clone, Debug)]
 pub struct InterfaceType {
-    pub description: Option<BowString>,
+    pub definition: Located<mir::InterfaceTypeDefinition>,
+    pub extensions: Vec<Located<mir::InterfaceTypeExtension>>,
+
     pub implements_interfaces: IndexSet<Name>,
-    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
-    pub fields: IndexMap<Name, Harc<Ranged<mir::FieldDefinition>>>,
+    fields: IndexMap<Name, ComponentIndex>,
 }
 
 #[derive(Clone, Debug)]
 pub struct UnionType {
-    pub description: Option<BowString>,
-    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
+    pub definition: Located<mir::UnionTypeDefinition>,
+    pub extensions: Vec<Located<mir::UnionTypeExtension>>,
+
     pub members: IndexSet<mir::NamedType>,
 }
 
 #[derive(Clone, Debug)]
 pub struct EnumType {
-    pub description: Option<BowString>,
-    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
-    pub values: IndexMap<Name, Harc<Ranged<mir::EnumValueDefinition>>>,
+    pub definition: Located<mir::EnumTypeDefinition>,
+    pub extensions: Vec<Located<mir::EnumTypeExtension>>,
+
+    values: IndexMap<Name, ComponentIndex>,
 }
 
 #[derive(Clone, Debug)]
 pub struct InputObjectType {
-    pub description: Option<BowString>,
-    pub directives: Vec<Harc<Ranged<mir::Directive>>>,
-    pub fields: IndexMap<Name, Harc<Ranged<mir::InputValueDefinition>>>,
+    pub definition: Located<mir::InputObjectTypeDefinition>,
+    pub extensions: Vec<Located<mir::InputObjectTypeExtension>>,
+
+    values: IndexMap<Name, ComponentIndex>,
+}
+
+impl ComponentIndex {
+    fn in_definition(index: usize) -> Self {
+        Self::InDefinition {
+            index: u32::try_from(index).unwrap(),
+        }
+    }
+
+    fn in_extension(extension_index: usize, index: usize) -> Self {
+        Self::InExtension {
+            extension_index_plus_one: NonZeroU32::new(
+                u32::try_from(extension_index)
+                    .unwrap()
+                    .checked_add(1)
+                    .unwrap(),
+            )
+            .unwrap(),
+            index: u32::try_from(index).unwrap(),
+        }
+    }
+
+    fn get<'a, Definition, Extension: 'a, Component>(
+        &self,
+        definition: &'a Located<Definition>,
+        definition_components: impl Fn() -> &'a [Harc<Ranged<Component>>],
+        extensions: impl Fn() -> &'a [Located<Extension>],
+        extension_components: impl Fn(&'a Extension) -> &'a [Harc<Ranged<Component>>],
+    ) -> LocatedBorrow<'a, Component> {
+        match *self {
+            ComponentIndex::InDefinition { index } => {
+                definition.component(|_| &definition_components()[index as usize])
+            }
+            ComponentIndex::InExtension {
+                extension_index_plus_one,
+                index,
+            } => {
+                let extension_index = extension_index_plus_one.get() - 1;
+                let extension = &extensions()[extension_index as usize];
+                extension.component(|e| &extension_components(e)[index as usize])
+            }
+        }
+    }
 }
 
 impl TypeSystem {
-    pub fn new(input_files: &[mir::Document]) -> Self {
+    pub fn new(input_files: &[(FileId, mir::Document)]) -> Self {
         static BUILT_IN_TYPES: std::sync::OnceLock<mir::Document> = std::sync::OnceLock::new();
         let built_in = BUILT_IN_TYPES.get_or_init(|| {
             let ast = apollo_parser::Parser::new(include_str!("../built_in_types.graphql")).parse();
             debug_assert_eq!(ast.errors().as_slice(), []);
             ast.into_mir()
         });
-        let documents = std::iter::once(built_in).chain(input_files);
+        let documents = std::iter::once((FileId::BUILT_IN, built_in))
+            .chain(input_files.iter().map(|(id, doc)| (*id, doc)));
         let mut opt_schema = None;
         let mut directives = IndexMap::new();
         let mut types = IndexMap::new();
         // Clone the iterator so we can later iterate again from the start
-        for document in documents.clone() {
+        for (file_id, document) in documents.clone() {
             for definition in &document.definitions {
                 match definition {
                     mir::Definition::SchemaDefinition(def) => {
-                        opt_schema.get_or_insert_with(|| Schema::new(def));
+                        opt_schema.get_or_insert_with(|| {
+                            Schema::new(Located::with_file_id(def.clone(), file_id))
+                        });
                     }
                     mir::Definition::DirectiveDefinition(def) => {
-                        directives.entry(def.name.clone()).or_insert(def.clone());
+                        directives
+                            .entry(def.name.clone())
+                            .or_insert(Located::with_file_id(def.clone(), file_id));
                     }
                     mir::Definition::ScalarTypeDefinition(def) => {
                         types
                             .entry(def.name.clone())
-                            .or_insert(Type::Scalar(ScalarType::new(def)));
+                            .or_insert(Type::Scalar(ScalarType::new(Located::with_file_id(
+                                def.clone(),
+                                file_id,
+                            ))));
                     }
                     mir::Definition::ObjectTypeDefinition(def) => {
                         types
                             .entry(def.name.clone())
-                            .or_insert(Type::Object(ObjectType::new(def)));
+                            .or_insert(Type::Object(ObjectType::new(Located::with_file_id(
+                                def.clone(),
+                                file_id,
+                            ))));
                     }
                     mir::Definition::InterfaceTypeDefinition(def) => {
-                        types
-                            .entry(def.name.clone())
-                            .or_insert(Type::Interface(InterfaceType::new(def)));
+                        types.entry(def.name.clone()).or_insert(Type::Interface(
+                            InterfaceType::new(Located::with_file_id(def.clone(), file_id)),
+                        ));
                     }
                     mir::Definition::UnionTypeDefinition(def) => {
                         types
                             .entry(def.name.clone())
-                            .or_insert(Type::Union(UnionType::new(def)));
+                            .or_insert(Type::Union(UnionType::new(Located::with_file_id(
+                                def.clone(),
+                                file_id,
+                            ))));
                     }
                     mir::Definition::EnumTypeDefinition(def) => {
                         types
                             .entry(def.name.clone())
-                            .or_insert(Type::Enum(EnumType::new(def)));
+                            .or_insert(Type::Enum(EnumType::new(Located::with_file_id(
+                                def.clone(),
+                                file_id,
+                            ))));
                     }
                     mir::Definition::InputObjectTypeDefinition(def) => {
-                        types
-                            .entry(def.name.clone())
-                            .or_insert(Type::InputObject(InputObjectType::new(def)));
+                        types.entry(def.name.clone()).or_insert(Type::InputObject(
+                            InputObjectType::new(Located::with_file_id(def.clone(), file_id)),
+                        ));
                     }
                     mir::Definition::SchemaExtension(_)
                     | mir::Definition::ScalarTypeExtension(_)
@@ -148,42 +232,42 @@ impl TypeSystem {
                 }
             }
         }
-        for document in documents.clone() {
+        for (file_id, document) in documents.clone() {
             for definition in &document.definitions {
                 match definition {
                     mir::Definition::SchemaExtension(ext) => {
                         if let Some(schema) = &mut opt_schema {
-                            schema.extend(ext);
+                            schema.extend(Located::with_file_id(ext.clone(), file_id))
                         }
                     }
                     mir::Definition::ScalarTypeExtension(ext) => {
                         if let Some(Type::Scalar(ty)) = types.get_mut(&ext.name) {
-                            ty.extend(ext)
+                            ty.extend(Located::with_file_id(ext.clone(), file_id))
                         }
                     }
                     mir::Definition::ObjectTypeExtension(ext) => {
                         if let Some(Type::Object(ty)) = types.get_mut(&ext.name) {
-                            ty.extend(ext)
+                            ty.extend(Located::with_file_id(ext.clone(), file_id))
                         }
                     }
                     mir::Definition::InterfaceTypeExtension(ext) => {
                         if let Some(Type::Interface(ty)) = types.get_mut(&ext.name) {
-                            ty.extend(ext)
+                            ty.extend(Located::with_file_id(ext.clone(), file_id))
                         }
                     }
                     mir::Definition::UnionTypeExtension(ext) => {
                         if let Some(Type::Union(ty)) = types.get_mut(&ext.name) {
-                            ty.extend(ext)
+                            ty.extend(Located::with_file_id(ext.clone(), file_id))
                         }
                     }
                     mir::Definition::EnumTypeExtension(ext) => {
                         if let Some(Type::Enum(ty)) = types.get_mut(&ext.name) {
-                            ty.extend(ext)
+                            ty.extend(Located::with_file_id(ext.clone(), file_id))
                         }
                     }
                     mir::Definition::InputObjectTypeExtension(ext) => {
                         if let Some(Type::InputObject(ty)) = types.get_mut(&ext.name) {
-                            ty.extend(ext)
+                            ty.extend(Located::with_file_id(ext.clone(), file_id))
                         }
                     }
                     mir::Definition::OperationDefinition(_)
@@ -266,8 +350,8 @@ impl TypeSystem {
         name: &str,
     ) -> Option<&IndexMap<Name, Harc<Ranged<mir::FieldDefinition>>>> {
         match self.types.get(name)? {
-            Type::Object(ty) => Some(&ty.fields),
-            Type::Interface(ty) => Some(&ty.fields),
+            // Type::Object(ty) => Some(&ty.fields),
+            // Type::Interface(ty) => Some(&ty.fields),
             _ => None,
         }
     }
@@ -330,24 +414,25 @@ impl TypeSystem {
 }
 
 impl Schema {
-    fn new(definition: &mir::SchemaDefinition) -> Schema {
+    fn new(definition: Located<mir::SchemaDefinition>) -> Schema {
         let mut schema = Schema {
-            description: definition.description.clone(),
-            directives: definition.directives.clone(),
+            definition: None,
+            extensions: Vec::new(),
             query: None,
             mutation: None,
             subscription: None,
         };
         schema.add_root_operations(&definition.root_operations);
+        schema.definition = Some(definition);
         schema
     }
 
-    fn extend(&mut self, extension: &mir::SchemaExtension) {
-        self.directives.extend(extension.directives.iter().cloned());
-        self.add_root_operations(&extension.root_operations)
+    fn extend(&mut self, extension: Located<mir::SchemaExtension>) {
+        self.add_root_operations(&extension.root_operations);
+        self.extensions.push(extension);
     }
 
-    fn add_root_operations(&mut self, root_operations: &[(mir::OperationType, BowString)]) {
+    fn add_root_operations(&mut self, root_operations: &[(mir::OperationType, Name)]) {
         for (operation_type, object_type_name) in root_operations {
             match operation_type {
                 mir::OperationType::Query => &mut self.query,
@@ -359,7 +444,7 @@ impl Schema {
     }
 
     /// Returns the name of the object type for the root operation with the given operation kind
-    pub fn root_operation(&self, operation_type: mir::OperationType) -> Option<&BowString> {
+    pub fn root_operation(&self, operation_type: mir::OperationType) -> Option<&Name> {
         match operation_type {
             mir::OperationType::Query => &self.query,
             mir::OperationType::Mutation => &self.mutation,
@@ -368,17 +453,17 @@ impl Schema {
         .as_ref()
     }
 
-    fn implicit(types: &IndexMap<BowString, Type>) -> Self {
+    fn implicit(types: &IndexMap<Name, Type>) -> Self {
         let if_has_object_type = |name: &str| {
             if let Some(Type::Object(_)) = types.get(name) {
-                Some(BowString::from(name))
+                Some(Name::from(name))
             } else {
                 None
             }
         };
         Self {
-            description: None,
-            directives: Vec::new(),
+            definition: None,
+            extensions: Vec::new(),
             query: if_has_object_type("Query"),
             mutation: if_has_object_type("Mutation"),
             subscription: if_has_object_type("Subscription"),
@@ -387,127 +472,208 @@ impl Schema {
 }
 
 impl ScalarType {
-    fn new(definition: &mir::ScalarTypeDefinition) -> Self {
+    fn new(definition: Located<mir::ScalarTypeDefinition>) -> Self {
         Self {
-            description: definition.description.clone(),
-            directives: definition.directives.clone(),
+            definition,
+            extensions: Vec::new(),
         }
     }
 
-    fn extend(&mut self, extension: &mir::ScalarTypeExtension) {
-        self.directives.extend(extension.directives.iter().cloned())
+    fn extend(&mut self, extension: Located<mir::ScalarTypeExtension>) {
+        self.extensions.push(extension);
     }
 }
 
 impl ObjectType {
-    fn new(definition: &mir::ObjectTypeDefinition) -> Self {
+    fn new(definition: Located<mir::ObjectTypeDefinition>) -> Self {
+        let implements_interfaces = definition.implements_interfaces.iter().cloned().collect();
+        let mut fields = IndexMap::new();
+        for (i, field) in definition.fields.iter().enumerate() {
+            fields
+                .entry(field.name.clone())
+                .or_insert_with(|| ComponentIndex::in_definition(i));
+        }
         Self {
-            description: definition.description.clone(),
-            implements_interfaces: definition.implements_interfaces.iter().cloned().collect(),
-            directives: definition.directives.clone(),
-            fields: definition
-                .fields
-                .iter()
-                .map(|f| (f.name.clone(), f.clone()))
-                .collect(),
+            definition,
+            extensions: Vec::new(),
+            implements_interfaces,
+            fields,
         }
     }
 
-    fn extend(&mut self, extension: &mir::ObjectTypeExtension) {
-        self.directives.extend(extension.directives.iter().cloned());
+    fn extend(&mut self, extension: Located<mir::ObjectTypeExtension>) {
         self.implements_interfaces
             .extend(extension.implements_interfaces.iter().cloned());
-        for field in &extension.fields {
+        let extension_index = self.extensions.len();
+        for (i, field) in extension.fields.iter().enumerate() {
             self.fields
                 .entry(field.name.clone())
-                .or_insert_with(|| field.clone());
+                .or_insert_with(|| ComponentIndex::in_extension(extension_index, i));
         }
+        self.extensions.push(extension);
+    }
+
+    fn field_by_index(&self, index: &ComponentIndex) -> LocatedBorrow<'_, mir::FieldDefinition> {
+        index.get(
+            &self.definition,
+            || &self.definition.fields,
+            || &self.extensions,
+            |ext| &ext.fields,
+        )
+    }
+
+    pub fn fields<'a>(
+        &'a self,
+    ) -> impl Iterator<Item = LocatedBorrow<'a, mir::FieldDefinition>> + 'a {
+        self.fields.values().map(|index| self.field_by_index(index))
+    }
+
+    pub fn field_by_name(&self, name: &str) -> Option<LocatedBorrow<mir::FieldDefinition>> {
+        self.fields
+            .get(name)
+            .map(|index| self.field_by_index(index))
     }
 }
 
 impl InterfaceType {
-    fn new(definition: &mir::InterfaceTypeDefinition) -> Self {
+    fn new(definition: Located<mir::InterfaceTypeDefinition>) -> Self {
+        let implements_interfaces = definition.implements_interfaces.iter().cloned().collect();
+        let mut fields = IndexMap::new();
+        for (i, field) in definition.fields.iter().enumerate() {
+            fields
+                .entry(field.name.clone())
+                .or_insert_with(|| ComponentIndex::in_definition(i));
+        }
         Self {
-            description: definition.description.clone(),
-            implements_interfaces: definition.implements_interfaces.iter().cloned().collect(),
-            directives: definition.directives.clone(),
-            fields: definition
-                .fields
-                .iter()
-                .map(|f| (f.name.clone(), f.clone()))
-                .collect(),
+            definition,
+            extensions: Vec::new(),
+            implements_interfaces,
+            fields,
         }
     }
 
-    fn extend(&mut self, extension: &mir::InterfaceTypeExtension) {
-        self.directives.extend(extension.directives.iter().cloned());
+    fn extend(&mut self, extension: Located<mir::InterfaceTypeExtension>) {
         self.implements_interfaces
             .extend(extension.implements_interfaces.iter().cloned());
-        for field in &extension.fields {
+        let extension_index = self.extensions.len();
+        for (i, field) in extension.fields.iter().enumerate() {
             self.fields
                 .entry(field.name.clone())
-                .or_insert_with(|| field.clone());
+                .or_insert_with(|| ComponentIndex::in_extension(extension_index, i));
         }
+        self.extensions.push(extension);
+    }
+
+    fn field_by_index(&self, index: &ComponentIndex) -> LocatedBorrow<'_, mir::FieldDefinition> {
+        index.get(
+            &self.definition,
+            || &self.definition.fields,
+            || &self.extensions,
+            |ext| &ext.fields,
+        )
+    }
+
+    pub fn fields<'a>(
+        &'a self,
+    ) -> impl Iterator<Item = LocatedBorrow<'a, mir::FieldDefinition>> + 'a {
+        self.fields.values().map(|index| self.field_by_index(index))
+    }
+
+    pub fn field_by_name(&self, name: &str) -> Option<LocatedBorrow<mir::FieldDefinition>> {
+        self.fields
+            .get(name)
+            .map(|index| self.field_by_index(index))
     }
 }
 
 impl UnionType {
-    fn new(definition: &mir::UnionTypeDefinition) -> Self {
+    fn new(definition: Located<mir::UnionTypeDefinition>) -> Self {
+        let members = definition.members.iter().cloned().collect();
         Self {
-            description: definition.description.clone(),
-            directives: definition.directives.clone(),
-            members: definition.members.iter().cloned().collect(),
+            definition,
+            extensions: Vec::new(),
+            members,
         }
     }
 
-    fn extend(&mut self, extension: &mir::UnionTypeExtension) {
-        self.directives.extend(extension.directives.iter().cloned());
+    fn extend(&mut self, extension: Located<mir::UnionTypeExtension>) {
         self.members.extend(extension.members.iter().cloned());
+        self.extensions.push(extension);
     }
 }
 
 impl EnumType {
-    fn new(definition: &mir::EnumTypeDefinition) -> Self {
+    fn new(definition: Located<mir::EnumTypeDefinition>) -> Self {
+        let mut values = IndexMap::new();
+        for (i, value_def) in definition.values.iter().enumerate() {
+            values
+                .entry(value_def.value.clone())
+                .or_insert_with(|| ComponentIndex::in_definition(i));
+        }
         Self {
-            description: definition.description.clone(),
-            directives: definition.directives.clone(),
-            values: definition
-                .values
-                .iter()
-                .map(|v| (v.value.clone(), v.clone()))
-                .collect(),
+            definition,
+            extensions: Vec::new(),
+            values,
         }
     }
 
-    fn extend(&mut self, extension: &mir::EnumTypeExtension) {
-        self.directives.extend(extension.directives.iter().cloned());
-        for value in &extension.values {
+    fn extend(&mut self, extension: Located<mir::EnumTypeExtension>) {
+        let extension_index = self.extensions.len();
+        for (i, value_def) in extension.values.iter().enumerate() {
             self.values
-                .entry(value.value.clone())
-                .or_insert_with(|| value.clone());
+                .entry(value_def.value.clone())
+                .or_insert_with(|| ComponentIndex::in_extension(extension_index, i));
         }
+        self.extensions.push(extension);
     }
 }
 
 impl InputObjectType {
-    fn new(definition: &mir::InputObjectTypeDefinition) -> Self {
+    fn new(definition: Located<mir::InputObjectTypeDefinition>) -> Self {
+        let mut fields = IndexMap::new();
+        for (i, field) in definition.fields.iter().enumerate() {
+            fields
+                .entry(field.name.clone())
+                .or_insert_with(|| ComponentIndex::in_definition(i));
+        }
         Self {
-            description: definition.description.clone(),
-            directives: definition.directives.clone(),
-            fields: definition
-                .fields
-                .iter()
-                .map(|f| (f.name.clone(), f.clone()))
-                .collect(),
+            definition,
+            extensions: Vec::new(),
+            values: fields,
         }
     }
 
-    fn extend(&mut self, extension: &mir::InputObjectTypeExtension) {
-        self.directives.extend(extension.directives.iter().cloned());
-        for field in &extension.fields {
-            self.fields
+    fn extend(&mut self, extension: Located<mir::InputObjectTypeExtension>) {
+        let extension_index = self.extensions.len();
+        for (i, field) in extension.fields.iter().enumerate() {
+            self.values
                 .entry(field.name.clone())
-                .or_insert_with(|| field.clone());
+                .or_insert_with(|| ComponentIndex::in_extension(extension_index, i));
         }
+        self.extensions.push(extension);
+    }
+
+    fn value_by_index(
+        &self,
+        index: &ComponentIndex,
+    ) -> LocatedBorrow<'_, mir::InputValueDefinition> {
+        index.get(
+            &self.definition,
+            || &self.definition.fields,
+            || &self.extensions,
+            |ext| &ext.fields,
+        )
+    }
+
+    pub fn values<'a>(
+        &'a self,
+    ) -> impl Iterator<Item = LocatedBorrow<'a, mir::InputValueDefinition>> + 'a {
+        self.values.values().map(|index| self.value_by_index(index))
+    }
+
+    pub fn value_by_name(&self, name: &str) -> Option<LocatedBorrow<mir::InputValueDefinition>> {
+        self.values
+            .get(name)
+            .map(|index| self.value_by_index(index))
     }
 }

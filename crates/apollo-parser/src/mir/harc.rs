@@ -15,7 +15,7 @@ use triomphe::Arc;
 /// For this cache to be correct, `T` is expected to have a stable hash a long as no
 /// `&mut T` exclusive reference to it is given out.
 /// Generally this excludes interior mutability.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Harc<T>(Arc<HarcInner<T>>);
 
 #[derive(Debug)]
@@ -30,6 +30,12 @@ const CACHED_HASH_NOT_COMPUTED_YET: u64 = 0;
 const _: () = {
     assert!(std::mem::size_of::<HarcInner<super::Ranged<()>>>() == 16);
 };
+
+impl<T> Clone for Harc<T> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
 
 impl<T: Clone> Clone for HarcInner<T> {
     fn clone(&self) -> Self {
