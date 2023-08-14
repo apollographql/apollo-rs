@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use apollo_parser::{Parser as ApolloParser, SyntaxTree};
 use rowan::GreenNode;
 
@@ -18,6 +20,9 @@ pub trait AstDatabase: InputDatabase {
     /// SyntaxNodePtr to an actual SyntaxNode.
     #[salsa::invoke(document)]
     fn document(&self, file_id: FileId) -> GreenNode;
+
+    #[salsa::invoke(mir)]
+    fn mir(&self, file_id: FileId) -> Arc<apollo_parser::mir::Document>;
 
     /// Get syntax errors found in the compiler's manifest.
     #[salsa::invoke(syntax_errors)]
@@ -43,6 +48,10 @@ fn ast(db: &dyn AstDatabase, file_id: FileId) -> SyntaxTree {
 
 fn document(db: &dyn AstDatabase, file_id: FileId) -> GreenNode {
     db.ast(file_id).green()
+}
+
+fn mir(db: &dyn AstDatabase, file_id: FileId) -> Arc<apollo_parser::mir::Document> {
+    Arc::new(db.ast(file_id).document().into())
 }
 
 fn syntax_errors(db: &dyn AstDatabase) -> Vec<ApolloDiagnostic> {
