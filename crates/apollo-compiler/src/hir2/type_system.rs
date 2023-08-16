@@ -344,53 +344,33 @@ impl TypeSystem {
         }
     }
 
-    /// If the given name is an object type on interface type, return its field definitions
-    pub(crate) fn field_definitions(
-        &self,
-        name: &str,
-    ) -> Option<&IndexMap<Name, Harc<Ranged<mir::FieldDefinition>>>> {
-        match self.types.get(name)? {
-            // Type::Object(ty) => Some(&ty.fields),
-            // Type::Interface(ty) => Some(&ty.fields),
-            _ => None,
-        }
-    }
-
     /// Return the meta-fields for a selection set.
     ///
     /// `is_root_operation` must be `Some` if and only if the selection set is the root of an operation.
     pub(crate) fn meta_field_definitions(
         is_root_operation_type: Option<mir::OperationType>,
-    ) -> &'static [Harc<Ranged<mir::FieldDefinition>>] {
-        static TYPENAME_FIELD: OnceLock<Harc<Ranged<mir::FieldDefinition>>> = OnceLock::new();
-        static ROOT_QUERY_FIELDS: OnceLock<[Harc<Ranged<mir::FieldDefinition>>; 3]> =
-            OnceLock::new();
-        let typename_field = || {
-            TYPENAME_FIELD.get_or_init(|| {
-                // __typename: String!
-                Harc::new(Ranged::no_location(mir::FieldDefinition {
-                    description: None,
-                    name: "__typename".into(),
-                    arguments: Vec::new(),
-                    ty: mir::Type::new_named("String").non_null(),
-                    directives: Vec::new(),
-                }))
-            })
-        };
-        match is_root_operation_type {
-            Some(mir::OperationType::Query) => ROOT_QUERY_FIELDS.get_or_init(|| {
+    ) -> &'static [Located<mir::FieldDefinition>] {
+        static ROOT_QUERY_FIELDS: LazyLock<[Located<mir::FieldDefinition>; 3]> =
+            LazyLock::new(|| {
                 [
-                    typename_field().clone(),
+                    // __typename: String!
+                    Located::no_location(mir::FieldDefinition {
+                        description: None,
+                        name: "__typename".into(),
+                        arguments: Vec::new(),
+                        ty: mir::Type::new_named("String").non_null(),
+                        directives: Vec::new(),
+                    }),
                     // __schema: __Schema!
-                    Harc::new(Ranged::no_location(mir::FieldDefinition {
+                    Located::no_location(mir::FieldDefinition {
                         description: None,
                         name: "__schema".into(),
                         arguments: Vec::new(),
                         ty: mir::Type::new_named("__Schema").non_null(),
                         directives: Vec::new(),
-                    })),
+                    }),
                     // __type(name: String!): __Type
-                    Harc::new(Ranged::no_location(mir::FieldDefinition {
+                    Located::no_location(mir::FieldDefinition {
                         description: None,
                         name: "__type".into(),
                         arguments: vec![Harc::new(Ranged::no_location(
@@ -404,11 +384,21 @@ impl TypeSystem {
                         ))],
                         ty: mir::Type::new_named("__Type"),
                         directives: Vec::new(),
-                    })),
+                    }),
                 ]
-            }),
+            });
+        static NON_ROOT_FIELDS: LazyLock<[Located<mir::FieldDefinition>; 1]> =
+            LazyLock::new(|| {
+                [
+                    // __typename: String!
+                    NON_ROOT_FIELDS.get()[0].clone(),
+                ]
+            });
+
+        match is_root_operation_type {
+            Some(mir::OperationType::Query) => ROOT_QUERY_FIELDS.get(),
             Some(mir::OperationType::Subscription) => &[],
-            _ => std::slice::from_ref(typename_field()),
+            _ => NON_ROOT_FIELDS.get(),
         }
     }
 }
@@ -675,5 +665,36 @@ impl InputObjectType {
         self.values
             .get(name)
             .map(|index| self.value_by_index(index))
+    }
+}
+
+impl Type {
+    /// For an object type or interface type, return the field with the given name.
+    /// For other types, always returns `None`.
+    pub fn field_by_name(&self, name: &str) -> Option<LocatedBorrow<'_, mir::FieldDefinition>> {
+        match self {
+            Type::Object(ty) => ty.field_by_name(name),
+            Type::Interface(ty) => ty.field_by_name(name),
+            Type::Scalar(_) | Type::Union(_) | Type::Enum(_) | Type::InputObject(_) => None,
+        }
+    }
+}
+
+// TODO: use `std::sync::LazyLock` when available https://github.com/rust-lang/rust/issues/109736
+struct LazyLock<T> {
+    value: OnceLock<T>,
+    init: fn() -> T,
+}
+
+impl<T> LazyLock<T> {
+    const fn new(init: fn() -> T) -> Self {
+        Self {
+            value: OnceLock::new(),
+            init,
+        }
+    }
+
+    fn get(&self) -> &T {
+        self.value.get_or_init(self.init)
     }
 }

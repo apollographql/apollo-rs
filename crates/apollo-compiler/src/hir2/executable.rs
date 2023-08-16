@@ -1,3 +1,4 @@
+use super::type_system;
 use super::type_system::TypeSystem;
 use apollo_parser::mir;
 use apollo_parser::mir::Harc;
@@ -151,7 +152,7 @@ impl Selection {
         if selection_set.is_empty() {
             return Ok(Vec::new());
         }
-        let parent_fields_def = type_system.field_definitions(parent_type);
+        let parent_type_def = type_system.types.get(parent_type).ok_or(TypeError {})?;
         selection_set
             .iter()
             .map(|selection| {
@@ -159,7 +160,7 @@ impl Selection {
                     type_system,
                     parent_is_root_operation,
                     parent_type,
-                    parent_fields_def,
+                    parent_type_def,
                     selection,
                 )
             })
@@ -170,7 +171,7 @@ impl Selection {
         type_system: &TypeSystem,
         parent_is_root_operation: Option<OperationType>,
         parent_type: &Name,
-        parent_fields_def: Option<&IndexMap<Name, Harc<Ranged<mir::FieldDefinition>>>>,
+        parent_type_def: &type_system::Type,
         selection: &mir::Selection,
     ) -> Result<Selection, TypeError> {
         Ok(match selection {
@@ -178,7 +179,8 @@ impl Selection {
                 let ty = &TypeSystem::meta_field_definitions(parent_is_root_operation)
                     .iter()
                     .find(|field_def| field_def.name == field.name)
-                    .or_else(|| parent_fields_def?.get(&field.name))
+                    .map(|field_def| field_def.borrow())
+                    .or_else(|| parent_type_def.field_by_name(&field.name))
                     .ok_or(TypeError {})?
                     .ty;
                 Selection::Field(Field {

@@ -32,10 +32,17 @@ impl<T> std::ops::Deref for LocatedBorrow<'_, T> {
 }
 
 impl<T> Located<T> {
-    pub fn no_file_id(value: Harc<Ranged<T>>) -> Self {
+    pub fn no_location(node: T) -> Self {
         Self {
             file_id: None,
-            harc: value,
+            harc: Harc::new(Ranged::no_location(node)),
+        }
+    }
+
+    pub fn no_file_id(harc: Harc<Ranged<T>>) -> Self {
+        Self {
+            file_id: None,
+            harc,
         }
     }
 
