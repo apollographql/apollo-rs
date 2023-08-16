@@ -1,4 +1,3 @@
-use super::type_system;
 use super::type_system::TypeSystem;
 use apollo_parser::mir;
 use apollo_parser::mir::Harc;
@@ -23,14 +22,21 @@ pub struct Operation {
     pub ty: mir::NamedType,
     pub variables: Vec<Harc<Ranged<mir::VariableDefinition>>>,
     pub directives: Vec<Harc<Ranged<mir::Directive>>>,
-    pub selection_set: Vec<Selection>,
+    pub selection_set: SelectionSet,
 }
 
 #[derive(Clone, Debug)]
 pub struct Fragment {
     pub type_condition: mir::NamedType,
     pub directives: Vec<Harc<Ranged<mir::Directive>>>,
-    pub selection_set: Vec<Selection>,
+    pub selection_set: SelectionSet,
+}
+
+#[derive(Clone, Debug)]
+pub struct SelectionSet {
+    parent_is_root_operation: Option<OperationType>,
+    parent_type: mir::NamedType,
+    selections: Vec<Selection>,
 }
 
 #[derive(Clone, Debug)]
@@ -48,7 +54,7 @@ pub struct Field {
     pub name: Name,
     pub arguments: Vec<(Name, mir::Value)>,
     pub directives: Vec<Harc<Ranged<mir::Directive>>>,
-    pub selection_set: Vec<Selection>,
+    pub selection_set: SelectionSet,
 }
 
 #[derive(Clone, Debug)]
@@ -61,7 +67,7 @@ pub struct FragmentSpread {
 pub struct InlineFragment {
     pub type_condition: Option<mir::NamedType>,
     pub directives: Vec<Harc<Ranged<mir::Directive>>>,
-    pub selection_set: Vec<Selection>,
+    pub selection_set: SelectionSet,
 }
 
 /// Run validation for details
@@ -69,7 +75,10 @@ pub struct InlineFragment {
 pub struct TypeError {}
 
 impl Executable {
-    pub fn new(type_system: &TypeSystem, input_files: &[mir::Document]) -> Result<Self, TypeError> {
+    pub fn from_mir(
+        type_system: &TypeSystem,
+        input_files: &[mir::Document],
+    ) -> Result<Self, TypeError> {
         let mut named_operations = IndexMap::new();
         let mut anonymous_operation = None;
         let mut fragments = IndexMap::new();
@@ -79,17 +88,18 @@ impl Executable {
                     mir::Definition::OperationDefinition(operation) => {
                         if let Some(name) = &operation.name {
                             if let Entry::Vacant(entry) = named_operations.entry(name.clone()) {
-                                entry.insert(Operation::new(type_system, operation)?);
+                                entry.insert(Operation::from_mir(type_system, operation)?);
                             }
                         } else {
                             if anonymous_operation.is_none() {
-                                anonymous_operation = Some(Operation::new(type_system, operation)?);
+                                anonymous_operation =
+                                    Some(Operation::from_mir(type_system, operation)?);
                             }
                         }
                     }
                     mir::Definition::FragmentDefinition(fragment) => {
                         if let Entry::Vacant(entry) = fragments.entry(fragment.name.clone()) {
-                            entry.insert(Fragment::new(type_system, fragment)?);
+                            entry.insert(Fragment::from_mir(type_system, fragment)?);
                         }
                     }
                     _ => {}
@@ -105,120 +115,277 @@ impl Executable {
 }
 
 impl Operation {
-    fn new(
+    fn from_mir(
         type_system: &TypeSystem,
-        definition: &mir::OperationDefinition,
+        mir: &mir::OperationDefinition,
     ) -> Result<Self, TypeError> {
         let ty = type_system
             .schema
-            .root_operation(definition.operation_type)
+            .root_operation(mir.operation_type)
             .ok_or(TypeError {})?;
+        let mut selection_set = SelectionSet::new_for_root(ty.clone(), mir.operation_type);
+        selection_set.extend_from_mir(type_system, &mir.selection_set)?;
         Ok(Self {
-            selection_set: Selection::new_set(
-                type_system,
-                Some(definition.operation_type),
-                ty,
-                &definition.selection_set,
-            )?,
+            selection_set,
             ty: ty.clone(),
-            operation_type: definition.operation_type,
-            variables: definition.variables.clone(),
-            directives: definition.directives.clone(),
+            operation_type: mir.operation_type,
+            variables: mir.variables.clone(),
+            directives: mir.directives.clone(),
         })
     }
 }
 
 impl Fragment {
-    fn new(
+    fn from_mir(
         type_system: &TypeSystem,
-        definition: &mir::FragmentDefinition,
+        mir: &mir::FragmentDefinition,
     ) -> Result<Self, TypeError> {
-        let ty = &definition.type_condition;
+        let ty = &mir.type_condition;
+        let mut selection_set = SelectionSet::new_for_non_root(ty.clone());
+        selection_set.extend_from_mir(type_system, &mir.selection_set)?;
         Ok(Self {
-            selection_set: Selection::new_set(type_system, None, ty, &definition.selection_set)?,
+            selection_set,
             type_condition: ty.clone(),
-            directives: definition.directives.clone(),
+            directives: mir.directives.clone(),
         })
     }
 }
 
-impl Selection {
-    fn new_set(
-        type_system: &TypeSystem,
-        parent_is_root_operation: Option<OperationType>,
-        parent_type: &mir::NamedType,
-        selection_set: &[mir::Selection],
-    ) -> Result<Vec<Self>, TypeError> {
-        if selection_set.is_empty() {
-            return Ok(Vec::new());
+impl SelectionSet {
+    /// Create a new selection set for the root of an operation
+    pub fn new_for_root(parent_type: mir::NamedType, operation_type: OperationType) -> Self {
+        Self {
+            parent_is_root_operation: Some(operation_type),
+            parent_type,
+            selections: Vec::new(),
         }
-        let parent_type_def = type_system.types.get(parent_type).ok_or(TypeError {})?;
-        selection_set
-            .iter()
-            .map(|selection| {
-                Self::new(
-                    type_system,
-                    parent_is_root_operation,
-                    parent_type,
-                    parent_type_def,
-                    selection,
-                )
-            })
-            .collect()
     }
 
-    fn new(
+    /// Create a new selection set for a field, fragment, or inline fragment
+    pub fn new_for_non_root(parent_type: mir::NamedType) -> Self {
+        Self {
+            parent_is_root_operation: None,
+            parent_type,
+            selections: Vec::new(),
+        }
+    }
+
+    pub fn selections(&self) -> &[Selection] {
+        &self.selections
+    }
+
+    pub fn push(&mut self, selection: impl Into<Selection>) {
+        self.selections.push(selection.into())
+    }
+
+    pub fn extend(&mut self, selections: impl IntoIterator<Item = impl Into<Selection>>) {
+        self.selections
+            .extend(selections.into_iter().map(|sel| sel.into()))
+    }
+
+    fn extend_from_mir(
+        &mut self,
         type_system: &TypeSystem,
-        parent_is_root_operation: Option<OperationType>,
-        parent_type: &Name,
-        parent_type_def: &type_system::Type,
-        selection: &mir::Selection,
-    ) -> Result<Selection, TypeError> {
-        Ok(match selection {
-            mir::Selection::Field(field) => {
-                let ty = &TypeSystem::meta_field_definitions(parent_is_root_operation)
-                    .iter()
-                    .find(|field_def| field_def.name == field.name)
-                    .map(|field_def| field_def.borrow())
-                    .or_else(|| parent_type_def.field_by_name(&field.name))
-                    .ok_or(TypeError {})?
-                    .ty;
-                Selection::Field(Field {
-                    selection_set: Selection::new_set(
-                        type_system,
-                        None,
-                        ty.inner_named_type(),
-                        &field.selection_set,
-                    )?,
-                    alias: field.alias.clone(),
-                    name: field.name.clone(),
-                    arguments: field.arguments.clone(),
-                    directives: field.directives.clone(),
-                    ty: ty.clone(),
-                })
+        mir_selections: &[mir::Selection],
+    ) -> Result<(), TypeError> {
+        for selection in mir_selections {
+            match selection {
+                mir::Selection::Field(mir) => {
+                    let mut field = self
+                        .new_field(type_system, mir.name.clone())?
+                        .with_alias(mir.alias.clone())
+                        .with_arguments(mir.arguments.iter().cloned())
+                        .with_directives(mir.directives.iter().cloned());
+                    field
+                        .selection_set
+                        .extend_from_mir(type_system, &mir.selection_set)?;
+                    self.push(field)
+                }
+                mir::Selection::FragmentSpread(mir) => self.push(
+                    FragmentSpread::new(mir.fragment_name.clone())
+                        .with_directives(mir.directives.iter().cloned()),
+                ),
+                mir::Selection::InlineFragment(mir) => {
+                    let mut inline_fragment =
+                        InlineFragment::new(&self.parent_type, mir.type_condition.clone())
+                            .with_directives(mir.directives.iter().cloned());
+                    inline_fragment
+                        .selection_set
+                        .extend_from_mir(type_system, &mir.selection_set)?;
+                    self.push(inline_fragment)
+                }
             }
-            mir::Selection::InlineFragment(inline_fragment) => {
-                let parent_type = inline_fragment
-                    .type_condition
-                    .as_ref()
-                    .unwrap_or(parent_type);
-                Selection::InlineFragment(InlineFragment {
-                    selection_set: Selection::new_set(
-                        type_system,
-                        None,
-                        parent_type,
-                        &inline_fragment.selection_set,
-                    )?,
-                    type_condition: inline_fragment.type_condition.clone(),
-                    directives: inline_fragment.directives.clone(),
-                })
-            }
-            mir::Selection::FragmentSpread(fragment_spread) => {
-                Selection::FragmentSpread(FragmentSpread {
-                    fragment_name: fragment_spread.fragment_name.clone(),
-                    directives: fragment_spread.directives.clone(),
-                })
-            }
+        }
+        Ok(())
+    }
+
+    /// Create a new field to be added to this selection set with [`push`][Self::push]
+    pub fn new_field(&self, type_system: &TypeSystem, name: Name) -> Result<Field, TypeError> {
+        let ty = TypeSystem::meta_field_definitions(self.parent_is_root_operation)
+            .iter()
+            .find(|field_def| field_def.name == name)
+            .map(|field_def| field_def.borrow())
+            .or_else(|| {
+                type_system
+                    .types
+                    .get(&self.parent_type)?
+                    .field_by_name(&name)
+            })
+            .ok_or(TypeError {})?
+            .ty
+            .clone();
+        let selection_set = SelectionSet::new_for_non_root(ty.inner_named_type().clone());
+        Ok(Field {
+            ty,
+            alias: None,
+            name,
+            arguments: Vec::new(),
+            directives: Vec::new(),
+            selection_set,
         })
+    }
+}
+
+impl From<Field> for Selection {
+    fn from(value: Field) -> Self {
+        Self::Field(value)
+    }
+}
+
+impl From<InlineFragment> for Selection {
+    fn from(value: InlineFragment) -> Self {
+        Self::InlineFragment(value)
+    }
+}
+
+impl From<FragmentSpread> for Selection {
+    fn from(value: FragmentSpread) -> Self {
+        Self::FragmentSpread(value)
+    }
+}
+
+impl Field {
+    pub fn with_alias(mut self, alias: impl Into<Option<Name>>) -> Self {
+        self.alias = alias.into();
+        self
+    }
+
+    pub fn with_directive(mut self, directive: impl Into<Harc<Ranged<mir::Directive>>>) -> Self {
+        self.directives.push(directive.into());
+        self
+    }
+
+    pub fn with_directives(
+        mut self,
+        directives: impl IntoIterator<Item = Harc<Ranged<mir::Directive>>>,
+    ) -> Self {
+        self.directives.extend(directives);
+        self
+    }
+
+    pub fn with_argument(mut self, name: impl Into<Name>, value: impl Into<mir::Value>) -> Self {
+        self.arguments.push((name.into(), value.into()));
+        self
+    }
+
+    pub fn with_arguments(
+        mut self,
+        arguments: impl IntoIterator<Item = (impl Into<Name>, impl Into<mir::Value>)>,
+    ) -> Self {
+        self.arguments.extend(
+            arguments
+                .into_iter()
+                .map(|(name, value)| (name.into(), value.into())),
+        );
+        self
+    }
+
+    pub fn with_selection(mut self, selection: impl Into<Selection>) -> Self {
+        self.selection_set.push(selection);
+        self
+    }
+
+    pub fn with_selections(
+        mut self,
+        selections: impl IntoIterator<Item = impl Into<Selection>>,
+    ) -> Self {
+        self.selection_set.extend(selections);
+        self
+    }
+}
+
+impl InlineFragment {
+    pub fn new(parent_type: &mir::NamedType, type_condition: Option<mir::NamedType>) -> Self {
+        if let Some(ty) = type_condition {
+            Self::with_type_condition(ty)
+        } else {
+            Self::no_type_condition(parent_type.clone())
+        }
+    }
+
+    pub fn no_type_condition(parent_type: mir::NamedType) -> Self {
+        let selection_set = SelectionSet::new_for_non_root(parent_type);
+        InlineFragment {
+            type_condition: None,
+            directives: Vec::new(),
+            selection_set,
+        }
+    }
+
+    pub fn with_type_condition(type_condition: mir::NamedType) -> Self {
+        let selection_set = SelectionSet::new_for_non_root(type_condition.clone());
+        InlineFragment {
+            type_condition: Some(type_condition),
+            directives: Vec::new(),
+            selection_set,
+        }
+    }
+
+    pub fn with_directive(mut self, directive: impl Into<Harc<Ranged<mir::Directive>>>) -> Self {
+        self.directives.push(directive.into());
+        self
+    }
+
+    pub fn with_directives(
+        mut self,
+        directives: impl IntoIterator<Item = Harc<Ranged<mir::Directive>>>,
+    ) -> Self {
+        self.directives.extend(directives);
+        self
+    }
+
+    pub fn with_selection(mut self, selection: impl Into<Selection>) -> Self {
+        self.selection_set.push(selection);
+        self
+    }
+
+    pub fn with_selections(
+        mut self,
+        selections: impl IntoIterator<Item = impl Into<Selection>>,
+    ) -> Self {
+        self.selection_set.extend(selections);
+        self
+    }
+}
+
+impl FragmentSpread {
+    pub fn new(fragment_name: Name) -> Self {
+        Self {
+            fragment_name,
+            directives: Vec::new(),
+        }
+    }
+
+    pub fn with_directive(mut self, directive: impl Into<Harc<Ranged<mir::Directive>>>) -> Self {
+        self.directives.push(directive.into());
+        self
+    }
+
+    pub fn with_directives(
+        mut self,
+        directives: impl IntoIterator<Item = Harc<Ranged<mir::Directive>>>,
+    ) -> Self {
+        self.directives.extend(directives);
+        self
     }
 }
