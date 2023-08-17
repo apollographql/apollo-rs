@@ -3120,6 +3120,19 @@ impl InterfaceTypeDefinition {
             .is_some()
     }
 
+    /// Returns an iterator of types implementing this interface
+    pub fn implementors<'db>(
+        &self,
+        db: &'db dyn HirDatabase,
+    ) -> impl Iterator<Item = TypeDefinition> + 'db {
+        let implementors = db.subtype_map().get(self.name()).cloned();
+
+        implementors
+            .into_iter()
+            .flatten()
+            .filter_map(move |implementor| db.find_type_definition_by_name(implementor))
+    }
+
     /// Get a reference to the interface definition's directives (excluding those on extensions).
     pub fn self_directives(&self) -> &[Directive] {
         self.directives.as_ref()
@@ -3921,6 +3934,7 @@ mod tests {
         let scalar = &compiler.db.types_definitions_by_name()["Scalar"];
         let object = &compiler.db.object_types()["Object"];
         let interface = &compiler.db.interfaces()["Intf"];
+        let interface2 = &compiler.db.interfaces()["Intf2"];
         let input = &compiler.db.input_objects()["Input"];
         let enum_ = &compiler.db.enums()["Enum"];
         let union_ = &compiler.db.unions()["Union"];
@@ -4056,6 +4070,13 @@ mod tests {
         );
         assert!(union_.has_member("Object2"));
         assert!(!union_.has_member("Enum"));
+
+        let mut implementors = interface2
+            .implementors(&compiler.db)
+            .map(|ty| ty.name().to_string())
+            .collect::<Vec<_>>();
+        implementors.sort();
+        assert_eq!(implementors, ["Intf", "Object"]);
     }
 
     #[test]
