@@ -148,7 +148,7 @@ where
 }
 
 impl TypeSystem {
-    pub fn new(input_files: &[(FileId, mir::Document)]) -> Self {
+    pub fn new(input_files: &[(FileId, &mir::Document)]) -> Self {
         static BUILT_IN_TYPES: std::sync::OnceLock<mir::Document> = std::sync::OnceLock::new();
         let built_in = BUILT_IN_TYPES.get_or_init(|| {
             let ast = apollo_parser::Parser::new(include_str!("../built_in_types.graphql")).parse();
@@ -156,7 +156,7 @@ impl TypeSystem {
             ast.into_mir()
         });
         let documents = std::iter::once((FileId::BUILT_IN, built_in))
-            .chain(input_files.iter().map(|(id, doc)| (*id, doc)));
+            .chain(input_files.iter().map(|(id, doc)| (*id, *doc)));
         let mut opt_schema = None;
         let mut directives = IndexMap::new();
         let mut types = IndexMap::new();

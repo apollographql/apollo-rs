@@ -41,6 +41,9 @@ pub trait HirDatabase: InputDatabase + AstDatabase {
     #[salsa::invoke(type_system)]
     fn type_system(&self) -> Arc<TypeSystem>;
 
+    #[salsa::invoke(type_system2)]
+    fn type_system2(&self) -> Arc<crate::hir2::type_system::TypeSystem>;
+
     /// Return all the extensions defined in the type system.
     #[salsa::invoke(extensions)]
     fn extensions(&self) -> Arc<Vec<TypeExtension>>;
@@ -318,6 +321,23 @@ fn type_system(db: &dyn HirDatabase) -> Arc<TypeSystem> {
             .map(|file_id| (file_id, db.input(file_id)))
             .collect(),
     })
+}
+
+fn type_system2(db: &dyn HirDatabase) -> Arc<crate::hir2::type_system::TypeSystem> {
+    let file_ids = db.type_definition_files();
+    let mirs = file_ids
+        .iter()
+        .map(|file_id| db.mir(*file_id))
+        .collect::<Vec<_>>();
+    let type_inputs = file_ids
+        .into_iter()
+        .zip(mirs.iter().map(|arc| arc.as_ref()))
+        .collect::<Vec<_>>();
+
+    // NOTE(@goto-bus-stop) we could save allocating above if TypeSystem took an iterator
+    let type_system = crate::hir2::type_system::TypeSystem::new(&type_inputs);
+
+    Arc::new(type_system)
 }
 
 fn extensions(db: &dyn HirDatabase) -> Arc<Vec<TypeExtension>> {
