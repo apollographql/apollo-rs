@@ -43,7 +43,7 @@ workflows:
   wasm:
     jobs:
       - wasm:
-          name: Wasm
+          name: Compile to wasm (on linux)
           matrix:
             parameters:
               platform: [linux]
@@ -59,7 +59,7 @@ workflows:
 
 
 
-# Details of the two jobs: lint and test.
+# Details of the three jobs: lint, test and wasm
 jobs:
   lint:
     parameters:
