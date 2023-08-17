@@ -98,7 +98,7 @@ jobs:
           platform: << parameters.platform >>
       - run:
           name: Build to wasm target
-          command: rustup target add wasm32-unknown-unknown && cargo build --target wasm32-unknown-unknown --packages apollo-compiler apollo-parser apollo-encoder
+          command: rustup target add wasm32-unknown-unknown && cargo build --target wasm32-unknown-unknown --exclude fuzz apollo-smith
 
   test:
     parameters:
