@@ -43,7 +43,7 @@ workflows:
   wasm:
     jobs:
       - wasm:
-          name: Compile to wasm (on linux)
+          name: Compile to wasm (stable rust on linux)
           matrix:
             parameters:
               platform: [linux]
