@@ -53,18 +53,15 @@ impl<T> Located<T> {
         }
     }
 
-    pub fn component<'a, C>(
-        &'a self,
-        f: impl FnOnce(&'a Harc<Ranged<T>>) -> &'a Harc<Ranged<C>>,
-    ) -> LocatedBorrow<'a, C> {
+    pub fn same_file_id<'a, C>(&self, harc: &'a Harc<Ranged<C>>) -> LocatedBorrow<'a, C> {
         LocatedBorrow {
             file_id: self.file_id,
-            harc: f(&self.harc),
+            harc,
         }
     }
 
     pub fn borrow(&self) -> LocatedBorrow<'_, T> {
-        self.component(|harc| harc)
+        self.same_file_id(&self.harc)
     }
 
     pub fn source_location(&self) -> Option<HirNodeLocation> {

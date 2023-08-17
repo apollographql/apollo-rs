@@ -137,7 +137,7 @@ impl ComponentIndex {
     ) -> LocatedBorrow<'a, Component> {
         match *self {
             ComponentIndex::InDefinition { index } => {
-                definition.component(|_| &definition_components()[index as usize])
+                definition.same_file_id(&definition_components()[index as usize])
             }
             ComponentIndex::InExtension {
                 extension_index_plus_one,
@@ -145,7 +145,7 @@ impl ComponentIndex {
             } => {
                 let extension_index = extension_index_plus_one.get() - 1;
                 let extension = &extensions()[extension_index as usize];
-                extension.component(|e| &extension_components(e)[index as usize])
+                extension.same_file_id(&extension_components(extension)[index as usize])
             }
         }
     }
@@ -403,6 +403,39 @@ impl TypeSystem {
     }
 }
 
+macro_rules! directives_by_name {
+    () => {
+        pub fn directives_by_name<'def: 'name, 'name>(
+            &'def self,
+            name: &'name str,
+        ) -> impl Iterator<Item = LocatedBorrow<'def, mir::Directive>> + 'name {
+            self.directives().filter(move |dir| dir.name == name)
+        }
+
+        pub fn directive_by_name(&self, name: &str) -> Option<LocatedBorrow<'_, mir::Directive>> {
+            self.directives_by_name(name).next()
+        }
+    };
+}
+
+macro_rules! directive_methods {
+    () => {
+        pub fn directives(&self) -> impl Iterator<Item = LocatedBorrow<'_, mir::Directive>> + '_ {
+            self.definition
+                .directives
+                .iter()
+                .map(|dir| self.definition.same_file_id(dir))
+                .chain(
+                    self.extensions
+                        .iter()
+                        .flat_map(|ext| ext.directives.iter().map(|dir| ext.same_file_id(dir))),
+                )
+        }
+
+        directives_by_name!();
+    };
+}
+
 impl Schema {
     fn new(definition: Located<mir::SchemaDefinition>) -> Schema {
         let mut schema = Schema {
@@ -459,6 +492,22 @@ impl Schema {
             subscription: if_has_object_type("Subscription"),
         }
     }
+
+    pub fn directives(&self) -> impl Iterator<Item = LocatedBorrow<'_, mir::Directive>> + '_ {
+        // Different implementation compared to other `.directives()` methods
+        // because `self.definition` is optional here:
+        self.definition
+            .as_ref()
+            .into_iter()
+            .flat_map(|def| def.directives.iter().map(|dir| def.same_file_id(dir)))
+            .chain(
+                self.extensions
+                    .iter()
+                    .flat_map(|ext| ext.directives.iter().map(|dir| ext.same_file_id(dir))),
+            )
+    }
+
+    directives_by_name!();
 }
 
 impl ScalarType {
@@ -472,6 +521,8 @@ impl ScalarType {
     fn extend(&mut self, extension: Located<mir::ScalarTypeExtension>) {
         self.extensions.push(extension);
     }
+
+    directive_methods!();
 }
 
 impl ObjectType {
@@ -523,6 +574,8 @@ impl ObjectType {
             .get(name)
             .map(|index| self.field_by_index(index))
     }
+
+    directive_methods!();
 }
 
 impl InterfaceType {
@@ -574,6 +627,8 @@ impl InterfaceType {
             .get(name)
             .map(|index| self.field_by_index(index))
     }
+
+    directive_methods!();
 }
 
 impl UnionType {
@@ -590,6 +645,8 @@ impl UnionType {
         self.members.extend(extension.members.iter().cloned());
         self.extensions.push(extension);
     }
+
+    directive_methods!();
 }
 
 impl EnumType {
@@ -616,6 +673,8 @@ impl EnumType {
         }
         self.extensions.push(extension);
     }
+
+    directive_methods!();
 }
 
 impl InputObjectType {
@@ -666,6 +725,8 @@ impl InputObjectType {
             .get(name)
             .map(|index| self.value_by_index(index))
     }
+
+    directive_methods!();
 }
 
 impl Type {
