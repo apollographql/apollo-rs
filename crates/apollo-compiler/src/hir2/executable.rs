@@ -1,4 +1,5 @@
 use super::type_system::TypeSystem;
+use crate::FileId;
 use apollo_parser::mir;
 use apollo_parser::mir::Harc;
 use apollo_parser::mir::Name;
@@ -9,7 +10,8 @@ use indexmap::IndexMap;
 
 /// Executable definitions, annotated with type information
 #[derive(Clone, Debug)]
-pub struct Executable {
+pub struct ExecutableDocument {
+    pub file_id: FileId,
     pub named_operations: IndexMap<Name, Operation>,
     pub anonymous_operation: Option<Operation>,
     pub fragments: IndexMap<Name, Fragment>,
@@ -74,39 +76,39 @@ pub struct InlineFragment {
 #[non_exhaustive]
 pub struct TypeError {}
 
-impl Executable {
+impl ExecutableDocument {
     pub fn from_mir(
         type_system: &TypeSystem,
-        input_files: &[mir::Document],
+        document: mir::Document,
+        file_id: FileId,
     ) -> Result<Self, TypeError> {
         let mut named_operations = IndexMap::new();
         let mut anonymous_operation = None;
         let mut fragments = IndexMap::new();
-        for document in input_files {
-            for definition in &document.definitions {
-                match definition {
-                    mir::Definition::OperationDefinition(operation) => {
-                        if let Some(name) = &operation.name {
-                            if let Entry::Vacant(entry) = named_operations.entry(name.clone()) {
-                                entry.insert(Operation::from_mir(type_system, operation)?);
-                            }
-                        } else {
-                            if anonymous_operation.is_none() {
-                                anonymous_operation =
-                                    Some(Operation::from_mir(type_system, operation)?);
-                            }
+        for definition in &document.definitions {
+            match definition {
+                mir::Definition::OperationDefinition(operation) => {
+                    if let Some(name) = &operation.name {
+                        if let Entry::Vacant(entry) = named_operations.entry(name.clone()) {
+                            entry.insert(Operation::from_mir(type_system, operation)?);
+                        }
+                    } else {
+                        if anonymous_operation.is_none() {
+                            anonymous_operation =
+                                Some(Operation::from_mir(type_system, operation)?);
                         }
                     }
-                    mir::Definition::FragmentDefinition(fragment) => {
-                        if let Entry::Vacant(entry) = fragments.entry(fragment.name.clone()) {
-                            entry.insert(Fragment::from_mir(type_system, fragment)?);
-                        }
-                    }
-                    _ => {}
                 }
+                mir::Definition::FragmentDefinition(fragment) => {
+                    if let Entry::Vacant(entry) = fragments.entry(fragment.name.clone()) {
+                        entry.insert(Fragment::from_mir(type_system, fragment)?);
+                    }
+                }
+                _ => {}
             }
         }
-        Ok(Executable {
+        Ok(ExecutableDocument {
+            file_id,
             named_operations,
             anonymous_operation,
             fragments,
