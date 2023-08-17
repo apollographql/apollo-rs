@@ -16,7 +16,7 @@ use std::sync::OnceLock;
 ///
 /// Information about a given type can come either from its “main” definition
 /// or from an extension.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TypeSystem {
     /// The source location is that of the "main" definition (if any).
     pub schema: Located<Schema>,
@@ -24,7 +24,7 @@ pub struct TypeSystem {
     pub types: IndexMap<mir::NamedType, Type>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Schema {
     pub description: Option<BowString>,
     pub directives: Vec<Component<mir::Directive>>,
@@ -50,7 +50,7 @@ pub struct Schema {
 /// The definition of a named type, with all information from type extensions folded in.
 ///
 /// The source location is that of the "main" definition.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Type {
     Scalar(Located<ScalarType>),
     Object(Located<ObjectType>),
@@ -60,13 +60,13 @@ pub enum Type {
     InputObject(Located<InputObjectType>),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct ScalarType {
     pub description: Option<BowString>,
     pub directives: Vec<Component<mir::Directive>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ObjectType {
     pub description: Option<BowString>,
 
@@ -80,7 +80,7 @@ pub struct ObjectType {
     pub fields: IndexMap<Name, Component<mir::FieldDefinition>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InterfaceType {
     pub description: Option<BowString>,
 
@@ -94,7 +94,7 @@ pub struct InterfaceType {
     pub fields: IndexMap<Name, Component<mir::FieldDefinition>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UnionType {
     pub description: Option<BowString>,
     pub directives: Vec<Component<mir::Directive>>,
@@ -105,14 +105,14 @@ pub struct UnionType {
     pub members: IndexMap<mir::NamedType, Option<ExtensionId>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EnumType {
     pub description: Option<BowString>,
     pub directives: Vec<Component<mir::Directive>>,
     pub values: IndexMap<Name, Component<mir::EnumValueDefinition>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InputObjectType {
     pub description: Option<BowString>,
     pub directives: Vec<Component<mir::Directive>>,
