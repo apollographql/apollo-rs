@@ -17,6 +17,29 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.6.0](https://crates.io/crates/apollo-parser/0.6.0) - 2023-08-18
+## Features
+- **zero-alloc lexer - [allancalix], [pull/322]**
+  Rewrites the lexer to avoid allocating for each token. Synthetic benchmarks
+  show about a 25% performance improvement to the parser as a whole.
+
+## Fixes
+- **fix token limit edge case - [goto-bus-stop], [pull/619], [issue/610]**
+  `token_limit` now includes the EOF token. In the past you could get
+  `token_limit + 1` tokens out of the lexer if the token at the limit was the
+  EOF token, but now it really always stops at `token_limit`.
+
+- **create EOF token with empty data - [allancalix], [pull/591]**
+  Makes consuming the token stream's data produce an identical string to the
+  original input of the lexer.
+
+[allancalix]: https://github.com/allancalix
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[issue/610]: https://github.com/apollographql/apollo-rs/issues/610
+[pull/322]: https://github.com/apollographql/apollo-rs/pull/322
+[pull/591]: https://github.com/apollographql/apollo-rs/pull/591
+[pull/619]: https://github.com/apollographql/apollo-rs/pull/619
+
 # [0.5.3](https://crates.io/crates/apollo-parser/0.5.3) - 2023-05-12
 ## Fixes
 - **variable definition list cannot be empty - [lrlna], [pull/553] fixing [issue/546]**
