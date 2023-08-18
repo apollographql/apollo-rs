@@ -17,6 +17,27 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation -->
 
+# [0.11.0](https://crates.io/crates/apollo-compiler/0.11.0) - 2023-08-18
+
+## Features
+- add `InterfaceTypeDefinition::implementors(&db)` to list object types and other interfaces that implement an interface, by [Geal] in [pull/616]
+
+[Geal]: https://github.com/Geal
+[pull/616]: https://github.com/apollographql/apollo-rs/pull/616
+
+## Fixes
+- fix `SelectionSet::is_introspection` when the same fragment is spread multiple times, by [glasser] in [pull/614], [issue/613]
+
+[glasser]: https://github.com/glasser
+[issue/613]: https://github.com/apollographql/apollo-rs/issues/613
+[pull/614]: https://github.com/apollographql/apollo-rs/pull/614
+
+## Maintenance
+- update `apollo-parser` to 0.6.0, by [goto-bus-stop] in [pull/621]
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/621]: https://github.com/apollographql/apollo-rs/pull/621
+
 # [0.10.0](https://crates.io/crates/apollo-compiler/0.10.0) - 2023-06-20
 
 ## BREAKING
