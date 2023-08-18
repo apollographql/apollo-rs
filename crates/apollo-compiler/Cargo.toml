@@ -17,7 +17,7 @@ categories = [
 edition = "2021"
 
 [dependencies]
-apollo-parser = { path = "../apollo-parser", version = "0.5.3" }
+apollo-parser = { path = "../apollo-parser", version = "0.6.0" }
 ariadne = "0.3.0"
 indexmap = "2.0.0"
 rowan = "0.15.5"
