@@ -11,14 +11,6 @@ pub struct Token<'a> {
 }
 
 impl<'a> Token<'a> {
-    pub(crate) fn new(kind: TokenKind, data: &'a str) -> Self {
-        Self {
-            kind,
-            data,
-            index: 0,
-        }
-    }
-
     /// Get a reference to the token's kind.
     pub fn kind(&self) -> TokenKind {
         self.kind
