@@ -27,8 +27,6 @@ pub use token_kind::TokenKind;
 /// ```
 #[derive(Clone, Debug)]
 pub struct Lexer<'a> {
-    input: &'a str,
-    index: usize,
     finished: bool,
     cursor: Cursor<'a>,
     pub(crate) limit_tracker: LimitTracker,
@@ -75,9 +73,7 @@ impl<'a> Lexer<'a> {
     /// ```
     pub fn new(input: &'a str) -> Self {
         Self {
-            input,
             cursor: Cursor::new(input),
-            index: 0,
             finished: false,
             limit_tracker: LimitTracker::new(usize::MAX),
         }
@@ -112,14 +108,6 @@ impl<'a> Iterator for Lexer<'a> {
             return None;
         }
 
-        if self.input.is_empty() {
-            let mut eof = Token::new(TokenKind::Eof, "");
-            eof.index = self.index;
-
-            self.finished = true;
-            return Some(Ok(eof));
-        }
-
         self.limit_tracker.consume();
         if self.limit_tracker.limited() {
             self.finished = true;
@@ -133,8 +121,6 @@ impl<'a> Iterator for Lexer<'a> {
             Ok(token) => {
                 if matches!(token.kind(), TokenKind::Eof) {
                     self.finished = true;
-
-                    return Some(Ok(token));
                 }
 
                 Some(Ok(token))
@@ -637,6 +623,22 @@ type Query {
         assert_eq!(
             errors,
             &[Error::limit("token limit reached, aborting lexing", 17)]
+        );
+    }
+
+    #[test]
+    fn token_limit_exact() {
+        let lexer = Lexer::new("type Query { a a a a a a a a a }").with_limit(26);
+        let (tokens, errors) = lexer.lex();
+        assert_eq!(tokens.len(), 26);
+        assert!(errors.is_empty());
+
+        let lexer = Lexer::new("type Query { a a a a a a a a a }").with_limit(25);
+        let (tokens, errors) = lexer.lex();
+        assert_eq!(tokens.len(), 25);
+        assert_eq!(
+            errors,
+            &[Error::limit("token limit reached, aborting lexing", 31)]
         );
     }
 
