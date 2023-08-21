@@ -1,6 +1,6 @@
 [package]
 name = "apollo-smith"
-version = "0.3.2"
+version = "0.4.0"
 edition = "2021"
 authors = ["Benjamin Coenen <benjamin.coenen@apollographql.com>"]
 license = "MIT OR Apache-2.0"

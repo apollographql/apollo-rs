@@ -18,6 +18,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 
 ## Documentation -->
+# [0.4.0](https://crates.io/crates/apollo-smith/0.4.0) - 2023-08-21
+
+## BREAKING
+- **apollo-parser@0.6.0 - [goto-bus-stop], [pull/621]**
+
+  This updates the version of `apollo-parser` required by the `TryFrom`
+  implementations in this crate.
+
+- **apollo-encoder@0.7.0 - [goto-bus-stop], [pull/623]**
+
+  This updates the version of `apollo-encoder` required by the `From`
+  implementations in this crate.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/621]: https://github.com/apollographql/apollo-rs/pull/621
+[pull/623]: https://github.com/apollographql/apollo-rs/pull/623
+
 # [0.3.2](https://crates.io/crates/apollo-smith/0.3.2) - 2023-01-18
 ## Features
 - Derive `Clone` on `apollo-smith` types, [SimonSapin] in [429]
