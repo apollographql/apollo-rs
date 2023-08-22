@@ -9,6 +9,7 @@ use apollo_parser::mir::Name;
 use apollo_parser::mir::Ranged;
 use apollo_parser::BowString;
 use indexmap::IndexMap;
+use indexmap::IndexSet;
 use std::sync::OnceLock;
 
 /// Results of analysis of type system definitions from any number of input files.
@@ -481,6 +482,32 @@ impl Schema {
             subscription_extension: None,
         })
     }
+
+    /// Collect schema extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.extension_id())
+            .chain(
+                self.query
+                    .as_ref()
+                    .and_then(|_| self.query_extension.as_ref()),
+            )
+            .chain(
+                self.mutation
+                    .as_ref()
+                    .and_then(|_| self.mutation_extension.as_ref()),
+            )
+            .chain(
+                self.subscription
+                    .as_ref()
+                    .and_then(|_| self.subscription_extension.as_ref()),
+            )
+            .collect()
+    }
 }
 
 impl ScalarType {
@@ -498,6 +525,17 @@ impl ScalarType {
             Some(&id),
             &extension.directives,
         ));
+    }
+
+    /// Collect scalar type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.extension_id())
+            .collect()
     }
 }
 
@@ -543,6 +581,18 @@ impl ObjectType {
                 .map(|field| (&field.name, extension.component(field, Some(&id)))),
         );
     }
+
+    /// Collect object type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.extension_id())
+            .chain(self.fields.values().flat_map(|field| field.extension_id()))
+            .collect()
+    }
 }
 
 impl InterfaceType {
@@ -587,6 +637,18 @@ impl InterfaceType {
                 .map(|field| (&field.name, extension.component(field, Some(&id)))),
         );
     }
+
+    /// Collect interface type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.extension_id())
+            .chain(self.fields.values().flat_map(|field| field.extension_id()))
+            .collect()
+    }
 }
 
 impl UnionType {
@@ -612,6 +674,18 @@ impl UnionType {
                 .iter()
                 .map(|name| (name, Some(id.clone()))),
         );
+    }
+
+    /// Collect union type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.extension_id())
+            .chain(self.members.values().flatten())
+            .collect()
     }
 }
 
@@ -644,6 +718,18 @@ impl EnumType {
                 .map(|value_def| (&value_def.value, extension.component(value_def, Some(&id)))),
         )
     }
+
+    /// Collect enum type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.extension_id())
+            .chain(self.values.values().flat_map(|value| value.extension_id()))
+            .collect()
+    }
 }
 
 impl InputObjectType {
@@ -674,6 +760,18 @@ impl InputObjectType {
                 .iter()
                 .map(|field| (&field.name, extension.component(field, Some(&id)))),
         )
+    }
+
+    /// Collect input object type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.extension_id())
+            .chain(self.fields.values().flat_map(|field| field.extension_id()))
+            .collect()
     }
 }
 
