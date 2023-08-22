@@ -212,9 +212,13 @@ impl TypeSystem {
                     | mir::Definition::InterfaceTypeExtension(_)
                     | mir::Definition::UnionTypeExtension(_)
                     | mir::Definition::EnumTypeExtension(_)
-                    | mir::Definition::InputObjectTypeExtension(_)
-                    | mir::Definition::OperationDefinition(_)
-                    | mir::Definition::FragmentDefinition(_) => todo!(),
+                    | mir::Definition::InputObjectTypeExtension(_) => {
+                        // Extensions are handled separately below.
+                    }
+                    mir::Definition::OperationDefinition(_)
+                    | mir::Definition::FragmentDefinition(_) => {
+                        // Operation-only definitions are not relevant to the type system.
+                    }
                 }
             }
         }
@@ -265,15 +269,19 @@ impl TypeSystem {
                         }
                     }
                     mir::Definition::OperationDefinition(_)
-                    | mir::Definition::FragmentDefinition(_)
-                    | mir::Definition::DirectiveDefinition(_)
+                    | mir::Definition::FragmentDefinition(_) => {
+                        // Operation-only definitions are not relevant to the type system.
+                    }
+                    mir::Definition::DirectiveDefinition(_)
                     | mir::Definition::SchemaDefinition(_)
                     | mir::Definition::ScalarTypeDefinition(_)
                     | mir::Definition::ObjectTypeDefinition(_)
                     | mir::Definition::InterfaceTypeDefinition(_)
                     | mir::Definition::UnionTypeDefinition(_)
                     | mir::Definition::EnumTypeDefinition(_)
-                    | mir::Definition::InputObjectTypeDefinition(_) => todo!(),
+                    | mir::Definition::InputObjectTypeDefinition(_) => {
+                        // Base definitions were already handled.
+                    }
                 }
             }
         }
