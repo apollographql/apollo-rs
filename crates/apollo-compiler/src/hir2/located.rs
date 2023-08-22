@@ -3,6 +3,7 @@ use crate::FileId;
 use apollo_parser::mir::Harc;
 use apollo_parser::mir::Ranged;
 
+/// Wraps a `Harc<Ranged<T>>` typically from a MIR document and adds an optional `FileId`.
 #[derive(Debug, Clone)]
 pub struct Located<T> {
     file_id: Option<FileId>,
@@ -78,12 +79,9 @@ impl<'a, T> LocatedBorrow<'a, T> {
     }
 
     pub fn source_location(&self) -> Option<HirNodeLocation> {
-        let file_id = self.file_id?;
-        let text_range = self.harc.location()?;
         Some(HirNodeLocation {
-            file_id,
-            offset: text_range.start().into(),
-            node_len: text_range.len().into(),
+            file_id: self.file_id?,
+            text_range: *self.harc.location()?,
         })
     }
 }
