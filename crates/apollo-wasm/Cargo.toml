@@ -1,8 +1,8 @@
 [package]
 name = "apollo-wasm"
 version = "0.1.0"
-authors = ["avery <avery@apollographql.com>"]
-edition = "2018"
+authors = ["Apollo Developers <opensource@apollographql.com>"]
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -18,5 +18,5 @@ tsify = "0.4"
 wasm-bindgen-test = "0.3.34"
 
 [profile.release]
-# Tell `rustc` to optimize for small code size.
+# Optimize for small code size.
 opt-level = "s"
