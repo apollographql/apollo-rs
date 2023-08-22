@@ -6,6 +6,7 @@ This crate provides a WASM build for `apollo-compiler` and generates TypeScript/
 
 1. Install [`rustup`](https://rustup.rs)
 1. Install [`wasm-pack`](https://rustwasm.github.io/wasm-pack/installer/)
+1. Run `rustup target add wasm32-unknown-unknown`
 
 ## Build
 
