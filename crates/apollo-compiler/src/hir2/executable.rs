@@ -226,12 +226,12 @@ impl SelectionSet {
         let ty = TypeSystem::meta_field_definitions(self.parent_is_root_operation)
             .iter()
             .find(|field_def| field_def.name == name)
-            .map(|field_def| field_def.borrow())
             .or_else(|| {
                 type_system
                     .types
                     .get(&self.parent_type)?
-                    .field_by_name(&name)
+                    .fields()?
+                    .get(&name)
             })
             .ok_or(TypeError {})?
             .ty

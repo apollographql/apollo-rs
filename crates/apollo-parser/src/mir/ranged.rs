@@ -32,6 +32,14 @@ impl<T> Ranged<T> {
             None
         }
     }
+
+    /// Returns the given `node` at the same location as `self` (e.g. for a type conversion).
+    pub fn at_same_location<U>(&self, node: U) -> Ranged<U> {
+        Ranged {
+            location: self.location,
+            node,
+        }
+    }
 }
 
 impl<T> std::ops::Deref for Ranged<T> {

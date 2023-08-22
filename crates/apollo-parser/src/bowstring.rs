@@ -110,6 +110,13 @@ impl std::str::FromStr for BowString {
     }
 }
 
+impl From<&'_ Self> for BowString {
+    #[inline]
+    fn from(value: &'_ Self) -> Self {
+        value.clone()
+    }
+}
+
 impl From<&'_ str> for BowString {
     #[inline]
     fn from(value: &'_ str) -> Self {
