@@ -142,6 +142,16 @@ impl DirectiveLocation {
     }
 }
 
+impl From<OperationType> for DirectiveLocation {
+    fn from(ty: OperationType) -> Self {
+        match ty {
+            OperationType::Query => DirectiveLocation::Query,
+            OperationType::Mutation => DirectiveLocation::Mutation,
+            OperationType::Subscription => DirectiveLocation::Subscription,
+        }
+    }
+}
+
 impl VariableDefinition {
     directive_methods!();
 }
