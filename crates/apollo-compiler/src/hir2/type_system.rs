@@ -11,6 +11,7 @@ use apollo_parser::mir::Ranged;
 use apollo_parser::BowString;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
+use std::fmt;
 use std::sync::OnceLock;
 
 /// Results of analysis of type system definitions from any number of input files.
@@ -460,6 +461,16 @@ impl TypeSystem {
     }
 }
 
+impl fmt::Display for TypeSystem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // TODO: this can be done without allocating temporary MIR nodes,
+        // but ideally (implementation-wise) this would share private helpers
+        // with MIR serialization.
+        // These can’t be both private and shared when MIR and HIR are in separate crates.
+        self.to_mir().fmt(f)
+    }
+}
+
 fn directives_from_mir<'a, T>(
     node: LocatedBorrow<'a, T>,
     extension: Option<&'a ExtensionId>,
@@ -653,6 +664,7 @@ impl ObjectType {
         self.directives
             .iter()
             .flat_map(|dir| dir.extension_id())
+            .chain(self.implements_interfaces.values().flatten())
             .chain(self.fields.values().flat_map(|field| field.extension_id()))
             .collect()
     }
@@ -709,6 +721,7 @@ impl InterfaceType {
         self.directives
             .iter()
             .flat_map(|dir| dir.extension_id())
+            .chain(self.implements_interfaces.values().flatten())
             .chain(self.fields.values().flat_map(|field| field.extension_id()))
             .collect()
     }

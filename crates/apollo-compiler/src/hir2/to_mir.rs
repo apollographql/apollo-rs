@@ -290,3 +290,55 @@ impl SelectionSet {
             .collect()
     }
 }
+
+#[test]
+fn test_type_system_reserialization() {
+    use crate::HirDatabase;
+
+    let input = r#"
+        extend type Query {
+            withArg(arg: Boolean): String @deprecated,
+        }
+
+        type Query {
+            int: Int,
+        }
+
+        extend type implements Inter
+
+        interface Inter {
+            string: String
+        }
+
+        extend type Query @customDirective;
+
+        extend type Query {
+            string: String,
+        }
+
+        directive @customDirective on OBJECT;
+    "#;
+    // Order is mostly not preserved
+    let expected = r#"directive @customDirective on OBJECT
+
+type Query {
+  int: Int
+}
+
+extend type Query {
+  withArg(arg: Boolean): String @deprecated
+}
+
+extend type Query {
+  string: String
+}
+
+interface Inter {
+  string: String
+}
+"#;
+    let mut compiler = crate::ApolloCompiler::new();
+    compiler.add_type_system(input, "");
+    let type_system = compiler.db.type_system2();
+    assert_eq!(type_system.to_string(), expected);
+}

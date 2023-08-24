@@ -7,6 +7,7 @@ use apollo_parser::mir::OperationType;
 use apollo_parser::mir::Ranged;
 use indexmap::map::Entry;
 use indexmap::IndexMap;
+use std::fmt;
 
 /// Executable definitions, annotated with type information
 #[derive(Clone, Debug)]
@@ -127,6 +128,16 @@ impl ExecutableDocument {
             doc.definitions.push(fragment.to_mir(name))
         }
         doc
+    }
+}
+
+impl fmt::Display for ExecutableDocument {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // TODO: this can be done without allocating temporary MIR nodes,
+        // but ideally (implementation-wise) this would share private helpers
+        // with MIR serialization.
+        // These can’t be both private and shared when MIR and HIR are in separate crates.
+        self.to_mir().fmt(f)
     }
 }
 
