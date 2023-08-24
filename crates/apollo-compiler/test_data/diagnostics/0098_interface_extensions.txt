@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            95: "0098_interface_extensions.graphql",
+            1: "built_in_types.graphql",
+            96: "0098_interface_extensions.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 95,
+                id: 96,
             },
             offset: 26,
             length: 12,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 95,
+                        id: 96,
                     },
                     offset: 26,
                     length: 12,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 95,
+                        id: 96,
                     },
                     offset: 74,
                     length: 12,
@@ -40,14 +40,14 @@
             field: "name",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 95,
+                    id: 96,
                 },
                 offset: 26,
                 length: 12,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 95,
+                    id: 96,
                 },
                 offset: 74,
                 length: 12,
@@ -56,12 +56,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            95: "0098_interface_extensions.graphql",
+            1: "built_in_types.graphql",
+            96: "0098_interface_extensions.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 95,
+                id: 96,
             },
             offset: 209,
             length: 14,
@@ -70,7 +70,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 95,
+                        id: 96,
                     },
                     offset: 150,
                     length: 14,
@@ -80,7 +80,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 95,
+                        id: 96,
                     },
                     offset: 209,
                     length: 14,
@@ -93,14 +93,14 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 95,
+                    id: 96,
                 },
                 offset: 150,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 95,
+                    id: 96,
                 },
                 offset: 209,
                 length: 14,
@@ -109,12 +109,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            95: "0098_interface_extensions.graphql",
+            1: "built_in_types.graphql",
+            96: "0098_interface_extensions.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 95,
+                id: 96,
             },
             offset: 271,
             length: 30,
@@ -123,7 +123,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 95,
+                        id: 96,
                     },
                     offset: 225,
                     length: 45,
@@ -133,7 +133,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 95,
+                        id: 96,
                     },
                     offset: 271,
                     length: 30,

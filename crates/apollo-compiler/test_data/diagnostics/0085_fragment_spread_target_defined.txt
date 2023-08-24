@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            82: "0085_fragment_spread_target_defined.graphql",
+            1: "built_in_types.graphql",
+            83: "0085_fragment_spread_target_defined.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 82,
+                id: 83,
             },
             offset: 70,
             length: 20,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 82,
+                        id: 83,
                     },
                     offset: 70,
                     length: 20,

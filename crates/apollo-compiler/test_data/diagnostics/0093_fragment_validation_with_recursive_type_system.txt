@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            90: "0093_fragment_validation_with_recursive_type_system.graphql",
+            1: "built_in_types.graphql",
+            91: "0093_fragment_validation_with_recursive_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 90,
+                id: 91,
             },
             offset: 96,
             length: 1,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 90,
+                        id: 91,
                     },
                     offset: 96,
                     length: 1,
@@ -30,12 +30,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            90: "0093_fragment_validation_with_recursive_type_system.graphql",
+            1: "built_in_types.graphql",
+            91: "0093_fragment_validation_with_recursive_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 90,
+                id: 91,
             },
             offset: 139,
             length: 1,
@@ -44,7 +44,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 90,
+                        id: 91,
                     },
                     offset: 139,
                     length: 1,

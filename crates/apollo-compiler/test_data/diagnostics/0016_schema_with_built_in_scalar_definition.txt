@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            16: "0016_schema_with_built_in_scalar_definition.graphql",
+            1: "built_in_types.graphql",
+            17: "0016_schema_with_built_in_scalar_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 16,
+                id: 17,
             },
             offset: 37,
             length: 3,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 16,
+                        id: 17,
                     },
                     offset: 37,
                     length: 3,

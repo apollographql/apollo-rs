@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            94: "0097_enum_extensions.graphql",
+            1: "built_in_types.graphql",
+            95: "0097_enum_extensions.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 94,
+                id: 95,
             },
             offset: 138,
             length: 14,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 94,
+                        id: 95,
                     },
                     offset: 82,
                     length: 14,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 94,
+                        id: 95,
                     },
                     offset: 138,
                     length: 14,
@@ -38,14 +38,14 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 94,
+                    id: 95,
                 },
                 offset: 82,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 94,
+                    id: 95,
                 },
                 offset: 138,
                 length: 14,
@@ -54,12 +54,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            94: "0097_enum_extensions.graphql",
+            1: "built_in_types.graphql",
+            95: "0097_enum_extensions.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 94,
+                id: 95,
             },
             offset: 157,
             length: 8,
@@ -68,7 +68,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 94,
+                        id: 95,
                     },
                     offset: 56,
                     length: 8,
@@ -78,7 +78,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 94,
+                        id: 95,
                     },
                     offset: 157,
                     length: 8,
@@ -94,14 +94,14 @@
             name: "MEMBER_2",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 94,
+                    id: 95,
                 },
                 offset: 56,
                 length: 8,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 94,
+                    id: 95,
                 },
                 offset: 157,
                 length: 8,
@@ -110,12 +110,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            94: "0097_enum_extensions.graphql",
+            1: "built_in_types.graphql",
+            95: "0097_enum_extensions.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 94,
+                id: 95,
             },
             offset: 168,
             length: 8,
@@ -124,7 +124,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 94,
+                        id: 95,
                     },
                     offset: 112,
                     length: 8,
@@ -134,7 +134,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 94,
+                        id: 95,
                     },
                     offset: 168,
                     length: 8,
@@ -150,14 +150,14 @@
             name: "MEMBER_4",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 94,
+                    id: 95,
                 },
                 offset: 112,
                 length: 8,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 94,
+                    id: 95,
                 },
                 offset: 168,
                 length: 8,

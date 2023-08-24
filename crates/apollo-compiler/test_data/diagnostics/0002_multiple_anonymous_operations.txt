@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            2: "0002_multiple_anonymous_operations.graphql",
+            1: "built_in_types.graphql",
+            3: "0002_multiple_anonymous_operations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 2,
+                id: 3,
             },
             offset: 0,
             length: 15,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 2,
+                        id: 3,
                     },
                     offset: 0,
                     length: 15,
@@ -30,12 +30,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            2: "0002_multiple_anonymous_operations.graphql",
+            1: "built_in_types.graphql",
+            3: "0002_multiple_anonymous_operations.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 2,
+                id: 3,
             },
             offset: 17,
             length: 57,
@@ -44,7 +44,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 2,
+                        id: 3,
                     },
                     offset: 17,
                     length: 57,

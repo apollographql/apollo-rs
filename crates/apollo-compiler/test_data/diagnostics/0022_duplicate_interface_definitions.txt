@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            22: "0022_duplicate_interface_definitions.graphql",
+            1: "built_in_types.graphql",
+            23: "0022_duplicate_interface_definitions.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 22,
+                id: 23,
             },
             offset: 106,
             length: 11,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 22,
+                        id: 23,
                     },
                     offset: 64,
                     length: 11,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 22,
+                        id: 23,
                     },
                     offset: 106,
                     length: 11,
@@ -41,14 +41,14 @@
             name: "NamedEntity",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 22,
+                    id: 23,
                 },
                 offset: 64,
                 length: 11,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 22,
+                    id: 23,
                 },
                 offset: 106,
                 length: 11,

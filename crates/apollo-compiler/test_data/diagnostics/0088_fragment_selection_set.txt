@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            85: "0088_fragment_selection_set.graphql",
+            1: "built_in_types.graphql",
+            86: "0088_fragment_selection_set.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 85,
+                id: 86,
             },
             offset: 138,
             length: 45,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 85,
+                        id: 86,
                     },
                     offset: 138,
                     length: 45,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 85,
+                        id: 86,
                     },
                     offset: 0,
                     length: 52,
@@ -43,12 +43,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            85: "0088_fragment_selection_set.graphql",
+            1: "built_in_types.graphql",
+            86: "0088_fragment_selection_set.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 85,
+                id: 86,
             },
             offset: 278,
             length: 16,
@@ -57,7 +57,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 85,
+                        id: 86,
                     },
                     offset: 278,
                     length: 16,
@@ -67,7 +67,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 85,
+                        id: 86,
                     },
                     offset: 54,
                     length: 50,

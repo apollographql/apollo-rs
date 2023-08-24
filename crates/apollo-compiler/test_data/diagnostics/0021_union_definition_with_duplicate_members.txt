@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            21: "0021_union_definition_with_duplicate_members.graphql",
+            1: "built_in_types.graphql",
+            22: "0021_union_definition_with_duplicate_members.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 21,
+                id: 22,
             },
             offset: 62,
             length: 5,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 21,
+                        id: 22,
                     },
                     offset: 54,
                     length: 5,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 21,
+                        id: 22,
                     },
                     offset: 62,
                     length: 5,
@@ -41,14 +41,14 @@
             name: "Photo",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 21,
+                    id: 22,
                 },
                 offset: 54,
                 length: 5,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
-                    id: 21,
+                    id: 22,
                 },
                 offset: 62,
                 length: 5,

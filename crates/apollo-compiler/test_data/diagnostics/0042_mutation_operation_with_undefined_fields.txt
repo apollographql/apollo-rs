@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            42: "0042_mutation_operation_with_undefined_fields.graphql",
+            1: "built_in_types.graphql",
+            43: "0042_mutation_operation_with_undefined_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 42,
+                id: 43,
             },
             offset: 217,
             length: 3,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 42,
+                        id: 43,
                     },
                     offset: 217,
                     length: 3,
@@ -30,12 +30,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            42: "0042_mutation_operation_with_undefined_fields.graphql",
+            1: "built_in_types.graphql",
+            43: "0042_mutation_operation_with_undefined_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 42,
+                id: 43,
             },
             offset: 223,
             length: 3,
@@ -44,7 +44,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 42,
+                        id: 43,
                     },
                     offset: 223,
                     length: 3,
@@ -59,12 +59,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            42: "0042_mutation_operation_with_undefined_fields.graphql",
+            1: "built_in_types.graphql",
+            43: "0042_mutation_operation_with_undefined_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 42,
+                id: 43,
             },
             offset: 31,
             length: 22,
@@ -73,7 +73,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 42,
+                        id: 43,
                     },
                     offset: 31,
                     length: 22,
@@ -83,7 +83,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 42,
+                        id: 43,
                     },
                     offset: 100,
                     length: 69,

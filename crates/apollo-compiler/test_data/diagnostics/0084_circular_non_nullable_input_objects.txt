@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            81: "0084_circular_non_nullable_input_objects.graphql",
+            1: "built_in_types.graphql",
+            82: "0084_circular_non_nullable_input_objects.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 81,
+                id: 82,
             },
             offset: 62,
             length: 49,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 81,
+                        id: 82,
                     },
                     offset: 62,
                     length: 49,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 81,
+                        id: 82,
                     },
                     offset: 231,
                     length: 13,
@@ -40,12 +40,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            81: "0084_circular_non_nullable_input_objects.graphql",
+            1: "built_in_types.graphql",
+            82: "0084_circular_non_nullable_input_objects.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 81,
+                id: 82,
             },
             offset: 113,
             length: 48,
@@ -54,7 +54,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 81,
+                        id: 82,
                     },
                     offset: 113,
                     length: 48,
@@ -64,7 +64,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 81,
+                        id: 82,
                     },
                     offset: 78,
                     length: 15,
@@ -79,12 +79,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            81: "0084_circular_non_nullable_input_objects.graphql",
+            1: "built_in_types.graphql",
+            82: "0084_circular_non_nullable_input_objects.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 81,
+                id: 82,
             },
             offset: 163,
             length: 49,
@@ -93,7 +93,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 81,
+                        id: 82,
                     },
                     offset: 163,
                     length: 49,
@@ -103,7 +103,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 81,
+                        id: 82,
                     },
                     offset: 130,
                     length: 13,
@@ -118,12 +118,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            81: "0084_circular_non_nullable_input_objects.graphql",
+            1: "built_in_types.graphql",
+            82: "0084_circular_non_nullable_input_objects.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 81,
+                id: 82,
             },
             offset: 214,
             length: 32,
@@ -132,7 +132,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 81,
+                        id: 82,
                     },
                     offset: 214,
                     length: 32,
@@ -142,7 +142,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 81,
+                        id: 82,
                     },
                     offset: 179,
                     length: 15,

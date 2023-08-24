@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            71: "0074_merge_identical_fields.graphql",
+            1: "built_in_types.graphql",
+            72: "0074_merge_identical_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 71,
+                id: 72,
             },
             offset: 247,
             length: 4,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 230,
                     length: 14,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 247,
                     length: 4,
@@ -38,14 +38,14 @@
             field: "nickname",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 230,
                 length: 14,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 247,
                 length: 4,
@@ -54,12 +54,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            71: "0074_merge_identical_fields.graphql",
+            1: "built_in_types.graphql",
+            72: "0074_merge_identical_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 71,
+                id: 72,
             },
             offset: 325,
             length: 14,
@@ -68,7 +68,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 312,
                     length: 10,
@@ -78,7 +78,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 325,
                     length: 14,
@@ -91,14 +91,14 @@
             field: "name",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 312,
                 length: 10,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 325,
                 length: 14,
@@ -107,12 +107,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            71: "0074_merge_identical_fields.graphql",
+            1: "built_in_types.graphql",
+            72: "0074_merge_identical_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 71,
+                id: 72,
             },
             offset: 247,
             length: 4,
@@ -121,7 +121,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 230,
                     length: 14,
@@ -131,7 +131,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 247,
                     length: 4,
@@ -144,14 +144,14 @@
             field: "nickname",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 230,
                 length: 14,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 247,
                 length: 4,
@@ -160,12 +160,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            71: "0074_merge_identical_fields.graphql",
+            1: "built_in_types.graphql",
+            72: "0074_merge_identical_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 71,
+                id: 72,
             },
             offset: 325,
             length: 14,
@@ -174,7 +174,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 312,
                     length: 10,
@@ -184,7 +184,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 71,
+                        id: 72,
                     },
                     offset: 325,
                     length: 14,
@@ -197,14 +197,14 @@
             field: "name",
             original_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 312,
                 length: 10,
             },
             redefined_selection: DiagnosticLocation {
                 file_id: FileId {
-                    id: 71,
+                    id: 72,
                 },
                 offset: 325,
                 length: 14,

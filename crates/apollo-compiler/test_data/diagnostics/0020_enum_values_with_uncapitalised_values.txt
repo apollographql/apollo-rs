@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            20: "0020_enum_values_with_uncapitalised_values.graphql",
+            1: "built_in_types.graphql",
+            21: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 20,
+                id: 21,
             },
             offset: 43,
             length: 3,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 20,
+                        id: 21,
                     },
                     offset: 43,
                     length: 3,
@@ -30,12 +30,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            20: "0020_enum_values_with_uncapitalised_values.graphql",
+            1: "built_in_types.graphql",
+            21: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 20,
+                id: 21,
             },
             offset: 51,
             length: 6,
@@ -44,7 +44,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 20,
+                        id: 21,
                     },
                     offset: 51,
                     length: 6,
@@ -59,12 +59,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            20: "0020_enum_values_with_uncapitalised_values.graphql",
+            1: "built_in_types.graphql",
+            21: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 20,
+                id: 21,
             },
             offset: 70,
             length: 4,
@@ -73,7 +73,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 20,
+                        id: 21,
                     },
                     offset: 70,
                     length: 4,
@@ -88,12 +88,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            20: "0020_enum_values_with_uncapitalised_values.graphql",
+            1: "built_in_types.graphql",
+            21: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 20,
+                id: 21,
             },
             offset: 79,
             length: 8,
@@ -102,7 +102,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 20,
+                        id: 21,
                     },
                     offset: 79,
                     length: 8,
@@ -117,12 +117,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            20: "0020_enum_values_with_uncapitalised_values.graphql",
+            1: "built_in_types.graphql",
+            21: "0020_enum_values_with_uncapitalised_values.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 20,
+                id: 21,
             },
             offset: 92,
             length: 7,
@@ -131,7 +131,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 20,
+                        id: 21,
                     },
                     offset: 92,
                     length: 7,

@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            25: "0025_interface_definition_with_missing_transitive_fields.graphql",
+            1: "built_in_types.graphql",
+            26: "0025_interface_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 25,
+                id: 26,
             },
             offset: 135,
             length: 76,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 25,
+                        id: 26,
                     },
                     offset: 72,
                     length: 61,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 25,
+                        id: 26,
                     },
                     offset: 135,
                     length: 76,

@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            98: "0101_mismatched_variable_usage.graphql",
+            1: "built_in_types.graphql",
+            99: "0101_mismatched_variable_usage.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 98,
+                id: 99,
             },
             offset: 79,
             length: 19,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 98,
+                        id: 99,
                     },
                     offset: 29,
                     length: 12,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 98,
+                        id: 99,
                     },
                     offset: 79,
                     length: 19,
@@ -41,12 +41,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            98: "0101_mismatched_variable_usage.graphql",
+            1: "built_in_types.graphql",
+            99: "0101_mismatched_variable_usage.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 98,
+                id: 99,
             },
             offset: 208,
             length: 27,
@@ -55,7 +55,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 98,
+                        id: 99,
                     },
                     offset: 144,
                     length: 26,
@@ -65,7 +65,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 98,
+                        id: 99,
                     },
                     offset: 208,
                     length: 27,

@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
+            1: "built_in_types.graphql",
+            87: "0089_fragment_type_condition_on_non_existent_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 86,
+                id: 87,
             },
             offset: 301,
             length: 55,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 86,
+                        id: 87,
                     },
                     offset: 301,
                     length: 55,
@@ -34,12 +34,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
+            1: "built_in_types.graphql",
+            87: "0089_fragment_type_condition_on_non_existent_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 86,
+                id: 87,
             },
             offset: 267,
             length: 30,
@@ -48,7 +48,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 86,
+                        id: 87,
                     },
                     offset: 267,
                     length: 30,
@@ -67,12 +67,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
+            1: "built_in_types.graphql",
+            87: "0089_fragment_type_condition_on_non_existent_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 86,
+                id: 87,
             },
             offset: 93,
             length: 40,
@@ -81,7 +81,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 86,
+                        id: 87,
                     },
                     offset: 93,
                     length: 40,

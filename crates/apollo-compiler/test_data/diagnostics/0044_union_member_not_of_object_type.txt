@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            44: "0044_union_member_not_of_object_type.graphql",
+            1: "built_in_types.graphql",
+            45: "0044_union_member_not_of_object_type.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 44,
+                id: 45,
             },
             offset: 219,
             length: 3,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 44,
+                        id: 45,
                     },
                     offset: 219,
                     length: 3,

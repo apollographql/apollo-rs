@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            84: "0087_fragment_type_condition_on_composite_types.graphql",
+            1: "built_in_types.graphql",
+            85: "0087_fragment_type_condition_on_composite_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 84,
+                id: 85,
             },
             offset: 52,
             length: 25,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 84,
+                        id: 85,
                     },
                     offset: 52,
                     length: 25,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 0,
+                        id: 1,
                     },
                     offset: 2963,
                     length: 150,
@@ -38,12 +38,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            84: "0087_fragment_type_condition_on_composite_types.graphql",
+            1: "built_in_types.graphql",
+            85: "0087_fragment_type_condition_on_composite_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 84,
+                id: 85,
             },
             offset: 328,
             length: 25,
@@ -52,7 +52,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 84,
+                        id: 85,
                     },
                     offset: 328,
                     length: 25,
@@ -62,7 +62,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 0,
+                        id: 1,
                     },
                     offset: 2963,
                     length: 150,
@@ -79,12 +79,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            84: "0087_fragment_type_condition_on_composite_types.graphql",
+            1: "built_in_types.graphql",
+            85: "0087_fragment_type_condition_on_composite_types.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 84,
+                id: 85,
             },
             offset: 108,
             length: 29,
@@ -93,7 +93,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 84,
+                        id: 85,
                     },
                     offset: 108,
                     length: 29,
@@ -103,7 +103,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 0,
+                        id: 1,
                     },
                     offset: 2963,
                     length: 150,

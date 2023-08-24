@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            9: "0009_operation_with_undefined_variables_in_fragment.graphql",
+            1: "built_in_types.graphql",
+            10: "0009_operation_with_undefined_variables_in_fragment.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 9,
+                id: 10,
             },
             offset: 173,
             length: 16,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 9,
+                        id: 10,
                     },
                     offset: 183,
                     length: 6,

@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            89: "0092_recursive_fragment_spread.graphql",
+            1: "built_in_types.graphql",
+            90: "0092_recursive_fragment_spread.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 89,
+                id: 90,
             },
             offset: 104,
             length: 42,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 89,
+                        id: 90,
                     },
                     offset: 104,
                     length: 14,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 89,
+                        id: 90,
                     },
                     offset: 222,
                     length: 8,

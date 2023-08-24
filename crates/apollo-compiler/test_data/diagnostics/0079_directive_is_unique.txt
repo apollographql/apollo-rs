@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            76: "0079_directive_is_unique.graphql",
+            1: "built_in_types.graphql",
+            77: "0079_directive_is_unique.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 76,
+                id: 77,
             },
             offset: 172,
             length: 7,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 76,
+                        id: 77,
                     },
                     offset: 164,
                     length: 7,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 76,
+                        id: 77,
                     },
                     offset: 172,
                     length: 7,
@@ -38,14 +38,14 @@
             name: "unique",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 76,
+                    id: 77,
                 },
                 offset: 164,
                 length: 7,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 76,
+                    id: 77,
                 },
                 offset: 172,
                 length: 7,

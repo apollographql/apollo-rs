@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            51: "0051_subscription_operation_with_root_introspection_field.graphql",
+            1: "built_in_types.graphql",
+            52: "0051_subscription_operation_with_root_introspection_field.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 51,
+                id: 52,
             },
             offset: 21,
             length: 10,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 51,
+                        id: 52,
                     },
                     offset: 21,
                     length: 10,

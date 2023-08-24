@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
+            1: "built_in_types.graphql",
+            35: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 34,
+                id: 35,
             },
             offset: 0,
             length: 56,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 34,
+                        id: 35,
                     },
                     offset: 0,
                     length: 56,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 34,
+                        id: 35,
                     },
                     offset: 77,
                     length: 7,
@@ -42,12 +42,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
+            1: "built_in_types.graphql",
+            35: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 34,
+                id: 35,
             },
             offset: 0,
             length: 56,
@@ -56,7 +56,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 34,
+                        id: 35,
                     },
                     offset: 0,
                     length: 56,
@@ -66,7 +66,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 34,
+                        id: 35,
                     },
                     offset: 111,
                     length: 10,

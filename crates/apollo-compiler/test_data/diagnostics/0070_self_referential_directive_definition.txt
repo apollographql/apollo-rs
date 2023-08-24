@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
+            1: "built_in_types.graphql",
+            71: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 70,
+                id: 71,
             },
             offset: 100,
             length: 77,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 100,
                     length: 25,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 138,
                     length: 15,
@@ -40,12 +40,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
+            1: "built_in_types.graphql",
+            71: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 70,
+                id: 71,
             },
             offset: 290,
             length: 88,
@@ -54,7 +54,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 290,
                     length: 25,
@@ -64,7 +64,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 235,
                     length: 54,
@@ -79,12 +79,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
+            1: "built_in_types.graphql",
+            71: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 70,
+                id: 71,
             },
             offset: 380,
             length: 60,
@@ -93,7 +93,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 380,
                     length: 16,
@@ -103,7 +103,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 532,
                     length: 6,
@@ -118,12 +118,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
+            1: "built_in_types.graphql",
+            71: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 70,
+                id: 71,
             },
             offset: 441,
             length: 60,
@@ -132,7 +132,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 441,
                     length: 16,
@@ -142,7 +142,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 410,
                     length: 6,
@@ -157,12 +157,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
+            1: "built_in_types.graphql",
+            71: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 70,
+                id: 71,
             },
             offset: 502,
             length: 60,
@@ -171,7 +171,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 502,
                     length: 16,
@@ -181,7 +181,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 471,
                     length: 6,
@@ -196,12 +196,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            70: "0070_self_referential_directive_definition.graphql",
+            1: "built_in_types.graphql",
+            71: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 70,
+                id: 71,
             },
             offset: 705,
             length: 75,
@@ -210,7 +210,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 705,
                     length: 16,
@@ -220,7 +220,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 70,
+                        id: 71,
                     },
                     offset: 621,
                     length: 6,

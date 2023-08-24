@@ -1,12 +1,12 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            78: "0081_directive_is_unique_type_system.graphql",
+            1: "built_in_types.graphql",
+            79: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 78,
+                id: 79,
             },
             offset: 112,
             length: 14,
@@ -15,7 +15,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 97,
                     length: 14,
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 112,
                     length: 14,
@@ -38,14 +38,14 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 97,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 112,
                 length: 14,
@@ -54,12 +54,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            78: "0081_directive_is_unique_type_system.graphql",
+            1: "built_in_types.graphql",
+            79: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 78,
+                id: 79,
             },
             offset: 177,
             length: 14,
@@ -68,7 +68,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 162,
                     length: 14,
@@ -78,7 +78,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 177,
                     length: 14,
@@ -91,14 +91,14 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 162,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 177,
                 length: 14,
@@ -107,12 +107,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            78: "0081_directive_is_unique_type_system.graphql",
+            1: "built_in_types.graphql",
+            79: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 78,
+                id: 79,
             },
             offset: 351,
             length: 14,
@@ -121,7 +121,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 336,
                     length: 14,
@@ -131,7 +131,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 351,
                     length: 14,
@@ -144,14 +144,14 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 336,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 351,
                 length: 14,
@@ -160,12 +160,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            78: "0081_directive_is_unique_type_system.graphql",
+            1: "built_in_types.graphql",
+            79: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 78,
+                id: 79,
             },
             offset: 305,
             length: 14,
@@ -174,7 +174,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 290,
                     length: 14,
@@ -184,7 +184,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 305,
                     length: 14,
@@ -197,14 +197,14 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 290,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 305,
                 length: 14,
@@ -213,12 +213,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            78: "0081_directive_is_unique_type_system.graphql",
+            1: "built_in_types.graphql",
+            79: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 78,
+                id: 79,
             },
             offset: 397,
             length: 14,
@@ -227,7 +227,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 382,
                     length: 14,
@@ -237,7 +237,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 397,
                     length: 14,
@@ -250,14 +250,14 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 382,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 397,
                 length: 14,
@@ -266,12 +266,12 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            78: "0081_directive_is_unique_type_system.graphql",
+            1: "built_in_types.graphql",
+            79: "0081_directive_is_unique_type_system.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 78,
+                id: 79,
             },
             offset: 251,
             length: 14,
@@ -280,7 +280,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 236,
                     length: 14,
@@ -290,7 +290,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 78,
+                        id: 79,
                     },
                     offset: 251,
                     length: 14,
@@ -303,14 +303,14 @@
             name: "nonRepeatable",
             original_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 236,
                 length: 14,
             },
             conflicting_call: DiagnosticLocation {
                 file_id: FileId {
-                    id: 78,
+                    id: 79,
                 },
                 offset: 251,
                 length: 14,
