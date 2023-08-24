@@ -114,6 +114,20 @@ impl ExecutableDocument {
             fragments,
         })
     }
+
+    pub fn to_mir(&self) -> mir::Document {
+        let mut doc = mir::Document::new();
+        if let Some(operation) = &self.anonymous_operation {
+            doc.definitions.push(operation.to_mir(None))
+        }
+        for (name, operation) in &self.named_operations {
+            doc.definitions.push(operation.to_mir(Some(name)))
+        }
+        for (name, fragment) in &self.fragments {
+            doc.definitions.push(fragment.to_mir(name))
+        }
+        doc
+    }
 }
 
 impl Operation {

@@ -1,5 +1,6 @@
 pub mod executable;
 mod located;
+mod to_mir;
 pub mod type_system;
 
 pub use self::located::Component;

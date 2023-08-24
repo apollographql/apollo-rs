@@ -82,6 +82,14 @@ impl<T> Located<T> {
         }
     }
 
+    pub fn file_id(&self) -> Option<FileId> {
+        self.file_id
+    }
+
+    pub fn ranged(&self) -> &Harc<Ranged<T>> {
+        &self.harc
+    }
+
     pub fn borrow(&self) -> LocatedBorrow<'_, T> {
         self.same_file_id(&self.harc)
     }
@@ -204,6 +212,14 @@ impl<T> Component<T> {
 
     pub fn source_location(&self) -> Option<HirNodeLocation> {
         self.component.source_location()
+    }
+
+    pub fn file_id(&self) -> Option<FileId> {
+        self.component.file_id
+    }
+
+    pub fn ranged(&self) -> &Harc<Ranged<T>> {
+        &self.component.harc
     }
 }
 

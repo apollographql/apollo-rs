@@ -6,6 +6,7 @@ use crate::FileId;
 use apollo_parser::mir;
 use apollo_parser::mir::Harc;
 use apollo_parser::mir::Name;
+use apollo_parser::mir::OperationType;
 use apollo_parser::mir::Ranged;
 use apollo_parser::BowString;
 use indexmap::IndexMap;
@@ -411,6 +412,52 @@ impl TypeSystem {
             _ => NON_ROOT_FIELDS.get(),
         }
     }
+
+    pub fn to_mir(&self) -> mir::Document {
+        let mut doc = mir::Document::new();
+        doc.definitions.extend(self.schema.to_mir());
+        for def in self.directives.values() {
+            if def.file_id() != Some(FileId::BUILT_IN) {
+                doc.definitions
+                    .push(mir::Definition::DirectiveDefinition(def.ranged().clone()));
+            }
+        }
+        for (name, def) in &self.types {
+            match def {
+                Type::Scalar(ty) => {
+                    if ty.file_id() != Some(FileId::BUILT_IN) {
+                        doc.definitions.extend(ty.to_mir(name))
+                    }
+                }
+                Type::Object(ty) => {
+                    if ty.file_id() != Some(FileId::BUILT_IN) {
+                        doc.definitions.extend(ty.to_mir(name))
+                    }
+                }
+                Type::Interface(ty) => {
+                    if ty.file_id() != Some(FileId::BUILT_IN) {
+                        doc.definitions.extend(ty.to_mir(name))
+                    }
+                }
+                Type::Union(ty) => {
+                    if ty.file_id() != Some(FileId::BUILT_IN) {
+                        doc.definitions.extend(ty.to_mir(name))
+                    }
+                }
+                Type::Enum(ty) => {
+                    if ty.file_id() != Some(FileId::BUILT_IN) {
+                        doc.definitions.extend(ty.to_mir(name))
+                    }
+                }
+                Type::InputObject(ty) => {
+                    if ty.file_id() != Some(FileId::BUILT_IN) {
+                        doc.definitions.extend(ty.to_mir(name))
+                    }
+                }
+            }
+        }
+        doc
+    }
 }
 
 fn directives_from_mir<'a, T>(
@@ -490,9 +537,9 @@ impl Schema {
         Located::no_location(Self {
             description: None,
             directives: Vec::new(),
-            query: if_has_object_type("Query"),
-            mutation: if_has_object_type("Mutation"),
-            subscription: if_has_object_type("Subscription"),
+            query: if_has_object_type(OperationType::Query.name()),
+            mutation: if_has_object_type(OperationType::Mutation.name()),
+            subscription: if_has_object_type(OperationType::Subscription.name()),
             query_extension: None,
             mutation_extension: None,
             subscription_extension: None,
