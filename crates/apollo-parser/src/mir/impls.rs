@@ -25,7 +25,13 @@ macro_rules! directive_methods {
     };
 }
 
-impl Document {}
+impl Document {
+    pub fn new() -> Self {
+        Self {
+            definitions: Vec::new(),
+        }
+    }
+}
 
 impl Definition {}
 

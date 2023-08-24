@@ -335,7 +335,7 @@ fn type_system2(db: &dyn HirDatabase) -> Arc<crate::hir2::type_system::TypeSyste
         .collect::<Vec<_>>();
 
     // NOTE(@goto-bus-stop) we could save allocating above if TypeSystem took an iterator
-    let type_system = crate::hir2::type_system::TypeSystem::new(&type_inputs);
+    let type_system = crate::hir2::type_system::TypeSystem::from_mir(&type_inputs);
 
     Arc::new(type_system)
 }

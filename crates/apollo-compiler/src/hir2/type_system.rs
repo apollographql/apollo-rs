@@ -148,7 +148,7 @@ where
 }
 
 impl TypeSystem {
-    pub fn new(input_files: &[(FileId, &mir::Document)]) -> Self {
+    pub fn from_mir(input_files: &[(FileId, &mir::Document)]) -> Self {
         static BUILT_IN_TYPES: std::sync::OnceLock<mir::Document> = std::sync::OnceLock::new();
         let built_in = BUILT_IN_TYPES.get_or_init(|| {
             let ast = apollo_parser::Parser::new(include_str!("../built_in_types.graphql")).parse();
@@ -166,7 +166,7 @@ impl TypeSystem {
                 match definition {
                     mir::Definition::SchemaDefinition(def) => {
                         opt_schema.get_or_insert_with(|| {
-                            Schema::new(LocatedBorrow::with_file_id(def, file_id))
+                            Schema::from_mir(LocatedBorrow::with_file_id(def, file_id))
                         });
                     }
                     mir::Definition::DirectiveDefinition(def) => {
@@ -176,34 +176,42 @@ impl TypeSystem {
                     }
                     mir::Definition::ScalarTypeDefinition(def) => {
                         insert_sticky(&mut types, &def.name, || {
-                            Type::Scalar(ScalarType::new(LocatedBorrow::with_file_id(def, file_id)))
+                            Type::Scalar(ScalarType::from_mir(LocatedBorrow::with_file_id(
+                                def, file_id,
+                            )))
                         });
                     }
                     mir::Definition::ObjectTypeDefinition(def) => {
                         insert_sticky(&mut types, &def.name, || {
-                            Type::Object(ObjectType::new(LocatedBorrow::with_file_id(def, file_id)))
+                            Type::Object(ObjectType::from_mir(LocatedBorrow::with_file_id(
+                                def, file_id,
+                            )))
                         });
                     }
                     mir::Definition::InterfaceTypeDefinition(def) => {
                         types.entry(def.name.clone()).or_insert(Type::Interface(
-                            InterfaceType::new(LocatedBorrow::with_file_id(def, file_id)),
+                            InterfaceType::from_mir(LocatedBorrow::with_file_id(def, file_id)),
                         ));
                     }
                     mir::Definition::UnionTypeDefinition(def) => {
                         insert_sticky(&mut types, &def.name, || {
-                            Type::Union(UnionType::new(LocatedBorrow::with_file_id(def, file_id)))
+                            Type::Union(UnionType::from_mir(LocatedBorrow::with_file_id(
+                                def, file_id,
+                            )))
                         });
                     }
                     mir::Definition::EnumTypeDefinition(def) => {
                         insert_sticky(&mut types, &def.name, || {
-                            Type::Enum(EnumType::new(LocatedBorrow::with_file_id(def, file_id)))
+                            Type::Enum(EnumType::from_mir(LocatedBorrow::with_file_id(
+                                def, file_id,
+                            )))
                         });
                     }
                     mir::Definition::InputObjectTypeDefinition(def) => {
                         insert_sticky(&mut types, &def.name, || {
-                            Type::InputObject(InputObjectType::new(LocatedBorrow::with_file_id(
-                                def, file_id,
-                            )))
+                            Type::InputObject(InputObjectType::from_mir(
+                                LocatedBorrow::with_file_id(def, file_id),
+                            ))
                         });
                     }
                     mir::Definition::SchemaExtension(_)
@@ -229,43 +237,43 @@ impl TypeSystem {
                         if let Some(schema) = &mut opt_schema {
                             schema
                                 .make_mut()
-                                .extend(LocatedBorrow::with_file_id(ext, file_id))
+                                .extend_mir(LocatedBorrow::with_file_id(ext, file_id))
                         }
                     }
                     mir::Definition::ScalarTypeExtension(ext) => {
                         if let Some(Type::Scalar(ty)) = types.get_mut(&ext.name) {
                             ty.make_mut()
-                                .extend(LocatedBorrow::with_file_id(ext, file_id))
+                                .extend_mir(LocatedBorrow::with_file_id(ext, file_id))
                         }
                     }
                     mir::Definition::ObjectTypeExtension(ext) => {
                         if let Some(Type::Object(ty)) = types.get_mut(&ext.name) {
                             ty.make_mut()
-                                .extend(LocatedBorrow::with_file_id(ext, file_id))
+                                .extend_mir(LocatedBorrow::with_file_id(ext, file_id))
                         }
                     }
                     mir::Definition::InterfaceTypeExtension(ext) => {
                         if let Some(Type::Interface(ty)) = types.get_mut(&ext.name) {
                             ty.make_mut()
-                                .extend(LocatedBorrow::with_file_id(ext, file_id))
+                                .extend_mir(LocatedBorrow::with_file_id(ext, file_id))
                         }
                     }
                     mir::Definition::UnionTypeExtension(ext) => {
                         if let Some(Type::Union(ty)) = types.get_mut(&ext.name) {
                             ty.make_mut()
-                                .extend(LocatedBorrow::with_file_id(ext, file_id))
+                                .extend_mir(LocatedBorrow::with_file_id(ext, file_id))
                         }
                     }
                     mir::Definition::EnumTypeExtension(ext) => {
                         if let Some(Type::Enum(ty)) = types.get_mut(&ext.name) {
                             ty.make_mut()
-                                .extend(LocatedBorrow::with_file_id(ext, file_id))
+                                .extend_mir(LocatedBorrow::with_file_id(ext, file_id))
                         }
                     }
                     mir::Definition::InputObjectTypeExtension(ext) => {
                         if let Some(Type::InputObject(ty)) = types.get_mut(&ext.name) {
                             ty.make_mut()
-                                .extend(LocatedBorrow::with_file_id(ext, file_id))
+                                .extend_mir(LocatedBorrow::with_file_id(ext, file_id))
                         }
                     }
                     mir::Definition::OperationDefinition(_)
@@ -416,7 +424,7 @@ fn directives_from_mir<'a, T>(
 }
 
 impl Schema {
-    fn new(definition: LocatedBorrow<'_, mir::SchemaDefinition>) -> Located<Self> {
+    fn from_mir(definition: LocatedBorrow<'_, mir::SchemaDefinition>) -> Located<Self> {
         let mut schema = Schema {
             description: definition.description.clone(),
             directives: directives_from_mir(definition, None, &definition.directives).collect(),
@@ -431,7 +439,7 @@ impl Schema {
         definition.same_location(schema)
     }
 
-    fn extend(&mut self, extension: LocatedBorrow<mir::SchemaExtension>) {
+    fn extend_mir(&mut self, extension: LocatedBorrow<mir::SchemaExtension>) {
         let id = ExtensionId::new(extension);
         self.directives.extend(directives_from_mir(
             extension,
@@ -519,14 +527,14 @@ impl Schema {
 }
 
 impl ScalarType {
-    fn new(definition: LocatedBorrow<'_, mir::ScalarTypeDefinition>) -> Located<Self> {
+    fn from_mir(definition: LocatedBorrow<'_, mir::ScalarTypeDefinition>) -> Located<Self> {
         definition.same_location(Self {
             description: definition.description.clone(),
             directives: directives_from_mir(definition, None, &definition.directives).collect(),
         })
     }
 
-    fn extend(&mut self, extension: LocatedBorrow<'_, mir::ScalarTypeExtension>) {
+    fn extend_mir(&mut self, extension: LocatedBorrow<'_, mir::ScalarTypeExtension>) {
         let id = ExtensionId::new(extension);
         self.directives.extend(directives_from_mir(
             extension,
@@ -548,7 +556,7 @@ impl ScalarType {
 }
 
 impl ObjectType {
-    fn new(definition: LocatedBorrow<'_, mir::ObjectTypeDefinition>) -> Located<Self> {
+    fn from_mir(definition: LocatedBorrow<'_, mir::ObjectTypeDefinition>) -> Located<Self> {
         definition.same_location(Self {
             description: definition.description.clone(),
             implements_interfaces: collect_sticky(
@@ -567,7 +575,7 @@ impl ObjectType {
         })
     }
 
-    fn extend(&mut self, extension: LocatedBorrow<'_, mir::ObjectTypeExtension>) {
+    fn extend_mir(&mut self, extension: LocatedBorrow<'_, mir::ObjectTypeExtension>) {
         let id = ExtensionId::new(extension);
         self.directives.extend(directives_from_mir(
             extension,
@@ -604,7 +612,7 @@ impl ObjectType {
 }
 
 impl InterfaceType {
-    fn new(definition: LocatedBorrow<'_, mir::InterfaceTypeDefinition>) -> Located<Self> {
+    fn from_mir(definition: LocatedBorrow<'_, mir::InterfaceTypeDefinition>) -> Located<Self> {
         definition.same_location(Self {
             description: definition.description.clone(),
             implements_interfaces: collect_sticky(
@@ -623,7 +631,7 @@ impl InterfaceType {
         })
     }
 
-    fn extend(&mut self, extension: LocatedBorrow<'_, mir::InterfaceTypeExtension>) {
+    fn extend_mir(&mut self, extension: LocatedBorrow<'_, mir::InterfaceTypeExtension>) {
         let id = ExtensionId::new(extension);
         self.directives.extend(directives_from_mir(
             extension,
@@ -660,7 +668,7 @@ impl InterfaceType {
 }
 
 impl UnionType {
-    fn new(definition: LocatedBorrow<'_, mir::UnionTypeDefinition>) -> Located<Self> {
+    fn from_mir(definition: LocatedBorrow<'_, mir::UnionTypeDefinition>) -> Located<Self> {
         definition.same_location(Self {
             description: definition.description.clone(),
             directives: directives_from_mir(definition, None, &definition.directives).collect(),
@@ -668,7 +676,7 @@ impl UnionType {
         })
     }
 
-    fn extend(&mut self, extension: LocatedBorrow<'_, mir::UnionTypeExtension>) {
+    fn extend_mir(&mut self, extension: LocatedBorrow<'_, mir::UnionTypeExtension>) {
         let id = ExtensionId::new(extension);
         self.directives.extend(directives_from_mir(
             extension,
@@ -698,7 +706,7 @@ impl UnionType {
 }
 
 impl EnumType {
-    fn new(definition: LocatedBorrow<'_, mir::EnumTypeDefinition>) -> Located<Self> {
+    fn from_mir(definition: LocatedBorrow<'_, mir::EnumTypeDefinition>) -> Located<Self> {
         definition.same_location(Self {
             description: definition.description.clone(),
             directives: directives_from_mir(definition, None, &definition.directives).collect(),
@@ -711,7 +719,7 @@ impl EnumType {
         })
     }
 
-    fn extend(&mut self, extension: LocatedBorrow<'_, mir::EnumTypeExtension>) {
+    fn extend_mir(&mut self, extension: LocatedBorrow<'_, mir::EnumTypeExtension>) {
         let id = ExtensionId::new(extension);
         self.directives.extend(directives_from_mir(
             extension,
@@ -741,7 +749,7 @@ impl EnumType {
 }
 
 impl InputObjectType {
-    fn new(definition: LocatedBorrow<'_, mir::InputObjectTypeDefinition>) -> Located<Self> {
+    fn from_mir(definition: LocatedBorrow<'_, mir::InputObjectTypeDefinition>) -> Located<Self> {
         definition.same_location(Self {
             description: definition.description.clone(),
             directives: directives_from_mir(definition, None, &definition.directives).collect(),
@@ -754,7 +762,7 @@ impl InputObjectType {
         })
     }
 
-    fn extend(&mut self, extension: LocatedBorrow<'_, mir::InputObjectTypeExtension>) {
+    fn extend_mir(&mut self, extension: LocatedBorrow<'_, mir::InputObjectTypeExtension>) {
         let id = ExtensionId::new(extension);
         self.directives.extend(directives_from_mir(
             extension,
