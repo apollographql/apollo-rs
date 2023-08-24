@@ -17,6 +17,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation -->
 
+# [0.11.1](https://crates.io/crates/apollo-compiler/0.11.1) - 2023-08-24
+
+## Features
+- disable colours in diagnostics output if the terminal is not interactive, by [EverlastingBugstopper] in [pull/628]
+
+[EverlastingBugstopper]: https://github.com/EverlastingBugstopper
+[pull/628]: https://github.com/apollographql/apollo-rs/pull/628
+
 # [0.11.0](https://crates.io/crates/apollo-compiler/0.11.0) - 2023-08-18
 
 ## Features
