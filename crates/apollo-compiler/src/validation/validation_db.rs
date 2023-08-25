@@ -30,7 +30,15 @@ pub trait ValidationDatabase:
     fn validate_type_system(&self) -> Vec<ApolloDiagnostic>;
 
     /// Validate an executable document.
+    #[salsa::invoke(validate_executable)]
     fn validate_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
+
+    /// Validate a standalone executable document, without knowledge of the type system it executes
+    /// against.
+    ///
+    /// This runs a subset of the validations from `validate_executable`.
+    #[salsa::invoke(validate_standalone_executable)]
+    fn validate_standalone_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
     /// Validate the names of all type definitions known to the compiler are unique.
     fn validate_type_system_names(&self) -> Vec<ApolloDiagnostic>;
@@ -342,8 +350,9 @@ fn validate_type_system_names(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnost
             | ast::Definition::EnumTypeDefinition(_)
             | ast::Definition::InputObjectTypeDefinition(_) => "type",
             // Only validate type system definitions.
-            ast::Definition::OperationDefinition(_)
-            | ast::Definition::FragmentDefinition(_) => unreachable!(),
+            ast::Definition::OperationDefinition(_) | ast::Definition::FragmentDefinition(_) => {
+                unreachable!()
+            }
             // Schemas do not have a name.
             ast::Definition::SchemaDefinition(_) => unreachable!(),
             // Extension names are always duplicate.
@@ -420,14 +429,18 @@ fn validate_type_system_names(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnost
     diagnostics
 }
 
-fn validate_executable_names(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
+fn validate_executable_names(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // Different node types use different namespaces.
     let mut fragment_scope = HashMap::<String, ast::Name>::new();
     let mut operation_scope = HashMap::new();
 
-    let executable_definitions = db.ast(file_id)
+    let executable_definitions = db
+        .ast(file_id)
         .document()
         .syntax()
         .children()
@@ -472,10 +485,7 @@ fn validate_executable_names(db: &dyn ValidationDatabase, file_id: FileId) -> Ve
                                 original_definition,
                                 format!("previous definition of `{name}` here"),
                             ),
-                            Label::new(
-                                redefined_definition,
-                                format!("`{name}` redefined here"),
-                            ),
+                            Label::new(redefined_definition, format!("`{name}` redefined here")),
                         ])
                         .help(format!(
                             "`{name}` must only be defined once in this document."
@@ -518,7 +528,10 @@ pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
     diagnostics
 }
 
-pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
+pub fn validate_standalone_executable(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     if db.source_type(file_id).is_executable() {
@@ -547,6 +560,14 @@ pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<
         diagnostics.extend(db.validate_fragment_used(Arc::clone(def), file_id));
     }
 
+    diagnostics.sort_by_key(location_sort_key);
+    diagnostics
+}
+
+pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = db.validate_standalone_executable(file_id);
+    diagnostics
+        .extend(super::operation::validate_operation_definitions_against_type_system(db, file_id));
     diagnostics.sort_by_key(location_sort_key);
     diagnostics
 }
@@ -709,6 +730,45 @@ type TestObject {
         assert_eq!(
             diagnostics[0].data.to_string(),
             "cannot query field `nickname` on type `TestObject`"
+        );
+    }
+
+    #[test]
+    fn validation_without_type_system() {
+        let mut compiler = ApolloCompiler::new();
+
+        let valid_id = compiler.add_executable(r#"{ obj { name nickname } }"#, "valid.graphql");
+        let diagnostics = compiler.db.validate_standalone_executable(valid_id);
+        // We don't know what `obj` refers to, so assume it is valid.
+        assert!(diagnostics.is_empty());
+
+        let unused_frag_id = compiler.add_executable(
+            r#"
+            fragment A on Type { a }
+            query { b }
+        "#,
+            "dupe_frag.graphql",
+        );
+        let diagnostics = compiler.db.validate_standalone_executable(unused_frag_id);
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(
+            diagnostics[0].data.to_string(),
+            "fragment `A` must be used in an operation"
+        );
+
+        let dupe_frag_id = compiler.add_executable(
+            r#"
+            fragment A on Type { a }
+            fragment A on Type { b }
+            query { ...A }
+        "#,
+            "dupe_frag.graphql",
+        );
+        let diagnostics = compiler.db.validate_standalone_executable(dupe_frag_id);
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(
+            diagnostics[0].data.to_string(),
+            "the fragment `A` is defined multiple times in the document"
         );
     }
 }

@@ -5,6 +5,34 @@ use crate::{
     hir, FileId, ValidationDatabase,
 };
 
+pub fn validate_operation_definitions_against_type_system(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let operations = db.operations(file_id);
+    for def in operations.iter() {
+        // Validate the Selection Set recursively
+        // Check that the root type exists
+        if def.object_type(db.upcast()).is_some() {
+            diagnostics.extend(
+                db.validate_selection_set(def.selection_set().clone(), def.variables.clone()),
+            );
+        }
+    }
+
+    let subscription_operations = db.upcast().subscription_operations(file_id);
+    let query_operations = db.upcast().query_operations(file_id);
+    let mutation_operations = db.upcast().mutation_operations(file_id);
+
+    diagnostics.extend(db.validate_subscription_operations(subscription_operations));
+    diagnostics.extend(db.validate_query_operations(query_operations));
+    diagnostics.extend(db.validate_mutation_operations(mutation_operations));
+
+    diagnostics
+}
+
 pub fn validate_operation_definitions(
     db: &dyn ValidationDatabase,
     file_id: FileId,
@@ -22,23 +50,8 @@ pub fn validate_operation_definitions(
         ));
         diagnostics.extend(db.validate_variable_definitions(def.variables.as_ref().clone()));
 
-        // Validate the Selection Set recursively
-        // Check that the root type exists
-        if def.object_type(db.upcast()).is_some() {
-            diagnostics.extend(
-                db.validate_selection_set(def.selection_set().clone(), def.variables.clone()),
-            );
-        }
         diagnostics.extend(db.validate_unused_variable(def.clone()));
     }
-
-    let subscription_operations = db.upcast().subscription_operations(file_id);
-    let query_operations = db.upcast().query_operations(file_id);
-    let mutation_operations = db.upcast().mutation_operations(file_id);
-
-    diagnostics.extend(db.validate_subscription_operations(subscription_operations));
-    diagnostics.extend(db.validate_query_operations(query_operations));
-    diagnostics.extend(db.validate_mutation_operations(mutation_operations));
 
     // It is possible to have an unnamed (anonymous) operation definition only
     // if there is **one** operation definition.
