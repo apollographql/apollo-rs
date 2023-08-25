@@ -770,5 +770,13 @@ type TestObject {
             diagnostics[0].data.to_string(),
             "the fragment `A` is defined multiple times in the document"
         );
+
+        let unknown_frag_id = compiler.add_executable(r#"{ ...A }"#, "unknown_frag.graphql");
+        let diagnostics = compiler.db.validate_standalone_executable(unknown_frag_id);
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(
+            diagnostics[0].data.to_string(),
+            "the fragment `A` is not defined in the document"
+        );
     }
 }
