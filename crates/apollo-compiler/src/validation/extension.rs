@@ -18,10 +18,17 @@ pub fn validate_extensions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic>
     for extension in db.extensions().iter() {
         let Some(definition) = db.find_type_definition_by_name(extension.name().into()) else {
             diagnostics.push(
-                ApolloDiagnostic::new(db, extension.loc().into(), DiagnosticData::UndefinedDefinition {
-                    name: extension.name().into(),
-                })
-                .label(Label::new(extension.name_src().loc.unwrap(), format!("`{}` type definition does not exist", extension.name()))),
+                ApolloDiagnostic::new(
+                    db,
+                    extension.loc().into(),
+                    DiagnosticData::UndefinedDefinition {
+                        name: extension.name().into(),
+                    },
+                )
+                .label(Label::new(
+                    extension.name_src().loc.unwrap(),
+                    format!("`{}` type definition does not exist", extension.name()),
+                )),
             );
 
             continue;

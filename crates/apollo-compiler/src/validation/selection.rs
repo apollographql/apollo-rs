@@ -83,7 +83,8 @@ pub(crate) fn same_response_shape(
         // 4d. Repeat from step 3.
     }
 
-    let (Some(def_a), Some(def_b)) = (type_a.type_def(db.upcast()), type_b.type_def(db.upcast())) else {
+    let (Some(def_a), Some(def_b)) = (type_a.type_def(db.upcast()), type_b.type_def(db.upcast()))
+    else {
         return Ok(()); // Cannot do much if we don't know the type
     };
 
@@ -151,7 +152,10 @@ fn identical_arguments(
     let args_b = field_b.arguments();
     // Check if fieldB provides the same argument names and values as fieldA (order-independent).
     for arg in args_a {
-        let Some(other_arg) = args_b.iter().find(|other_arg| other_arg.name() == arg.name()) else {
+        let Some(other_arg) = args_b
+            .iter()
+            .find(|other_arg| other_arg.name() == arg.name())
+        else {
             return Err(
                 ApolloDiagnostic::new(
                     db,
