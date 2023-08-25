@@ -2,7 +2,7 @@
 // non-optional and will have an error produced in the parser if they are missing.
 
 use crate::{
-    database::{AstStorage, HirStorage, InputStorage},
+    database::{CstStorage, HirStorage, InputStorage},
     validation::ValidationStorage,
     HirDatabase,
 };
@@ -10,7 +10,7 @@ use crate::{
 pub trait Upcast<T: ?Sized> {
     fn upcast(&self) -> &T;
 }
-#[salsa::database(InputStorage, AstStorage, HirStorage, ValidationStorage)]
+#[salsa::database(InputStorage, CstStorage, HirStorage, ValidationStorage)]
 #[derive(Default)]
 pub struct RootDatabase {
     pub storage: salsa::Storage<RootDatabase>,

@@ -41,35 +41,35 @@ impl From<InputValue> for apollo_encoder::Value {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::DefaultValue> for InputValue {
+impl TryFrom<apollo_parser::cst::DefaultValue> for InputValue {
     type Error = crate::FromError;
 
-    fn try_from(default_val: apollo_parser::ast::DefaultValue) -> Result<Self, Self::Error> {
+    fn try_from(default_val: apollo_parser::cst::DefaultValue) -> Result<Self, Self::Error> {
         default_val.value().unwrap().try_into()
     }
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::Value> for InputValue {
+impl TryFrom<apollo_parser::cst::Value> for InputValue {
     type Error = crate::FromError;
 
-    fn try_from(value: apollo_parser::ast::Value) -> Result<Self, Self::Error> {
+    fn try_from(value: apollo_parser::cst::Value) -> Result<Self, Self::Error> {
         let smith_value = match value {
-            apollo_parser::ast::Value::Variable(variable) => {
+            apollo_parser::cst::Value::Variable(variable) => {
                 Self::Variable(variable.name().unwrap().into())
             }
-            apollo_parser::ast::Value::StringValue(val) => Self::String(val.try_into().unwrap()),
-            apollo_parser::ast::Value::FloatValue(val) => Self::Float(val.try_into()?),
-            apollo_parser::ast::Value::IntValue(val) => Self::Int(val.try_into()?),
-            apollo_parser::ast::Value::BooleanValue(val) => Self::Boolean(val.try_into()?),
-            apollo_parser::ast::Value::NullValue(_val) => Self::Null,
-            apollo_parser::ast::Value::EnumValue(val) => Self::Enum(val.name().unwrap().into()),
-            apollo_parser::ast::Value::ListValue(val) => Self::List(
+            apollo_parser::cst::Value::StringValue(val) => Self::String(val.try_into().unwrap()),
+            apollo_parser::cst::Value::FloatValue(val) => Self::Float(val.try_into()?),
+            apollo_parser::cst::Value::IntValue(val) => Self::Int(val.try_into()?),
+            apollo_parser::cst::Value::BooleanValue(val) => Self::Boolean(val.try_into()?),
+            apollo_parser::cst::Value::NullValue(_val) => Self::Null,
+            apollo_parser::cst::Value::EnumValue(val) => Self::Enum(val.name().unwrap().into()),
+            apollo_parser::cst::Value::ListValue(val) => Self::List(
                 val.values()
                     .map(Self::try_from)
                     .collect::<Result<Vec<_>, _>>()?,
             ),
-            apollo_parser::ast::Value::ObjectValue(val) => Self::Object(
+            apollo_parser::cst::Value::ObjectValue(val) => Self::Object(
                 val.object_fields()
                     .map(|of| Ok((of.name().unwrap().into(), of.value().unwrap().try_into()?)))
                     .collect::<Result<Vec<_>, crate::FromError>>()?,
@@ -141,11 +141,11 @@ impl From<InputValueDef> for apollo_encoder::InputValueDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::InputValueDefinition> for InputValueDef {
+impl TryFrom<apollo_parser::cst::InputValueDefinition> for InputValueDef {
     type Error = crate::FromError;
 
     fn try_from(
-        input_val_def: apollo_parser::ast::InputValueDefinition,
+        input_val_def: apollo_parser::cst::InputValueDefinition,
     ) -> Result<Self, Self::Error> {
         Ok(Self {
             description: input_val_def.description().map(Description::from),

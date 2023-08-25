@@ -67,7 +67,7 @@ pub(crate) fn variable(p: &mut Parser) {
 #[cfg(test)]
 
 mod test {
-    use crate::{ast, Parser};
+    use crate::{cst, Parser};
 
     #[test]
     fn it_accesses_variable_name_and_type() {
@@ -78,14 +78,14 @@ query GroceryStoreTrip($budget: Int) {
         "#;
 
         let parser = Parser::new(gql);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors().len() == 0);
+        assert!(cst.errors().len() == 0);
 
-        let doc = ast.document();
+        let doc = cst.document();
 
         for definition in doc.definitions() {
-            if let ast::Definition::OperationDefinition(op_def) = definition {
+            if let cst::Definition::OperationDefinition(op_def) = definition {
                 for var in op_def
                     .variable_definitions()
                     .unwrap()
@@ -95,7 +95,7 @@ query GroceryStoreTrip($budget: Int) {
                         var.variable().unwrap().name().unwrap().text().as_ref(),
                         "budget"
                     );
-                    if let ast::Type::NamedType(name) = var.ty().unwrap() {
+                    if let cst::Type::NamedType(name) = var.ty().unwrap() {
                         assert_eq!(name.name().unwrap().text().as_ref(), "Int")
                     }
                 }

@@ -153,7 +153,7 @@ pub(crate) fn default_value(p: &mut Parser) {
 
 #[cfg(test)]
 mod test {
-    use crate::{ast, ast::AstNode, Parser};
+    use crate::{cst, cst::CstNode, Parser};
 
     #[test]
     fn it_returns_string_for_string_value_into() {
@@ -162,16 +162,16 @@ enum Test @dir__one(string: "string value", int_value: -10, float_value: -1.123e
   INVENTORY
 } "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+            if let cst::Definition::EnumTypeDefinition(enum_) = definition {
                 for directive in enum_.directives().unwrap().directives() {
                     for argument in directive.arguments().unwrap().arguments() {
-                        if let ast::Value::StringValue(val) =
+                        if let cst::Value::StringValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
                             let source = val.source_string();
@@ -193,16 +193,16 @@ enum Test @dir__one(int_value: -10) {
   INVENTORY
 } "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+            if let cst::Definition::EnumTypeDefinition(enum_) = definition {
                 for directive in enum_.directives().unwrap().directives() {
                     for argument in directive.arguments().unwrap().arguments() {
-                        if let ast::Value::IntValue(val) =
+                        if let cst::Value::IntValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
                             let i: i32 = val.try_into().unwrap();
@@ -224,16 +224,16 @@ enum Test @dir__one(float_value: -1.123E4) {
   INVENTORY
 } "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+            if let cst::Definition::EnumTypeDefinition(enum_) = definition {
                 for directive in enum_.directives().unwrap().directives() {
                     for argument in directive.arguments().unwrap().arguments() {
-                        if let ast::Value::FloatValue(val) =
+                        if let cst::Value::FloatValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
                             let f: f64 = val.try_into().unwrap();
@@ -252,16 +252,16 @@ enum Test @dir__one(bool_value: false) {
   INVENTORY
 } "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
 
-        let document = ast.document();
+        let document = cst.document();
         for definition in document.definitions() {
-            if let ast::Definition::EnumTypeDefinition(enum_) = definition {
+            if let cst::Definition::EnumTypeDefinition(enum_) = definition {
                 for directive in enum_.directives().unwrap().directives() {
                     for argument in directive.arguments().unwrap().arguments() {
-                        if let ast::Value::BooleanValue(val) =
+                        if let cst::Value::BooleanValue(val) =
                             argument.value().expect("Cannot get argument value.")
                         {
                             let b: bool = val.try_into().unwrap();
@@ -285,13 +285,13 @@ query GraphQuery($graph_id: ID!, $variant: String) {
 }
         ";
         let parser = Parser::new(input);
-        let ast = parser.parse();
-        assert_eq!(0, ast.errors().len());
+        let cst = parser.parse();
+        assert_eq!(0, cst.errors().len());
 
-        let doc = ast.document();
+        let doc = cst.document();
 
         for def in doc.definitions() {
-            if let ast::Definition::OperationDefinition(op_def) = def {
+            if let cst::Definition::OperationDefinition(op_def) = def {
                 assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
 
                 let variable_defs = op_def.variable_definitions();
@@ -318,9 +318,9 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             }
           }"#;
         let parser = Parser::new(input);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
     }
 
     #[test]
@@ -333,9 +333,9 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             }
           }"#;
         let parser = Parser::new(input);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
     }
 
     #[test]
@@ -348,9 +348,9 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             }
           }"#;
         let parser = Parser::new(input);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(ast.errors.is_empty());
+        assert!(cst.errors.is_empty());
     }
 
     #[test]
@@ -363,9 +363,9 @@ query GraphQuery($graph_id: ID!, $variant: String) {
             }
           }"#;
         let parser = Parser::new(input);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert!(!ast.errors.is_empty());
+        assert!(!cst.errors.is_empty());
     }
 
     #[test]
@@ -384,7 +384,7 @@ type Vehicle @key(fields: "id") {
 "#;
 
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        assert!(!ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(!cst.errors.is_empty());
     }
 }

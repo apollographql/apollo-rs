@@ -40,16 +40,16 @@ fn lexer_tests() {
 fn parser_tests() {
     dir_tests(&test_data_dir(), &["parser/ok"], "txt", |text, path| {
         let parser = Parser::new(text);
-        let ast = parser.parse();
-        assert_errors_are_absent(&ast.errors().cloned().collect::<Vec<_>>(), path);
-        format!("{ast:?}")
+        let cst = parser.parse();
+        assert_errors_are_absent(&cst.errors().cloned().collect::<Vec<_>>(), path);
+        format!("{cst:?}")
     });
 
     dir_tests(&test_data_dir(), &["parser/err"], "txt", |text, path| {
         let parser = Parser::new(text);
-        let ast = parser.parse();
-        assert_errors_are_present(&ast.errors().cloned().collect::<Vec<_>>(), path);
-        format!("{ast:?}")
+        let cst = parser.parse();
+        assert_errors_are_present(&cst.errors().cloned().collect::<Vec<_>>(), path);
+        format!("{cst:?}")
     });
 }
 

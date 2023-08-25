@@ -21,20 +21,20 @@ use std::fmt;
 /// // recursion limit
 /// let parser = Parser::new(query).recursion_limit(4);
 /// // Parse the query, and return a SyntaxTree.
-/// let ast = parser.parse();
+/// let cst = parser.parse();
 /// // Retrieve the limits
-/// let usage = ast.recursion_limit();
+/// let usage = cst.recursion_limit();
 /// // Print out some of the usage details to see what happened during
 /// // our parse. `limit` just reports the limit we set, `high` is the
 /// // high-water mark of recursion usage.
 /// println!("{:?}", usage);
 /// println!("{:?}", usage.limit);
 /// println!("{:?}", usage.high);
-/// // Check that are no errors. These are not part of the AST.
-/// assert_eq!(0, ast.errors().len());
+/// // Check that are no errors. These are not part of the CST.
+/// assert_eq!(0, cst.errors().len());
 ///
 /// // Get the document root node
-/// let doc = ast.document();
+/// let doc = cst.document();
 /// // ... continue
 /// ```
 #[derive(PartialEq, Eq, Clone, Copy)]

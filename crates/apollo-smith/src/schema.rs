@@ -53,10 +53,10 @@ impl From<SchemaDef> for apollo_encoder::SchemaDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::SchemaDefinition> for SchemaDef {
+impl TryFrom<apollo_parser::cst::SchemaDefinition> for SchemaDef {
     type Error = crate::FromError;
 
-    fn try_from(schema_def: apollo_parser::ast::SchemaDefinition) -> Result<Self, Self::Error> {
+    fn try_from(schema_def: apollo_parser::cst::SchemaDefinition) -> Result<Self, Self::Error> {
         let mut query = None;
         let mut mutation = None;
         let mut subcription = None;
@@ -89,10 +89,10 @@ impl TryFrom<apollo_parser::ast::SchemaDefinition> for SchemaDef {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::SchemaExtension> for SchemaDef {
+impl TryFrom<apollo_parser::cst::SchemaExtension> for SchemaDef {
     type Error = crate::FromError;
 
-    fn try_from(schema_def: apollo_parser::ast::SchemaExtension) -> Result<Self, Self::Error> {
+    fn try_from(schema_def: apollo_parser::cst::SchemaExtension) -> Result<Self, Self::Error> {
         let mut query = None;
         let mut mutation = None;
         let mut subcription = None;

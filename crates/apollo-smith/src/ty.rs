@@ -43,14 +43,14 @@ impl From<Ty> for Type_ {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::Type> for Ty {
-    fn from(ty: apollo_parser::ast::Type) -> Self {
+impl From<apollo_parser::cst::Type> for Ty {
+    fn from(ty: apollo_parser::cst::Type) -> Self {
         match ty {
-            apollo_parser::ast::Type::NamedType(named_ty) => named_ty.into(),
-            apollo_parser::ast::Type::ListType(list_type) => {
+            apollo_parser::cst::Type::NamedType(named_ty) => named_ty.into(),
+            apollo_parser::cst::Type::ListType(list_type) => {
                 Self::List(Box::new(list_type.ty().unwrap().into()))
             }
-            apollo_parser::ast::Type::NonNullType(non_null) => {
+            apollo_parser::cst::Type::NonNullType(non_null) => {
                 if let Some(named_ty) = non_null.named_type() {
                     Self::NonNull(Box::new(named_ty.into()))
                 } else if let Some(list_type) = non_null.list_type() {
@@ -66,8 +66,8 @@ impl From<apollo_parser::ast::Type> for Ty {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::NamedType> for Ty {
-    fn from(ty: apollo_parser::ast::NamedType) -> Self {
+impl From<apollo_parser::cst::NamedType> for Ty {
+    fn from(ty: apollo_parser::cst::NamedType) -> Self {
         Self::Named(ty.name().unwrap().into())
     }
 }

@@ -4,7 +4,7 @@ use std::{
     sync::Arc,
 };
 
-use apollo_parser::{ast, SyntaxNode};
+use apollo_parser::{cst, SyntaxNode};
 use ordered_float::{self, OrderedFloat};
 
 use crate::{HirDatabase, Source};
@@ -416,7 +416,7 @@ impl FragmentDefinition {
         db.find_type_definition_by_name(self.name().to_string())
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -534,7 +534,7 @@ impl OperationDefinition {
         db.operation_fragment_references(self.selection_set.clone())
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -667,7 +667,7 @@ impl VariableDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -747,7 +747,7 @@ impl Type {
         }
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> Option<HirNodeLocation> {
         match self {
             Type::NonNull { loc, .. } | Type::List { loc, .. } | Type::Named { loc, .. } => *loc,
@@ -811,7 +811,7 @@ impl Directive {
         db.find_directive_definition_by_name(self.name().to_string())
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -858,7 +858,7 @@ impl DirectiveDefinition {
         self.repeatable
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -942,8 +942,8 @@ impl fmt::Display for DirectiveLocation {
     }
 }
 
-impl From<ast::DirectiveLocation> for DirectiveLocation {
-    fn from(directive_loc: ast::DirectiveLocation) -> Self {
+impl From<cst::DirectiveLocation> for DirectiveLocation {
+    fn from(directive_loc: cst::DirectiveLocation) -> Self {
         if directive_loc.query_token().is_some() {
             DirectiveLocation::Query
         } else if directive_loc.mutation_token().is_some() {
@@ -1004,7 +1004,7 @@ impl Argument {
         self.name.src()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -1269,7 +1269,7 @@ impl TryFrom<&'_ Value> for i32 {
 
     fn try_from(value: &'_ Value) -> Result<Self, Self::Error> {
         if let Value::Int { value: float, .. } = value {
-            // The parser emitted an `ast::IntValue` instead of `ast::FloatValue`
+            // The parser emitted an `cst::IntValue` instead of `cst::FloatValue`
             // so we already know `float` does not have a frational part.
             float
                 .to_i32_checked()
@@ -1300,7 +1300,7 @@ impl Variable {
         self.name.as_ref()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -1510,7 +1510,7 @@ impl Selection {
         matches!(self, Self::InlineFragment(..))
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         match self {
             Selection::Field(field) => field.loc(),
@@ -1578,7 +1578,7 @@ impl FragmentSelection {
         }
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         match self {
             FragmentSelection::FragmentSpread(fragment_spread) => fragment_spread.loc(),
@@ -1722,7 +1722,7 @@ impl Field {
         vars
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -1889,7 +1889,7 @@ impl InlineFragment {
         self.selection_set.variables(db)
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -1982,7 +1982,7 @@ impl FragmentSpread {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -2194,7 +2194,7 @@ impl SchemaDefinition {
         )
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> Option<HirNodeLocation> {
         self.loc
     }
@@ -2268,7 +2268,7 @@ impl RootOperationTypeDefinition {
         db.find_object_type_by_name(self.named_type().name())
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> Option<HirNodeLocation> {
         self.loc
     }
@@ -2415,7 +2415,7 @@ impl ObjectTypeDefinition {
             .is_some()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -2485,7 +2485,7 @@ impl ImplementsInterface {
         self.interface.src()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -2536,7 +2536,7 @@ impl FieldDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> Option<HirNodeLocation> {
         self.loc
     }
@@ -2564,7 +2564,7 @@ impl ArgumentsDefinition {
         self.input_values.as_ref()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> Option<HirNodeLocation> {
         self.loc
     }
@@ -2615,7 +2615,7 @@ impl InputValueDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> Option<HirNodeLocation> {
         self.loc
     }
@@ -2701,7 +2701,7 @@ impl ScalarTypeDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -2842,7 +2842,7 @@ impl EnumTypeDefinition {
         )
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -2913,7 +2913,7 @@ impl EnumValueDefinition {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3014,7 +3014,7 @@ impl UnionTypeDefinition {
             .is_some()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3053,7 +3053,7 @@ impl UnionMember {
         db.find_object_type_by_name(self.name().to_string())
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3199,7 +3199,7 @@ impl InterfaceTypeDefinition {
             .or_else(|| self.implicit_fields().iter().find(|f| f.name() == name))
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3317,7 +3317,7 @@ impl InputObjectTypeDefinition {
         )
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3350,7 +3350,7 @@ impl Name {
         self.src.as_ref()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> Option<HirNodeLocation> {
         self.loc
     }
@@ -3408,7 +3408,7 @@ impl SchemaExtension {
         self.root_operation_type_definition.as_ref()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3456,7 +3456,7 @@ impl ScalarTypeExtension {
             .filter(move |directive| directive.name() == name)
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3520,7 +3520,7 @@ impl ObjectTypeExtension {
         self.implements_interfaces.as_ref()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3585,7 +3585,7 @@ impl InterfaceTypeExtension {
         self.fields().iter().find(|f| f.name() == name)
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3640,7 +3640,7 @@ impl UnionTypeExtension {
         self.union_members.as_ref()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3694,7 +3694,7 @@ impl EnumTypeExtension {
         self.enum_values_definition.as_ref()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3747,7 +3747,7 @@ impl InputObjectTypeExtension {
         self.input_fields_definition.as_ref()
     }
 
-    /// Get the AST location information for this HIR node.
+    /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
     }
@@ -3791,8 +3791,8 @@ impl HirNodeLocation {
     }
 }
 
-impl<Ast: ast::AstNode> From<(FileId, &'_ Ast)> for HirNodeLocation {
-    fn from((file_id, node): (FileId, &'_ Ast)) -> Self {
+impl<Cst: cst::CstNode> From<(FileId, &'_ Cst)> for HirNodeLocation {
+    fn from((file_id, node): (FileId, &'_ Cst)) -> Self {
         Self::new(file_id, node.syntax())
     }
 }

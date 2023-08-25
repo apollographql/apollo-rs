@@ -1,7 +1,7 @@
-//! Typed AST module to access nodes in the tree.
+//! Typed Concrete Syntax Tree module to access nodes in the tree.
 //!
 //! The nodes described here are those also described in the [GraphQL grammar],
-//! with a few exceptions. For example, for easy of querying the AST we do not
+//! with a few exceptions. For example, for easy of querying the CST we do not
 //! separate `Definition` into `ExecutableDefinition` and
 //! `TypeSystemDefinitionOrExtension`. Instead, all possible definitions and
 //! extensions can be accessed with `Definition`.
@@ -22,7 +22,7 @@
 //! This example parses a subgraph schema and looks at the various Definition Names.
 //!
 //! ```rust
-//! use apollo_parser::{ast, Parser};
+//! use apollo_parser::{cst, Parser};
 //!
 //! let schema = r#"
 //! directive @tag(name: String!) repeatable on FIELD_DEFINITION
@@ -40,13 +40,13 @@
 //! }
 //! "#;
 //! let parser = Parser::new(schema);
-//! let ast = parser.parse();
+//! let cst = parser.parse();
 //!
-//! assert_eq!(0, ast.errors().len());
-//! let document = ast.document();
+//! assert_eq!(0, cst.errors().len());
+//! let document = cst.document();
 //! for definition in document.definitions() {
 //!     match definition {
-//!         ast::Definition::DirectiveDefinition(directive) => {
+//!         cst::Definition::DirectiveDefinition(directive) => {
 //!             assert_eq!(
 //!                 directive
 //!                     .name()
@@ -56,7 +56,7 @@
 //!                 "tag"
 //!             )
 //!         }
-//!         ast::Definition::ObjectTypeDefinition(object_type) => {
+//!         cst::Definition::ObjectTypeDefinition(object_type) => {
 //!             assert_eq!(
 //!                 object_type
 //!                     .name()
@@ -66,7 +66,7 @@
 //!                 "ProductVariation"
 //!             )
 //!         }
-//!         ast::Definition::UnionTypeDefinition(union_type) => {
+//!         cst::Definition::UnionTypeDefinition(union_type) => {
 //!             assert_eq!(
 //!                 union_type
 //!                     .name()
@@ -76,7 +76,7 @@
 //!                 "SearchResult"
 //!             )
 //!         }
-//!         ast::Definition::ScalarTypeDefinition(scalar_type) => {
+//!         cst::Definition::ScalarTypeDefinition(scalar_type) => {
 //!             assert_eq!(
 //!                 scalar_type
 //!                     .name()
@@ -86,7 +86,7 @@
 //!                 "UUID"
 //!             )
 //!         }
-//!         ast::Definition::ObjectTypeExtension(object_type) => {
+//!         cst::Definition::ObjectTypeExtension(object_type) => {
 //!             assert_eq!(
 //!                 object_type
 //!                     .name()
@@ -113,11 +113,11 @@ pub use crate::{parser::SyntaxNodePtr, SyntaxNode};
 
 pub use generated::nodes::*;
 
-/// The main trait to go from untyped `SyntaxNode`  to a typed ast. The
-/// conversion itself has zero runtime cost: ast and syntax nodes have exactly
+/// The main trait to go from untyped `SyntaxNode`  to a typed CST. The
+/// conversion itself has zero runtime cost: CST and syntax nodes have exactly
 /// the same representation: a pointer to the tree root and a pointer to the
 /// node itself.
-pub trait AstNode {
+pub trait CstNode {
     fn can_cast(kind: SyntaxKind) -> bool
     where
         Self: Sized;
@@ -147,8 +147,8 @@ pub trait AstNode {
     }
 }
 
-/// Like `AstNode`, but wraps tokens rather than interior nodes.
-pub trait AstToken {
+/// Like `CstNode`, but wraps tokens rather than interior nodes.
+pub trait CstToken {
     fn can_cast(token: SyntaxKind) -> bool
     where
         Self: Sized;
@@ -164,23 +164,23 @@ pub trait AstToken {
     }
 }
 
-/// An iterator over `SyntaxNode` children of a particular AST type.
+/// An iterator over `SyntaxNode` children of a particular CST type.
 #[derive(Debug, Clone)]
-pub struct AstChildren<N> {
+pub struct CstChildren<N> {
     inner: SyntaxNodeChildren,
     ph: PhantomData<N>,
 }
 
-impl<N> AstChildren<N> {
+impl<N> CstChildren<N> {
     fn new(parent: &SyntaxNode) -> Self {
-        AstChildren {
+        CstChildren {
             inner: parent.children(),
             ph: PhantomData,
         }
     }
 }
 
-impl<N: AstNode> Iterator for AstChildren<N> {
+impl<N: CstNode> Iterator for CstChildren<N> {
     type Item = N;
     fn next(&mut self) -> Option<N> {
         self.inner.find_map(N::cast)
@@ -188,14 +188,14 @@ impl<N: AstNode> Iterator for AstChildren<N> {
 }
 
 mod support {
-    use super::{AstChildren, AstNode, SyntaxKind, SyntaxNode, SyntaxToken};
+    use super::{CstChildren, CstNode, SyntaxKind, SyntaxNode, SyntaxToken};
 
-    pub(super) fn child<N: AstNode>(parent: &SyntaxNode) -> Option<N> {
+    pub(super) fn child<N: CstNode>(parent: &SyntaxNode) -> Option<N> {
         parent.children().find_map(N::cast)
     }
 
-    pub(super) fn children<N: AstNode>(parent: &SyntaxNode) -> AstChildren<N> {
-        AstChildren::new(parent)
+    pub(super) fn children<N: CstNode>(parent: &SyntaxNode) -> CstChildren<N> {
+        CstChildren::new(parent)
     }
 
     pub(super) fn token(parent: &SyntaxNode, kind: SyntaxKind) -> Option<SyntaxToken> {

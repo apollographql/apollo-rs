@@ -9,10 +9,10 @@ use crate::{
         argument, directive, enum_, extension, fragment, input_object, interface, object,
         operation, scalar, schema, selection, union_, value, variable,
     },
-    AstDatabase, FileId, HirDatabase, InputDatabase,
+    CstDatabase, FileId, HirDatabase, InputDatabase,
 };
-use apollo_parser::ast;
-use apollo_parser::ast::AstNode;
+use apollo_parser::cst;
+use apollo_parser::cst::CstNode;
 
 use super::field;
 
@@ -20,7 +20,7 @@ const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 
 #[salsa::query_group(ValidationStorage)]
 pub trait ValidationDatabase:
-    Upcast<dyn HirDatabase> + InputDatabase + AstDatabase + HirDatabase
+    Upcast<dyn HirDatabase> + InputDatabase + CstDatabase + HirDatabase
 {
     /// Validate all documents.
     fn validate(&self) -> Vec<ApolloDiagnostic>;
@@ -306,7 +306,7 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
     let mut diagnostics = Vec::new();
 
     // Different node types use different namespaces.
-    let mut fragment_scope = HashMap::<String, (FileId, ast::Name)>::new();
+    let mut fragment_scope = HashMap::<String, (FileId, cst::Name)>::new();
     let mut operation_scope = HashMap::new();
     let mut directive_scope = HashMap::new();
     let mut type_scope = HashMap::new();
@@ -315,48 +315,48 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
         .type_definition_files()
         .into_iter()
         .flat_map(move |file_id| {
-            db.ast(file_id)
+            db.cst(file_id)
                 .document()
                 .syntax()
                 .children()
-                .filter_map(ast::Definition::cast)
+                .filter_map(cst::Definition::cast)
                 // Extension names are allowed to be duplicates,
                 // and schema definitions don't have names.
                 .filter(|def| {
                     !def.is_extension_definition()
-                        && !matches!(def, ast::Definition::SchemaDefinition(_))
+                        && !matches!(def, cst::Definition::SchemaDefinition(_))
                 })
                 .map(move |def| (file_id, def))
         });
 
-    for (file_id, ast_def) in all_types {
-        let ty_ = match ast_def {
-            ast::Definition::OperationDefinition(_) => "operation",
-            ast::Definition::FragmentDefinition(_) => "fragment",
-            ast::Definition::DirectiveDefinition(_) => "directive",
-            ast::Definition::ScalarTypeDefinition(_)
-            | ast::Definition::ObjectTypeDefinition(_)
-            | ast::Definition::InterfaceTypeDefinition(_)
-            | ast::Definition::UnionTypeDefinition(_)
-            | ast::Definition::EnumTypeDefinition(_)
-            | ast::Definition::InputObjectTypeDefinition(_) => "type",
-            ast::Definition::SchemaDefinition(_)
-            | ast::Definition::SchemaExtension(_)
-            | ast::Definition::ScalarTypeExtension(_)
-            | ast::Definition::ObjectTypeExtension(_)
-            | ast::Definition::InterfaceTypeExtension(_)
-            | ast::Definition::UnionTypeExtension(_)
-            | ast::Definition::EnumTypeExtension(_)
-            | ast::Definition::InputObjectTypeExtension(_) => unreachable!(),
+    for (file_id, cst_def) in all_types {
+        let ty_ = match cst_def {
+            cst::Definition::OperationDefinition(_) => "operation",
+            cst::Definition::FragmentDefinition(_) => "fragment",
+            cst::Definition::DirectiveDefinition(_) => "directive",
+            cst::Definition::ScalarTypeDefinition(_)
+            | cst::Definition::ObjectTypeDefinition(_)
+            | cst::Definition::InterfaceTypeDefinition(_)
+            | cst::Definition::UnionTypeDefinition(_)
+            | cst::Definition::EnumTypeDefinition(_)
+            | cst::Definition::InputObjectTypeDefinition(_) => "type",
+            cst::Definition::SchemaDefinition(_)
+            | cst::Definition::SchemaExtension(_)
+            | cst::Definition::ScalarTypeExtension(_)
+            | cst::Definition::ObjectTypeExtension(_)
+            | cst::Definition::InterfaceTypeExtension(_)
+            | cst::Definition::UnionTypeExtension(_)
+            | cst::Definition::EnumTypeExtension(_)
+            | cst::Definition::InputObjectTypeExtension(_) => unreachable!(),
         };
-        let scope = match ast_def {
-            ast::Definition::OperationDefinition(_) => &mut operation_scope,
-            ast::Definition::FragmentDefinition(_) => &mut fragment_scope,
-            ast::Definition::DirectiveDefinition(_) => &mut directive_scope,
+        let scope = match cst_def {
+            cst::Definition::OperationDefinition(_) => &mut operation_scope,
+            cst::Definition::FragmentDefinition(_) => &mut fragment_scope,
+            cst::Definition::DirectiveDefinition(_) => &mut directive_scope,
             _ => &mut type_scope,
         };
 
-        if let Some(name_node) = ast_def.name() {
+        if let Some(name_node) = cst_def.name() {
             let name = &*name_node.text();
             match scope.entry(name.to_string()) {
                 Entry::Occupied(entry) => {
@@ -364,7 +364,7 @@ fn validate_name_uniqueness(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
                     let original_definition = (*original_file_id, original.syntax().text_range());
                     let redefined_definition = (file_id, name_node.syntax().text_range());
                     let is_built_in = db.input(file_id).source_type().is_built_in();
-                    let is_scalar = matches!(ast_def, ast::Definition::ScalarTypeDefinition(_));
+                    let is_scalar = matches!(cst_def, cst::Definition::ScalarTypeDefinition(_));
 
                     if is_scalar && BUILT_IN_SCALARS.contains(&name) && !is_built_in {
                         diagnostics.push(
@@ -441,7 +441,7 @@ pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<
     let mut diagnostics = Vec::new();
 
     if db.source_type(file_id).is_executable() {
-        let document = db.ast(file_id).document();
+        let document = db.cst(file_id).document();
         for def in document.definitions() {
             if !def.is_executable_definition() {
                 diagnostics.push(

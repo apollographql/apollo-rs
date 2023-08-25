@@ -3,7 +3,7 @@ This repository is in active development as we strive to implement features outl
 While this is a non-exhaustive list, current large features we are planning on building are as follows:
 
 1. **Semantic Analysis and Validation**
-    We will be building a separate structure on top of the the AST created by
+    We will be building a separate structure on top of the the CST created by
     the parser to allow for more efficient schema querying. This will include more
     easily accessible information about queries, mutations, types and their
     subtypes, directives etc.

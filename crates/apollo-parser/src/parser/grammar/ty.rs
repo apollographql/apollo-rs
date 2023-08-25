@@ -51,7 +51,7 @@ fn parse<'a>(p: &mut Parser<'a>) -> Result<(), Token<'a>> {
 
             let token = p.pop();
             name::validate_name(token.data(), p);
-            p.push_ast(SyntaxKind::IDENT, token);
+            p.push_token(SyntaxKind::IDENT, token);
         }
         _ => return Err(p.pop()),
     };
@@ -87,7 +87,7 @@ pub(crate) fn named_type(p: &mut Parser) {
 
 #[cfg(test)]
 mod test {
-    use crate::{ast, ast::AstNode, Parser};
+    use crate::{cst, cst::CstNode, Parser};
 
     #[test]
     fn it_parses_nested_wrapped_types_in_op_def_and_returns_matching_stringified_doc() {
@@ -96,20 +96,20 @@ mutation MyMutation($custId: [Int!]!) {
   myMutation(custId: $custId)
 }"#;
         let parser = Parser::new(mutation);
-        let ast = parser.parse();
-        assert!(ast.errors.is_empty());
+        let cst = parser.parse();
+        assert!(cst.errors.is_empty());
 
-        let doc = ast.document();
+        let doc = cst.document();
         assert_eq!(&mutation, &doc.source_string());
 
         for definition in doc.definitions() {
-            if let ast::Definition::OperationDefinition(op_type) = definition {
+            if let cst::Definition::OperationDefinition(op_type) = definition {
                 for var in op_type
                     .variable_definitions()
                     .unwrap()
                     .variable_definitions()
                 {
-                    if let ast::Type::NamedType(name) = var.ty().unwrap() {
+                    if let cst::Type::NamedType(name) = var.ty().unwrap() {
                         assert_eq!(name.source_string(), "[Int!]!")
                     }
                 }
@@ -118,7 +118,7 @@ mutation MyMutation($custId: [Int!]!) {
     }
 
     #[test]
-    fn stringified_ast_matches_input_with_deeply_nested_wrapped_types() {
+    fn stringified_cst_matches_input_with_deeply_nested_wrapped_types() {
         let mutation = r#"
 mutation MyMutation($a: Int $b: [Int] $c: String! $d: [Int!]!
 
@@ -130,14 +130,14 @@ mutation MyMutation($a: Int $b: [Int] $c: String! $d: [Int!]!
   myMutation(custId: $a)
 }"#;
         let parser = Parser::new(mutation);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        let doc = ast.document();
+        let doc = cst.document();
         assert_eq!(&mutation, &doc.source_string());
     }
 
     #[test]
-    fn stringified_ast_matches_input_with_deeply_nested_wrapped_types_with_commas() {
+    fn stringified_cst_matches_input_with_deeply_nested_wrapped_types_with_commas() {
         let mutation = r#"
 mutation MyMutation($a: Int, $b: [Int], $c: String!, $d: [Int!]!,
 
@@ -149,9 +149,9 @@ mutation MyMutation($a: Int, $b: [Int], $c: String!, $d: [Int!]!,
   myMutation(custId: $a)
 }"#;
         let parser = Parser::new(mutation);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        let doc = ast.document();
+        let doc = cst.document();
         assert_eq!(&mutation, &doc.source_string());
     }
 }

@@ -155,14 +155,14 @@ pub(crate) const KINDS_SRC: KindsSrc = KindsSrc {
 // pub(crate) tokens is actually used once the code is generated.
 #[allow(dead_code)]
 #[derive(Default, Debug)]
-pub(crate) struct AstSrc {
+pub(crate) struct CstSrc {
     pub(crate) tokens: Vec<String>,
-    pub(crate) nodes: Vec<AstNodeSrc>,
-    pub(crate) enums: Vec<AstEnumSrc>,
+    pub(crate) nodes: Vec<CstNodeSrc>,
+    pub(crate) enums: Vec<CstEnumSrc>,
 }
 
 #[derive(Debug)]
-pub(crate) struct AstNodeSrc {
+pub(crate) struct CstNodeSrc {
     pub(crate) doc: Vec<String>,
     pub(crate) name: String,
     pub(crate) traits: Vec<String>,
@@ -186,7 +186,7 @@ pub(crate) enum Cardinality {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct AstEnumSrc {
+pub(crate) struct CstEnumSrc {
     pub(crate) doc: Vec<String>,
     pub(crate) name: String,
     pub(crate) traits: Vec<String>,

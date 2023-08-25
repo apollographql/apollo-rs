@@ -55,10 +55,10 @@ impl From<ObjectTypeDef> for ObjectDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
+impl TryFrom<apollo_parser::cst::ObjectTypeDefinition> for ObjectTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(object_def: apollo_parser::ast::ObjectTypeDefinition) -> Result<Self, Self::Error> {
+    fn try_from(object_def: apollo_parser::cst::ObjectTypeDefinition) -> Result<Self, Self::Error> {
         Ok(Self {
             name: object_def
                 .name()
@@ -91,10 +91,10 @@ impl TryFrom<apollo_parser::ast::ObjectTypeDefinition> for ObjectTypeDef {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::ObjectTypeExtension> for ObjectTypeDef {
+impl TryFrom<apollo_parser::cst::ObjectTypeExtension> for ObjectTypeDef {
     type Error = crate::FromError;
 
-    fn try_from(object_def: apollo_parser::ast::ObjectTypeExtension) -> Result<Self, Self::Error> {
+    fn try_from(object_def: apollo_parser::cst::ObjectTypeExtension) -> Result<Self, Self::Error> {
         Ok(Self {
             name: object_def
                 .name()

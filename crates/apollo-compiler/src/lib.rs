@@ -11,7 +11,7 @@ use std::{path::Path, sync::Arc};
 use salsa::ParallelDatabase;
 use validation::ValidationDatabase;
 
-pub use database::{hir, AstDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source};
+pub use database::{hir, CstDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source};
 pub use diagnostics::ApolloDiagnostic;
 
 pub struct ApolloCompiler {

@@ -10,9 +10,9 @@ use annotate_snippets::{
     display_list::{DisplayList, FormatOptions},
     snippet::{Annotation, AnnotationType, Slice, Snippet, SourceAnnotation},
 };
-use apollo_parser::{ast, Parser};
+use apollo_parser::{cst, Parser};
 
-fn parse_schema() -> ast::Document {
+fn parse_schema() -> cst::Document {
     let file = Path::new("crates/apollo-parser/examples/schema_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
     // this is a nice to have for errors for displaying error origin.
@@ -22,12 +22,12 @@ fn parse_schema() -> ast::Document {
         .to_str()
         .expect("Could not get &str from file name.");
     let parser = Parser::new(&src);
-    let ast = parser.parse();
+    let cst = parser.parse();
 
     // each err comes with the two pieces of data you need for diagnostics:
     // - message (err.message())
     // - index (err.index())
-    for err in ast.errors() {
+    for err in cst.errors() {
         let snippet = Snippet {
             title: Some(Annotation {
                 label: Some(err.message()),
@@ -56,7 +56,7 @@ fn parse_schema() -> ast::Document {
         println!("{dl}\n\n");
     }
 
-    ast.document()
+    cst.document()
 }
 
 fn main() {

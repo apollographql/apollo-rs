@@ -31,10 +31,10 @@ impl From<ArgumentsDef> for apollo_encoder::ArgumentsDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::ArgumentsDefinition> for ArgumentsDef {
+impl TryFrom<apollo_parser::cst::ArgumentsDefinition> for ArgumentsDef {
     type Error = crate::FromError;
 
-    fn try_from(args_def: apollo_parser::ast::ArgumentsDefinition) -> Result<Self, Self::Error> {
+    fn try_from(args_def: apollo_parser::cst::ArgumentsDefinition) -> Result<Self, Self::Error> {
         Ok(Self {
             input_value_definitions: args_def
                 .input_value_definitions()
@@ -63,10 +63,10 @@ impl From<Argument> for apollo_encoder::Argument {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::Argument> for Argument {
+impl TryFrom<apollo_parser::cst::Argument> for Argument {
     type Error = crate::FromError;
 
-    fn try_from(argument: apollo_parser::ast::Argument) -> Result<Self, Self::Error> {
+    fn try_from(argument: apollo_parser::cst::Argument) -> Result<Self, Self::Error> {
         Ok(Self {
             name: argument.name().unwrap().into(),
             value: argument.value().unwrap().try_into()?,

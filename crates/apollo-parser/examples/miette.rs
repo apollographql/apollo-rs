@@ -4,7 +4,7 @@
 ///
 use std::{fs, path::Path};
 
-use apollo_parser::{ast, Parser};
+use apollo_parser::{cst, Parser};
 use miette::{Diagnostic, NamedSource, Report, SourceSpan};
 use thiserror::Error;
 
@@ -22,7 +22,7 @@ struct ApolloParserError {
     span: SourceSpan,
 }
 
-fn parse_schema() -> ast::Document {
+fn parse_schema() -> cst::Document {
     let file = Path::new("crates/apollo-parser/examples/schema_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
     // This is really useful for display the src path within the diagnostic.
@@ -33,12 +33,12 @@ fn parse_schema() -> ast::Document {
         .expect("Could not get &str from file name.");
 
     let parser = Parser::new(&src);
-    let ast = parser.parse();
+    let cst = parser.parse();
 
     // each err comes with the two pieces of data you need for diagnostics:
     // - message (err.message())
     // - index (err.index())
-    for err in ast.errors() {
+    for err in cst.errors() {
         // We need to create a report and print that individually, as the error
         // slice can have many errors.
         let err = Report::new(ApolloParserError {
@@ -49,7 +49,7 @@ fn parse_schema() -> ast::Document {
         println!("{err:?}");
     }
 
-    ast.document()
+    cst.document()
 }
 
 fn main() {

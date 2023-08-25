@@ -2,16 +2,16 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use apollo_parser::ast::AstChildren;
-use apollo_parser::ast::AstNode;
-use apollo_parser::ast::{self};
+use apollo_parser::cst::CstChildren;
+use apollo_parser::cst::CstNode;
+use apollo_parser::cst::{self};
 use apollo_parser::SyntaxNode;
 use indexmap::IndexMap;
 
 use crate::database::document;
 use crate::database::FileId;
 use crate::hir::*;
-use crate::AstDatabase;
+use crate::CstDatabase;
 use crate::InputDatabase;
 
 const INTROSPECTION_OBJECT_TYS: [&str; 6] = [
@@ -29,7 +29,7 @@ const INTROSPECTION_ENUM_TYS: [&str; 2] = ["__TypeKind", "__DirectiveLocation"];
 // as a result of parser errors should be ignored.
 
 #[salsa::query_group(HirStorage)]
-pub trait HirDatabase: InputDatabase + AstDatabase {
+pub trait HirDatabase: InputDatabase + CstDatabase {
     /// Return all type system definitions defined in the compiler.
     #[salsa::invoke(type_system_definitions)]
     fn type_system_definitions(&self) -> Arc<TypeSystemDefinitions>;
@@ -324,11 +324,11 @@ fn extensions(db: &dyn HirDatabase) -> Arc<Vec<TypeExtension>> {
     let mut extensions = vec![];
     for file_id in db.type_definition_files() {
         extensions.extend(
-            db.ast(file_id)
+            db.cst(file_id)
                 .document()
                 .syntax()
                 .children()
-                .filter_map(ast::Definition::cast)
+                .filter_map(cst::Definition::cast)
                 .filter_map(|def| extension(db, def, file_id)),
         );
     }
@@ -338,11 +338,11 @@ fn extensions(db: &dyn HirDatabase) -> Arc<Vec<TypeExtension>> {
 
 fn operations(db: &dyn HirDatabase, file_id: FileId) -> Arc<Vec<Arc<OperationDefinition>>> {
     Arc::new(
-        db.ast(file_id)
+        db.cst(file_id)
             .document()
             .syntax()
             .children()
-            .filter_map(ast::OperationDefinition::cast)
+            .filter_map(cst::OperationDefinition::cast)
             .filter_map(|def| operation_definition(db, def, file_id))
             .map(Arc::new)
             .collect(),
@@ -352,11 +352,11 @@ fn operations(db: &dyn HirDatabase, file_id: FileId) -> Arc<Vec<Arc<OperationDef
 fn fragments(db: &dyn HirDatabase, file_id: FileId) -> ByName<FragmentDefinition> {
     let mut map = IndexMap::new();
     for def in db
-        .ast(file_id)
+        .cst(file_id)
         .document()
         .syntax()
         .children()
-        .filter_map(ast::FragmentDefinition::cast)
+        .filter_map(cst::FragmentDefinition::cast)
         .filter_map(|def| fragment_definition(db, def, file_id))
     {
         let name = def.name().to_owned();
@@ -383,27 +383,27 @@ fn all_fragments(db: &dyn HirDatabase) -> ByName<FragmentDefinition> {
     Arc::new(fragments)
 }
 
-/// Takes a fallible conversion from a specific AST type to an HIR type,
-/// finds matching top-level AST nodes in type definition files,
+/// Takes a fallible conversion from a specific CST type to an HIR type,
+/// finds matching top-level CST nodes in type definition files,
 /// and returns an iterator of successful conversion results.
 ///
 /// Failed conversions are ignored.
-fn type_definitions<'db, AstType, TryConvert, HirType>(
+fn type_definitions<'db, CstType, TryConvert, HirType>(
     db: &'db dyn HirDatabase,
     try_convert: TryConvert,
 ) -> impl Iterator<Item = HirType> + 'db
 where
-    AstType: 'db + ast::AstNode,
-    TryConvert: 'db + Copy + Fn(&dyn HirDatabase, AstType, FileId) -> Option<HirType>,
+    CstType: 'db + cst::CstNode,
+    TryConvert: 'db + Copy + Fn(&dyn HirDatabase, CstType, FileId) -> Option<HirType>,
 {
     db.type_definition_files()
         .into_iter()
         .flat_map(move |file_id| {
-            db.ast(file_id)
+            db.cst(file_id)
                 .document()
                 .syntax()
                 .children()
-                .filter_map(AstNode::cast)
+                .filter_map(CstNode::cast)
                 .filter_map(move |def| try_convert(db, def, file_id))
         })
 }
@@ -543,7 +543,7 @@ fn directive_definitions(db: &dyn HirDatabase) -> ByName<DirectiveDefinition> {
 
 fn operation_definition(
     db: &dyn HirDatabase,
-    op_def: ast::OperationDefinition,
+    op_def: cst::OperationDefinition,
     file_id: FileId,
 ) -> Option<OperationDefinition> {
     // check if there are already operations
@@ -575,7 +575,7 @@ fn operation_definition(
 
 fn fragment_definition(
     db: &dyn HirDatabase,
-    fragment_def: ast::FragmentDefinition,
+    fragment_def: cst::FragmentDefinition,
     file_id: FileId,
 ) -> Option<FragmentDefinition> {
     let name = name(fragment_def.fragment_name()?.name(), file_id)?;
@@ -605,7 +605,7 @@ fn fragment_definition(
 
 fn schema_definition(
     db: &dyn HirDatabase,
-    schema_def: ast::SchemaDefinition,
+    schema_def: cst::SchemaDefinition,
     file_id: FileId,
 ) -> Option<SchemaDefinition> {
     let description = description(schema_def.description());
@@ -643,7 +643,7 @@ fn implicit_schema_definition(db: &dyn HirDatabase) -> SchemaDefinition {
 }
 
 fn schema_extensions(db: &dyn HirDatabase) -> Vec<Arc<SchemaExtension>> {
-    type_definitions(db, |_db, def: ast::SchemaExtension, file_id| {
+    type_definitions(db, |_db, def: cst::SchemaExtension, file_id| {
         let directives = directives(def.directives(), file_id);
         let root_operation_type_definition = Arc::new(root_operation_type_definition(
             def.root_operation_type_definitions(),
@@ -719,7 +719,7 @@ fn add_implicit_operations(
 
 fn object_type_definition(
     _db: &dyn HirDatabase,
-    obj_def: ast::ObjectTypeDefinition,
+    obj_def: cst::ObjectTypeDefinition,
     file_id: FileId,
 ) -> Option<ObjectTypeDefinition> {
     let description = description(obj_def.description());
@@ -753,7 +753,7 @@ fn object_type_definition(
 
 fn object_type_extension(
     _db: &dyn HirDatabase,
-    def: ast::ObjectTypeExtension,
+    def: cst::ObjectTypeExtension,
     file_id: FileId,
 ) -> Option<Arc<ObjectTypeExtension>> {
     Some(Arc::new(ObjectTypeExtension {
@@ -767,7 +767,7 @@ fn object_type_extension(
 
 fn scalar_definition(
     db: &dyn HirDatabase,
-    scalar_def: ast::ScalarTypeDefinition,
+    scalar_def: cst::ScalarTypeDefinition,
     file_id: FileId,
 ) -> Option<ScalarTypeDefinition> {
     let description = description(scalar_def.description());
@@ -790,7 +790,7 @@ fn scalar_definition(
 
 fn scalar_extension(
     _db: &dyn HirDatabase,
-    def: ast::ScalarTypeExtension,
+    def: cst::ScalarTypeExtension,
     file_id: FileId,
 ) -> Option<Arc<ScalarTypeExtension>> {
     Some(Arc::new(ScalarTypeExtension {
@@ -802,7 +802,7 @@ fn scalar_extension(
 
 fn enum_definition(
     _db: &dyn HirDatabase,
-    enum_def: ast::EnumTypeDefinition,
+    enum_def: cst::EnumTypeDefinition,
     file_id: FileId,
 ) -> Option<EnumTypeDefinition> {
     let description = description(enum_def.description());
@@ -830,7 +830,7 @@ fn enum_definition(
 
 fn enum_extension(
     _db: &dyn HirDatabase,
-    def: ast::EnumTypeExtension,
+    def: cst::EnumTypeExtension,
     file_id: FileId,
 ) -> Option<Arc<EnumTypeExtension>> {
     Some(Arc::new(EnumTypeExtension {
@@ -842,7 +842,7 @@ fn enum_extension(
 }
 
 fn enum_values_definition(
-    enum_values_def: Option<ast::EnumValuesDefinition>,
+    enum_values_def: Option<cst::EnumValuesDefinition>,
     file_id: FileId,
 ) -> Arc<Vec<EnumValueDefinition>> {
     match enum_values_def {
@@ -858,7 +858,7 @@ fn enum_values_definition(
 }
 
 fn enum_value_definition(
-    enum_value_def: ast::EnumValueDefinition,
+    enum_value_def: cst::EnumValueDefinition,
     file_id: FileId,
 ) -> Option<EnumValueDefinition> {
     let description = description(enum_value_def.description());
@@ -876,7 +876,7 @@ fn enum_value_definition(
 
 fn union_definition(
     _db: &dyn HirDatabase,
-    union_def: ast::UnionTypeDefinition,
+    union_def: cst::UnionTypeDefinition,
     file_id: FileId,
 ) -> Option<UnionTypeDefinition> {
     let description = description(union_def.description());
@@ -903,7 +903,7 @@ fn union_definition(
 
 fn union_extension(
     _db: &dyn HirDatabase,
-    def: ast::UnionTypeExtension,
+    def: cst::UnionTypeExtension,
     file_id: FileId,
 ) -> Option<Arc<UnionTypeExtension>> {
     let directives = directives(def.directives(), file_id);
@@ -921,7 +921,7 @@ fn union_extension(
 }
 
 fn union_members(
-    union_members: Option<ast::UnionMemberTypes>,
+    union_members: Option<cst::UnionMemberTypes>,
     file_id: FileId,
 ) -> Arc<Vec<UnionMember>> {
     match union_members {
@@ -936,7 +936,7 @@ fn union_members(
     }
 }
 
-fn union_member(member: ast::NamedType, file_id: FileId) -> Option<UnionMember> {
+fn union_member(member: cst::NamedType, file_id: FileId) -> Option<UnionMember> {
     let name = name(member.name(), file_id)?;
     let loc = location(file_id, member.syntax());
 
@@ -945,7 +945,7 @@ fn union_member(member: ast::NamedType, file_id: FileId) -> Option<UnionMember> 
 
 fn interface_definition(
     _db: &dyn HirDatabase,
-    interface_def: ast::InterfaceTypeDefinition,
+    interface_def: cst::InterfaceTypeDefinition,
     file_id: FileId,
 ) -> Option<InterfaceTypeDefinition> {
     let description = description(interface_def.description());
@@ -978,7 +978,7 @@ fn interface_definition(
 
 fn interface_extension(
     _db: &dyn HirDatabase,
-    def: ast::InterfaceTypeExtension,
+    def: cst::InterfaceTypeExtension,
     file_id: FileId,
 ) -> Option<Arc<InterfaceTypeExtension>> {
     Some(Arc::new(InterfaceTypeExtension {
@@ -992,7 +992,7 @@ fn interface_extension(
 
 fn directive_definition(
     _db: &dyn HirDatabase,
-    directive_def: ast::DirectiveDefinition,
+    directive_def: cst::DirectiveDefinition,
     file_id: FileId,
 ) -> Option<DirectiveDefinition> {
     let name = name(directive_def.name(), file_id)?;
@@ -1016,7 +1016,7 @@ fn directive_definition(
 
 fn input_object_definition(
     _db: &dyn HirDatabase,
-    input_obj: ast::InputObjectTypeDefinition,
+    input_obj: cst::InputObjectTypeDefinition,
     file_id: FileId,
 ) -> Option<InputObjectTypeDefinition> {
     let description = description(input_obj.description());
@@ -1043,7 +1043,7 @@ fn input_object_definition(
 
 fn input_object_extension(
     _db: &dyn HirDatabase,
-    def: ast::InputObjectTypeExtension,
+    def: cst::InputObjectTypeExtension,
     file_id: FileId,
 ) -> Option<Arc<InputObjectTypeExtension>> {
     Some(Arc::new(InputObjectTypeExtension {
@@ -1054,24 +1054,24 @@ fn input_object_extension(
     }))
 }
 
-fn extension(db: &dyn HirDatabase, def: ast::Definition, file_id: FileId) -> Option<TypeExtension> {
+fn extension(db: &dyn HirDatabase, def: cst::Definition, file_id: FileId) -> Option<TypeExtension> {
     match def {
-        ast::Definition::ScalarTypeExtension(def) => {
+        cst::Definition::ScalarTypeExtension(def) => {
             scalar_extension(db, def, file_id).map(TypeExtension::ScalarTypeExtension)
         }
-        ast::Definition::ObjectTypeExtension(def) => {
+        cst::Definition::ObjectTypeExtension(def) => {
             object_type_extension(db, def, file_id).map(TypeExtension::ObjectTypeExtension)
         }
-        ast::Definition::InterfaceTypeExtension(def) => {
+        cst::Definition::InterfaceTypeExtension(def) => {
             interface_extension(db, def, file_id).map(TypeExtension::InterfaceTypeExtension)
         }
-        ast::Definition::UnionTypeExtension(def) => {
+        cst::Definition::UnionTypeExtension(def) => {
             union_extension(db, def, file_id).map(TypeExtension::UnionTypeExtension)
         }
-        ast::Definition::EnumTypeExtension(def) => {
+        cst::Definition::EnumTypeExtension(def) => {
             enum_extension(db, def, file_id).map(TypeExtension::EnumTypeExtension)
         }
-        ast::Definition::InputObjectTypeExtension(def) => {
+        cst::Definition::InputObjectTypeExtension(def) => {
             input_object_extension(db, def, file_id).map(TypeExtension::InputObjectTypeExtension)
         }
         _ => None,
@@ -1161,7 +1161,7 @@ fn typename_field() -> FieldDefinition {
 }
 
 fn implements_interfaces(
-    implements_interfaces: Option<ast::ImplementsInterfaces>,
+    implements_interfaces: Option<cst::ImplementsInterfaces>,
     file_id: FileId,
 ) -> Arc<Vec<ImplementsInterface>> {
     let interfaces: Vec<ImplementsInterface> = implements_interfaces
@@ -1185,7 +1185,7 @@ fn implements_interfaces(
 }
 
 fn fields_definition(
-    fields_definition: Option<ast::FieldsDefinition>,
+    fields_definition: Option<cst::FieldsDefinition>,
     file_id: FileId,
 ) -> Arc<Vec<FieldDefinition>> {
     match fields_definition {
@@ -1200,7 +1200,7 @@ fn fields_definition(
     }
 }
 
-fn field_definition(field: ast::FieldDefinition, file_id: FileId) -> Option<FieldDefinition> {
+fn field_definition(field: cst::FieldDefinition, file_id: FileId) -> Option<FieldDefinition> {
     let description = description(field.description());
     let name = name(field.name(), file_id)?;
     let arguments = arguments_definition(field.arguments_definition(), file_id);
@@ -1219,7 +1219,7 @@ fn field_definition(field: ast::FieldDefinition, file_id: FileId) -> Option<Fiel
 }
 
 fn arguments_definition(
-    arguments_definition: Option<ast::ArgumentsDefinition>,
+    arguments_definition: Option<cst::ArgumentsDefinition>,
     file_id: FileId,
 ) -> ArgumentsDefinition {
     match arguments_definition {
@@ -1241,7 +1241,7 @@ fn arguments_definition(
 }
 
 fn input_fields_definition(
-    input_fields: Option<ast::InputFieldsDefinition>,
+    input_fields: Option<cst::InputFieldsDefinition>,
     file_id: FileId,
 ) -> Arc<Vec<InputValueDefinition>> {
     match input_fields {
@@ -1251,7 +1251,7 @@ fn input_fields_definition(
 }
 
 fn input_value_definitions(
-    input_values: AstChildren<ast::InputValueDefinition>,
+    input_values: CstChildren<cst::InputValueDefinition>,
     file_id: FileId,
 ) -> Arc<Vec<InputValueDefinition>> {
     let input_values: Vec<InputValueDefinition> = input_values
@@ -1277,7 +1277,7 @@ fn input_value_definitions(
 }
 
 fn default_value(
-    default_value: Option<ast::DefaultValue>,
+    default_value: Option<cst::DefaultValue>,
     file_id: FileId,
 ) -> Option<DefaultValue> {
     default_value
@@ -1286,7 +1286,7 @@ fn default_value(
 }
 
 fn root_operation_type_definition(
-    root_type_def: AstChildren<ast::RootOperationTypeDefinition>,
+    root_type_def: CstChildren<cst::RootOperationTypeDefinition>,
     file_id: FileId,
 ) -> Vec<RootOperationTypeDefinition> {
     root_type_def
@@ -1309,7 +1309,7 @@ fn root_operation_type_definition(
         .collect()
 }
 
-fn operation_type(op_type: Option<ast::OperationType>) -> OperationType {
+fn operation_type(op_type: Option<cst::OperationType>) -> OperationType {
     match op_type {
         Some(ty) => {
             if ty.query_token().is_some() {
@@ -1327,7 +1327,7 @@ fn operation_type(op_type: Option<ast::OperationType>) -> OperationType {
 }
 
 fn variable_definitions(
-    variable_definitions: Option<ast::VariableDefinitions>,
+    variable_definitions: Option<cst::VariableDefinitions>,
     file_id: FileId,
 ) -> Arc<Vec<VariableDefinition>> {
     match variable_definitions {
@@ -1343,7 +1343,7 @@ fn variable_definitions(
 }
 
 fn variable_definition(
-    var: ast::VariableDefinition,
+    var: cst::VariableDefinition,
     file_id: FileId,
 ) -> Option<VariableDefinition> {
     let name = name(var.variable()?.name(), file_id)?;
@@ -1361,14 +1361,14 @@ fn variable_definition(
     })
 }
 
-fn ty(ty_: ast::Type, file_id: FileId) -> Option<Type> {
+fn ty(ty_: cst::Type, file_id: FileId) -> Option<Type> {
     match ty_ {
-        ast::Type::NamedType(name) => name.name().map(|name| named_type(name, file_id)),
-        ast::Type::ListType(list) => Some(Type::List {
+        cst::Type::NamedType(name) => name.name().map(|name| named_type(name, file_id)),
+        cst::Type::ListType(list) => Some(Type::List {
             ty: Box::new(ty(list.ty()?, file_id)?),
             loc: Some(location(file_id, list.syntax())),
         }),
-        ast::Type::NonNullType(non_null) => {
+        cst::Type::NonNullType(non_null) => {
             if let Some(n) = non_null.named_type() {
                 let named_type = n.name().map(|name| named_type(name, file_id))?;
                 Some(Type::NonNull {
@@ -1394,7 +1394,7 @@ fn ty(ty_: ast::Type, file_id: FileId) -> Option<Type> {
     }
 }
 
-fn named_type(name: ast::Name, file_id: FileId) -> Type {
+fn named_type(name: cst::Name, file_id: FileId) -> Type {
     Type::Named {
         name: name.text().to_string(),
         loc: Some(location(file_id, name.syntax())),
@@ -1402,7 +1402,7 @@ fn named_type(name: ast::Name, file_id: FileId) -> Type {
 }
 
 fn directive_locations(
-    directive_locations: Option<ast::DirectiveLocations>,
+    directive_locations: Option<cst::DirectiveLocations>,
 ) -> Arc<Vec<DirectiveLocation>> {
     match directive_locations {
         Some(directive_loc) => {
@@ -1416,7 +1416,7 @@ fn directive_locations(
     }
 }
 
-fn directives(directives: Option<ast::Directives>, file_id: FileId) -> Arc<Vec<Directive>> {
+fn directives(directives: Option<cst::Directives>, file_id: FileId) -> Arc<Vec<Directive>> {
     match directives {
         Some(directives) => {
             let directives = directives
@@ -1429,7 +1429,7 @@ fn directives(directives: Option<ast::Directives>, file_id: FileId) -> Arc<Vec<D
     }
 }
 
-fn directive(directive: ast::Directive, file_id: FileId) -> Option<Directive> {
+fn directive(directive: cst::Directive, file_id: FileId) -> Option<Directive> {
     let name = name(directive.name(), file_id)?;
     let arguments = arguments(directive.arguments(), file_id);
     let loc = location(file_id, directive.syntax());
@@ -1441,7 +1441,7 @@ fn directive(directive: ast::Directive, file_id: FileId) -> Option<Directive> {
     })
 }
 
-fn arguments(arguments: Option<ast::Arguments>, file_id: FileId) -> Arc<Vec<Argument>> {
+fn arguments(arguments: Option<cst::Arguments>, file_id: FileId) -> Arc<Vec<Argument>> {
     match arguments {
         Some(arguments) => {
             let arguments = arguments
@@ -1454,7 +1454,7 @@ fn arguments(arguments: Option<ast::Arguments>, file_id: FileId) -> Arc<Vec<Argu
     }
 }
 
-fn argument(argument: ast::Argument, file_id: FileId) -> Option<Argument> {
+fn argument(argument: cst::Argument, file_id: FileId) -> Option<Argument> {
     let name = name(argument.name(), file_id)?;
     let value = value(argument.value()?, file_id)?;
     let loc = location(file_id, argument.syntax());
@@ -1462,44 +1462,44 @@ fn argument(argument: ast::Argument, file_id: FileId) -> Option<Argument> {
     Some(Argument { name, value, loc })
 }
 
-fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
+fn value(val: cst::Value, file_id: FileId) -> Option<Value> {
     let hir_val = match val {
-        ast::Value::Variable(var) => Value::Variable(Variable {
+        cst::Value::Variable(var) => Value::Variable(Variable {
             name: var.name()?.text().to_string(),
             loc: location(file_id, var.syntax()),
         }),
-        ast::Value::StringValue(string_val) => Value::String {
+        cst::Value::StringValue(string_val) => Value::String {
             loc: location(file_id, string_val.syntax()),
             value: string_val.into(),
         },
         // TODO(@goto-bus-stop) do not unwrap
-        ast::Value::FloatValue(float) => Value::Float {
+        cst::Value::FloatValue(float) => Value::Float {
             loc: location(file_id, float.syntax()),
             value: Float::new(float.try_into().unwrap()),
         },
-        ast::Value::IntValue(int) => Value::Int {
+        cst::Value::IntValue(int) => Value::Int {
             loc: location(file_id, int.syntax()),
             value: Float::new(f64::try_from(int).unwrap()),
         },
-        ast::Value::BooleanValue(bool) => Value::Boolean {
+        cst::Value::BooleanValue(bool) => Value::Boolean {
             loc: location(file_id, bool.syntax()),
             value: bool.try_into().unwrap(),
         },
-        ast::Value::NullValue(null) => Value::Null {
+        cst::Value::NullValue(null) => Value::Null {
             loc: location(file_id, null.syntax()),
         },
-        ast::Value::EnumValue(enum_) => Value::Enum {
+        cst::Value::EnumValue(enum_) => Value::Enum {
             loc: location(file_id, enum_.syntax()),
             value: name(enum_.name(), file_id)?,
         },
-        ast::Value::ListValue(list) => {
+        cst::Value::ListValue(list) => {
             let li: Vec<Value> = list.values().filter_map(|v| value(v, file_id)).collect();
             Value::List {
                 loc: location(file_id, list.syntax()),
                 value: li,
             }
         }
-        ast::Value::ObjectValue(object) => {
+        cst::Value::ObjectValue(object) => {
             let object_values: Vec<(Name, Value)> = object
                 .object_fields()
                 .filter_map(|o| {
@@ -1519,7 +1519,7 @@ fn value(val: ast::Value, file_id: FileId) -> Option<Value> {
 
 fn selection_set(
     db: &dyn HirDatabase,
-    selections: Option<ast::SelectionSet>,
+    selections: Option<cst::SelectionSet>,
     parent_obj_ty: Option<String>,
     file_id: FileId,
 ) -> SelectionSet {
@@ -1538,18 +1538,18 @@ fn selection_set(
 
 fn selection(
     db: &dyn HirDatabase,
-    selection: ast::Selection,
+    selection: cst::Selection,
     parent_obj_ty: Option<String>,
     file_id: FileId,
 ) -> Option<Selection> {
     match selection {
-        ast::Selection::Field(sel_field) => {
+        cst::Selection::Field(sel_field) => {
             field(db, sel_field, parent_obj_ty, file_id).map(Selection::Field)
         }
-        ast::Selection::FragmentSpread(fragment) => {
+        cst::Selection::FragmentSpread(fragment) => {
             fragment_spread(db, fragment, parent_obj_ty, file_id).map(Selection::FragmentSpread)
         }
-        ast::Selection::InlineFragment(fragment) => Some(Selection::InlineFragment(
+        cst::Selection::InlineFragment(fragment) => Some(Selection::InlineFragment(
             inline_fragment(db, fragment, parent_obj_ty, file_id),
         )),
     }
@@ -1557,7 +1557,7 @@ fn selection(
 
 fn inline_fragment(
     db: &dyn HirDatabase,
-    fragment: ast::InlineFragment,
+    fragment: cst::InlineFragment,
     parent_obj: Option<String>,
     file_id: FileId,
 ) -> Arc<InlineFragment> {
@@ -1587,7 +1587,7 @@ fn inline_fragment(
 
 fn fragment_spread(
     _db: &dyn HirDatabase,
-    fragment: ast::FragmentSpread,
+    fragment: cst::FragmentSpread,
     parent_obj: Option<String>,
     file_id: FileId,
 ) -> Option<Arc<FragmentSpread>> {
@@ -1606,7 +1606,7 @@ fn fragment_spread(
 
 fn field(
     db: &dyn HirDatabase,
-    field: ast::Field,
+    field: cst::Field,
     parent_obj: Option<String>,
     file_id: FileId,
 ) -> Option<Arc<Field>> {
@@ -1639,27 +1639,27 @@ fn parent_ty(db: &dyn HirDatabase, field_name: &str, parent_obj: Option<String>)
     )
 }
 
-fn name(name: Option<ast::Name>, file_id: FileId) -> Option<Name> {
+fn name(name: Option<cst::Name>, file_id: FileId) -> Option<Name> {
     name.map(|name| name_hir_node(name, file_id))
 }
 
-fn name_hir_node(name: ast::Name, file_id: FileId) -> Name {
+fn name_hir_node(name: cst::Name, file_id: FileId) -> Name {
     Name {
         src: name.text().to_string(),
         loc: Some(location(file_id, name.syntax())),
     }
 }
 
-fn enum_value(enum_value: Option<ast::EnumValue>, file_id: FileId) -> Option<Name> {
+fn enum_value(enum_value: Option<cst::EnumValue>, file_id: FileId) -> Option<Name> {
     let name = enum_value?.name()?;
     Some(name_hir_node(name, file_id))
 }
 
-fn description(description: Option<ast::Description>) -> Option<String> {
+fn description(description: Option<cst::Description>) -> Option<String> {
     description.and_then(|desc| Some(desc.string_value()?.into()))
 }
 
-fn alias(alias: Option<ast::Alias>) -> Option<Arc<Alias>> {
+fn alias(alias: Option<cst::Alias>) -> Option<Arc<Alias>> {
     alias.and_then(|alias| {
         let name = alias.name()?.text().to_string();
         let alias_data = Alias(name);

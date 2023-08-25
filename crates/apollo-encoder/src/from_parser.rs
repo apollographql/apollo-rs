@@ -1,10 +1,10 @@
 use std::convert::TryFrom;
 
-use apollo_parser::ast::{self, AstNode};
+use apollo_parser::cst::{self, CstNode};
 use thiserror::Error;
 
-/// Errors that can occur when converting an apollo-parser AST to an apollo-encoder one.
-/// These errors don't give a lot of context at the moment. Before converting ASTs, you
+/// Errors that can occur when converting an apollo-parser CST to an apollo-encoder one.
+/// These errors don't give a lot of context at the moment. Before converting CSTs, you
 /// should make sure that your parse tree is complete and valid.
 // TODO(@goto-bus-stop) Would be nice to have some way to show where the error
 // occurred
@@ -21,7 +21,7 @@ pub enum FromError {
     ParseFloatError(#[from] std::num::ParseFloatError),
 }
 
-impl TryFrom<ast::Value> for crate::Value {
+impl TryFrom<cst::Value> for crate::Value {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -30,40 +30,40 @@ impl TryFrom<ast::Value> for crate::Value {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::Value) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::Value) -> Result<Self, Self::Error> {
         let encoder_node = match node {
-            ast::Value::Variable(variable) => Self::Variable(
+            cst::Value::Variable(variable) => Self::Variable(
                 variable
                     .name()
                     .ok_or(FromError::MissingNode)?
                     .text()
                     .to_string(),
             ),
-            ast::Value::StringValue(string) => Self::String(string.into()),
-            ast::Value::FloatValue(float) => Self::Float(
+            cst::Value::StringValue(string) => Self::String(string.into()),
+            cst::Value::FloatValue(float) => Self::Float(
                 float
                     .float_token()
                     .ok_or(FromError::MissingNode)?
                     .text()
                     .parse()?,
             ),
-            ast::Value::IntValue(int) => Self::Int(
+            cst::Value::IntValue(int) => Self::Int(
                 int.int_token()
                     .ok_or(FromError::MissingNode)?
                     .text()
                     .parse()?,
             ),
-            ast::Value::BooleanValue(boolean) => Self::Boolean(boolean.true_token().is_some()),
-            ast::Value::NullValue(_) => Self::Null,
-            ast::Value::EnumValue(enum_) => Self::Enum(enum_.text().to_string()),
-            ast::Value::ListValue(list) => {
+            cst::Value::BooleanValue(boolean) => Self::Boolean(boolean.true_token().is_some()),
+            cst::Value::NullValue(_) => Self::Null,
+            cst::Value::EnumValue(enum_) => Self::Enum(enum_.text().to_string()),
+            cst::Value::ListValue(list) => {
                 let encoder_list = list
                     .values()
                     .map(Self::try_from)
                     .collect::<Result<Vec<_>, FromError>>()?;
                 Self::List(encoder_list)
             }
-            ast::Value::ObjectValue(object) => {
+            cst::Value::ObjectValue(object) => {
                 let encoder_object = object
                     .object_fields()
                     .map(|field| {
@@ -84,7 +84,7 @@ impl TryFrom<ast::Value> for crate::Value {
     }
 }
 
-impl TryFrom<ast::DefaultValue> for crate::Value {
+impl TryFrom<cst::DefaultValue> for crate::Value {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -93,12 +93,12 @@ impl TryFrom<ast::DefaultValue> for crate::Value {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::DefaultValue) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::DefaultValue) -> Result<Self, Self::Error> {
         node.value().ok_or(FromError::MissingNode)?.try_into()
     }
 }
 
-impl TryFrom<ast::Directive> for crate::Directive {
+impl TryFrom<cst::Directive> for crate::Directive {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -107,7 +107,7 @@ impl TryFrom<ast::Directive> for crate::Directive {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::Directive) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::Directive) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -125,7 +125,7 @@ impl TryFrom<ast::Directive> for crate::Directive {
     }
 }
 
-impl TryFrom<ast::Argument> for crate::Argument {
+impl TryFrom<cst::Argument> for crate::Argument {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -134,7 +134,7 @@ impl TryFrom<ast::Argument> for crate::Argument {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::Argument) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::Argument) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -145,7 +145,7 @@ impl TryFrom<ast::Argument> for crate::Argument {
     }
 }
 
-impl TryFrom<ast::NamedType> for crate::Type_ {
+impl TryFrom<cst::NamedType> for crate::Type_ {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -154,7 +154,7 @@ impl TryFrom<ast::NamedType> for crate::Type_ {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::NamedType) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::NamedType) -> Result<Self, Self::Error> {
         Ok(Self::NamedType {
             name: node
                 .name()
@@ -165,7 +165,7 @@ impl TryFrom<ast::NamedType> for crate::Type_ {
     }
 }
 
-impl TryFrom<ast::ListType> for crate::Type_ {
+impl TryFrom<cst::ListType> for crate::Type_ {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -174,14 +174,14 @@ impl TryFrom<ast::ListType> for crate::Type_ {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::ListType) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::ListType) -> Result<Self, Self::Error> {
         Ok(Self::List {
             ty: Box::new(node.ty().ok_or(FromError::MissingNode)?.try_into()?),
         })
     }
 }
 
-impl TryFrom<ast::NonNullType> for crate::Type_ {
+impl TryFrom<cst::NonNullType> for crate::Type_ {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -190,7 +190,7 @@ impl TryFrom<ast::NonNullType> for crate::Type_ {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::NonNullType) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::NonNullType) -> Result<Self, Self::Error> {
         let named_type = node
             .named_type()
             .ok_or(FromError::MissingNode)
@@ -206,7 +206,7 @@ impl TryFrom<ast::NonNullType> for crate::Type_ {
     }
 }
 
-impl TryFrom<ast::Type> for crate::Type_ {
+impl TryFrom<cst::Type> for crate::Type_ {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -215,16 +215,16 @@ impl TryFrom<ast::Type> for crate::Type_ {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::Type) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::Type) -> Result<Self, Self::Error> {
         match node {
-            ast::Type::NamedType(ty) => ty.try_into(),
-            ast::Type::ListType(ty) => ty.try_into(),
-            ast::Type::NonNullType(ty) => ty.try_into(),
+            cst::Type::NamedType(ty) => ty.try_into(),
+            cst::Type::ListType(ty) => ty.try_into(),
+            cst::Type::NonNullType(ty) => ty.try_into(),
         }
     }
 }
 
-impl TryFrom<ast::InputValueDefinition> for crate::InputValueDefinition {
+impl TryFrom<cst::InputValueDefinition> for crate::InputValueDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -233,7 +233,7 @@ impl TryFrom<ast::InputValueDefinition> for crate::InputValueDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::InputValueDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::InputValueDefinition) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -271,7 +271,7 @@ impl TryFrom<ast::InputValueDefinition> for crate::InputValueDefinition {
     }
 }
 
-impl TryFrom<ast::ArgumentsDefinition> for crate::ArgumentsDefinition {
+impl TryFrom<cst::ArgumentsDefinition> for crate::ArgumentsDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -280,7 +280,7 @@ impl TryFrom<ast::ArgumentsDefinition> for crate::ArgumentsDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::ArgumentsDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::ArgumentsDefinition) -> Result<Self, Self::Error> {
         let input_values = node
             .input_value_definitions()
             .map(|input_value| input_value.try_into())
@@ -290,7 +290,7 @@ impl TryFrom<ast::ArgumentsDefinition> for crate::ArgumentsDefinition {
     }
 }
 
-impl TryFrom<ast::FieldDefinition> for crate::FieldDefinition {
+impl TryFrom<cst::FieldDefinition> for crate::FieldDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -299,7 +299,7 @@ impl TryFrom<ast::FieldDefinition> for crate::FieldDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::FieldDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::FieldDefinition) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -324,7 +324,7 @@ impl TryFrom<ast::FieldDefinition> for crate::FieldDefinition {
     }
 }
 
-impl TryFrom<ast::TypeCondition> for crate::TypeCondition {
+impl TryFrom<cst::TypeCondition> for crate::TypeCondition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -333,7 +333,7 @@ impl TryFrom<ast::TypeCondition> for crate::TypeCondition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::TypeCondition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::TypeCondition) -> Result<Self, Self::Error> {
         let named_type = node.named_type().ok_or(FromError::MissingNode)?;
         let name = named_type
             .name()
@@ -344,7 +344,7 @@ impl TryFrom<ast::TypeCondition> for crate::TypeCondition {
     }
 }
 
-impl TryFrom<ast::Field> for crate::Field {
+impl TryFrom<cst::Field> for crate::Field {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -353,7 +353,7 @@ impl TryFrom<ast::Field> for crate::Field {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::Field) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::Field) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -393,7 +393,7 @@ impl TryFrom<ast::Field> for crate::Field {
     }
 }
 
-impl TryFrom<ast::FragmentSpread> for crate::FragmentSpread {
+impl TryFrom<cst::FragmentSpread> for crate::FragmentSpread {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -402,7 +402,7 @@ impl TryFrom<ast::FragmentSpread> for crate::FragmentSpread {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::FragmentSpread) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::FragmentSpread) -> Result<Self, Self::Error> {
         let name = node
             .fragment_name()
             .and_then(|fragment_name| fragment_name.name())
@@ -419,7 +419,7 @@ impl TryFrom<ast::FragmentSpread> for crate::FragmentSpread {
     }
 }
 
-impl TryFrom<ast::InlineFragment> for crate::InlineFragment {
+impl TryFrom<cst::InlineFragment> for crate::InlineFragment {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -428,7 +428,7 @@ impl TryFrom<ast::InlineFragment> for crate::InlineFragment {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::InlineFragment) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::InlineFragment) -> Result<Self, Self::Error> {
         let selection_set = node
             .selection_set()
             .ok_or(FromError::MissingNode)?
@@ -451,7 +451,7 @@ impl TryFrom<ast::InlineFragment> for crate::InlineFragment {
     }
 }
 
-impl TryFrom<ast::Selection> for crate::Selection {
+impl TryFrom<cst::Selection> for crate::Selection {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -460,18 +460,18 @@ impl TryFrom<ast::Selection> for crate::Selection {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::Selection) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::Selection) -> Result<Self, Self::Error> {
         let encoder_node = match node {
-            ast::Selection::Field(field) => Self::Field(field.try_into()?),
-            ast::Selection::FragmentSpread(fragment) => Self::FragmentSpread(fragment.try_into()?),
-            ast::Selection::InlineFragment(fragment) => Self::InlineFragment(fragment.try_into()?),
+            cst::Selection::Field(field) => Self::Field(field.try_into()?),
+            cst::Selection::FragmentSpread(fragment) => Self::FragmentSpread(fragment.try_into()?),
+            cst::Selection::InlineFragment(fragment) => Self::InlineFragment(fragment.try_into()?),
         };
 
         Ok(encoder_node)
     }
 }
 
-impl TryFrom<ast::SelectionSet> for crate::SelectionSet {
+impl TryFrom<cst::SelectionSet> for crate::SelectionSet {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -480,7 +480,7 @@ impl TryFrom<ast::SelectionSet> for crate::SelectionSet {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::SelectionSet) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::SelectionSet) -> Result<Self, Self::Error> {
         let selections = node
             .selections()
             .map(|selection| selection.try_into())
@@ -490,7 +490,7 @@ impl TryFrom<ast::SelectionSet> for crate::SelectionSet {
     }
 }
 
-impl TryFrom<ast::OperationType> for crate::OperationType {
+impl TryFrom<cst::OperationType> for crate::OperationType {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -499,7 +499,7 @@ impl TryFrom<ast::OperationType> for crate::OperationType {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::OperationType) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::OperationType) -> Result<Self, Self::Error> {
         if node.query_token().is_some() {
             Ok(Self::Query)
         } else if node.mutation_token().is_some() {
@@ -512,7 +512,7 @@ impl TryFrom<ast::OperationType> for crate::OperationType {
     }
 }
 
-impl TryFrom<ast::VariableDefinition> for crate::VariableDefinition {
+impl TryFrom<cst::VariableDefinition> for crate::VariableDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -521,7 +521,7 @@ impl TryFrom<ast::VariableDefinition> for crate::VariableDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::VariableDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::VariableDefinition) -> Result<Self, Self::Error> {
         let name = node
             .variable()
             .ok_or(FromError::MissingNode)?
@@ -547,7 +547,7 @@ impl TryFrom<ast::VariableDefinition> for crate::VariableDefinition {
     }
 }
 
-impl TryFrom<ast::OperationDefinition> for crate::OperationDefinition {
+impl TryFrom<cst::OperationDefinition> for crate::OperationDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -556,7 +556,7 @@ impl TryFrom<ast::OperationDefinition> for crate::OperationDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::OperationDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::OperationDefinition) -> Result<Self, Self::Error> {
         let operation_type = node
             .operation_type()
             .ok_or(FromError::MissingNode)?
@@ -588,7 +588,7 @@ impl TryFrom<ast::OperationDefinition> for crate::OperationDefinition {
     }
 }
 
-impl TryFrom<ast::FragmentDefinition> for crate::FragmentDefinition {
+impl TryFrom<cst::FragmentDefinition> for crate::FragmentDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -597,7 +597,7 @@ impl TryFrom<ast::FragmentDefinition> for crate::FragmentDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::FragmentDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::FragmentDefinition) -> Result<Self, Self::Error> {
         let name = node
             .fragment_name()
             .ok_or(FromError::MissingNode)?
@@ -625,7 +625,7 @@ impl TryFrom<ast::FragmentDefinition> for crate::FragmentDefinition {
     }
 }
 
-impl TryFrom<ast::DirectiveDefinition> for crate::DirectiveDefinition {
+impl TryFrom<cst::DirectiveDefinition> for crate::DirectiveDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -634,7 +634,7 @@ impl TryFrom<ast::DirectiveDefinition> for crate::DirectiveDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::DirectiveDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::DirectiveDefinition) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -679,7 +679,7 @@ impl TryFrom<ast::DirectiveDefinition> for crate::DirectiveDefinition {
 
 fn apply_root_operation_type_definitions(
     encoder_node: &mut crate::SchemaDefinition,
-    type_definitions: impl Iterator<Item = ast::RootOperationTypeDefinition>,
+    type_definitions: impl Iterator<Item = cst::RootOperationTypeDefinition>,
 ) -> Result<(), FromError> {
     for root in type_definitions {
         let operation_type = root.operation_type().ok_or(FromError::MissingNode)?;
@@ -704,7 +704,7 @@ fn apply_root_operation_type_definitions(
     Ok(())
 }
 
-impl TryFrom<ast::SchemaDefinition> for crate::SchemaDefinition {
+impl TryFrom<cst::SchemaDefinition> for crate::SchemaDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -713,7 +713,7 @@ impl TryFrom<ast::SchemaDefinition> for crate::SchemaDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::SchemaDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::SchemaDefinition) -> Result<Self, Self::Error> {
         let mut encoder_node = Self::new();
 
         let description = node
@@ -739,7 +739,7 @@ impl TryFrom<ast::SchemaDefinition> for crate::SchemaDefinition {
     }
 }
 
-impl TryFrom<ast::ScalarTypeDefinition> for crate::ScalarDefinition {
+impl TryFrom<cst::ScalarTypeDefinition> for crate::ScalarDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -748,7 +748,7 @@ impl TryFrom<ast::ScalarTypeDefinition> for crate::ScalarDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::ScalarTypeDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::ScalarTypeDefinition) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -774,7 +774,7 @@ impl TryFrom<ast::ScalarTypeDefinition> for crate::ScalarDefinition {
     }
 }
 
-impl TryFrom<ast::ObjectTypeDefinition> for crate::ObjectDefinition {
+impl TryFrom<cst::ObjectTypeDefinition> for crate::ObjectDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -783,59 +783,7 @@ impl TryFrom<ast::ObjectTypeDefinition> for crate::ObjectDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::ObjectTypeDefinition) -> Result<Self, Self::Error> {
-        let name = node
-            .name()
-            .ok_or(FromError::MissingNode)?
-            .text()
-            .to_string();
-        let mut encoder_node = Self::new(name);
-
-        let description = node
-            .description()
-            .and_then(|description| description.string_value())
-            .map(|string| string.into());
-        if let Some(description) = description {
-            encoder_node.description(description);
-        }
-
-        if let Some(directives) = node.directives() {
-            for directive in directives.directives() {
-                encoder_node.directive(directive.try_into()?);
-            }
-        }
-
-        if let Some(implements_interfaces) = node.implements_interfaces() {
-            for implements in implements_interfaces.named_types() {
-                let name = implements
-                    .name()
-                    .ok_or(FromError::MissingNode)?
-                    .text()
-                    .to_string();
-                encoder_node.interface(name);
-            }
-        }
-
-        if let Some(field_definitions) = node.fields_definition() {
-            for field_definition in field_definitions.field_definitions() {
-                encoder_node.field(field_definition.try_into()?);
-            }
-        }
-
-        Ok(encoder_node)
-    }
-}
-
-impl TryFrom<ast::InterfaceTypeDefinition> for crate::InterfaceDefinition {
-    type Error = FromError;
-
-    /// Create an apollo-encoder node from an apollo-parser one.
-    ///
-    /// # Errors
-    /// This returns an error if the apollo-parser tree is not valid. The error
-    /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
-    /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::InterfaceTypeDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::ObjectTypeDefinition) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -878,7 +826,7 @@ impl TryFrom<ast::InterfaceTypeDefinition> for crate::InterfaceDefinition {
     }
 }
 
-impl TryFrom<ast::UnionTypeDefinition> for crate::UnionDefinition {
+impl TryFrom<cst::InterfaceTypeDefinition> for crate::InterfaceDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -887,7 +835,59 @@ impl TryFrom<ast::UnionTypeDefinition> for crate::UnionDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::UnionTypeDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::InterfaceTypeDefinition) -> Result<Self, Self::Error> {
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
+        let mut encoder_node = Self::new(name);
+
+        let description = node
+            .description()
+            .and_then(|description| description.string_value())
+            .map(|string| string.into());
+        if let Some(description) = description {
+            encoder_node.description(description);
+        }
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(implements_interfaces) = node.implements_interfaces() {
+            for implements in implements_interfaces.named_types() {
+                let name = implements
+                    .name()
+                    .ok_or(FromError::MissingNode)?
+                    .text()
+                    .to_string();
+                encoder_node.interface(name);
+            }
+        }
+
+        if let Some(field_definitions) = node.fields_definition() {
+            for field_definition in field_definitions.field_definitions() {
+                encoder_node.field(field_definition.try_into()?);
+            }
+        }
+
+        Ok(encoder_node)
+    }
+}
+
+impl TryFrom<cst::UnionTypeDefinition> for crate::UnionDefinition {
+    type Error = FromError;
+
+    /// Create an apollo-encoder node from an apollo-parser one.
+    ///
+    /// # Errors
+    /// This returns an error if the apollo-parser tree is not valid. The error
+    /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
+    /// using TryFrom if granular errors are important to you.
+    fn try_from(node: cst::UnionTypeDefinition) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -925,7 +925,7 @@ impl TryFrom<ast::UnionTypeDefinition> for crate::UnionDefinition {
     }
 }
 
-impl TryFrom<ast::EnumValueDefinition> for crate::EnumValue {
+impl TryFrom<cst::EnumValueDefinition> for crate::EnumValue {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -934,7 +934,7 @@ impl TryFrom<ast::EnumValueDefinition> for crate::EnumValue {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::EnumValueDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::EnumValueDefinition) -> Result<Self, Self::Error> {
         let name = node
             .enum_value()
             .ok_or(FromError::MissingNode)?
@@ -962,7 +962,7 @@ impl TryFrom<ast::EnumValueDefinition> for crate::EnumValue {
     }
 }
 
-impl TryFrom<ast::EnumTypeDefinition> for crate::EnumDefinition {
+impl TryFrom<cst::EnumTypeDefinition> for crate::EnumDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -971,7 +971,7 @@ impl TryFrom<ast::EnumTypeDefinition> for crate::EnumDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::EnumTypeDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::EnumTypeDefinition) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -1003,7 +1003,7 @@ impl TryFrom<ast::EnumTypeDefinition> for crate::EnumDefinition {
     }
 }
 
-impl TryFrom<ast::InputValueDefinition> for crate::InputField {
+impl TryFrom<cst::InputValueDefinition> for crate::InputField {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -1012,7 +1012,7 @@ impl TryFrom<ast::InputValueDefinition> for crate::InputField {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::InputValueDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::InputValueDefinition) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -1050,7 +1050,7 @@ impl TryFrom<ast::InputValueDefinition> for crate::InputField {
     }
 }
 
-impl TryFrom<ast::InputObjectTypeDefinition> for crate::InputObjectDefinition {
+impl TryFrom<cst::InputObjectTypeDefinition> for crate::InputObjectDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -1059,7 +1059,7 @@ impl TryFrom<ast::InputObjectTypeDefinition> for crate::InputObjectDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::InputObjectTypeDefinition) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::InputObjectTypeDefinition) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -1091,7 +1091,7 @@ impl TryFrom<ast::InputObjectTypeDefinition> for crate::InputObjectDefinition {
     }
 }
 
-impl TryFrom<ast::SchemaExtension> for crate::SchemaDefinition {
+impl TryFrom<cst::SchemaExtension> for crate::SchemaDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -1100,7 +1100,7 @@ impl TryFrom<ast::SchemaExtension> for crate::SchemaDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::SchemaExtension) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::SchemaExtension) -> Result<Self, Self::Error> {
         let mut encoder_node = Self::new();
 
         if let Some(directives) = node.directives() {
@@ -1120,7 +1120,7 @@ impl TryFrom<ast::SchemaExtension> for crate::SchemaDefinition {
     }
 }
 
-impl TryFrom<ast::ScalarTypeExtension> for crate::ScalarDefinition {
+impl TryFrom<cst::ScalarTypeExtension> for crate::ScalarDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -1129,7 +1129,7 @@ impl TryFrom<ast::ScalarTypeExtension> for crate::ScalarDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::ScalarTypeExtension) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::ScalarTypeExtension) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -1149,7 +1149,7 @@ impl TryFrom<ast::ScalarTypeExtension> for crate::ScalarDefinition {
     }
 }
 
-impl TryFrom<ast::ObjectTypeExtension> for crate::ObjectDefinition {
+impl TryFrom<cst::ObjectTypeExtension> for crate::ObjectDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -1158,53 +1158,7 @@ impl TryFrom<ast::ObjectTypeExtension> for crate::ObjectDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::ObjectTypeExtension) -> Result<Self, Self::Error> {
-        let name = node
-            .name()
-            .ok_or(FromError::MissingNode)?
-            .text()
-            .to_string();
-        let mut encoder_node = Self::new(name);
-
-        if let Some(directives) = node.directives() {
-            for directive in directives.directives() {
-                encoder_node.directive(directive.try_into()?);
-            }
-        }
-
-        if let Some(implements_interfaces) = node.implements_interfaces() {
-            for implements in implements_interfaces.named_types() {
-                let name = implements
-                    .name()
-                    .ok_or(FromError::MissingNode)?
-                    .text()
-                    .to_string();
-                encoder_node.interface(name);
-            }
-        }
-
-        if let Some(field_definitions) = node.fields_definition() {
-            for field_definition in field_definitions.field_definitions() {
-                encoder_node.field(field_definition.try_into()?);
-            }
-        }
-
-        encoder_node.extend();
-
-        Ok(encoder_node)
-    }
-}
-
-impl TryFrom<ast::InterfaceTypeExtension> for crate::InterfaceDefinition {
-    type Error = FromError;
-
-    /// Create an apollo-encoder node from an apollo-parser one.
-    ///
-    /// # Errors
-    /// This returns an error if the apollo-parser tree is not valid. The error
-    /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
-    /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::InterfaceTypeExtension) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::ObjectTypeExtension) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -1241,7 +1195,7 @@ impl TryFrom<ast::InterfaceTypeExtension> for crate::InterfaceDefinition {
     }
 }
 
-impl TryFrom<ast::UnionTypeExtension> for crate::UnionDefinition {
+impl TryFrom<cst::InterfaceTypeExtension> for crate::InterfaceDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -1250,7 +1204,53 @@ impl TryFrom<ast::UnionTypeExtension> for crate::UnionDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::UnionTypeExtension) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::InterfaceTypeExtension) -> Result<Self, Self::Error> {
+        let name = node
+            .name()
+            .ok_or(FromError::MissingNode)?
+            .text()
+            .to_string();
+        let mut encoder_node = Self::new(name);
+
+        if let Some(directives) = node.directives() {
+            for directive in directives.directives() {
+                encoder_node.directive(directive.try_into()?);
+            }
+        }
+
+        if let Some(implements_interfaces) = node.implements_interfaces() {
+            for implements in implements_interfaces.named_types() {
+                let name = implements
+                    .name()
+                    .ok_or(FromError::MissingNode)?
+                    .text()
+                    .to_string();
+                encoder_node.interface(name);
+            }
+        }
+
+        if let Some(field_definitions) = node.fields_definition() {
+            for field_definition in field_definitions.field_definitions() {
+                encoder_node.field(field_definition.try_into()?);
+            }
+        }
+
+        encoder_node.extend();
+
+        Ok(encoder_node)
+    }
+}
+
+impl TryFrom<cst::UnionTypeExtension> for crate::UnionDefinition {
+    type Error = FromError;
+
+    /// Create an apollo-encoder node from an apollo-parser one.
+    ///
+    /// # Errors
+    /// This returns an error if the apollo-parser tree is not valid. The error
+    /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
+    /// using TryFrom if granular errors are important to you.
+    fn try_from(node: cst::UnionTypeExtension) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -1282,7 +1282,7 @@ impl TryFrom<ast::UnionTypeExtension> for crate::UnionDefinition {
     }
 }
 
-impl TryFrom<ast::EnumTypeExtension> for crate::EnumDefinition {
+impl TryFrom<cst::EnumTypeExtension> for crate::EnumDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -1291,7 +1291,7 @@ impl TryFrom<ast::EnumTypeExtension> for crate::EnumDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::EnumTypeExtension) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::EnumTypeExtension) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -1317,7 +1317,7 @@ impl TryFrom<ast::EnumTypeExtension> for crate::EnumDefinition {
     }
 }
 
-impl TryFrom<ast::InputObjectTypeExtension> for crate::InputObjectDefinition {
+impl TryFrom<cst::InputObjectTypeExtension> for crate::InputObjectDefinition {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -1326,7 +1326,7 @@ impl TryFrom<ast::InputObjectTypeExtension> for crate::InputObjectDefinition {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::InputObjectTypeExtension) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::InputObjectTypeExtension) -> Result<Self, Self::Error> {
         let name = node
             .name()
             .ok_or(FromError::MissingNode)?
@@ -1352,7 +1352,7 @@ impl TryFrom<ast::InputObjectTypeExtension> for crate::InputObjectDefinition {
     }
 }
 
-impl TryFrom<ast::Document> for crate::Document {
+impl TryFrom<cst::Document> for crate::Document {
     type Error = FromError;
 
     /// Create an apollo-encoder node from an apollo-parser one.
@@ -1361,38 +1361,38 @@ impl TryFrom<ast::Document> for crate::Document {
     /// This returns an error if the apollo-parser tree is not valid. The error
     /// doesn't have much context due to TryFrom API constraints: validate the parse tree before
     /// using TryFrom if granular errors are important to you.
-    fn try_from(node: ast::Document) -> Result<Self, Self::Error> {
+    fn try_from(node: cst::Document) -> Result<Self, Self::Error> {
         let mut encoder_node = Self::new();
 
         for definition in node.definitions() {
             match definition {
-                ast::Definition::OperationDefinition(def) => {
+                cst::Definition::OperationDefinition(def) => {
                     encoder_node.operation(def.try_into()?)
                 }
-                ast::Definition::FragmentDefinition(def) => encoder_node.fragment(def.try_into()?),
-                ast::Definition::DirectiveDefinition(def) => {
+                cst::Definition::FragmentDefinition(def) => encoder_node.fragment(def.try_into()?),
+                cst::Definition::DirectiveDefinition(def) => {
                     encoder_node.directive(def.try_into()?)
                 }
-                ast::Definition::SchemaDefinition(def) => encoder_node.schema(def.try_into()?),
-                ast::Definition::ScalarTypeDefinition(def) => encoder_node.scalar(def.try_into()?),
-                ast::Definition::ObjectTypeDefinition(def) => encoder_node.object(def.try_into()?),
-                ast::Definition::InterfaceTypeDefinition(def) => {
+                cst::Definition::SchemaDefinition(def) => encoder_node.schema(def.try_into()?),
+                cst::Definition::ScalarTypeDefinition(def) => encoder_node.scalar(def.try_into()?),
+                cst::Definition::ObjectTypeDefinition(def) => encoder_node.object(def.try_into()?),
+                cst::Definition::InterfaceTypeDefinition(def) => {
                     encoder_node.interface(def.try_into()?)
                 }
-                ast::Definition::UnionTypeDefinition(def) => encoder_node.union(def.try_into()?),
-                ast::Definition::EnumTypeDefinition(def) => encoder_node.enum_(def.try_into()?),
-                ast::Definition::InputObjectTypeDefinition(def) => {
+                cst::Definition::UnionTypeDefinition(def) => encoder_node.union(def.try_into()?),
+                cst::Definition::EnumTypeDefinition(def) => encoder_node.enum_(def.try_into()?),
+                cst::Definition::InputObjectTypeDefinition(def) => {
                     encoder_node.input_object(def.try_into()?)
                 }
-                ast::Definition::SchemaExtension(ext) => encoder_node.schema(ext.try_into()?),
-                ast::Definition::ScalarTypeExtension(ext) => encoder_node.scalar(ext.try_into()?),
-                ast::Definition::ObjectTypeExtension(ext) => encoder_node.object(ext.try_into()?),
-                ast::Definition::InterfaceTypeExtension(ext) => {
+                cst::Definition::SchemaExtension(ext) => encoder_node.schema(ext.try_into()?),
+                cst::Definition::ScalarTypeExtension(ext) => encoder_node.scalar(ext.try_into()?),
+                cst::Definition::ObjectTypeExtension(ext) => encoder_node.object(ext.try_into()?),
+                cst::Definition::InterfaceTypeExtension(ext) => {
                     encoder_node.interface(ext.try_into()?)
                 }
-                ast::Definition::UnionTypeExtension(ext) => encoder_node.union(ext.try_into()?),
-                ast::Definition::EnumTypeExtension(ext) => encoder_node.enum_(ext.try_into()?),
-                ast::Definition::InputObjectTypeExtension(ext) => {
+                cst::Definition::UnionTypeExtension(ext) => encoder_node.union(ext.try_into()?),
+                cst::Definition::EnumTypeExtension(ext) => encoder_node.enum_(ext.try_into()?),
+                cst::Definition::InputObjectTypeExtension(ext) => {
                     encoder_node.input_object(ext.try_into()?)
                 }
             }
@@ -1424,8 +1424,8 @@ query HeroForEpisode($ep: Episode!) {
 }
 "#,
         );
-        let ast = parser.parse();
-        let doc = ast.document();
+        let cst = parser.parse();
+        let doc = cst.document();
 
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(
@@ -1458,8 +1458,8 @@ fragment FragmentDefinition on VeryRealType {
 }
 "#,
         );
-        let ast = parser.parse();
-        let doc = ast.document();
+        let cst = parser.parse();
+        let doc = cst.document();
 
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(
@@ -1485,8 +1485,8 @@ directive @withDeprecatedArgs(
 ) on FIELD
 "#,
         );
-        let ast = parser.parse();
-        let doc = ast.document();
+        let cst = parser.parse();
+        let doc = cst.document();
 
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(encoder.to_string(), r#"
@@ -1507,8 +1507,8 @@ extend schema {
 }
 "#,
         );
-        let ast = parser.parse();
-        let doc = ast.document();
+        let cst = parser.parse();
+        let doc = cst.document();
 
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(
@@ -1534,8 +1534,8 @@ scalar Date
 extend scalar Date @directive
 "#,
         );
-        let ast = parser.parse();
-        let doc = ast.document();
+        let cst = parser.parse();
+        let doc = cst.document();
 
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(
@@ -1563,8 +1563,8 @@ type User implements X & Y
 }
 "#,
         );
-        let ast = parser.parse();
-        let doc = ast.document();
+        let cst = parser.parse();
+        let doc = cst.document();
 
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(
@@ -1594,8 +1594,8 @@ interface Y {
 interface Z implements X & Y @inaccessible {}
 "#,
         );
-        let ast = parser.parse();
-        let doc = ast.document();
+        let cst = parser.parse();
+        let doc = cst.document();
 
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(
@@ -1621,8 +1621,8 @@ interface Z implements X& Y @inaccessible {
 union UnionType = X | Y | Z
 "#,
         );
-        let ast = parser.parse();
-        let doc = ast.document();
+        let cst = parser.parse();
+        let doc = cst.document();
 
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(
@@ -1647,8 +1647,8 @@ enum EnumType {
 }
 "#,
         );
-        let ast = parser.parse();
-        let doc = ast.document();
+        let cst = parser.parse();
+        let doc = cst.document();
 
         let encoder = Document::try_from(doc).unwrap();
         assert_eq!(

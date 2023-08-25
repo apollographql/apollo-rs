@@ -18,7 +18,7 @@
 </div>
 
 ## Features
-* Ergonomic API on top the AST created by `apollo-parser`
+* Ergonomic API on top the CST created by `apollo-parser`
 * GraphQL validation and diagnostics reporting
     * Validation is a work in progress, stay tuned for further validation rules implementation.
 
@@ -43,7 +43,7 @@ Older version may or may not be compatible.
 
 ## Usage
 `apollo-compiler` is built using [`salsa`] to provide a
-memoised query system on top of the AST produced by `apollo-parser`.
+memoised query system on top of the CST produced by `apollo-parser`.
 The idea is that all relationships between GraphQL types are pre-established and pre-computed, so you are able to always find the reference to say a field Type, or a Directive.
 
 You can get started with `apollo-compiler`:
