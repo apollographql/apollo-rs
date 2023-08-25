@@ -1137,6 +1137,45 @@
             file_id: FileId {
                 id: 99,
             },
+            offset: 3968,
+            length: 25,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 3968,
+                    length: 25,
+                },
+                text: "missing value for argument `req2`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 567,
+                    length: 10,
+                },
+                text: "argument defined here",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "req2",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
             offset: 3987,
             length: 5,
         },
@@ -1166,45 +1205,6 @@
         data: UnsupportedValueType {
             value: "String",
             ty: "Int",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3968,
-            length: 25,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3968,
-                    length: 25,
-                },
-                text: "missing value for argument `req2`",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 567,
-                    length: 10,
-                },
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            name: "req2",
         },
     },
     ApolloDiagnostic {
@@ -1483,45 +1483,6 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 4955,
-            length: 39,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4955,
-                    length: 39,
-                },
-                text: "missing value for argument `requiredField`",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 882,
-                    length: 7,
-                },
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            name: "requiredField",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            99: "0102_invalid_string_values.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
             offset: 4906,
             length: 4,
         },
@@ -1602,8 +1563,8 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 5223,
-            length: 16,
+            offset: 4955,
+            length: 39,
         },
         labels: [
             Label {
@@ -1611,26 +1572,25 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 5208,
-                    length: 12,
+                    offset: 4955,
+                    length: 39,
                 },
-                text: "field declared here as ComplexInput type",
+                text: "missing value for argument `requiredField`",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 5223,
-                    length: 16,
+                    offset: 882,
+                    length: 7,
                 },
-                text: "argument declared here is of String type",
+                text: "argument defined here",
             },
         ],
         help: None,
-        data: UnsupportedValueType {
-            value: "String",
-            ty: "ComplexInput",
+        data: RequiredArgument {
+            name: "requiredField",
         },
     },
     ApolloDiagnostic {
@@ -1711,6 +1671,46 @@
         data: UnsupportedValueType {
             value: "Int",
             ty: "String",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            99: "0102_invalid_string_values.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 99,
+            },
+            offset: 5223,
+            length: 16,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 5208,
+                    length: 12,
+                },
+                text: "field declared here as ComplexInput type",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 99,
+                    },
+                    offset: 5223,
+                    length: 16,
+                },
+                text: "argument declared here is of String type",
+            },
+        ],
+        help: None,
+        data: UnsupportedValueType {
+            value: "String",
+            ty: "ComplexInput",
         },
     },
     ApolloDiagnostic {

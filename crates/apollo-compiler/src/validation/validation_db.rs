@@ -492,6 +492,10 @@ fn validate_executable_names(db: &dyn ValidationDatabase, file_id: FileId) -> Ve
     diagnostics
 }
 
+fn location_sort_key(diagnostic: &ApolloDiagnostic) -> (FileId, usize) {
+    (diagnostic.location.file_id(), diagnostic.location.offset())
+}
+
 pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -510,6 +514,7 @@ pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
 
     diagnostics.extend(db.validate_extensions());
 
+    diagnostics.sort_by_key(location_sort_key);
     diagnostics
 }
 
@@ -542,6 +547,7 @@ pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<
         diagnostics.extend(db.validate_fragment_used(Arc::clone(def), file_id));
     }
 
+    diagnostics.sort_by_key(location_sort_key);
     diagnostics
 }
 
