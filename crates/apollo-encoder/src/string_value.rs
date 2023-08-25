@@ -4,12 +4,12 @@ use std::fmt::{self, Write};
 fn write_character(c: char, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match c {
         '"' => f.write_str(r#"\""#),
-        '\u{0008}' => f.write_str(r#"\b"#),
-        '\u{000c}' => f.write_str(r#"\f"#),
-        '\n' => f.write_str(r#"\n"#),
-        '\r' => f.write_str(r#"\r"#),
-        '\t' => f.write_str(r#"\t"#),
-        '\\' => f.write_str(r#"\\"#),
+        '\u{0008}' => f.write_str(r"\b"),
+        '\u{000c}' => f.write_str(r"\f"),
+        '\n' => f.write_str(r"\n"),
+        '\r' => f.write_str(r"\r"),
+        '\t' => f.write_str(r"\t"),
+        '\\' => f.write_str(r"\\"),
         c if c.is_control() => write!(f, "\\u{:04x}", c as u32),
         // Other unicode chars are written as is
         c => write!(f, "{c}"),
