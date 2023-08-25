@@ -445,19 +445,19 @@ fn validate_executable_names(
         .syntax()
         .children()
         .filter_map(ast::Definition::cast)
-        // Extension names are allowed to be duplicates,
-        // and schema definitions don't have names.
         .filter(|def| def.is_executable_definition());
 
     for ast_def in executable_definitions {
         let ty_ = match ast_def {
             ast::Definition::OperationDefinition(_) => "operation",
             ast::Definition::FragmentDefinition(_) => "fragment",
+            // Type system definitions are not checked here.
             _ => unreachable!(),
         };
         let scope = match ast_def {
             ast::Definition::OperationDefinition(_) => &mut operation_scope,
             ast::Definition::FragmentDefinition(_) => &mut fragment_scope,
+            // Type system definitions are not checked here.
             _ => unreachable!(),
         };
 
