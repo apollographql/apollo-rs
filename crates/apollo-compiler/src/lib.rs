@@ -1,8 +1,11 @@
 #![doc = include_str!("../README.md")]
 
 mod arc;
+pub mod ast;
 pub mod database;
 pub mod diagnostics;
+mod node;
+mod node_str;
 #[cfg(test)]
 mod tests;
 pub mod validation;
@@ -15,6 +18,8 @@ pub use self::database::{
     hir, CstDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source,
 };
 pub use self::diagnostics::ApolloDiagnostic;
+pub use self::node::{Node, NodeLocation};
+pub use self::node_str::NodeStr;
 use self::validation::ValidationDatabase;
 
 pub struct ApolloCompiler {

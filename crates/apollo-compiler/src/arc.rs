@@ -3,7 +3,6 @@ use std::hash::Hasher;
 use std::sync::atomic::AtomicU64;
 use std::sync::atomic::Ordering;
 
-pub use crate::hir::HirNodeLocation as NodeLocation;
 use std::collections::hash_map::RandomState;
 use std::fmt;
 use std::hash::BuildHasher;
@@ -17,7 +16,7 @@ use std::sync::OnceLock;
 /// a long as no `&mut T` exclusive reference to it is given out.
 /// Generally this excludes interior mutability.
 ///
-/// This `Arc` cannot implement [`std::borrow::Borrow`] because `Arc<T> as Hash`
+/// This `Arc` cannot implement [`Borrow<T>`][std::borrow::Borrow] because `Arc<T> as Hash`
 /// produces a result (the hash of the cached hash) different from `T as Hash`.
 pub struct Arc<T>(triomphe::Arc<ArcInner<T>>);
 
@@ -46,8 +45,8 @@ impl<T> Arc<T> {
     ///
     /// This is functionally equivalent to [`Arc::make_mut`][mm] from the standard library.
     ///
-    /// If this `Node` is uniquely owned, `make_mut()` will provide a mutable
-    /// reference to the contents. If not, `make_mut()` will create a _new_ `Node`
+    /// If this `Arc` is uniquely owned, `make_mut()` will provide a mutable
+    /// reference to the contents. If not, `make_mut()` will create a _new_ `Arc`
     /// with a copy of the contents, update `self` to point to it, and provide
     /// a mutable reference to its contents.
     ///
@@ -111,7 +110,7 @@ impl HashCache {
         *self.0.get_mut() = Self::NOT_COMPUTED_YET
     }
 
-    pub(crate) fn get(&self, value: &impl Hash) -> u64 {
+    pub(crate) fn get<T: ?Sized + Hash>(&self, value: &T) -> u64 {
         let hash = self.0.load(Ordering::Relaxed);
         if hash != Self::NOT_COMPUTED_YET {
             // cache hit
@@ -127,7 +126,7 @@ impl HashCache {
     // at the cost of extra computation in the unlikely case of this race.
     #[cold]
     #[inline(never)]
-    fn get_slow_path(&self, value: &impl Hash) -> u64 {
+    fn get_slow_path<T: ?Sized + Hash>(&self, value: &T) -> u64 {
         /// We share a single `BuildHasher` process-wide,
         /// not only for the race described above but also
         /// so that multiple `HarcInner`’s with the same contents have the same hash.

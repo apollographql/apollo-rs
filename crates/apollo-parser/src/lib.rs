@@ -11,9 +11,8 @@ mod parser;
 
 pub use crate::lexer::Lexer;
 pub use crate::lexer::{Token, TokenKind};
-pub(crate) use crate::parser::{
-    SyntaxElement, SyntaxKind, SyntaxNodeChildren, SyntaxToken, TokenText,
-};
+pub use crate::parser::SyntaxKind;
+pub(crate) use crate::parser::{SyntaxElement, SyntaxNodeChildren, SyntaxToken, TokenText};
 
 pub use crate::error::Error;
 pub use crate::limit::LimitTracker;
