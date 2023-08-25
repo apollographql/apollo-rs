@@ -1,0 +1,25 @@
+type Query {
+  pet: Dog
+}
+
+type Dog {
+  nickname: String
+  name: String!
+}
+
+query queryPupper {
+  pet {
+    ...mergeIdenticalFields
+    ...mergeIdenticalAliasesAndFields
+  }
+}
+
+fragment mergeIdenticalFields on Dog {
+  name
+  name
+}
+
+fragment mergeIdenticalAliasesAndFields on Dog {
+  otherName: name
+  otherName: name
+}

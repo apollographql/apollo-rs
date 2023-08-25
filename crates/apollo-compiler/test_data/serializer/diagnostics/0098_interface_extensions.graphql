@@ -1,0 +1,27 @@
+interface UniqueNames {
+  name: String
+}
+
+extend interface UniqueNames {
+  name: String
+}
+
+directive @nonRepeatable on INTERFACE
+
+interface Directives @nonRepeatable {
+  age: Int
+}
+
+interface Base {
+  a: Int
+  b: Int
+  c: Int
+}
+
+interface Derived {
+  a: Int
+}
+
+extend interface Derived implements Base {
+  c: Int
+}

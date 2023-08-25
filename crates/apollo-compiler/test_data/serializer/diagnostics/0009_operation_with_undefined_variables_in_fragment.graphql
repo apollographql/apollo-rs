@@ -1,0 +1,31 @@
+query ExampleQuery($variable: Int) {
+  topProducts(first: $variable) {
+    name
+  }
+  ...subFrag
+}
+
+fragment subFrag on Query {
+  topProducts(first: $variable) {
+    price(setPrice: $value)
+  }
+}
+
+type Query {
+  topProducts(first: Int): Product
+  reviews: Review
+}
+
+type Review {
+  message: Message
+}
+
+type Message {
+  body: String
+  sender(attribute: String): String
+}
+
+type Product {
+  name: String
+  price(setPrice: Int): Int
+}

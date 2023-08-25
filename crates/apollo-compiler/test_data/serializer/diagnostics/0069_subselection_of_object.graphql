@@ -1,0 +1,21 @@
+query SelectionOfObject {
+  pet1
+  pet2
+  pet3
+  pet4
+  pet5
+  pet6
+}
+
+type Query {
+  pet1: Pet
+  pet2: Pet!
+  pet3: [Pet]
+  pet4: [Pet!]
+  pet5: [Pet]!
+  pet6: [Pet!]!
+}
+
+type Pet {
+  id: String
+}

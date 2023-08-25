@@ -1,0 +1,17 @@
+type O {
+  a: Int
+  b: Int
+}
+
+type Query {
+  field: O
+}
+
+{
+  field {
+    x: a
+  }
+  field {
+    x: b
+  }
+}

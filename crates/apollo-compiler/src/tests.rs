@@ -13,7 +13,7 @@ use std::{
 
 use expect_test::expect_file;
 
-use crate::{ApolloCompiler, ApolloDiagnostic, CstDatabase, FileId};
+use crate::{ast::Parser, ApolloCompiler, ApolloDiagnostic, CstDatabase, FileId};
 
 // To run these tests and update files:
 // ```bash
@@ -65,6 +65,28 @@ fn assert_diagnostics_are_absent(errors: &[ApolloDiagnostic], path: &Path) {
             "There should be no diagnostics in the file {:?}",
             path.display(),
         );
+    }
+}
+
+#[test]
+fn serializer_tests() {
+    let test_data_dir = test_data_dir();
+    for subdir in ["ok", "diagnostics"] {
+        let output_dir = test_data_dir.join("serializer").join(subdir);
+        let collected = collect_graphql_files(&test_data_dir, &[subdir]);
+        for (input_path, input) in collected {
+            let output_path = output_dir.join(input_path.file_name().unwrap());
+            let ast = Parser::new().parse(&input).document;
+            let serialized = ast.to_string();
+            expect_file![output_path].assert_eq(&serialized);
+            let ast2 = Parser::new().parse(&serialized).document;
+            if ast != ast2 {
+                panic!(
+                    "Serialization does not round-trip:\n\
+                    {input}\n=>\n{ast:#?}\n=>\n{serialized}\n=>\n{ast2:#?}\n=>\n{ast2}\n"
+                );
+            }
+        }
     }
 }
 

@@ -1,0 +1,9 @@
+directive @nonRepeatable on OBJECT | SCALAR | INTERFACE
+
+scalar Scalar @nonRepeatable
+
+extend scalar Scalar @nonRepeatable @specifiedBy(url: "example.com")
+
+interface Intf @nonRepeatable {
+  field: String
+}

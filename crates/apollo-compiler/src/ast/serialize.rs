@@ -666,7 +666,14 @@ impl Value {
             Value::Enum(name) => state.write(name),
             Value::String(value) => serialize_string_value(state, value),
             Value::Variable(name) => display!(state, "${}", name),
-            Value::Float(value) => display!(state, value),
+            Value::Float(value) => {
+                let value = value.to_string();
+                state.write(&value)?;
+                if !value.contains('.') {
+                    state.write(".0")?
+                }
+                Ok(())
+            }
             Value::Int(value) => display!(state, value),
             Value::BigInt(value) => display!(state, value),
             Value::List(value) => comma_separated(state, "[", "]", value, |state, value| {

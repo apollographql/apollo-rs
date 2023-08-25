@@ -1,0 +1,33 @@
+query getProduct {
+  size
+  topProducts {
+    __type(name: "User") {
+      name
+      fields {
+        name
+        type {
+          name
+        }
+      }
+    }
+    name
+    inStock
+  }
+}
+
+type Query {
+  topProducts: Product
+  name: String
+  size: Int
+}
+
+type Product {
+  inStock: Boolean @join__field(graph: INVENTORY)
+  name: String @join__field(graph: PRODUCTS)
+  price: Int
+  shippingEstimate: Int
+  upc: String!
+  weight: Int
+}
+
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION

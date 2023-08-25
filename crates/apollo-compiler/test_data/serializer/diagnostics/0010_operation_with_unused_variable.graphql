@@ -1,0 +1,14 @@
+query ExampleQuery($unusedVariable: Int) {
+  topProducts {
+    name
+  }
+}
+
+type Query {
+  topProducts(first: Int): Product
+}
+
+type Product {
+  name: String
+  price(setPrice: Int): Int
+}

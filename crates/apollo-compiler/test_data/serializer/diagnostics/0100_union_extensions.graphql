@@ -1,0 +1,23 @@
+scalar ThisIsAScalar @specifiedBy(url: "https://example.com")
+
+type WithFieldA {
+  a: String
+}
+
+type WithFieldB {
+  b: String
+}
+
+union NonObjectType = WithFieldA | WithFieldB
+
+extend union NonObjectType = ThisIsAScalar
+
+union DuplicateMembers = WithFieldA
+
+extend union DuplicateMembers = WithFieldA | WithFieldB
+
+directive @nonRepeatable on UNION
+
+union DuplicateDirective @nonRepeatable = WithFieldA
+
+extend union DuplicateDirective @nonRepeatable = WithFieldB

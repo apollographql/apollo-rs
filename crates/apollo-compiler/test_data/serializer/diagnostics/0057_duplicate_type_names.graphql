@@ -1,0 +1,22 @@
+interface World {
+  a: Int
+}
+
+type World implements World {
+  a: Int
+}
+
+scalar X @specifiedBy(url: "https://apollographql.com")
+
+union X @X = World
+
+enum X {
+  Y
+  Z
+}
+
+type X {
+  x: X
+}
+
+directive @X(ok: Boolean) on UNION

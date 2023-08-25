@@ -1,0 +1,33 @@
+query takesBoolean($atOtherHomes: Boolean) {
+  dog {
+    isHouseTrained(atOtherHomes: $atOtherHomes)
+  }
+}
+
+query takesComplexInput($complexInput: ComplexInput) {
+  findDog(complex: $complexInput) {
+    name
+  }
+}
+
+query TakesListOfBooleanBang($booleans: [Boolean!]) {
+  booleanList(booleanListArg: $booleans)
+}
+
+type Dog {
+  name: String!
+  nickname: String
+  barkVolume: Int
+  isHouseTrained(atOtherHomes: Boolean): Boolean!
+}
+
+input ComplexInput {
+  name: String
+  owner: String
+}
+
+type Query {
+  dog: Dog
+  findDog(complex: ComplexInput): Dog
+  booleanList(booleanListArg: [Boolean!]): Boolean
+}

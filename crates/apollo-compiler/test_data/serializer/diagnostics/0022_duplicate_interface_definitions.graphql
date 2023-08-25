@@ -1,0 +1,11 @@
+type Query implements NamedEntity {
+  name: String
+}
+
+interface NamedEntity {
+  name: String
+}
+
+interface NamedEntity {
+  name: String
+}

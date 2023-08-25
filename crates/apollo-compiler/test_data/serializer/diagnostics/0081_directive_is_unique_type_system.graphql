@@ -1,0 +1,7 @@
+directive @nonRepeatable on SCHEMA | SCALAR | OBJECT | INTERFACE | UNION | INPUT_OBJECT
+
+schema @nonRepeatable @nonRepeatable {
+  query: Dummy
+}
+
+scalar TestScalar @nonRepeatable @nonRepeatable @specifiedBy(url: "example.com")

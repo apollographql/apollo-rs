@@ -1,0 +1,13 @@
+type Dog {
+  name: String!
+}
+
+type Query {
+  dog: Dog
+}
+
+{
+  dog {
+    ...undefinedFragment
+  }
+}

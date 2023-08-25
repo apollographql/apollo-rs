@@ -1,0 +1,9 @@
+schema {
+  query: customPetQuery
+  subscription: customPetQuery
+}
+
+type customPetQuery {
+  name: String
+  age: Int
+}

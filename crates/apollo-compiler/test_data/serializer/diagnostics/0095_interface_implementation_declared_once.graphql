@@ -1,0 +1,15 @@
+interface Intf {
+  field: String
+}
+
+type Object implements Intf & Intf {
+  field: String
+}
+
+type Extended implements Intf {
+  field: String
+}
+
+interface SubIntf implements Intf & Intf {
+  field: String
+}

@@ -1,0 +1,37 @@
+type T {
+  a: Int
+  b: Int
+  c: Int
+  d: Int
+}
+
+type Query {
+  field: T
+}
+
+{
+  field {
+    ...F
+  }
+  field {
+    ...I
+  }
+}
+
+fragment F on T {
+  x: a
+  ...G
+}
+
+fragment G on T {
+  y: c
+}
+
+fragment I on T {
+  y: d
+  ...J
+}
+
+fragment J on T {
+  x: b
+}

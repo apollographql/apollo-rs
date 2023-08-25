@@ -1,0 +1,22 @@
+{
+  cat
+}
+
+mutation {
+  addPet(name: "Example") {
+    response
+  }
+}
+
+type Query {
+  cat: String
+}
+
+type Mutation {
+  addPet(name: String!, petType: PetType): Result!
+}
+
+type Result {
+  pageNumber: Int
+  response: String
+}

@@ -1,0 +1,107 @@
+interface Pet {
+  name: String!
+}
+
+type Dog implements Pet {
+  name: String!
+  barkVolume: Int
+}
+
+type Cat implements Pet {
+  name: String!
+  meowVolume: Int
+}
+
+union CatOrDog = Cat | Dog
+
+type Human {
+  pets: [Pet!]
+}
+
+union DogOrHuman = Dog | Human
+
+fragment dogFragment on Dog {
+  ... on Dog {
+    barkVolume
+  }
+}
+
+fragment petNameFragment on Pet {
+  name
+}
+
+fragment interfaceWithinObjectFragment on Dog {
+  ...petNameFragment
+}
+
+fragment catOrDogNameFragment on CatOrDog {
+  ... on Cat {
+    meowVolume
+  }
+}
+
+fragment unionWithObjectFragment on Dog {
+  ...catOrDogNameFragment
+}
+
+fragment petFragment on Pet {
+  name
+  ... on Dog {
+    barkVolume
+  }
+}
+
+fragment catOrDogFragment on CatOrDog {
+  ... on Cat {
+    meowVolume
+  }
+}
+
+fragment unionWithInterface on Pet {
+  ...dogOrHumanFragment
+}
+
+fragment dogOrHumanFragment on DogOrHuman {
+  ... on Dog {
+    barkVolume
+  }
+}
+
+interface Node {
+  id: ID!
+}
+
+interface Resource implements Node {
+  id: ID!
+  url: String
+}
+
+fragment interfaceWithInterface on Node {
+  ...resourceFragment
+}
+
+fragment resourceFragment on Resource {
+  url
+}
+
+type Query {
+  pet: Pet
+  resource: Resource
+}
+
+query UseAllFragments {
+  pet {
+    ...dogFragment
+    ...interfaceWithinObjectFragment
+    ...unionWithObjectFragment
+    ...petFragment
+    ...catOrDogFragment
+    ...unionWithInterface
+  }
+  resource {
+    ...interfaceWithInterface
+    ... @skip(if: true) {
+      urlInInlineFragment: url
+    }
+  }
+}
