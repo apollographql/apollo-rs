@@ -1,6 +1,4 @@
-use std::collections::{hash_map::Entry, HashMap};
-use std::sync::Arc;
-
+use crate::Arc;
 use crate::{
     database::db::Upcast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
@@ -13,6 +11,7 @@ use crate::{
 };
 use apollo_parser::cst;
 use apollo_parser::cst::CstNode;
+use std::collections::{hash_map::Entry, HashMap};
 
 use super::field;
 

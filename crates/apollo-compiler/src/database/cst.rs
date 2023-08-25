@@ -28,9 +28,9 @@ fn cst(db: &dyn CstDatabase, file_id: FileId) -> SyntaxTree {
     // Do not use `db.source_code(file_id)` here
     // as that would also include sources of for pre-computed input,
     // which we don’t want to re-parse.
-    let input = db.input(file_id).text();
+    let input = db.input(file_id);
 
-    let mut parser = ApolloParser::new(&input);
+    let mut parser = ApolloParser::new(input.text());
     if let Some(limit) = db.recursion_limit() {
         parser = parser.recursion_limit(limit)
     };

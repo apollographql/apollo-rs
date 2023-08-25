@@ -1,18 +1,21 @@
 #![doc = include_str!("../README.md")]
 
+mod arc;
 pub mod database;
 pub mod diagnostics;
 #[cfg(test)]
 mod tests;
 pub mod validation;
 
-use std::{path::Path, sync::Arc};
-
 use salsa::ParallelDatabase;
-use validation::ValidationDatabase;
+use std::path::Path;
 
-pub use database::{hir, CstDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source};
-pub use diagnostics::ApolloDiagnostic;
+pub use self::arc::Arc;
+pub use self::database::{
+    hir, CstDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source,
+};
+pub use self::diagnostics::ApolloDiagnostic;
+use self::validation::ValidationDatabase;
 
 pub struct ApolloCompiler {
     pub db: RootDatabase,
@@ -1262,7 +1265,7 @@ type Query {
 
         let handles: Vec<_> = (0..2)
             .map(|_| {
-                let cloned = std::sync::Arc::clone(&type_system); // cheap refcount increment
+                let cloned = Arc::clone(&type_system); // cheap refcount increment
                 std::thread::spawn(move || {
                     let mut compiler = ApolloCompiler::new();
                     let query_id = compiler.add_executable(query, "query.graphql");

@@ -1,8 +1,8 @@
-use std::{fmt, sync::Arc};
-
 use crate::database::hir::{DirectiveLocation, HirNodeLocation};
 use crate::database::{InputDatabase, SourceCache};
+use crate::Arc;
 use crate::FileId;
+use std::fmt;
 use thiserror::Error;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]

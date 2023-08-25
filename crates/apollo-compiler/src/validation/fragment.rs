@@ -1,10 +1,11 @@
+use crate::Arc;
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::RecursionStack,
     FileId, ValidationDatabase,
 };
-use std::{collections::HashSet, sync::Arc};
+use std::collections::HashSet;
 
 /// Given a type definition, find all the types that can be used for fragment spreading.
 ///

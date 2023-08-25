@@ -1,11 +1,10 @@
-use indexmap::IndexMap;
-use std::sync::Arc;
-
+use crate::Arc;
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::ValidationDatabase,
 };
+use indexmap::IndexMap;
 
 /// Check if two fields will output the same type.
 ///

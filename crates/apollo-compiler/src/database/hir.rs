@@ -1,17 +1,14 @@
+use crate::Arc;
+use crate::FileId;
+use crate::{HirDatabase, Source};
+use apollo_parser::{cst, SyntaxNode};
+use indexmap::IndexMap;
+use ordered_float::{self, OrderedFloat};
+use rowan::TextRange;
 use std::{
     collections::{HashMap, HashSet},
     fmt, hash,
-    sync::Arc,
 };
-
-use apollo_parser::{cst, SyntaxNode};
-use ordered_float::{self, OrderedFloat};
-
-use crate::{HirDatabase, Source};
-
-use super::FileId;
-use indexmap::IndexMap;
-use rowan::TextRange;
 
 pub type ByName<T> = Arc<IndexMap<String, Arc<T>>>;
 
@@ -3798,8 +3795,8 @@ impl<Cst: cst::CstNode> From<(FileId, &'_ Cst)> for HirNodeLocation {
 mod tests {
     use crate::hir::OperationDefinition;
     use crate::ApolloCompiler;
+    use crate::Arc;
     use crate::HirDatabase;
-    use std::sync::Arc;
 
     #[test]
     fn huge_floats() {

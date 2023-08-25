@@ -1,11 +1,11 @@
-use std::{collections::HashSet, sync::Arc};
-
+use crate::Arc;
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::ValidationSet,
     ValidationDatabase,
 };
+use std::collections::HashSet;
 
 pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();

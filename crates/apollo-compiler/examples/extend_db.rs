@@ -117,7 +117,7 @@ fn capitalised_definitions(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
 
                     Some(LintDiagnostic::CapitalisedDefinitions(
                         CapitalisedDefinitions {
-                            src: db.source_code(loc.file_id()),
+                            src: Arc::new(db.source_code(loc.file_id()).to_string()),
                             definition: (offset, len).into(),
                         },
                     ))
@@ -161,7 +161,7 @@ impl fmt::Display for LintDiagnostic {
 #[diagnostic(code("graphql linter diagnostic"))]
 pub struct CapitalisedDefinitions {
     #[source_code]
-    pub src: Arc<str>,
+    pub src: Arc<String>,
 
     #[label = "capitalise this definition"]
     pub definition: SourceSpan,

@@ -1,11 +1,11 @@
-use std::{collections::HashSet, sync::Arc};
-
+use crate::Arc;
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::{RecursionStack, ValidationSet},
     ValidationDatabase,
 };
+use std::collections::HashSet;
 
 /// This struct just groups functions that are used to find self-referential directives.
 /// The way to use it is to call `FindRecursiveDirective::check`.

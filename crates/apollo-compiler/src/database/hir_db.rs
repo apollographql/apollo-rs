@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::sync::Arc;
 
+use apollo_parser::cst;
 use apollo_parser::cst::CstChildren;
 use apollo_parser::cst::CstNode;
-use apollo_parser::cst::{self};
 use apollo_parser::SyntaxNode;
 use indexmap::IndexMap;
 
 use crate::database::document;
 use crate::database::FileId;
 use crate::hir::*;
+use crate::Arc;
 use crate::CstDatabase;
 use crate::InputDatabase;
 

@@ -1,10 +1,10 @@
-use std::{collections::HashMap, sync::Arc};
-
+use crate::Arc;
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self, EnumValueDefinition},
     ValidationDatabase,
 };
+use std::collections::HashMap;
 
 pub fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();

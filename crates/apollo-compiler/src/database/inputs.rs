@@ -1,9 +1,9 @@
 use super::sources::{FileId, Source, SourceType};
 use crate::hir::TypeSystem;
+use crate::Arc;
 use ariadne::{Cache as AriadneCache, Source as AriadneSource};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::Arc;
 
 #[derive(Debug, thiserror::Error)]
 #[error("Unknown file ID")]
@@ -73,7 +73,7 @@ pub trait InputDatabase {
 
     /// Get the GraphQL source text for a file.
     #[salsa::invoke(source_code)]
-    fn source_code(&self, file_id: FileId) -> Arc<str>;
+    fn source_code(&self, file_id: FileId) -> Arc<String>;
 
     /// Get the source type (document/schema/executable) for a file.
     #[salsa::invoke(source_type)]
@@ -105,14 +105,14 @@ pub trait InputDatabase {
     fn executable_definition_files(&self) -> Vec<FileId>;
 }
 
-fn source_code(db: &dyn InputDatabase, file_id: FileId) -> Arc<str> {
+fn source_code(db: &dyn InputDatabase, file_id: FileId) -> Arc<String> {
     // For diagnostics, also include sources for a precomputed input.
     if let Some(precomputed) = db.type_system_hir_input() {
         if let Some(source) = precomputed.inputs.get(&file_id) {
-            return source.text();
+            return source.text().clone();
         }
     }
-    db.input(file_id).text()
+    db.input(file_id).text().clone()
 }
 
 fn source_file(db: &dyn InputDatabase, path: PathBuf) -> Option<FileId> {

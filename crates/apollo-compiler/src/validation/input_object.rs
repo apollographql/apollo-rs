@@ -1,11 +1,11 @@
-use std::{collections::HashMap, sync::Arc};
-
+use crate::Arc;
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::RecursionStack,
     ValidationDatabase,
 };
+use std::collections::HashMap;
 
 // Implements [Circular References](https://spec.graphql.org/October2021/#sec-Input-Objects.Circular-References)
 // part of the input object validation spec.

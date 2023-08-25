@@ -1,7 +1,8 @@
+use crate::Arc;
 use std::{
     num::NonZeroI64,
     path::{Path, PathBuf},
-    sync::{atomic, Arc},
+    sync::atomic,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -51,25 +52,25 @@ impl SourceType {
 pub struct Source {
     ty: SourceType,
     filename: PathBuf,
-    text: Arc<str>,
+    text: Arc<String>,
 }
 
 impl Source {
     /// Create a GraphQL schema source file.
-    pub fn schema(filename: PathBuf, text: impl Into<Arc<str>>) -> Self {
+    pub fn schema(filename: PathBuf, text: impl Into<String>) -> Self {
         Self {
             ty: SourceType::Schema,
             filename,
-            text: text.into(),
+            text: Arc::new(text.into()),
         }
     }
 
     /// Create a GraphQL executable source file.
-    pub fn executable(filename: PathBuf, text: impl Into<Arc<str>>) -> Self {
+    pub fn executable(filename: PathBuf, text: impl Into<String>) -> Self {
         Self {
             ty: SourceType::Executable,
             filename,
-            text: text.into(),
+            text: Arc::new(text.into()),
         }
     }
 
@@ -77,19 +78,19 @@ impl Source {
     ///
     /// A Document can contain type definitions *and* executable definitions. You can also use it
     /// when you don't know the actual source type.
-    pub fn document(filename: PathBuf, text: impl Into<Arc<str>>) -> Self {
+    pub fn document(filename: PathBuf, text: impl Into<String>) -> Self {
         Self {
             ty: SourceType::Document,
             filename,
-            text: text.into(),
+            text: Arc::new(text.into()),
         }
     }
     /// Create a GraphQL type system file with built in types.
-    pub(crate) fn built_in(filename: PathBuf, text: impl Into<Arc<str>>) -> Self {
+    pub(crate) fn built_in(filename: PathBuf, text: impl Into<String>) -> Self {
         Self {
             ty: SourceType::BuiltIn,
             filename,
-            text: text.into(),
+            text: Arc::new(text.into()),
         }
     }
 
@@ -101,8 +102,8 @@ impl Source {
         self.ty
     }
 
-    pub fn text(&self) -> Arc<str> {
-        Arc::clone(&self.text)
+    pub fn text(&self) -> &Arc<String> {
+        &self.text
     }
 }
 

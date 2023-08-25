@@ -1,10 +1,7 @@
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
-
+use crate::Arc;
 use crate::{hir::*, FileId, HirDatabase};
 use indexmap::IndexMap;
+use std::collections::{HashMap, HashSet};
 
 pub(crate) fn types_definitions_by_name(
     db: &dyn HirDatabase,

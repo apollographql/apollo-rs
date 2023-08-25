@@ -1,9 +1,9 @@
-use std::{collections::HashMap, sync::Arc};
-
+use crate::Arc;
 use crate::{
     diagnostics::{DiagnosticData, Label},
     hir, ApolloDiagnostic, ValidationDatabase,
 };
+use std::collections::HashMap;
 
 pub fn validate_schema_definition(
     db: &dyn ValidationDatabase,

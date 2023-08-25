@@ -1,10 +1,10 @@
-use std::{collections::HashMap, sync::Arc};
-
+use crate::Arc;
 use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self},
     validation::ValidationDatabase,
 };
+use std::collections::HashMap;
 
 pub fn validate_field(
     db: &dyn ValidationDatabase,
