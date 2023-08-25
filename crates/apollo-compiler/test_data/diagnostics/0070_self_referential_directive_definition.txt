@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             70: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
@@ -40,7 +40,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             70: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
@@ -79,7 +79,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             70: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
@@ -118,7 +118,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             70: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
@@ -157,7 +157,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             70: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {
@@ -196,7 +196,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             70: "0070_self_referential_directive_definition.graphql",
         },
         location: DiagnosticLocation {

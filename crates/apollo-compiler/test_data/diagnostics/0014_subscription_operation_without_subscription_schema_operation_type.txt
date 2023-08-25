@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             14: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
         },
         location: DiagnosticLocation {

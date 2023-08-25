@@ -1,4 +1,5 @@
 use std::{
+    num::NonZeroI64,
     path::{Path, PathBuf},
     sync::{atomic, Arc},
 };
@@ -107,36 +108,43 @@ impl Source {
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct FileId {
-    id: u64,
-}
-
-impl From<u64> for FileId {
-    fn from(val: u64) -> Self {
-        Self { id: val }
-    }
+    id: NonZeroI64,
 }
 
 /// The next file ID to use. This is global so file IDs do not conflict between different compiler
 /// instances.
-static NEXT: atomic::AtomicU64 = atomic::AtomicU64::new(1);
+static NEXT: atomic::AtomicI64 = atomic::AtomicI64::new(1);
 
 impl FileId {
+    /// The ID of the file implicitly added to type systems, for built-in scalars and introspection types
+    pub const BUILT_IN: Self = Self::const_new(-1);
+
     // Returning a different value every time does not sound like good `impl Default`
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
+        let id = NEXT.fetch_add(1, atomic::Ordering::Relaxed);
         Self {
-            id: NEXT.fetch_add(1, atomic::Ordering::Relaxed),
+            id: NonZeroI64::new(id).unwrap(),
         }
     }
 
     // Exposed for tests, but relying on the test order is probably not a good idea…
-    pub(crate) fn as_u64(self) -> u64 {
-        self.id
+    pub(crate) fn to_i64(self) -> i64 {
+        self.id.get()
     }
 
     /// Reset file ID back to 1, used to get consistent results in tests.
-    #[allow(unused)]
+    #[cfg(test)]
     pub(crate) fn reset() {
         NEXT.store(1, atomic::Ordering::SeqCst);
+    }
+
+    const fn const_new(id: i64) -> Self {
+        // TODO: use unwrap() when const-stable https://github.com/rust-lang/rust/issues/67441
+        if let Some(id) = NonZeroI64::new(id) {
+            Self { id }
+        } else {
+            panic!()
+        }
     }
 }

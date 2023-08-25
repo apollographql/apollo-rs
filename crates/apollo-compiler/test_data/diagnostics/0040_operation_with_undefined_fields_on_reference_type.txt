@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
         },
         location: DiagnosticLocation {
@@ -43,7 +43,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
         },
         location: DiagnosticLocation {

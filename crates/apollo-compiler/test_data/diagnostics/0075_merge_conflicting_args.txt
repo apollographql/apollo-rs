@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -56,7 +56,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -111,7 +111,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -166,7 +166,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -221,7 +221,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -276,7 +276,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -331,7 +331,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -386,7 +386,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -441,7 +441,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {
@@ -496,7 +496,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             72: "0075_merge_conflicting_args.graphql",
         },
         location: DiagnosticLocation {

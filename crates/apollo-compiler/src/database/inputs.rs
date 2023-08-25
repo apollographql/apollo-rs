@@ -48,7 +48,7 @@ impl std::fmt::Debug for SourceCache {
             .entries({
                 let mut paths: Vec<_> = self.paths.iter().collect();
                 paths.sort_by(|a, b| a.0.cmp(b.0));
-                paths.into_iter().map(|(id, path)| (id.as_u64(), path))
+                paths.into_iter().map(|(id, path)| (id.to_i64(), path))
             })
             .finish()
     }

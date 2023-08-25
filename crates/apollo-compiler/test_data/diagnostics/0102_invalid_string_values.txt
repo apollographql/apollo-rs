@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -41,7 +41,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -81,7 +81,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -121,7 +121,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -161,7 +161,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -201,7 +201,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -230,7 +230,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -270,7 +270,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -310,7 +310,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -350,7 +350,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -390,7 +390,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -430,7 +430,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -470,7 +470,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -510,7 +510,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -550,7 +550,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -590,7 +590,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -630,7 +630,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -670,7 +670,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -710,7 +710,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -750,7 +750,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -790,7 +790,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -830,7 +830,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -870,7 +870,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -910,7 +910,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -940,7 +940,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -970,7 +970,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1010,7 +1010,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1050,7 +1050,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1090,7 +1090,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1130,7 +1130,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1170,7 +1170,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1209,7 +1209,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1248,7 +1248,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1287,7 +1287,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1326,7 +1326,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1366,7 +1366,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1396,7 +1396,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1410,7 +1410,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 0,
+                        id: -1,
                     },
                     offset: 2290,
                     length: 7,
@@ -1436,7 +1436,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1450,7 +1450,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 0,
+                        id: -1,
                     },
                     offset: 2089,
                     length: 7,
@@ -1476,7 +1476,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1515,7 +1515,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1555,7 +1555,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1595,7 +1595,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1635,7 +1635,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1675,7 +1675,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1715,7 +1715,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1755,7 +1755,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1795,7 +1795,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {
@@ -1834,7 +1834,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             99: "0102_invalid_string_values.graphql",
         },
         location: DiagnosticLocation {

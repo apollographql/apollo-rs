@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             94: "0097_enum_extensions.graphql",
         },
         location: DiagnosticLocation {
@@ -54,7 +54,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             94: "0097_enum_extensions.graphql",
         },
         location: DiagnosticLocation {
@@ -110,7 +110,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             94: "0097_enum_extensions.graphql",
         },
         location: DiagnosticLocation {

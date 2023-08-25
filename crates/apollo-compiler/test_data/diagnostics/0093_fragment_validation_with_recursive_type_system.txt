@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             90: "0093_fragment_validation_with_recursive_type_system.graphql",
         },
         location: DiagnosticLocation {
@@ -30,7 +30,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             90: "0093_fragment_validation_with_recursive_type_system.graphql",
         },
         location: DiagnosticLocation {

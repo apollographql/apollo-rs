@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -31,7 +31,7 @@
             dir_loc: Schema,
             directive_def: DiagnosticLocation {
                 file_id: FileId {
-                    id: 0,
+                    id: -1,
                 },
                 offset: 2146,
                 length: 199,
@@ -40,7 +40,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -89,7 +89,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -138,7 +138,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -187,7 +187,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -236,7 +236,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -266,7 +266,7 @@
             dir_loc: Interface,
             directive_def: DiagnosticLocation {
                 file_id: FileId {
-                    id: 0,
+                    id: -1,
                 },
                 offset: 1957,
                 length: 187,
@@ -275,7 +275,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -305,7 +305,7 @@
             dir_loc: InputObject,
             directive_def: DiagnosticLocation {
                 file_id: FileId {
-                    id: 0,
+                    id: -1,
                 },
                 offset: 2146,
                 length: 199,
@@ -314,7 +314,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -344,7 +344,7 @@
             dir_loc: InputFieldDefinition,
             directive_def: DiagnosticLocation {
                 file_id: FileId {
-                    id: 0,
+                    id: -1,
                 },
                 offset: 2146,
                 length: 199,
@@ -353,7 +353,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -402,7 +402,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -432,7 +432,7 @@
             dir_loc: Object,
             directive_def: DiagnosticLocation {
                 file_id: FileId {
-                    id: 0,
+                    id: -1,
                 },
                 offset: 2347,
                 length: 440,
@@ -441,7 +441,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -471,7 +471,7 @@
             dir_loc: ArgumentDefinition,
             directive_def: DiagnosticLocation {
                 file_id: FileId {
-                    id: 0,
+                    id: -1,
                 },
                 offset: 2789,
                 length: 172,
@@ -480,7 +480,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -510,7 +510,7 @@
             dir_loc: Query,
             directive_def: DiagnosticLocation {
                 file_id: FileId {
-                    id: 0,
+                    id: -1,
                 },
                 offset: 1957,
                 length: 187,
@@ -519,7 +519,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -549,7 +549,7 @@
             dir_loc: VariableDefinition,
             directive_def: DiagnosticLocation {
                 file_id: FileId {
-                    id: 0,
+                    id: -1,
                 },
                 offset: 1957,
                 length: 187,
@@ -558,7 +558,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -588,7 +588,7 @@
             dir_loc: Field,
             directive_def: DiagnosticLocation {
                 file_id: FileId {
-                    id: 0,
+                    id: -1,
                 },
                 offset: 2347,
                 length: 440,
@@ -597,7 +597,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -646,7 +646,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -695,7 +695,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -744,7 +744,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -793,7 +793,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -823,7 +823,7 @@
             dir_loc: Mutation,
             directive_def: DiagnosticLocation {
                 file_id: FileId {
-                    id: 0,
+                    id: -1,
                 },
                 offset: 1957,
                 length: 187,

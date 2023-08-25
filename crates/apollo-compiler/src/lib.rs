@@ -133,7 +133,7 @@ impl ApolloCompiler {
     fn add_implicit_types(&mut self) {
         let f_name = "built_in_types.graphql";
         if self.db.source_file(f_name.into()).is_none() {
-            let file_id = 0.into();
+            let file_id = FileId::BUILT_IN;
             let mut sources = self.db.source_files();
             sources.push(file_id);
             let implicit_tys = include_str!("built_in_types.graphql");

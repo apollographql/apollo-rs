@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             54: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -25,7 +25,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 0,
+                        id: -1,
                     },
                     offset: 2062,
                     length: 35,
@@ -40,7 +40,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             54: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -79,7 +79,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             54: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -103,7 +103,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 0,
+                        id: -1,
                     },
                     offset: 2262,
                     length: 36,
@@ -118,7 +118,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             54: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -157,7 +157,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             54: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -196,7 +196,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             54: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -235,7 +235,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             54: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -290,7 +290,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             54: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -329,7 +329,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             54: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {
@@ -368,7 +368,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             54: "0054_argument_not_provided.graphql",
         },
         location: DiagnosticLocation {

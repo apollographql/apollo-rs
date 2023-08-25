@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             79: "0082_introspection_types_in_mutation.graphql",
         },
         location: DiagnosticLocation {

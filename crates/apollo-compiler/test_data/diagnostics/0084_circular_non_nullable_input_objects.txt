@@ -1,7 +1,7 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             81: "0084_circular_non_nullable_input_objects.graphql",
         },
         location: DiagnosticLocation {
@@ -40,7 +40,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             81: "0084_circular_non_nullable_input_objects.graphql",
         },
         location: DiagnosticLocation {
@@ -79,7 +79,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             81: "0084_circular_non_nullable_input_objects.graphql",
         },
         location: DiagnosticLocation {
@@ -118,7 +118,7 @@
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
+            -1: "built_in_types.graphql",
             81: "0084_circular_non_nullable_input_objects.graphql",
         },
         location: DiagnosticLocation {
