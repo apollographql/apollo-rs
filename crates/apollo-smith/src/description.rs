@@ -24,8 +24,8 @@ impl From<Description> for String {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::Description> for Description {
-    fn from(desc: apollo_parser::ast::Description) -> Self {
+impl From<apollo_parser::cst::Description> for Description {
+    fn from(desc: apollo_parser::cst::Description) -> Self {
         Description(
             desc.string_value()
                 .map(|s| s.into())
@@ -56,8 +56,8 @@ pub enum StringValue {
 }
 
 #[cfg(feature = "parser-impl")]
-impl From<apollo_parser::ast::StringValue> for StringValue {
-    fn from(val: apollo_parser::ast::StringValue) -> Self {
+impl From<apollo_parser::cst::StringValue> for StringValue {
+    fn from(val: apollo_parser::cst::StringValue) -> Self {
         Self::from(Into::<String>::into(val))
     }
 }
@@ -131,7 +131,7 @@ mod tests {
     #[test]
     fn convert_description_from_parser() {
         use crate::description::Description;
-        use apollo_parser::ast::Definition;
+        use apollo_parser::cst::Definition;
         use apollo_parser::Parser;
 
         let schema = r#"
@@ -139,8 +139,8 @@ mod tests {
 schema {}
         "#;
         let parser = Parser::new(schema);
-        let ast = parser.parse();
-        let document = ast.document();
+        let cst = parser.parse();
+        let document = cst.document();
         if let Definition::SchemaDefinition(def) = document.definitions().next().unwrap() {
             let parser_description = def.description().unwrap();
             let smith_description = Description::from(parser_description);

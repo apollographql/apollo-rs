@@ -47,10 +47,10 @@ impl From<FieldDef> for apollo_encoder::FieldDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::FieldDefinition> for FieldDef {
+impl TryFrom<apollo_parser::cst::FieldDefinition> for FieldDef {
     type Error = crate::FromError;
 
-    fn try_from(field_def: apollo_parser::ast::FieldDefinition) -> Result<Self, Self::Error> {
+    fn try_from(field_def: apollo_parser::cst::FieldDefinition) -> Result<Self, Self::Error> {
         Ok(Self {
             description: field_def.description().map(Description::from),
             name: field_def
@@ -105,10 +105,10 @@ impl From<Field> for apollo_encoder::Field {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::Field> for Field {
+impl TryFrom<apollo_parser::cst::Field> for Field {
     type Error = crate::FromError;
 
-    fn try_from(field: apollo_parser::ast::Field) -> Result<Self, Self::Error> {
+    fn try_from(field: apollo_parser::cst::Field) -> Result<Self, Self::Error> {
         Ok(Self {
             alias: field.alias().map(|alias| alias.name().unwrap().into()),
             name: field.name().unwrap().into(),

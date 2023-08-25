@@ -1,4 +1,4 @@
-use apollo_parser::{ast, Parser};
+use apollo_parser::{cst, Parser};
 
 use anyhow::Result;
 
@@ -21,16 +21,16 @@ fn merge_queries() -> Result<apollo_encoder::Document> {
     #";
 
     let parser = Parser::new(query);
-    let ast = parser.parse();
-    assert_eq!(ast.errors().len(), 0);
+    let cst = parser.parse();
+    assert_eq!(cst.errors().len(), 0);
 
-    let doc = ast.document();
+    let doc = cst.document();
 
     let mut new_query = apollo_encoder::Document::new();
     let mut sel_set = Vec::new();
     for def in doc.definitions() {
         // We want to combine all of our operations into a single one.
-        if let ast::Definition::OperationDefinition(op) = def {
+        if let cst::Definition::OperationDefinition(op) = def {
             let selections: Vec<apollo_encoder::Selection> = op
                 .selection_set()
                 .unwrap()
@@ -69,17 +69,17 @@ fn omitted_fields() -> Result<apollo_encoder::Document> {
     #";
 
     let parser = Parser::new(query);
-    let ast = parser.parse();
-    assert_eq!(ast.errors().len(), 0);
+    let cst = parser.parse();
+    assert_eq!(cst.errors().len(), 0);
 
-    let doc = ast.document();
+    let doc = cst.document();
 
     let mut new_query = apollo_encoder::Document::new();
     for def in doc.definitions() {
-        if let ast::Definition::OperationDefinition(op) = def {
+        if let cst::Definition::OperationDefinition(op) = def {
             let mut selection_set = apollo_encoder::SelectionSet::new();
             for selection in op.selection_set().unwrap().selections() {
-                if let ast::Selection::Field(field) = selection {
+                if let cst::Selection::Field(field) = selection {
                     if let Some(dir) = field.directives() {
                         let omit = dir
                             .directives()
@@ -101,7 +101,7 @@ fn omitted_fields() -> Result<apollo_encoder::Document> {
                 selection_set,
             );
             new_query.operation(op_def)
-        } else if let ast::Definition::FragmentDefinition(fragment) = def {
+        } else if let cst::Definition::FragmentDefinition(fragment) = def {
             new_query.fragment(fragment.try_into()?);
         }
     }

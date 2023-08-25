@@ -5,13 +5,13 @@ use crate::database::inputs::InputDatabase;
 use crate::diagnostics::{ApolloDiagnostic, DiagnosticData, Label};
 use crate::FileId;
 
-#[salsa::query_group(AstStorage)]
-pub trait AstDatabase: InputDatabase {
+#[salsa::query_group(CstStorage)]
+pub trait CstDatabase: InputDatabase {
     /// Get an AST for a particular file. Returns a `rowan` SyntaxTree.  The
     /// SyntaxTree can be safely shared between threads as it's `Send` and
     /// `Sync`.
-    #[salsa::invoke(ast)]
-    fn ast(&self, file_id: FileId) -> SyntaxTree;
+    #[salsa::invoke(cst)]
+    fn cst(&self, file_id: FileId) -> SyntaxTree;
 
     /// Get a file's GraphQL Document. Returns a `rowan` Green Node. This is the
     /// top level document node that can be used when going between an
@@ -24,7 +24,7 @@ pub trait AstDatabase: InputDatabase {
     fn syntax_errors(&self) -> Vec<ApolloDiagnostic>;
 }
 
-fn ast(db: &dyn AstDatabase, file_id: FileId) -> SyntaxTree {
+fn cst(db: &dyn CstDatabase, file_id: FileId) -> SyntaxTree {
     // Do not use `db.source_code(file_id)` here
     // as that would also include sources of for pre-computed input,
     // which we don’t want to re-parse.
@@ -41,15 +41,15 @@ fn ast(db: &dyn AstDatabase, file_id: FileId) -> SyntaxTree {
     parser.parse()
 }
 
-fn document(db: &dyn AstDatabase, file_id: FileId) -> GreenNode {
-    db.ast(file_id).green()
+fn document(db: &dyn CstDatabase, file_id: FileId) -> GreenNode {
+    db.cst(file_id).green()
 }
 
-fn syntax_errors(db: &dyn AstDatabase) -> Vec<ApolloDiagnostic> {
+fn syntax_errors(db: &dyn CstDatabase) -> Vec<ApolloDiagnostic> {
     db.source_files()
         .into_iter()
         .flat_map(|file_id| {
-            db.ast(file_id)
+            db.cst(file_id)
                 .errors()
                 .map(|err| {
                     if err.is_limit() {
@@ -102,7 +102,7 @@ mod tests {
         let mut compiler = ApolloCompiler::new().recursion_limit(1);
         let doc_id = compiler.add_document(schema, "schema.graphql");
 
-        let ast = compiler.db.ast(doc_id);
+        let ast = compiler.db.cst(doc_id);
 
         assert_eq!(ast.recursion_limit().high, 2);
         assert_eq!(ast.errors().len(), 1);
@@ -125,7 +125,7 @@ mod tests {
         let mut compiler = ApolloCompiler::new().recursion_limit(7);
         let doc_id = compiler.add_document(schema, "schema.graphql");
 
-        let ast = compiler.db.ast(doc_id);
+        let ast = compiler.db.cst(doc_id);
 
         assert_eq!(ast.recursion_limit().high, 4);
         assert_eq!(ast.errors().len(), 0);
@@ -142,7 +142,7 @@ mod tests {
         let mut compiler = ApolloCompiler::new().token_limit(18);
         let doc_id = compiler.add_document(schema, "schema.graphql");
 
-        let ast = compiler.db.ast(doc_id);
+        let ast = compiler.db.cst(doc_id);
 
         assert_eq!(ast.errors().len(), 1);
         assert_eq!(
@@ -171,7 +171,7 @@ mod tests {
         let mut compiler = ApolloCompiler::new().token_limit(22).recursion_limit(10);
         let doc_id = compiler.add_document(schema, "schema.graphql");
 
-        let ast = compiler.db.ast(doc_id);
+        let ast = compiler.db.cst(doc_id);
 
         assert_eq!(ast.errors().len(), 1);
         assert_eq!(
@@ -185,7 +185,7 @@ mod tests {
         let mut compiler = ApolloCompiler::new().recursion_limit(3).token_limit(200);
         let doc_id = compiler.add_document(schema, "schema.graphql");
 
-        let ast = compiler.db.ast(doc_id);
+        let ast = compiler.db.cst(doc_id);
 
         assert_eq!(ast.errors().len(), 1);
         assert_eq!(

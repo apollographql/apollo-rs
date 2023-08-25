@@ -51,11 +51,11 @@ impl From<EnumTypeDef> for EnumDefinition {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
+impl TryFrom<apollo_parser::cst::EnumTypeDefinition> for EnumTypeDef {
     type Error = crate::FromError;
 
     fn try_from(
-        enum_def: apollo_parser::ast::EnumTypeDefinition,
+        enum_def: apollo_parser::cst::EnumTypeDefinition,
     ) -> std::result::Result<Self, Self::Error> {
         Ok(Self {
             description: enum_def
@@ -80,11 +80,11 @@ impl TryFrom<apollo_parser::ast::EnumTypeDefinition> for EnumTypeDef {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::EnumTypeExtension> for EnumTypeDef {
+impl TryFrom<apollo_parser::cst::EnumTypeExtension> for EnumTypeDef {
     type Error = crate::FromError;
 
     fn try_from(
-        enum_def: apollo_parser::ast::EnumTypeExtension,
+        enum_def: apollo_parser::cst::EnumTypeExtension,
     ) -> std::result::Result<Self, Self::Error> {
         Ok(Self {
             description: None,
@@ -134,11 +134,11 @@ impl From<EnumValueDefinition> for EnumValue {
 }
 
 #[cfg(feature = "parser-impl")]
-impl TryFrom<apollo_parser::ast::EnumValueDefinition> for EnumValueDefinition {
+impl TryFrom<apollo_parser::cst::EnumValueDefinition> for EnumValueDefinition {
     type Error = crate::FromError;
 
     fn try_from(
-        enum_value_def: apollo_parser::ast::EnumValueDefinition,
+        enum_value_def: apollo_parser::cst::EnumValueDefinition,
     ) -> std::result::Result<Self, Self::Error> {
         Ok(Self {
             description: enum_value_def.description().map(Description::from),

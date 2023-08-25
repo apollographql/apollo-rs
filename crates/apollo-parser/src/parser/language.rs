@@ -2,7 +2,7 @@ use crate::SyntaxKind;
 
 /// A node in the immutable tree. It has other nodes and tokens as children.
 pub type SyntaxNode = rowan::SyntaxNode<GraphQLLanguage>;
-/// A leaf node in the AST.
+/// A leaf node in the syntax tree.
 pub type SyntaxToken = rowan::SyntaxToken<GraphQLLanguage>;
 /// A `SyntaxNode` or a `SyntaxToken`.
 pub type SyntaxElement = rowan::SyntaxElement<GraphQLLanguage>;

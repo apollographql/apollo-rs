@@ -4,7 +4,7 @@ mod lexer;
 #[cfg(test)]
 mod tests;
 
-pub mod ast;
+pub mod cst;
 mod error;
 mod limit;
 mod parser;

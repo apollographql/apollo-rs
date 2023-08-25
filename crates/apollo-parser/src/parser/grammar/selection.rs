@@ -86,7 +86,7 @@ pub(crate) fn selection(p: &mut Parser) {
 
 #[cfg(test)]
 mod test {
-    use crate::{ast, Parser, TokenText};
+    use crate::{cst, Parser, TokenText};
 
     #[test]
     fn fragment_spread_in_selection() {
@@ -102,23 +102,23 @@ mod test {
 }
 ";
         let parser = Parser::new(input);
-        let ast = parser.parse();
-        assert_eq!(0, ast.errors().len());
+        let cst = parser.parse();
+        assert_eq!(0, cst.errors().len());
 
-        let doc = ast.document();
+        let doc = cst.document();
 
         for def in doc.definitions() {
-            if let ast::Definition::OperationDefinition(op_def) = def {
+            if let cst::Definition::OperationDefinition(op_def) = def {
                 if let Some(selection_set) = op_def.selection_set() {
                     for selection in selection_set.selections() {
                         match selection {
-                            ast::Selection::Field(field) => {
+                            cst::Selection::Field(field) => {
                                 assert_eq!(
                                     "animal".to_string(),
                                     field.name().unwrap().text().to_string()
                                 );
                             }
-                            ast::Selection::FragmentSpread(f_spread) => {
+                            cst::Selection::FragmentSpread(f_spread) => {
                                 assert_eq!(
                                     "snackSelection".to_string(),
                                     f_spread
@@ -130,7 +130,7 @@ mod test {
                                         .to_string()
                                 )
                             }
-                            ast::Selection::InlineFragment(inline_fragment) => {
+                            cst::Selection::InlineFragment(inline_fragment) => {
                                 assert_eq!(
                                     "Pet".to_string(),
                                     inline_fragment
@@ -163,13 +163,13 @@ query GraphQuery($graph_id: ID!, $variant: String) {
 }
 ";
         let parser = Parser::new(input);
-        let ast = parser.parse();
-        assert_eq!(0, ast.errors().len());
+        let cst = parser.parse();
+        assert_eq!(0, cst.errors().len());
 
-        let doc = ast.document();
+        let doc = cst.document();
 
         for def in doc.definitions() {
-            if let ast::Definition::OperationDefinition(op_def) = def {
+            if let cst::Definition::OperationDefinition(op_def) = def {
                 assert_eq!(op_def.name().unwrap().text(), "GraphQuery");
 
                 let variable_defs = op_def.variable_definitions();
@@ -189,17 +189,17 @@ query GraphQuery($graph_id: ID!, $variant: String) {
 
         fn get_variables_from_selection(
             used_vars: &mut Vec<TokenText>,
-            selection_set: ast::SelectionSet,
+            selection_set: cst::SelectionSet,
         ) -> &Vec<TokenText> {
             for selection in selection_set.selections() {
                 match selection {
-                    ast::Selection::Field(field) => {
+                    cst::Selection::Field(field) => {
                         let arguments = field.arguments();
                         let mut vars: Vec<TokenText> = arguments
                             .iter()
                             .flat_map(|a| a.arguments())
                             .filter_map(|v| {
-                                if let ast::Value::Variable(var) = v.value()? {
+                                if let cst::Value::Variable(var) = v.value()? {
                                     return Some(var.name()?.text());
                                 }
                                 None
@@ -243,24 +243,24 @@ query SomeQuery(
   }
 }"#;
         let parser = Parser::new(query);
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.errors().len(), 0);
+        assert_eq!(cst.errors().len(), 0);
 
-        let doc = ast.document();
+        let doc = cst.document();
         for def in doc.definitions() {
-            if let ast::Definition::OperationDefinition(op_def) = def {
+            if let cst::Definition::OperationDefinition(op_def) = def {
                 let selection_set = op_def.selection_set().unwrap();
                 for selection in selection_set.selections() {
-                    if let ast::Selection::Field(field) = selection {
+                    if let cst::Selection::Field(field) = selection {
                         assert_eq!("item1", field.name().unwrap().text().as_ref());
                         let selection_set = field.selection_set().unwrap();
                         for selection in selection_set.selections() {
                             match selection {
-                                ast::Selection::Field(field) => {
+                                cst::Selection::Field(field) => {
                                     assert_eq!("id", field.name().unwrap().text().as_ref());
                                 }
-                                ast::Selection::FragmentSpread(fragment_spread) => {
+                                cst::Selection::FragmentSpread(fragment_spread) => {
                                     assert_eq!(
                                         "Fragment1",
                                         fragment_spread
@@ -272,7 +272,7 @@ query SomeQuery(
                                             .as_ref()
                                     );
                                 }
-                                ast::Selection::InlineFragment(inline_fragment) => {
+                                cst::Selection::InlineFragment(inline_fragment) => {
                                     assert_eq!(
                                         "Fragment2",
                                         inline_fragment
@@ -301,10 +301,10 @@ query SomeQuery(
         "#;
         let parser = Parser::new(schema);
 
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().count(), 1);
+        assert_eq!(cst.errors().len(), 1);
+        assert_eq!(cst.document().definitions().count(), 1);
     }
 
     #[test]
@@ -320,11 +320,11 @@ query SomeQuery(
         "#;
         let parser = Parser::new(schema).recursion_limit(1);
 
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 2);
-        assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().count(), 1);
+        assert_eq!(cst.recursion_limit().high, 2);
+        assert_eq!(cst.errors().len(), 1);
+        assert_eq!(cst.document().definitions().count(), 1);
     }
 
     #[test]
@@ -340,11 +340,11 @@ query SomeQuery(
         "#;
         let parser = Parser::new(schema).recursion_limit(7);
 
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 3);
-        assert_eq!(ast.errors().len(), 0);
-        assert_eq!(ast.document().definitions().count(), 1);
+        assert_eq!(cst.recursion_limit().high, 3);
+        assert_eq!(cst.errors().len(), 0);
+        assert_eq!(cst.document().definitions().count(), 1);
     }
 
     #[test]
@@ -363,11 +363,11 @@ query SomeQuery(
         "#;
         let parser = Parser::new(schema).recursion_limit(2);
 
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 3);
-        assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().count(), 1);
+        assert_eq!(cst.recursion_limit().high, 3);
+        assert_eq!(cst.errors().len(), 1);
+        assert_eq!(cst.document().definitions().count(), 1);
     }
 
     #[test]
@@ -385,11 +385,11 @@ query SomeQuery(
         "#;
         let parser = Parser::new(schema).recursion_limit(2);
 
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 3);
-        assert_eq!(ast.errors().len(), 1);
-        assert_eq!(dbg!(ast.document()).definitions().count(), 1);
+        assert_eq!(cst.recursion_limit().high, 3);
+        assert_eq!(cst.errors().len(), 1);
+        assert_eq!(dbg!(cst.document()).definitions().count(), 1);
     }
 
     #[test]
@@ -411,11 +411,11 @@ query SomeQuery(
         "#;
         let parser = Parser::new(schema).recursion_limit(1);
 
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 2);
-        assert_eq!(ast.errors().len(), 1);
-        assert_eq!(ast.document().definitions().count(), 1);
+        assert_eq!(cst.recursion_limit().high, 2);
+        assert_eq!(cst.errors().len(), 1);
+        assert_eq!(cst.document().definitions().count(), 1);
     }
 
     #[test]
@@ -435,10 +435,10 @@ query SomeQuery(
         "#;
         let parser = Parser::new(schema);
 
-        let ast = parser.parse();
+        let cst = parser.parse();
 
-        assert_eq!(ast.recursion_limit().high, 6);
-        assert_eq!(ast.errors().len(), 0);
-        assert_eq!(ast.document().definitions().count(), 1);
+        assert_eq!(cst.recursion_limit().high, 6);
+        assert_eq!(cst.errors().len(), 0);
+        assert_eq!(cst.document().definitions().count(), 1);
     }
 }

@@ -8,7 +8,7 @@ use clap::Parser;
 use ungrammar::{Grammar, Rule};
 
 use crate::{
-    ast_src::{AstEnumSrc, AstNodeSrc, AstSrc, Cardinality, Field, KINDS_SRC},
+    cst_src::{Cardinality, CstEnumSrc, CstNodeSrc, CstSrc, Field, KINDS_SRC},
     ensure_file_contents, root_path,
     utils::{pluralize, project_root, to_lower_snake_case},
 };
@@ -23,27 +23,27 @@ impl Codegen {
     pub(crate) fn run(&self, _verbose: bool) -> Result<()> {
         let grammar_src = include_str!("../../../graphql.ungram");
         let grammar: Grammar = grammar_src.parse().unwrap();
-        let ast = lower(&grammar);
+        let cst = lower(&grammar);
 
         let syntax_kind_path =
             root_path().join("crates/apollo-parser/src/parser/generated/syntax_kind.rs");
         let syntax_kinds = generate_kinds(KINDS_SRC);
         ensure_file_contents(syntax_kind_path.as_path(), &syntax_kinds?)?;
 
-        let ast_nodes_file = project_root().join("crates/apollo-parser/src/ast/generated/nodes.rs");
-        let contents = generate_nodes(KINDS_SRC, &ast)?;
-        ensure_file_contents(ast_nodes_file.as_path(), &contents)?;
+        let cst_nodes_file = project_root().join("crates/apollo-parser/src/cst/generated/nodes.rs");
+        let contents = generate_nodes(KINDS_SRC, &cst)?;
+        ensure_file_contents(cst_nodes_file.as_path(), &contents)?;
         Ok(())
     }
 }
 
-fn lower(grammar: &Grammar) -> AstSrc {
+fn lower(grammar: &Grammar) -> CstSrc {
     let tokens = "Whitespace Comment String ByteString IntNumber FloatNumber"
         .split_ascii_whitespace()
         .map(|it| it.to_string())
         .collect::<Vec<_>>();
 
-    let mut res = AstSrc {
+    let mut res = CstSrc {
         tokens,
         ..Default::default()
     };
@@ -55,7 +55,7 @@ fn lower(grammar: &Grammar) -> AstSrc {
         let rule = &grammar[node].rule;
         match lower_enum(grammar, rule) {
             Some(variants) => {
-                let enum_src = AstEnumSrc {
+                let enum_src = CstEnumSrc {
                     doc: Vec::new(),
                     name,
                     traits: Vec::new(),
@@ -66,7 +66,7 @@ fn lower(grammar: &Grammar) -> AstSrc {
             None => {
                 let mut fields = Vec::new();
                 lower_rule(&mut fields, grammar, None, rule);
-                res.nodes.push(AstNodeSrc {
+                res.nodes.push(CstNodeSrc {
                     doc: Vec::new(),
                     name,
                     traits: Vec::new(),
@@ -211,8 +211,8 @@ fn lower_comma_list(
     true
 }
 
-fn deduplicate_fields(ast: &mut AstSrc) {
-    for node in &mut ast.nodes {
+fn deduplicate_fields(cst: &mut CstSrc) {
+    for node in &mut cst.nodes {
         let mut i = 0;
         'outer: while i < node.fields.len() {
             for j in 0..i {
@@ -228,9 +228,9 @@ fn deduplicate_fields(ast: &mut AstSrc) {
     }
 }
 
-fn extract_enums(ast: &mut AstSrc) {
-    for node in &mut ast.nodes {
-        for enm in &ast.enums {
+fn extract_enums(cst: &mut CstSrc) {
+    for node in &mut cst.nodes {
+        for enm in &cst.enums {
             let mut to_remove = Vec::new();
             for (i, field) in node.fields.iter().enumerate() {
                 let ty = field.ty().to_string();
@@ -252,18 +252,18 @@ fn extract_enums(ast: &mut AstSrc) {
     }
 }
 
-fn extract_struct_traits(ast: &mut AstSrc) {
+fn extract_struct_traits(cst: &mut CstSrc) {
     // TODO @lrlna: add common accessor traits here.
     let traits: &[(&str, &[&str])] = &[];
 
-    for node in &mut ast.nodes {
+    for node in &mut cst.nodes {
         for (name, methods) in traits {
             extract_struct_trait(node, name, methods);
         }
     }
 }
 
-fn extract_struct_trait(node: &mut AstNodeSrc, trait_name: &str, methods: &[&str]) {
+fn extract_struct_trait(node: &mut CstNodeSrc, trait_name: &str, methods: &[&str]) {
     let mut to_remove = Vec::new();
     for (i, field) in node.fields.iter().enumerate() {
         let method_name = field.method_name().to_string();
@@ -277,13 +277,13 @@ fn extract_struct_trait(node: &mut AstNodeSrc, trait_name: &str, methods: &[&str
     }
 }
 
-fn extract_enum_traits(ast: &mut AstSrc) {
-    let enums = ast.enums.clone();
-    for enm in &mut ast.enums {
+fn extract_enum_traits(cst: &mut CstSrc) {
+    let enums = cst.enums.clone();
+    for enm in &mut cst.enums {
         if enm.name == "Stmt" {
             continue;
         }
-        let nodes = &ast.nodes;
+        let nodes = &cst.nodes;
 
         let mut variant_traits = enm.variants.iter().map(|var| {
             nodes
@@ -325,7 +325,7 @@ fn extract_enum_traits(ast: &mut AstSrc) {
     }
 }
 
-impl AstNodeSrc {
+impl CstNodeSrc {
     fn remove_field(&mut self, to_remove: Vec<usize>) {
         to_remove.into_iter().rev().for_each(|idx| {
             self.fields.remove(idx);

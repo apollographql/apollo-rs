@@ -17,6 +17,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.7.0] (unreleased) - 2023-mm-dd
+
+## BREAKING
+
+- **rename `ast` to `cst` - [SimonSapin], [pull/???]**
+  The Rowan-based typed syntax tree emitted by the parser used to be called
+  Abstract Syntax Tree (AST) but is in fact not very abstract: it preserves
+  text input losslessly, and all tree leaves are string-based tokens.
+  This renames it to Concrete Syntax Tree (CST) and renames various APIs accordingly.
+  This leaves the AST name available for a new tree representation (coming soon).
+
+[pull/???]: https://github.com/apollographql/apollo-rs/pull/???
+
 # [0.6.1](https://crates.io/crates/apollo-parser/0.6.1) (unreleased)
 ## Fixes
 - **fix lexing escape-sequence-like text in block strings - [goto-bus-stop], [pull/638], [issue/632]**

@@ -1,15 +1,15 @@
 use rowan::{GreenToken, SyntaxKind};
 
-use crate::{ast, ast::AstNode, SyntaxNode, TokenText};
+use crate::{cst, cst::CstNode, SyntaxNode, TokenText};
 use std::num::{ParseFloatError, ParseIntError};
 
-impl ast::Name {
+impl cst::Name {
     pub fn text(&self) -> TokenText {
         text_of_first_token(self.syntax())
     }
 }
 
-impl ast::Variable {
+impl cst::Variable {
     pub fn text(&self) -> TokenText {
         self.name()
             .expect("Cannot get variable's NAME token")
@@ -17,7 +17,7 @@ impl ast::Variable {
     }
 }
 
-impl ast::EnumValue {
+impl cst::EnumValue {
     pub fn text(&self) -> TokenText {
         self.name()
             .expect("Cannot get enum value's NAME token")
@@ -25,7 +25,7 @@ impl ast::EnumValue {
     }
 }
 
-impl ast::DirectiveLocation {
+impl cst::DirectiveLocation {
     pub fn text(self) -> Option<TokenText> {
         let txt = if self.query_token().is_some() {
             Some("QUERY")
@@ -78,10 +78,10 @@ impl ast::DirectiveLocation {
     }
 }
 
-impl ast::Definition {
+impl cst::Definition {
     /// Return the name of this definition, if any. Schema definitions are unnamed and always
     /// return `None`.
-    pub fn name(&self) -> Option<ast::Name> {
+    pub fn name(&self) -> Option<cst::Name> {
         match self {
             Self::OperationDefinition(it) => it.name(),
             Self::FragmentDefinition(it) => it.fragment_name()?.name(),
@@ -105,23 +105,23 @@ impl ast::Definition {
 
     pub fn kind(&self) -> &'static str {
         match self {
-            ast::Definition::OperationDefinition(_) => "OperationDefinition",
-            ast::Definition::FragmentDefinition(_) => "FragmentDefinition",
-            ast::Definition::DirectiveDefinition(_) => "DirectiveDefinition",
-            ast::Definition::ScalarTypeDefinition(_) => "ScalarTypeDefinition",
-            ast::Definition::ObjectTypeDefinition(_) => "ObjectTypeDefinition",
-            ast::Definition::InterfaceTypeDefinition(_) => "InterfaceTypeDefinition",
-            ast::Definition::UnionTypeDefinition(_) => "UnionTypeDefinition",
-            ast::Definition::EnumTypeDefinition(_) => "EnumTypeDefinition",
-            ast::Definition::InputObjectTypeDefinition(_) => "InputObjectTypeDefinition",
-            ast::Definition::SchemaDefinition(_) => "SchemaDefinition",
-            ast::Definition::SchemaExtension(_) => "SchemaExtension",
-            ast::Definition::ScalarTypeExtension(_) => "ScalarTypeExtension",
-            ast::Definition::ObjectTypeExtension(_) => "ObjectTypeExtension",
-            ast::Definition::InterfaceTypeExtension(_) => "InterfaceTypeExtension",
-            ast::Definition::UnionTypeExtension(_) => "UnionTypeExtension",
-            ast::Definition::EnumTypeExtension(_) => "EnumTypeExtension",
-            ast::Definition::InputObjectTypeExtension(_) => "InputObjectTypeExtension",
+            cst::Definition::OperationDefinition(_) => "OperationDefinition",
+            cst::Definition::FragmentDefinition(_) => "FragmentDefinition",
+            cst::Definition::DirectiveDefinition(_) => "DirectiveDefinition",
+            cst::Definition::ScalarTypeDefinition(_) => "ScalarTypeDefinition",
+            cst::Definition::ObjectTypeDefinition(_) => "ObjectTypeDefinition",
+            cst::Definition::InterfaceTypeDefinition(_) => "InterfaceTypeDefinition",
+            cst::Definition::UnionTypeDefinition(_) => "UnionTypeDefinition",
+            cst::Definition::EnumTypeDefinition(_) => "EnumTypeDefinition",
+            cst::Definition::InputObjectTypeDefinition(_) => "InputObjectTypeDefinition",
+            cst::Definition::SchemaDefinition(_) => "SchemaDefinition",
+            cst::Definition::SchemaExtension(_) => "SchemaExtension",
+            cst::Definition::ScalarTypeExtension(_) => "ScalarTypeExtension",
+            cst::Definition::ObjectTypeExtension(_) => "ObjectTypeExtension",
+            cst::Definition::InterfaceTypeExtension(_) => "InterfaceTypeExtension",
+            cst::Definition::UnionTypeExtension(_) => "UnionTypeExtension",
+            cst::Definition::EnumTypeExtension(_) => "EnumTypeExtension",
+            cst::Definition::InputObjectTypeExtension(_) => "InputObjectTypeExtension",
         }
     }
 
@@ -146,8 +146,8 @@ impl ast::Definition {
     }
 }
 
-impl From<ast::StringValue> for String {
-    fn from(val: ast::StringValue) -> Self {
+impl From<cst::StringValue> for String {
+    fn from(val: cst::StringValue) -> Self {
         Self::from(&val)
     }
 }
@@ -193,8 +193,8 @@ fn unescape_string(input: &str) -> String {
     output
 }
 
-impl From<&'_ ast::StringValue> for String {
-    fn from(val: &'_ ast::StringValue) -> Self {
+impl From<&'_ cst::StringValue> for String {
+    fn from(val: &'_ cst::StringValue) -> Self {
         let text = text_of_first_token(val.syntax());
         // Would panic if the contents are invalid, but the lexer already guarantees that the
         // string is valid.
@@ -202,69 +202,69 @@ impl From<&'_ ast::StringValue> for String {
     }
 }
 
-impl TryFrom<ast::IntValue> for i32 {
+impl TryFrom<cst::IntValue> for i32 {
     type Error = ParseIntError;
 
-    fn try_from(val: ast::IntValue) -> Result<Self, Self::Error> {
+    fn try_from(val: cst::IntValue) -> Result<Self, Self::Error> {
         Self::try_from(&val)
     }
 }
 
-impl TryFrom<&'_ ast::IntValue> for i32 {
+impl TryFrom<&'_ cst::IntValue> for i32 {
     type Error = ParseIntError;
 
-    fn try_from(val: &'_ ast::IntValue) -> Result<Self, Self::Error> {
+    fn try_from(val: &'_ cst::IntValue) -> Result<Self, Self::Error> {
         let text = text_of_first_token(val.syntax());
         text.parse()
     }
 }
 
-impl TryFrom<ast::IntValue> for f64 {
+impl TryFrom<cst::IntValue> for f64 {
     type Error = ParseFloatError;
 
-    fn try_from(val: ast::IntValue) -> Result<Self, Self::Error> {
+    fn try_from(val: cst::IntValue) -> Result<Self, Self::Error> {
         Self::try_from(&val)
     }
 }
 
-impl TryFrom<&'_ ast::IntValue> for f64 {
+impl TryFrom<&'_ cst::IntValue> for f64 {
     type Error = ParseFloatError;
 
-    fn try_from(val: &'_ ast::IntValue) -> Result<Self, Self::Error> {
+    fn try_from(val: &'_ cst::IntValue) -> Result<Self, Self::Error> {
         let text = text_of_first_token(val.syntax());
         text.parse()
     }
 }
 
-impl TryFrom<ast::FloatValue> for f64 {
+impl TryFrom<cst::FloatValue> for f64 {
     type Error = ParseFloatError;
 
-    fn try_from(val: ast::FloatValue) -> Result<Self, Self::Error> {
+    fn try_from(val: cst::FloatValue) -> Result<Self, Self::Error> {
         Self::try_from(&val)
     }
 }
 
-impl TryFrom<&'_ ast::FloatValue> for f64 {
+impl TryFrom<&'_ cst::FloatValue> for f64 {
     type Error = ParseFloatError;
 
-    fn try_from(val: &'_ ast::FloatValue) -> Result<Self, Self::Error> {
+    fn try_from(val: &'_ cst::FloatValue) -> Result<Self, Self::Error> {
         let text = text_of_first_token(val.syntax());
         text.parse()
     }
 }
 
-impl TryFrom<ast::BooleanValue> for bool {
+impl TryFrom<cst::BooleanValue> for bool {
     type Error = std::str::ParseBoolError;
 
-    fn try_from(val: ast::BooleanValue) -> Result<Self, Self::Error> {
+    fn try_from(val: cst::BooleanValue) -> Result<Self, Self::Error> {
         Self::try_from(&val)
     }
 }
 
-impl TryFrom<&'_ ast::BooleanValue> for bool {
+impl TryFrom<&'_ cst::BooleanValue> for bool {
     type Error = std::str::ParseBoolError;
 
-    fn try_from(val: &'_ ast::BooleanValue) -> Result<Self, Self::Error> {
+    fn try_from(val: &'_ cst::BooleanValue) -> Result<Self, Self::Error> {
         let text = text_of_first_token(val.syntax());
         text.parse()
     }

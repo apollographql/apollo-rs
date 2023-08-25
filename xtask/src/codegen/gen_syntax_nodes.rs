@@ -3,10 +3,10 @@ use std::{collections::HashSet, fmt::Write};
 use anyhow::Result;
 use quote::{format_ident, quote};
 
-use crate::ast_src::{AstSrc, Cardinality, Field, KindsSrc};
+use crate::cst_src::{Cardinality, CstSrc, Field, KindsSrc};
 use crate::reformat;
 
-pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<String> {
+pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &CstSrc) -> Result<String> {
     let (node_defs, node_boilerplate_impls): (Vec<_>, Vec<_>) = grammar
         .nodes
         .iter()
@@ -15,7 +15,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
             let kind = format_ident!("{}", to_upper_snake_case(&node.name));
             let traits = node.traits.iter().map(|trait_name| {
                 let trait_name = format_ident!("{}", trait_name);
-                quote!(impl ast::#trait_name for #name {})
+                quote!(impl cst::#trait_name for #name {})
             });
 
             let methods = node.fields.iter().map(|field| {
@@ -24,7 +24,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
 
                 if field.is_many() {
                     quote! {
-                        pub fn #method_name(&self) -> AstChildren<#ty> {
+                        pub fn #method_name(&self) -> CstChildren<#ty> {
                             support::children(&self.syntax)
                         }
                     }
@@ -57,7 +57,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
                     }
                 },
                 quote! {
-                    impl AstNode for #name {
+                    impl CstNode for #name {
                         fn can_cast(kind: SyntaxKind) -> bool {
                             kind == #kind
                         }
@@ -87,14 +87,14 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
                 .collect();
             let traits = en.traits.iter().map(|trait_name| {
                 let trait_name = format_ident!("{}", trait_name);
-                quote!(impl ast::#trait_name for #name {})
+                quote!(impl cst::#trait_name for #name {})
             });
 
-            let ast_node = if en.name == "Stmt" {
+            let cst_node = if en.name == "Stmt" {
                 quote! {}
             } else {
                 quote! {
-                    impl AstNode for #name {
+                    impl CstNode for #name {
                         fn can_cast(kind: SyntaxKind) -> bool {
                             matches!(kind, #(#kinds)|*)
                         }
@@ -136,7 +136,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
                             }
                         }
                     )*
-                    #ast_node
+                    #cst_node
                 },
             )
         })
@@ -153,13 +153,13 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
     {
         drop(node)
         // TODO: restore this
-        // eprintln!("Warning: node {} not defined in ast source", node);
+        // eprintln!("Warning: node {} not defined in cst source", node);
     }
 
-    let ast = quote! {
+    let cst = quote! {
         use crate::{
             SyntaxNode, SyntaxToken, SyntaxKind::{self, *},
-            ast::{AstNode, AstChildren, support},
+            cst::{CstNode, CstChildren, support},
             S,
         };
 
@@ -169,9 +169,9 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
         #(#enum_boilerplate_impls)*
     };
 
-    let ast = ast.to_string().replace("S ! [", "S![");
+    let cst = cst.to_string().replace("S ! [", "S![");
 
-    let mut res = String::with_capacity(ast.len() * 2);
+    let mut res = String::with_capacity(cst.len() * 2);
 
     let mut docs = grammar
         .nodes
@@ -179,7 +179,7 @@ pub(crate) fn generate_nodes(kinds: KindsSrc<'_>, grammar: &AstSrc) -> Result<St
         .map(|it| &it.doc)
         .chain(grammar.enums.iter().map(|it| &it.doc));
 
-    for chunk in ast.split("# [pretty_doc_comment_placeholder_workaround] ") {
+    for chunk in cst.split("# [pretty_doc_comment_placeholder_workaround] ") {
         res.push_str(chunk);
         if let Some(doc) = docs.next() {
             write_doc_comment(doc, &mut res);

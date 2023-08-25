@@ -2,7 +2,7 @@
 //! made in codegeneration that lives in `xtask` top-level dir.
 
 use crate::{
-    ast::{support, AstChildren, AstNode},
+    cst::{support, CstChildren, CstNode},
     SyntaxKind::{self, *},
     SyntaxNode, SyntaxToken, S,
 };
@@ -20,7 +20,7 @@ pub struct Document {
     pub(crate) syntax: SyntaxNode,
 }
 impl Document {
-    pub fn definitions(&self) -> AstChildren<Definition> {
+    pub fn definitions(&self) -> CstChildren<Definition> {
         support::children(&self.syntax)
     }
 }
@@ -113,7 +113,7 @@ impl SchemaDefinition {
     pub fn l_curly_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S!['{'])
     }
-    pub fn root_operation_type_definitions(&self) -> AstChildren<RootOperationTypeDefinition> {
+    pub fn root_operation_type_definitions(&self) -> CstChildren<RootOperationTypeDefinition> {
         support::children(&self.syntax)
     }
     pub fn r_curly_token(&self) -> Option<SyntaxToken> {
@@ -266,7 +266,7 @@ impl SchemaExtension {
     pub fn l_curly_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S!['{'])
     }
-    pub fn root_operation_type_definitions(&self) -> AstChildren<RootOperationTypeDefinition> {
+    pub fn root_operation_type_definitions(&self) -> CstChildren<RootOperationTypeDefinition> {
         support::children(&self.syntax)
     }
     pub fn r_curly_token(&self) -> Option<SyntaxToken> {
@@ -425,7 +425,7 @@ impl VariableDefinitions {
     pub fn l_paren_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S!['('])
     }
-    pub fn variable_definitions(&self) -> AstChildren<VariableDefinition> {
+    pub fn variable_definitions(&self) -> CstChildren<VariableDefinition> {
         support::children(&self.syntax)
     }
     pub fn r_paren_token(&self) -> Option<SyntaxToken> {
@@ -437,7 +437,7 @@ pub struct Directives {
     pub(crate) syntax: SyntaxNode,
 }
 impl Directives {
-    pub fn directives(&self) -> AstChildren<Directive> {
+    pub fn directives(&self) -> CstChildren<Directive> {
         support::children(&self.syntax)
     }
 }
@@ -449,7 +449,7 @@ impl SelectionSet {
     pub fn l_curly_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S!['{'])
     }
-    pub fn selections(&self) -> AstChildren<Selection> {
+    pub fn selections(&self) -> CstChildren<Selection> {
         support::children(&self.syntax)
     }
     pub fn r_curly_token(&self) -> Option<SyntaxToken> {
@@ -530,7 +530,7 @@ impl Arguments {
     pub fn l_paren_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S!['('])
     }
-    pub fn arguments(&self) -> AstChildren<Argument> {
+    pub fn arguments(&self) -> CstChildren<Argument> {
         support::children(&self.syntax)
     }
     pub fn r_paren_token(&self) -> Option<SyntaxToken> {
@@ -658,7 +658,7 @@ impl ListValue {
     pub fn r_brack_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S![']'])
     }
-    pub fn values(&self) -> AstChildren<Value> {
+    pub fn values(&self) -> CstChildren<Value> {
         support::children(&self.syntax)
     }
 }
@@ -673,7 +673,7 @@ impl ObjectValue {
     pub fn r_curly_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S!['}'])
     }
-    pub fn object_fields(&self) -> AstChildren<ObjectField> {
+    pub fn object_fields(&self) -> CstChildren<ObjectField> {
         support::children(&self.syntax)
     }
 }
@@ -805,7 +805,7 @@ impl ImplementsInterfaces {
     pub fn amp_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S![&])
     }
-    pub fn named_types(&self) -> AstChildren<NamedType> {
+    pub fn named_types(&self) -> CstChildren<NamedType> {
         support::children(&self.syntax)
     }
 }
@@ -817,7 +817,7 @@ impl FieldsDefinition {
     pub fn l_curly_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S!['{'])
     }
-    pub fn field_definitions(&self) -> AstChildren<FieldDefinition> {
+    pub fn field_definitions(&self) -> CstChildren<FieldDefinition> {
         support::children(&self.syntax)
     }
     pub fn r_curly_token(&self) -> Option<SyntaxToken> {
@@ -856,7 +856,7 @@ impl ArgumentsDefinition {
     pub fn l_paren_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S!['('])
     }
-    pub fn input_value_definitions(&self) -> AstChildren<InputValueDefinition> {
+    pub fn input_value_definitions(&self) -> CstChildren<InputValueDefinition> {
         support::children(&self.syntax)
     }
     pub fn r_paren_token(&self) -> Option<SyntaxToken> {
@@ -898,7 +898,7 @@ impl UnionMemberTypes {
     pub fn pipe_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S![|])
     }
-    pub fn named_types(&self) -> AstChildren<NamedType> {
+    pub fn named_types(&self) -> CstChildren<NamedType> {
         support::children(&self.syntax)
     }
 }
@@ -910,7 +910,7 @@ impl EnumValuesDefinition {
     pub fn l_curly_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S!['{'])
     }
-    pub fn enum_value_definitions(&self) -> AstChildren<EnumValueDefinition> {
+    pub fn enum_value_definitions(&self) -> CstChildren<EnumValueDefinition> {
         support::children(&self.syntax)
     }
     pub fn r_curly_token(&self) -> Option<SyntaxToken> {
@@ -940,7 +940,7 @@ impl InputFieldsDefinition {
     pub fn l_curly_token(&self) -> Option<SyntaxToken> {
         support::token(&self.syntax, S!['{'])
     }
-    pub fn input_value_definitions(&self) -> AstChildren<InputValueDefinition> {
+    pub fn input_value_definitions(&self) -> CstChildren<InputValueDefinition> {
         support::children(&self.syntax)
     }
     pub fn r_curly_token(&self) -> Option<SyntaxToken> {
@@ -952,7 +952,7 @@ pub struct DirectiveLocations {
     pub(crate) syntax: SyntaxNode,
 }
 impl DirectiveLocations {
-    pub fn directive_locations(&self) -> AstChildren<DirectiveLocation> {
+    pub fn directive_locations(&self) -> CstChildren<DirectiveLocation> {
         support::children(&self.syntax)
     }
 }
@@ -1063,7 +1063,7 @@ pub enum Type {
     ListType(ListType),
     NonNullType(NonNullType),
 }
-impl AstNode for Name {
+impl CstNode for Name {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == NAME
     }
@@ -1078,7 +1078,7 @@ impl AstNode for Name {
         &self.syntax
     }
 }
-impl AstNode for Document {
+impl CstNode for Document {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == DOCUMENT
     }
@@ -1093,7 +1093,7 @@ impl AstNode for Document {
         &self.syntax
     }
 }
-impl AstNode for OperationDefinition {
+impl CstNode for OperationDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == OPERATION_DEFINITION
     }
@@ -1108,7 +1108,7 @@ impl AstNode for OperationDefinition {
         &self.syntax
     }
 }
-impl AstNode for FragmentDefinition {
+impl CstNode for FragmentDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == FRAGMENT_DEFINITION
     }
@@ -1123,7 +1123,7 @@ impl AstNode for FragmentDefinition {
         &self.syntax
     }
 }
-impl AstNode for DirectiveDefinition {
+impl CstNode for DirectiveDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == DIRECTIVE_DEFINITION
     }
@@ -1138,7 +1138,7 @@ impl AstNode for DirectiveDefinition {
         &self.syntax
     }
 }
-impl AstNode for SchemaDefinition {
+impl CstNode for SchemaDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == SCHEMA_DEFINITION
     }
@@ -1153,7 +1153,7 @@ impl AstNode for SchemaDefinition {
         &self.syntax
     }
 }
-impl AstNode for ScalarTypeDefinition {
+impl CstNode for ScalarTypeDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == SCALAR_TYPE_DEFINITION
     }
@@ -1168,7 +1168,7 @@ impl AstNode for ScalarTypeDefinition {
         &self.syntax
     }
 }
-impl AstNode for ObjectTypeDefinition {
+impl CstNode for ObjectTypeDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == OBJECT_TYPE_DEFINITION
     }
@@ -1183,7 +1183,7 @@ impl AstNode for ObjectTypeDefinition {
         &self.syntax
     }
 }
-impl AstNode for InterfaceTypeDefinition {
+impl CstNode for InterfaceTypeDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == INTERFACE_TYPE_DEFINITION
     }
@@ -1198,7 +1198,7 @@ impl AstNode for InterfaceTypeDefinition {
         &self.syntax
     }
 }
-impl AstNode for UnionTypeDefinition {
+impl CstNode for UnionTypeDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == UNION_TYPE_DEFINITION
     }
@@ -1213,7 +1213,7 @@ impl AstNode for UnionTypeDefinition {
         &self.syntax
     }
 }
-impl AstNode for EnumTypeDefinition {
+impl CstNode for EnumTypeDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == ENUM_TYPE_DEFINITION
     }
@@ -1228,7 +1228,7 @@ impl AstNode for EnumTypeDefinition {
         &self.syntax
     }
 }
-impl AstNode for InputObjectTypeDefinition {
+impl CstNode for InputObjectTypeDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == INPUT_OBJECT_TYPE_DEFINITION
     }
@@ -1243,7 +1243,7 @@ impl AstNode for InputObjectTypeDefinition {
         &self.syntax
     }
 }
-impl AstNode for SchemaExtension {
+impl CstNode for SchemaExtension {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == SCHEMA_EXTENSION
     }
@@ -1258,7 +1258,7 @@ impl AstNode for SchemaExtension {
         &self.syntax
     }
 }
-impl AstNode for ScalarTypeExtension {
+impl CstNode for ScalarTypeExtension {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == SCALAR_TYPE_EXTENSION
     }
@@ -1273,7 +1273,7 @@ impl AstNode for ScalarTypeExtension {
         &self.syntax
     }
 }
-impl AstNode for ObjectTypeExtension {
+impl CstNode for ObjectTypeExtension {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == OBJECT_TYPE_EXTENSION
     }
@@ -1288,7 +1288,7 @@ impl AstNode for ObjectTypeExtension {
         &self.syntax
     }
 }
-impl AstNode for InterfaceTypeExtension {
+impl CstNode for InterfaceTypeExtension {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == INTERFACE_TYPE_EXTENSION
     }
@@ -1303,7 +1303,7 @@ impl AstNode for InterfaceTypeExtension {
         &self.syntax
     }
 }
-impl AstNode for UnionTypeExtension {
+impl CstNode for UnionTypeExtension {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == UNION_TYPE_EXTENSION
     }
@@ -1318,7 +1318,7 @@ impl AstNode for UnionTypeExtension {
         &self.syntax
     }
 }
-impl AstNode for EnumTypeExtension {
+impl CstNode for EnumTypeExtension {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == ENUM_TYPE_EXTENSION
     }
@@ -1333,7 +1333,7 @@ impl AstNode for EnumTypeExtension {
         &self.syntax
     }
 }
-impl AstNode for InputObjectTypeExtension {
+impl CstNode for InputObjectTypeExtension {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == INPUT_OBJECT_TYPE_EXTENSION
     }
@@ -1348,7 +1348,7 @@ impl AstNode for InputObjectTypeExtension {
         &self.syntax
     }
 }
-impl AstNode for OperationType {
+impl CstNode for OperationType {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == OPERATION_TYPE
     }
@@ -1363,7 +1363,7 @@ impl AstNode for OperationType {
         &self.syntax
     }
 }
-impl AstNode for VariableDefinitions {
+impl CstNode for VariableDefinitions {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == VARIABLE_DEFINITIONS
     }
@@ -1378,7 +1378,7 @@ impl AstNode for VariableDefinitions {
         &self.syntax
     }
 }
-impl AstNode for Directives {
+impl CstNode for Directives {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == DIRECTIVES
     }
@@ -1393,7 +1393,7 @@ impl AstNode for Directives {
         &self.syntax
     }
 }
-impl AstNode for SelectionSet {
+impl CstNode for SelectionSet {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == SELECTION_SET
     }
@@ -1408,7 +1408,7 @@ impl AstNode for SelectionSet {
         &self.syntax
     }
 }
-impl AstNode for Field {
+impl CstNode for Field {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == FIELD
     }
@@ -1423,7 +1423,7 @@ impl AstNode for Field {
         &self.syntax
     }
 }
-impl AstNode for FragmentSpread {
+impl CstNode for FragmentSpread {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == FRAGMENT_SPREAD
     }
@@ -1438,7 +1438,7 @@ impl AstNode for FragmentSpread {
         &self.syntax
     }
 }
-impl AstNode for InlineFragment {
+impl CstNode for InlineFragment {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == INLINE_FRAGMENT
     }
@@ -1453,7 +1453,7 @@ impl AstNode for InlineFragment {
         &self.syntax
     }
 }
-impl AstNode for Alias {
+impl CstNode for Alias {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == ALIAS
     }
@@ -1468,7 +1468,7 @@ impl AstNode for Alias {
         &self.syntax
     }
 }
-impl AstNode for Arguments {
+impl CstNode for Arguments {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == ARGUMENTS
     }
@@ -1483,7 +1483,7 @@ impl AstNode for Arguments {
         &self.syntax
     }
 }
-impl AstNode for Argument {
+impl CstNode for Argument {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == ARGUMENT
     }
@@ -1498,7 +1498,7 @@ impl AstNode for Argument {
         &self.syntax
     }
 }
-impl AstNode for FragmentName {
+impl CstNode for FragmentName {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == FRAGMENT_NAME
     }
@@ -1513,7 +1513,7 @@ impl AstNode for FragmentName {
         &self.syntax
     }
 }
-impl AstNode for TypeCondition {
+impl CstNode for TypeCondition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == TYPE_CONDITION
     }
@@ -1528,7 +1528,7 @@ impl AstNode for TypeCondition {
         &self.syntax
     }
 }
-impl AstNode for NamedType {
+impl CstNode for NamedType {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == NAMED_TYPE
     }
@@ -1543,7 +1543,7 @@ impl AstNode for NamedType {
         &self.syntax
     }
 }
-impl AstNode for Variable {
+impl CstNode for Variable {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == VARIABLE
     }
@@ -1558,7 +1558,7 @@ impl AstNode for Variable {
         &self.syntax
     }
 }
-impl AstNode for StringValue {
+impl CstNode for StringValue {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == STRING_VALUE
     }
@@ -1573,7 +1573,7 @@ impl AstNode for StringValue {
         &self.syntax
     }
 }
-impl AstNode for FloatValue {
+impl CstNode for FloatValue {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == FLOAT_VALUE
     }
@@ -1588,7 +1588,7 @@ impl AstNode for FloatValue {
         &self.syntax
     }
 }
-impl AstNode for IntValue {
+impl CstNode for IntValue {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == INT_VALUE
     }
@@ -1603,7 +1603,7 @@ impl AstNode for IntValue {
         &self.syntax
     }
 }
-impl AstNode for BooleanValue {
+impl CstNode for BooleanValue {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == BOOLEAN_VALUE
     }
@@ -1618,7 +1618,7 @@ impl AstNode for BooleanValue {
         &self.syntax
     }
 }
-impl AstNode for NullValue {
+impl CstNode for NullValue {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == NULL_VALUE
     }
@@ -1633,7 +1633,7 @@ impl AstNode for NullValue {
         &self.syntax
     }
 }
-impl AstNode for EnumValue {
+impl CstNode for EnumValue {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == ENUM_VALUE
     }
@@ -1648,7 +1648,7 @@ impl AstNode for EnumValue {
         &self.syntax
     }
 }
-impl AstNode for ListValue {
+impl CstNode for ListValue {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == LIST_VALUE
     }
@@ -1663,7 +1663,7 @@ impl AstNode for ListValue {
         &self.syntax
     }
 }
-impl AstNode for ObjectValue {
+impl CstNode for ObjectValue {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == OBJECT_VALUE
     }
@@ -1678,7 +1678,7 @@ impl AstNode for ObjectValue {
         &self.syntax
     }
 }
-impl AstNode for ObjectField {
+impl CstNode for ObjectField {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == OBJECT_FIELD
     }
@@ -1693,7 +1693,7 @@ impl AstNode for ObjectField {
         &self.syntax
     }
 }
-impl AstNode for VariableDefinition {
+impl CstNode for VariableDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == VARIABLE_DEFINITION
     }
@@ -1708,7 +1708,7 @@ impl AstNode for VariableDefinition {
         &self.syntax
     }
 }
-impl AstNode for DefaultValue {
+impl CstNode for DefaultValue {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == DEFAULT_VALUE
     }
@@ -1723,7 +1723,7 @@ impl AstNode for DefaultValue {
         &self.syntax
     }
 }
-impl AstNode for ListType {
+impl CstNode for ListType {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == LIST_TYPE
     }
@@ -1738,7 +1738,7 @@ impl AstNode for ListType {
         &self.syntax
     }
 }
-impl AstNode for NonNullType {
+impl CstNode for NonNullType {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == NON_NULL_TYPE
     }
@@ -1753,7 +1753,7 @@ impl AstNode for NonNullType {
         &self.syntax
     }
 }
-impl AstNode for Directive {
+impl CstNode for Directive {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == DIRECTIVE
     }
@@ -1768,7 +1768,7 @@ impl AstNode for Directive {
         &self.syntax
     }
 }
-impl AstNode for Description {
+impl CstNode for Description {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == DESCRIPTION
     }
@@ -1783,7 +1783,7 @@ impl AstNode for Description {
         &self.syntax
     }
 }
-impl AstNode for RootOperationTypeDefinition {
+impl CstNode for RootOperationTypeDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == ROOT_OPERATION_TYPE_DEFINITION
     }
@@ -1798,7 +1798,7 @@ impl AstNode for RootOperationTypeDefinition {
         &self.syntax
     }
 }
-impl AstNode for ImplementsInterfaces {
+impl CstNode for ImplementsInterfaces {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == IMPLEMENTS_INTERFACES
     }
@@ -1813,7 +1813,7 @@ impl AstNode for ImplementsInterfaces {
         &self.syntax
     }
 }
-impl AstNode for FieldsDefinition {
+impl CstNode for FieldsDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == FIELDS_DEFINITION
     }
@@ -1828,7 +1828,7 @@ impl AstNode for FieldsDefinition {
         &self.syntax
     }
 }
-impl AstNode for FieldDefinition {
+impl CstNode for FieldDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == FIELD_DEFINITION
     }
@@ -1843,7 +1843,7 @@ impl AstNode for FieldDefinition {
         &self.syntax
     }
 }
-impl AstNode for ArgumentsDefinition {
+impl CstNode for ArgumentsDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == ARGUMENTS_DEFINITION
     }
@@ -1858,7 +1858,7 @@ impl AstNode for ArgumentsDefinition {
         &self.syntax
     }
 }
-impl AstNode for InputValueDefinition {
+impl CstNode for InputValueDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == INPUT_VALUE_DEFINITION
     }
@@ -1873,7 +1873,7 @@ impl AstNode for InputValueDefinition {
         &self.syntax
     }
 }
-impl AstNode for UnionMemberTypes {
+impl CstNode for UnionMemberTypes {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == UNION_MEMBER_TYPES
     }
@@ -1888,7 +1888,7 @@ impl AstNode for UnionMemberTypes {
         &self.syntax
     }
 }
-impl AstNode for EnumValuesDefinition {
+impl CstNode for EnumValuesDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == ENUM_VALUES_DEFINITION
     }
@@ -1903,7 +1903,7 @@ impl AstNode for EnumValuesDefinition {
         &self.syntax
     }
 }
-impl AstNode for EnumValueDefinition {
+impl CstNode for EnumValueDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == ENUM_VALUE_DEFINITION
     }
@@ -1918,7 +1918,7 @@ impl AstNode for EnumValueDefinition {
         &self.syntax
     }
 }
-impl AstNode for InputFieldsDefinition {
+impl CstNode for InputFieldsDefinition {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == INPUT_FIELDS_DEFINITION
     }
@@ -1933,7 +1933,7 @@ impl AstNode for InputFieldsDefinition {
         &self.syntax
     }
 }
-impl AstNode for DirectiveLocations {
+impl CstNode for DirectiveLocations {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == DIRECTIVE_LOCATIONS
     }
@@ -1948,7 +1948,7 @@ impl AstNode for DirectiveLocations {
         &self.syntax
     }
 }
-impl AstNode for DirectiveLocation {
+impl CstNode for DirectiveLocation {
     fn can_cast(kind: SyntaxKind) -> bool {
         kind == DIRECTIVE_LOCATION
     }
@@ -2048,7 +2048,7 @@ impl From<InputObjectTypeExtension> for Definition {
         Definition::InputObjectTypeExtension(node)
     }
 }
-impl AstNode for Definition {
+impl CstNode for Definition {
     fn can_cast(kind: SyntaxKind) -> bool {
         matches!(
             kind,
@@ -2149,7 +2149,7 @@ impl From<InlineFragment> for Selection {
         Selection::InlineFragment(node)
     }
 }
-impl AstNode for Selection {
+impl CstNode for Selection {
     fn can_cast(kind: SyntaxKind) -> bool {
         matches!(kind, FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT)
     }
@@ -2215,7 +2215,7 @@ impl From<ObjectValue> for Value {
         Value::ObjectValue(node)
     }
 }
-impl AstNode for Value {
+impl CstNode for Value {
     fn can_cast(kind: SyntaxKind) -> bool {
         matches!(
             kind,
@@ -2274,7 +2274,7 @@ impl From<NonNullType> for Type {
         Type::NonNullType(node)
     }
 }
-impl AstNode for Type {
+impl CstNode for Type {
     fn can_cast(kind: SyntaxKind) -> bool {
         matches!(kind, NAMED_TYPE | LIST_TYPE | NON_NULL_TYPE)
     }
