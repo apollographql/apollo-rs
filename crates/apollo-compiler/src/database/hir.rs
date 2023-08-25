@@ -11,6 +11,7 @@ use crate::{HirDatabase, Source};
 
 use super::FileId;
 use indexmap::IndexMap;
+use rowan::TextRange;
 
 pub type ByName<T> = Arc<IndexMap<String, Arc<T>>>;
 
@@ -427,9 +428,8 @@ impl FragmentDefinition {
         self.name_src()
             .loc()
             .map(|name_loc| HirNodeLocation {
-                // Adjust the node length to include the name
-                node_len: name_loc.end_offset() - self.loc.offset(),
-                ..self.loc
+                file_id: self.loc.file_id,
+                text_range: TextRange::new(self.loc.text_range.start(), name_loc.text_range.end()),
             })
             .unwrap_or(self.loc)
     }
@@ -869,9 +869,8 @@ impl DirectiveDefinition {
         self.name_src()
             .loc()
             .map(|name_loc| HirNodeLocation {
-                // Adjust the node length to include the name
-                node_len: name_loc.end_offset() - self.loc.offset(),
-                ..self.loc
+                file_id: self.loc.file_id,
+                text_range: TextRange::new(self.loc.text_range.start(), name_loc.text_range.end()),
             })
             .unwrap_or(self.loc)
     }
@@ -3753,41 +3752,39 @@ impl InputObjectTypeExtension {
     }
 }
 
+/// The source location of a parsed node: file ID and range within that file.
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct HirNodeLocation {
-    pub(crate) offset: usize,
-    pub(crate) node_len: usize,
     pub(crate) file_id: FileId,
+    pub(crate) text_range: rowan::TextRange,
 }
 
 impl HirNodeLocation {
     pub(crate) fn new(file_id: FileId, node: &'_ SyntaxNode) -> Self {
-        let text_range = node.text_range();
         Self {
-            offset: text_range.start().into(),
-            node_len: text_range.len().into(),
             file_id,
+            text_range: node.text_range(),
         }
     }
 
-    /// Get file id of the current node.
+    /// Returns the file ID for this location
     pub fn file_id(&self) -> FileId {
         self.file_id
     }
 
-    /// Get source offset of the current node.
+    /// Returns the offset from the start of the file to the start of the range, in UTF-8 bytes
     pub fn offset(&self) -> usize {
-        self.offset
+        self.text_range.start().into()
     }
 
-    /// Get the source offset of the end of the current node.
+    /// Returns the offset from the start of the file to the end of the range, in UTF-8 bytes
     pub fn end_offset(&self) -> usize {
-        self.offset + self.node_len
+        self.text_range.end().into()
     }
 
-    /// Get node length.
+    /// Returns the length of the range, in UTF-8 bytes
     pub fn node_len(&self) -> usize {
-        self.node_len
+        self.text_range.len().into()
     }
 }
 
