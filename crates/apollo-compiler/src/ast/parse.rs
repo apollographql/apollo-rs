@@ -51,10 +51,6 @@ impl fmt::Debug for ParseError {
 }
 
 impl Parser {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Configure the recursion to use while parsing.
     pub fn recursion_limit(mut self, value: usize) -> Self {
         self.recursion_limit = Some(value);

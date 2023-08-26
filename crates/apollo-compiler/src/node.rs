@@ -1,5 +1,8 @@
 pub use crate::hir::HirNodeLocation as NodeLocation;
+use crate::schema::Component;
+use crate::schema::ComponentOrigin;
 use crate::Arc;
+use crate::FileId;
 use std::fmt;
 use std::hash;
 
@@ -40,6 +43,27 @@ impl<T> Node<T> {
 
     pub fn location(&self) -> Option<&NodeLocation> {
         self.0.location.as_ref()
+    }
+
+    /// Whether this node is located in `FileId::BUILT_IN`,
+    /// which defines built-in directives, built-in scalars, and introspection types.
+    pub fn is_built_in(&self) -> bool {
+        self.location().map(|l| l.file_id()) == Some(FileId::BUILT_IN)
+    }
+
+    /// Returns the given `node` at the same location as `self` (e.g. for a type conversion).
+    pub fn same_location<U>(&self, node: U) -> Node<U> {
+        Node(Arc::new(NodeInner {
+            location: self.0.location,
+            node,
+        }))
+    }
+
+    pub fn to_component(&self, origin: ComponentOrigin) -> Component<T> {
+        Component {
+            origin,
+            node: self.clone(),
+        }
     }
 
     // `Arc` APIs

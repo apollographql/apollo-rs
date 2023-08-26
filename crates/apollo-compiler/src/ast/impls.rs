@@ -37,7 +37,7 @@ macro_rules! serialize_method {
         /// by writing GraphQL syntax.
         pub fn serialize(&self) -> Serialize<Self> {
             Serialize {
-                mir_node: self,
+                node: self,
                 config: Default::default(),
             }
         }
@@ -57,6 +57,16 @@ impl Document {
         Self {
             definitions: Vec::new(),
         }
+    }
+
+    /// Return a new configurable parser
+    pub fn parser() -> Parser {
+        Parser::default()
+    }
+
+    /// Parse `input` with the default configuration
+    pub fn parse(input: &str) -> ParseResult {
+        Self::parser().parse(input)
     }
 
     serialize_method!();

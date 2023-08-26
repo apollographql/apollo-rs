@@ -6,6 +6,7 @@ pub mod database;
 pub mod diagnostics;
 mod node;
 mod node_str;
+pub mod schema;
 #[cfg(test)]
 mod tests;
 pub mod validation;
@@ -21,6 +22,7 @@ pub use self::diagnostics::ApolloDiagnostic;
 pub use self::node::{Node, NodeLocation};
 pub use self::node_str::NodeStr;
 use self::validation::ValidationDatabase;
+pub use schema::Schema;
 
 pub struct ApolloCompiler {
     pub db: RootDatabase,

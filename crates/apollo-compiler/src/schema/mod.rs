@@ -1,0 +1,645 @@
+//! High-level representation of a GraphQL schema
+
+use crate::ast;
+use crate::ast::Name;
+use crate::ast::Serialize;
+use crate::FileId;
+use crate::Node;
+use crate::NodeStr;
+use indexmap::IndexMap;
+use std::hash::Hash;
+
+mod component;
+mod from_ast;
+mod serialize;
+
+pub use self::component::{Component, ComponentOrigin, ComponentStr, ExtensionId};
+pub use self::from_ast::SchemaBuilder;
+use indexmap::Equivalent;
+use indexmap::IndexSet;
+use std::sync::OnceLock;
+
+/// High-level representation of a GraphQL schema
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Schema {
+    /// The description of the `schema` definition
+    pub description: Option<NodeStr>,
+
+    /// Directives applied to the `schema` definition or a `schema` extension
+    pub directives: Vec<Component<ast::Directive>>,
+
+    /// Built-in and explicit directive definitions
+    pub directive_definitions: IndexMap<Name, Node<ast::DirectiveDefinition>>,
+
+    /// Definitions and extensions of built-in scalars, introspection types,
+    /// and explicit types
+    pub types: IndexMap<ast::NamedType, Type>,
+
+    /// Name of the object type for the `query` root operation
+    pub query_type: Option<ComponentStr>,
+
+    /// Name of the object type for the `mutation` root operation
+    pub mutation_type: Option<ComponentStr>,
+
+    /// Name of the object type for the `subscription` root operation
+    pub subscription_type: Option<ComponentStr>,
+}
+
+/// The definition of a named type, with all information from type extensions folded in.
+///
+/// The source location is that of the "main" definition.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Type {
+    Scalar(Node<ScalarType>),
+    Object(Node<ObjectType>),
+    Interface(Node<InterfaceType>),
+    Union(Node<UnionType>),
+    Enum(Node<EnumType>),
+    InputObject(Node<InputObjectType>),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScalarType {
+    pub description: Option<NodeStr>,
+    pub directives: Vec<Component<ast::Directive>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ObjectType {
+    pub description: Option<NodeStr>,
+
+    /// * Keys: name of the implemented interface
+    /// * Values: which object type extension defined this implementation,
+    ///   or `None` for the object type definition.
+    pub implements_interfaces: IndexMap<Name, ComponentOrigin>,
+
+    pub directives: Vec<Component<ast::Directive>>,
+
+    /// Explicit field definitions.
+    ///
+    /// When looking up a definition,
+    /// consider using [`Schema::type_field`] instead to include meta-fields.
+    pub fields: IndexMap<Name, Component<ast::FieldDefinition>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InterfaceType {
+    pub description: Option<NodeStr>,
+
+    /// * Key: name of an implemented interface
+    /// * Value: which interface type extension defined this implementation,
+    ///   or `None` for the interface type definition.
+    pub implements_interfaces: IndexMap<Name, ComponentOrigin>,
+
+    pub directives: Vec<Component<ast::Directive>>,
+
+    /// Explicit field definitions.
+    ///
+    /// When looking up a definition,
+    /// consider using [`Schema::type_field`] instead to include meta-fields.
+    pub fields: IndexMap<Name, Component<ast::FieldDefinition>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnionType {
+    pub description: Option<NodeStr>,
+    pub directives: Vec<Component<ast::Directive>>,
+
+    /// * Key: name of a member object type
+    /// * Value: which union type extension defined this implementation,
+    ///   or `None` for the union type definition.
+    pub members: IndexMap<ast::NamedType, ComponentOrigin>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EnumType {
+    pub description: Option<NodeStr>,
+    pub directives: Vec<Component<ast::Directive>>,
+    pub values: IndexMap<Name, Component<ast::EnumValueDefinition>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InputObjectType {
+    pub description: Option<NodeStr>,
+    pub directives: Vec<Component<ast::Directive>>,
+    pub fields: IndexMap<Name, Component<ast::InputValueDefinition>>,
+}
+
+macro_rules! directive_by_name_method {
+    () => {
+        /// Returns the first directive with the given name, if any.
+        ///
+        /// This method is best for non-repeatable directives. For repeatable directives,
+        /// see [`directives_by_name`][Self::directives_by_name] (plural)
+        pub fn directive_by_name(&self, name: &str) -> Option<&Component<ast::Directive>> {
+            self.directives_by_name(name).next()
+        }
+    };
+}
+
+pub fn directives_by_name<'def: 'name, 'name>(
+    directives: &'def [Component<ast::Directive>],
+    name: &'name str,
+) -> impl Iterator<Item = &'def Component<ast::Directive>> + 'name {
+    directives.iter().filter(move |dir| dir.name == name)
+}
+
+macro_rules! directive_methods {
+    () => {
+        /// Returns an iterator of directives with the given name.
+        ///
+        /// This method is best for repeatable directives. For non-repeatable directives,
+        /// see [`directive_by_name`][Self::directive_by_name] (singular)
+        pub fn directives_by_name<'def: 'name, 'name>(
+            &'def self,
+            name: &'name str,
+        ) -> impl Iterator<Item = &'def Component<ast::Directive>> + 'name {
+            directives_by_name(&self.directives, name)
+        }
+
+        directive_by_name_method!();
+    };
+}
+
+macro_rules! serialize_method {
+    () => {
+        /// Returns a builder that has chaining methods for setting serialization configuration,
+        /// and implements the [`Display`][std::fmt::Display] and [`ToString`] traits
+        /// by writing GraphQL syntax.
+        pub fn serialize(&self) -> Serialize<Self> {
+            Serialize {
+                node: self,
+                config: Default::default(),
+            }
+        }
+    };
+}
+
+impl Schema {
+    /// Returns a new builder for creating a Schema from AST documents,
+    /// initialized with built-in directives, built-in scalars, and introspection types
+    pub fn builder() -> SchemaBuilder {
+        SchemaBuilder::new()
+    }
+
+    /// Returns an (almost) empty schema.
+    ///
+    /// It starts with built-in directives, built-in scalars, and introspection types.
+    /// It can then be filled programatically.
+    #[allow(clippy::new_without_default)] // not a great implicit default in generic contexts
+    pub fn new() -> Self {
+        let (schema, _orphan_definitions) = SchemaBuilder::new().build();
+        // _orphan_definitions already debug_assert’ed empty in SchemaBuilder::new
+        schema
+    }
+
+    /// Returns a schema built from one AST document
+    ///
+    /// The schema also contains built-in directives, built-in scalars, and introspection types.
+    ///
+    /// Additionally, orphan extensions that are not represented in `Schema`
+    /// are returned separately:
+    ///
+    /// * `Definition::SchemaExtension` variants if no `Definition::SchemaDefinition` was found
+    /// * `Definition::*TypeExtension` if no `Definition::*TypeDefinition` with the same name
+    ///   was found, or if it is a different kind of type
+    pub fn from_ast(document: &ast::Document) -> (Self, impl Iterator<Item = ast::Definition>) {
+        let mut builder = SchemaBuilder::new();
+        builder.add_document(document);
+        builder.build()
+    }
+
+    /// Returns the type with the given name, if it is a scalar type
+    pub fn get_scalar<N>(&self, name: &N) -> Option<&ScalarType>
+    where
+        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
+    {
+        if let Some(Type::Scalar(ty)) = self.types.get(name) {
+            Some(ty)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the type with the given name, if it is a object type
+    pub fn get_object<N>(&self, name: &N) -> Option<&ObjectType>
+    where
+        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
+    {
+        if let Some(Type::Object(ty)) = self.types.get(name) {
+            Some(ty)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the type with the given name, if it is a interface type
+    pub fn get_interface<N>(&self, name: &N) -> Option<&InterfaceType>
+    where
+        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
+    {
+        if let Some(Type::Interface(ty)) = self.types.get(name) {
+            Some(ty)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the type with the given name, if it is a union type
+    pub fn get_union<N>(&self, name: &N) -> Option<&UnionType>
+    where
+        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
+    {
+        if let Some(Type::Union(ty)) = self.types.get(name) {
+            Some(ty)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the type with the given name, if it is a enum type
+    pub fn get_enum<N>(&self, name: &N) -> Option<&EnumType>
+    where
+        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
+    {
+        if let Some(Type::Enum(ty)) = self.types.get(name) {
+            Some(ty)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the type with the given name, if it is a input object type
+    pub fn get_input_object<N>(&self, name: &N) -> Option<&InputObjectType>
+    where
+        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
+    {
+        if let Some(Type::InputObject(ty)) = self.types.get(name) {
+            Some(ty)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the name of the object type for the root operation with the given operation kind
+    pub fn root_operation(&self, operation_type: ast::OperationType) -> Option<&ComponentStr> {
+        match operation_type {
+            ast::OperationType::Query => &self.query_type,
+            ast::OperationType::Mutation => &self.mutation_type,
+            ast::OperationType::Subscription => &self.subscription_type,
+        }
+        .as_ref()
+    }
+
+    /// Collect `schema` extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.origin.extension_id())
+            .chain(
+                self.query_type
+                    .as_ref()
+                    .and_then(|name| name.origin.extension_id()),
+            )
+            .chain(
+                self.mutation_type
+                    .as_ref()
+                    .and_then(|name| name.origin.extension_id()),
+            )
+            .chain(
+                self.subscription_type
+                    .as_ref()
+                    .and_then(|name| name.origin.extension_id()),
+            )
+            .collect()
+    }
+
+    /// Returns the definition of a type’s explicit field or meta-field.
+    pub fn type_field<N1, N2>(
+        &self,
+        type_name: &N1,
+        field_name: &N2,
+    ) -> Option<&Component<ast::FieldDefinition>>
+    where
+        N1: ?Sized + Eq + Hash + Equivalent<NodeStr>,
+        N2: ?Sized + Eq + Hash + Equivalent<NodeStr>,
+    {
+        self.meta_fields_definitions(type_name)
+            .iter()
+            .find(|def| field_name.equivalent(&def.name))
+            .or_else(|| match self.types.get(type_name)? {
+                Type::Object(ty) => ty.fields.get(field_name),
+                Type::Interface(ty) => ty.fields.get(field_name),
+                Type::Scalar(_) | Type::Union(_) | Type::Enum(_) | Type::InputObject(_) => None,
+            })
+    }
+
+    /// Return the meta-fields of the given type
+    pub(crate) fn meta_fields_definitions<N>(
+        &self,
+        type_name: &N,
+    ) -> &'static [Component<ast::FieldDefinition>]
+    where
+        N: ?Sized + Equivalent<NodeStr>,
+    {
+        static ROOT_QUERY_FIELDS: LazyLock<[Component<ast::FieldDefinition>; 3]> =
+            LazyLock::new(|| {
+                [
+                    // __typename: String!
+                    Component::new_synthetic(ast::FieldDefinition {
+                        description: None,
+                        name: Name::new_synthetic("__typename"),
+                        arguments: Vec::new(),
+                        ty: ast::Type::new_named("String").non_null(),
+                        directives: Vec::new(),
+                    }),
+                    // __schema: __Schema!
+                    Component::new_synthetic(ast::FieldDefinition {
+                        description: None,
+                        name: Name::new_synthetic("__schema"),
+                        arguments: Vec::new(),
+                        ty: ast::Type::new_named("__Schema").non_null(),
+                        directives: Vec::new(),
+                    }),
+                    // __type(name: String!): __Type
+                    Component::new_synthetic(ast::FieldDefinition {
+                        description: None,
+                        name: Name::new_synthetic("__type"),
+                        arguments: vec![Node::new_synthetic(ast::InputValueDefinition {
+                            description: None,
+                            name: Name::new_synthetic("name"),
+                            ty: ast::Type::new_named("String").non_null(),
+                            default_value: None,
+                            directives: Vec::new(),
+                        })],
+                        ty: ast::Type::new_named("__Type"),
+                        directives: Vec::new(),
+                    }),
+                ]
+            });
+        if self
+            .query_type
+            .as_ref()
+            .is_some_and(|n| type_name.equivalent(&n.node))
+        {
+            // __typename: String!
+            // __schema: __Schema!
+            // __type(name: String!): __Type
+            ROOT_QUERY_FIELDS.get()
+        } else {
+            // __typename: String!
+            std::slice::from_ref(&ROOT_QUERY_FIELDS.get()[0])
+        }
+    }
+
+    directive_methods!();
+    serialize_method!();
+}
+
+impl Type {
+    pub fn is_scalar(&self) -> bool {
+        matches!(self, Self::Scalar(_))
+    }
+
+    pub fn is_object(&self) -> bool {
+        matches!(self, Self::Object(_))
+    }
+
+    pub fn is_interface(&self) -> bool {
+        matches!(self, Self::Interface(_))
+    }
+
+    pub fn is_union(&self) -> bool {
+        matches!(self, Self::Union(_))
+    }
+
+    pub fn is_enum(&self) -> bool {
+        matches!(self, Self::Enum(_))
+    }
+
+    pub fn is_input_object(&self) -> bool {
+        matches!(self, Self::InputObject(_))
+    }
+
+    /// Returns whether this is a built-in scalar or introspection type
+    pub fn is_built_in(&self) -> bool {
+        match self {
+            Type::Scalar(ty) => ty.is_built_in(),
+            Type::Object(ty) => ty.is_built_in(),
+            Type::Interface(ty) => ty.is_built_in(),
+            Type::Union(ty) => ty.is_built_in(),
+            Type::Enum(ty) => ty.is_built_in(),
+            Type::InputObject(ty) => ty.is_built_in(),
+        }
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// This method is best for repeatable directives. For non-repeatable directives,
+    /// see [`directive_by_name`][Self::directive_by_name] (singular)
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Component<ast::Directive>> + 'name {
+        match self {
+            Type::Scalar(ty) => directives_by_name(&ty.directives, name),
+            Type::Object(ty) => directives_by_name(&ty.directives, name),
+            Type::Interface(ty) => directives_by_name(&ty.directives, name),
+            Type::Union(ty) => directives_by_name(&ty.directives, name),
+            Type::Enum(ty) => directives_by_name(&ty.directives, name),
+            Type::InputObject(ty) => directives_by_name(&ty.directives, name),
+        }
+    }
+
+    directive_by_name_method!();
+    serialize_method!();
+}
+
+impl ScalarType {
+    /// Collect scalar type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.origin.extension_id())
+            .collect()
+    }
+
+    directive_methods!();
+    serialize_method!();
+}
+
+impl ObjectType {
+    /// Collect object type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.origin.extension_id())
+            .chain(
+                self.implements_interfaces
+                    .values()
+                    .flat_map(|origin| origin.extension_id()),
+            )
+            .chain(
+                self.fields
+                    .values()
+                    .flat_map(|field| field.origin.extension_id()),
+            )
+            .collect()
+    }
+
+    directive_methods!();
+    serialize_method!();
+}
+
+impl InterfaceType {
+    /// Collect interface type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.origin.extension_id())
+            .chain(
+                self.implements_interfaces
+                    .values()
+                    .flat_map(|origin| origin.extension_id()),
+            )
+            .chain(
+                self.fields
+                    .values()
+                    .flat_map(|field| field.origin.extension_id()),
+            )
+            .collect()
+    }
+
+    directive_methods!();
+    serialize_method!();
+}
+
+impl UnionType {
+    /// Collect union type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.origin.extension_id())
+            .chain(
+                self.members
+                    .values()
+                    .flat_map(|origin| origin.extension_id()),
+            )
+            .collect()
+    }
+
+    directive_methods!();
+    serialize_method!();
+}
+
+impl EnumType {
+    /// Collect enum type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.origin.extension_id())
+            .chain(
+                self.values
+                    .values()
+                    .flat_map(|value| value.origin.extension_id()),
+            )
+            .collect()
+    }
+
+    directive_methods!();
+    serialize_method!();
+}
+
+impl InputObjectType {
+    /// Collect input object type extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.origin.extension_id())
+            .chain(
+                self.fields
+                    .values()
+                    .flat_map(|field| field.origin.extension_id()),
+            )
+            .collect()
+    }
+
+    directive_methods!();
+    serialize_method!();
+}
+
+impl From<Node<ScalarType>> for Type {
+    fn from(ty: Node<ScalarType>) -> Self {
+        Self::Scalar(ty)
+    }
+}
+
+impl From<Node<ObjectType>> for Type {
+    fn from(ty: Node<ObjectType>) -> Self {
+        Self::Object(ty)
+    }
+}
+
+impl From<Node<InterfaceType>> for Type {
+    fn from(ty: Node<InterfaceType>) -> Self {
+        Self::Interface(ty)
+    }
+}
+
+impl From<Node<UnionType>> for Type {
+    fn from(ty: Node<UnionType>) -> Self {
+        Self::Union(ty)
+    }
+}
+
+impl From<Node<EnumType>> for Type {
+    fn from(ty: Node<EnumType>) -> Self {
+        Self::Enum(ty)
+    }
+}
+
+impl From<Node<InputObjectType>> for Type {
+    fn from(ty: Node<InputObjectType>) -> Self {
+        Self::InputObject(ty)
+    }
+}
+
+// TODO: use `std::sync::LazyLock` when available https://github.com/rust-lang/rust/issues/109736
+struct LazyLock<T> {
+    value: OnceLock<T>,
+    init: fn() -> T,
+}
+
+impl<T> LazyLock<T> {
+    const fn new(init: fn() -> T) -> Self {
+        Self {
+            value: OnceLock::new(),
+            init,
+        }
+    }
+
+    fn get(&self) -> &T {
+        self.value.get_or_init(self.init)
+    }
+}

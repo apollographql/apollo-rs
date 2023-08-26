@@ -1,10 +1,11 @@
 use super::*;
+use crate::schema;
 use std::fmt;
 use std::fmt::Display;
 
 #[derive(Debug, Clone)]
 pub struct Serialize<'a, T> {
-    pub(crate) mir_node: &'a T,
+    pub(crate) node: &'a T,
     pub(crate) config: Config<'a>,
 }
 
@@ -13,7 +14,7 @@ pub(crate) struct Config<'a> {
     ident_prefix: Option<&'a str>,
 }
 
-struct State<'config, 'fmt, 'fmt2> {
+pub(crate) struct State<'config, 'fmt, 'fmt2> {
     config: Config<'config>,
     indent_level: usize,
     output: &'fmt mut fmt::Formatter<'fmt2>,
@@ -55,31 +56,31 @@ macro_rules! display {
 }
 
 impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
-    fn write(&mut self, str: &str) -> fmt::Result {
+    pub(crate) fn write(&mut self, str: &str) -> fmt::Result {
         self.output.write_str(str)
     }
 
-    fn indent(&mut self) -> fmt::Result {
+    pub(crate) fn indent(&mut self) -> fmt::Result {
         self.indent_level += 1;
         self.new_line_common(false)
     }
 
-    fn indent_or_space(&mut self) -> fmt::Result {
+    pub(crate) fn indent_or_space(&mut self) -> fmt::Result {
         self.indent_level += 1;
         self.new_line_common(true)
     }
 
-    fn dedent(&mut self) -> fmt::Result {
+    pub(crate) fn dedent(&mut self) -> fmt::Result {
         self.indent_level -= 1; // checked underflow in debug mode
         self.new_line_common(false)
     }
 
-    fn dedent_or_space(&mut self) -> fmt::Result {
+    pub(crate) fn dedent_or_space(&mut self) -> fmt::Result {
         self.indent_level -= 1; // checked underflow in debug mode
         self.new_line_common(true)
     }
 
-    fn new_line_or_space(&mut self) -> fmt::Result {
+    pub(crate) fn new_line_or_space(&mut self) -> fmt::Result {
         self.new_line_common(true)
     }
 
@@ -95,11 +96,11 @@ impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
         Ok(())
     }
 
-    fn newlines_enabled(&self) -> bool {
+    pub(crate) fn newlines_enabled(&self) -> bool {
         self.config.ident_prefix.is_some()
     }
 
-    fn on_single_line<R>(&mut self, f: impl FnOnce(&mut Self) -> R) -> R {
+    pub(crate) fn on_single_line<R>(&mut self, f: impl FnOnce(&mut Self) -> R) -> R {
         let indent_prefix = self.config.ident_prefix.take();
         let result = f(self);
         self.config.ident_prefix = indent_prefix;
@@ -109,27 +110,38 @@ impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
 
 impl Document {
     fn serialize_impl(&self, state: &mut State) -> fmt::Result {
-        if let Some((first, rest)) = self.definitions.split_first() {
-            first.serialize_impl(state)?;
-            for def in rest {
-                if state.newlines_enabled() {
-                    // Empty line between top-level definitions
-                    state.write("\n")?;
-                }
-                state.new_line_or_space()?;
-                def.serialize_impl(state)?;
-            }
-            // Trailing newline
-            if state.newlines_enabled() {
-                state.write("\n")?;
-            }
-        }
-        Ok(())
+        top_level(state, &self.definitions, |state, def| {
+            def.serialize_impl(state)
+        })
     }
 }
 
+pub(crate) fn top_level<T>(
+    state: &mut State,
+    iter: impl IntoIterator<Item = T>,
+    serialize_one: impl Fn(&mut State, T) -> fmt::Result,
+) -> fmt::Result {
+    let mut iter = iter.into_iter();
+    if let Some(first) = iter.next() {
+        serialize_one(state, first)?;
+        iter.try_for_each(|item| {
+            if state.newlines_enabled() {
+                // Empty line between top-level definitions
+                state.write("\n")?;
+            }
+            state.new_line_or_space()?;
+            serialize_one(state, item)
+        })?;
+        // Trailing newline
+        if state.newlines_enabled() {
+            state.write("\n")?;
+        }
+    }
+    Ok(())
+}
+
 impl Definition {
-    fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         match self {
             Definition::OperationDefinition(def) => def.serialize_impl(state),
             Definition::FragmentDefinition(def) => def.serialize_impl(state),
@@ -827,7 +839,7 @@ impl fmt::Display for DirectiveLocation {
 }
 
 macro_rules! impl_display {
-    ($($ty: ident)+) => {
+    ($($ty: path)+) => {
         $(
             /// Serialize to GraphQL syntax with the default configuration
             impl Display for $ty {
@@ -853,7 +865,7 @@ macro_rules! impl_display {
             /// Serialize to GraphQL syntax
             impl Display for Serialize<'_, $ty> {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    self.mir_node.serialize_impl(&mut State {
+                    self.node.serialize_impl(&mut State {
                         config: self.config.clone(),
                         indent_level: 0,
                         output: f,
@@ -894,4 +906,5 @@ impl_display! {
     FragmentSpread
     InlineFragment
     Value
+    schema::Schema
 }

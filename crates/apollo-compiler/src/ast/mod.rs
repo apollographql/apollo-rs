@@ -35,7 +35,7 @@ use crate::NodeStr;
 
 mod impls;
 mod parse;
-mod serialize;
+pub(crate) mod serialize;
 
 pub use self::parse::{ParseResult, Parser};
 pub use self::serialize::Serialize;

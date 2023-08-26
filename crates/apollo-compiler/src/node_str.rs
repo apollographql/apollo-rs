@@ -1,3 +1,5 @@
+use crate::schema::ComponentOrigin;
+use crate::schema::ComponentStr;
 use crate::NodeLocation;
 use triomphe::ThinArc;
 
@@ -25,6 +27,14 @@ impl NodeStr {
     #[inline]
     pub fn new_synthetic(value: &str) -> Self {
         Self(ThinArc::from_header_and_slice(None, value.as_bytes()))
+    }
+
+    #[inline]
+    pub fn to_component(&self, origin: ComponentOrigin) -> ComponentStr {
+        ComponentStr {
+            origin,
+            node: self.clone(),
+        }
     }
 
     #[inline]
