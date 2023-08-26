@@ -152,7 +152,9 @@ impl From<ast::StringValue> for String {
     }
 }
 
-/// Handle escaped characters in a StringValue. Panics on invalid escape sequences.
+/// Handle escaped characters in a StringValue.
+///
+/// Panics on invalid escape sequences. Those should be rejected in the lexer already.
 fn unescape_string(input: &str) -> String {
     let mut output = String::with_capacity(input.len());
 
@@ -177,12 +179,12 @@ fn unescape_string(input: &str) -> String {
                 };
 
                 match c2 {
+                    '"' | '\\' | '/' => output.push(c2),
                     'b' => output.push('\u{0008}'),
                     'f' => output.push('\u{000c}'),
                     'n' => output.push('\n'),
                     'r' => output.push('\r'),
                     't' => output.push('\t'),
-                    '"' | '\\' => output.push(c2),
                     'u' => output.push(unicode()),
                     _ => (),
                 }
@@ -194,21 +196,27 @@ fn unescape_string(input: &str) -> String {
     output
 }
 
+const ESCAPED_TRIPLE_QUOTE: &str = r#"\""""#;
 const TRIPLE_QUOTE: &str = r#"""""#;
+
 fn is_block_string(input: &str) -> bool {
     input.starts_with(TRIPLE_QUOTE)
 }
 
+// TODO(@goto-bus-stop) Handle indents
+fn unescape_block_string(input: &str) -> String {
+    input.replace(ESCAPED_TRIPLE_QUOTE, TRIPLE_QUOTE)
+}
+
+// TODO(@goto-bus-stop) As this handles escaping, which can fail in theory, it should be TryFrom
 impl From<&'_ ast::StringValue> for String {
     fn from(val: &'_ ast::StringValue) -> Self {
         let text = text_of_first_token(val.syntax());
+        // These slices would panic if the contents are invalid, but the lexer already guarantees that the
+        // string is valid.
         if is_block_string(&text) {
-            text.trim_start_matches('"')
-                .trim_end_matches('"')
-                .to_string()
+            unescape_block_string(&text[3..text.len() - 3])
         } else {
-            // Would panic if the contents are invalid, but the lexer already guarantees that the
-            // string is valid.
             unescape_string(&text[1..text.len() - 1])
         }
     }
