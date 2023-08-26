@@ -180,6 +180,7 @@ fn unescape_string(input: &str) -> String {
                     'b' => output.push('\u{0008}'),
                     'f' => output.push('\u{000c}'),
                     'n' => output.push('\n'),
+                    'r' => output.push('\r'),
                     't' => output.push('\t'),
                     '"' | '\\' => output.push(c2),
                     'u' => output.push(unicode()),
@@ -193,12 +194,23 @@ fn unescape_string(input: &str) -> String {
     output
 }
 
+const TRIPLE_QUOTE: &str = r#"""""#;
+fn is_block_string(input: &str) -> bool {
+    input.starts_with(TRIPLE_QUOTE)
+}
+
 impl From<&'_ ast::StringValue> for String {
     fn from(val: &'_ ast::StringValue) -> Self {
         let text = text_of_first_token(val.syntax());
-        // Would panic if the contents are invalid, but the lexer already guarantees that the
-        // string is valid.
-        unescape_string(text.trim_start_matches('"').trim_end_matches('"'))
+        if is_block_string(&text) {
+            text.trim_start_matches('"')
+                .trim_end_matches('"')
+                .to_string()
+        } else {
+            // Would panic if the contents are invalid, but the lexer already guarantees that the
+            // string is valid.
+            unescape_string(&text[1..text.len() - 1])
+        }
     }
 }
 
