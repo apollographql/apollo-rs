@@ -2,7 +2,6 @@
 
 use crate::ast;
 use crate::ast::Name;
-use crate::ast::Serialize;
 use crate::FileId;
 use crate::Node;
 use crate::NodeStr;
@@ -158,20 +157,6 @@ macro_rules! directive_methods {
         }
 
         directive_by_name_method!();
-    };
-}
-
-macro_rules! serialize_method {
-    () => {
-        /// Returns a builder that has chaining methods for setting serialization configuration,
-        /// and implements the [`Display`][std::fmt::Display] and [`ToString`] traits
-        /// by writing GraphQL syntax.
-        pub fn serialize(&self) -> Serialize<Self> {
-            Serialize {
-                node: self,
-                config: Default::default(),
-            }
-        }
     };
 }
 

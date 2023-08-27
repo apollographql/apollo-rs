@@ -30,20 +30,6 @@ macro_rules! directive_methods {
     };
 }
 
-macro_rules! serialize_method {
-    () => {
-        /// Returns a builder that has chaining methods for setting serialization configuration,
-        /// and implements the [`Display`][std::fmt::Display] and [`ToString`] traits
-        /// by writing GraphQL syntax.
-        pub fn serialize(&self) -> Serialize<Self> {
-            Serialize {
-                node: self,
-                config: Default::default(),
-            }
-        }
-    };
-}
-
 fn directives_by_name<'def: 'name, 'name>(
     directives: &'def [Node<Directive>],
     name: &'name str,

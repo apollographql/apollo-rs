@@ -1,5 +1,4 @@
 use super::*;
-use crate::schema;
 use std::fmt;
 use std::fmt::Display;
 
@@ -109,7 +108,7 @@ impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
 }
 
 impl Document {
-    fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+    pub(crate) fn serialize_impl(&self, state: &mut State) -> fmt::Result {
         top_level(state, &self.definitions, |state, def| {
             def.serialize_impl(state)
         })
@@ -906,5 +905,6 @@ impl_display! {
     FragmentSpread
     InlineFragment
     Value
-    schema::Schema
+    crate::Schema
+    crate::ExecutableDocument
 }

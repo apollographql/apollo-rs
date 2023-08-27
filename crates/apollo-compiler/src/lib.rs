@@ -1,9 +1,12 @@
 #![doc = include_str!("../README.md")]
 
+#[macro_use]
+mod macros;
 mod arc;
 pub mod ast;
 pub mod database;
 pub mod diagnostics;
+pub mod executable;
 mod node;
 mod node_str;
 pub mod schema;
@@ -19,6 +22,7 @@ pub use self::database::{
     hir, CstDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source,
 };
 pub use self::diagnostics::ApolloDiagnostic;
+pub use self::executable::ExecutableDocument;
 pub use self::node::{Node, NodeLocation};
 pub use self::node_str::NodeStr;
 use self::validation::ValidationDatabase;
