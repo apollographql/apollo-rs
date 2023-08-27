@@ -41,6 +41,25 @@ pub trait HirDatabase: InputDatabase + CstDatabase {
     #[salsa::invoke(type_system)]
     fn type_system(&self) -> Arc<TypeSystem>;
 
+    // TODO: does a database trait just for AST make sense?
+    #[salsa::invoke(ast)]
+    fn ast(&self, file_id: FileId) -> Arc<crate::ast::Document>;
+
+    #[salsa::invoke(schema_with_orphan_extensions)]
+    fn schema_with_orphan_extensions(
+        &self,
+    ) -> (Arc<crate::Schema>, Arc<Vec<crate::ast::Definition>>);
+
+    #[salsa::invoke(schema)]
+    #[salsa::transparent]
+    fn schema(&self) -> Arc<crate::Schema>;
+
+    #[salsa::invoke(executable_document)]
+    fn executable_document(
+        &self,
+        file_id: FileId,
+    ) -> Arc<Result<crate::ExecutableDocument, crate::executable::TypeError>>;
+
     /// Return all the extensions defined in the type system.
     #[salsa::invoke(extensions)]
     fn extensions(&self) -> Arc<Vec<TypeExtension>>;
@@ -1673,4 +1692,33 @@ fn alias(alias: Option<cst::Alias>) -> Option<Arc<Alias>> {
 
 fn location(file_id: FileId, syntax_node: &SyntaxNode) -> HirNodeLocation {
     HirNodeLocation::new(file_id, syntax_node)
+}
+
+fn ast(db: &dyn HirDatabase, file_id: FileId) -> Arc<crate::ast::Document> {
+    Arc::new(crate::ast::Document::from_cst(db.cst(file_id), file_id))
+}
+
+fn schema_with_orphan_extensions(
+    db: &dyn HirDatabase,
+) -> (Arc<crate::Schema>, Arc<Vec<crate::ast::Definition>>) {
+    let mut builder = crate::Schema::builder();
+    for file_id in db.type_definition_files() {
+        builder.add_document(&db.ast(file_id))
+    }
+    let (schema, orphan_extensions) = builder.build();
+    (Arc::new(schema), Arc::new(orphan_extensions.collect()))
+}
+
+fn schema(db: &dyn HirDatabase) -> Arc<crate::Schema> {
+    db.schema_with_orphan_extensions().0
+}
+
+fn executable_document(
+    db: &dyn HirDatabase,
+    file_id: FileId,
+) -> Arc<Result<crate::ExecutableDocument, crate::executable::TypeError>> {
+    Arc::new(crate::ExecutableDocument::from_ast(
+        &db.schema(),
+        &db.ast(file_id),
+    ))
 }
