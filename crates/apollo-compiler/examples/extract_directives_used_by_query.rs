@@ -140,7 +140,7 @@ mod tests {
     }
 
     #[test]
-    fn it_only_directives_used_by_query() {
+    fn it_only_returns_directives_used_by_query() {
         let schema_src = r#"
           directive @testDirective(testArg: Boolean!) on FIELD_DEFINITION
           type GrandChildTest {
