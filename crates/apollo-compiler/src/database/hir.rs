@@ -460,7 +460,7 @@ impl OperationDefinition {
 
     /// Get operation's definition object type.
     pub fn object_type(&self, db: &dyn HirDatabase) -> Option<Arc<ObjectTypeDefinition>> {
-        let schema = db.schema();
+        let schema = db.hir_schema();
         let name = match self.operation_ty {
             OperationType::Query => schema.query()?,
             OperationType::Mutation => schema.mutation()?,
@@ -2444,7 +2444,7 @@ impl ObjectTypeDefinition {
 
     pub(crate) fn implicit_fields(&self, db: &dyn HirDatabase) -> &[FieldDefinition] {
         let is_root_query = db
-            .schema()
+            .hir_schema()
             .root_operations()
             .any(|op| op.operation_ty().is_query() && op.named_type().name() == self.name());
         if is_root_query {
@@ -3855,7 +3855,7 @@ mod tests {
         compiler.add_type_system(first, "first.graphql");
         compiler.add_type_system(second, "second.graphql");
 
-        let schema = compiler.db.schema();
+        let schema = compiler.db.hir_schema();
         assert_eq!(
             schema
                 .self_root_operations()

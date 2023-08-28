@@ -139,13 +139,13 @@ pub fn validate_subscription_operations(
     // defined schema root operation types.
     //
     //   * subscription operation - subscription root operation
-    if !subscriptions.is_empty() && db.schema().subscription().is_none() {
+    if !subscriptions.is_empty() && db.hir_schema().subscription().is_none() {
         let unsupported_ops: Vec<ApolloDiagnostic> = subscriptions
             .iter()
             .map(|op| {
                 let diagnostic = ApolloDiagnostic::new(db, op.loc().into(), DiagnosticData::UnsupportedOperation { ty: "subscription" })
                     .label(Label::new(op.loc(), "Subscription operation is not defined in the schema and is therefore not supported"));
-                if let Some(schema_loc) = db.schema().loc() {
+                if let Some(schema_loc) = db.hir_schema().loc() {
                     diagnostic.label(Label::new(schema_loc, "Consider defining a `subscription` root operation type here"))
                 } else {
                     diagnostic.help("consider defining a `subscription` root operation type in your schema")
@@ -168,7 +168,7 @@ pub fn validate_query_operations(
     // defined schema root operation types.
     //
     //   * query operation - query root operation
-    if !queries.is_empty() && db.schema().query().is_none() {
+    if !queries.is_empty() && db.hir_schema().query().is_none() {
         let unsupported_ops: Vec<ApolloDiagnostic> =
             queries
                 .iter()
@@ -183,7 +183,7 @@ pub fn validate_query_operations(
                             op.loc(),
                             "Query operation is not defined in the schema and is therefore not supported",
                         ));
-                        if let Some(schema_loc) = db.schema().loc() {
+                        if let Some(schema_loc) = db.hir_schema().loc() {
                             Some(diagnostic.label(Label::new(
                                 schema_loc,
                                 "Consider defining a `query` root operation type here",
@@ -214,13 +214,13 @@ pub fn validate_mutation_operations(
     // defined schema root operation types.
     //
     //   * mutation operation - mutation root operation
-    if !mutations.is_empty() && db.schema().mutation().is_none() {
+    if !mutations.is_empty() && db.hir_schema().mutation().is_none() {
         let unsupported_ops: Vec<ApolloDiagnostic> = mutations
             .iter()
             .map(|op| {
                 let diagnostic = ApolloDiagnostic::new(db, op.loc().into(), DiagnosticData::UnsupportedOperation { ty: "mutation" })
                     .label(Label::new(op.loc(), "Mutation operation is not defined in the schema and is therefore not supported"));
-                if let Some(schema_loc) = db.schema().loc() {
+                if let Some(schema_loc) = db.hir_schema().loc() {
                     diagnostic.label(Label::new(schema_loc, "Consider defining a `mutation` root operation type here"))
                 } else {
                     diagnostic.help("consider defining a `mutation` root operation type in your schema")

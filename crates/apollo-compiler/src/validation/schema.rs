@@ -13,7 +13,7 @@ pub fn validate_schema_definition(
 
     // A GraphQL schema must have a Query root operation.
     if schema_def.query().is_none() {
-        if let Some(loc) = db.schema().loc() {
+        if let Some(loc) = db.hir_schema().loc() {
             diagnostics.push(
                 ApolloDiagnostic::new(db, loc.into(), DiagnosticData::QueryRootOperationType)
                     .label(Label::new(

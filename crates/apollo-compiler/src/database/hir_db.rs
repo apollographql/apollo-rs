@@ -62,8 +62,8 @@ pub trait HirDatabase: InputDatabase + CstDatabase {
     fn all_fragments(&self) -> ByName<FragmentDefinition>;
 
     /// Return schema definition defined in the compiler.
-    #[salsa::invoke(schema)]
-    fn schema(&self) -> Arc<SchemaDefinition>;
+    #[salsa::invoke(hir_schema)]
+    fn hir_schema(&self) -> Arc<SchemaDefinition>;
 
     /// Return all object type definitions defined in the compiler.
     #[salsa::invoke(object_types)]
@@ -292,7 +292,7 @@ pub trait HirDatabase: InputDatabase + CstDatabase {
 
 fn type_system_definitions(db: &dyn HirDatabase) -> Arc<TypeSystemDefinitions> {
     Arc::new(TypeSystemDefinitions {
-        schema: db.schema(),
+        schema: db.hir_schema(),
         scalars: db.scalars(),
         objects: db.object_types_with_built_ins(),
         interfaces: db.interfaces(),
@@ -414,7 +414,7 @@ where
 //
 // This implementation currently just finds the first schema definition, which
 // means we can't really diagnose the "multiple schema definitions" errors.
-fn schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
+fn hir_schema(db: &dyn HirDatabase) -> Arc<SchemaDefinition> {
     if let Some(precomputed) = db.type_system_hir_input() {
         // Panics in `ApolloCompiler` methods ensure `type_definition_files().is_empty()`
         return precomputed.definitions.schema.clone();
@@ -552,13 +552,17 @@ fn operation_definition(
     let name = op_def.name().map(|n| name_hir_node(n, file_id));
     let ty = operation_type(op_def.operation_type());
     let variables = variable_definitions(op_def.variable_definitions(), file_id);
-    let parent_object_ty = db.schema().self_root_operations().iter().find_map(|op| {
-        if op.operation_ty() == ty {
-            Some(op.named_type().name())
-        } else {
-            None
-        }
-    });
+    let parent_object_ty = db
+        .hir_schema()
+        .self_root_operations()
+        .iter()
+        .find_map(|op| {
+            if op.operation_ty() == ty {
+                Some(op.named_type().name())
+            } else {
+                None
+            }
+        });
     let selection_set = selection_set(db, op_def.selection_set(), parent_object_ty, file_id);
     let directives = directives(op_def.directives(), file_id);
     let loc = location(file_id, op_def.syntax());
