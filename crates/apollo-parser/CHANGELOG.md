@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [0.6.1](https://crates.io/crates/apollo-parser/0.6.1) (unreleased)
+# [0.6.1](https://crates.io/crates/apollo-parser/0.6.1) - 2023-18-28
 ## Fixes
 - **fix lexing escape-sequence-like text in block strings - [goto-bus-stop], [pull/638], [issue/632]**
   Fixes a regression in 0.6.0 that could cause apollo-parser to reject valid input if a
