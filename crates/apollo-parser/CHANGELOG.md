@@ -28,6 +28,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Now block strings are lexed like in 0.5.3. Only the `\"""` sequence is treated as an
   escape sequence.
 
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/638]: https://github.com/apollographql/apollo-rs/pull/638
+[issue/632]: https://github.com/apollographql/apollo-rs/issues/632
+
 # [0.6.0](https://crates.io/crates/apollo-parser/0.6.0) - 2023-08-18
 ## Features
 - **zero-alloc lexer - [allancalix], [pull/322]**
