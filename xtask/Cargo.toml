@@ -10,4 +10,4 @@ proc-macro2 = "1.0.8"
 quote = "1.0.2"
 xshell = "0.2"
 anyhow = "1"
-clap = { version = "4.1.8", features = ["derive"] }
+clap = { version = "4.4.0", features = ["derive"] }
