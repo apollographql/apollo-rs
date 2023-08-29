@@ -32,26 +32,38 @@ fn get_directives_used_in_query(compiler: &ApolloCompiler, query_id: &FileId) ->
 
 fn main() {
     let schema_src = r#"
-          directive @testDirective(testArg: Boolean!) on FIELD_DEFINITION
+          directive @testDirective0(testArg: Boolean!) on FIELD_DEFINITION
+          directive @testDirective1(testArg: Boolean!) on FIELD_DEFINITION
+          directive @testDirective2(testArg: Boolean!) on FIELD_DEFINITION
+          directive @testDirective3(testArg: Boolean!) on FIELD_DEFINITION
+
           type GrandChildTest {
-            test: bool @testDirective(testArg: true)
+            test: Boolean @testDirective3(testArg: true)
           }
+
           type ChildTest {
-            test: GrandChildTest! @testDirective(testArg: true)
+            test: GrandChildTest! @testDirective2(testArg: true)
           }
+
           type Test {
-            test: ChildTest! @testDirective(testArg: true)
+            test: ChildTest! @testDirective1(testArg: true)
           }
+
+          type NoDirectivesType {
+            test: Boolean
+          }
+
           type Query {
-            testOperation: Test! @testDirective(testArg: true)
+            directivesQuery: Test! @testDirective0(testArg: true)
+            noDirectivesQuery: NoDirectivesType!
           }
         "#;
 
     let mut compiler = ApolloCompiler::new();
     compiler.add_type_system(schema_src, "not-used-here.graphql");
 
-    let query_src = r#"query {
-          testOperation {
+    let query_src0 = r#"query {
+          directivesQuery {
             test {
               test {
                 test
@@ -60,117 +72,30 @@ fn main() {
           }
         }
         "#;
-    let query_id = compiler.add_executable(query_src, "not-used-here.graphql");
+    let query_id0 = compiler.add_executable(query_src0, "not-used-here.graphql");
 
-    let directives = get_directives_used_in_query(&compiler, &query_id);
-
+    let directives = get_directives_used_in_query(&compiler, &query_id0);
     assert_eq!(directives.len(), 4);
 
-    // checkout the tests below as well :)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_finds_directives_on_query() {
-        let schema_src = r#"
-          directive @testDirective(testArg: Boolean!) on FIELD_DEFINITION
-          type Test {
-            test: Boolean
-          }
-          type Query {
-            testOperation: Test! @testDirective(testArg: true)
-          }
-        "#;
-
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_type_system(&schema_src, "not-used-here.graphql");
-
-        let query_src = r#"query {
-          testOperation {
+    let query_src1 = r#"query {
+          directivesQuery {
             test
           }
         }
         "#;
-        let query_id = compiler.add_executable(&query_src, "not-used-here.graphql");
+    let query_id1 = compiler.add_executable(query_src1, "not-used-here.graphql");
 
-        let directives = get_directives_used_in_query(&compiler, &query_id);
+    let directives = get_directives_used_in_query(&compiler, &query_id1);
+    assert_eq!(directives.len(), 2);
 
-        assert_eq!(directives.len(), 1);
-    }
-
-    #[test]
-    fn it_finds_nested_directives() {
-        let schema_src = r#"
-          directive @testDirective(testArg: Boolean!) on FIELD_DEFINITION
-          type GrandChildTest {
-            test: bool @testDirective(testArg: true)
-          }
-          type ChildTest {
-            test: GrandChildTest! @testDirective(testArg: true)
-          }
-          type Test {
-            test: ChildTest! @testDirective(testArg: true)
-          }
-          type Query {
-            testOperation: Test! @testDirective(testArg: true)
-          }
-        "#;
-
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_type_system(&schema_src, "not-used-here.graphql");
-
-        let query_src = r#"query {
-          testOperation {
-            test {
-              test {
-                test
-              }
-            }
-          }
-        }
-        "#;
-        let query_id = compiler.add_executable(&query_src, "not-used-here.graphql");
-
-        let directives = get_directives_used_in_query(&compiler, &query_id);
-
-        assert_eq!(directives.len(), 4);
-    }
-
-    #[test]
-    fn it_only_returns_directives_used_by_query() {
-        let schema_src = r#"
-          directive @testDirective(testArg: Boolean!) on FIELD_DEFINITION
-          type GrandChildTest {
-            test: bool @testDirective(testArg: true)
-          }
-          type ChildTest {
-            test: GrandChildTest! @testDirective(testArg: true)
-          }
-          type Test {
-            test: ChildTest! @testDirective(testArg: true)
-          }
-          type Query {
-            testOperation: Test! @testDirective(testArg: true)
-          }
-        "#;
-
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_type_system(&schema_src, "not-used-here.graphql");
-
-        // This query will only hit 2 directives as subfields are not being queried
-        let query_src = r#"query {
-          testOperation {
+    let query_src2 = r#"query {
+          noDirectivesQuery {
             test
           }
         }
         "#;
-        let query_id = compiler.add_executable(&query_src, "not-used-here.graphql");
+    let query_id2 = compiler.add_executable(query_src2, "not-used-here.graphql");
 
-        let directives = get_directives_used_in_query(&compiler, &query_id);
-
-        assert_eq!(directives.len(), 2);
-    }
+    let directives = get_directives_used_in_query(&compiler, &query_id2);
+    assert_eq!(directives.len(), 0);
 }
