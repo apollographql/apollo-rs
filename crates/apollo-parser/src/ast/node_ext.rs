@@ -203,9 +203,174 @@ fn is_block_string(input: &str) -> bool {
     input.starts_with(TRIPLE_QUOTE)
 }
 
-// TODO(@goto-bus-stop) Handle indents
-fn unescape_block_string(input: &str) -> String {
-    input.replace(ESCAPED_TRIPLE_QUOTE, TRIPLE_QUOTE)
+/// Iterator over the lines in a GraphQL string, using GraphQL's definition of newlines
+/// (\r\n, \n, or just \r).
+struct GraphQLLines<'a> {
+    input: &'a str,
+    finished: bool,
+}
+
+impl<'a> GraphQLLines<'a> {
+    fn new(input: &'a str) -> Self {
+        Self {
+            input,
+            finished: false,
+        }
+    }
+}
+
+impl<'a> Iterator for GraphQLLines<'a> {
+    type Item = &'a str;
+    fn next(&mut self) -> Option<Self::Item> {
+        // Can't just check for the input string being empty, as an empty string should still
+        // produce one line.
+        if self.finished {
+            return None;
+        }
+
+        let Some(index) = memchr::memchr2(b'\r', b'\n', self.input.as_bytes()) else {
+            self.finished = true;
+            return Some(self.input);
+        };
+        let line = &self.input[..index];
+        let rest = match self.input.get(index..=index + 1) {
+            Some("\r\n") => &self.input[index + 2..],
+            _ => &self.input[index + 1..],
+        };
+        self.input = rest;
+        Some(line)
+    }
+}
+
+#[test]
+fn test_split_graphql_lines() {
+    let plain_newlines: Vec<_> = GraphQLLines::new(
+        r#"source text
+    with some
+    new
+
+
+    lines
+        "#,
+    )
+    .collect();
+
+    assert_eq!(
+        plain_newlines,
+        [
+            "source text",
+            "    with some",
+            "    new",
+            "",
+            "",
+            "    lines",
+            "        ",
+        ]
+    );
+
+    let different_endings: Vec<_> =
+        GraphQLLines::new("with\nand\r\nand\rall in the same\r\nstring").collect();
+    assert_eq!(
+        different_endings,
+        ["with", "and", "and", "all in the same", "string",]
+    );
+
+    let empty_string: Vec<_> = GraphQLLines::new("").collect();
+    assert_eq!(empty_string, [""]);
+
+    let empty_line: Vec<_> = GraphQLLines::new("\n\r\r\n").collect();
+    assert_eq!(empty_line, ["", "", "", ""]);
+}
+
+/// Split lines on \n, \r\n, and just \r
+fn split_lines(input: &str) -> impl Iterator<Item = &str> {
+    GraphQLLines::new(input)
+}
+
+fn replace_into(input: &str, pattern: &str, replace: &str, output: &mut String) {
+    let mut last_index = 0;
+    for index in memchr::memmem::find_iter(input.as_bytes(), pattern.as_bytes()) {
+        output.push_str(&input[last_index..index]);
+        output.push_str(replace);
+        last_index = index + pattern.len();
+    }
+    if last_index < input.len() {
+        output.push_str(&input[last_index..]);
+    }
+}
+
+fn unescape_block_string(raw_value: &str) -> String {
+    // WhiteSpace :: Horizontal Tab (U+0009) Space (U+0020)
+    fn is_whitespace(c: char) -> bool {
+        matches!(c, ' ' | '\t')
+    }
+    // `line` should be a single line, possibly including newline characters at the end.
+    fn is_whitespace_line(line: &str) -> bool {
+        line.chars().all(|c| matches!(c, ' ' | '\t' | '\n' | '\r'))
+    }
+    fn count_indent(line: &str) -> usize {
+        line.chars().take_while(|&c| is_whitespace(c)).count()
+    }
+
+    // 3. For each line in lines:
+    let common_indent = split_lines(raw_value)
+        // 3.a. If line is the first item in lines, continue to the next line.
+        .skip(1)
+        .filter_map(|line| {
+            // 3.b. Let length be the number of characters in line.
+            let length = line.len();
+            // 3.c. Let indent be the number of leading consecutive WhiteSpace characters in line.
+            let indent = count_indent(line);
+            // 3.d. If indent is less than length:
+            (indent < length).then_some(indent)
+        })
+        .min();
+
+    let mut lines = split_lines(raw_value)
+        .enumerate()
+        // 4.a. For each line in lines:
+        .map(|(index, line)| {
+            // 4.a.i. If line is the first item in lines, continue to the next line.
+            if index == 0 {
+                line
+            } else if let Some(common_indent) = common_indent {
+                // 4.a.ii. Remove commonIndent characters from the beginning of line.
+                &line[common_indent.min(line.len())..]
+            } else {
+                line
+            }
+        })
+        .skip_while(|line| is_whitespace_line(line));
+
+    // 7. Let formatted be the empty character sequence.
+    let mut formatted = String::with_capacity(raw_value.len());
+
+    // 8. For each line in lines:
+    // 8.a. If line is the first item in lines:
+    if let Some(line) = lines.next() {
+        // 8.a.i. Append formatted with line.
+        replace_into(line, ESCAPED_TRIPLE_QUOTE, TRIPLE_QUOTE, &mut formatted);
+    };
+
+    let mut final_char_index = formatted.len();
+
+    // 8.b. Otherwise:
+    for line in lines {
+        // 8.b.i. Append formatted with a line feed character (U+000A).
+        formatted.push('\n');
+        // 8.b.ii. Append formatted with line.
+        replace_into(line, ESCAPED_TRIPLE_QUOTE, TRIPLE_QUOTE, &mut formatted);
+
+        if !is_whitespace_line(line) {
+            final_char_index = formatted.len();
+        }
+    }
+
+    // Remove the excess
+    formatted.truncate(final_char_index);
+
+    // 9. Return formatted.
+    formatted
 }
 
 // TODO(@goto-bus-stop) As this handles escaping, which can fail in theory, it should be TryFrom
