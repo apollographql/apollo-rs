@@ -15,6 +15,7 @@ use apollo_parser::ast;
 use apollo_parser::ast::AstNode;
 
 use super::field;
+use super::operation::OperationValidationConfig;
 
 const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 
@@ -162,7 +163,7 @@ pub trait ValidationDatabase:
     fn validate_field(
         &self,
         field: Arc<Field>,
-        vars: Arc<Vec<VariableDefinition>>,
+        context: OperationValidationConfig,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(field::validate_leaf_field_selection)]
@@ -198,14 +199,14 @@ pub trait ValidationDatabase:
     fn validate_fragment_spread(
         &self,
         spread: Arc<FragmentSpread>,
-        var_defs: Arc<Vec<VariableDefinition>>,
+        context: OperationValidationConfig,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_inline_fragment)]
     fn validate_inline_fragment(
         &self,
         inline: Arc<InlineFragment>,
-        var_defs: Arc<Vec<VariableDefinition>>,
+        context: OperationValidationConfig,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_definition)]
@@ -213,7 +214,7 @@ pub trait ValidationDatabase:
     fn validate_fragment_definition(
         &self,
         def: Arc<FragmentDefinition>,
-        var_defs: Arc<Vec<VariableDefinition>>,
+        context: OperationValidationConfig,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(fragment::validate_fragment_cycles)]
@@ -237,19 +238,22 @@ pub trait ValidationDatabase:
     fn validate_selection_set(
         &self,
         sel_set: SelectionSet,
-        vars: Arc<Vec<VariableDefinition>>,
+        context: OperationValidationConfig,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(selection::validate_selection)]
     fn validate_selection(
         &self,
         sel: Arc<Vec<Selection>>,
-        vars: Arc<Vec<VariableDefinition>>,
+        context: OperationValidationConfig,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(variable::validate_variable_definitions)]
-    fn validate_variable_definitions(&self, defs: Vec<VariableDefinition>)
-        -> Vec<ApolloDiagnostic>;
+    fn validate_variable_definitions(
+        &self,
+        defs: Arc<Vec<VariableDefinition>>,
+        has_schema: bool,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(variable::validate_unused_variables)]
     fn validate_unused_variable(&self, op: Arc<OperationDefinition>) -> Vec<ApolloDiagnostic>;
@@ -528,9 +532,10 @@ pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
     diagnostics
 }
 
-pub fn validate_standalone_executable(
+fn validate_executable_inner(
     db: &dyn ValidationDatabase,
     file_id: FileId,
+    has_schema: bool,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -555,7 +560,9 @@ pub fn validate_standalone_executable(
 
     diagnostics.extend(db.validate_executable_names(file_id));
 
-    diagnostics.extend(db.validate_operation_definitions(file_id));
+    diagnostics.extend(super::operation::validate_operation_definitions_inner(
+        db, file_id, has_schema,
+    ));
     for def in db.fragments(file_id).values() {
         diagnostics.extend(db.validate_fragment_used(Arc::clone(def), file_id));
     }
@@ -564,12 +571,15 @@ pub fn validate_standalone_executable(
     diagnostics
 }
 
+pub fn validate_standalone_executable(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
+    validate_executable_inner(db, file_id, false)
+}
+
 pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = db.validate_standalone_executable(file_id);
-    diagnostics
-        .extend(super::operation::validate_operation_definitions_against_type_system(db, file_id));
-    diagnostics.sort_by_key(location_sort_key);
-    diagnostics
+    validate_executable_inner(db, file_id, true)
 }
 
 #[cfg(test)]
@@ -776,7 +786,27 @@ type TestObject {
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(
             diagnostics[0].data.to_string(),
-            "the fragment `A` is not defined in the document"
+            "cannot find fragment `A` in this document"
         );
+    }
+
+    #[test]
+    fn validate_variable_usage_without_type_system() {
+        let mut compiler = ApolloCompiler::new();
+        let id = compiler.add_executable(r#"
+query nullableStringArg($nonNullableVar: String!, $nonNullableList: [String!]!, $nonNullableListList: [[Int!]!]) {
+  arguments {
+    nullableString(nullableString: $nonNullableVar)
+    nullableList(nullableList: $nonNullableList)
+    nullableListList(nullableListList: $nonNullableListList)
+  }
+}
+"#, "query.graphql");
+
+        let diagnostics = compiler.db.validate_standalone_executable(id);
+        for diag in &diagnostics {
+            println!("{diag}")
+        }
+        assert_eq!(diagnostics.len(), 0);
     }
 }

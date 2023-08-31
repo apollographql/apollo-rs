@@ -16,6 +16,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Maintenance
 ## Documentation -->
+# [x.x.x] (unreleased) - 2021-mm-dd
+
+## Features
+- Add `validate_standalone_executable` function to validate an executable document without access to a schema, by [goto-bus-stop] in [pull/631], [issue/629]
+
+  This runs just those validations that can be done on operations without knowing the types of things.
+  ```rust
+  let compiler = ApolloCompiler::new();
+  let file_id = compiler.add_executable(r#"
+  {
+    user { ...userData }
+  }
+  "#, "query.graphql");
+  let diagnostics = compiler.db.validate_standalone_executable(file_id);
+  // Complains about `userData` fragment not existing, but does not complain about `user` being an unknown query.
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/631]: https://github.com/apollographql/apollo-rs/pull/631
+[issue/629]: https://github.com/apollographql/apollo-rs/issues/629
 
 # [0.11.1](https://crates.io/crates/apollo-compiler/0.11.1) - 2023-08-24
 
