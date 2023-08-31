@@ -541,21 +541,25 @@ fn validate_executable_inner(
     let mut diagnostics = Vec::new();
 
     if db.source_type(file_id).is_executable() {
-        let document = db.cst(file_id).document();
-        for def in document.definitions() {
-            if !def.is_executable_definition() {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        (file_id, def.syntax().text_range()).into(),
-                        DiagnosticData::ExecutableDefinition { kind: def.kind() },
-                    )
-                    .label(Label::new(
-                        (file_id, def.syntax().text_range()),
-                        "not supported in executable documents",
-                    )),
-                );
+        let document = db.ast(file_id);
+        for def in &document.definitions {
+            if def.is_executable_definition() {
+                continue;
             }
+            let Some(&location) = def.location() else {
+                continue;
+            };
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    location.into(),
+                    DiagnosticData::ExecutableDefinition { kind: def.kind() },
+                )
+                .label(Label::new(
+                    location,
+                    "not supported in executable documents",
+                )),
+            );
         }
     }
 

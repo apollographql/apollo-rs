@@ -1,4 +1,5 @@
 use super::*;
+use crate::hir::HirNodeLocation;
 use std::fmt;
 
 macro_rules! directive_by_name_method {
@@ -76,6 +77,58 @@ impl fmt::Debug for Document {
 }
 
 impl Definition {
+    /// Returns true if this is an executable definition (operation or fragment).
+    pub fn is_executable_definition(&self) -> bool {
+        matches!(
+            self,
+            Self::OperationDefinition(_) | Self::FragmentDefinition(_)
+        )
+    }
+
+    pub fn kind(&self) -> &'static str {
+        match self {
+            Self::OperationDefinition(_) => "OperationDefinition",
+            Self::FragmentDefinition(_) => "FragmentDefinition",
+            Self::DirectiveDefinition(_) => "DirectiveDefinition",
+            Self::ScalarTypeDefinition(_) => "ScalarTypeDefinition",
+            Self::ObjectTypeDefinition(_) => "ObjectTypeDefinition",
+            Self::InterfaceTypeDefinition(_) => "InterfaceTypeDefinition",
+            Self::UnionTypeDefinition(_) => "UnionTypeDefinition",
+            Self::EnumTypeDefinition(_) => "EnumTypeDefinition",
+            Self::InputObjectTypeDefinition(_) => "InputObjectTypeDefinition",
+            Self::SchemaDefinition(_) => "SchemaDefinition",
+            Self::SchemaExtension(_) => "SchemaExtension",
+            Self::ScalarTypeExtension(_) => "ScalarTypeExtension",
+            Self::ObjectTypeExtension(_) => "ObjectTypeExtension",
+            Self::InterfaceTypeExtension(_) => "InterfaceTypeExtension",
+            Self::UnionTypeExtension(_) => "UnionTypeExtension",
+            Self::EnumTypeExtension(_) => "EnumTypeExtension",
+            Self::InputObjectTypeExtension(_) => "InputObjectTypeExtension",
+        }
+    }
+
+    pub fn location(&self) -> Option<&HirNodeLocation> {
+        match self {
+            Self::OperationDefinition(def) => def.location(),
+            Self::FragmentDefinition(def) => def.location(),
+            Self::DirectiveDefinition(def) => def.location(),
+            Self::SchemaDefinition(def) => def.location(),
+            Self::ScalarTypeDefinition(def) => def.location(),
+            Self::ObjectTypeDefinition(def) => def.location(),
+            Self::InterfaceTypeDefinition(def) => def.location(),
+            Self::UnionTypeDefinition(def) => def.location(),
+            Self::EnumTypeDefinition(def) => def.location(),
+            Self::InputObjectTypeDefinition(def) => def.location(),
+            Self::SchemaExtension(def) => def.location(),
+            Self::ScalarTypeExtension(def) => def.location(),
+            Self::ObjectTypeExtension(def) => def.location(),
+            Self::InterfaceTypeExtension(def) => def.location(),
+            Self::UnionTypeExtension(def) => def.location(),
+            Self::EnumTypeExtension(def) => def.location(),
+            Self::InputObjectTypeExtension(def) => def.location(),
+        }
+    }
+
     /// Returns an iterator of directives with the given name.
     ///
     /// This method is best for repeatable directives. For non-repeatable directives,
