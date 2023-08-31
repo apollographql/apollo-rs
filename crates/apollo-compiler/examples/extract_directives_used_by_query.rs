@@ -1,3 +1,4 @@
+//! This example collects all directives declared on the fields that are queried by an operation.
 use apollo_compiler::{
     hir::{Directive, Field},
     ApolloCompiler, FileId, HirDatabase,
@@ -11,20 +12,24 @@ fn get_directives_used_in_query(compiler: &ApolloCompiler, query_id: &FileId) ->
             .operations(*query_id)
             .iter()
             .fold(vec![], |mut acc, operation_definition| {
-                acc.extend(operation_definition.selection_set().fields().to_vec());
+                acc.extend(
+                    operation_definition
+                        .selection_set()
+                        .fields()
+                        .iter()
+                        .cloned(),
+                );
                 acc
             });
 
     let mut directives = vec![];
 
     // depth first search for nested fields with directives
-    while !stack.is_empty() {
-        if let Some(field) = stack.pop() {
-            if let Some(field_definition) = &field.field_definition(&compiler.db) {
-                directives.extend(field_definition.directives().to_vec());
-            }
-            stack.extend(field.selection_set().fields().to_vec());
+    while let Some(field) = stack.pop() {
+        if let Some(field_definition) = &field.field_definition(&compiler.db) {
+            directives.extend(field_definition.directives().iter().cloned());
         }
+        stack.extend(field.selection_set().fields().iter().cloned());
     }
 
     directives
