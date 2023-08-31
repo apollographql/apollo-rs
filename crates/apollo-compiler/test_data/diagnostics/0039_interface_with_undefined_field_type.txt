@@ -8,35 +8,6 @@
             file_id: FileId {
                 id: 39,
             },
-            offset: 79,
-            length: 6,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 39,
-                    },
-                    offset: 79,
-                    length: 6,
-                },
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "relationship",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            39: "0039_interface_with_undefined_field_type.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 39,
-            },
             offset: 33,
             length: 3,
         },
@@ -55,6 +26,35 @@
         help: None,
         data: UndefinedDefinition {
             name: "img",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            39: "0039_interface_with_undefined_field_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 39,
+            },
+            offset: 79,
+            length: 6,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 39,
+                    },
+                    offset: 79,
+                    length: 6,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "relationship",
         },
     },
 ]

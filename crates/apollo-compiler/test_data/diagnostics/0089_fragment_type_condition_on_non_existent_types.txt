@@ -8,8 +8,8 @@
             file_id: FileId {
                 id: 86,
             },
-            offset: 301,
-            length: 55,
+            offset: 93,
+            length: 40,
         },
         labels: [
             Label {
@@ -17,18 +17,18 @@
                     file_id: FileId {
                         id: 86,
                     },
-                    offset: 301,
-                    length: 55,
+                    offset: 93,
+                    length: 40,
                 },
-                text: "`Interface2` is defined here but not declared in the schema",
+                text: "`MissingSecondType` is defined here but not declared in the schema",
             },
         ],
         help: Some(
-            "consider defining `Interface2` in the schema",
+            "consider defining `MissingSecondType` in the schema",
         ),
         data: InvalidFragment {
             ty: Some(
-                "Interface2",
+                "MissingSecondType",
             ),
         },
     },
@@ -74,8 +74,8 @@
             file_id: FileId {
                 id: 86,
             },
-            offset: 93,
-            length: 40,
+            offset: 301,
+            length: 55,
         },
         labels: [
             Label {
@@ -83,18 +83,18 @@
                     file_id: FileId {
                         id: 86,
                     },
-                    offset: 93,
-                    length: 40,
+                    offset: 301,
+                    length: 55,
                 },
-                text: "`MissingSecondType` is defined here but not declared in the schema",
+                text: "`Interface2` is defined here but not declared in the schema",
             },
         ],
         help: Some(
-            "consider defining `MissingSecondType` in the schema",
+            "consider defining `Interface2` in the schema",
         ),
         data: InvalidFragment {
             ty: Some(
-                "MissingSecondType",
+                "Interface2",
             ),
         },
     },

@@ -8,6 +8,35 @@
             file_id: FileId {
                 id: 3,
             },
+            offset: 0,
+            length: 15,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 3,
+                    },
+                    offset: 0,
+                    length: 15,
+                },
+                text: "provide a name for this definition",
+            },
+        ],
+        help: Some(
+            "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
+        ),
+        data: MissingIdent,
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            3: "0003_anonymous_and_named_operation.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 3,
+            },
             offset: 38,
             length: 25,
         },
@@ -37,34 +66,5 @@
         data: RequiredArgument {
             name: "name",
         },
-    },
-    ApolloDiagnostic {
-        cache: {
-            0: "built_in_types.graphql",
-            3: "0003_anonymous_and_named_operation.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 3,
-            },
-            offset: 0,
-            length: 15,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 3,
-                    },
-                    offset: 0,
-                    length: 15,
-                },
-                text: "provide a name for this definition",
-            },
-        ],
-        help: Some(
-            "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
-        ),
-        data: MissingIdent,
     },
 ]

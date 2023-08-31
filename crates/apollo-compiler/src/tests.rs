@@ -30,8 +30,9 @@ fn compiler_tests() {
         let file_id = compiler.add_document(text, path.file_name().unwrap());
 
         let errors = compiler.validate();
-        let ast = compiler.db.ast(file_id);
         assert_diagnostics_are_absent(&errors, path);
+
+        let ast = compiler.db.ast(file_id);
         format!("{ast:?}")
     });
 
