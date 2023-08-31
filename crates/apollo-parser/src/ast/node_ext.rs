@@ -438,11 +438,40 @@ fn text_of_first_token(node: &SyntaxNode) -> TokenText {
 }
 
 #[cfg(test)]
+mod string_tests {
+    use super::unescape_string;
+
+    #[test]
+    fn it_parses_strings() {
+        assert_eq!(unescape_string(r"simple"), "simple");
+        assert_eq!(unescape_string(r" white space "), " white space ");
+    }
+
+    #[test]
+    fn it_unescapes_strings() {
+        assert_eq!(unescape_string(r#"quote \""#), "quote \"");
+        assert_eq!(
+            unescape_string(r"escaped \n\r\b\t\f"),
+            "escaped \n\r\u{0008}\t\u{000c}"
+        );
+        assert_eq!(unescape_string(r"slashes \\ \/"), r"slashes \ /");
+        assert_eq!(
+            unescape_string("unescaped unicode outside BMP \u{1f600}"),
+            "unescaped unicode outside BMP \u{1f600}"
+        );
+        assert_eq!(
+            unescape_string(r"unicode \u1234\u5678\u90AB\uCDEF"),
+            "unicode \u{1234}\u{5678}\u{90AB}\u{CDEF}"
+        );
+    }
+}
+
+#[cfg(test)]
 mod block_string_tests {
     use super::{split_lines, unescape_block_string};
 
     #[test]
-    fn test_split_graphql_lines() {
+    fn it_splits_lines_by_graphql_newline_definition() {
         let plain_newlines: Vec<_> = split_lines(
             r#"source text
     with some
