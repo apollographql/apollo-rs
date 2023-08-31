@@ -138,6 +138,15 @@ pub fn validate_directive_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = vec![];
 
+    diagnostics.extend(super::input_object::validate_input_value_definitions(
+        db,
+        &def.arguments,
+    ));
+
+    // A directive definition must not contain the use of a directive which
+    // references itself directly.
+    //
+    // Returns Recursive Definition error.
     if let Err(directive) = FindRecursiveDirective::check(&db.schema(), &def) {
         let Some(&definition_location) = def.location() else {
             return vec![];
@@ -181,24 +190,9 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
     for file_id in db.type_definition_files() {
         for def in &db.ast(file_id).definitions {
             if let ast::Definition::DirectiveDefinition(directive_definition) = def {
-                diagnostics.extend(validate_directive_definition(
-                    db,
-                    directive_definition.clone(),
-                ));
+                diagnostics.extend(db.validate_directive_definition(directive_definition.clone()));
             }
         }
-    }
-
-    // A directive definition must not contain the use of a directive which
-    // references itself directly.
-    //
-    // Returns Recursive Definition error.
-    for directive_def in db.directive_definitions().values() {
-        // Validate directive definitions' arguments
-        diagnostics.extend(db.validate_arguments_definition(
-            directive_def.arguments.clone(),
-            hir::DirectiveLocation::ArgumentDefinition,
-        ));
     }
 
     diagnostics

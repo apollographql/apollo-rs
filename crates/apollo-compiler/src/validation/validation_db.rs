@@ -1,5 +1,5 @@
-use crate::Arc;
 use crate::{
+    ast,
     database::db::Upcast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::*,
@@ -7,7 +7,7 @@ use crate::{
         argument, directive, enum_, extension, fragment, input_object, interface, object,
         operation, scalar, schema, selection, union_, value, variable,
     },
-    FileId, HirDatabase, InputDatabase, ReprDatabase,
+    Arc, FileId, HirDatabase, InputDatabase, Node, ReprDatabase,
 };
 use apollo_parser::cst;
 use apollo_parser::cst::CstNode;
@@ -94,6 +94,12 @@ pub trait ValidationDatabase:
         &self,
         implementor_name: String,
         impl_interfaces: Vec<ImplementsInterface>,
+    ) -> Vec<ApolloDiagnostic>;
+
+    #[salsa::invoke(directive::validate_directive_definition)]
+    fn validate_directive_definition(
+        &self,
+        directive_definition: Node<ast::DirectiveDefinition>,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(directive::validate_directive_definitions)]

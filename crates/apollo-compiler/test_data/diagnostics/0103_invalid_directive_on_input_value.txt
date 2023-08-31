@@ -1,0 +1,80 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            100: "0103_invalid_directive_on_input_value.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 100,
+            },
+            offset: 154,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 100,
+                    },
+                    offset: 154,
+                    length: 8,
+                },
+                text: "missing value for argument `arg`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 100,
+                    },
+                    offset: 19,
+                    length: 12,
+                },
+                text: "argument defined here",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "arg",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            100: "0103_invalid_directive_on_input_value.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 100,
+            },
+            offset: 111,
+            length: 8,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 100,
+                    },
+                    offset: 111,
+                    length: 8,
+                },
+                text: "missing value for argument `arg`",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 100,
+                    },
+                    offset: 19,
+                    length: 12,
+                },
+                text: "argument defined here",
+            },
+        ],
+        help: None,
+        data: RequiredArgument {
+            name: "arg",
+        },
+    },
+]

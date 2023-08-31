@@ -1,9 +1,9 @@
-use crate::Arc;
 use crate::{
+    ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::RecursionStack,
-    ValidationDatabase,
+    Arc, Node, ValidationDatabase,
 };
 use std::collections::HashMap;
 
@@ -133,6 +133,48 @@ pub fn validate_input_object_definition(
         hir::DirectiveLocation::InputFieldDefinition,
     ));
 
+    diagnostics
+}
+
+pub fn validate_input_value_definitions(
+    db: &dyn ValidationDatabase,
+    input_values: &[Node<ast::InputValueDefinition>],
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+    let mut seen: HashMap<ast::Name, &Node<ast::InputValueDefinition>> = HashMap::new();
+    for input_value in input_values {
+        let name = &input_value.name;
+        // TODO(@goto-bus-stop): Validate directives
+        if let Some(prev_value) = seen.get(name) {
+            if let (Some(&original_value), Some(&redefined_value)) =
+                (prev_value.location(), input_value.location())
+            {
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        original_value.into(),
+                        DiagnosticData::UniqueInputValue {
+                            name: name.to_string(),
+                            original_value: original_value.into(),
+                            redefined_value: redefined_value.into(),
+                        },
+                    )
+                    .labels([
+                        Label::new(
+                            original_value,
+                            format!("previous definition of `{name}` here"),
+                        ),
+                        Label::new(redefined_value, format!("`{name}` redefined here")),
+                    ])
+                    .help(format!(
+                        "`{name}` field must only be defined once in this input object definition."
+                    )),
+                );
+            }
+        } else {
+            seen.insert(name.clone(), input_value);
+        }
+    }
     diagnostics
 }
 
