@@ -281,6 +281,8 @@ fn unescape_block_string(raw_value: &str) -> String {
         line.chars().take_while(|&c| is_whitespace(c)).count()
     }
 
+    // 1. Let lines be the result of splitting rawValue by LineTerminator.
+    // 2. Let commonIndent be null.
     // 3. For each line in lines:
     let common_indent = split_lines(raw_value)
         // 3.a. If line is the first item in lines, continue to the next line.
@@ -312,6 +314,8 @@ fn unescape_block_string(raw_value: &str) -> String {
         // 5.a. Remove the first item from lines.
         .skip_while(|line| is_whitespace_line(line));
 
+    // (Step 6 is done at the end so we don't need an intermediate allocation.)
+
     // 7. Let formatted be the empty character sequence.
     let mut formatted = String::with_capacity(raw_value.len());
 
@@ -331,12 +335,13 @@ fn unescape_block_string(raw_value: &str) -> String {
         // 8.b.ii. Append formatted with line.
         replace_into(line, ESCAPED_TRIPLE_QUOTE, TRIPLE_QUOTE, &mut formatted);
 
+        // Track the last non-whitespace line for implementing step 6 in the spec.
         if !is_whitespace_line(line) {
             final_char_index = formatted.len();
         }
     }
 
-    // Remove WhiteSpace-only lines from the end.
+    // 6. Implemented differently: remove WhiteSpace-only lines from the end.
     formatted.truncate(final_char_index);
 
     // 9. Return formatted.
