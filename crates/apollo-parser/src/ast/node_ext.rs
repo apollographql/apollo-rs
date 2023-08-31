@@ -456,8 +456,8 @@ mod string_tests {
         );
         assert_eq!(unescape_string(r"slashes \\ \/"), r"slashes \ /");
         assert_eq!(
-            unescape_string("unescaped unicode outside BMP \u{1f600}"),
-            "unescaped unicode outside BMP \u{1f600}"
+            unescape_string("unescaped unicode outside BMP 😀"),
+            "unescaped unicode outside BMP 😀"
         );
         assert_eq!(
             unescape_string(r"unicode \u1234\u5678\u90AB\uCDEF"),
