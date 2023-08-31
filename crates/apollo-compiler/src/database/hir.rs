@@ -860,18 +860,6 @@ impl DirectiveDefinition {
         self.loc
     }
 
-    /// Get the location information for the "head" of the directive definition, namely the
-    /// `directive` keyword and the name.
-    pub(crate) fn head_loc(&self) -> HirNodeLocation {
-        self.name_src()
-            .loc()
-            .map(|name_loc| HirNodeLocation {
-                file_id: self.loc.file_id,
-                text_range: TextRange::new(self.loc.text_range.start(), name_loc.text_range.end()),
-            })
-            .unwrap_or(self.loc)
-    }
-
     /// Checks if current directive is one of built-in directives - `@skip`,
     /// `@include`, `@deprecated`, `@specifiedBy`.
     pub fn is_built_in(&self) -> bool {

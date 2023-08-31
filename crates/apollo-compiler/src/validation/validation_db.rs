@@ -27,6 +27,7 @@ pub trait ValidationDatabase:
 
     /// Validate the type system, combined of all type system documents known to
     /// the compiler.
+    #[salsa::invoke(validate_type_system)]
     fn validate_type_system(&self) -> Vec<ApolloDiagnostic>;
 
     /// Validate an executable document.

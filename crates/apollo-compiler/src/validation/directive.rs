@@ -1,40 +1,50 @@
-use crate::Arc;
 use crate::{
+    ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
+    hir, schema,
     validation::{RecursionStack, ValidationSet},
-    ValidationDatabase,
+    Arc, Node, ValidationDatabase,
 };
+use apollo_parser::cst;
 use std::collections::HashSet;
 
 /// This struct just groups functions that are used to find self-referential directives.
 /// The way to use it is to call `FindRecursiveDirective::check`.
-struct FindRecursiveDirective<'a> {
-    db: &'a dyn ValidationDatabase,
+struct FindRecursiveDirective<'s> {
+    schema: &'s schema::Schema,
 }
 
 impl FindRecursiveDirective<'_> {
     fn type_definition(
         &self,
         seen: &mut RecursionStack<'_>,
-        def: &hir::TypeDefinition,
-    ) -> Result<(), hir::Directive> {
-        for directive in def.directives() {
-            self.directive(seen, directive)?;
-        }
-
+        def: &schema::ExtendedType,
+    ) -> Result<(), Node<ast::Directive>> {
         match def {
-            hir::TypeDefinition::InputObjectTypeDefinition(input_type_definition) => {
-                for input_value in input_type_definition.fields() {
-                    self.input_value(seen, input_value)?;
-                }
+            schema::ExtendedType::Scalar(scalar_type_definition) => {
+                self.directives(seen, &scalar_type_definition.directives)?;
             }
-            hir::TypeDefinition::EnumTypeDefinition(enum_type_definition) => {
-                for enum_value in enum_type_definition.values() {
+            schema::ExtendedType::Object(object_type_definition) => {
+                self.directives(seen, &object_type_definition.directives)?;
+            }
+            schema::ExtendedType::Interface(interface_type_definition) => {
+                self.directives(seen, &interface_type_definition.directives)?;
+            }
+            schema::ExtendedType::Union(union_type_definition) => {
+                self.directives(seen, &union_type_definition.directives)?;
+            }
+            schema::ExtendedType::Enum(enum_type_definition) => {
+                self.directives(seen, &enum_type_definition.directives)?;
+                for enum_value in enum_type_definition.values.values() {
                     self.enum_value(seen, enum_value)?;
                 }
             }
-            _ => (),
+            schema::ExtendedType::InputObject(input_type_definition) => {
+                self.directives(seen, &input_type_definition.directives)?;
+                for input_value in input_type_definition.fields.values() {
+                    self.input_value(seen, input_value)?;
+                }
+            }
         }
 
         Ok(())
@@ -43,12 +53,14 @@ impl FindRecursiveDirective<'_> {
     fn input_value(
         &self,
         seen: &mut RecursionStack<'_>,
-        input_value: &hir::InputValueDefinition,
-    ) -> Result<(), hir::Directive> {
-        for directive in input_value.directives() {
+        input_value: &Node<ast::InputValueDefinition>,
+    ) -> Result<(), Node<ast::Directive>> {
+        for directive in &input_value.directives {
             self.directive(seen, directive)?;
         }
-        if let Some(type_def) = input_value.ty().type_def(self.db.upcast()) {
+
+        let type_name = input_value.ty.inner_named_type();
+        if let Some(type_def) = self.schema.types.get(type_name) {
             self.type_definition(seen, &type_def)?;
         }
 
@@ -58,25 +70,36 @@ impl FindRecursiveDirective<'_> {
     fn enum_value(
         &self,
         seen: &mut RecursionStack<'_>,
-        enum_value: &hir::EnumValueDefinition,
-    ) -> Result<(), hir::Directive> {
-        for directive in enum_value.directives() {
+        enum_value: &Node<ast::EnumValueDefinition>,
+    ) -> Result<(), Node<ast::Directive>> {
+        for directive in &enum_value.directives {
             self.directive(seen, directive)?;
         }
 
         Ok(())
     }
 
+    fn directives(
+        &self,
+        seen: &mut RecursionStack<'_>,
+        directives: &[schema::Component<ast::Directive>],
+    ) -> Result<(), Node<ast::Directive>> {
+        for directive in directives {
+            self.directive(seen, directive)?;
+        }
+        Ok(())
+    }
+
     fn directive(
         &self,
         seen: &mut RecursionStack<'_>,
-        directive: &hir::Directive,
-    ) -> Result<(), hir::Directive> {
-        if !seen.contains(directive.name()) {
-            if let Some(def) = directive.directive(self.db.upcast()) {
-                self.directive_definition(seen.push(directive.name().to_string()), &def)?;
+        directive: &Node<ast::Directive>,
+    ) -> Result<(), Node<ast::Directive>> {
+        if !seen.contains(&directive.name) {
+            if let Some(def) = self.schema.directive_definitions.get(&directive.name) {
+                self.directive_definition(seen.push(directive.name.to_string()), &def)?;
             }
-        } else if seen.first() == Some(directive.name()) {
+        } else if seen.first() == Some(&directive.name) {
             // Only report an error & bail out early if this is the *initial* directive.
             // This prevents raising confusing errors when a directive `@b` which is not
             // self-referential uses a directive `@a` that *is*. The error with `@a` should
@@ -90,10 +113,10 @@ impl FindRecursiveDirective<'_> {
     fn directive_definition(
         &self,
         mut seen: RecursionStack<'_>,
-        def: &hir::DirectiveDefinition,
-    ) -> Result<(), hir::Directive> {
-        let mut guard = seen.push(def.name().to_string());
-        for input_value in def.arguments().input_values() {
+        def: &Node<ast::DirectiveDefinition>,
+    ) -> Result<(), Node<ast::Directive>> {
+        let mut guard = seen.push(def.name.to_string());
+        for input_value in &def.arguments {
             self.input_value(&mut guard, input_value)?;
         }
 
@@ -101,37 +124,101 @@ impl FindRecursiveDirective<'_> {
     }
 
     fn check(
-        db: &dyn ValidationDatabase,
-        directive_def: &hir::DirectiveDefinition,
-    ) -> Result<(), hir::Directive> {
-        FindRecursiveDirective { db }
+        schema: &schema::Schema,
+        directive_def: &Node<ast::DirectiveDefinition>,
+    ) -> Result<(), Node<ast::Directive>> {
+        FindRecursiveDirective { schema }
             .directive_definition(RecursionStack(&mut vec![]), directive_def)
     }
+}
+
+/// Find the closest CST node of the requested type that contains the whole range indicated by `location`.
+fn lookup_cst_node<T: cst::CstNode>(
+    db: &dyn crate::database::HirDatabase,
+    location: hir::HirNodeLocation,
+) -> Option<T> {
+    use cst::CstNode;
+    let document = db.cst(location.file_id).document();
+    let root = document.syntax();
+    let element = root.covering_element(location.text_range);
+    element.ancestors().find_map(T::cast)
+}
+
+/// Create a custom text range based on the concrete syntax tree.
+fn lookup_cst_location<T: cst::CstNode>(
+    db: &dyn crate::database::HirDatabase,
+    reference_location: hir::HirNodeLocation,
+    build_range: impl Fn(T) -> Option<apollo_parser::TextRange>,
+) -> Option<hir::HirNodeLocation> {
+    let node = lookup_cst_node::<T>(db, reference_location)?;
+    build_range(node).map(|text_range| hir::HirNodeLocation {
+        file_id: reference_location.file_id,
+        text_range,
+    })
+}
+
+pub fn validate_directive_definition(
+    db: &dyn ValidationDatabase,
+    def: Node<ast::DirectiveDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = vec![];
+
+    if let Err(directive) = FindRecursiveDirective::check(&db.schema(), &def) {
+        let Some(&definition_location) = def.location() else {
+            return vec![];
+        };
+        let Some(&directive_location) = directive.location() else {
+            return vec![];
+        };
+        let head_location = lookup_cst_location(
+            db.upcast(),
+            definition_location,
+            |node: cst::DirectiveDefinition| {
+                let directive_token = node.directive_token()?;
+                let name_token = node.name()?.ident_token()?;
+
+                Some(directive_token.text_range().cover(name_token.text_range()))
+            },
+        );
+
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                definition_location.into(),
+                DiagnosticData::RecursiveDirectiveDefinition {
+                    name: def.name.to_string(),
+                },
+            )
+            .label(Label::new(
+                head_location.unwrap_or(definition_location),
+                "recursive directive definition",
+            ))
+            .label(Label::new(directive_location, "refers to itself here")),
+        );
+    }
+
+    diagnostics
 }
 
 pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    for file_id in db.type_definition_files() {
+        for def in &db.ast(file_id).definitions {
+            if let ast::Definition::DirectiveDefinition(directive_definition) = def {
+                diagnostics.extend(validate_directive_definition(
+                    db,
+                    directive_definition.clone(),
+                ));
+            }
+        }
+    }
+
     // A directive definition must not contain the use of a directive which
     // references itself directly.
     //
     // Returns Recursive Definition error.
-    for (name, directive_def) in db.directive_definitions().iter() {
-        if let Err(directive) = FindRecursiveDirective::check(db, directive_def) {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    directive_def.loc().into(),
-                    DiagnosticData::RecursiveDirectiveDefinition { name: name.clone() },
-                )
-                .label(Label::new(
-                    directive_def.head_loc(),
-                    "recursive directive definition",
-                ))
-                .label(Label::new(directive.loc(), "refers to itself here")),
-            );
-        }
-
+    for directive_def in db.directive_definitions().values() {
         // Validate directive definitions' arguments
         diagnostics.extend(db.validate_arguments_definition(
             directive_def.arguments.clone(),
