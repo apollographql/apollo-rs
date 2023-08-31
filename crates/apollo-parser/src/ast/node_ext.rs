@@ -289,6 +289,8 @@ fn unescape_block_string(raw_value: &str) -> String {
         .skip(1)
         .filter_map(|line| {
             // 3.b. Let length be the number of characters in line.
+            // We will compare this byte length to a character length below, but
+            // `count_indent` only ever counts one-byte characters, so it's equivalent.
             let length = line.len();
             // 3.c. Let indent be the number of leading consecutive WhiteSpace characters in line.
             let indent = count_indent(line);
