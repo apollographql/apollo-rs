@@ -19,7 +19,9 @@ mod variable;
 
 pub use validation_db::{ValidationDatabase, ValidationStorage};
 
+use crate::database::HirDatabase;
 use crate::hir::HirNodeLocation;
+use apollo_parser::cst::CstNode;
 
 #[derive(Debug, Eq)]
 struct ValidationSet {
@@ -60,4 +62,25 @@ impl Drop for RecursionStack<'_> {
     fn drop(&mut self) {
         self.0.pop();
     }
+}
+
+/// Find the closest CST node of the requested type that contains the whole range indicated by `location`.
+fn lookup_cst_node<T: CstNode>(db: &dyn HirDatabase, location: HirNodeLocation) -> Option<T> {
+    let document = db.cst(location.file_id).document();
+    let root = document.syntax();
+    let element = root.covering_element(location.text_range);
+    element.ancestors().find_map(T::cast)
+}
+
+/// Create a custom text range based on the concrete syntax tree.
+fn lookup_cst_location<T: CstNode>(
+    db: &dyn HirDatabase,
+    reference_location: HirNodeLocation,
+    build_range: impl Fn(T) -> Option<apollo_parser::TextRange>,
+) -> Option<HirNodeLocation> {
+    let node = lookup_cst_node::<T>(db, reference_location)?;
+    build_range(node).map(|text_range| HirNodeLocation {
+        file_id: reference_location.file_id,
+        text_range,
+    })
 }

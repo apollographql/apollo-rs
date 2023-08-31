@@ -132,31 +132,6 @@ impl FindRecursiveDirective<'_> {
     }
 }
 
-/// Find the closest CST node of the requested type that contains the whole range indicated by `location`.
-fn lookup_cst_node<T: cst::CstNode>(
-    db: &dyn crate::database::HirDatabase,
-    location: hir::HirNodeLocation,
-) -> Option<T> {
-    use cst::CstNode;
-    let document = db.cst(location.file_id).document();
-    let root = document.syntax();
-    let element = root.covering_element(location.text_range);
-    element.ancestors().find_map(T::cast)
-}
-
-/// Create a custom text range based on the concrete syntax tree.
-fn lookup_cst_location<T: cst::CstNode>(
-    db: &dyn crate::database::HirDatabase,
-    reference_location: hir::HirNodeLocation,
-    build_range: impl Fn(T) -> Option<apollo_parser::TextRange>,
-) -> Option<hir::HirNodeLocation> {
-    let node = lookup_cst_node::<T>(db, reference_location)?;
-    build_range(node).map(|text_range| hir::HirNodeLocation {
-        file_id: reference_location.file_id,
-        text_range,
-    })
-}
-
 pub fn validate_directive_definition(
     db: &dyn ValidationDatabase,
     def: Node<ast::DirectiveDefinition>,
@@ -170,7 +145,7 @@ pub fn validate_directive_definition(
         let Some(&directive_location) = directive.location() else {
             return vec![];
         };
-        let head_location = lookup_cst_location(
+        let head_location = super::lookup_cst_location(
             db.upcast(),
             definition_location,
             |node: cst::DirectiveDefinition| {
