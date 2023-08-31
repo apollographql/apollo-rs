@@ -17,6 +17,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [0.6.1](https://crates.io/crates/apollo-parser/0.6.1) - 2023-18-28
+## Fixes
+- **fix lexing escape-sequence-like text in block strings - [goto-bus-stop], [pull/638], [issue/632]**
+  Fixes a regression in 0.6.0 that could cause apollo-parser to reject valid input if a
+  block string contained backslashes. Block strings do not support escape sequences so
+  backslashes are normally literal, but 0.6.0 tried to lex them as escape sequences,
+  which could be invalid (eg. `\W` is not a supported escape sequence).
+
+  Now block strings are lexed like in 0.5.3. Only the `\"""` sequence is treated as an
+  escape sequence.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/638]: https://github.com/apollographql/apollo-rs/pull/638
+[issue/632]: https://github.com/apollographql/apollo-rs/issues/632
+
 # [0.6.0](https://crates.io/crates/apollo-parser/0.6.0) - 2023-08-18
 ## Features
 - **zero-alloc lexer - [allancalix], [pull/322]**

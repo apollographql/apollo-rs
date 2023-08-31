@@ -40,7 +40,6 @@ enum State {
     StringLiteralEscapedUnicode(usize),
     StringLiteral,
     StringLiteralStart,
-    BlockStringLiteralEscapedUnicode(usize),
     BlockStringLiteral,
     BlockStringLiteralBackslash,
     StringLiteralBackslash,
@@ -308,33 +307,6 @@ impl<'a> Cursor<'a> {
                         continue;
                     }
                 },
-                State::BlockStringLiteralEscapedUnicode(remaining) => match c {
-                    '"' => {
-                        self.add_err(Error::new(
-                            "incomplete unicode escape sequence",
-                            c.to_string(),
-                        ));
-                        token.data = self.current_str();
-                        state = State::Done;
-
-                        break;
-                    }
-                    c if !c.is_ascii_hexdigit() => {
-                        self.add_err(Error::new("invalid unicode escape sequence", c.to_string()));
-                        state = State::BlockStringLiteral;
-
-                        continue;
-                    }
-                    _ => {
-                        if remaining <= 1 {
-                            state = State::BlockStringLiteral;
-
-                            continue;
-                        }
-
-                        state = State::BlockStringLiteralEscapedUnicode(remaining - 1)
-                    }
-                },
                 State::StringLiteralEscapedUnicode(remaining) => match c {
                     '"' => {
                         self.add_err(Error::new(
@@ -379,19 +351,17 @@ impl<'a> Cursor<'a> {
                 },
                 State::BlockStringLiteralBackslash => match c {
                     '"' => {
-                        while self.eatc('"') {}
+                        // If this is \""", we need to eat 3 in total, and then continue parsing.
+                        // The lexer does not un-escape escape sequences so it's OK
+                        // if we take this path for \"", even if that is technically not an escape
+                        // sequence.
+                        if self.eatc('"') {
+                            self.eatc('"');
+                        }
 
                         state = State::BlockStringLiteral;
-                    }
-                    curr if is_escaped_char(curr) => {
-                        state = State::BlockStringLiteral;
-                    }
-                    'u' => {
-                        state = State::BlockStringLiteralEscapedUnicode(4);
                     }
                     _ => {
-                        self.add_err(Error::new("unexpected escaped character", c.to_string()));
-
                         state = State::BlockStringLiteral;
                     }
                 },
@@ -520,7 +490,7 @@ impl<'a> Cursor<'a> {
                     curr.to_string(),
                 ))
             }
-            State::StringLiteral => {
+            State::StringLiteral | State::BlockStringLiteral => {
                 let curr = self.drain();
 
                 Err(Error::with_loc(
@@ -672,5 +642,62 @@ type Query {
             .fold(String::new(), |acc, token| acc + token.unwrap().data());
 
         assert_eq!(schema, processed_schema);
+    }
+
+    #[test]
+    fn quoted_block_comment() {
+        let input = r#"
+"""
+Not an escape character:
+'/\W/'
+Escape character:
+\"""
+\"""\"""
+Not escape characters:
+\" \""
+Escape character followed by a quote:
+\""""
+"""
+        "#;
+
+        let (tokens, errors) = Lexer::new(input).lex();
+        assert!(errors.is_empty());
+        // The token data should be literally the source text.
+        assert_eq!(
+            tokens[1].data,
+            r#"
+"""
+Not an escape character:
+'/\W/'
+Escape character:
+\"""
+\"""\"""
+Not escape characters:
+\" \""
+Escape character followed by a quote:
+\""""
+"""
+"#
+            .trim(),
+        );
+
+        let input = r#"
+# String contents: """
+"""\""""""
+# Unclosed block string
+"""\"""
+        "#;
+        let (tokens, errors) = Lexer::new(input).lex();
+        assert_eq!(tokens[3].data, r#""""\"""""""#);
+        assert_eq!(
+            errors,
+            &[Error::with_loc(
+                "unterminated string value",
+                r#""""\"""
+        "#
+                .to_string(),
+                59,
+            )]
+        );
     }
 }
