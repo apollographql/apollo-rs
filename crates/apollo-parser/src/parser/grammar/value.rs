@@ -193,11 +193,11 @@ enum Test @dir__one(string: "string value", int_value: -10, float_value: -1.123e
 scalar StringWithEscapes
 "String with unicode \uadf8\ub77c\ud504\ud050\uc5d8"
 scalar StringWithUnicode
-    """
-    Escapes\nshould\nnot\nmatter
-    including \q nonexistent \W ones
-    \""" is the only one \""
-    """
+"""
+Escapes\nshould\nnot\nmatter
+including \q nonexistent \W ones
+\""" is the only one \""
+"""
 scalar BlockStringRaw
 "#;
         let parser = Parser::new(schema);
@@ -224,7 +224,6 @@ including \q nonexistent \W ones
             };
             let description = scalar.description().unwrap().string_value().unwrap();
             let s = String::from(description);
-            println!("{s}");
             assert_eq!(s, expected.next().unwrap());
         }
     }

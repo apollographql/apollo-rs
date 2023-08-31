@@ -242,51 +242,14 @@ impl<'a> Iterator for GraphQLLines<'a> {
     }
 }
 
-#[test]
-fn test_split_graphql_lines() {
-    let plain_newlines: Vec<_> = GraphQLLines::new(
-        r#"source text
-    with some
-    new
-
-
-    lines
-        "#,
-    )
-    .collect();
-
-    assert_eq!(
-        plain_newlines,
-        [
-            "source text",
-            "    with some",
-            "    new",
-            "",
-            "",
-            "    lines",
-            "        ",
-        ]
-    );
-
-    let different_endings: Vec<_> =
-        GraphQLLines::new("with\nand\r\nand\rall in the same\r\nstring").collect();
-    assert_eq!(
-        different_endings,
-        ["with", "and", "and", "all in the same", "string",]
-    );
-
-    let empty_string: Vec<_> = GraphQLLines::new("").collect();
-    assert_eq!(empty_string, [""]);
-
-    let empty_line: Vec<_> = GraphQLLines::new("\n\r\r\n").collect();
-    assert_eq!(empty_line, ["", "", "", ""]);
-}
-
 /// Split lines on \n, \r\n, and just \r
 fn split_lines(input: &str) -> impl Iterator<Item = &str> {
     GraphQLLines::new(input)
 }
 
+/// Replace a literal pattern in a string but push the output to an existing string.
+///
+/// Like `str::replace`, but doesn't allocate if there's enough space in the provided output.
 fn replace_into(input: &str, pattern: &str, replace: &str, output: &mut String) {
     let mut last_index = 0;
     for index in memchr::memmem::find_iter(input.as_bytes(), pattern.as_bytes()) {
@@ -299,15 +262,21 @@ fn replace_into(input: &str, pattern: &str, replace: &str, output: &mut String) 
     }
 }
 
+/// Implementation of the spec function `BlockStringValue(rawValue)`. In addition to handling
+/// indents and newline normalization, this also handles escape sequences (strictly not part of
+/// BlockStringValue in the spec, but more efficient to do it at the same time).
+///
+/// Spec: https://spec.graphql.org/October2021/#BlockStringValue()
 fn unescape_block_string(raw_value: &str) -> String {
-    // WhiteSpace :: Horizontal Tab (U+0009) Space (U+0020)
+    /// WhiteSpace :: Horizontal Tab (U+0009) Space (U+0020)
     fn is_whitespace(c: char) -> bool {
         matches!(c, ' ' | '\t')
     }
-    // `line` should be a single line, possibly including newline characters at the end.
+    /// Check if a string is all WhiteSpace. This expects a single line of input.
     fn is_whitespace_line(line: &str) -> bool {
-        line.chars().all(|c| matches!(c, ' ' | '\t' | '\n' | '\r'))
+        line.chars().all(is_whitespace)
     }
+    /// Count the indentation of a single line (how many WhiteSpace characters are at the start).
     fn count_indent(line: &str) -> usize {
         line.chars().take_while(|&c| is_whitespace(c)).count()
     }
@@ -324,7 +293,8 @@ fn unescape_block_string(raw_value: &str) -> String {
             // 3.d. If indent is less than length:
             (indent < length).then_some(indent)
         })
-        .min();
+        .min()
+        .unwrap_or(0);
 
     let mut lines = split_lines(raw_value)
         .enumerate()
@@ -333,13 +303,13 @@ fn unescape_block_string(raw_value: &str) -> String {
             // 4.a.i. If line is the first item in lines, continue to the next line.
             if index == 0 {
                 line
-            } else if let Some(common_indent) = common_indent {
+            } else {
                 // 4.a.ii. Remove commonIndent characters from the beginning of line.
                 &line[common_indent.min(line.len())..]
-            } else {
-                line
             }
         })
+        // 5. While the first item line in lines contains only WhiteSpace:
+        // 5.a. Remove the first item from lines.
         .skip_while(|line| is_whitespace_line(line));
 
     // 7. Let formatted be the empty character sequence.
@@ -366,7 +336,7 @@ fn unescape_block_string(raw_value: &str) -> String {
         }
     }
 
-    // Remove the excess
+    // Remove WhiteSpace-only lines from the end.
     formatted.truncate(final_char_index);
 
     // 9. Return formatted.
@@ -465,4 +435,108 @@ fn text_of_first_token(node: &SyntaxNode) -> TokenText {
         .to_owned();
 
     TokenText(first_token)
+}
+
+#[cfg(test)]
+mod block_string_tests {
+    use super::{split_lines, unescape_block_string};
+
+    #[test]
+    fn test_split_graphql_lines() {
+        let plain_newlines: Vec<_> = split_lines(
+            r#"source text
+    with some
+    new
+
+
+    lines
+        "#,
+        )
+        .collect();
+
+        assert_eq!(
+            plain_newlines,
+            [
+                "source text",
+                "    with some",
+                "    new",
+                "",
+                "",
+                "    lines",
+                "        ",
+            ]
+        );
+
+        let different_endings: Vec<_> =
+            split_lines("with\nand\r\nand\rall in the same\r\nstring").collect();
+        assert_eq!(
+            different_endings,
+            ["with", "and", "and", "all in the same", "string",]
+        );
+
+        let empty_string: Vec<_> = split_lines("").collect();
+        assert_eq!(empty_string, [""]);
+
+        let empty_line: Vec<_> = split_lines("\n\r\r\n").collect();
+        assert_eq!(empty_line, ["", "", "", ""]);
+    }
+
+    #[test]
+    fn it_normalizes_block_string_newlines() {
+        assert_eq!(unescape_block_string("multi\nline"), "multi\nline");
+        assert_eq!(unescape_block_string("multi\r\nline"), "multi\nline");
+        assert_eq!(unescape_block_string("multi\rline"), "multi\nline");
+    }
+
+    #[test]
+    fn it_does_not_unescape_block_strings() {
+        assert_eq!(
+            unescape_block_string(r#"escaped \n\r\b\t\f"#),
+            r#"escaped \n\r\b\t\f"#
+        );
+        assert_eq!(
+            unescape_block_string(r#"slashes \\ \/"#),
+            r#"slashes \\ \/"#
+        );
+        assert_eq!(
+            unescape_block_string("unescaped unicode outside BMP \u{1f600}"),
+            "unescaped unicode outside BMP \u{1f600}"
+        );
+    }
+
+    #[test]
+    fn it_dedents_block_strings() {
+        assert_eq!(
+            unescape_block_string("  intact whitespace with one line  "),
+            "  intact whitespace with one line  "
+        );
+
+        assert_eq!(
+            unescape_block_string(
+                r#"
+            This is
+            indented
+            quite a lot
+    "#
+            ),
+            r#"This is
+indented
+quite a lot"#
+        );
+
+        assert_eq!(
+            unescape_block_string(
+                r#"
+
+        spans
+          multiple
+            lines
+
+    "#
+            ),
+            r#"spans
+  multiple
+    lines"#
+        );
+    }
 }
