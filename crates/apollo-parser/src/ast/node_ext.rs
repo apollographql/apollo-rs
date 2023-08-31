@@ -491,13 +491,10 @@ mod block_string_tests {
     #[test]
     fn it_does_not_unescape_block_strings() {
         assert_eq!(
-            unescape_block_string(r#"escaped \n\r\b\t\f"#),
-            r#"escaped \n\r\b\t\f"#
+            unescape_block_string(r"escaped \n\r\b\t\f"),
+            r"escaped \n\r\b\t\f"
         );
-        assert_eq!(
-            unescape_block_string(r#"slashes \\ \/"#),
-            r#"slashes \\ \/"#
-        );
+        assert_eq!(unescape_block_string(r"slashes \\ \/"), r"slashes \\ \/");
         assert_eq!(
             unescape_block_string("unescaped unicode outside BMP \u{1f600}"),
             "unescaped unicode outside BMP \u{1f600}"
@@ -513,30 +510,30 @@ mod block_string_tests {
 
         assert_eq!(
             unescape_block_string(
-                r#"
+                r"
             This is
             indented
             quite a lot
-    "#
+    "
             ),
-            r#"This is
+            r"This is
 indented
-quite a lot"#
+quite a lot"
         );
 
         assert_eq!(
             unescape_block_string(
-                r#"
+                r"
 
         spans
           multiple
             lines
 
-    "#
+    "
             ),
-            r#"spans
+            r"spans
   multiple
-    lines"#
+    lines"
         );
     }
 }
