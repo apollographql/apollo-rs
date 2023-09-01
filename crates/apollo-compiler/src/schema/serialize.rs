@@ -73,15 +73,15 @@ impl Schema {
     }
 }
 
-impl Type {
+impl ExtendedType {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
         match self {
-            Type::Scalar(ty) => Box::new(ty.to_ast(name)) as Box<dyn Iterator<Item = _>>,
-            Type::Object(ty) => Box::new(ty.to_ast(name)) as _,
-            Type::Interface(ty) => Box::new(ty.to_ast(name)) as _,
-            Type::Union(ty) => Box::new(ty.to_ast(name)) as _,
-            Type::Enum(ty) => Box::new(ty.to_ast(name)) as _,
-            Type::InputObject(ty) => Box::new(ty.to_ast(name)) as _,
+            ExtendedType::Scalar(ty) => Box::new(ty.to_ast(name)) as Box<dyn Iterator<Item = _>>,
+            ExtendedType::Object(ty) => Box::new(ty.to_ast(name)) as _,
+            ExtendedType::Interface(ty) => Box::new(ty.to_ast(name)) as _,
+            ExtendedType::Union(ty) => Box::new(ty.to_ast(name)) as _,
+            ExtendedType::Enum(ty) => Box::new(ty.to_ast(name)) as _,
+            ExtendedType::InputObject(ty) => Box::new(ty.to_ast(name)) as _,
         }
     }
 }

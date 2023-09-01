@@ -1,7 +1,7 @@
 use apollo_compiler::ast;
 use apollo_compiler::schema;
 use apollo_compiler::schema::Component;
-use apollo_compiler::schema::Type;
+use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::ApolloCompiler;
 use apollo_compiler::HirDatabase;
 use apollo_compiler::Schema;
@@ -87,16 +87,24 @@ where
     Ok(())
 }
 
-fn merge_type_definitions(merged: &mut Type, new: &Type) -> Result<(), MergeError> {
+fn merge_type_definitions(merged: &mut ExtendedType, new: &ExtendedType) -> Result<(), MergeError> {
     match (merged, new) {
-        (Type::Scalar(merged), Type::Scalar(new)) => merge_scalar_types(merged.make_mut(), new),
-        (Type::Object(merged), Type::Object(new)) => merge_object_types(merged.make_mut(), new),
-        (Type::Interface(merged), Type::Interface(new)) => {
+        (ExtendedType::Scalar(merged), ExtendedType::Scalar(new)) => {
+            merge_scalar_types(merged.make_mut(), new)
+        }
+        (ExtendedType::Object(merged), ExtendedType::Object(new)) => {
+            merge_object_types(merged.make_mut(), new)
+        }
+        (ExtendedType::Interface(merged), ExtendedType::Interface(new)) => {
             merge_interface_types(merged.make_mut(), new)
         }
-        (Type::Union(merged), Type::Union(new)) => merge_union_types(merged.make_mut(), new),
-        (Type::Enum(merged), Type::Enum(new)) => merge_enum_types(merged.make_mut(), new),
-        (Type::InputObject(merged), Type::InputObject(new)) => {
+        (ExtendedType::Union(merged), ExtendedType::Union(new)) => {
+            merge_union_types(merged.make_mut(), new)
+        }
+        (ExtendedType::Enum(merged), ExtendedType::Enum(new)) => {
+            merge_enum_types(merged.make_mut(), new)
+        }
+        (ExtendedType::InputObject(merged), ExtendedType::InputObject(new)) => {
             merge_input_object_types(merged.make_mut(), new)
         }
         _ => Err("incompatible kinds of types"),

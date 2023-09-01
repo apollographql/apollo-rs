@@ -32,7 +32,7 @@ pub struct Schema {
 
     /// Definitions and extensions of built-in scalars, introspection types,
     /// and explicit types
-    pub types: IndexMap<ast::NamedType, Type>,
+    pub types: IndexMap<ast::NamedType, ExtendedType>,
 
     /// Name of the object type for the `query` root operation
     pub query_type: Option<ComponentStr>,
@@ -48,7 +48,7 @@ pub struct Schema {
 ///
 /// The source location is that of the "main" definition.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Type {
+pub enum ExtendedType {
     Scalar(Node<ScalarType>),
     Object(Node<ObjectType>),
     Interface(Node<InterfaceType>),
@@ -199,7 +199,7 @@ impl Schema {
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
-        if let Some(Type::Scalar(ty)) = self.types.get(name) {
+        if let Some(ExtendedType::Scalar(ty)) = self.types.get(name) {
             Some(ty)
         } else {
             None
@@ -211,7 +211,7 @@ impl Schema {
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
-        if let Some(Type::Object(ty)) = self.types.get(name) {
+        if let Some(ExtendedType::Object(ty)) = self.types.get(name) {
             Some(ty)
         } else {
             None
@@ -223,7 +223,7 @@ impl Schema {
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
-        if let Some(Type::Interface(ty)) = self.types.get(name) {
+        if let Some(ExtendedType::Interface(ty)) = self.types.get(name) {
             Some(ty)
         } else {
             None
@@ -235,7 +235,7 @@ impl Schema {
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
-        if let Some(Type::Union(ty)) = self.types.get(name) {
+        if let Some(ExtendedType::Union(ty)) = self.types.get(name) {
             Some(ty)
         } else {
             None
@@ -247,7 +247,7 @@ impl Schema {
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
-        if let Some(Type::Enum(ty)) = self.types.get(name) {
+        if let Some(ExtendedType::Enum(ty)) = self.types.get(name) {
             Some(ty)
         } else {
             None
@@ -259,7 +259,7 @@ impl Schema {
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
-        if let Some(Type::InputObject(ty)) = self.types.get(name) {
+        if let Some(ExtendedType::InputObject(ty)) = self.types.get(name) {
             Some(ty)
         } else {
             None
@@ -316,9 +316,12 @@ impl Schema {
             .iter()
             .find(|def| field_name.equivalent(&def.name))
             .or_else(|| match self.types.get(type_name)? {
-                Type::Object(ty) => ty.fields.get(field_name),
-                Type::Interface(ty) => ty.fields.get(field_name),
-                Type::Scalar(_) | Type::Union(_) | Type::Enum(_) | Type::InputObject(_) => None,
+                ExtendedType::Object(ty) => ty.fields.get(field_name),
+                ExtendedType::Interface(ty) => ty.fields.get(field_name),
+                ExtendedType::Scalar(_)
+                | ExtendedType::Union(_)
+                | ExtendedType::Enum(_)
+                | ExtendedType::InputObject(_) => None,
             })
     }
 
@@ -384,7 +387,7 @@ impl Schema {
     serialize_method!();
 }
 
-impl Type {
+impl ExtendedType {
     pub fn is_scalar(&self) -> bool {
         matches!(self, Self::Scalar(_))
     }
@@ -412,12 +415,12 @@ impl Type {
     /// Returns whether this is a built-in scalar or introspection type
     pub fn is_built_in(&self) -> bool {
         match self {
-            Type::Scalar(ty) => ty.is_built_in(),
-            Type::Object(ty) => ty.is_built_in(),
-            Type::Interface(ty) => ty.is_built_in(),
-            Type::Union(ty) => ty.is_built_in(),
-            Type::Enum(ty) => ty.is_built_in(),
-            Type::InputObject(ty) => ty.is_built_in(),
+            Self::Scalar(ty) => ty.is_built_in(),
+            Self::Object(ty) => ty.is_built_in(),
+            Self::Interface(ty) => ty.is_built_in(),
+            Self::Union(ty) => ty.is_built_in(),
+            Self::Enum(ty) => ty.is_built_in(),
+            Self::InputObject(ty) => ty.is_built_in(),
         }
     }
 
@@ -430,12 +433,12 @@ impl Type {
         name: &'name str,
     ) -> impl Iterator<Item = &'def Component<ast::Directive>> + 'name {
         match self {
-            Type::Scalar(ty) => directives_by_name(&ty.directives, name),
-            Type::Object(ty) => directives_by_name(&ty.directives, name),
-            Type::Interface(ty) => directives_by_name(&ty.directives, name),
-            Type::Union(ty) => directives_by_name(&ty.directives, name),
-            Type::Enum(ty) => directives_by_name(&ty.directives, name),
-            Type::InputObject(ty) => directives_by_name(&ty.directives, name),
+            Self::Scalar(ty) => directives_by_name(&ty.directives, name),
+            Self::Object(ty) => directives_by_name(&ty.directives, name),
+            Self::Interface(ty) => directives_by_name(&ty.directives, name),
+            Self::Union(ty) => directives_by_name(&ty.directives, name),
+            Self::Enum(ty) => directives_by_name(&ty.directives, name),
+            Self::InputObject(ty) => directives_by_name(&ty.directives, name),
         }
     }
 
@@ -574,37 +577,37 @@ impl InputObjectType {
     serialize_method!();
 }
 
-impl From<Node<ScalarType>> for Type {
+impl From<Node<ScalarType>> for ExtendedType {
     fn from(ty: Node<ScalarType>) -> Self {
         Self::Scalar(ty)
     }
 }
 
-impl From<Node<ObjectType>> for Type {
+impl From<Node<ObjectType>> for ExtendedType {
     fn from(ty: Node<ObjectType>) -> Self {
         Self::Object(ty)
     }
 }
 
-impl From<Node<InterfaceType>> for Type {
+impl From<Node<InterfaceType>> for ExtendedType {
     fn from(ty: Node<InterfaceType>) -> Self {
         Self::Interface(ty)
     }
 }
 
-impl From<Node<UnionType>> for Type {
+impl From<Node<UnionType>> for ExtendedType {
     fn from(ty: Node<UnionType>) -> Self {
         Self::Union(ty)
     }
 }
 
-impl From<Node<EnumType>> for Type {
+impl From<Node<EnumType>> for ExtendedType {
     fn from(ty: Node<EnumType>) -> Self {
         Self::Enum(ty)
     }
 }
 
-impl From<Node<InputObjectType>> for Type {
+impl From<Node<InputObjectType>> for ExtendedType {
     fn from(ty: Node<InputObjectType>) -> Self {
         Self::InputObject(ty)
     }

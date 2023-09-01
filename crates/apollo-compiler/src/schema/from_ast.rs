@@ -81,7 +81,7 @@ impl SchemaBuilder {
                 }
                 ast::Definition::ScalarTypeDefinition(def) => {
                     insert_sticky(&mut self.schema.types, &def.name, || {
-                        Type::Scalar(ScalarType::from_ast(
+                        ExtendedType::Scalar(ScalarType::from_ast(
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
@@ -91,7 +91,7 @@ impl SchemaBuilder {
                 }
                 ast::Definition::ObjectTypeDefinition(def) => {
                     insert_sticky(&mut self.schema.types, &def.name, || {
-                        Type::Object(ObjectType::from_ast(
+                        ExtendedType::Object(ObjectType::from_ast(
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
@@ -101,7 +101,7 @@ impl SchemaBuilder {
                 }
                 ast::Definition::InterfaceTypeDefinition(def) => {
                     insert_sticky(&mut self.schema.types, &def.name, || {
-                        Type::Interface(InterfaceType::from_ast(
+                        ExtendedType::Interface(InterfaceType::from_ast(
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
@@ -111,7 +111,7 @@ impl SchemaBuilder {
                 }
                 ast::Definition::UnionTypeDefinition(def) => {
                     insert_sticky(&mut self.schema.types, &def.name, || {
-                        Type::Union(UnionType::from_ast(
+                        ExtendedType::Union(UnionType::from_ast(
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
@@ -121,7 +121,7 @@ impl SchemaBuilder {
                 }
                 ast::Definition::EnumTypeDefinition(def) => {
                     insert_sticky(&mut self.schema.types, &def.name, || {
-                        Type::Enum(EnumType::from_ast(
+                        ExtendedType::Enum(EnumType::from_ast(
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
@@ -131,7 +131,7 @@ impl SchemaBuilder {
                 }
                 ast::Definition::InputObjectTypeDefinition(def) => {
                     insert_sticky(&mut self.schema.types, &def.name, || {
-                        Type::InputObject(InputObjectType::from_ast(
+                        ExtendedType::InputObject(InputObjectType::from_ast(
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
@@ -147,7 +147,7 @@ impl SchemaBuilder {
                 },
                 ast::Definition::ScalarTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
-                        if let Type::Scalar(ty) = ty {
+                        if let ExtendedType::Scalar(ty) = ty {
                             ty.make_mut().extend_ast(ext)
                         }
                     } else {
@@ -159,7 +159,7 @@ impl SchemaBuilder {
                 }
                 ast::Definition::ObjectTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
-                        if let Type::Object(ty) = ty {
+                        if let ExtendedType::Object(ty) = ty {
                             ty.make_mut().extend_ast(ext)
                         }
                     } else {
@@ -171,7 +171,7 @@ impl SchemaBuilder {
                 }
                 ast::Definition::InterfaceTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
-                        if let Type::Interface(ty) = ty {
+                        if let ExtendedType::Interface(ty) = ty {
                             ty.make_mut().extend_ast(ext)
                         }
                     } else {
@@ -183,7 +183,7 @@ impl SchemaBuilder {
                 }
                 ast::Definition::UnionTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
-                        if let Type::Union(ty) = ty {
+                        if let ExtendedType::Union(ty) = ty {
                             ty.make_mut().extend_ast(ext)
                         }
                     } else {
@@ -195,7 +195,7 @@ impl SchemaBuilder {
                 }
                 ast::Definition::EnumTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
-                        if let Type::Enum(ty) = ty {
+                        if let ExtendedType::Enum(ty) = ty {
                             ty.make_mut().extend_ast(ext)
                         }
                     } else {
@@ -207,7 +207,7 @@ impl SchemaBuilder {
                 }
                 ast::Definition::InputObjectTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
-                        if let Type::InputObject(ty) = ty {
+                        if let ExtendedType::InputObject(ty) = ty {
                             ty.make_mut().extend_ast(ext)
                         }
                     } else {
@@ -236,7 +236,7 @@ impl SchemaBuilder {
                 // Implict `schema`, ignoring extensions
                 let if_has_object_type = |ty: OperationType| {
                     let name = Name::new_synthetic(ty.name());
-                    if let Some(Type::Object(_)) = self.schema.types.get(&name) {
+                    if let Some(ExtendedType::Object(_)) = self.schema.types.get(&name) {
                         Some(name.to_component(ComponentOrigin::Definition))
                     } else {
                         None
