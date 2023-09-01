@@ -1,6 +1,4 @@
 use crate::ast;
-use crate::ast::Name;
-use crate::ast::OperationType;
 use crate::Node;
 use crate::Schema;
 use indexmap::map::Entry;
@@ -9,6 +7,8 @@ use std::fmt;
 
 mod from_ast;
 mod serialize;
+
+pub use crate::ast::{Directive, Name, NamedType, OperationType, Type, Value, VariableDefinition};
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -21,20 +21,20 @@ pub struct ExecutableDocument {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operation {
     pub operation_type: OperationType,
-    pub variables: Vec<Node<ast::VariableDefinition>>,
-    pub directives: Vec<Node<ast::Directive>>,
+    pub variables: Vec<Node<VariableDefinition>>,
+    pub directives: Vec<Node<Directive>>,
     pub selection_set: SelectionSet,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fragment {
-    pub directives: Vec<Node<ast::Directive>>,
+    pub directives: Vec<Node<Directive>>,
     pub selection_set: SelectionSet,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SelectionSet {
-    pub ty: ast::NamedType,
+    pub ty: NamedType,
     pub selections: Vec<Selection>,
 }
 
@@ -48,24 +48,24 @@ pub enum Selection {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Field {
     /// The type of this field, resolved from context and schema
-    pub ty: ast::Type,
+    pub ty: Type,
     pub alias: Option<Name>,
     pub name: Name,
-    pub arguments: Vec<(Name, Node<ast::Value>)>,
-    pub directives: Vec<Node<ast::Directive>>,
+    pub arguments: Vec<(Name, Node<Value>)>,
+    pub directives: Vec<Node<Directive>>,
     pub selection_set: SelectionSet,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FragmentSpread {
     pub fragment_name: Name,
-    pub directives: Vec<Node<ast::Directive>>,
+    pub directives: Vec<Node<Directive>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InlineFragment {
-    pub type_condition: Option<ast::NamedType>,
-    pub directives: Vec<Node<ast::Directive>>,
+    pub type_condition: Option<NamedType>,
+    pub directives: Vec<Node<Directive>>,
     pub selection_set: SelectionSet,
 }
 
@@ -91,20 +91,20 @@ impl ExecutableDocument {
 }
 
 impl Operation {
-    pub fn object_type(&self) -> &ast::NamedType {
+    pub fn object_type(&self) -> &NamedType {
         &self.selection_set.ty
     }
 }
 
 impl Fragment {
-    pub fn type_condition(&self) -> &ast::NamedType {
+    pub fn type_condition(&self) -> &NamedType {
         &self.selection_set.ty
     }
 }
 
 impl SelectionSet {
     /// Create a new selection set
-    pub fn new(schema: &Schema, ty: ast::NamedType) -> Result<Self, TypeError> {
+    pub fn new(schema: &Schema, ty: NamedType) -> Result<Self, TypeError> {
         if schema.types.contains_key(&ty) {
             Ok(Self {
                 ty,
@@ -181,7 +181,7 @@ impl SelectionSet {
     pub fn new_inline_fragment(
         &self,
         schema: &Schema,
-        type_condition: Option<ast::NamedType>,
+        type_condition: Option<NamedType>,
     ) -> Result<InlineFragment, TypeError> {
         let inner_parent_type = type_condition.clone().unwrap_or(self.ty.clone());
         let inner = SelectionSet::new(schema, inner_parent_type)?;
@@ -243,31 +243,27 @@ impl Field {
         self
     }
 
-    pub fn with_directive(mut self, directive: impl Into<Node<ast::Directive>>) -> Self {
+    pub fn with_directive(mut self, directive: impl Into<Node<Directive>>) -> Self {
         self.directives.push(directive.into());
         self
     }
 
     pub fn with_directives(
         mut self,
-        directives: impl IntoIterator<Item = Node<ast::Directive>>,
+        directives: impl IntoIterator<Item = Node<Directive>>,
     ) -> Self {
         self.directives.extend(directives);
         self
     }
 
-    pub fn with_argument(
-        mut self,
-        name: impl Into<Name>,
-        value: impl Into<Node<ast::Value>>,
-    ) -> Self {
+    pub fn with_argument(mut self, name: impl Into<Name>, value: impl Into<Node<Value>>) -> Self {
         self.arguments.push((name.into(), value.into()));
         self
     }
 
     pub fn with_arguments(
         mut self,
-        arguments: impl IntoIterator<Item = (impl Into<Name>, impl Into<Node<ast::Value>>)>,
+        arguments: impl IntoIterator<Item = (impl Into<Name>, impl Into<Node<Value>>)>,
     ) -> Self {
         self.arguments.extend(
             arguments
@@ -301,14 +297,14 @@ impl Field {
 }
 
 impl InlineFragment {
-    pub fn with_directive(mut self, directive: impl Into<Node<ast::Directive>>) -> Self {
+    pub fn with_directive(mut self, directive: impl Into<Node<Directive>>) -> Self {
         self.directives.push(directive.into());
         self
     }
 
     pub fn with_directives(
         mut self,
-        directives: impl IntoIterator<Item = Node<ast::Directive>>,
+        directives: impl IntoIterator<Item = Node<Directive>>,
     ) -> Self {
         self.directives.extend(directives);
         self
@@ -338,14 +334,14 @@ impl InlineFragment {
 }
 
 impl FragmentSpread {
-    pub fn with_directive(mut self, directive: impl Into<Node<ast::Directive>>) -> Self {
+    pub fn with_directive(mut self, directive: impl Into<Node<Directive>>) -> Self {
         self.directives.push(directive.into());
         self
     }
 
     pub fn with_directives(
         mut self,
-        directives: impl IntoIterator<Item = Node<ast::Directive>>,
+        directives: impl IntoIterator<Item = Node<Directive>>,
     ) -> Self {
         self.directives.extend(directives);
         self

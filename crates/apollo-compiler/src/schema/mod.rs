@@ -1,12 +1,14 @@
 //! High-level representation of a GraphQL schema
 
 use crate::ast;
-use crate::ast::Name;
 use crate::FileId;
 use crate::Node;
 use crate::NodeStr;
+use indexmap::Equivalent;
 use indexmap::IndexMap;
+use indexmap::IndexSet;
 use std::hash::Hash;
+use std::sync::OnceLock;
 
 mod component;
 mod from_ast;
@@ -14,9 +16,10 @@ mod serialize;
 
 pub use self::component::{Component, ComponentOrigin, ComponentStr, ExtensionId};
 pub use self::from_ast::SchemaBuilder;
-use indexmap::Equivalent;
-use indexmap::IndexSet;
-use std::sync::OnceLock;
+pub use crate::ast::{
+    Directive, DirectiveDefinition, DirectiveLocation, EnumValueDefinition, FieldDefinition,
+    InputValueDefinition, Name, NamedType, Type, Value,
+};
 
 /// High-level representation of a GraphQL schema
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -25,14 +28,14 @@ pub struct Schema {
     pub description: Option<NodeStr>,
 
     /// Directives applied to the `schema` definition or a `schema` extension
-    pub directives: Vec<Component<ast::Directive>>,
+    pub directives: Vec<Component<Directive>>,
 
     /// Built-in and explicit directive definitions
-    pub directive_definitions: IndexMap<Name, Node<ast::DirectiveDefinition>>,
+    pub directive_definitions: IndexMap<Name, Node<DirectiveDefinition>>,
 
     /// Definitions and extensions of built-in scalars, introspection types,
     /// and explicit types
-    pub types: IndexMap<ast::NamedType, ExtendedType>,
+    pub types: IndexMap<NamedType, ExtendedType>,
 
     /// Name of the object type for the `query` root operation
     pub query_type: Option<ComponentStr>,
@@ -60,7 +63,7 @@ pub enum ExtendedType {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ScalarType {
     pub description: Option<NodeStr>,
-    pub directives: Vec<Component<ast::Directive>>,
+    pub directives: Vec<Component<Directive>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -72,13 +75,13 @@ pub struct ObjectType {
     ///   or `None` for the object type definition.
     pub implements_interfaces: IndexMap<Name, ComponentOrigin>,
 
-    pub directives: Vec<Component<ast::Directive>>,
+    pub directives: Vec<Component<Directive>>,
 
     /// Explicit field definitions.
     ///
     /// When looking up a definition,
     /// consider using [`Schema::type_field`] instead to include meta-fields.
-    pub fields: IndexMap<Name, Component<ast::FieldDefinition>>,
+    pub fields: IndexMap<Name, Component<FieldDefinition>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -90,38 +93,38 @@ pub struct InterfaceType {
     ///   or `None` for the interface type definition.
     pub implements_interfaces: IndexMap<Name, ComponentOrigin>,
 
-    pub directives: Vec<Component<ast::Directive>>,
+    pub directives: Vec<Component<Directive>>,
 
     /// Explicit field definitions.
     ///
     /// When looking up a definition,
     /// consider using [`Schema::type_field`] instead to include meta-fields.
-    pub fields: IndexMap<Name, Component<ast::FieldDefinition>>,
+    pub fields: IndexMap<Name, Component<FieldDefinition>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnionType {
     pub description: Option<NodeStr>,
-    pub directives: Vec<Component<ast::Directive>>,
+    pub directives: Vec<Component<Directive>>,
 
     /// * Key: name of a member object type
     /// * Value: which union type extension defined this implementation,
     ///   or `None` for the union type definition.
-    pub members: IndexMap<ast::NamedType, ComponentOrigin>,
+    pub members: IndexMap<NamedType, ComponentOrigin>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnumType {
     pub description: Option<NodeStr>,
-    pub directives: Vec<Component<ast::Directive>>,
-    pub values: IndexMap<Name, Component<ast::EnumValueDefinition>>,
+    pub directives: Vec<Component<Directive>>,
+    pub values: IndexMap<Name, Component<EnumValueDefinition>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InputObjectType {
     pub description: Option<NodeStr>,
-    pub directives: Vec<Component<ast::Directive>>,
-    pub fields: IndexMap<Name, Component<ast::InputValueDefinition>>,
+    pub directives: Vec<Component<Directive>>,
+    pub fields: IndexMap<Name, Component<InputValueDefinition>>,
 }
 
 macro_rules! directive_by_name_method {
@@ -130,16 +133,16 @@ macro_rules! directive_by_name_method {
         ///
         /// This method is best for non-repeatable directives. For repeatable directives,
         /// see [`directives_by_name`][Self::directives_by_name] (plural)
-        pub fn directive_by_name(&self, name: &str) -> Option<&Component<ast::Directive>> {
+        pub fn directive_by_name(&self, name: &str) -> Option<&Component<Directive>> {
             self.directives_by_name(name).next()
         }
     };
 }
 
 pub fn directives_by_name<'def: 'name, 'name>(
-    directives: &'def [Component<ast::Directive>],
+    directives: &'def [Component<Directive>],
     name: &'name str,
-) -> impl Iterator<Item = &'def Component<ast::Directive>> + 'name {
+) -> impl Iterator<Item = &'def Component<Directive>> + 'name {
     directives.iter().filter(move |dir| dir.name == name)
 }
 
@@ -152,7 +155,7 @@ macro_rules! directive_methods {
         pub fn directives_by_name<'def: 'name, 'name>(
             &'def self,
             name: &'name str,
-        ) -> impl Iterator<Item = &'def Component<ast::Directive>> + 'name {
+        ) -> impl Iterator<Item = &'def Component<Directive>> + 'name {
             directives_by_name(&self.directives, name)
         }
 
@@ -307,7 +310,7 @@ impl Schema {
         &self,
         type_name: &N1,
         field_name: &N2,
-    ) -> Option<&Component<ast::FieldDefinition>>
+    ) -> Option<&Component<FieldDefinition>>
     where
         N1: ?Sized + Eq + Hash + Equivalent<NodeStr>,
         N2: ?Sized + Eq + Hash + Equivalent<NodeStr>,
@@ -329,45 +332,44 @@ impl Schema {
     pub(crate) fn meta_fields_definitions<N>(
         &self,
         type_name: &N,
-    ) -> &'static [Component<ast::FieldDefinition>]
+    ) -> &'static [Component<FieldDefinition>]
     where
         N: ?Sized + Equivalent<NodeStr>,
     {
-        static ROOT_QUERY_FIELDS: LazyLock<[Component<ast::FieldDefinition>; 3]> =
-            LazyLock::new(|| {
-                [
-                    // __typename: String!
-                    Component::new_synthetic(ast::FieldDefinition {
+        static ROOT_QUERY_FIELDS: LazyLock<[Component<FieldDefinition>; 3]> = LazyLock::new(|| {
+            [
+                // __typename: String!
+                Component::new_synthetic(FieldDefinition {
+                    description: None,
+                    name: Name::new_synthetic("__typename"),
+                    arguments: Vec::new(),
+                    ty: Type::new_named("String").non_null(),
+                    directives: Vec::new(),
+                }),
+                // __schema: __Schema!
+                Component::new_synthetic(FieldDefinition {
+                    description: None,
+                    name: Name::new_synthetic("__schema"),
+                    arguments: Vec::new(),
+                    ty: Type::new_named("__Schema").non_null(),
+                    directives: Vec::new(),
+                }),
+                // __type(name: String!): __Type
+                Component::new_synthetic(FieldDefinition {
+                    description: None,
+                    name: Name::new_synthetic("__type"),
+                    arguments: vec![Node::new_synthetic(InputValueDefinition {
                         description: None,
-                        name: Name::new_synthetic("__typename"),
-                        arguments: Vec::new(),
+                        name: Name::new_synthetic("name"),
                         ty: ast::Type::new_named("String").non_null(),
+                        default_value: None,
                         directives: Vec::new(),
-                    }),
-                    // __schema: __Schema!
-                    Component::new_synthetic(ast::FieldDefinition {
-                        description: None,
-                        name: Name::new_synthetic("__schema"),
-                        arguments: Vec::new(),
-                        ty: ast::Type::new_named("__Schema").non_null(),
-                        directives: Vec::new(),
-                    }),
-                    // __type(name: String!): __Type
-                    Component::new_synthetic(ast::FieldDefinition {
-                        description: None,
-                        name: Name::new_synthetic("__type"),
-                        arguments: vec![Node::new_synthetic(ast::InputValueDefinition {
-                            description: None,
-                            name: Name::new_synthetic("name"),
-                            ty: ast::Type::new_named("String").non_null(),
-                            default_value: None,
-                            directives: Vec::new(),
-                        })],
-                        ty: ast::Type::new_named("__Type"),
-                        directives: Vec::new(),
-                    }),
-                ]
-            });
+                    })],
+                    ty: Type::new_named("__Type"),
+                    directives: Vec::new(),
+                }),
+            ]
+        });
         if self
             .query_type
             .as_ref()
@@ -431,7 +433,7 @@ impl ExtendedType {
     pub fn directives_by_name<'def: 'name, 'name>(
         &'def self,
         name: &'name str,
-    ) -> impl Iterator<Item = &'def Component<ast::Directive>> + 'name {
+    ) -> impl Iterator<Item = &'def Component<Directive>> + 'name {
         match self {
             Self::Scalar(ty) => directives_by_name(&ty.directives, name),
             Self::Object(ty) => directives_by_name(&ty.directives, name),
