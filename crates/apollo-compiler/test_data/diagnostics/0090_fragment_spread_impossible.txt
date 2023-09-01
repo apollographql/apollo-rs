@@ -60,6 +60,58 @@
             file_id: FileId {
                 id: 87,
             },
+            offset: 571,
+            length: 28,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 571,
+                    length: 28,
+                },
+                text: "fragment `nonIntersectingInterfaces` cannot be applied",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 879,
+                    length: 68,
+                },
+                text: "fragment declared with type condition `Pet` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 87,
+                    },
+                    offset: 262,
+                    length: 65,
+                },
+                text: "type condition `Pet` is not assignable to this type",
+            },
+        ],
+        help: None,
+        data: InvalidFragmentSpread {
+            name: Some(
+                "nonIntersectingInterfaces",
+            ),
+            type_name: "Human",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            -1: "built_in_types.graphql",
+            87: "0090_fragment_spread_impossible.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 87,
+            },
             offset: 682,
             length: 31,
         },
@@ -169,58 +221,6 @@
         data: InvalidFragmentSpread {
             name: None,
             type_name: "HumanOrAlien",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            -1: "built_in_types.graphql",
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 571,
-            length: 28,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 571,
-                    length: 28,
-                },
-                text: "fragment `nonIntersectingInterfaces` cannot be applied",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 879,
-                    length: 68,
-                },
-                text: "fragment declared with type condition `Pet` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 262,
-                    length: 65,
-                },
-                text: "type condition `Pet` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: Some(
-                "nonIntersectingInterfaces",
-            ),
-            type_name: "Human",
         },
     },
     ApolloDiagnostic {

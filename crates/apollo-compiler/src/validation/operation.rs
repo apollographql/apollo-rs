@@ -4,14 +4,28 @@ use crate::{
     hir, FileId, ValidationDatabase,
 };
 
-pub fn validate_operation_definitions(
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct OperationValidationConfig {
+    /// When false, rules that require a schema to validate are disabled.
+    pub has_schema: bool,
+    /// The variables defined for this operation.
+    pub variables: Arc<Vec<hir::VariableDefinition>>,
+}
+
+pub(crate) fn validate_operation_definitions_inner(
     db: &dyn ValidationDatabase,
     file_id: FileId,
+    has_schema: bool,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     let operations = db.operations(file_id);
     for def in operations.iter() {
+        let config = OperationValidationConfig {
+            has_schema,
+            variables: def.variables.clone(),
+        };
+
         diagnostics.extend(db.validate_directives(
             def.directives().to_vec(),
             def.operation_ty().into(),
@@ -19,25 +33,13 @@ pub fn validate_operation_definitions(
             // use already defined variables
             def.variables.clone(),
         ));
-        diagnostics.extend(db.validate_variable_definitions(def.variables.as_ref().clone()));
+        diagnostics.extend(db.validate_variable_definitions(def.variables.clone(), has_schema));
+
+        diagnostics.extend(db.validate_unused_variable(def.clone()));
 
         // Validate the Selection Set recursively
-        // Check that the root type exists
-        if def.object_type(db.upcast()).is_some() {
-            diagnostics.extend(
-                db.validate_selection_set(def.selection_set().clone(), def.variables.clone()),
-            );
-        }
-        diagnostics.extend(db.validate_unused_variable(def.clone()));
+        diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), config));
     }
-
-    let subscription_operations = db.upcast().subscription_operations(file_id);
-    let query_operations = db.upcast().query_operations(file_id);
-    let mutation_operations = db.upcast().mutation_operations(file_id);
-
-    diagnostics.extend(db.validate_subscription_operations(subscription_operations));
-    diagnostics.extend(db.validate_query_operations(query_operations));
-    diagnostics.extend(db.validate_mutation_operations(mutation_operations));
 
     // It is possible to have an unnamed (anonymous) operation definition only
     // if there is **one** operation definition.
@@ -62,7 +64,24 @@ pub fn validate_operation_definitions(
         diagnostics.extend(missing_ident);
     }
 
+    if has_schema {
+        let subscription_operations = db.upcast().subscription_operations(file_id);
+        let query_operations = db.upcast().query_operations(file_id);
+        let mutation_operations = db.upcast().mutation_operations(file_id);
+
+        diagnostics.extend(db.validate_subscription_operations(subscription_operations));
+        diagnostics.extend(db.validate_query_operations(query_operations));
+        diagnostics.extend(db.validate_mutation_operations(mutation_operations));
+    }
+
     diagnostics
+}
+
+pub fn validate_operation_definitions(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
+    validate_operation_definitions_inner(db, file_id, false)
 }
 
 pub fn validate_subscription_operations(

@@ -61,59 +61,6 @@
             file_id: FileId {
                 id: 71,
             },
-            offset: 325,
-            length: 14,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 71,
-                    },
-                    offset: 312,
-                    length: 10,
-                },
-                text: "`fido` has type `String!` here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 71,
-                    },
-                    offset: 325,
-                    length: 14,
-                },
-                text: "but the same field name has type `String` here",
-            },
-        ],
-        help: None,
-        data: ConflictingField {
-            field: "name",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 71,
-                },
-                offset: 312,
-                length: 10,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 71,
-                },
-                offset: 325,
-                length: 14,
-            },
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            -1: "built_in_types.graphql",
-            71: "0074_merge_identical_fields.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 71,
-            },
             offset: 247,
             length: 4,
         },
@@ -155,6 +102,59 @@
                 },
                 offset: 247,
                 length: 4,
+            },
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            -1: "built_in_types.graphql",
+            71: "0074_merge_identical_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 71,
+            },
+            offset: 325,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 71,
+                    },
+                    offset: 312,
+                    length: 10,
+                },
+                text: "`fido` has type `String!` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 71,
+                    },
+                    offset: 325,
+                    length: 14,
+                },
+                text: "but the same field name has type `String` here",
+            },
+        ],
+        help: None,
+        data: ConflictingField {
+            field: "name",
+            original_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 71,
+                },
+                offset: 312,
+                length: 10,
+            },
+            redefined_selection: DiagnosticLocation {
+                file_id: FileId {
+                    id: 71,
+                },
+                offset: 325,
+                length: 14,
             },
         },
     },

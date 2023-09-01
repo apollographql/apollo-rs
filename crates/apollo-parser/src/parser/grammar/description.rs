@@ -39,7 +39,7 @@ type Query {
                     .string_value()
                     .unwrap()
                     .into();
-                assert_eq!(desc, String::from("\ndescription for Query object type\n"));
+                assert_eq!(desc, "description for Query object type");
                 return;
             }
         }

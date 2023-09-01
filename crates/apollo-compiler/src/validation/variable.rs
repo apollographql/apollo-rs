@@ -9,7 +9,8 @@ use std::collections::{HashMap, HashSet};
 
 pub fn validate_variable_definitions(
     db: &dyn ValidationDatabase,
-    variables: Vec<hir::VariableDefinition>,
+    variables: Arc<Vec<hir::VariableDefinition>>,
+    has_schema: bool,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
@@ -23,12 +24,13 @@ pub fn validate_variable_definitions(
             Arc::new(Vec::new()),
         ));
 
-        let ty = variable.ty();
-        if !ty.is_input_type(db.upcast()) {
-            let type_def = ty.type_def(db.upcast());
-            if let Some(type_def) = type_def {
-                let ty_name = type_def.kind();
-                diagnostics.push(
+        if has_schema {
+            let ty = variable.ty();
+            if !ty.is_input_type(db.upcast()) {
+                let type_def = ty.type_def(db.upcast());
+                if let Some(type_def) = type_def {
+                    let ty_name = type_def.kind();
+                    diagnostics.push(
                     ApolloDiagnostic::new(db, variable.loc().into(), DiagnosticData::InputType {
                         name: variable.name().into(),
                         ty: ty_name,
@@ -36,15 +38,16 @@ pub fn validate_variable_definitions(
                     .label(Label::new(ty.loc().unwrap(), format!("this is of `{ty_name}` type")))
                     .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
                 );
-            } else {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        variable.loc.into(),
-                        DiagnosticData::UndefinedDefinition { name: ty.name() },
+                } else {
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            variable.loc.into(),
+                            DiagnosticData::UndefinedDefinition { name: ty.name() },
+                        )
+                        .label(Label::new(variable.loc, "not found in the type system")),
                     )
-                    .label(Label::new(variable.loc, "not found in the type system")),
-                )
+                }
             }
         }
 

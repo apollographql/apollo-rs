@@ -6,15 +6,17 @@ use crate::{
 };
 use std::collections::HashMap;
 
+use super::operation::OperationValidationConfig;
+
 pub fn validate_field(
     db: &dyn ValidationDatabase,
     field: Arc<hir::Field>,
-    var_defs: Arc<Vec<hir::VariableDefinition>>,
+    context: OperationValidationConfig,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = db.validate_directives(
         field.directives().to_vec(),
         hir::DirectiveLocation::Field,
-        var_defs.clone(),
+        context.variables.clone(),
     );
 
     if let Some(field_definition) = field.field_definition(db.upcast()) {
@@ -29,13 +31,17 @@ pub fn validate_field(
                     .cloned();
                 if let Some(input_val) = input_val {
                     if let Some(diag) = db
-                        .validate_variable_usage(input_val.clone(), var_defs.clone(), arg.clone())
+                        .validate_variable_usage(
+                            input_val.clone(),
+                            context.variables.clone(),
+                            arg.clone(),
+                        )
                         .err()
                     {
                         diagnostics.push(diag)
                     } else {
                         let value_of_correct_type =
-                            db.validate_values(input_val.ty(), arg, var_defs.clone());
+                            db.validate_values(input_val.ty(), arg, context.variables.clone());
 
                         if let Err(diag) = value_of_correct_type {
                             diagnostics.extend(diag);
@@ -94,47 +100,45 @@ pub fn validate_field(
         }
     }
 
-    let field_type = field.ty(db.upcast());
-    if let Some(field_type) = field_type {
-        match db.validate_leaf_field_selection(field.clone(), field_type) {
-            Err(diag) => diagnostics.push(diag),
-            Ok(_) => diagnostics
-                .extend(db.validate_selection_set(field.selection_set().clone(), var_defs)),
-        }
-    } else {
-        let help = format!(
-            "`{}` is not defined on `{}` type",
-            field.name(),
-            field.parent_obj.as_ref().unwrap(),
-        );
-        let fname = field.name();
-        let diagnostic = ApolloDiagnostic::new(
-            db,
-            field.loc().into(),
-            DiagnosticData::UndefinedField {
-                field: fname.into(),
-                ty: field.parent_obj.clone().unwrap(),
-            },
-        )
-        .label(Label::new(
-            field.loc(),
-            format!("`{fname}` field is not defined"),
-        ))
-        .help(help);
-
-        let parent_type_loc = db
-            .find_type_definition_by_name(field.parent_obj.clone().unwrap())
-            .map(|type_def| type_def.loc());
-
-        let diagnostic = if let Some(parent_type_loc) = parent_type_loc {
-            diagnostic.label(Label::new(
-                parent_type_loc,
-                format!("`{}` declared here", field.parent_obj.as_ref().unwrap()),
+    if context.has_schema {
+        let field_type = field.ty(db.upcast());
+        if let Some(field_type) = field_type {
+            match db.validate_leaf_field_selection(field.clone(), field_type) {
+                Err(diag) => diagnostics.push(diag),
+                Ok(_) => diagnostics
+                    .extend(db.validate_selection_set(field.selection_set().clone(), context)),
+            }
+        } else if let Some(parent_obj) = field.parent_obj.as_ref() {
+            let help = format!("`{}` is not defined on `{}` type", field.name(), parent_obj,);
+            let fname = field.name();
+            let diagnostic = ApolloDiagnostic::new(
+                db,
+                field.loc().into(),
+                DiagnosticData::UndefinedField {
+                    field: fname.into(),
+                    ty: field.parent_obj.clone().unwrap(),
+                },
+            )
+            .label(Label::new(
+                field.loc(),
+                format!("`{fname}` field is not defined"),
             ))
-        } else {
-            diagnostic
-        };
-        diagnostics.push(diagnostic);
+            .help(help);
+
+            let parent_type_loc = db
+                .find_type_definition_by_name(field.parent_obj.clone().unwrap())
+                .map(|type_def| type_def.loc());
+
+            let diagnostic = if let Some(parent_type_loc) = parent_type_loc {
+                diagnostic.label(Label::new(
+                    parent_type_loc,
+                    format!("`{}` declared here", field.parent_obj.as_ref().unwrap()),
+                ))
+            } else {
+                diagnostic
+            };
+            diagnostics.push(diagnostic);
+        }
     }
 
     diagnostics
@@ -148,7 +152,7 @@ pub fn validate_field_definition(
         field.directives().to_vec(),
         hir::DirectiveLocation::FieldDefinition,
         // field definitions don't have variables
-        Arc::new(Vec::new()),
+        Default::default(),
     );
 
     diagnostics.extend(db.validate_arguments_definition(

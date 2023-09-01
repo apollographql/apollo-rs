@@ -187,6 +187,48 @@ enum Test @dir__one(string: "string value", int_value: -10, float_value: -1.123e
     }
 
     #[test]
+    fn it_unescapes_strings() {
+        let schema = r#"
+"String with\tescapes\r\n"
+scalar StringWithEscapes
+"String with unicode \uadf8\ub77c\ud504\ud050\uc5d8"
+scalar StringWithUnicode
+"""
+Escapes\nshould\nnot\nmatter
+including \q nonexistent \W ones
+\""" is the only one \""
+"""
+scalar BlockStringRaw
+"#;
+        let parser = Parser::new(schema);
+        let cst = parser.parse();
+
+        assert!(cst.errors.is_empty());
+
+        let mut expected = vec![
+            "String with\tescapes\r\n",
+            "String with unicode 그라프큐엘",
+            r#"
+Escapes\nshould\nnot\nmatter
+including \q nonexistent \W ones
+""" is the only one \""
+"#
+            .trim(),
+        ]
+        .into_iter();
+
+        let document = cst.document();
+        for definition in document.definitions() {
+            let cst::Definition::ScalarTypeDefinition(scalar) = definition else {
+                continue;
+            };
+            let description = scalar.description().unwrap().string_value().unwrap();
+            let s = String::from(description);
+            assert_eq!(s, expected.next().unwrap());
+        }
+    }
+
+    #[test]
     fn it_returns_i64_for_int_values() {
         let schema = r#"
 enum Test @dir__one(int_value: -10) {

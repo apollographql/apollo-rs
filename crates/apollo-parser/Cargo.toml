@@ -1,6 +1,6 @@
 [package]
 name = "apollo-parser"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Irina Shestak <shestak.irina@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
@@ -17,6 +17,7 @@ categories = [
 edition = "2021"
 
 [dependencies]
+memchr = "2.6.1"
 rowan = "0.15.5"
 thiserror = "1.0.30"
 

@@ -45,8 +45,8 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 328,
-            length: 25,
+            offset: 108,
+            length: 29,
         },
         labels: [
             Label {
@@ -54,8 +54,8 @@
                     file_id: FileId {
                         id: 84,
                     },
-                    offset: 328,
-                    length: 25,
+                    offset: 108,
+                    length: 29,
                 },
                 text: "fragment declares unsupported type condition `Int`",
             },
@@ -86,8 +86,8 @@
             file_id: FileId {
                 id: 84,
             },
-            offset: 108,
-            length: 29,
+            offset: 328,
+            length: 25,
         },
         labels: [
             Label {
@@ -95,8 +95,8 @@
                     file_id: FileId {
                         id: 84,
                     },
-                    offset: 108,
-                    length: 29,
+                    offset: 328,
+                    length: 25,
                 },
                 text: "fragment declares unsupported type condition `Int`",
             },

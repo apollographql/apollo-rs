@@ -8,46 +8,6 @@
             file_id: FileId {
                 id: 92,
             },
-            offset: 216,
-            length: 4,
-        },
-        labels: [
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 209,
-                    length: 4,
-                },
-                text: "`Intf` interface implementation previously declared here",
-            },
-            Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 216,
-                    length: 4,
-                },
-                text: "`Intf` interface implementation declared again here",
-            },
-        ],
-        help: None,
-        data: DuplicateImplementsInterface {
-            ty: "SubIntf",
-            interface: "Intf",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            -1: "built_in_types.graphql",
-            92: "0095_interface_implementation_declared_once.graphql",
-        },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 92,
-            },
             offset: 66,
             length: 4,
         },
@@ -116,6 +76,46 @@
         help: None,
         data: DuplicateImplementsInterface {
             ty: "Extended",
+            interface: "Intf",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            -1: "built_in_types.graphql",
+            92: "0095_interface_implementation_declared_once.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 92,
+            },
+            offset: 216,
+            length: 4,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 92,
+                    },
+                    offset: 209,
+                    length: 4,
+                },
+                text: "`Intf` interface implementation previously declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 92,
+                    },
+                    offset: 216,
+                    length: 4,
+                },
+                text: "`Intf` interface implementation declared again here",
+            },
+        ],
+        help: None,
+        data: DuplicateImplementsInterface {
+            ty: "SubIntf",
             interface: "Intf",
         },
     },

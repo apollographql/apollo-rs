@@ -7,6 +7,8 @@ use crate::{
 };
 use std::collections::HashSet;
 
+use super::operation::OperationValidationConfig;
+
 /// Given a type definition, find all the types that can be used for fragment spreading.
 ///
 /// Spec: https://spec.graphql.org/October2021/#GetPossibleTypes()
@@ -153,28 +155,33 @@ pub fn validate_fragment_selection(
 pub fn validate_inline_fragment(
     db: &dyn ValidationDatabase,
     inline: Arc<hir::InlineFragment>,
-    var_defs: Arc<Vec<hir::VariableDefinition>>,
+    context: OperationValidationConfig,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(db.validate_directives(
         inline.directives().to_vec(),
         hir::DirectiveLocation::InlineFragment,
-        var_defs.clone(),
+        context.variables.clone(),
     ));
 
-    let type_cond_diagnostics = if let Some(t) = inline.type_condition() {
-        db.validate_fragment_type_condition(t.to_string(), inline.loc())
+    let has_type_error = if context.has_schema {
+        let type_cond_diagnostics = if let Some(t) = inline.type_condition() {
+            db.validate_fragment_type_condition(t.to_string(), inline.loc())
+        } else {
+            Default::default()
+        };
+        let has_type_error = !type_cond_diagnostics.is_empty();
+        diagnostics.extend(type_cond_diagnostics);
+        has_type_error
     } else {
-        Default::default()
+        false
     };
-    let has_type_error = !type_cond_diagnostics.is_empty();
-    diagnostics.extend(type_cond_diagnostics);
 
     // If there was an error with the type condition, it makes no sense to validate the selection,
     // as every field would be an error.
     if !has_type_error {
-        diagnostics.extend(db.validate_selection_set(inline.selection_set.clone(), var_defs));
+        diagnostics.extend(db.validate_selection_set(inline.selection_set.clone(), context));
         diagnostics
             .extend(db.validate_fragment_selection(hir::FragmentSelection::InlineFragment(inline)));
     }
@@ -185,14 +192,14 @@ pub fn validate_inline_fragment(
 pub fn validate_fragment_spread(
     db: &dyn ValidationDatabase,
     spread: Arc<hir::FragmentSpread>,
-    var_defs: Arc<Vec<hir::VariableDefinition>>,
+    context: OperationValidationConfig,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(db.validate_directives(
         spread.directives().to_vec(),
         hir::DirectiveLocation::FragmentSpread,
-        var_defs.clone(),
+        context.variables.clone(),
     ));
 
     match spread.fragment(db.upcast()) {
@@ -200,7 +207,7 @@ pub fn validate_fragment_spread(
             diagnostics.extend(
                 db.validate_fragment_selection(hir::FragmentSelection::FragmentSpread(spread)),
             );
-            diagnostics.extend(db.validate_fragment_definition(def, var_defs));
+            diagnostics.extend(db.validate_fragment_definition(def, context));
         }
         None => {
             diagnostics.push(
@@ -225,26 +232,31 @@ pub fn validate_fragment_spread(
 pub fn validate_fragment_definition(
     db: &dyn ValidationDatabase,
     def: Arc<hir::FragmentDefinition>,
-    var_defs: Arc<Vec<hir::VariableDefinition>>,
+    context: OperationValidationConfig,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     diagnostics.extend(db.validate_directives(
         def.directives().to_vec(),
         hir::DirectiveLocation::FragmentDefinition,
-        var_defs.clone(),
+        context.variables.clone(),
     ));
 
-    let type_cond_diagnostics =
-        db.validate_fragment_type_condition(def.type_condition().to_string(), def.loc());
-    let has_type_error = !type_cond_diagnostics.is_empty();
-    diagnostics.extend(type_cond_diagnostics);
+    let has_type_error = if context.has_schema {
+        let type_cond_diagnostics =
+            db.validate_fragment_type_condition(def.type_condition().to_string(), def.loc());
+        let has_type_error = !type_cond_diagnostics.is_empty();
+        diagnostics.extend(type_cond_diagnostics);
+        has_type_error
+    } else {
+        false
+    };
 
     let fragment_cycles_diagnostics = db.validate_fragment_cycles(def.clone());
     let has_cycles = !fragment_cycles_diagnostics.is_empty();
     diagnostics.extend(fragment_cycles_diagnostics);
 
     if !has_type_error && !has_cycles {
-        diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), var_defs));
+        diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), context));
     }
 
     diagnostics
