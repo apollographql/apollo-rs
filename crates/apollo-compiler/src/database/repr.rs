@@ -36,7 +36,7 @@ pub trait ReprDatabase: InputDatabase {
     fn executable_document(
         &self,
         file_id: FileId,
-    ) -> Arc<Result<crate::ExecutableDocument, crate::executable::TypeError>>;
+    ) -> Result<Arc<crate::ExecutableDocument>, crate::executable::TypeError>;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -125,9 +125,6 @@ fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
 fn executable_document(
     db: &dyn ReprDatabase,
     file_id: FileId,
-) -> Arc<Result<crate::ExecutableDocument, crate::executable::TypeError>> {
-    Arc::new(crate::ExecutableDocument::from_ast(
-        &db.schema(),
-        &db.ast(file_id),
-    ))
+) -> Result<Arc<crate::ExecutableDocument>, crate::executable::TypeError> {
+    crate::ExecutableDocument::from_ast(&db.schema(), &db.ast(file_id)).map(Arc::new)
 }
