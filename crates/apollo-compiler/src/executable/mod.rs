@@ -26,6 +26,11 @@ pub struct Operation {
     pub selection_set: SelectionSet,
 }
 
+pub enum OperationRef<'a> {
+    Anonymous(&'a Node<Operation>),
+    Named(&'a Name, &'a Node<Operation>),
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fragment {
     pub directives: Vec<Node<Directive>>,
@@ -82,12 +87,88 @@ impl fmt::Display for TypeError {
     }
 }
 
+/// A request error returned by [`ExecutableDocument::get_operation`]
+///
+/// If `get_operation`’s `name_request` argument was `Some`, this error indicates
+/// that the document does not contain an operation with the requested name.
+///
+/// If `name_request` was `None`, the request is ambiguous
+/// because the document contains multiple operations
+/// (or zero, though the document would be invalid in that case).
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct GetOperationError();
+
 impl ExecutableDocument {
     pub fn from_ast(schema: &Schema, document: &ast::Document) -> Result<Self, TypeError> {
         self::from_ast::document_from_ast(schema, document)
     }
 
+    /// Returns an iterator of operations, both anonymous and named
+    pub fn all_operations(&self) -> impl Iterator<Item = OperationRef<'_>> {
+        self.anonymous_operation
+            .as_ref()
+            .into_iter()
+            .map(OperationRef::Anonymous)
+            .chain(
+                self.named_operations
+                    .iter()
+                    .map(|(name, op)| OperationRef::Named(name, op)),
+            )
+    }
+
+    /// Return the relevant operation for a request, or a request error
+    ///
+    /// This the [GetOperation](https://spec.graphql.org/October2021/#GetOperation())
+    /// algorithm in the _Executing Requests_ section of the specification.
+    ///
+    /// A GraphQL request comes with a document (which may contain multiple operations)
+    /// an an optional operation name. When a name is given the request executes the operation
+    /// with that name, which is expected to exist. When it is not given / null / `None`,
+    /// the document is expected to contain a single operation (which may or may not be named)
+    /// to avoid ambiguity.
+    pub fn get_operation<N>(
+        &self,
+        name_request: Option<&N>,
+    ) -> Result<OperationRef<'_>, GetOperationError>
+    where
+        N: std::hash::Hash + indexmap::Equivalent<Name>,
+    {
+        if let Some(name) = name_request {
+            // Honor the request
+            self.named_operations
+                .get_key_value(name)
+                .map(|(name, op)| OperationRef::Named(name, op))
+        } else if let Some(op) = &self.anonymous_operation {
+            // No name request, return the anonymous operation if it’s the only operation
+            self.named_operations
+                .is_empty()
+                .then_some(OperationRef::Anonymous(op))
+        } else {
+            // No name request or anonymous operation, return a named operation if it’s the only one
+            self.named_operations.iter().next().and_then(|(name, op)| {
+                (self.named_operations.len() == 1).then_some(OperationRef::Named(name, op))
+            })
+        }
+        .ok_or(GetOperationError())
+    }
+
     serialize_method!();
+}
+
+impl<'a> OperationRef<'a> {
+    pub fn name(&self) -> Option<&'a Name> {
+        match self {
+            OperationRef::Anonymous(_) => None,
+            OperationRef::Named(name, _) => Some(name),
+        }
+    }
+
+    pub fn definition(&self) -> &'a Node<Operation> {
+        match self {
+            OperationRef::Anonymous(def) | OperationRef::Named(_, def) => def,
+        }
+    }
 }
 
 impl Operation {
