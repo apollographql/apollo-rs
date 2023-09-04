@@ -3,7 +3,7 @@ use apollo_compiler::schema;
 use apollo_compiler::schema::Component;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::ApolloCompiler;
-use apollo_compiler::HirDatabase;
+use apollo_compiler::ReprDatabase;
 use apollo_compiler::Schema;
 use indexmap::IndexMap;
 

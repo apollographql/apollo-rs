@@ -1,5 +1,6 @@
 use super::*;
 use crate::ast::OperationType;
+use crate::Arc;
 
 pub struct SchemaBuilder {
     schema: Schema,
@@ -40,11 +41,11 @@ impl SchemaBuilder {
             orphan_type_extensions: IndexMap::new(),
         };
 
-        static BUILT_IN_TYPES: std::sync::OnceLock<ast::Document> = std::sync::OnceLock::new();
+        static BUILT_IN_TYPES: std::sync::OnceLock<Arc<ast::Document>> = std::sync::OnceLock::new();
         let built_in = BUILT_IN_TYPES.get_or_init(|| {
             let input = include_str!("../built_in_types.graphql");
             let result = ast::Document::parser().parse_with_file_id(input, FileId::BUILT_IN);
-            debug_assert!(result.errors.is_empty());
+            debug_assert!(result.syntax_errors.is_empty());
             result.document
         });
 

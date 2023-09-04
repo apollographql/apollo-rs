@@ -1,5 +1,6 @@
 use crate::ast;
 use crate::ast::Document;
+use crate::Arc;
 use crate::FileId;
 use crate::Node;
 use crate::NodeLocation;
@@ -27,9 +28,9 @@ pub struct ParseResult {
     /// used in all [`Node`]s in [`document`][Self::document]
     pub file_id: FileId,
 
-    pub document: Document,
+    pub document: Arc<Document>,
 
-    pub errors: Vec<ParseError>,
+    pub syntax_errors: Vec<ParseError>,
 
     /// What level of recursion was reached during parsing.
     /// Compare with [`Parser::recursion_limit`].
@@ -42,7 +43,7 @@ pub struct ParseResult {
 
 // TODO: make `ApolloDiagnostic` constructible without a database
 #[derive(Clone)]
-pub struct ParseError(apollo_parser::Error);
+pub struct ParseError(pub(crate) apollo_parser::Error);
 
 impl fmt::Debug for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -52,7 +53,7 @@ impl fmt::Debug for ParseError {
 
 impl Parser {
     /// Configure the recursion to use while parsing.
-    pub fn recursion_limit(mut self, value: usize) -> Self {
+    pub fn recursion_limit(&mut self, value: usize) -> &mut Self {
         self.recursion_limit = Some(value);
         self
     }
@@ -60,7 +61,7 @@ impl Parser {
     /// Configure the limit on the number of tokens to parse.
     /// If an input document is too big, parsing will be aborted.
     /// By default, there is no limit.
-    pub fn token_limit(mut self, value: usize) -> Self {
+    pub fn token_limit(&mut self, value: usize) -> &mut Self {
         self.token_limit = Some(value);
         self
     }
@@ -81,11 +82,11 @@ impl Parser {
         let syntax_errors = tree.errors().map(|err| ParseError(err.clone())).collect();
         let recursion_reached = tree.recursion_limit().high;
         let tokens_reached = tree.token_limit().high;
-        let document = Document::from_cst(tree, file_id);
+        let document = Arc::new(Document::from_cst(tree, file_id));
         ParseResult {
             file_id,
             document,
-            errors: syntax_errors,
+            syntax_errors,
             recursion_reached,
             tokens_reached,
         }
@@ -95,9 +96,9 @@ impl Parser {
 impl ParseResult {
     /// Panics with a formatted message if there are parse error
     pub fn assert_no_error(&self) {
-        if !self.errors.is_empty() {
+        if !self.syntax_errors.is_empty() {
             let mut details = String::new();
-            for error in &self.errors {
+            for error in &self.syntax_errors {
                 writeln!(&mut details, "{error:?}").unwrap()
             }
             panic!("Syntax errors:\n{details}")

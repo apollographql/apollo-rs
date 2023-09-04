@@ -19,7 +19,7 @@ use std::path::Path;
 
 pub use self::arc::Arc;
 pub use self::database::{
-    hir, CstDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source,
+    hir, CstDatabase, FileId, HirDatabase, InputDatabase, ReprDatabase, RootDatabase, Source,
 };
 pub use self::diagnostics::ApolloDiagnostic;
 pub use self::executable::ExecutableDocument;
