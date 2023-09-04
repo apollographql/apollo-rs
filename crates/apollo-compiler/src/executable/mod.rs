@@ -7,8 +7,11 @@ use std::fmt;
 
 mod from_ast;
 mod serialize;
+#[cfg(test)]
+mod tests;
 
 pub use crate::ast::{Directive, Name, NamedType, OperationType, Type, Value, VariableDefinition};
+use std::collections::HashSet;
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -83,7 +86,7 @@ pub struct TypeError(&'static str);
 
 impl fmt::Display for TypeError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0.fmt(f)
+        write!(f, "{}, validate for details", self.0)
     }
 }
 
@@ -174,6 +177,49 @@ impl<'a> OperationRef<'a> {
 impl Operation {
     pub fn object_type(&self) -> &NamedType {
         &self.selection_set.ty
+    }
+
+    /// Return whether this operation is a query that only selects introspection meta-fields:
+    /// `__type`, `__schema`, and `__typename`
+    pub fn is_introspection(&self, document: &ExecutableDocument) -> bool {
+        fn is_introspection_impl<'a>(
+            document: &'a ExecutableDocument,
+            seen_fragments: &mut HashSet<&'a Name>,
+            set: &'a SelectionSet,
+        ) -> bool {
+            set.selections.iter().all(|selection| match selection {
+                Selection::Field(field) => {
+                    matches!(field.name.as_str(), "__type" | "__schema" | "__typename")
+                }
+                Selection::FragmentSpread(spread) => {
+                    document
+                        .fragments
+                        .get(&spread.fragment_name)
+                        .is_some_and(|fragment| {
+                            let new = seen_fragments.insert(&spread.fragment_name);
+                            if new {
+                                is_introspection_impl(
+                                    document,
+                                    seen_fragments,
+                                    &fragment.selection_set,
+                                )
+                            } else {
+                                // This isn't the first time we've seen this spread.
+                                // We trust that the first visit will find all
+                                // relevant fields and stop the recursion (without
+                                // affecting the overall `all` result).
+                                true
+                            }
+                        })
+                }
+                Selection::InlineFragment(inline) => {
+                    is_introspection_impl(document, seen_fragments, &inline.selection_set)
+                }
+            })
+        }
+
+        self.operation_type == OperationType::Query
+            && is_introspection_impl(document, &mut HashSet::new(), &self.selection_set)
     }
 }
 
