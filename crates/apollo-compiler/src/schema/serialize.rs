@@ -15,7 +15,7 @@ impl Schema {
 impl Schema {
     fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         let implicit_op = |opt: &Option<ComponentStr>, ty: OperationType| match opt {
-            Some(name) => name.as_str() == ty.name(),
+            Some(name) => name.as_str() == ty.default_type_name(),
             None => true,
         };
         let schema_extensions = self.extensions();
