@@ -49,7 +49,7 @@ impl Fragment {
 
 impl SelectionSet {
     fn to_ast(&self) -> Vec<ast::Selection> {
-        self.selections()
+        self.selections
             .iter()
             .map(|selection| match selection {
                 Selection::Field(field) => ast::Selection::Field(Node::new_synthetic(ast::Field {

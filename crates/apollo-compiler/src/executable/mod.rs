@@ -270,10 +270,6 @@ impl SelectionSet {
         }
     }
 
-    pub fn selections(&self) -> &[Selection] {
-        &self.selections
-    }
-
     pub fn push(&mut self, selection: impl Into<Selection>) {
         self.selections.push(selection.into())
     }
