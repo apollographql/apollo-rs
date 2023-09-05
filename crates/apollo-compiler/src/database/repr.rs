@@ -2,9 +2,12 @@ use super::InputDatabase;
 use crate::ast;
 use crate::diagnostics::DiagnosticData;
 use crate::diagnostics::Label;
+use crate::schema::Name;
 use crate::ApolloDiagnostic;
 use crate::Arc;
 use crate::FileId;
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 /// Queries for parsing into the various in-memory representations of GraphQL documents
 #[salsa::query_group(ReprStorage)]
@@ -43,6 +46,25 @@ pub trait ReprDatabase: InputDatabase {
         &self,
         file_id: FileId,
     ) -> Result<Arc<crate::ExecutableDocument>, crate::executable::TypeError>;
+
+    // TODO: another database trait? what to name it?
+
+    /// Returns a map of interface names to names of types that implement that interface
+    ///
+    /// `Schema` only stores the inverse relationship
+    /// (in [`ObjectType::implements_interfaces`] and [`InterfaceType::implements_interfaces`]),
+    /// so finding the implementers of even one interface requires a linear scan.
+    /// Gathering them all at once and caching amorticizes that cost.
+    #[salsa::invoke(implementers_map)]
+    fn implementers_map(&self) -> Arc<HashMap<Name, HashSet<Name>>>;
+
+    /// Returns whether `maybe_subtype` is a subtype of `abstract_type`, which means either:
+    ///
+    /// * `maybe_subtype` implements the interface `abstract_type`
+    /// * `maybe_subtype` is a member of the union type `abstract_type`
+    #[salsa::invoke(is_subtype)]
+    #[salsa::transparent]
+    fn is_subtype(&self, abstract_type: &str, maybe_subtype: &str) -> bool;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -139,4 +161,13 @@ fn executable_document(
     file_id: FileId,
 ) -> Result<Arc<crate::ExecutableDocument>, crate::executable::TypeError> {
     crate::ExecutableDocument::from_ast(&db.schema(), &db.ast(file_id)).map(Arc::new)
+}
+
+fn implementers_map(db: &dyn ReprDatabase) -> Arc<HashMap<Name, HashSet<Name>>> {
+    Arc::new(db.schema().implementers_map())
+}
+
+fn is_subtype(db: &dyn ReprDatabase, abstract_type: &str, maybe_subtype: &str) -> bool {
+    db.schema()
+        .is_subtype(&db.implementers_map(), abstract_type, maybe_subtype)
 }

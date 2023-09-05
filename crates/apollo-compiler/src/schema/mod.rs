@@ -7,12 +7,17 @@ use crate::NodeStr;
 use indexmap::Equivalent;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
+use std::borrow::Borrow;
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::hash::Hash;
 use std::sync::OnceLock;
 
 mod component;
 mod from_ast;
 mod serialize;
+#[cfg(test)]
+mod tests;
 
 pub use self::component::{Component, ComponentOrigin, ComponentStr, ExtensionId};
 pub use self::from_ast::SchemaBuilder;
@@ -198,6 +203,8 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a scalar type
+    ///
+    /// `name` can be of type [`&Name`][Name] or `&str`.
     pub fn get_scalar<N>(&self, name: &N) -> Option<&ScalarType>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
@@ -210,6 +217,8 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a object type
+    ///
+    /// `name` can be of type [`&Name`][Name] or `&str`.
     pub fn get_object<N>(&self, name: &N) -> Option<&ObjectType>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
@@ -222,6 +231,8 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a interface type
+    ///
+    /// `name` can be of type [`&Name`][Name] or `&str`.
     pub fn get_interface<N>(&self, name: &N) -> Option<&InterfaceType>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
@@ -234,6 +245,8 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a union type
+    ///
+    /// `name` can be of type [`&Name`][Name] or `&str`.
     pub fn get_union<N>(&self, name: &N) -> Option<&UnionType>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
@@ -246,6 +259,8 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a enum type
+    ///
+    /// `name` can be of type [`&Name`][Name] or `&str`.
     pub fn get_enum<N>(&self, name: &N) -> Option<&EnumType>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
@@ -258,6 +273,8 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a input object type
+    ///
+    /// `name` can be of type [`&Name`][Name] or `&str`.
     pub fn get_input_object<N>(&self, name: &N) -> Option<&InputObjectType>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
@@ -306,6 +323,8 @@ impl Schema {
     }
 
     /// Returns the definition of a type’s explicit field or meta-field.
+    ///
+    /// `type_name` and `field_name` can be of type [`&Name`][Name] or `&str`.
     pub fn type_field<N1, N2>(
         &self,
         type_name: &N1,
@@ -326,6 +345,67 @@ impl Schema {
                 | ExtendedType::Enum(_)
                 | ExtendedType::InputObject(_) => None,
             })
+    }
+
+    /// Returns a map of interface names to names of types that implement that interface
+    ///
+    /// `Schema` only stores the inverse relationship
+    /// (in [`ObjectType::implements_interfaces`] and [`InterfaceType::implements_interfaces`]),
+    /// so finding the implementers of even one interface requires a linear scan.
+    /// Gathering them all at once amorticizes that cost, if the map is cached.
+    #[doc(hidden)] // use the Salsa query instead
+    pub fn implementers_map(&self) -> HashMap<Name, HashSet<Name>> {
+        let mut map = HashMap::<Name, HashSet<Name>>::new();
+        for (ty_name, ty) in &self.types {
+            let interfaces = match ty {
+                ExtendedType::Object(def) => &def.implements_interfaces,
+                ExtendedType::Interface(def) => &def.implements_interfaces,
+                ExtendedType::Scalar(_)
+                | ExtendedType::Union(_)
+                | ExtendedType::Enum(_)
+                | ExtendedType::InputObject(_) => continue,
+            };
+            for interface in interfaces.keys() {
+                map.entry(interface.clone())
+                    .or_default()
+                    .insert(ty_name.clone());
+            }
+        }
+        map
+    }
+
+    /// Returns whether `maybe_subtype` is a subtype of `abstract_type`, which means either:
+    ///
+    /// * `maybe_subtype` implements the interface `abstract_type`
+    /// * `maybe_subtype` is a member of the union type `abstract_type`
+    ///
+    /// `abstract_type` and `maybe_subtype` can be of type [`&Name`][Name] or `&str`.
+    ///
+    /// The `implementers_map` argument can be created with
+    /// the [`implementers_map`][Self::implementers_map] method.
+    /// This may return incorrect results if the schema was modified since the map was created.
+    #[doc(hidden)] // use the Salsa query instead
+    pub fn is_subtype<N1, N2>(
+        &self,
+        implementers_map: &HashMap<Name, HashSet<Name>>,
+        abstract_type: &N1,
+        maybe_subtype: &N2,
+    ) -> bool
+    where
+        N1: ?Sized + Eq + Hash,
+        N2: ?Sized + Eq + Hash,
+        NodeStr: Borrow<N1> + Borrow<N2>,
+    {
+        self.types.get(abstract_type).is_some_and(|ty| match ty {
+            ExtendedType::Interface(_) => implementers_map
+                .get(abstract_type)
+                .is_some_and(|implementers| implementers.contains(maybe_subtype)),
+            ExtendedType::Union(def) => def.members.contains_key(maybe_subtype),
+            ExtendedType::Scalar(_)
+            | ExtendedType::Object(_)
+            | ExtendedType::Enum(_)
+            | ExtendedType::InputObject(_) => false,
+        })
     }
 
     /// Return the meta-fields of the given type
