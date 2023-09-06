@@ -28,6 +28,8 @@ pub struct ParseResult {
     /// used in all [`Node`]s in [`document`][Self::document]
     pub file_id: FileId,
 
+    pub cst: cst::Document,
+
     pub document: Arc<Document>,
 
     pub syntax_errors: Vec<ParseError>,
@@ -82,9 +84,10 @@ impl Parser {
         let syntax_errors = tree.errors().map(|err| ParseError(err.clone())).collect();
         let recursion_reached = tree.recursion_limit().high;
         let tokens_reached = tree.token_limit().high;
-        let document = Arc::new(Document::from_cst(tree, file_id));
+        let document = Arc::new(Document::from_cst(tree.document(), file_id));
         ParseResult {
             file_id,
+            cst: tree.document(),
             document,
             syntax_errors,
             recursion_reached,
@@ -107,10 +110,9 @@ impl ParseResult {
 }
 
 impl Document {
-    pub(crate) fn from_cst(tree: apollo_parser::SyntaxTree, file_id: FileId) -> Self {
+    pub(crate) fn from_cst(document: cst::Document, file_id: FileId) -> Self {
         Self {
-            definitions: tree
-                .document()
+            definitions: document
                 .definitions()
                 .filter_map(|def| def.convert(file_id))
                 .collect(),

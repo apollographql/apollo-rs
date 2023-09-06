@@ -9,6 +9,12 @@ use crate::FileId;
 /// Queries for parsing into the various in-memory representations of GraphQL documents
 #[salsa::query_group(ReprStorage)]
 pub trait ReprDatabase: InputDatabase {
+    /// Get a CST for a particular file. Returns a `rowan` SyntaxTree. The
+    /// SyntaxTree can be safely shared between threads as it's `Send` and
+    /// `Sync`.
+    #[salsa::invoke(cst)]
+    fn cst(&self, file_id: FileId) -> apollo_parser::SyntaxTree;
+
     #[salsa::invoke(ast_parse_result)]
     #[doc(hidden)]
     fn _ast_parse_result(&self, file_id: FileId) -> Arc<ParseResult>;
@@ -47,25 +53,31 @@ pub struct ParseResult {
     tokens_reached: usize,
 }
 
-fn ast_parse_result(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ParseResult> {
-    let mut parser = ast::Document::parser();
+fn cst(db: &dyn ReprDatabase, file_id: FileId) -> apollo_parser::SyntaxTree {
+    let input = db.source_code(file_id);
+    let mut parser = apollo_parser::Parser::new(&input);
     if let Some(limit) = db.recursion_limit() {
-        parser.recursion_limit(limit);
+        parser = parser.recursion_limit(limit);
     }
     if let Some(limit) = db.token_limit() {
-        parser.token_limit(limit);
+        parser = parser.token_limit(limit);
     }
-    let result = parser.parse(&db.source_code(file_id));
+    parser.parse()
+}
+
+fn ast_parse_result(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ParseResult> {
+    let tree = db.cst(file_id);
+    let syntax_errors = tree.errors();
+    let recursion_reached = tree.recursion_limit().high;
+    let tokens_reached = tree.token_limit().high;
+    let document = Arc::new(ast::Document::from_cst(tree.document(), file_id));
     Arc::new(ParseResult {
-        document: result.document,
-        recursion_reached: result.recursion_reached,
-        tokens_reached: result.tokens_reached,
+        document,
+        recursion_reached,
+        tokens_reached,
         syntax_errors: Arc::new(
-            result
-                .syntax_errors
-                .into_iter()
+            syntax_errors
                 .map(|err| {
-                    let err = err.0;
                     if err.is_limit() {
                         ApolloDiagnostic::new(
                             db,

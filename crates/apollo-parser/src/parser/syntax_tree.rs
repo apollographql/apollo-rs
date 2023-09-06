@@ -71,7 +71,7 @@ impl SyntaxTree {
     }
 
     /// Return the root typed `Document` node.
-    pub fn document(self) -> Document {
+    pub fn document(&self) -> Document {
         Document {
             syntax: self.syntax_node(),
         }

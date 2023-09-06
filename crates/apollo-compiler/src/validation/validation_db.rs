@@ -7,7 +7,7 @@ use crate::{
         argument, directive, enum_, extension, fragment, input_object, interface, object,
         operation, scalar, schema, selection, union_, value, variable,
     },
-    CstDatabase, FileId, HirDatabase, InputDatabase,
+    FileId, HirDatabase, InputDatabase, ReprDatabase,
 };
 use apollo_parser::cst;
 use apollo_parser::cst::CstNode;
@@ -20,7 +20,7 @@ const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 
 #[salsa::query_group(ValidationStorage)]
 pub trait ValidationDatabase:
-    Upcast<dyn HirDatabase> + InputDatabase + CstDatabase + HirDatabase
+    Upcast<dyn HirDatabase> + InputDatabase + ReprDatabase + HirDatabase
 {
     /// Validate all documents.
     fn validate(&self) -> Vec<ApolloDiagnostic>;
@@ -306,7 +306,9 @@ pub trait ValidationDatabase:
 
 pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-    diagnostics.extend(db.syntax_errors());
+    for file_id in db.source_files() {
+        diagnostics.extend(db.syntax_errors(file_id).iter().cloned());
+    }
 
     diagnostics.extend(db.validate_type_system());
 

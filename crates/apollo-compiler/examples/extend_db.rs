@@ -1,8 +1,8 @@
 use std::{fmt, path::Path, sync::Arc};
 
 use apollo_compiler::{
-    database::{CstStorage, HirStorage, InputStorage},
-    CstDatabase, FileId, HirDatabase, InputDatabase, Source,
+    database::{HirStorage, InputStorage, ReprStorage},
+    FileId, HirDatabase, InputDatabase, ReprDatabase, Source,
 };
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
@@ -42,7 +42,7 @@ impl Linter {
 
 // Includes all the necessary database's storage units that will now be
 // accessible from LinterDatabase.
-#[salsa::database(InputStorage, CstStorage, HirStorage, LintValidationStorage)]
+#[salsa::database(InputStorage, ReprStorage, HirStorage, LintValidationStorage)]
 #[derive(Default)]
 pub struct LinterDatabase {
     pub storage: salsa::Storage<LinterDatabase>,
@@ -77,7 +77,7 @@ impl Upcast<dyn HirDatabase> for LinterDatabase {
 // HirDatabase>.
 #[salsa::query_group(LintValidationStorage)]
 pub trait LintValidation:
-    Upcast<dyn HirDatabase> + InputDatabase + CstDatabase + HirDatabase
+    Upcast<dyn HirDatabase> + InputDatabase + ReprDatabase + HirDatabase
 {
     // Define any queries that should be part of this database.
     fn lint(&self) -> Vec<LintDiagnostic>;
