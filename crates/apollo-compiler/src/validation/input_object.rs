@@ -144,6 +144,13 @@ pub fn validate_input_value_definitions(
     let mut seen: HashMap<ast::Name, &Node<ast::InputValueDefinition>> = HashMap::new();
     for input_value in input_values {
         let name = &input_value.name;
+        diagnostics.extend(super::directive::validate_directives2(
+            db,
+            input_value.directives.clone(),
+            ast::DirectiveLocation::ArgumentDefinition,
+            Default::default(), // No variables in an input value definition
+        ));
+
         // TODO(@goto-bus-stop): Validate directives
         if let Some(prev_value) = seen.get(name) {
             if let (Some(&original_value), Some(&redefined_value)) =

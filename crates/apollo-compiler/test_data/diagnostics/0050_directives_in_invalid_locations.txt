@@ -28,7 +28,7 @@
         ),
         data: UnsupportedLocation {
             name: "skip",
-            dir_loc: Interface,
+            dir_loc: "INTERFACE",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: -1,
@@ -77,7 +77,7 @@
         ),
         data: UnsupportedLocation {
             name: "directiveB",
-            dir_loc: FieldDefinition,
+            dir_loc: "FIELD_DEFINITION",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: 50,
@@ -116,7 +116,7 @@
         ),
         data: UnsupportedLocation {
             name: "include",
-            dir_loc: InputObject,
+            dir_loc: "INPUT_OBJECT",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: -1,
@@ -155,7 +155,7 @@
         ),
         data: UnsupportedLocation {
             name: "include",
-            dir_loc: InputFieldDefinition,
+            dir_loc: "INPUT_FIELD_DEFINITION",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: -1,
@@ -204,7 +204,7 @@
         ),
         data: UnsupportedLocation {
             name: "directiveB",
-            dir_loc: Union,
+            dir_loc: "UNION",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: 50,
@@ -253,7 +253,7 @@
         ),
         data: UnsupportedLocation {
             name: "directiveA",
-            dir_loc: Enum,
+            dir_loc: "ENUM",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: 50,
@@ -302,7 +302,7 @@
         ),
         data: UnsupportedLocation {
             name: "directiveA",
-            dir_loc: EnumValue,
+            dir_loc: "ENUM_VALUE",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: 50,
@@ -341,7 +341,7 @@
         ),
         data: UnsupportedLocation {
             name: "deprecated",
-            dir_loc: Object,
+            dir_loc: "OBJECT",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: -1,
@@ -380,7 +380,7 @@
         ),
         data: UnsupportedLocation {
             name: "specifiedBy",
-            dir_loc: ArgumentDefinition,
+            dir_loc: "ARGUMENT_DEFINITION",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: -1,
@@ -419,7 +419,7 @@
         ),
         data: UnsupportedLocation {
             name: "include",
-            dir_loc: Schema,
+            dir_loc: "SCHEMA",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: -1,
@@ -468,7 +468,7 @@
         ),
         data: UnsupportedLocation {
             name: "directiveB",
-            dir_loc: Scalar,
+            dir_loc: "SCALAR",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: 50,
@@ -507,7 +507,7 @@
         ),
         data: UnsupportedLocation {
             name: "skip",
-            dir_loc: VariableDefinition,
+            dir_loc: "VARIABLE_DEFINITION",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: -1,
@@ -546,7 +546,7 @@
         ),
         data: UnsupportedLocation {
             name: "skip",
-            dir_loc: Query,
+            dir_loc: "QUERY",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: -1,
@@ -585,7 +585,7 @@
         ),
         data: UnsupportedLocation {
             name: "deprecated",
-            dir_loc: Field,
+            dir_loc: "FIELD",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: -1,
@@ -634,7 +634,7 @@
         ),
         data: UnsupportedLocation {
             name: "directiveB",
-            dir_loc: FragmentSpread,
+            dir_loc: "FRAGMENT_SPREAD",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: 50,
@@ -683,7 +683,7 @@
         ),
         data: UnsupportedLocation {
             name: "directiveB",
-            dir_loc: FragmentDefinition,
+            dir_loc: "FRAGMENT_DEFINITION",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: 50,
@@ -732,7 +732,7 @@
         ),
         data: UnsupportedLocation {
             name: "directiveA",
-            dir_loc: InlineFragment,
+            dir_loc: "INLINE_FRAGMENT",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: 50,
@@ -781,7 +781,7 @@
         ),
         data: UnsupportedLocation {
             name: "directiveA",
-            dir_loc: Subscription,
+            dir_loc: "SUBSCRIPTION",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: 50,
@@ -820,7 +820,7 @@
         ),
         data: UnsupportedLocation {
             name: "skip",
-            dir_loc: Mutation,
+            dir_loc: "MUTATION",
             directive_def: DiagnosticLocation {
                 file_id: FileId {
                     id: -1,

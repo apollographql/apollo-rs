@@ -5,7 +5,7 @@ use crate::{
     validation::{RecursionStack, ValidationSet},
     Arc, Node, ValidationDatabase,
 };
-use apollo_parser::cst;
+use apollo_parser::cst::{self, CstNode};
 use std::collections::HashSet;
 
 /// This struct just groups functions that are used to find self-referential directives.
@@ -224,10 +224,21 @@ pub fn validate_directives2(
                 .unwrap_or(true);
 
             if !is_repeatable {
-                // original loc must be Some
-                let original_loc = *original
-                    .location()
-                    .expect("undefined original directive location");
+                let original_loc = super::lookup_cst_location(
+                    db.upcast(),
+                    *original
+                        .location()
+                        .expect("undefined original directive location"),
+                    |cst: cst::Directive| {
+                        Some(
+                            cst.at_token()?
+                                .text_range()
+                                .cover(cst.name()?.syntax().text_range()),
+                        )
+                    },
+                )
+                .or(original.location().copied())
+                .expect("undefined original directive location");
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
@@ -283,7 +294,6 @@ pub fn validate_directives2(
                     .find(|val| val.name == *arg_name)
                     .cloned();
 
-                use apollo_parser::cst::CstNode;
                 let whole_arg_location = super::lookup_cst_location(
                     db.upcast(),
                     *arg_name.location().unwrap(),

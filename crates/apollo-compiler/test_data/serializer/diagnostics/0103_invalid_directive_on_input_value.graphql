@@ -1,0 +1,9 @@
+directive @example(arg: String!) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
+
+input Input {
+  key: String! @example
+}
+
+directive @directive(
+  arg2: Int @example,
+) on SCHEMA
