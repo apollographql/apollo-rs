@@ -198,6 +198,188 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
     diagnostics
 }
 
+pub fn validate_directives2(
+    db: &dyn ValidationDatabase,
+    dirs: Vec<Node<ast::Directive>>,
+    dir_loc: ast::DirectiveLocation,
+    var_defs: &[Node<ast::VariableDefinition>],
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let mut seen_directives = HashSet::<ast::Name>::new();
+
+    let schema = db.schema();
+    for dir in dirs {
+        diagnostics.extend(super::argument::validate_arguments2(db, &dir.arguments));
+        // diagnostics.extend(db.validate_arguments(dir.arguments().to_vec()));
+
+        let name = &dir.name;
+        let Some(&loc) = dir.location() else { continue };
+        let directive_definition = schema.directive_definitions.get(name);
+
+        if let Some(original) = seen_directives.get(name) {
+            let is_repeatable = directive_definition
+                .map(|def| def.repeatable)
+                // Assume unknown directives are repeatable to avoid producing confusing diagnostics
+                .unwrap_or(true);
+
+            if !is_repeatable {
+                // original loc must be Some
+                let original_loc = *original
+                    .location()
+                    .expect("undefined original directive location");
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        loc.into(),
+                        DiagnosticData::UniqueDirective {
+                            name: name.to_string(),
+                            original_call: original_loc.into(),
+                            conflicting_call: loc.into(),
+                        },
+                    )
+                    .label(Label::new(
+                        original_loc,
+                        format!("directive {name} first called here"),
+                    ))
+                    .label(Label::new(
+                        loc,
+                        format!("directive {name} called again here"),
+                    )),
+                );
+            }
+        } else {
+            seen_directives.insert(dir.name.clone());
+        }
+
+        if let Some(directive_definition) = directive_definition {
+            let allowed_loc: HashSet<ast::DirectiveLocation> =
+                HashSet::from_iter(directive_definition.locations.iter().cloned());
+            if !allowed_loc.contains(&dir_loc) {
+                let mut diag = ApolloDiagnostic::new(
+                        db,
+                        loc.into(),
+                        DiagnosticData::UnsupportedLocation {
+                            name: name.to_string(),
+                            dir_loc,
+                            directive_def: (*directive_definition.location().unwrap()).into(),
+                        },
+                )
+                    .label(Label::new(loc, format!("{dir_loc} is not a valid location")))
+                    .help("the directive must be used in a location that the service has declared support for");
+                if !directive_definition.is_built_in() {
+                    diag = diag.label(Label::new(
+                        *directive_definition.location().unwrap(),
+                        format!("consider adding {dir_loc} directive location here"),
+                    ));
+                }
+                diagnostics.push(diag)
+            }
+
+            for (arg_name, arg_value) in &dir.arguments {
+                let input_value = directive_definition
+                    .arguments
+                    .iter()
+                    .find(|val| val.name == *arg_name)
+                    .cloned();
+
+                use apollo_parser::cst::CstNode;
+                let whole_arg_location = super::lookup_cst_location(
+                    db.upcast(),
+                    *arg_name.location().unwrap(),
+                    |cst: apollo_parser::cst::InputValueDefinition| Some(cst.syntax().text_range()),
+                );
+
+                // @b(a: true)
+                if let Some(input_value) = input_value {
+                    // TODO(@goto-bus-stop) do we really need value validation and variable
+                    // validation separately?
+                    if let Some(diag) = super::variable::validate_variable_usage2(
+                        db,
+                        input_value.clone(),
+                        var_defs,
+                        (arg_name, arg_value),
+                    )
+                    .err()
+                    {
+                        diagnostics.push(diag)
+                    } else {
+                        let type_diags = super::value::validate_values2(
+                            db,
+                            &input_value.ty,
+                            (arg_name, arg_value.clone()),
+                            var_defs,
+                        );
+
+                        diagnostics.extend(type_diags);
+                    }
+                } else {
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            whole_arg_location.unwrap().into(),
+                            DiagnosticData::UndefinedArgument {
+                                name: arg_name.to_string(),
+                            },
+                        )
+                        .label(Label::new(
+                            *arg_name.location().unwrap(),
+                            "argument by this name not found",
+                        ))
+                        .label(Label::new(loc, "directive declared here")),
+                    );
+                }
+            }
+            for arg_def in &directive_definition.arguments {
+                let arg_value = dir
+                    .arguments
+                    .iter()
+                    .find(|(name, _value)| *name == arg_def.name)
+                    .map(|(_name, value)| value);
+                let is_null = match arg_value {
+                    None => true,
+                    // Prevents explicitly providing `requiredArg: null`,
+                    // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
+                    // and it won't raise a validation error at this stage.
+                    Some(value) => value.is_null(),
+                };
+
+                if arg_def.is_required() && is_null {
+                    let mut diagnostic = ApolloDiagnostic::new(
+                        db,
+                        (*dir.location().unwrap()).into(),
+                        DiagnosticData::RequiredArgument {
+                            name: arg_def.name.to_string(),
+                        },
+                    );
+                    diagnostic = diagnostic.label(Label::new(
+                        *dir.location().unwrap(),
+                        format!("missing value for argument `{}`", arg_def.name),
+                    ));
+                    if let Some(&loc) = arg_def.location() {
+                        diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
+                    }
+
+                    diagnostics.push(diagnostic);
+                }
+            }
+        } else {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    loc.into(),
+                    DiagnosticData::UndefinedDirective {
+                        name: name.to_string(),
+                    },
+                )
+                .label(Label::new(loc, "directive not defined")),
+            )
+        }
+    }
+
+    diagnostics
+}
+
 pub fn validate_directives(
     db: &dyn ValidationDatabase,
     dirs: Vec<hir::Directive>,
@@ -262,7 +444,27 @@ pub fn validate_directives(
                         loc.into(),
                         DiagnosticData::UnsupportedLocation {
                             name: name.into(),
-                            dir_loc,
+                            dir_loc: match dir_loc {
+                                hir::DirectiveLocation::Query => ast::DirectiveLocation::Query,
+                                hir::DirectiveLocation::Mutation => ast::DirectiveLocation::Mutation,
+                                hir::DirectiveLocation::Subscription => ast::DirectiveLocation::Subscription,
+                                hir::DirectiveLocation::Field => ast::DirectiveLocation::Field,
+                                hir::DirectiveLocation::FragmentDefinition => ast::DirectiveLocation::FragmentDefinition,
+                                hir::DirectiveLocation::FragmentSpread => ast::DirectiveLocation::FragmentSpread,
+                                hir::DirectiveLocation::InlineFragment => ast::DirectiveLocation::InlineFragment,
+                                hir::DirectiveLocation::VariableDefinition => ast::DirectiveLocation::VariableDefinition,
+                                hir::DirectiveLocation::Schema => ast::DirectiveLocation::Schema,
+                                hir::DirectiveLocation::Object => ast::DirectiveLocation::Object,
+                                hir::DirectiveLocation::FieldDefinition => ast::DirectiveLocation::FieldDefinition,
+                                hir::DirectiveLocation::ArgumentDefinition => ast::DirectiveLocation::ArgumentDefinition,
+                                hir::DirectiveLocation::Interface => ast::DirectiveLocation::Interface,
+                                hir::DirectiveLocation::Union => ast::DirectiveLocation::Union,
+                                hir::DirectiveLocation::Enum => ast::DirectiveLocation::Enum,
+                                hir::DirectiveLocation::EnumValue => ast::DirectiveLocation::EnumValue,
+                                hir::DirectiveLocation::InputObject => ast::DirectiveLocation::InputObject,
+                                hir::DirectiveLocation::InputFieldDefinition => ast::DirectiveLocation::InputFieldDefinition,
+                                hir::DirectiveLocation::Scalar => ast::DirectiveLocation::Scalar,
+                            },
                             directive_def: directive_definition.loc.into(),
                         },
                 )

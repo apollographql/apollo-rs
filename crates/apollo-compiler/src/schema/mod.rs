@@ -65,7 +65,7 @@ pub enum ExtendedType {
     InputObject(Node<InputObjectType>),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarType {
     pub name: Name,
     pub description: Option<NodeStr>,

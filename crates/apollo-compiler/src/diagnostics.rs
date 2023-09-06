@@ -1,4 +1,5 @@
-use crate::database::hir::{DirectiveLocation, HirNodeLocation};
+use crate::ast::DirectiveLocation;
+use crate::database::hir::HirNodeLocation;
 use crate::database::{InputDatabase, SourceCache};
 use crate::Arc;
 use crate::FileId;

@@ -368,6 +368,16 @@ impl Type {
         }
     }
 
+    /// Returns this type made nullable, if it isn’t already.
+    pub fn nullable(self) -> Self {
+        match self {
+            Type::Named(_) => self,
+            Type::List(_) => self,
+            Type::NonNullNamed(name) => Type::Named(name),
+            Type::NonNullList(inner) => Type::List(inner),
+        }
+    }
+
     /// Returns a list type whose items are this type.
     pub fn list(self) -> Self {
         Type::List(Box::new(self))
@@ -381,6 +391,35 @@ impl Type {
         }
     }
 
+    pub fn is_non_null(&self) -> bool {
+        matches!(self, Type::NonNullNamed(_) | Type::NonNullList(_))
+    }
+
+    /// Can a value of this type be used when the `target` type is expected?
+    ///
+    /// Implementation of spec function `AreTypesCompatible()`.
+    pub fn is_assignable_to(&self, target: &Self) -> bool {
+        match (target, self) {
+            // Can't assign a nullable type to a non-nullable type.
+            (Type::NonNullNamed(_) | Type::NonNullList(_), Type::Named(_) | Type::List(_)) => false,
+            // Can't assign a list type to a non-list type.
+            (Type::Named(_) | Type::NonNullNamed(_), Type::List(_) | Type::NonNullList(_)) => false,
+            // Can't assign a non-list type to a list type.
+            (Type::List(_) | Type::NonNullList(_), Type::Named(_) | Type::NonNullNamed(_)) => false,
+            // Non-null named types can be assigned if they are the same.
+            (Type::NonNullNamed(left), Type::NonNullNamed(right)) => left == right,
+            // Non-null list types can be assigned if their inner types are compatible.
+            (Type::NonNullList(left), Type::NonNullList(right)) => right.is_assignable_to(left),
+            // Both nullable and non-nullable named types can be assigned to a nullable type of the
+            // same name.
+            (Type::Named(left), Type::Named(right) | Type::NonNullNamed(right)) => left == right,
+            // Nullable and non-nullable lists can be assigned to a matching nullable list type.
+            (Type::List(left), Type::List(right) | Type::NonNullList(right)) => {
+                right.is_assignable_to(left)
+            }
+        }
+    }
+
     serialize_method!();
 }
 
@@ -390,6 +429,10 @@ impl FieldDefinition {
 }
 
 impl InputValueDefinition {
+    pub fn is_required(&self) -> bool {
+        matches!(self.ty, Type::NonNullNamed(_) | Type::NonNullList(_))
+    }
+
     directive_methods!();
     serialize_method!();
 }
@@ -491,6 +534,21 @@ impl Value {
             Some(value)
         } else {
             None
+        }
+    }
+
+    pub fn kind(&self) -> &'static str {
+        match self {
+            Value::Null => "Null",
+            Value::Enum(_) => "Enum",
+            Value::Variable(_) => "Variable",
+            Value::String(_) => "String",
+            Value::Float(_) => "Float",
+            Value::Int(_) => "Int",
+            Value::BigInt(_) => "BigInt",
+            Value::Boolean(_) => "Boolean",
+            Value::List(_) => "List",
+            Value::Object(_) => "Object",
         }
     }
 

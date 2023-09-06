@@ -1,9 +1,9 @@
-use crate::Arc;
 use crate::{
+    ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self, VariableDefinition},
     validation::ValidationSet,
-    ValidationDatabase,
+    Arc, Node, ValidationDatabase,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -124,6 +124,106 @@ pub fn validate_unused_variables(
     }));
 
     diagnostics
+}
+
+pub fn validate_variable_usage2(
+    db: &dyn ValidationDatabase,
+    var_usage: Node<ast::InputValueDefinition>,
+    var_defs: &[Node<ast::VariableDefinition>],
+    (arg_name, arg_value): (&ast::Name, &Node<ast::Value>),
+) -> Result<(), ApolloDiagnostic> {
+    use apollo_parser::cst::CstNode;
+    let whole_arg_location = super::lookup_cst_location(
+        db.upcast(),
+        *arg_name.location().unwrap(),
+        |cst: apollo_parser::cst::InputValueDefinition| Some(cst.syntax().text_range()),
+    );
+
+    if let ast::Value::Variable(var_name) = &**arg_value {
+        // Let var_def be the VariableDefinition named
+        // variable_name defined within operation.
+        let var_def = var_defs.iter().find(|v| v.name == *var_name);
+        if let Some(var_def) = var_def {
+            let is_allowed = is_variable_usage_allowed2(var_def, &var_usage);
+            if !is_allowed {
+                return Err(ApolloDiagnostic::new(
+                    db,
+                    whole_arg_location.unwrap().into(),
+                    DiagnosticData::DisallowedVariableUsage {
+                        var_name: var_def.name.to_string(),
+                        arg_name: arg_name.to_string(),
+                    },
+                )
+                .labels([
+                    Label::new(
+                        *var_def.location().unwrap(),
+                        format!(
+                            "variable `{}` of type `{}` is declared here",
+                            var_def.name, var_def.ty,
+                        ),
+                    ),
+                    Label::new(
+                        whole_arg_location.unwrap(),
+                        format!(
+                            "argument `{}` of type `{}` is declared here",
+                            arg_name, var_usage.ty,
+                        ),
+                    ),
+                ]));
+            }
+        } else {
+            return Err(ApolloDiagnostic::new(
+                db,
+                whole_arg_location.unwrap().into(),
+                DiagnosticData::UndefinedVariable {
+                    name: var_name.to_string(),
+                },
+            )
+            .label(Label::new(
+                *var_name.location().unwrap(),
+                "not found in this scope",
+            )));
+        }
+    }
+    // It's super confusing to produce a diagnostic here if either the
+    // location_ty or variable_ty is missing, so just return Ok(());
+    Ok(())
+}
+
+fn is_variable_usage_allowed2(
+    variable_def: &ast::VariableDefinition,
+    variable_usage: &ast::InputValueDefinition,
+) -> bool {
+    // 1. Let variable_ty be the expected type of variable_def.
+    let variable_ty = &variable_def.ty;
+    // 2. Let location_ty be the expected type of the Argument,
+    // ObjectField, or ListValue entry where variableUsage is
+    // located.
+    let location_ty = &variable_usage.ty;
+    // 3. if location_ty is a non-null type AND variable_ty is
+    // NOT a non-null type:
+    if location_ty.is_non_null() && !variable_ty.is_non_null() {
+        // 3.a. let hasNonNullVariableDefaultValue be true
+        // if a default value exists for variableDefinition
+        // and is not the value null.
+        let has_non_null_default_value = variable_def.default_value.is_some();
+        // 3.b. Let hasLocationDefaultValue be true if a default
+        // value exists for the Argument or ObjectField where
+        // variableUsage is located.
+        let has_location_default_value = variable_usage.default_value.is_some();
+        // 3.c. If hasNonNullVariableDefaultValue is NOT true
+        // AND hasLocationDefaultValue is NOT true, return
+        // false.
+        if !has_non_null_default_value && !has_location_default_value {
+            return false;
+        }
+
+        // 3.d. Let nullable_location_ty be the unwrapped
+        // nullable type of location_ty.
+        return variable_ty.is_assignable_to(&location_ty.clone().nullable());
+    }
+
+    variable_ty.is_assignable_to(location_ty)
 }
 
 pub fn validate_variable_usage(

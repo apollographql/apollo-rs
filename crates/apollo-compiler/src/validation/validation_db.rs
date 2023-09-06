@@ -3,9 +3,10 @@ use crate::{
     database::db::Upcast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::*,
+    schema,
     validation::{
-        argument, directive, enum_, extension, fragment, input_object, interface, object,
-        operation, scalar, schema, selection, union_, value, variable,
+        self, argument, directive, enum_, extension, fragment, input_object, interface, object,
+        operation, scalar, selection, union_, value, variable,
     },
     Arc, FileId, HirDatabase, InputDatabase, Node, ReprDatabase,
 };
@@ -47,10 +48,10 @@ pub trait ValidationDatabase:
     /// Validate names of operations and fragments in an executable document are unique.
     fn validate_executable_names(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
-    #[salsa::invoke(schema::validate_schema_definition)]
+    #[salsa::invoke(validation::schema::validate_schema_definition)]
     fn validate_schema_definition(&self, def: Arc<SchemaDefinition>) -> Vec<ApolloDiagnostic>;
 
-    #[salsa::invoke(schema::validate_root_operation_definitions)]
+    #[salsa::invoke(validation::schema::validate_root_operation_definitions)]
     fn validate_root_operation_definitions(
         &self,
         defs: Vec<RootOperationTypeDefinition>,
@@ -62,7 +63,7 @@ pub trait ValidationDatabase:
     #[salsa::invoke(scalar::validate_scalar_definition)]
     fn validate_scalar_definition(
         &self,
-        scalar_def: Arc<ScalarTypeDefinition>,
+        scalar_def: Node<schema::ScalarType>,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(enum_::validate_enum_definitions)]
