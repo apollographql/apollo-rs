@@ -68,7 +68,7 @@ fn unsupported_type(
 pub fn validate_values2(
     db: &dyn ValidationDatabase,
     ty: &ast::Type,
-    (arg_name, arg_value): (&ast::Name, Node<ast::Value>),
+    (_name, arg_value): (&ast::Name, Node<ast::Value>),
     var_defs: &[Node<ast::VariableDefinition>],
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = vec![];
@@ -97,7 +97,7 @@ pub fn value_of_correct_type2(
         // raised.
         // When expected as an input type, any string (such as "4") or
         // integer (such as 4 or -4) input value should be coerced to ID
-        ast::Value::Int(int) => match &type_definition {
+        ast::Value::Int(_) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) => {
                 if scalar.is_built_in()
                     && matches!(ty.inner_named_type().as_str(), "String" | "Boolean")

@@ -9,7 +9,7 @@
                 id: 10,
             },
             offset: 19,
-            length: 20,
+            length: 15,
         },
         labels: [
             Label {
@@ -18,7 +18,7 @@
                         id: 10,
                     },
                     offset: 19,
-                    length: 20,
+                    length: 15,
                 },
                 text: "this variable is never used",
             },

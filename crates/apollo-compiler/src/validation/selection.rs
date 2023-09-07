@@ -1,8 +1,9 @@
-use crate::Arc;
 use crate::{
+    ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir,
     validation::ValidationDatabase,
+    Arc,
 };
 use indexmap::IndexMap;
 
@@ -328,6 +329,22 @@ pub fn validate_selection(
             }
         }
     }
+
+    diagnostics
+}
+
+pub fn validate_selection_set2(
+    _db: &dyn ValidationDatabase,
+    _selection_set: &[ast::Selection],
+    _context: super::operation::OperationValidationConfig2<'_>,
+) -> Vec<ApolloDiagnostic> {
+    let diagnostics = Vec::new();
+
+    // if let Err(diagnostic) = db.fields_in_set_can_merge(selection_set.clone()) {
+    //     diagnostics.extend(diagnostic);
+    // }
+
+    // diagnostics.extend(db.validate_selection(selection_set.selection, context));
 
     diagnostics
 }

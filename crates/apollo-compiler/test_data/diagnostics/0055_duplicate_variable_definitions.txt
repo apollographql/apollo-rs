@@ -37,7 +37,7 @@
             "atOtherHomes must only be defined once in this enum.",
         ),
         data: UniqueDefinition {
-            ty: "enum",
+            ty: "variable",
             name: "atOtherHomes",
             original_definition: DiagnosticLocation {
                 file_id: FileId {

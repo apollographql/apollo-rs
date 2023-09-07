@@ -2,10 +2,96 @@ use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self, VariableDefinition},
-    validation::ValidationSet,
     Arc, Node, ValidationDatabase,
 };
+use apollo_parser::cst::{self, CstNode};
+use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
+
+pub fn validate_variable_definitions2(
+    db: &dyn ValidationDatabase,
+    variables: &[Node<ast::VariableDefinition>],
+    has_schema: bool,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let mut seen: HashMap<ast::Name, &Node<ast::VariableDefinition>> = HashMap::new();
+    for variable in variables.iter() {
+        diagnostics.extend(super::directive::validate_directives2(
+            db,
+            variable.directives.clone(),
+            ast::DirectiveLocation::VariableDefinition,
+            // let's assume that variable definitions cannot reference other
+            // variables and provide them as arguments to directives
+            Default::default(),
+        ));
+
+        if has_schema {
+            // let ty = variable.ty();
+            // if !ty.is_input_type(db.upcast()) {
+            //     let type_def = ty.type_def(db.upcast());
+            //     if let Some(type_def) = type_def {
+            //         let ty_name = type_def.kind();
+            //         diagnostics.push(
+            //         ApolloDiagnostic::new(db, variable.loc().into(), DiagnosticData::InputType {
+            //             name: variable.name().into(),
+            //             ty: ty_name,
+            //         })
+            //         .label(Label::new(ty.loc().unwrap(), format!("this is of `{ty_name}` type")))
+            //         .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
+            //     );
+            //     } else {
+            //         diagnostics.push(
+            //             ApolloDiagnostic::new(
+            //                 db,
+            //                 variable.loc.into(),
+            //                 DiagnosticData::UndefinedDefinition { name: ty.name() },
+            //             )
+            //             .label(Label::new(variable.loc, "not found in the type system")),
+            //         )
+            //     }
+            // }
+        }
+
+        match seen.entry(variable.name.clone()) {
+            Entry::Occupied(original) => {
+                let original_definition = *original.get().location().unwrap();
+                let redefined_definition = *variable.location().unwrap();
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        redefined_definition.into(),
+                        DiagnosticData::UniqueDefinition {
+                            ty: "variable",
+                            name: variable.name.to_string(),
+                            original_definition: original_definition.into(),
+                            redefined_definition: redefined_definition.into(),
+                        },
+                    )
+                    .labels([
+                        Label::new(
+                            original_definition,
+                            format!("previous definition of `{}` here", variable.name),
+                        ),
+                        Label::new(
+                            redefined_definition,
+                            format!("`{}` redefined here", variable.name),
+                        ),
+                    ])
+                    .help(format!(
+                        "{} must only be defined once in this enum.",
+                        variable.name
+                    )),
+                );
+            }
+            Entry::Vacant(entry) => {
+                entry.insert(variable);
+            }
+        }
+    }
+
+    diagnostics
+}
 
 pub fn validate_variable_definitions(
     db: &dyn ValidationDatabase,
@@ -86,41 +172,167 @@ pub fn validate_variable_definitions(
     diagnostics
 }
 
+enum SelectionPathElement<'ast> {
+    Field(&'ast ast::Field),
+    Fragment(&'ast ast::FragmentSpread),
+    InlineFragment(&'ast ast::InlineFragment),
+}
+fn walk_selections(
+    document: &ast::Document,
+    selections: &[ast::Selection],
+    mut f: impl FnMut(&ast::Selection) -> (),
+) {
+    type NamedFragments = HashMap<ast::Name, Node<ast::FragmentDefinition>>;
+    let named_fragments: NamedFragments = document
+        .definitions
+        .iter()
+        .filter_map(|definition| match definition {
+            ast::Definition::FragmentDefinition(fragment) => {
+                Some((fragment.name.clone(), fragment.clone()))
+            }
+            _ => None,
+        })
+        .collect();
+
+    fn walk_selections_inner<'ast: 'path, 'path>(
+        named_fragments: &'ast NamedFragments,
+        selections: &'ast [ast::Selection],
+        path: &mut Vec<SelectionPathElement<'path>>,
+        f: &mut dyn FnMut(&ast::Selection) -> (),
+    ) {
+        for selection in selections {
+            f(selection);
+            match selection {
+                ast::Selection::Field(field) => {
+                    path.push(SelectionPathElement::Field(field));
+                    walk_selections_inner(named_fragments, &field.selection_set, path, f);
+                    path.pop();
+                }
+                ast::Selection::FragmentSpread(fragment) => {
+                    // prevent recursion
+                    if path.iter().any(|element| {
+                        matches!(element, SelectionPathElement::Fragment(walked) if walked.fragment_name == fragment.fragment_name)
+                    }) {
+                        continue;
+                    }
+
+                    path.push(SelectionPathElement::Fragment(fragment));
+                    if let Some(fragment_definition) = named_fragments.get(&fragment.fragment_name)
+                    {
+                        walk_selections_inner(
+                            named_fragments,
+                            &fragment_definition.selection_set,
+                            path,
+                            f,
+                        );
+                    }
+                    path.pop();
+                }
+                ast::Selection::InlineFragment(fragment) => {
+                    path.push(SelectionPathElement::InlineFragment(fragment));
+                    walk_selections_inner(named_fragments, &fragment.selection_set, path, f);
+                    path.pop();
+                }
+            }
+        }
+    }
+
+    walk_selections_inner(
+        &named_fragments,
+        selections,
+        &mut Default::default(),
+        &mut f,
+    );
+}
+
+fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = ast::Name> + '_ {
+    let mut value_stack = vec![value];
+    std::iter::from_fn(move || {
+        while let Some(value) = value_stack.pop() {
+            match value {
+                ast::Value::Variable(variable) => return Some(variable.clone()),
+                ast::Value::List(list) => value_stack.extend(list.iter().map(|value| &**value)),
+                ast::Value::Object(fields) => {
+                    value_stack.extend(fields.iter().map(|(_, value)| &**value))
+                }
+                _ => (),
+            }
+        }
+        None
+    })
+}
+
+fn variables_in_arguments(
+    args: &[(ast::Name, Node<ast::Value>)],
+) -> impl Iterator<Item = ast::Name> + '_ {
+    args.iter()
+        .flat_map(|(_name, value)| variables_in_value(&**value))
+}
+
+fn variables_in_directives(
+    directives: &[Node<ast::Directive>],
+) -> impl Iterator<Item = ast::Name> + '_ {
+    directives
+        .iter()
+        .flat_map(|directive| variables_in_arguments(&directive.arguments))
+}
+
+// TODO add test:
+// should NOT report a unused variable warning
+// query ($var1: Boolean!, $var2: Boolean!) {
+//   a: field (arg: $var1)
+//   a: field (arg: $var2)
+// }
 pub fn validate_unused_variables(
     db: &dyn ValidationDatabase,
-    op: Arc<hir::OperationDefinition>,
+    operation: Node<ast::OperationDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    let defined_vars: HashSet<ValidationSet> = op
-        .variables()
+    let defined_vars: HashSet<_> = operation
+        .variables
         .iter()
-        .map(|var| ValidationSet {
-            name: var.name().into(),
-            loc: Some(var.loc()),
-        })
+        .map(|var| var.name.clone())
         .collect();
-    let used_vars: HashSet<ValidationSet> = op
-        .selection_set
-        .variables(db.upcast())
-        .into_iter()
-        .map(|var| ValidationSet {
-            name: var.name().into(),
-            loc: Some(var.loc()),
-        })
-        .collect();
+    let mut used_vars = HashSet::<ast::Name>::new();
+    walk_selections(
+        &db.ast(operation.location().unwrap().file_id()),
+        &operation.selection_set,
+        |selection| match selection {
+            ast::Selection::Field(field) => {
+                used_vars.extend(variables_in_directives(&field.directives));
+                used_vars.extend(variables_in_arguments(&field.arguments));
+            }
+            ast::Selection::FragmentSpread(fragment) => {
+                used_vars.extend(variables_in_directives(&fragment.directives));
+            }
+            ast::Selection::InlineFragment(fragment) => {
+                used_vars.extend(variables_in_directives(&fragment.directives));
+            }
+        },
+    );
+
     let mut diagnostics = Vec::new();
 
     let unused_vars = defined_vars.difference(&used_vars);
+
     diagnostics.extend(unused_vars.map(|unused_var| {
         // unused var location is always Some
-        let loc = unused_var.loc.expect("missing location information");
+        let loc = *unused_var.location().expect("missing location information");
+        let whole_variable_location =
+            super::lookup_cst_location(db.upcast(), loc, |cst: cst::Variable| {
+                Some(cst.syntax().text_range())
+            })
+            .unwrap_or(loc);
         ApolloDiagnostic::new(
             db,
-            loc.into(),
+            whole_variable_location.into(),
             DiagnosticData::UnusedVariable {
-                name: unused_var.name.clone(),
+                name: unused_var.to_string(),
             },
         )
-        .label(Label::new(loc, "this variable is never used"))
+        .label(Label::new(
+            whole_variable_location,
+            "this variable is never used",
+        ))
     }));
 
     diagnostics
@@ -132,7 +344,6 @@ pub fn validate_variable_usage2(
     var_defs: &[Node<ast::VariableDefinition>],
     (arg_name, arg_value): (&ast::Name, &Node<ast::Value>),
 ) -> Result<(), ApolloDiagnostic> {
-    use apollo_parser::cst::CstNode;
     let whole_arg_location = super::lookup_cst_location(
         db.upcast(),
         *arg_name.location().unwrap(),

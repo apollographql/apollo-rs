@@ -1,7 +1,7 @@
-use crate::Arc;
 use crate::{
+    ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir, FileId, ValidationDatabase,
+    hir, Arc, FileId, Node, ValidationDatabase,
 };
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -12,6 +12,50 @@ pub struct OperationValidationConfig {
     pub variables: Arc<Vec<hir::VariableDefinition>>,
 }
 
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct OperationValidationConfig2<'vars> {
+    /// When false, rules that require a schema to validate are disabled.
+    pub has_schema: bool,
+    /// The variables defined for this operation.
+    pub variables: &'vars [Node<ast::VariableDefinition>],
+}
+
+pub(crate) fn validate_operation(
+    db: &dyn ValidationDatabase,
+    operation: Node<ast::OperationDefinition>,
+) -> Vec<ApolloDiagnostic> {
+    let mut diagnostics = vec![];
+
+    let config = OperationValidationConfig2 {
+        has_schema: true,
+        variables: &operation.variables,
+    };
+
+    diagnostics.extend(super::directive::validate_directives2(
+        db,
+        operation.directives.clone(),
+        operation.operation_type.into(),
+        &operation.variables,
+    ));
+    diagnostics.extend(super::variable::validate_variable_definitions2(
+        db,
+        &operation.variables,
+        config.has_schema,
+    ));
+
+    diagnostics.extend(super::variable::validate_unused_variables(
+        db,
+        operation.clone(),
+    ));
+    diagnostics.extend(super::selection::validate_selection_set2(
+        db,
+        &operation.selection_set,
+        config,
+    ));
+
+    diagnostics
+}
+
 pub(crate) fn validate_operation_definitions_inner(
     db: &dyn ValidationDatabase,
     file_id: FileId,
@@ -19,23 +63,21 @@ pub(crate) fn validate_operation_definitions_inner(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
+    for file_id in db.type_definition_files() {
+        for definition in &db.ast(file_id).definitions {
+            if let ast::Definition::OperationDefinition(operation) = definition {
+                // db.validate_operation(operation.clone());
+                diagnostics.extend(validate_operation(db, operation.clone()));
+            }
+        }
+    }
+
     let operations = db.operations(file_id);
     for def in operations.iter() {
         let config = OperationValidationConfig {
             has_schema,
             variables: def.variables.clone(),
         };
-
-        diagnostics.extend(db.validate_directives(
-            def.directives().to_vec(),
-            def.operation_ty().into(),
-            // assumption here is that operation definition's own directives can
-            // use already defined variables
-            def.variables.clone(),
-        ));
-        diagnostics.extend(db.validate_variable_definitions(def.variables.clone(), has_schema));
-
-        diagnostics.extend(db.validate_unused_variable(def.clone()));
 
         // Validate the Selection Set recursively
         diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), config));

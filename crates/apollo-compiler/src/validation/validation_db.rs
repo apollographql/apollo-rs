@@ -264,9 +264,6 @@ pub trait ValidationDatabase:
         has_schema: bool,
     ) -> Vec<ApolloDiagnostic>;
 
-    #[salsa::invoke(variable::validate_unused_variables)]
-    fn validate_unused_variable(&self, op: Arc<OperationDefinition>) -> Vec<ApolloDiagnostic>;
-
     #[salsa::transparent]
     #[salsa::invoke(variable::validate_variable_usage)]
     fn validate_variable_usage(
