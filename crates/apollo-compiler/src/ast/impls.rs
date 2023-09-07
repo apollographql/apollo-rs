@@ -85,6 +85,20 @@ impl Definition {
         )
     }
 
+    /// Returns true if this is an extension of another definition.
+    pub fn is_extension_definition(&self) -> bool {
+        matches!(
+            self,
+            Self::SchemaExtension(_)
+                | Self::ScalarTypeExtension(_)
+                | Self::ObjectTypeExtension(_)
+                | Self::InterfaceTypeExtension(_)
+                | Self::UnionTypeExtension(_)
+                | Self::EnumTypeExtension(_)
+                | Self::InputObjectTypeExtension(_)
+        )
+    }
+
     pub fn kind(&self) -> &'static str {
         match self {
             Self::OperationDefinition(_) => "OperationDefinition",

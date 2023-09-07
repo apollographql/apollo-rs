@@ -1,7 +1,7 @@
 use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema, Arc, Node, ValidationDatabase,
+    schema, Node, ValidationDatabase,
 };
 
 pub fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {

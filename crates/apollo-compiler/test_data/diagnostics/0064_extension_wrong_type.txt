@@ -52,7 +52,7 @@
                     offset: 208,
                     length: 28,
                 },
-                text: "adding an UnionTypeExtension, but `Scalar` is a ScalarTypeDefinition",
+                text: "adding an UnionTypeExtension, but `Scalar` is a Scalar",
             },
             Label {
                 location: DiagnosticLocation {
@@ -105,7 +105,7 @@
                     offset: 237,
                     length: 45,
                 },
-                text: "adding an InterfaceTypeExtension, but `Object` is an ObjectTypeDefinition",
+                text: "adding an InterfaceTypeExtension, but `Object` is an Object",
             },
             Label {
                 location: DiagnosticLocation {
@@ -158,7 +158,7 @@
                     offset: 283,
                     length: 31,
                 },
-                text: "adding an EnumTypeExtension, but `Intf` is an InterfaceTypeDefinition",
+                text: "adding an EnumTypeExtension, but `Intf` is an Interface",
             },
             Label {
                 location: DiagnosticLocation {
@@ -211,7 +211,7 @@
                     offset: 315,
                     length: 39,
                 },
-                text: "adding an ObjectTypeExtension, but `Input` is an InputObjectTypeDefinition",
+                text: "adding an ObjectTypeExtension, but `Input` is an InputObject",
             },
             Label {
                 location: DiagnosticLocation {
@@ -264,7 +264,7 @@
                     offset: 355,
                     length: 39,
                 },
-                text: "adding an InputObjectTypeExtension, but `Enum` is an EnumTypeDefinition",
+                text: "adding an InputObjectTypeExtension, but `Enum` is an Enum",
             },
             Label {
                 location: DiagnosticLocation {

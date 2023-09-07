@@ -43,9 +43,11 @@ pub trait ValidationDatabase:
     fn validate_standalone_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
     /// Validate the names of all type definitions known to the compiler are unique.
+    #[salsa::invoke(validate_type_system_names)]
     fn validate_type_system_names(&self) -> Vec<ApolloDiagnostic>;
 
     /// Validate names of operations and fragments in an executable document are unique.
+    #[salsa::invoke(validate_executable_names)]
     fn validate_executable_names(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(validation::schema::validate_schema_definition)]

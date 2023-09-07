@@ -1,6 +1,7 @@
 use crate::{
+    ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::{TypeDefinition, TypeExtension},
+    schema::ExtendedType,
     validation::ValidationDatabase,
 };
 
@@ -15,64 +16,96 @@ fn particle(ty: &str) -> &str {
 pub fn validate_extensions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    for extension in db.extensions().iter() {
-        let Some(definition) = db.find_type_definition_by_name(extension.name().into()) else {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    extension.loc().into(),
-                    DiagnosticData::UndefinedDefinition {
-                        name: extension.name().into(),
-                    },
-                )
-                .label(Label::new(
-                    extension.name_src().loc.unwrap(),
-                    format!("`{}` type definition does not exist", extension.name()),
-                )),
-            );
+    let schema = db.schema();
+    for file_id in db.type_definition_files() {
+        for extension in &db.ast(file_id).definitions {
+            type A = ast::Definition;
+            let name = match extension {
+                A::ObjectTypeExtension(obj) => &obj.name,
+                A::ScalarTypeExtension(obj) => &obj.name,
+                A::EnumTypeExtension(obj) => &obj.name,
+                A::UnionTypeExtension(obj) => &obj.name,
+                A::InterfaceTypeExtension(obj) => &obj.name,
+                A::InputObjectTypeExtension(obj) => &obj.name,
+                // `extend schema` can extend an implicit schema.
+                A::SchemaExtension(_) => continue,
+                // Non-extensions
+                _ => continue,
+            };
+            let name_location = *name.location().unwrap();
 
-            continue;
-        };
-
-        match (definition, extension) {
-            (TypeDefinition::ScalarTypeDefinition(_), TypeExtension::ScalarTypeExtension(_))
-            | (TypeDefinition::ObjectTypeDefinition(_), TypeExtension::ObjectTypeExtension(_))
-            | (
-                TypeDefinition::InterfaceTypeDefinition(_),
-                TypeExtension::InterfaceTypeExtension(_),
-            )
-            | (TypeDefinition::UnionTypeDefinition(_), TypeExtension::UnionTypeExtension(_))
-            | (TypeDefinition::EnumTypeDefinition(_), TypeExtension::EnumTypeExtension(_))
-            | (
-                TypeDefinition::InputObjectTypeDefinition(_),
-                TypeExtension::InputObjectTypeExtension(_),
-            ) => {
-                // Definition/extension kinds are the same
-            }
-            (definition, extension) => {
+            let Some(definition) = schema.types.get(name) else {
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        extension.loc().into(),
-                        DiagnosticData::WrongTypeExtension {
-                            name: extension.name().into(),
-                            definition: definition.loc().into(),
-                            extension: extension.loc().into(),
+                        (*extension.location().unwrap()).into(),
+                        DiagnosticData::UndefinedDefinition {
+                            name: name.to_string(),
                         },
                     )
                     .label(Label::new(
-                        extension.loc(),
-                        format!(
-                            "adding {} {}, but `{}` is {} {}",
-                            particle(extension.kind()),
-                            extension.kind(),
-                            extension.name(),
-                            particle(definition.kind()),
-                            definition.kind()
-                        ),
-                    ))
-                    .label(Label::new(definition.loc(), "original type defined here")),
+                        name_location,
+                        format!("`{name}` type definition does not exist"),
+                    )),
                 );
+                continue;
+            };
+
+            match (definition, extension) {
+                (ExtendedType::Scalar(_), A::ScalarTypeExtension(_))
+                | (ExtendedType::Object(_), A::ObjectTypeExtension(_))
+                | (ExtendedType::Interface(_), A::InterfaceTypeExtension(_))
+                | (ExtendedType::Union(_), A::UnionTypeExtension(_))
+                | (ExtendedType::Enum(_), A::EnumTypeExtension(_))
+                | (ExtendedType::InputObject(_), A::InputObjectTypeExtension(_)) => {
+                    // Definition/extension kinds are the same
+                }
+                (definition, extension) => {
+                    let definition_location = *match definition {
+                        ExtendedType::Scalar(def) => def.location(),
+                        ExtendedType::Object(def) => def.location(),
+                        ExtendedType::Interface(def) => def.location(),
+                        ExtendedType::Union(def) => def.location(),
+                        ExtendedType::Enum(def) => def.location(),
+                        ExtendedType::InputObject(def) => def.location(),
+                    }
+                    .unwrap();
+                    let definition_kind = match definition {
+                        ExtendedType::Scalar(_) => "Scalar",
+                        ExtendedType::Object(_) => "Object",
+                        ExtendedType::Interface(_) => "Interface",
+                        ExtendedType::Union(_) => "Union",
+                        ExtendedType::Enum(_) => "Enum",
+                        ExtendedType::InputObject(_) => "InputObject",
+                    };
+
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            (*extension.location().unwrap()).into(),
+                            DiagnosticData::WrongTypeExtension {
+                                name: name.to_string(),
+                                definition: definition_location.into(),
+                                extension: (*extension.location().unwrap()).into(),
+                            },
+                        )
+                        .label(Label::new(
+                            *extension.location().unwrap(),
+                            format!(
+                                "adding {} {}, but `{}` is {} {}",
+                                particle(extension.kind()),
+                                extension.kind(),
+                                name,
+                                particle(definition_kind),
+                                definition_kind,
+                            ),
+                        ))
+                        .label(Label::new(
+                            definition_location,
+                            "original type defined here",
+                        )),
+                    );
+                }
             }
         }
     }
