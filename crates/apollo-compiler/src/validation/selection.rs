@@ -8,6 +8,7 @@ use crate::{
 use indexmap::IndexMap;
 
 use super::operation::OperationValidationConfig;
+/// TODO(@goto-bus-stop) pathological query with many of the same field
 
 /// Check if two fields will output the same type.
 ///

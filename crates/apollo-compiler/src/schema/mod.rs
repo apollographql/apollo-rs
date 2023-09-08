@@ -500,6 +500,25 @@ impl ExtendedType {
         matches!(self, Self::InputObject(_))
     }
 
+    /// Returns true if a value of this type can be used as an input value.
+    ///
+    /// # Spec
+    /// This implements spec function `IsInputType(type)`: https://spec.graphql.org/draft/#IsInputType()
+    pub fn is_input_type(&self) -> bool {
+        matches!(self, Self::Scalar(_) | Self::Enum(_) | Self::InputObject(_))
+    }
+
+    /// Returns true if a value of this type can be used as an output value.
+    ///
+    /// # Spec
+    /// This implements spec function `IsOutputType(type)`: https://spec.graphql.org/draft/#IsOutputType()
+    pub fn is_output_type(&self) -> bool {
+        matches!(
+            self,
+            Self::Scalar(_) | Self::Enum(_) | Self::Object(_) | Self::Interface(_) | Self::Union(_)
+        )
+    }
+
     /// Returns whether this is a built-in scalar or introspection type
     pub fn is_built_in(&self) -> bool {
         match self {

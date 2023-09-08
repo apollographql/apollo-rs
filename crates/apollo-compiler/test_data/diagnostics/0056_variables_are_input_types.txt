@@ -20,7 +20,7 @@
                     offset: 21,
                     length: 3,
                 },
-                text: "this is of `ObjectTypeDefinition` type",
+                text: "this is of `object` type",
             },
         ],
         help: Some(
@@ -28,7 +28,7 @@
         ),
         data: InputType {
             name: "cat",
-            ty: "ObjectTypeDefinition",
+            ty: "object",
         },
     },
     ApolloDiagnostic {
@@ -92,7 +92,7 @@
                     offset: 107,
                     length: 3,
                 },
-                text: "this is of `ObjectTypeDefinition` type",
+                text: "this is of `object` type",
             },
         ],
         help: Some(
@@ -100,7 +100,7 @@
         ),
         data: InputType {
             name: "dog",
-            ty: "ObjectTypeDefinition",
+            ty: "object",
         },
     },
     ApolloDiagnostic {
@@ -161,10 +161,10 @@
                     file_id: FileId {
                         id: 56,
                     },
-                    offset: 197,
-                    length: 5,
+                    offset: 198,
+                    length: 3,
                 },
-                text: "this is of `InterfaceTypeDefinition` type",
+                text: "this is of `interface` type",
             },
         ],
         help: Some(
@@ -172,7 +172,7 @@
         ),
         data: InputType {
             name: "pets",
-            ty: "InterfaceTypeDefinition",
+            ty: "interface",
         },
     },
     ApolloDiagnostic {
@@ -236,7 +236,7 @@
                     offset: 277,
                     length: 8,
                 },
-                text: "this is of `UnionTypeDefinition` type",
+                text: "this is of `union` type",
             },
         ],
         help: Some(
@@ -244,7 +244,7 @@
         ),
         data: InputType {
             name: "catOrDog",
-            ty: "UnionTypeDefinition",
+            ty: "union",
         },
     },
     ApolloDiagnostic {
@@ -305,8 +305,8 @@
                     file_id: FileId {
                         id: 56,
                     },
-                    offset: 369,
-                    length: 17,
+                    offset: 380,
+                    length: 6,
                 },
                 text: "not found in the type system",
             },

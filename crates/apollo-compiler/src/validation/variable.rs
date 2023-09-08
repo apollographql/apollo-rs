@@ -2,7 +2,7 @@ use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     hir::{self, VariableDefinition},
-    Arc, Node, ValidationDatabase,
+    schema, Arc, Node, ValidationDatabase,
 };
 use apollo_parser::cst::{self, CstNode};
 use std::collections::hash_map::Entry;
@@ -14,6 +14,7 @@ pub fn validate_variable_definitions2(
     has_schema: bool,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
+    let schema = db.schema();
 
     let mut seen: HashMap<ast::Name, &Node<ast::VariableDefinition>> = HashMap::new();
     for variable in variables.iter() {
@@ -27,30 +28,45 @@ pub fn validate_variable_definitions2(
         ));
 
         if has_schema {
-            // let ty = variable.ty();
-            // if !ty.is_input_type(db.upcast()) {
-            //     let type_def = ty.type_def(db.upcast());
-            //     if let Some(type_def) = type_def {
-            //         let ty_name = type_def.kind();
-            //         diagnostics.push(
-            //         ApolloDiagnostic::new(db, variable.loc().into(), DiagnosticData::InputType {
-            //             name: variable.name().into(),
-            //             ty: ty_name,
-            //         })
-            //         .label(Label::new(ty.loc().unwrap(), format!("this is of `{ty_name}` type")))
-            //         .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
-            //     );
-            //     } else {
-            //         diagnostics.push(
-            //             ApolloDiagnostic::new(
-            //                 db,
-            //                 variable.loc.into(),
-            //                 DiagnosticData::UndefinedDefinition { name: ty.name() },
-            //             )
-            //             .label(Label::new(variable.loc, "not found in the type system")),
-            //         )
-            //     }
-            // }
+            let ty = &variable.ty;
+            let type_definition = schema.types.get(ty.inner_named_type());
+
+            match type_definition {
+                Some(type_definition) if type_definition.is_input_type() => {
+                    // OK!
+                }
+                Some(type_definition) => {
+                    let kind = match type_definition {
+                        schema::ExtendedType::Scalar(_) => "scalar",
+                        schema::ExtendedType::Object(_) => "object",
+                        schema::ExtendedType::Interface(_) => "interface",
+                        schema::ExtendedType::Union(_) => "union",
+                        schema::ExtendedType::Enum(_) => "enum",
+                        schema::ExtendedType::InputObject(_) => "input object",
+                    };
+                    diagnostics.push(
+                        ApolloDiagnostic::new(db, (*variable.location().unwrap()).into(), DiagnosticData::InputType {
+                            name: variable.name.to_string(),
+                            ty: kind,
+                        })
+                        .label(Label::new(*ty.inner_named_type().location().unwrap(), format!("this is of `{kind}` type")))
+                        .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
+                        );
+                }
+                None => diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        (*variable.location().unwrap()).into(),
+                        DiagnosticData::UndefinedDefinition {
+                            name: ty.inner_named_type().to_string(),
+                        },
+                    )
+                    .label(Label::new(
+                        *ty.inner_named_type().location().unwrap(),
+                        "not found in the type system",
+                    )),
+                ),
+            }
         }
 
         match seen.entry(variable.name.clone()) {
