@@ -24,9 +24,9 @@
             },
         ],
         help: Some(
-            "Scalars, Enums, and Input Objects are input types. Change `petType` field to return one of these output types.",
+            "Scalars, Enums, and Input Objects are input types. Change `petType` field to take one of these input types.",
         ),
-        data: OutputType {
+        data: InputType {
             name: "petType",
             ty: "UnionTypeDefinition",
         },

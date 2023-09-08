@@ -8,7 +8,39 @@
             file_id: FileId {
                 id: 100,
             },
-            offset: 37,
+            offset: 135,
+            length: 23,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 100,
+                    },
+                    offset: 135,
+                    length: 23,
+                },
+                text: "this is of `ObjectTypeDefinition` type",
+            },
+        ],
+        help: Some(
+            "Scalars, Enums, and Input Objects are input types. Change `thisIsWrong` field to take one of these input types.",
+        ),
+        data: InputType {
+            name: "thisIsWrong",
+            ty: "ObjectTypeDefinition",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            100: "0103_invalid_type_in_arg.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 100,
+            },
+            offset: 204,
             length: 6,
         },
         labels: [
@@ -17,7 +49,7 @@
                     file_id: FileId {
                         id: 100,
                     },
-                    offset: 37,
+                    offset: 204,
                     length: 6,
                 },
                 text: "not found in this scope",
@@ -37,7 +69,7 @@
             file_id: FileId {
                 id: 100,
             },
-            offset: 48,
+            offset: 215,
             length: 6,
         },
         labels: [
@@ -46,7 +78,7 @@
                     file_id: FileId {
                         id: 100,
                     },
-                    offset: 48,
+                    offset: 215,
                     length: 6,
                 },
                 text: "not found in this scope",
@@ -55,6 +87,70 @@
         help: None,
         data: UndefinedDefinition {
             name: "b",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            100: "0103_invalid_type_in_arg.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 100,
+            },
+            offset: 255,
+            length: 13,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 100,
+                    },
+                    offset: 255,
+                    length: 13,
+                },
+                text: "this is of `ObjectTypeDefinition` type",
+            },
+        ],
+        help: Some(
+            "Scalars, Enums, and Input Objects are input types. Change `a` field to take one of these input types.",
+        ),
+        data: InputType {
+            name: "a",
+            ty: "ObjectTypeDefinition",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            100: "0103_invalid_type_in_arg.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 100,
+            },
+            offset: 270,
+            length: 18,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 100,
+                    },
+                    offset: 270,
+                    length: 18,
+                },
+                text: "this is of `UnionTypeDefinition` type",
+            },
+        ],
+        help: Some(
+            "Scalars, Enums, and Input Objects are input types. Change `b` field to take one of these input types.",
+        ),
+        data: InputType {
+            name: "b",
+            ty: "UnionTypeDefinition",
         },
     },
 ]

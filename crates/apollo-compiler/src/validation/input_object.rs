@@ -196,7 +196,7 @@ pub fn validate_input_values(
                         ty: field_ty.kind(),
                     })
                         .label(Label::new(loc, format!("this is of `{}` type", field_ty.kind())))
-                        .help(format!("Scalars, Enums, and Input Objects are input types. Change `{}` field to return one of these input types.", input_value.name())),
+                        .help(format!("Scalars, Enums, and Input Objects are input types. Change `{}` field to take one of these input types.", input_value.name())),
                 );
             }
         } else if let Some(field_ty_loc) = input_value.ty().loc() {

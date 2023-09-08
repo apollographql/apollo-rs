@@ -1,6 +1,16 @@
+scalar AnInputType @specifiedBy(url: "http://example.com")
+type OutputType {
+  not: AnInputType
+}
+
+input InputObjectWithOutputType {
+  thisIsWrong: OutputType
+}
+
 type Root {
   id: ID!
-  operation(a: number, b: number): OperationResult!
+  undefinedTypes(a: number, b: number): OperationResult!
+  outputTypes(a: OutputType, b: OperationResult): ID!
 }
 
 union OperationResult = Operation
