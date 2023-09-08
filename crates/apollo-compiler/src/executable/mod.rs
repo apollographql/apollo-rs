@@ -174,6 +174,14 @@ impl<'a> OperationRef<'a> {
     }
 }
 
+impl std::ops::Deref for OperationRef<'_> {
+    type Target = Node<Operation>;
+
+    fn deref(&self) -> &Self::Target {
+        self.definition()
+    }
+}
+
 impl Operation {
     pub fn object_type(&self) -> &NamedType {
         &self.selection_set.ty

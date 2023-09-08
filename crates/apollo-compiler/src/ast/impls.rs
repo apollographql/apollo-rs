@@ -386,7 +386,7 @@ impl Value {
         }
     }
 
-    pub fn as_str(&self) -> Option<&str> {
+    pub fn as_str(&self) -> Option<&NodeStr> {
         if let Value::String(value) = self {
             Some(value)
         } else {

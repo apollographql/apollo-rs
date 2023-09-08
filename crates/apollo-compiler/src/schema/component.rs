@@ -90,6 +90,12 @@ impl<T> DerefMut for Component<T> {
     }
 }
 
+impl<T> AsRef<T> for Component<T> {
+    fn as_ref(&self) -> &T {
+        &self.node
+    }
+}
+
 /// A string component of a type or `schema`, for example the name of a union member type.
 ///
 /// Wraps a [`NodeStr`] and adds its origin: either a (`schema` or type) definition
