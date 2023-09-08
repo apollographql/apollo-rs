@@ -1,0 +1,10 @@
+type Root {
+  id: ID!
+  operation(a: number, b: number): OperationResult!
+}
+
+union OperationResult = Operation
+
+type Operation {
+  id: ID!
+}

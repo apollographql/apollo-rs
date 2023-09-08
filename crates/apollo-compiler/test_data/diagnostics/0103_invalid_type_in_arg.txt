@@ -1,0 +1,60 @@
+[
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            100: "0103_invalid_type_in_arg.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 100,
+            },
+            offset: 37,
+            length: 6,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 100,
+                    },
+                    offset: 37,
+                    length: 6,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "a",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            100: "0103_invalid_type_in_arg.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 100,
+            },
+            offset: 48,
+            length: 6,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 100,
+                    },
+                    offset: 48,
+                    length: 6,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "b",
+        },
+    },
+]

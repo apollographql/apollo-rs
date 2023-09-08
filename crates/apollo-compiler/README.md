@@ -173,6 +173,11 @@ fn main() -> Result<()> {
       weight: Int
     }
 
+    enum join__Graph {
+      INVENTORY,
+      PRODUCTS,
+    }
+    scalar join__FieldSet
     directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
     "#;
     let query_input = r#"
@@ -194,7 +199,11 @@ fn main() -> Result<()> {
     for diagnostic in &diagnostics {
         println!("{}", diagnostic);
     }
-    assert!(diagnostics.is_empty());
+    let error_diagnostics = diagnostics
+        .iter()
+        .filter(|diag| diag.data.is_error())
+        .collect::<Vec<_>>();
+    assert!(error_diagnostics.is_empty());
 
     let operations = compiler.db.operations(query_id);
     let get_product_op = operations
