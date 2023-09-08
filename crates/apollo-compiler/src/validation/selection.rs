@@ -339,7 +339,7 @@ pub fn validate_selection_set2(
     _selection_set: &[ast::Selection],
     _context: super::operation::OperationValidationConfig2<'_>,
 ) -> Vec<ApolloDiagnostic> {
-    let diagnostics = Vec::new();
+    let diagnostics = vec![];
 
     // if let Err(diagnostic) = db.fields_in_set_can_merge(selection_set.clone()) {
     //     diagnostics.extend(diagnostic);

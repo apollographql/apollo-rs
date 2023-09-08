@@ -196,7 +196,7 @@ enum SelectionPathElement<'ast> {
 fn walk_selections(
     document: &ast::Document,
     selections: &[ast::Selection],
-    mut f: impl FnMut(&ast::Selection) -> (),
+    mut f: impl FnMut(&ast::Selection),
 ) {
     type NamedFragments = HashMap<ast::Name, Node<ast::FragmentDefinition>>;
     let named_fragments: NamedFragments = document
@@ -214,7 +214,7 @@ fn walk_selections(
         named_fragments: &'ast NamedFragments,
         selections: &'ast [ast::Selection],
         path: &mut Vec<SelectionPathElement<'path>>,
-        f: &mut dyn FnMut(&ast::Selection) -> (),
+        f: &mut dyn FnMut(&ast::Selection),
     ) {
         for selection in selections {
             f(selection);
@@ -282,7 +282,7 @@ fn variables_in_arguments(
     args: &[(ast::Name, Node<ast::Value>)],
 ) -> impl Iterator<Item = ast::Name> + '_ {
     args.iter()
-        .flat_map(|(_name, value)| variables_in_value(&**value))
+        .flat_map(|(_name, value)| variables_in_value(value))
 }
 
 fn variables_in_directives(

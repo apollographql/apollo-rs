@@ -102,10 +102,10 @@ pub fn value_of_correct_type2(
                 if scalar.is_built_in()
                     && matches!(ty.inner_named_type().as_str(), "String" | "Boolean")
                 {
-                    diagnostics.push(unsupported_type(db, &arg_value, ty));
+                    diagnostics.push(unsupported_type(db, arg_value, ty));
                 }
             }
-            _ => diagnostics.push(unsupported_type(db, &arg_value, ty)),
+            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         ast::Value::BigInt(int) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) => {
@@ -130,10 +130,10 @@ pub fn value_of_correct_type2(
                 } else if scalar.is_built_in()
                     && matches!(ty.inner_named_type().as_str(), "String" | "Boolean")
                 {
-                    diagnostics.push(unsupported_type(db, &arg_value, ty));
+                    diagnostics.push(unsupported_type(db, arg_value, ty));
                 }
             }
-            _ => diagnostics.push(unsupported_type(db, &arg_value, ty)),
+            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         // When expected as an input type, both integer and float input
         // values are accepted. All other input values, including strings
@@ -142,10 +142,10 @@ pub fn value_of_correct_type2(
         ast::Value::Float(_) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) => {
                 if scalar.is_built_in() && ty.inner_named_type() != "Float" {
-                    diagnostics.push(unsupported_type(db, &arg_value, ty));
+                    diagnostics.push(unsupported_type(db, arg_value, ty));
                 }
             }
-            _ => diagnostics.push(unsupported_type(db, &arg_value, ty)),
+            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         // When expected as an input type, only valid Unicode string input
         // values are accepted. All other input values must raise a request
@@ -161,10 +161,10 @@ pub fn value_of_correct_type2(
                 if scalar.is_built_in()
                     && !matches!(ty.inner_named_type().as_str(), "String" | "ID")
                 {
-                    diagnostics.push(unsupported_type(db, &arg_value, ty));
+                    diagnostics.push(unsupported_type(db, arg_value, ty));
                 }
             }
-            _ => diagnostics.push(unsupported_type(db, &arg_value, ty)),
+            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         // When expected as an input type, only boolean input values are
         // accepted. All other input values must raise a request error
@@ -172,17 +172,17 @@ pub fn value_of_correct_type2(
         ast::Value::Boolean(_) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) => {
                 if scalar.is_built_in() && ty.inner_named_type().as_str() != "Boolean" {
-                    diagnostics.push(unsupported_type(db, &arg_value, ty));
+                    diagnostics.push(unsupported_type(db, arg_value, ty));
                 }
             }
-            _ => diagnostics.push(unsupported_type(db, &arg_value, ty)),
+            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         ast::Value::Null => {
             if !matches!(
                 type_definition,
                 schema::ExtendedType::Enum(_) | schema::ExtendedType::Scalar(_)
             ) {
-                diagnostics.push(unsupported_type(db, &arg_value, ty));
+                diagnostics.push(unsupported_type(db, arg_value, ty));
             }
         }
         ast::Value::Variable(var_name) => match &type_definition {
@@ -195,15 +195,15 @@ pub fn value_of_correct_type2(
                     // compare if two Types are the same
                     // TODO(@goto-bus-stop) This should use the is_assignable_to check
                     if var_def.ty.inner_named_type() != ty.inner_named_type() {
-                        diagnostics.push(unsupported_type(db, &arg_value, ty));
+                        diagnostics.push(unsupported_type(db, arg_value, ty));
                     } else if let Some(default_value) = &var_def.default_value {
                         if var_def.ty.is_non_null() && default_value.is_null() {
-                            diagnostics.push(unsupported_type(db, &default_value, &var_def.ty))
+                            diagnostics.push(unsupported_type(db, default_value, &var_def.ty))
                         } else {
                             value_of_correct_type2(
                                 db,
                                 &var_def.ty,
-                                &default_value,
+                                default_value,
                                 var_defs,
                                 diagnostics,
                             )
@@ -211,7 +211,7 @@ pub fn value_of_correct_type2(
                     }
                 }
             }
-            _ => diagnostics.push(unsupported_type(db, &arg_value, ty)),
+            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         // GraphQL has a constant literal to represent enum input values.
         // GraphQL string literals must not be accepted as an enum input and
@@ -235,7 +235,7 @@ pub fn value_of_correct_type2(
                     );
                 }
             }
-            _ => diagnostics.push(unsupported_type(db, &arg_value, ty)),
+            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         // When expected as an input, list values are accepted only when
         // each item in the list can be accepted by the list’s item type.
@@ -251,7 +251,7 @@ pub fn value_of_correct_type2(
             | schema::ExtendedType::InputObject(_) => li
                 .iter()
                 .for_each(|v| value_of_correct_type2(db, ty, v, var_defs, diagnostics)),
-            _ => diagnostics.push(unsupported_type(db, &arg_value, ty)),
+            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         ast::Value::Object(obj) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => (),
@@ -316,7 +316,7 @@ pub fn value_of_correct_type2(
                     }
                 })
             }
-            _ => diagnostics.push(unsupported_type(db, &arg_value, ty)),
+            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
     }
 }

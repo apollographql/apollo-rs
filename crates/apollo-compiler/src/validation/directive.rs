@@ -61,7 +61,7 @@ impl FindRecursiveDirective<'_> {
 
         let type_name = input_value.ty.inner_named_type();
         if let Some(type_def) = self.schema.types.get(type_name) {
-            self.type_definition(seen, &type_def)?;
+            self.type_definition(seen, type_def)?;
         }
 
         Ok(())
@@ -97,7 +97,7 @@ impl FindRecursiveDirective<'_> {
     ) -> Result<(), Node<ast::Directive>> {
         if !seen.contains(&directive.name) {
             if let Some(def) = self.schema.directive_definitions.get(&directive.name) {
-                self.directive_definition(seen.push(directive.name.to_string()), &def)?;
+                self.directive_definition(seen.push(directive.name.to_string()), def)?;
             }
         } else if seen.first() == Some(&directive.name) {
             // Only report an error & bail out early if this is the *initial* directive.
