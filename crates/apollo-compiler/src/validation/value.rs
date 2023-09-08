@@ -171,7 +171,7 @@ pub fn value_of_correct_type2(
         // indicating an incorrect type.
         ast::Value::Boolean(_) => match &type_definition {
             schema::ExtendedType::Scalar(scalar) => {
-                if scalar.is_built_in() && ty.inner_named_type().as_str() == "Boolean" {
+                if scalar.is_built_in() && ty.inner_named_type().as_str() != "Boolean" {
                     diagnostics.push(unsupported_type(db, &arg_value, ty));
                 }
             }
