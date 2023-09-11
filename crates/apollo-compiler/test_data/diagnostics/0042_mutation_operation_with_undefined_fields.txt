@@ -8,6 +8,38 @@
             file_id: FileId {
                 id: 42,
             },
+            offset: 141,
+            length: 16,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 42,
+                    },
+                    offset: 141,
+                    length: 16,
+                },
+                text: "this is of `UnionTypeDefinition` type",
+            },
+        ],
+        help: Some(
+            "Scalars, Enums, and Input Objects are input types. Change `petType` field to take one of these input types.",
+        ),
+        data: InputType {
+            name: "petType",
+            ty: "UnionTypeDefinition",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            42: "0042_mutation_operation_with_undefined_fields.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 42,
+            },
             offset: 217,
             length: 3,
         },

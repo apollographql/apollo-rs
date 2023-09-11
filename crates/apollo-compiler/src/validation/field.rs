@@ -156,9 +156,46 @@ pub fn validate_field_definition(
     );
 
     diagnostics.extend(db.validate_arguments_definition(
-        field.arguments,
+        field.arguments.clone(),
         hir::DirectiveLocation::ArgumentDefinition,
     ));
+
+    // Field types in Object Types must be of output type
+    let loc = field.loc().expect("undefined field definition location");
+    if let Some(field_ty) = field.ty().type_def(db.upcast()) {
+        if !field.ty().is_output_type(db.upcast()) {
+            diagnostics.push(
+                    ApolloDiagnostic::new(db, loc.into(), DiagnosticData::OutputType {
+                        name: field.name().into(),
+                        ty: field_ty.kind(),
+                    })
+                        .label(Label::new(loc, format!("this is of `{}` type", field_ty.kind())))
+                        .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
+                );
+        }
+    } else if let Some(field_ty_loc) = field.ty().loc() {
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                field_ty_loc.into(),
+                DiagnosticData::UndefinedDefinition {
+                    name: field.name().into(),
+                },
+            )
+            .label(Label::new(field_ty_loc, "not found in this scope")),
+        );
+    } else {
+        diagnostics.push(
+            ApolloDiagnostic::new(
+                db,
+                loc.into(),
+                DiagnosticData::UndefinedDefinition {
+                    name: field.ty().name(),
+                },
+            )
+            .label(Label::new(loc, "not found in this scope")),
+        );
+    }
 
     diagnostics
 }
@@ -208,43 +245,6 @@ pub fn validate_field_definitions(
             );
         } else {
             seen.insert(fname, field);
-        }
-
-        // Field types in Object Types must be of output type
-        let loc = field.loc().expect("undefined field definition location");
-        if let Some(field_ty) = field.ty().type_def(db.upcast()) {
-            if !field.ty().is_output_type(db.upcast()) {
-                diagnostics.push(
-                    ApolloDiagnostic::new(db, loc.into(), DiagnosticData::OutputType {
-                        name: field.name().into(),
-                        ty: field_ty.kind(),
-                    })
-                        .label(Label::new(loc, format!("this is of `{}` type", field_ty.kind())))
-                        .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
-                );
-            }
-        } else if let Some(field_ty_loc) = field.ty().loc() {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    field_ty_loc.into(),
-                    DiagnosticData::UndefinedDefinition {
-                        name: field.name().into(),
-                    },
-                )
-                .label(Label::new(field_ty_loc, "not found in this scope")),
-            );
-        } else {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    loc.into(),
-                    DiagnosticData::UndefinedDefinition {
-                        name: field.ty().name(),
-                    },
-                )
-                .label(Label::new(loc, "not found in this scope")),
-            );
         }
     }
 

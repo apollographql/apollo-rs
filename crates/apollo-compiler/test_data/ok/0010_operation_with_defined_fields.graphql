@@ -21,4 +21,8 @@ type Product {
   weight: Int
 }
 
-directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
+directive @join__field(graph: join__Graph) on FIELD_DEFINITION
+enum join__Graph {
+  INVENTORY,
+  PRODUCTS,
+}
