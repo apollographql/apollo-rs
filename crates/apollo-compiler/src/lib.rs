@@ -536,7 +536,11 @@ type Product {
   weight: Int
 }
 
-directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
+directive @join__field(graph: join__Graph) on FIELD_DEFINITION
+enum join__Graph {
+  INVENTORY
+  PRODUCTS
+}
 "#;
 
         let mut compiler = ApolloCompiler::new();
@@ -713,6 +717,11 @@ fragment vipCustomer on User {
         let input = r#"
 schema {
   query: customPetQuery,
+}
+
+enum PetType {
+  CAT,
+  DOG,
 }
 
 type customPetQuery {

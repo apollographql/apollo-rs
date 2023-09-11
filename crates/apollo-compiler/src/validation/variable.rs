@@ -31,7 +31,7 @@ pub fn validate_variable_definitions(
                 if let Some(type_def) = type_def {
                     let ty_name = type_def.kind();
                     diagnostics.push(
-                    ApolloDiagnostic::new(db, variable.loc().into(), DiagnosticData::InputType {
+                    ApolloDiagnostic::new(db, variable.loc().into(), DiagnosticData::VariableInputType {
                         name: variable.name().into(),
                         ty: ty_name,
                     })

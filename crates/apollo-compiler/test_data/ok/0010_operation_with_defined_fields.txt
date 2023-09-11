@@ -1,4 +1,4 @@
-- DOCUMENT@0..429
+- DOCUMENT@0..424
     - OPERATION_DEFINITION@0..68
         - OPERATION_TYPE@0..5
             - query_KW@0..5 "query"
@@ -171,13 +171,13 @@
             - WHITESPACE@311..312 "\n"
             - R_CURLY@312..313 "}"
     - WHITESPACE@313..315 "\n\n"
-    - DIRECTIVE_DEFINITION@315..429
+    - DIRECTIVE_DEFINITION@315..377
         - directive_KW@315..324 "directive"
         - WHITESPACE@324..325 " "
         - AT@325..326 "@"
         - NAME@326..337
             - IDENT@326..337 "join__field"
-        - ARGUMENTS_DEFINITION@337..409
+        - ARGUMENTS_DEFINITION@337..357
             - L_PAREN@337..338 "("
             - INPUT_VALUE_DEFINITION@338..356
                 - NAME@338..343
@@ -187,31 +187,35 @@
                 - NAMED_TYPE@345..356
                     - NAME@345..356
                         - IDENT@345..356 "join__Graph"
-            - COMMA@356..357 ","
-            - WHITESPACE@357..358 " "
-            - INPUT_VALUE_DEFINITION@358..382
-                - NAME@358..366
-                    - IDENT@358..366 "requires"
-                - COLON@366..367 ":"
-                - WHITESPACE@367..368 " "
-                - NAMED_TYPE@368..382
-                    - NAME@368..382
-                        - IDENT@368..382 "join__FieldSet"
-            - COMMA@382..383 ","
-            - WHITESPACE@383..384 " "
-            - INPUT_VALUE_DEFINITION@384..408
-                - NAME@384..392
-                    - IDENT@384..392 "provides"
-                - COLON@392..393 ":"
-                - WHITESPACE@393..394 " "
-                - NAMED_TYPE@394..408
-                    - NAME@394..408
-                        - IDENT@394..408 "join__FieldSet"
-            - R_PAREN@408..409 ")"
-        - WHITESPACE@409..410 " "
-        - on_KW@410..412 "on"
-        - WHITESPACE@412..413 " "
-        - DIRECTIVE_LOCATIONS@413..429
-            - DIRECTIVE_LOCATION@413..429
-                - FIELD_DEFINITION_KW@413..429 "FIELD_DEFINITION"
+            - R_PAREN@356..357 ")"
+        - WHITESPACE@357..358 " "
+        - on_KW@358..360 "on"
+        - WHITESPACE@360..361 " "
+        - DIRECTIVE_LOCATIONS@361..377
+            - DIRECTIVE_LOCATION@361..377
+                - FIELD_DEFINITION_KW@361..377 "FIELD_DEFINITION"
+    - WHITESPACE@377..378 "\n"
+    - ENUM_TYPE_DEFINITION@378..423
+        - enum_KW@378..382 "enum"
+        - WHITESPACE@382..383 " "
+        - NAME@383..394
+            - IDENT@383..394 "join__Graph"
+        - WHITESPACE@394..395 " "
+        - ENUM_VALUES_DEFINITION@395..423
+            - L_CURLY@395..396 "{"
+            - WHITESPACE@396..399 "\n  "
+            - ENUM_VALUE_DEFINITION@399..408
+                - ENUM_VALUE@399..408
+                    - NAME@399..408
+                        - IDENT@399..408 "INVENTORY"
+            - COMMA@408..409 ","
+            - WHITESPACE@409..412 "\n  "
+            - ENUM_VALUE_DEFINITION@412..420
+                - ENUM_VALUE@412..420
+                    - NAME@412..420
+                        - IDENT@412..420 "PRODUCTS"
+            - COMMA@420..421 ","
+            - WHITESPACE@421..422 "\n"
+            - R_CURLY@422..423 "}"
+    - WHITESPACE@423..424 "\n"
 recursion limit: 4096, high: 2
