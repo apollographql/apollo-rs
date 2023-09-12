@@ -198,6 +198,8 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
     diagnostics
 }
 
+// TODO(@goto-bus-stop) This is a big function: should probably not be generic over the iterator
+// type
 pub fn validate_directives2<'dir>(
     db: &dyn ValidationDatabase,
     dirs: impl Iterator<Item = &'dir Node<ast::Directive>>,
