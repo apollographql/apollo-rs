@@ -34,6 +34,8 @@ type Query {
   int: Int
 }
 
+extend type Query @customDirective
+
 extend type Query {
   withArg(arg: Boolean): String @deprecated
 }

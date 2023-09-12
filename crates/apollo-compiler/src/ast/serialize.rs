@@ -272,24 +272,16 @@ impl SchemaDefinition {
         } = self;
         serialize_description(state, description)?;
         state.write("schema")?;
-        serialize_schema(state, directives, root_operations)
+        serialize_directives(state, directives)?;
+        state.write(" ")?;
+        curly_brackets_space_separated(
+            state,
+            root_operations,
+            |state, (operation_type, operation_name)| {
+                display!(state, "{}: {}", operation_type, operation_name)
+            },
+        )
     }
-}
-
-fn serialize_schema(
-    state: &mut State,
-    directives: &[Node<Directive>],
-    root_operations: &[(OperationType, Name)],
-) -> fmt::Result {
-    serialize_directives(state, directives)?;
-    state.write(" ")?;
-    curly_brackets_space_separated(
-        state,
-        root_operations,
-        |state, (operation_type, operation_name)| {
-            display!(state, "{}: {}", operation_type, operation_name)
-        },
-    )
 }
 
 impl ScalarTypeDefinition {
@@ -338,8 +330,12 @@ fn serialize_object_type_like(
         }
     }
     serialize_directives(state, directives)?;
-    state.write(" ")?;
-    curly_brackets_space_separated(state, fields, |state, field| field.serialize_impl(state))
+
+    if !fields.is_empty() {
+        state.write(" ")?;
+        curly_brackets_space_separated(state, fields, |state, field| field.serialize_impl(state))?;
+    }
+    Ok(())
 }
 
 impl InterfaceTypeDefinition {
@@ -402,8 +398,13 @@ impl EnumTypeDefinition {
         state.write("enum ")?;
         state.write(name)?;
         serialize_directives(state, directives)?;
-        state.write(" ")?;
-        curly_brackets_space_separated(state, values, |state, value| value.serialize_impl(state))
+        if !values.is_empty() {
+            state.write(" ")?;
+            curly_brackets_space_separated(state, values, |state, value| {
+                value.serialize_impl(state)
+            })?;
+        }
+        Ok(())
     }
 }
 
@@ -419,8 +420,11 @@ impl InputObjectTypeDefinition {
         state.write("input ")?;
         state.write(name)?;
         serialize_directives(state, directives)?;
-        state.write(" ")?;
-        curly_brackets_space_separated(state, fields, |state, f| f.serialize_impl(state))
+        if !fields.is_empty() {
+            state.write(" ")?;
+            curly_brackets_space_separated(state, fields, |state, f| f.serialize_impl(state))?;
+        }
+        Ok(())
     }
 }
 
@@ -431,7 +435,18 @@ impl SchemaExtension {
             root_operations,
         } = self;
         state.write("extend schema")?;
-        serialize_schema(state, directives, root_operations)
+        serialize_directives(state, directives)?;
+        if !root_operations.is_empty() {
+            state.write(" ")?;
+            curly_brackets_space_separated(
+                state,
+                root_operations,
+                |state, (operation_type, operation_name)| {
+                    display!(state, "{}: {}", operation_type, operation_name)
+                },
+            )?;
+        }
+        Ok(())
     }
 }
 
@@ -492,8 +507,13 @@ impl EnumTypeExtension {
         state.write("extend enum ")?;
         state.write(name)?;
         serialize_directives(state, directives)?;
-        state.write(" ")?;
-        curly_brackets_space_separated(state, values, |state, value| value.serialize_impl(state))
+        if !values.is_empty() {
+            state.write(" ")?;
+            curly_brackets_space_separated(state, values, |state, value| {
+                value.serialize_impl(state)
+            })?;
+        }
+        Ok(())
     }
 }
 
@@ -507,8 +527,11 @@ impl InputObjectTypeExtension {
         state.write("extend input ")?;
         state.write(name)?;
         serialize_directives(state, directives)?;
-        state.write(" ")?;
-        curly_brackets_space_separated(state, fields, |state, f| f.serialize_impl(state))
+        if !fields.is_empty() {
+            state.write(" ")?;
+            curly_brackets_space_separated(state, fields, |state, f| f.serialize_impl(state))?;
+        }
+        Ok(())
     }
 }
 

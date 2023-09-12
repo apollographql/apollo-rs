@@ -5,3 +5,11 @@ schema @nonRepeatable @nonRepeatable {
 }
 
 scalar TestScalar @nonRepeatable @nonRepeatable @specifiedBy(url: "example.com")
+
+type Dummy @nonRepeatable @nonRepeatable
+
+interface TestInterface @nonRepeatable @nonRepeatable
+
+union TestUnion @nonRepeatable @nonRepeatable
+
+input TestInput @nonRepeatable @nonRepeatable

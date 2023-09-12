@@ -8,4 +8,4 @@ schema @nonRepeatable {
   query: Query
 }
 
-extend schema @nonRepeatable {}
+extend schema @nonRepeatable

@@ -290,6 +290,10 @@ impl Convert for cst::SchemaDefinition {
         Some(Self::Target {
             description: self.description().convert(file_id)?,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            // This may represent a syntactically invalid thing: a schema without any root
+            // operation definitions. However the presence of a broken schema definition does
+            // affect whether a default schema definition should be inserted, so we bubble up the
+            // potentially invalid definition.
             root_operations: self
                 .root_operation_type_definitions()
                 .filter_map(|x| x.convert(file_id))
@@ -319,7 +323,7 @@ impl Convert for cst::ObjectTypeDefinition {
             name: self.name()?.convert(file_id)?,
             implements_interfaces: self.implements_interfaces().convert(file_id)?,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
-            fields: collect(file_id, self.fields_definition()?.field_definitions()),
+            fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
         })
     }
 }
@@ -333,7 +337,7 @@ impl Convert for cst::InterfaceTypeDefinition {
             name: self.name()?.convert(file_id)?,
             implements_interfaces: self.implements_interfaces().convert(file_id)?,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
-            fields: collect(file_id, self.fields_definition()?.field_definitions()),
+            fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
         })
     }
 }
@@ -347,10 +351,13 @@ impl Convert for cst::UnionTypeDefinition {
             name: self.name()?.convert(file_id)?,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
             members: self
-                .union_member_types()?
-                .named_types()
-                .filter_map(|n| n.name()?.convert(file_id))
-                .collect(),
+                .union_member_types()
+                .map_or_else(Default::default, |member_types| {
+                    member_types
+                        .named_types()
+                        .filter_map(|n| n.name()?.convert(file_id))
+                        .collect()
+                }),
         })
     }
 }
@@ -363,10 +370,9 @@ impl Convert for cst::EnumTypeDefinition {
             description: self.description().convert(file_id)?,
             name: self.name()?.convert(file_id)?,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
-            values: collect(
-                file_id,
-                self.enum_values_definition()?.enum_value_definitions(),
-            ),
+            values: collect_opt(file_id, self.enum_values_definition(), |x| {
+                x.enum_value_definitions()
+            }),
         })
     }
 }
@@ -379,10 +385,9 @@ impl Convert for cst::InputObjectTypeDefinition {
             description: self.description().convert(file_id)?,
             name: self.name()?.convert(file_id)?,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
-            fields: collect(
-                file_id,
-                self.input_fields_definition()?.input_value_definitions(),
-            ),
+            fields: collect_opt(file_id, self.input_fields_definition(), |x| {
+                x.input_value_definitions()
+            }),
         })
     }
 }
@@ -420,7 +425,7 @@ impl Convert for cst::ObjectTypeExtension {
             name: self.name()?.convert(file_id)?,
             implements_interfaces: self.implements_interfaces().convert(file_id)?,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
-            fields: collect(file_id, self.fields_definition()?.field_definitions()),
+            fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
         })
     }
 }
@@ -433,7 +438,7 @@ impl Convert for cst::InterfaceTypeExtension {
             name: self.name()?.convert(file_id)?,
             implements_interfaces: self.implements_interfaces().convert(file_id)?,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
-            fields: collect(file_id, self.fields_definition()?.field_definitions()),
+            fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
         })
     }
 }
@@ -446,10 +451,13 @@ impl Convert for cst::UnionTypeExtension {
             name: self.name()?.convert(file_id)?,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
             members: self
-                .union_member_types()?
-                .named_types()
-                .filter_map(|n| n.name()?.convert(file_id))
-                .collect(),
+                .union_member_types()
+                .map_or_else(Default::default, |member_types| {
+                    member_types
+                        .named_types()
+                        .filter_map(|n| n.name()?.convert(file_id))
+                        .collect()
+                }),
         })
     }
 }
@@ -461,10 +469,9 @@ impl Convert for cst::EnumTypeExtension {
         Some(Self::Target {
             name: self.name()?.convert(file_id)?,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
-            values: collect(
-                file_id,
-                self.enum_values_definition()?.enum_value_definitions(),
-            ),
+            values: collect_opt(file_id, self.enum_values_definition(), |x| {
+                x.enum_value_definitions()
+            }),
         })
     }
 }
@@ -476,10 +483,9 @@ impl Convert for cst::InputObjectTypeExtension {
         Some(Self::Target {
             name: self.name()?.convert(file_id)?,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
-            fields: collect(
-                file_id,
-                self.input_fields_definition()?.input_value_definitions(),
-            ),
+            fields: collect_opt(file_id, self.input_fields_definition(), |x| {
+                x.input_value_definitions()
+            }),
         })
     }
 }

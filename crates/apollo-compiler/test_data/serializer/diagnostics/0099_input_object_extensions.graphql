@@ -11,3 +11,5 @@ directive @nonRepeatable on INPUT_OBJECT
 input UniqueDirective @nonRepeatable {
   field: String
 }
+
+extend input UniqueDirective @nonRepeatable

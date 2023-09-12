@@ -12,6 +12,8 @@ interface Directives @nonRepeatable {
   age: Int
 }
 
+extend interface Directives @nonRepeatable
+
 interface Base {
   a: Int
   b: Int

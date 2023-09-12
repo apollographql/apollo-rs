@@ -1,5 +1,11 @@
 directive @nonRepeatable on OBJECT | SCALAR | INTERFACE
 
+extend type TestObject @nonRepeatable
+
+type TestObject @nonRepeatable
+
+extend type TestObject @nonRepeatable
+
 scalar Scalar @nonRepeatable
 
 extend scalar Scalar @nonRepeatable @specifiedBy(url: "example.com")
@@ -7,3 +13,5 @@ extend scalar Scalar @nonRepeatable @specifiedBy(url: "example.com")
 interface Intf @nonRepeatable {
   field: String
 }
+
+interface Intf @nonRepeatable
