@@ -1,8 +1,10 @@
 use crate::ast;
+use crate::ast::impls::directives_by_name;
 use crate::Node;
 use crate::Schema;
 use indexmap::map::Entry;
 use indexmap::IndexMap;
+use std::collections::HashSet;
 use std::fmt;
 
 mod from_ast;
@@ -13,7 +15,6 @@ mod tests;
 pub use crate::ast::{
     Argument, Directive, Name, NamedType, OperationType, Type, Value, VariableDefinition,
 };
-use std::collections::HashSet;
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -132,12 +133,14 @@ impl ExecutableDocument {
     /// with that name, which is expected to exist. When it is not given / null / `None`,
     /// the document is expected to contain a single operation (which may or may not be named)
     /// to avoid ambiguity.
+    ///
+    /// `name_request` can be of type [`Option<&Name>`][Name] or `Option<&str>`.
     pub fn get_operation<N>(
         &self,
         name_request: Option<&N>,
     ) -> Result<OperationRef<'_>, GetOperationError>
     where
-        N: std::hash::Hash + indexmap::Equivalent<Name>,
+        N: ?Sized + std::hash::Hash + indexmap::Equivalent<Name>,
     {
         if let Some(name) = name_request {
             // Honor the request
@@ -155,6 +158,32 @@ impl ExecutableDocument {
                 (self.named_operations.len() == 1).then_some(OperationRef::Named(name, op))
             })
         }
+        .ok_or(GetOperationError())
+    }
+
+    /// Similar to [`get_operation`][Self::get_operation] but returns a mutable reference.
+    pub fn get_operation_mut<N>(
+        &mut self,
+        name_request: Option<&N>,
+    ) -> Result<&mut Operation, GetOperationError>
+    where
+        N: ?Sized + std::hash::Hash + indexmap::Equivalent<Name>,
+    {
+        if let Some(name) = name_request {
+            // Honor the request
+            self.named_operations.get_mut(name)
+        } else if let Some(op) = &mut self.anonymous_operation {
+            // No name request, return the anonymous operation if it’s the only operation
+            self.named_operations.is_empty().then_some(op)
+        } else {
+            // No name request or anonymous operation, return a named operation if it’s the only one
+            let len = self.named_operations.len();
+            self.named_operations
+                .values_mut()
+                .next()
+                .and_then(|op| (len == 1).then_some(op))
+        }
+        .map(Node::make_mut)
         .ok_or(GetOperationError())
     }
 
@@ -231,12 +260,16 @@ impl Operation {
         self.operation_type == OperationType::Query
             && is_introspection_impl(document, &mut HashSet::new(), &self.selection_set)
     }
+
+    directive_methods!();
 }
 
 impl Fragment {
     pub fn type_condition(&self) -> &NamedType {
         &self.selection_set.ty
     }
+
+    directive_methods!();
 }
 
 impl SelectionSet {
@@ -334,6 +367,25 @@ impl SelectionSet {
     }
 }
 
+impl Selection {
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// This method is best for repeatable directives. For non-repeatable directives,
+    /// see [`directive_by_name`][Self::directive_by_name] (singular)
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Node<Directive>> + 'name {
+        match self {
+            Selection::Field(field) => directives_by_name(&field.directives, name),
+            Selection::FragmentSpread(spread) => directives_by_name(&spread.directives, name),
+            Selection::InlineFragment(inline) => directives_by_name(&inline.directives, name),
+        }
+    }
+
+    directive_by_name_method!();
+}
+
 impl From<Node<Field>> for Selection {
     fn from(node: Node<Field>) -> Self {
         Self::Field(node)
@@ -420,6 +472,13 @@ impl Field {
         self.selection_set.extend_from_ast(schema, ast_selections)?;
         Ok(self)
     }
+
+    /// Returns the response key for this field: the alias if there is one, or the name
+    pub fn response_key(&self) -> &Name {
+        self.alias.as_ref().unwrap_or(&self.name)
+    }
+
+    directive_methods!();
 }
 
 impl InlineFragment {
@@ -457,6 +516,8 @@ impl InlineFragment {
         self.selection_set.extend_from_ast(schema, ast_selections)?;
         Ok(self)
     }
+
+    directive_methods!();
 }
 
 impl FragmentSpread {
@@ -472,4 +533,6 @@ impl FragmentSpread {
         self.directives.extend(directives);
         self
     }
+
+    directive_methods!();
 }

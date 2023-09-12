@@ -33,7 +33,7 @@
 use crate::Node;
 use crate::NodeStr;
 
-mod impls;
+pub(crate) mod impls;
 mod parse;
 pub(crate) mod serialize;
 

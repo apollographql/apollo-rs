@@ -128,3 +128,9 @@ impl Deref for ComponentStr {
         &self.node
     }
 }
+
+impl AsRef<str> for ComponentStr {
+    fn as_ref(&self) -> &str {
+        self
+    }
+}

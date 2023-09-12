@@ -212,7 +212,7 @@ impl Schema {
     /// Returns the type with the given name, if it is a scalar type
     ///
     /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_scalar<N>(&self, name: &N) -> Option<&ScalarType>
+    pub fn get_scalar<N>(&self, name: &N) -> Option<&Node<ScalarType>>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
@@ -226,7 +226,7 @@ impl Schema {
     /// Returns the type with the given name, if it is a object type
     ///
     /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_object<N>(&self, name: &N) -> Option<&ObjectType>
+    pub fn get_object<N>(&self, name: &N) -> Option<&Node<ObjectType>>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
@@ -240,7 +240,7 @@ impl Schema {
     /// Returns the type with the given name, if it is a interface type
     ///
     /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_interface<N>(&self, name: &N) -> Option<&InterfaceType>
+    pub fn get_interface<N>(&self, name: &N) -> Option<&Node<InterfaceType>>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
@@ -254,7 +254,7 @@ impl Schema {
     /// Returns the type with the given name, if it is a union type
     ///
     /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_union<N>(&self, name: &N) -> Option<&UnionType>
+    pub fn get_union<N>(&self, name: &N) -> Option<&Node<UnionType>>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
@@ -268,7 +268,7 @@ impl Schema {
     /// Returns the type with the given name, if it is a enum type
     ///
     /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_enum<N>(&self, name: &N) -> Option<&EnumType>
+    pub fn get_enum<N>(&self, name: &N) -> Option<&Node<EnumType>>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
@@ -282,7 +282,7 @@ impl Schema {
     /// Returns the type with the given name, if it is a input object type
     ///
     /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_input_object<N>(&self, name: &N) -> Option<&InputObjectType>
+    pub fn get_input_object<N>(&self, name: &N) -> Option<&Node<InputObjectType>>
     where
         N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
     {
@@ -416,6 +416,8 @@ impl Schema {
     }
 
     /// Return the meta-fields of the given type
+    ///
+    /// `type_name` can be of type [`&Name`][Name] or `&str`.
     pub(crate) fn meta_fields_definitions<N>(
         &self,
         type_name: &N,
@@ -469,6 +471,35 @@ impl Schema {
         } else {
             // __typename: String!
             std::slice::from_ref(&ROOT_QUERY_FIELDS.get()[0])
+        }
+    }
+
+    /// Returns whether the type `ty` is defined as is an input type
+    ///
+    /// <https://spec.graphql.org/October2021/#sec-Input-and-Output-Types>
+    pub fn is_input_type(&self, ty: &Type) -> bool {
+        match self.types.get(ty.inner_named_type()) {
+            Some(ExtendedType::Scalar(_))
+            | Some(ExtendedType::Enum(_))
+            | Some(ExtendedType::InputObject(_)) => true,
+            Some(ExtendedType::Object(_))
+            | Some(ExtendedType::Interface(_))
+            | Some(ExtendedType::Union(_))
+            | None => false,
+        }
+    }
+
+    /// Returns whether the type `ty` is defined as is an output type
+    ///
+    /// <https://spec.graphql.org/October2021/#sec-Input-and-Output-Types>
+    pub fn is_output_type(&self, ty: &Type) -> bool {
+        match self.types.get(ty.inner_named_type()) {
+            Some(ExtendedType::Scalar(_))
+            | Some(ExtendedType::Object(_))
+            | Some(ExtendedType::Interface(_))
+            | Some(ExtendedType::Union(_))
+            | Some(ExtendedType::Enum(_)) => true,
+            Some(ExtendedType::InputObject(_)) | None => false,
         }
     }
 
@@ -554,6 +585,17 @@ impl ExtendedType {
             Self::Union(ty) => directives_by_name(&ty.directives, name),
             Self::Enum(ty) => directives_by_name(&ty.directives, name),
             Self::InputObject(ty) => directives_by_name(&ty.directives, name),
+        }
+    }
+
+    pub fn description(&self) -> Option<&NodeStr> {
+        match self {
+            Self::Scalar(ty) => ty.description.as_ref(),
+            Self::Object(ty) => ty.description.as_ref(),
+            Self::Interface(ty) => ty.description.as_ref(),
+            Self::Union(ty) => ty.description.as_ref(),
+            Self::Enum(ty) => ty.description.as_ref(),
+            Self::InputObject(ty) => ty.description.as_ref(),
         }
     }
 
