@@ -20,7 +20,7 @@ pub fn validate_variable_definitions2(
     for variable in variables.iter() {
         diagnostics.extend(super::directive::validate_directives2(
             db,
-            variable.directives.clone(),
+            variable.directives.iter(),
             ast::DirectiveLocation::VariableDefinition,
             // let's assume that variable definitions cannot reference other
             // variables and provide them as arguments to directives

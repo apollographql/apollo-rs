@@ -146,7 +146,7 @@ pub fn validate_input_value_definitions(
         let name = &input_value.name;
         diagnostics.extend(super::directive::validate_directives2(
             db,
-            input_value.directives.clone(),
+            input_value.directives.iter(),
             ast::DirectiveLocation::ArgumentDefinition,
             Default::default(), // No variables in an input value definition
         ));

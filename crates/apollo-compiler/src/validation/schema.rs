@@ -32,7 +32,7 @@ pub fn validate_schema_definition(
 
     diagnostics.extend(super::directive::validate_directives2(
         db,
-        schema_definition.directives().cloned().collect(),
+        schema_definition.directives(),
         ast::DirectiveLocation::Schema,
         // schemas don't use variables
         Default::default(),

@@ -151,7 +151,7 @@ pub fn validate_field_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = super::directive::validate_directives2(
         db,
-        field.directives.clone(),
+        field.directives.iter(),
         ast::DirectiveLocation::FieldDefinition,
         // field definitions don't have variables
         Default::default(),

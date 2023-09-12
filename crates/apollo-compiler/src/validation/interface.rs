@@ -25,7 +25,7 @@ pub fn validate_interface_definition(
 
     diagnostics.extend(super::directive::validate_directives2(
         db,
-        interface.directives().cloned().collect(),
+        interface.directives(),
         ast::DirectiveLocation::Interface,
         // interfaces don't use variables
         Default::default(),

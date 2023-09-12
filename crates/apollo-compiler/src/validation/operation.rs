@@ -33,7 +33,7 @@ pub(crate) fn validate_operation(
 
     diagnostics.extend(super::directive::validate_directives2(
         db,
-        operation.directives.clone(),
+        operation.directives.iter(),
         operation.operation_type.into(),
         &operation.variables,
     ));

@@ -198,9 +198,9 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
     diagnostics
 }
 
-pub fn validate_directives2(
+pub fn validate_directives2<'dir>(
     db: &dyn ValidationDatabase,
-    dirs: Vec<Node<ast::Directive>>,
+    dirs: impl Iterator<Item = &'dir Node<ast::Directive>>,
     dir_loc: ast::DirectiveLocation,
     var_defs: &[Node<ast::VariableDefinition>],
 ) -> Vec<ApolloDiagnostic> {

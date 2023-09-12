@@ -26,7 +26,7 @@ pub fn validate_object_type_definition(
 
     diagnostics.extend(super::directive::validate_directives2(
         db,
-        object.directives().cloned().collect(),
+        object.directives(),
         ast::DirectiveLocation::Object,
         // objects don't use variables
         Default::default(),

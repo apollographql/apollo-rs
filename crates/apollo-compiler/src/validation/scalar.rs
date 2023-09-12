@@ -52,8 +52,7 @@ pub fn validate_scalar_definition(
             scalar_def
                 .directives
                 .iter()
-                .map(|component| component.node.clone())
-                .collect(),
+                .map(|component| &component.node),
             ast::DirectiveLocation::Scalar,
             // scalars don't use variables
             Default::default(),
