@@ -17,6 +17,16 @@
                     file_id: FileId {
                         id: 34,
                     },
+                    offset: 22,
+                    length: 4,
+                },
+                text: "implementation of interface Node declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 34,
+                    },
                     offset: 0,
                     length: 56,
                 },
@@ -30,13 +40,14 @@
                     offset: 77,
                     length: 7,
                 },
-                text: "`id` was originally defined here",
+                text: "`id` was originally defined by Node here",
             },
         ],
         help: Some(
             "An object must provide all fields required by the interfaces it implements",
         ),
-        data: MissingField {
+        data: MissingInterfaceField {
+            interface: "Node",
             field: "id",
         },
     },
@@ -58,6 +69,16 @@
                     file_id: FileId {
                         id: 34,
                     },
+                    offset: 29,
+                    length: 8,
+                },
+                text: "implementation of interface Resource declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 34,
+                    },
                     offset: 0,
                     length: 56,
                 },
@@ -71,13 +92,14 @@
                     offset: 111,
                     length: 10,
                 },
-                text: "`width` was originally defined here",
+                text: "`width` was originally defined by Resource here",
             },
         ],
         help: Some(
             "An object must provide all fields required by the interfaces it implements",
         ),
-        data: MissingField {
+        data: MissingInterfaceField {
+            interface: "Resource",
             field: "width",
         },
     },

@@ -768,20 +768,30 @@ impl<T: Extensible> TypeWithExtensions<T> {
     }
 }
 
-impl TypeWithExtensions<SchemaDefinition> {
-    pub fn directives<'a>(&'a self) -> impl Iterator<Item = &'a Node<Directive>> + 'a {
-        self.iter_all(
-            |definition| definition.directives.iter(),
-            |extension| extension.directives.iter(),
-        )
-    }
+macro_rules! iter_extensible_method {
+    ($property:ident, $ty:ty) => {
+        pub fn $property<'a>(&'a self) -> impl Iterator<Item = &'a $ty> + 'a {
+            self.iter_all(
+                |definition| definition.$property.iter(),
+                |extension| extension.$property.iter(),
+            )
+        }
+    };
+}
 
-    pub fn root_operations<'a>(
-        &'a self,
-    ) -> impl Iterator<Item = &'a (OperationType, NamedType)> + 'a {
-        self.iter_all(
-            |definition| definition.root_operations.iter(),
-            |extension| extension.root_operations.iter(),
-        )
-    }
+impl TypeWithExtensions<SchemaDefinition> {
+    iter_extensible_method!(directives, Node<Directive>);
+    iter_extensible_method!(root_operations, (OperationType, NamedType));
+}
+
+impl TypeWithExtensions<ObjectTypeDefinition> {
+    iter_extensible_method!(directives, Node<Directive>);
+    iter_extensible_method!(fields, Node<FieldDefinition>);
+    iter_extensible_method!(implements_interfaces, NamedType);
+}
+
+impl TypeWithExtensions<InterfaceTypeDefinition> {
+    iter_extensible_method!(directives, Node<Directive>);
+    iter_extensible_method!(fields, Node<FieldDefinition>);
+    iter_extensible_method!(implements_interfaces, NamedType);
 }

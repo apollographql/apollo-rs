@@ -49,7 +49,7 @@
                     offset: 237,
                     length: 20,
                 },
-                text: "this is of `InputObjectTypeDefinition` type",
+                text: "this is an input object",
             },
         ],
         help: Some(
@@ -57,7 +57,7 @@
         ),
         data: OutputType {
             name: "coordinates",
-            ty: "InputObjectTypeDefinition",
+            ty: "input object",
         },
     },
     ApolloDiagnostic {

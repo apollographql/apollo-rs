@@ -1,8 +1,9 @@
-use crate::Arc;
 use crate::{
+    ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::{self},
+    hir, schema,
     validation::ValidationDatabase,
+    Arc, Node,
 };
 use std::collections::HashMap;
 
@@ -146,18 +147,19 @@ pub fn validate_field(
 
 pub fn validate_field_definition(
     db: &dyn ValidationDatabase,
-    field: hir::FieldDefinition,
+    field: &Node<ast::FieldDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = db.validate_directives(
-        field.directives().to_vec(),
-        hir::DirectiveLocation::FieldDefinition,
+    let mut diagnostics = super::directive::validate_directives2(
+        db,
+        field.directives.clone(),
+        ast::DirectiveLocation::FieldDefinition,
         // field definitions don't have variables
         Default::default(),
     );
 
-    diagnostics.extend(db.validate_arguments_definition(
-        field.arguments,
-        hir::DirectiveLocation::ArgumentDefinition,
+    diagnostics.extend(super::input_object::validate_input_value_definitions(
+        db,
+        &field.arguments,
     ));
 
     diagnostics
@@ -165,24 +167,28 @@ pub fn validate_field_definition(
 
 pub fn validate_field_definitions(
     db: &dyn ValidationDatabase,
-    fields: Vec<hir::FieldDefinition>,
+    fields: Vec<Node<ast::FieldDefinition>>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    let mut seen: HashMap<&str, &hir::FieldDefinition> = HashMap::new();
+    let schema = db.schema();
 
-    for field in fields.iter() {
-        diagnostics.extend(db.validate_field_definition(field.clone()));
+    let mut seen: HashMap<ast::Name, &Node<ast::FieldDefinition>> = HashMap::new();
+
+    for field in &fields {
+        diagnostics.extend(validate_field_definition(db, field));
 
         // Fields must be unique.
         //
         // Returns Unique Field error.
-        let fname = field.name();
-        let redefined_definition = field.loc().expect("undefined field definition location");
+        let fname = &field.name;
+        let redefined_definition = *field
+            .location()
+            .expect("undefined field definition location");
 
         if let Some(prev_field) = seen.get(fname) {
-            let original_definition = prev_field
-                .loc()
+            let original_definition = *prev_field
+                .location()
                 .expect("undefined field definition location");
 
             diagnostics.push(
@@ -190,7 +196,7 @@ pub fn validate_field_definitions(
                     db,
                     original_definition.into(),
                     DiagnosticData::UniqueField {
-                        field: fname.into(),
+                        field: fname.to_string(),
                         original_definition: original_definition.into(),
                         redefined_definition: redefined_definition.into(),
                     },
@@ -207,29 +213,40 @@ pub fn validate_field_definitions(
                 )),
             );
         } else {
-            seen.insert(fname, field);
+            seen.insert(fname.clone(), field);
         }
 
         // Field types in Object Types must be of output type
-        let loc = field.loc().expect("undefined field definition location");
-        if let Some(field_ty) = field.ty().type_def(db.upcast()) {
-            if !field.ty().is_output_type(db.upcast()) {
+        let loc = *field
+            .location()
+            .expect("undefined field definition location");
+        if let Some(field_ty) = schema.types.get(field.ty.inner_named_type()) {
+            if !field_ty.is_output_type() {
+                // Output types are unreachable
+                let (particle, kind) = match field_ty {
+                    schema::ExtendedType::Scalar(_) => unreachable!(),
+                    schema::ExtendedType::Union(_) => unreachable!(),
+                    schema::ExtendedType::Enum(_) => unreachable!(),
+                    schema::ExtendedType::Interface(_) => unreachable!(),
+                    schema::ExtendedType::InputObject(_) => ("an", "input object"),
+                    schema::ExtendedType::Object(_) => unreachable!(),
+                };
                 diagnostics.push(
                     ApolloDiagnostic::new(db, loc.into(), DiagnosticData::OutputType {
-                        name: field.name().into(),
-                        ty: field_ty.kind(),
+                        name: field.name.to_string(),
+                        ty: kind,
                     })
-                        .label(Label::new(loc, format!("this is of `{}` type", field_ty.kind())))
-                        .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name())),
+                        .label(Label::new(loc, format!("this is {particle} {kind}")))
+                        .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name)),
                 );
             }
-        } else if let Some(field_ty_loc) = field.ty().loc() {
+        } else if let Some(&field_ty_loc) = field.ty.inner_named_type().location() {
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
                     field_ty_loc.into(),
                     DiagnosticData::UndefinedDefinition {
-                        name: field.name().into(),
+                        name: field.name.to_string(),
                     },
                 )
                 .label(Label::new(field_ty_loc, "not found in this scope")),
@@ -240,7 +257,7 @@ pub fn validate_field_definitions(
                     db,
                     loc.into(),
                     DiagnosticData::UndefinedDefinition {
-                        name: field.ty().name(),
+                        name: field.ty.to_string(),
                     },
                 )
                 .label(Label::new(loc, "not found in this scope")),

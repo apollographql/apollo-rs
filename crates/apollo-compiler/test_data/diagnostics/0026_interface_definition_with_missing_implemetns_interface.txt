@@ -8,8 +8,8 @@
             file_id: FileId {
                 id: 26,
             },
-            offset: 176,
-            length: 8,
+            offset: 149,
+            length: 96,
         },
         labels: [
             Label {
@@ -17,8 +17,18 @@
                     file_id: FileId {
                         id: 26,
                     },
-                    offset: 176,
-                    length: 8,
+                    offset: 102,
+                    length: 4,
+                },
+                text: "implementation of Node declared by Resource here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 26,
+                    },
+                    offset: 149,
+                    length: 96,
                 },
                 text: "Node must also be implemented here",
             },

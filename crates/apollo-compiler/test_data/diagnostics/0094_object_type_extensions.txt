@@ -220,6 +220,16 @@
                     file_id: FileId {
                         id: 91,
                     },
+                    offset: 583,
+                    length: 17,
+                },
+                text: "implementation of interface ExtendedInterface declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 91,
+                    },
                     offset: 537,
                     length: 82,
                 },
@@ -233,13 +243,14 @@
                     offset: 659,
                     length: 13,
                 },
-                text: "`fail` was originally defined here",
+                text: "`fail` was originally defined by ExtendedInterface here",
             },
         ],
         help: Some(
             "An object must provide all fields required by the interfaces it implements",
         ),
-        data: MissingField {
+        data: MissingInterfaceField {
+            interface: "ExtendedInterface",
             field: "fail",
         },
     },

@@ -125,10 +125,20 @@
                     file_id: FileId {
                         id: 95,
                     },
-                    offset: 225,
-                    length: 45,
+                    offset: 338,
+                    length: 4,
                 },
-                text: "`b` was originally defined here",
+                text: "implementation of interface Base declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 95,
+                    },
+                    offset: 253,
+                    length: 6,
+                },
+                text: "`b` was originally defined by Base here",
             },
             Label {
                 location: DiagnosticLocation {
@@ -144,7 +154,8 @@
         help: Some(
             "An interface must be a super-set of all interfaces it implements",
         ),
-        data: MissingField {
+        data: MissingInterfaceField {
+            interface: "Base",
             field: "b",
         },
     },

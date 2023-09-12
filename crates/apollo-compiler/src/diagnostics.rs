@@ -241,6 +241,8 @@ pub enum DiagnosticData {
         original_definition: DiagnosticLocation,
         redefined_definition: DiagnosticLocation,
     },
+    #[error("type does not satisfy interface `{interface}`: missing field `{field}`")]
+    MissingInterfaceField { interface: String, field: String },
     #[error("missing `{field}` field")]
     MissingField {
         // current field that should be defined

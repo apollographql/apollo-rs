@@ -88,14 +88,7 @@ pub trait ValidationDatabase:
     #[salsa::invoke(interface::validate_interface_definition)]
     fn validate_interface_definition(
         &self,
-        def: Arc<InterfaceTypeDefinition>,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(interface::validate_implements_interfaces)]
-    fn validate_implements_interfaces(
-        &self,
-        implementor_name: String,
-        impl_interfaces: Vec<ImplementsInterface>,
+        interface: ast::TypeWithExtensions<ast::InterfaceTypeDefinition>,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(directive::validate_directive_definition)]
@@ -158,14 +151,14 @@ pub trait ValidationDatabase:
     #[salsa::invoke(object::validate_object_type_definition)]
     fn validate_object_type_definition(
         &self,
-        def: Arc<ObjectTypeDefinition>,
+        def: ast::TypeWithExtensions<ast::ObjectTypeDefinition>,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(field::validate_field_definitions)]
-    fn validate_field_definitions(&self, fields: Vec<FieldDefinition>) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(field::validate_field_definition)]
-    fn validate_field_definition(&self, field: FieldDefinition) -> Vec<ApolloDiagnostic>;
+    fn validate_field_definitions(
+        &self,
+        fields: Vec<Node<ast::FieldDefinition>>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(field::validate_field)]
     fn validate_field(
@@ -322,7 +315,12 @@ fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
     let mut schema_extensions = vec![];
 
     for file_id in db.type_definition_files() {
+        if file_id == FileId::BUILT_IN {
+            continue;
+        }
+
         let document = db.ast(file_id);
+        println!("{document}");
         for definition in document.definitions.iter() {
             match definition {
                 ast::Definition::SchemaDefinition(schema) => {

@@ -8,8 +8,8 @@
             file_id: FileId {
                 id: 90,
             },
-            offset: 96,
-            length: 1,
+            offset: 73,
+            length: 42,
         },
         labels: [
             Label {
@@ -17,8 +17,18 @@
                     file_id: FileId {
                         id: 90,
                     },
-                    offset: 96,
+                    offset: 139,
                     length: 1,
+                },
+                text: "implementation of A declared by B here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 90,
+                    },
+                    offset: 73,
+                    length: 42,
                 },
                 text: "A must also be implemented here",
             },
@@ -37,8 +47,8 @@
             file_id: FileId {
                 id: 90,
             },
-            offset: 139,
-            length: 1,
+            offset: 116,
+            length: 42,
         },
         labels: [
             Label {
@@ -46,8 +56,18 @@
                     file_id: FileId {
                         id: 90,
                     },
-                    offset: 139,
+                    offset: 96,
                     length: 1,
+                },
+                text: "implementation of B declared by A here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 90,
+                    },
+                    offset: 116,
+                    length: 42,
                 },
                 text: "B must also be implemented here",
             },
