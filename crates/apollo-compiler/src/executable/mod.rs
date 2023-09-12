@@ -133,15 +133,10 @@ impl ExecutableDocument {
     /// with that name, which is expected to exist. When it is not given / null / `None`,
     /// the document is expected to contain a single operation (which may or may not be named)
     /// to avoid ambiguity.
-    ///
-    /// `name_request` can be of type [`Option<&Name>`][Name] or `Option<&str>`.
-    pub fn get_operation<N>(
+    pub fn get_operation(
         &self,
-        name_request: Option<&N>,
-    ) -> Result<OperationRef<'_>, GetOperationError>
-    where
-        N: ?Sized + std::hash::Hash + indexmap::Equivalent<Name>,
-    {
+        name_request: Option<&str>,
+    ) -> Result<OperationRef<'_>, GetOperationError> {
         if let Some(name) = name_request {
             // Honor the request
             self.named_operations
