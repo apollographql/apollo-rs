@@ -351,6 +351,8 @@ pub struct TypeWithExtensions<T: Extensible> {
     pub extensions: Vec<Node<T::Extension>>,
 }
 
+// TODO(@goto-bus-stop): may have to do Arc<TypeWithExtensions> as we need to clone
+// it for salsa reasons. OR pass (object|scalar|etc, Name) tuples to the salsa queries.
 #[derive(Debug, PartialEq, Eq)]
 pub struct TypeSystem {
     pub schema: TypeWithExtensions<SchemaDefinition>,

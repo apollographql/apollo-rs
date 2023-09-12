@@ -53,12 +53,9 @@ pub trait ValidationDatabase:
     fn validate_executable_names(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(validation::schema::validate_schema_definition)]
-    fn validate_schema_definition(&self, def: Arc<SchemaDefinition>) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(validation::schema::validate_root_operation_definitions)]
-    fn validate_root_operation_definitions(
+    fn validate_schema_definition(
         &self,
-        defs: Vec<RootOperationTypeDefinition>,
+        def: ast::TypeWithExtensions<ast::SchemaDefinition>,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(scalar::validate_scalar_definitions)]
@@ -677,7 +674,8 @@ pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
 
     diagnostics.extend(db.validate_type_system_names());
 
-    diagnostics.extend(db.validate_schema_definition(db.type_system_definitions().schema.clone()));
+    let schema = db.ast_types().schema.clone();
+    diagnostics.extend(db.validate_schema_definition(schema));
 
     diagnostics.extend(db.validate_scalar_definitions());
     diagnostics.extend(db.validate_enum_definitions());

@@ -20,15 +20,15 @@
                     offset: 13,
                     length: 20,
                 },
-                text: "This is of `InterfaceTypeDefinition` type",
+                text: "This is an interface",
             },
         ],
         help: Some(
-            "root operation type must be of an Object Type",
+            "root operation type must be an object type",
         ),
         data: ObjectType {
             name: "SomeInterface",
-            ty: "InterfaceTypeDefinition",
+            ty: "interface",
         },
     },
 ]
