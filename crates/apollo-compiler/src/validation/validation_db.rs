@@ -71,10 +71,10 @@ pub trait ValidationDatabase:
     fn validate_enum_definitions(&self) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(enum_::validate_enum_definition)]
-    fn validate_enum_definition(&self, def: Arc<EnumTypeDefinition>) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(enum_::validate_enum_value)]
-    fn validate_enum_value(&self, def: EnumValueDefinition) -> Vec<ApolloDiagnostic>;
+    fn validate_enum_definition(
+        &self,
+        enum_: ast::TypeWithExtensions<ast::EnumTypeDefinition>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(union_::validate_union_definitions)]
     fn validate_union_definitions(&self) -> Vec<ApolloDiagnostic>;
