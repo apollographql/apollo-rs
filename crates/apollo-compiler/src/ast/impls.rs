@@ -219,35 +219,56 @@ impl SchemaDefinition {
     directive_methods!();
     serialize_method!();
 }
+impl Extensible for SchemaDefinition {
+    type Extension = SchemaExtension;
+}
 
 impl ScalarTypeDefinition {
     directive_methods!();
     serialize_method!();
+}
+impl Extensible for ScalarTypeDefinition {
+    type Extension = ScalarTypeExtension;
 }
 
 impl ObjectTypeDefinition {
     directive_methods!();
     serialize_method!();
 }
+impl Extensible for ObjectTypeDefinition {
+    type Extension = ObjectTypeExtension;
+}
 
 impl InterfaceTypeDefinition {
     directive_methods!();
     serialize_method!();
+}
+impl Extensible for InterfaceTypeDefinition {
+    type Extension = InterfaceTypeExtension;
 }
 
 impl UnionTypeDefinition {
     directive_methods!();
     serialize_method!();
 }
+impl Extensible for UnionTypeDefinition {
+    type Extension = UnionTypeExtension;
+}
 
 impl EnumTypeDefinition {
     directive_methods!();
     serialize_method!();
 }
+impl Extensible for EnumTypeDefinition {
+    type Extension = EnumTypeExtension;
+}
 
 impl InputObjectTypeDefinition {
     directive_methods!();
     serialize_method!();
+}
+impl Extensible for InputObjectTypeDefinition {
+    type Extension = InputObjectTypeExtension;
 }
 
 impl SchemaExtension {
@@ -728,5 +749,39 @@ impl From<i32> for Node<Value> {
 impl From<bool> for Node<Value> {
     fn from(value: bool) -> Self {
         Node::new_synthetic(value.into())
+    }
+}
+
+impl<T: Extensible> TypeWithExtensions<T> {
+    /// Iterate over elements of the base definition and its extensions.
+    pub fn iter_all<'a, Item, DefIter, ExtIter>(
+        &'a self,
+        mut map_definition: impl FnMut(&'a Node<T>) -> DefIter + 'a,
+        map_extension: impl FnMut(&'a Node<T::Extension>) -> ExtIter + 'a,
+    ) -> impl Iterator<Item = Item> + 'a
+    where
+        Item: 'a,
+        DefIter: Iterator<Item = Item> + 'a,
+        ExtIter: Iterator<Item = Item> + 'a,
+    {
+        map_definition(&self.definition).chain(self.extensions.iter().flat_map(map_extension))
+    }
+}
+
+impl TypeWithExtensions<SchemaDefinition> {
+    pub fn directives<'a>(&'a self) -> impl Iterator<Item = &'a Node<Directive>> + 'a {
+        self.iter_all(
+            |definition| definition.directives.iter(),
+            |extension| extension.directives.iter(),
+        )
+    }
+
+    pub fn root_operations<'a>(
+        &'a self,
+    ) -> impl Iterator<Item = &'a (OperationType, NamedType)> + 'a {
+        self.iter_all(
+            |definition| definition.root_operations.iter(),
+            |extension| extension.root_operations.iter(),
+        )
     }
 }

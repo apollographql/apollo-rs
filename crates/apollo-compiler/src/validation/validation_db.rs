@@ -23,6 +23,8 @@ const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 pub trait ValidationDatabase:
     Upcast<dyn HirDatabase> + InputDatabase + ReprDatabase + HirDatabase
 {
+    fn ast_types(&self) -> Arc<ast::TypeSystem>;
+
     /// Validate all documents.
     fn validate(&self) -> Vec<ApolloDiagnostic>;
 
@@ -309,6 +311,158 @@ pub trait ValidationDatabase:
         &self,
         selection_set: SelectionSet,
     ) -> Result<(), Vec<ApolloDiagnostic>>;
+}
+
+fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
+    let mut objects = HashMap::new();
+    let mut scalars = HashMap::new();
+    let mut interfaces = HashMap::new();
+    let mut unions = HashMap::new();
+    let mut enums = HashMap::new();
+    let mut input_objects = HashMap::new();
+
+    let mut schema_definition = None;
+    let mut schema_extensions = vec![];
+
+    for file_id in db.type_definition_files() {
+        let document = db.ast(file_id);
+        for definition in document.definitions.iter() {
+            match definition {
+                ast::Definition::SchemaDefinition(schema) => {
+                    schema_definition = Some(schema.clone());
+                }
+                ast::Definition::ObjectTypeDefinition(object) => {
+                    objects.insert(
+                        object.name.clone(),
+                        ast::TypeWithExtensions {
+                            definition: object.clone(),
+                            extensions: vec![],
+                        },
+                    );
+                }
+                ast::Definition::ScalarTypeDefinition(scalar) => {
+                    scalars.insert(
+                        scalar.name.clone(),
+                        ast::TypeWithExtensions {
+                            definition: scalar.clone(),
+                            extensions: vec![],
+                        },
+                    );
+                }
+                ast::Definition::InterfaceTypeDefinition(interface) => {
+                    interfaces.insert(
+                        interface.name.clone(),
+                        ast::TypeWithExtensions {
+                            definition: interface.clone(),
+                            extensions: vec![],
+                        },
+                    );
+                }
+                ast::Definition::UnionTypeDefinition(union_) => {
+                    unions.insert(
+                        union_.name.clone(),
+                        ast::TypeWithExtensions {
+                            definition: union_.clone(),
+                            extensions: vec![],
+                        },
+                    );
+                }
+                ast::Definition::EnumTypeDefinition(enum_) => {
+                    enums.insert(
+                        enum_.name.clone(),
+                        ast::TypeWithExtensions {
+                            definition: enum_.clone(),
+                            extensions: vec![],
+                        },
+                    );
+                }
+                ast::Definition::InputObjectTypeDefinition(input_object) => {
+                    input_objects.insert(
+                        input_object.name.clone(),
+                        ast::TypeWithExtensions {
+                            definition: input_object.clone(),
+                            extensions: vec![],
+                        },
+                    );
+                }
+                _ => (),
+            }
+        }
+        for definition in document.definitions.iter() {
+            match definition {
+                ast::Definition::SchemaExtension(schema) => {
+                    schema_extensions.push(schema.clone());
+                }
+                ast::Definition::ObjectTypeExtension(extension) => {
+                    if let Some(ty) = objects.get_mut(&extension.name) {
+                        ty.extensions.push(extension.clone());
+                    }
+                }
+                ast::Definition::ScalarTypeExtension(extension) => {
+                    if let Some(ty) = scalars.get_mut(&extension.name) {
+                        ty.extensions.push(extension.clone());
+                    }
+                }
+                ast::Definition::InterfaceTypeExtension(extension) => {
+                    if let Some(ty) = interfaces.get_mut(&extension.name) {
+                        ty.extensions.push(extension.clone());
+                    }
+                }
+                ast::Definition::UnionTypeExtension(extension) => {
+                    if let Some(ty) = unions.get_mut(&extension.name) {
+                        ty.extensions.push(extension.clone());
+                    }
+                }
+                ast::Definition::EnumTypeExtension(extension) => {
+                    if let Some(ty) = enums.get_mut(&extension.name) {
+                        ty.extensions.push(extension.clone());
+                    }
+                }
+                ast::Definition::InputObjectTypeExtension(extension) => {
+                    if let Some(ty) = input_objects.get_mut(&extension.name) {
+                        ty.extensions.push(extension.clone());
+                    }
+                }
+                _ => (),
+            }
+        }
+    }
+
+    let schema = ast::TypeWithExtensions {
+        definition: schema_definition.unwrap_or_else(|| {
+            Node::new_synthetic(ast::SchemaDefinition {
+                description: None,
+                directives: vec![],
+                root_operations: {
+                    let mut operations = Vec::with_capacity(3);
+                    let query_name = ast::Name::new_synthetic("Query");
+                    if objects.contains_key(&query_name) {
+                        operations.push((ast::OperationType::Query, query_name));
+                    }
+                    let mutation_name = ast::Name::new_synthetic("Mutation");
+                    if objects.contains_key(&mutation_name) {
+                        operations.push((ast::OperationType::Mutation, mutation_name));
+                    }
+                    let subscription_name = ast::Name::new_synthetic("Subscription");
+                    if objects.contains_key(&subscription_name) {
+                        operations.push((ast::OperationType::Subscription, subscription_name));
+                    }
+                    operations
+                },
+            })
+        }),
+        extensions: schema_extensions,
+    };
+
+    Arc::new(ast::TypeSystem {
+        schema,
+        objects,
+        scalars,
+        interfaces,
+        unions,
+        enums,
+        input_objects,
+    })
 }
 
 pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {

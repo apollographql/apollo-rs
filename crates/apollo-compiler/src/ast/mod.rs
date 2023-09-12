@@ -32,6 +32,7 @@
 
 use crate::Node;
 use crate::NodeStr;
+use std::collections::HashMap;
 
 mod impls;
 mod parse;
@@ -336,4 +337,27 @@ pub enum Value {
     Boolean(bool),
     List(Vec<Node<Value>>),
     Object(Vec<(Name, Node<Value>)>),
+}
+
+/// Trait implemented by extensible type definitions, to associate the extension type with the base
+/// definition type.
+pub trait Extensible {
+    type Extension;
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct TypeWithExtensions<T: Extensible> {
+    pub definition: Node<T>,
+    pub extensions: Vec<Node<T::Extension>>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct TypeSystem {
+    pub schema: TypeWithExtensions<SchemaDefinition>,
+    pub objects: HashMap<Name, TypeWithExtensions<ObjectTypeDefinition>>,
+    pub scalars: HashMap<Name, TypeWithExtensions<ScalarTypeDefinition>>,
+    pub interfaces: HashMap<Name, TypeWithExtensions<InterfaceTypeDefinition>>,
+    pub unions: HashMap<Name, TypeWithExtensions<UnionTypeDefinition>>,
+    pub enums: HashMap<Name, TypeWithExtensions<EnumTypeDefinition>>,
+    pub input_objects: HashMap<Name, TypeWithExtensions<InputObjectTypeDefinition>>,
 }
