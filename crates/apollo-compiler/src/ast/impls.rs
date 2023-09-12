@@ -800,3 +800,8 @@ impl TypeWithExtensions<UnionTypeDefinition> {
     iter_extensible_method!(directives, Node<Directive>);
     iter_extensible_method!(members, NamedType);
 }
+
+impl TypeWithExtensions<InputObjectTypeDefinition> {
+    iter_extensible_method!(directives, Node<Directive>);
+    iter_extensible_method!(fields, Node<InputValueDefinition>);
+}

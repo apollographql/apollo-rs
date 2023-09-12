@@ -141,6 +141,7 @@ pub fn validate_directive_definition(
     diagnostics.extend(super::input_object::validate_input_value_definitions(
         db,
         &def.arguments,
+        ast::DirectiveLocation::ArgumentDefinition,
     ));
 
     // A directive definition must not contain the use of a directive which

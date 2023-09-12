@@ -117,7 +117,7 @@ pub trait ValidationDatabase:
     #[salsa::invoke(input_object::validate_input_object_definition)]
     fn validate_input_object_definition(
         &self,
-        def: Arc<InputObjectTypeDefinition>,
+        input_object: ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(input_object::validate_input_values)]

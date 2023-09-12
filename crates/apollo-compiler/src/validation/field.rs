@@ -160,6 +160,7 @@ pub fn validate_field_definition(
     diagnostics.extend(super::input_object::validate_input_value_definitions(
         db,
         &field.arguments,
+        ast::DirectiveLocation::ArgumentDefinition,
     ));
 
     diagnostics
