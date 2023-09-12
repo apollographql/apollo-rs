@@ -53,18 +53,12 @@ pub trait ReprDatabase: InputDatabase {
     ///
     /// `Schema` only stores the inverse relationship
     /// (in [`ObjectType::implements_interfaces`] and [`InterfaceType::implements_interfaces`]),
-    /// so finding the implementers of even one interface requires a linear scan.
-    /// Gathering them all at once and caching amorticizes that cost.
+    /// so iterating the implementers of an interface requires a linear scan
+    /// of all types in the schema.
+    /// If that is repeated for multiple interfaces,
+    /// gathering them all at once amorticizes that cost.
     #[salsa::invoke(implementers_map)]
     fn implementers_map(&self) -> Arc<HashMap<Name, HashSet<Name>>>;
-
-    /// Returns whether `maybe_subtype` is a subtype of `abstract_type`, which means either:
-    ///
-    /// * `maybe_subtype` implements the interface `abstract_type`
-    /// * `maybe_subtype` is a member of the union type `abstract_type`
-    #[salsa::invoke(is_subtype)]
-    #[salsa::transparent]
-    fn is_subtype(&self, abstract_type: &str, maybe_subtype: &str) -> bool;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -165,9 +159,4 @@ fn executable_document(
 
 fn implementers_map(db: &dyn ReprDatabase) -> Arc<HashMap<Name, HashSet<Name>>> {
     Arc::new(db.schema().implementers_map())
-}
-
-fn is_subtype(db: &dyn ReprDatabase, abstract_type: &str, maybe_subtype: &str) -> bool {
-    db.schema()
-        .is_subtype(&db.implementers_map(), abstract_type, maybe_subtype)
 }

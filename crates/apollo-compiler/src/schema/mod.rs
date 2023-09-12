@@ -358,8 +358,10 @@ impl Schema {
     ///
     /// `Schema` only stores the inverse relationship
     /// (in [`ObjectType::implements_interfaces`] and [`InterfaceType::implements_interfaces`]),
-    /// so finding the implementers of even one interface requires a linear scan.
-    /// Gathering them all at once amorticizes that cost, if the map is cached.
+    /// so iterating the implementers of an interface requires a linear scan
+    /// of all types in the schema.
+    /// If that is repeated for multiple interfaces,
+    /// gathering them all at once amorticizes that cost.
     #[doc(hidden)] // use the Salsa query instead
     pub fn implementers_map(&self) -> HashMap<Name, HashSet<Name>> {
         let mut map = HashMap::<Name, HashSet<Name>>::new();
@@ -387,26 +389,24 @@ impl Schema {
     /// * `maybe_subtype` is a member of the union type `abstract_type`
     ///
     /// `abstract_type` and `maybe_subtype` can be of type [`&Name`][Name] or `&str`.
-    ///
-    /// The `implementers_map` argument can be created with
-    /// the [`implementers_map`][Self::implementers_map] method.
-    /// This may return incorrect results if the schema was modified since the map was created.
-    #[doc(hidden)] // use the Salsa query instead
-    pub fn is_subtype<N1, N2>(
-        &self,
-        implementers_map: &HashMap<Name, HashSet<Name>>,
-        abstract_type: &N1,
-        maybe_subtype: &N2,
-    ) -> bool
+    pub fn is_subtype<N1, N2>(&self, abstract_type: &N1, maybe_subtype: &N2) -> bool
     where
         N1: ?Sized + Eq + Hash,
         N2: ?Sized + Eq + Hash,
         NodeStr: Borrow<N1> + Borrow<N2>,
     {
         self.types.get(abstract_type).is_some_and(|ty| match ty {
-            ExtendedType::Interface(_) => implementers_map
-                .get(abstract_type)
-                .is_some_and(|implementers| implementers.contains(maybe_subtype)),
+            ExtendedType::Interface(_) => self.types.get(maybe_subtype).is_some_and(|ty2| {
+                match ty2 {
+                    ExtendedType::Object(def) => &def.implements_interfaces,
+                    ExtendedType::Interface(def) => &def.implements_interfaces,
+                    ExtendedType::Scalar(_)
+                    | ExtendedType::Union(_)
+                    | ExtendedType::Enum(_)
+                    | ExtendedType::InputObject(_) => return false,
+                }
+                .contains_key(abstract_type)
+            }),
             ExtendedType::Union(def) => def.members.contains_key(maybe_subtype),
             ExtendedType::Scalar(_)
             | ExtendedType::Object(_)
