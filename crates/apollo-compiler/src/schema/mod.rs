@@ -67,12 +67,14 @@ pub enum ExtendedType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ScalarType {
+    pub name: Name,
     pub description: Option<NodeStr>,
     pub directives: Vec<Component<Directive>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectType {
+    pub name: Name,
     pub description: Option<NodeStr>,
 
     /// * Keys: name of the implemented interface
@@ -91,6 +93,7 @@ pub struct ObjectType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InterfaceType {
+    pub name: Name,
     pub description: Option<NodeStr>,
 
     /// * Key: name of an implemented interface
@@ -109,6 +112,7 @@ pub struct InterfaceType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnionType {
+    pub name: Name,
     pub description: Option<NodeStr>,
     pub directives: Vec<Component<Directive>>,
 
@@ -120,6 +124,7 @@ pub struct UnionType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnumType {
+    pub name: Name,
     pub description: Option<NodeStr>,
     pub directives: Vec<Component<Directive>>,
     pub values: IndexMap<Name, Component<EnumValueDefinition>>,
@@ -127,6 +132,7 @@ pub struct EnumType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InputObjectType {
+    pub name: Name,
     pub description: Option<NodeStr>,
     pub directives: Vec<Component<Directive>>,
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,

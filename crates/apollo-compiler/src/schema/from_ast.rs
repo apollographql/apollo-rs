@@ -307,6 +307,7 @@ impl ScalarType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
+            name: definition.name.clone(),
             description: definition.description.clone(),
             directives: definition
                 .directives
@@ -339,6 +340,7 @@ impl ObjectType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
+            name: definition.name.clone(),
             description: definition.description.clone(),
             implements_interfaces: collect_sticky(
                 definition
@@ -397,6 +399,7 @@ impl InterfaceType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
+            name: definition.name.clone(),
             description: definition.description.clone(),
             implements_interfaces: collect_sticky(
                 definition
@@ -455,6 +458,7 @@ impl UnionType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
+            name: definition.name.clone(),
             description: definition.description.clone(),
             directives: definition
                 .directives
@@ -497,6 +501,7 @@ impl EnumType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
+            name: definition.name.clone(),
             description: definition.description.clone(),
             directives: definition
                 .directives
@@ -542,6 +547,7 @@ impl InputObjectType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
+            name: definition.name.clone(),
             description: definition.description.clone(),
             directives: definition
                 .directives
