@@ -770,7 +770,7 @@ impl<T: Extensible> TypeWithExtensions<T> {
 
 macro_rules! iter_extensible_method {
     ($property:ident, $ty:ty) => {
-        pub fn $property<'a>(&'a self) -> impl Iterator<Item = &'a $ty> + 'a {
+        pub fn $property(&self) -> impl Iterator<Item = &'_ $ty> + '_ {
             self.iter_all(
                 |definition| definition.$property.iter(),
                 |extension| extension.$property.iter(),
