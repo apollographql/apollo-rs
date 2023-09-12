@@ -80,7 +80,10 @@ pub trait ValidationDatabase:
     fn validate_union_definitions(&self) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(union_::validate_union_definition)]
-    fn validate_union_definition(&self, def: Arc<UnionTypeDefinition>) -> Vec<ApolloDiagnostic>;
+    fn validate_union_definition(
+        &self,
+        union_: ast::TypeWithExtensions<ast::UnionTypeDefinition>,
+    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(interface::validate_interface_definitions)]
     fn validate_interface_definitions(&self) -> Vec<ApolloDiagnostic>;

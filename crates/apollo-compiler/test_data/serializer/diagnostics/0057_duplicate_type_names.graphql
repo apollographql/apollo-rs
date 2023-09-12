@@ -2,13 +2,17 @@ interface World {
   a: Int
 }
 
+type Object implements World {
+  a: Int
+}
+
 type World implements World {
   a: Int
 }
 
 scalar X @specifiedBy(url: "https://apollographql.com")
 
-union X @X = World
+union X @X = Object
 
 enum X {
   Y

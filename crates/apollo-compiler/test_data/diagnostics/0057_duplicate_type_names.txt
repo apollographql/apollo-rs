@@ -8,7 +8,7 @@
             file_id: FileId {
                 id: 57,
             },
-            offset: 34,
+            offset: 86,
             length: 5,
         },
         labels: [
@@ -27,7 +27,7 @@
                     file_id: FileId {
                         id: 57,
                     },
-                    offset: 34,
+                    offset: 86,
                     length: 5,
                 },
                 text: "`World` redefined here",
@@ -50,7 +50,7 @@
                 file_id: FileId {
                     id: 57,
                 },
-                offset: 34,
+                offset: 86,
                 length: 5,
             },
         },
@@ -64,7 +64,7 @@
             file_id: FileId {
                 id: 57,
             },
-            offset: 147,
+            offset: 199,
             length: 1,
         },
         labels: [
@@ -73,7 +73,7 @@
                     file_id: FileId {
                         id: 57,
                     },
-                    offset: 83,
+                    offset: 135,
                     length: 1,
                 },
                 text: "previous definition of `X` here",
@@ -83,7 +83,7 @@
                     file_id: FileId {
                         id: 57,
                     },
-                    offset: 147,
+                    offset: 199,
                     length: 1,
                 },
                 text: "`X` redefined here",
@@ -99,14 +99,14 @@
                 file_id: FileId {
                     id: 57,
                 },
-                offset: 83,
+                offset: 135,
                 length: 1,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 57,
                 },
-                offset: 147,
+                offset: 199,
                 length: 1,
             },
         },
@@ -120,7 +120,7 @@
             file_id: FileId {
                 id: 57,
             },
-            offset: 174,
+            offset: 227,
             length: 1,
         },
         labels: [
@@ -129,7 +129,7 @@
                     file_id: FileId {
                         id: 57,
                     },
-                    offset: 83,
+                    offset: 135,
                     length: 1,
                 },
                 text: "previous definition of `X` here",
@@ -139,7 +139,7 @@
                     file_id: FileId {
                         id: 57,
                     },
-                    offset: 174,
+                    offset: 227,
                     length: 1,
                 },
                 text: "`X` redefined here",
@@ -155,14 +155,14 @@
                 file_id: FileId {
                     id: 57,
                 },
-                offset: 83,
+                offset: 135,
                 length: 1,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 57,
                 },
-                offset: 174,
+                offset: 227,
                 length: 1,
             },
         },
@@ -176,7 +176,7 @@
             file_id: FileId {
                 id: 57,
             },
-            offset: 191,
+            offset: 244,
             length: 1,
         },
         labels: [
@@ -185,7 +185,7 @@
                     file_id: FileId {
                         id: 57,
                     },
-                    offset: 83,
+                    offset: 135,
                     length: 1,
                 },
                 text: "previous definition of `X` here",
@@ -195,7 +195,7 @@
                     file_id: FileId {
                         id: 57,
                     },
-                    offset: 191,
+                    offset: 244,
                     length: 1,
                 },
                 text: "`X` redefined here",
@@ -211,14 +211,14 @@
                 file_id: FileId {
                     id: 57,
                 },
-                offset: 83,
+                offset: 135,
                 length: 1,
             },
             redefined_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 57,
                 },
-                offset: 191,
+                offset: 244,
                 length: 1,
             },
         },

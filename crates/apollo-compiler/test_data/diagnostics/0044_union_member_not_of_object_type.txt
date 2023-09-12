@@ -20,7 +20,7 @@
                     offset: 219,
                     length: 3,
                 },
-                text: "This is of `InterfaceTypeDefinition` type",
+                text: "This is a an interface",
             },
         ],
         help: Some(
@@ -28,7 +28,7 @@
         ),
         data: ObjectType {
             name: "Pet",
-            ty: "InterfaceTypeDefinition",
+            ty: "interface",
         },
     },
 ]

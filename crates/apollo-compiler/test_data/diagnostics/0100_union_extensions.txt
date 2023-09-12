@@ -20,7 +20,7 @@
                     offset: 239,
                     length: 13,
                 },
-                text: "This is of `ScalarTypeDefinition` type",
+                text: "This is a a scalar",
             },
         ],
         help: Some(
@@ -28,7 +28,7 @@
         ),
         data: ObjectType {
             name: "ThisIsAScalar",
-            ty: "ScalarTypeDefinition",
+            ty: "scalar",
         },
     },
     ApolloDiagnostic {
