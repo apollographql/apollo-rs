@@ -3,6 +3,7 @@
 use crate::ast;
 use crate::FileId;
 use crate::Node;
+use crate::NodeLocation;
 use crate::NodeStr;
 use indexmap::Equivalent;
 use indexmap::IndexMap;
@@ -476,6 +477,32 @@ impl Schema {
 }
 
 impl ExtendedType {
+    /// Return the name of the type.
+    pub fn name(&self) -> &ast::Name {
+        match self {
+            Self::Scalar(ty) => &ty.name,
+            Self::Object(ty) => &ty.name,
+            Self::Interface(ty) => &ty.name,
+            Self::Union(ty) => &ty.name,
+            Self::Enum(ty) => &ty.name,
+            Self::InputObject(ty) => &ty.name,
+        }
+    }
+
+    /// Return the source location of the type's base definition.
+    ///
+    /// If the type has extensions, those are not covered by this location.
+    pub fn location(&self) -> Option<&'_ NodeLocation> {
+        match self {
+            Self::Scalar(ty) => ty.location(),
+            Self::Object(ty) => ty.location(),
+            Self::Interface(ty) => ty.location(),
+            Self::Union(ty) => ty.location(),
+            Self::Enum(ty) => ty.location(),
+            Self::InputObject(ty) => ty.location(),
+        }
+    }
+
     pub fn is_scalar(&self) -> bool {
         matches!(self, Self::Scalar(_))
     }
