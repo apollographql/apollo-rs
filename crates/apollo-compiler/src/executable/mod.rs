@@ -348,19 +348,19 @@ impl From<Node<FragmentSpread>> for Selection {
 
 impl From<Field> for Selection {
     fn from(value: Field) -> Self {
-        Self::Field(Node::new_synthetic(value))
+        Self::Field(Node::new(value))
     }
 }
 
 impl From<InlineFragment> for Selection {
     fn from(value: InlineFragment) -> Self {
-        Self::InlineFragment(Node::new_synthetic(value))
+        Self::InlineFragment(Node::new(value))
     }
 }
 
 impl From<FragmentSpread> for Selection {
     fn from(value: FragmentSpread) -> Self {
-        Self::FragmentSpread(Node::new_synthetic(value))
+        Self::FragmentSpread(Node::new(value))
     }
 }
 

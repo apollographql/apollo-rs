@@ -43,7 +43,7 @@ impl Schema {
         if implicit_schema {
             None
         } else {
-            Some(ast::Definition::SchemaDefinition(Node::new_synthetic(
+            Some(ast::Definition::SchemaDefinition(Node::new(
                 ast::SchemaDefinition {
                     description: self.description.clone(),
                     directives: components(&self.directives, None),
@@ -53,7 +53,7 @@ impl Schema {
         }
         .into_iter()
         .chain(schema_extensions.into_iter().map(move |ext| {
-            ast::Definition::SchemaExtension(Node::new_synthetic(ast::SchemaExtension {
+            ast::Definition::SchemaExtension(Node::new(ast::SchemaExtension {
                 directives: components(&self.directives, Some(ext)),
                 root_operations: root_ops(Some(ext)),
             }))
@@ -88,7 +88,7 @@ impl ExtendedType {
 
 impl ScalarType {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::ScalarTypeDefinition(Node::new_synthetic(
+        std::iter::once(ast::Definition::ScalarTypeDefinition(Node::new(
             ast::ScalarTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
@@ -96,7 +96,7 @@ impl ScalarType {
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::ScalarTypeExtension(Node::new_synthetic(ast::ScalarTypeExtension {
+            ast::Definition::ScalarTypeExtension(Node::new(ast::ScalarTypeExtension {
                 name: name.clone(),
                 directives: components(&self.directives, Some(ext)),
             }))
@@ -106,7 +106,7 @@ impl ScalarType {
 
 impl ObjectType {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::ObjectTypeDefinition(Node::new_synthetic(
+        std::iter::once(ast::Definition::ObjectTypeDefinition(Node::new(
             ast::ObjectTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
@@ -116,7 +116,7 @@ impl ObjectType {
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::ObjectTypeExtension(Node::new_synthetic(ast::ObjectTypeExtension {
+            ast::Definition::ObjectTypeExtension(Node::new(ast::ObjectTypeExtension {
                 name: name.clone(),
                 implements_interfaces: names(&self.implements_interfaces, Some(ext)),
                 directives: components(&self.directives, Some(ext)),
@@ -128,31 +128,29 @@ impl ObjectType {
 
 impl InterfaceType {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::InterfaceTypeDefinition(
-            Node::new_synthetic(ast::InterfaceTypeDefinition {
+        std::iter::once(ast::Definition::InterfaceTypeDefinition(Node::new(
+            ast::InterfaceTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
                 implements_interfaces: names(&self.implements_interfaces, None),
                 directives: components(&self.directives, None),
                 fields: components(self.fields.values(), None),
-            }),
-        ))
+            },
+        )))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::InterfaceTypeExtension(Node::new_synthetic(
-                ast::InterfaceTypeExtension {
-                    name: name.clone(),
-                    implements_interfaces: names(&self.implements_interfaces, Some(ext)),
-                    directives: components(&self.directives, Some(ext)),
-                    fields: components(self.fields.values(), Some(ext)),
-                },
-            ))
+            ast::Definition::InterfaceTypeExtension(Node::new(ast::InterfaceTypeExtension {
+                name: name.clone(),
+                implements_interfaces: names(&self.implements_interfaces, Some(ext)),
+                directives: components(&self.directives, Some(ext)),
+                fields: components(self.fields.values(), Some(ext)),
+            }))
         }))
     }
 }
 
 impl UnionType {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::UnionTypeDefinition(Node::new_synthetic(
+        std::iter::once(ast::Definition::UnionTypeDefinition(Node::new(
             ast::UnionTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
@@ -161,7 +159,7 @@ impl UnionType {
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::UnionTypeExtension(Node::new_synthetic(ast::UnionTypeExtension {
+            ast::Definition::UnionTypeExtension(Node::new(ast::UnionTypeExtension {
                 name: name.clone(),
                 directives: components(&self.directives, Some(ext)),
                 members: names(&self.members, Some(ext)),
@@ -172,7 +170,7 @@ impl UnionType {
 
 impl EnumType {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::EnumTypeDefinition(Node::new_synthetic(
+        std::iter::once(ast::Definition::EnumTypeDefinition(Node::new(
             ast::EnumTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
@@ -181,7 +179,7 @@ impl EnumType {
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::EnumTypeExtension(Node::new_synthetic(ast::EnumTypeExtension {
+            ast::Definition::EnumTypeExtension(Node::new(ast::EnumTypeExtension {
                 name: name.clone(),
                 directives: components(&self.directives, Some(ext)),
                 values: components(self.values.values(), Some(ext)),
@@ -192,22 +190,20 @@ impl EnumType {
 
 impl InputObjectType {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::InputObjectTypeDefinition(
-            Node::new_synthetic(ast::InputObjectTypeDefinition {
+        std::iter::once(ast::Definition::InputObjectTypeDefinition(Node::new(
+            ast::InputObjectTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
                 directives: components(&self.directives, None),
                 fields: components(self.fields.values(), None),
-            }),
-        ))
+            },
+        )))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::InputObjectTypeExtension(Node::new_synthetic(
-                ast::InputObjectTypeExtension {
-                    name: name.clone(),
-                    directives: components(&self.directives, Some(ext)),
-                    fields: components(self.fields.values(), Some(ext)),
-                },
-            ))
+            ast::Definition::InputObjectTypeExtension(Node::new(ast::InputObjectTypeExtension {
+                name: name.clone(),
+                directives: components(&self.directives, Some(ext)),
+                fields: components(self.fields.values(), Some(ext)),
+            }))
         }))
     }
 }

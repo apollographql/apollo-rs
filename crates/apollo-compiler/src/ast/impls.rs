@@ -272,7 +272,7 @@ impl VariableDefinition {
 impl Type {
     /// Returns a new `Type::Named` with with a synthetic `Name` (not parsed from a source file)
     pub fn new_named(name: &str) -> Self {
-        Type::Named(Name::new_synthetic(name))
+        Type::Named(Name::new(name))
     }
 
     /// Returns this type made non-null, if it isn’t already.
@@ -552,37 +552,37 @@ impl From<bool> for Value {
 
 impl From<()> for Node<Value> {
     fn from(value: ()) -> Self {
-        Node::new_synthetic(value.into())
+        Node::new(value.into())
     }
 }
 
 impl From<ordered_float::OrderedFloat<f64>> for Node<Value> {
     fn from(value: ordered_float::OrderedFloat<f64>) -> Self {
-        Node::new_synthetic(value.into())
+        Node::new(value.into())
     }
 }
 
 impl From<f64> for Node<Value> {
     fn from(value: f64) -> Self {
-        Node::new_synthetic(value.into())
+        Node::new(value.into())
     }
 }
 
 impl From<i32> for Node<Value> {
     fn from(value: i32) -> Self {
-        Node::new_synthetic(value.into())
+        Node::new(value.into())
     }
 }
 
 impl From<bool> for Node<Value> {
     fn from(value: bool) -> Self {
-        Node::new_synthetic(value.into())
+        Node::new(value.into())
     }
 }
 
 impl<N: Into<Name>, V: Into<Node<Value>>> From<(N, V)> for Node<Argument> {
     fn from((name, value): (N, V)) -> Self {
-        Node::new_synthetic(Argument {
+        Node::new(Argument {
             name: name.into(),
             value: value.into(),
         })

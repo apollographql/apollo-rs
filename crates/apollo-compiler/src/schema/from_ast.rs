@@ -237,9 +237,11 @@ impl SchemaBuilder {
                 // Implict `schema`, ignoring extensions
                 let if_has_object_type = |ty: OperationType| {
                     let name = ty.default_type_name();
-                    self.schema.types.get(name)?.is_object().then(|| {
-                        Name::new_synthetic(name).to_component(ComponentOrigin::Definition)
-                    })
+                    self.schema
+                        .types
+                        .get(name)?
+                        .is_object()
+                        .then(|| Name::new(name).to_component(ComponentOrigin::Definition))
                 };
                 self.schema.query_type = if_has_object_type(OperationType::Query);
                 self.schema.mutation_type = if_has_object_type(OperationType::Mutation);

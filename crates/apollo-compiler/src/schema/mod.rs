@@ -74,12 +74,7 @@ pub struct ScalarType {
 pub struct ObjectType {
     pub name: Name,
     pub description: Option<NodeStr>,
-
-    /// * Keys: name of the implemented interface
-    /// * Values: which object type extension defined this implementation,
-    ///   or `None` for the object type definition.
     pub implements_interfaces: IndexMap<Name, ComponentOrigin>,
-
     pub directives: Vec<Component<Directive>>,
 
     /// Explicit field definitions.
@@ -389,32 +384,33 @@ impl Schema {
         static ROOT_QUERY_FIELDS: LazyLock<[Component<FieldDefinition>; 3]> = LazyLock::new(|| {
             [
                 // __typename: String!
-                Component::new_synthetic(FieldDefinition {
+                Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new_synthetic("__typename"),
+                    name: Name::new("__typename"),
                     arguments: Vec::new(),
                     ty: Type::new_named("String").non_null(),
                     directives: Vec::new(),
                 }),
                 // __schema: __Schema!
-                Component::new_synthetic(FieldDefinition {
+                Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new_synthetic("__schema"),
+                    name: Name::new("__schema"),
                     arguments: Vec::new(),
                     ty: Type::new_named("__Schema").non_null(),
                     directives: Vec::new(),
                 }),
                 // __type(name: String!): __Type
-                Component::new_synthetic(FieldDefinition {
+                Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new_synthetic("__type"),
-                    arguments: vec![Node::new_synthetic(InputValueDefinition {
+                    name: Name::new("__type"),
+                    arguments: vec![InputValueDefinition {
                         description: None,
-                        name: Name::new_synthetic("name"),
+                        name: Name::new("name"),
                         ty: ast::Type::new_named("String").non_null(),
                         default_value: None,
                         directives: Vec::new(),
-                    })],
+                    }
+                    .into()],
                     ty: Type::new_named("__Type"),
                     directives: Vec::new(),
                 }),
