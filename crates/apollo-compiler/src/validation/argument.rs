@@ -11,7 +11,7 @@ use apollo_parser::cst::{self, CstNode};
 
 pub fn validate_arguments2(
     db: &dyn ValidationDatabase,
-    arguments: &[(ast::Name, Node<ast::Value>)],
+    arguments: &[Node<ast::Argument>],
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
     let mut seen: HashSet<ast::Name> = HashSet::new();
@@ -24,7 +24,8 @@ pub fn validate_arguments2(
         )
     };
 
-    for (name, _value) in arguments {
+    for argument in arguments {
+        let name = &argument.name;
         if let Some(original) = seen.get(name) {
             let original_definition = argument_location(original).unwrap();
             let redefined_definition = argument_location(name).unwrap();

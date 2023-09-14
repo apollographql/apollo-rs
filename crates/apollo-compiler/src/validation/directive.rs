@@ -289,18 +289,12 @@ pub fn validate_directives2<'dir>(
                 diagnostics.push(diag)
             }
 
-            for (arg_name, arg_value) in &dir.arguments {
+            for argument in &dir.arguments {
                 let input_value = directive_definition
                     .arguments
                     .iter()
-                    .find(|val| val.name == *arg_name)
+                    .find(|val| val.name == *argument.name)
                     .cloned();
-
-                let whole_arg_location = super::lookup_cst_location(
-                    db.upcast(),
-                    *arg_name.location().unwrap(),
-                    |cst: apollo_parser::cst::InputValueDefinition| Some(cst.syntax().text_range()),
-                );
 
                 // @b(a: true)
                 if let Some(input_value) = input_value {
@@ -310,7 +304,7 @@ pub fn validate_directives2<'dir>(
                         db,
                         input_value.clone(),
                         var_defs,
-                        (arg_name, arg_value),
+                        &argument,
                     )
                     .err()
                     {
@@ -319,7 +313,7 @@ pub fn validate_directives2<'dir>(
                         let type_diags = super::value::validate_values2(
                             db,
                             &input_value.ty,
-                            (arg_name, arg_value.clone()),
+                            &argument,
                             var_defs,
                         );
 
@@ -329,13 +323,13 @@ pub fn validate_directives2<'dir>(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            whole_arg_location.unwrap().into(),
+                            (*argument.location().unwrap()).into(),
                             DiagnosticData::UndefinedArgument {
-                                name: arg_name.to_string(),
+                                name: argument.name.to_string(),
                             },
                         )
                         .label(Label::new(
-                            *arg_name.location().unwrap(),
+                            *argument.name.location().unwrap(),
                             "argument by this name not found",
                         ))
                         .label(Label::new(loc, "directive declared here")),
@@ -346,8 +340,7 @@ pub fn validate_directives2<'dir>(
                 let arg_value = dir
                     .arguments
                     .iter()
-                    .find(|(name, _value)| *name == arg_def.name)
-                    .map(|(_name, value)| value);
+                    .find_map(|arg| (arg.name == arg_def.name).then_some(&arg.value));
                 let is_null = match arg_value {
                     None => true,
                     // Prevents explicitly providing `requiredArg: null`,

@@ -278,11 +278,8 @@ fn variables_in_value(value: &ast::Value) -> impl Iterator<Item = ast::Name> + '
     })
 }
 
-fn variables_in_arguments(
-    args: &[(ast::Name, Node<ast::Value>)],
-) -> impl Iterator<Item = ast::Name> + '_ {
-    args.iter()
-        .flat_map(|(_name, value)| variables_in_value(value))
+fn variables_in_arguments(args: &[Node<ast::Argument>]) -> impl Iterator<Item = ast::Name> + '_ {
+    args.iter().flat_map(|arg| variables_in_value(&arg.value))
 }
 
 fn variables_in_directives(
@@ -358,15 +355,9 @@ pub fn validate_variable_usage2(
     db: &dyn ValidationDatabase,
     var_usage: Node<ast::InputValueDefinition>,
     var_defs: &[Node<ast::VariableDefinition>],
-    (arg_name, arg_value): (&ast::Name, &Node<ast::Value>),
+    argument: &Node<ast::Argument>,
 ) -> Result<(), ApolloDiagnostic> {
-    let whole_arg_location = super::lookup_cst_location(
-        db.upcast(),
-        *arg_name.location().unwrap(),
-        |cst: apollo_parser::cst::InputValueDefinition| Some(cst.syntax().text_range()),
-    );
-
-    if let ast::Value::Variable(var_name) = &**arg_value {
+    if let ast::Value::Variable(var_name) = &*argument.value {
         // Let var_def be the VariableDefinition named
         // variable_name defined within operation.
         let var_def = var_defs.iter().find(|v| v.name == *var_name);
@@ -375,10 +366,10 @@ pub fn validate_variable_usage2(
             if !is_allowed {
                 return Err(ApolloDiagnostic::new(
                     db,
-                    whole_arg_location.unwrap().into(),
+                    (*argument.location().unwrap()).into(),
                     DiagnosticData::DisallowedVariableUsage {
                         var_name: var_def.name.to_string(),
-                        arg_name: arg_name.to_string(),
+                        arg_name: argument.name.to_string(),
                     },
                 )
                 .labels([
@@ -390,10 +381,10 @@ pub fn validate_variable_usage2(
                         ),
                     ),
                     Label::new(
-                        whole_arg_location.unwrap(),
+                        *argument.location().unwrap(),
                         format!(
                             "argument `{}` of type `{}` is declared here",
-                            arg_name, var_usage.ty,
+                            argument.name, var_usage.ty,
                         ),
                     ),
                 ]));
@@ -401,7 +392,7 @@ pub fn validate_variable_usage2(
         } else {
             return Err(ApolloDiagnostic::new(
                 db,
-                whole_arg_location.unwrap().into(),
+                (*argument.location().unwrap()).into(),
                 DiagnosticData::UndefinedVariable {
                     name: var_name.to_string(),
                 },

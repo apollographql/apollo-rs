@@ -68,11 +68,11 @@ fn unsupported_type(
 pub fn validate_values2(
     db: &dyn ValidationDatabase,
     ty: &ast::Type,
-    (_name, arg_value): (&ast::Name, Node<ast::Value>),
+    argument: &Node<ast::Argument>,
     var_defs: &[Node<ast::VariableDefinition>],
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = vec![];
-    value_of_correct_type2(db, ty, &arg_value, var_defs, &mut diagnostics);
+    value_of_correct_type2(db, ty, &argument.value, var_defs, &mut diagnostics);
     diagnostics
 }
 
