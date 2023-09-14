@@ -157,13 +157,10 @@ impl ExecutableDocument {
     }
 
     /// Similar to [`get_operation`][Self::get_operation] but returns a mutable reference.
-    pub fn get_operation_mut<N>(
+    pub fn get_operation_mut(
         &mut self,
-        name_request: Option<&N>,
-    ) -> Result<&mut Operation, GetOperationError>
-    where
-        N: ?Sized + std::hash::Hash + indexmap::Equivalent<Name>,
-    {
+        name_request: Option<&str>,
+    ) -> Result<&mut Operation, GetOperationError> {
         if let Some(name) = name_request {
             // Honor the request
             self.named_operations.get_mut(name)
@@ -269,9 +266,9 @@ impl Fragment {
 
 impl SelectionSet {
     /// Create a new selection set
-    pub fn new(ty: NamedType) -> Self {
+    pub fn new(ty: impl Into<NamedType>) -> Self {
         Self {
-            ty,
+            ty: ty.into(),
             selections: Vec::new(),
         }
     }
@@ -289,13 +286,21 @@ impl SelectionSet {
     ///
     /// Returns an error if the type of this selection set is not defined
     /// or does not have a field named `name`.
-    pub fn new_field(&self, schema: &Schema, name: Name) -> Result<Field, FieldLookupError> {
+    pub fn new_field(
+        &self,
+        schema: &Schema,
+        name: impl Into<Name>,
+    ) -> Result<Field, FieldLookupError> {
+        let name = name.into();
         let ty = schema.type_field(&self.ty, &name)?.ty.clone();
         Ok(Field::new(name, ty))
     }
 
     /// Create a new inline fragment to be added to this selection set with [`push`][Self::push]
-    pub fn new_inline_fragment(&self, opt_type_condition: Option<NamedType>) -> InlineFragment {
+    pub fn new_inline_fragment(
+        &self,
+        opt_type_condition: Option<impl Into<NamedType>>,
+    ) -> InlineFragment {
         if let Some(type_condition) = opt_type_condition {
             InlineFragment::with_type_condition(type_condition)
         } else {
@@ -304,7 +309,7 @@ impl SelectionSet {
     }
 
     /// Create a new fragment spread to be added to this selection set with [`push`][Self::push]
-    pub fn new_fragment_spread(&self, fragment_name: Name) -> FragmentSpread {
+    pub fn new_fragment_spread(&self, fragment_name: impl Into<Name>) -> FragmentSpread {
         FragmentSpread::new(fragment_name)
     }
 }
@@ -368,20 +373,25 @@ impl Field {
     /// Create a new field with the given name and type.
     ///
     /// See [`SelectionSet::new_field`] too look up the type in a schema instead.
-    pub fn new(name: Name, ty: Type) -> Self {
+    pub fn new(name: impl Into<Name>, ty: Type) -> Self {
         let selection_set = SelectionSet::new(ty.inner_named_type().clone());
         Field {
             ty,
             alias: None,
-            name,
+            name: name.into(),
             arguments: Vec::new(),
             directives: Vec::new(),
             selection_set,
         }
     }
 
-    pub fn with_alias(mut self, alias: impl Into<Option<Name>>) -> Self {
-        self.alias = alias.into();
+    pub fn with_alias(mut self, alias: impl Into<Name>) -> Self {
+        self.alias = Some(alias.into());
+        self
+    }
+
+    pub fn with_opt_alias(mut self, alias: Option<impl Into<Name>>) -> Self {
+        self.alias = alias.map(Into::into);
         self
     }
 
@@ -430,7 +440,8 @@ impl Field {
 }
 
 impl InlineFragment {
-    pub fn with_type_condition(type_condition: NamedType) -> Self {
+    pub fn with_type_condition(type_condition: impl Into<NamedType>) -> Self {
+        let type_condition = type_condition.into();
         let selection_set = SelectionSet::new(type_condition.clone());
         Self {
             type_condition: Some(type_condition),
@@ -439,7 +450,7 @@ impl InlineFragment {
         }
     }
 
-    pub fn without_type_condition(parent_selection_set_type: NamedType) -> Self {
+    pub fn without_type_condition(parent_selection_set_type: impl Into<NamedType>) -> Self {
         Self {
             type_condition: None,
             directives: Vec::new(),
@@ -477,9 +488,9 @@ impl InlineFragment {
 }
 
 impl FragmentSpread {
-    pub fn new(fragment_name: Name) -> Self {
+    pub fn new(fragment_name: impl Into<Name>) -> Self {
         Self {
-            fragment_name,
+            fragment_name: fragment_name.into(),
             directives: Vec::new(),
         }
     }

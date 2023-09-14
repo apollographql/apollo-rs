@@ -98,7 +98,7 @@ impl SelectionSet {
                     Ok(field) => self.push(
                         ast.same_location(
                             field
-                                .with_alias(ast.alias.clone())
+                                .with_opt_alias(ast.alias.clone())
                                 .with_arguments(ast.arguments.iter().cloned())
                                 .with_directives(ast.directives.iter().cloned())
                                 .with_ast_selections(schema, errors, &ast.selection_set),
