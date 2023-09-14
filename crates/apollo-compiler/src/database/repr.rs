@@ -2,6 +2,7 @@ use super::InputDatabase;
 use crate::ast;
 use crate::diagnostics::DiagnosticData;
 use crate::diagnostics::Label;
+use crate::executable::FromAstError;
 use crate::schema::Name;
 use crate::ApolloDiagnostic;
 use crate::Arc;
@@ -41,11 +42,17 @@ pub trait ReprDatabase: InputDatabase {
     #[salsa::invoke(schema)]
     fn schema(&self) -> Arc<crate::Schema>;
 
-    #[salsa::invoke(executable_document)]
-    fn executable_document(
+    #[salsa::invoke(executable_document_result)]
+    fn executable_document_result(
         &self,
         file_id: FileId,
-    ) -> Result<Arc<crate::ExecutableDocument>, crate::executable::TypeError>;
+    ) -> (
+        Arc<crate::ExecutableDocument>,
+        Result<(), Arc<FromAstError>>,
+    );
+
+    #[salsa::invoke(executable_document)]
+    fn executable_document(&self, file_id: FileId) -> Arc<crate::ExecutableDocument>;
 
     // TODO: another database trait? what to name it?
 
@@ -150,11 +157,19 @@ fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
     Arc::new(schema)
 }
 
-fn executable_document(
+fn executable_document_result(
     db: &dyn ReprDatabase,
     file_id: FileId,
-) -> Result<Arc<crate::ExecutableDocument>, crate::executable::TypeError> {
-    crate::ExecutableDocument::from_ast(&db.schema(), &db.ast(file_id)).map(Arc::new)
+) -> (
+    Arc<crate::ExecutableDocument>,
+    Result<(), Arc<FromAstError>>,
+) {
+    let (doc, result) = crate::ExecutableDocument::from_ast(&db.schema(), &db.ast(file_id));
+    (Arc::new(doc), result.map_err(Arc::new))
+}
+
+fn executable_document(db: &dyn ReprDatabase, file_id: FileId) -> Arc<crate::ExecutableDocument> {
+    db.executable_document_result(file_id).0
 }
 
 fn implementers_map(db: &dyn ReprDatabase) -> Arc<HashMap<Name, HashSet<Name>>> {

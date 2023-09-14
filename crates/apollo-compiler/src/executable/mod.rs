@@ -1,11 +1,11 @@
 use crate::ast;
 use crate::ast::impls::directives_by_name;
+use crate::schema::FieldLookupError;
 use crate::Node;
 use crate::Schema;
 use indexmap::map::Entry;
 use indexmap::IndexMap;
 use std::collections::HashSet;
-use std::fmt;
 
 mod from_ast;
 mod serialize;
@@ -80,17 +80,17 @@ pub struct InlineFragment {
     pub selection_set: SelectionSet,
 }
 
-/// Tried to create a selection set that would be invalid for the given schema.
-///
-/// This is not full validation of the executable document,
-/// only some type-related cases cause this error to be returned.
+/// AST nodes that have been skipped during conversion to `ExecutableDocument`
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TypeError(&'static str);
-
-impl fmt::Display for TypeError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}, validate for details", self.0)
-    }
+pub struct FromAstError {
+    /// The schema does not define a root operation
+    /// for the operation type of this operation definition
+    pub undefined_root_operation: Vec<Node<ast::OperationDefinition>>,
+    /// Could not resolve the type of this field because the schema does not define
+    /// the type of its parent selection set
+    pub undefined_type: Vec<(NamedType, Node<ast::Field>)>,
+    /// Could not resolve the type of this field because the schema does not define it
+    pub undefined_field: Vec<Node<ast::Field>>,
 }
 
 /// A request error returned by [`ExecutableDocument::get_operation`]
@@ -106,7 +106,7 @@ impl fmt::Display for TypeError {
 pub struct GetOperationError();
 
 impl ExecutableDocument {
-    pub fn from_ast(schema: &Schema, document: &ast::Document) -> Result<Self, TypeError> {
+    pub fn from_ast(schema: &Schema, document: &ast::Document) -> (Self, Result<(), FromAstError>) {
         self::from_ast::document_from_ast(schema, document)
     }
 
@@ -269,42 +269,10 @@ impl Fragment {
 
 impl SelectionSet {
     /// Create a new selection set
-    pub fn new(schema: &Schema, ty: NamedType) -> Result<Self, TypeError> {
-        if schema.types.contains_key(&ty) {
-            Ok(Self {
-                ty,
-                selections: Vec::new(),
-            })
-        } else {
-            Err(TypeError("no type definition with that name"))
-        }
-    }
-
-    /// Create a new selection set for the root of an operation
-    pub fn for_operation(
-        schema: &Schema,
-        operation_type: OperationType,
-    ) -> Result<Self, TypeError> {
-        let ty = schema
-            .root_operation(operation_type)
-            .ok_or(TypeError(
-                "missing root operation definition for the operation type",
-            ))?
-            .node
-            .clone();
-        if let Some(def) = schema.types.get(&ty) {
-            if def.is_object() {
-                Ok(Self {
-                    ty,
-                    selections: Vec::new(),
-                })
-            } else {
-                Err(TypeError(
-                    "type definition for the root operation is not an object type",
-                ))
-            }
-        } else {
-            Err(TypeError("missing type definition for the root operation"))
+    pub fn new(ty: NamedType) -> Self {
+        Self {
+            ty,
+            selections: Vec::new(),
         }
     }
 
@@ -319,46 +287,25 @@ impl SelectionSet {
 
     /// Create a new field to be added to this selection set with [`push`][Self::push]
     ///
-    /// Returns an error if the type of this selection set does not have a field named `name`,
-    /// or if that field’s own type is not defined.
-    pub fn new_field(&self, schema: &Schema, name: Name) -> Result<Field, TypeError> {
-        let ty = schema
-            .type_field(&self.ty, &name)
-            .ok_or(TypeError("no field definition with that name"))?
-            .ty
-            .clone();
-        let selection_set = SelectionSet::new(schema, ty.inner_named_type().clone())?;
-        Ok(Field {
-            ty,
-            alias: None,
-            name,
-            arguments: Vec::new(),
-            directives: Vec::new(),
-            selection_set,
-        })
+    /// Returns an error if the type of this selection set is not defined
+    /// or does not have a field named `name`.
+    pub fn new_field(&self, schema: &Schema, name: Name) -> Result<Field, FieldLookupError> {
+        let ty = schema.type_field(&self.ty, &name)?.ty.clone();
+        Ok(Field::new(name, ty))
     }
 
     /// Create a new inline fragment to be added to this selection set with [`push`][Self::push]
-    pub fn new_inline_fragment(
-        &self,
-        schema: &Schema,
-        type_condition: Option<NamedType>,
-    ) -> Result<InlineFragment, TypeError> {
-        let inner_parent_type = type_condition.clone().unwrap_or(self.ty.clone());
-        let inner = SelectionSet::new(schema, inner_parent_type)?;
-        Ok(InlineFragment {
-            type_condition,
-            directives: Vec::new(),
-            selection_set: inner,
-        })
+    pub fn new_inline_fragment(&self, opt_type_condition: Option<NamedType>) -> InlineFragment {
+        if let Some(type_condition) = opt_type_condition {
+            InlineFragment::with_type_condition(type_condition)
+        } else {
+            InlineFragment::without_type_condition(self.ty.clone())
+        }
     }
 
     /// Create a new fragment spread to be added to this selection set with [`push`][Self::push]
     pub fn new_fragment_spread(&self, fragment_name: Name) -> FragmentSpread {
-        FragmentSpread {
-            fragment_name,
-            directives: Vec::new(),
-        }
+        FragmentSpread::new(fragment_name)
     }
 }
 
@@ -418,6 +365,21 @@ impl From<FragmentSpread> for Selection {
 }
 
 impl Field {
+    /// Create a new field with the given name and type.
+    ///
+    /// See [`SelectionSet::new_field`] too look up the type in a schema instead.
+    pub fn new(name: Name, ty: Type) -> Self {
+        let selection_set = SelectionSet::new(ty.inner_named_type().clone());
+        Field {
+            ty,
+            alias: None,
+            name,
+            arguments: Vec::new(),
+            directives: Vec::new(),
+            selection_set,
+        }
+    }
+
     pub fn with_alias(mut self, alias: impl Into<Option<Name>>) -> Self {
         self.alias = alias.into();
         self
@@ -459,15 +421,6 @@ impl Field {
         self
     }
 
-    fn with_ast_selections(
-        mut self,
-        schema: &Schema,
-        ast_selections: &[ast::Selection],
-    ) -> Result<Self, TypeError> {
-        self.selection_set.extend_from_ast(schema, ast_selections)?;
-        Ok(self)
-    }
-
     /// Returns the response key for this field: the alias if there is one, or the name
     pub fn response_key(&self) -> &Name {
         self.alias.as_ref().unwrap_or(&self.name)
@@ -477,6 +430,23 @@ impl Field {
 }
 
 impl InlineFragment {
+    pub fn with_type_condition(type_condition: NamedType) -> Self {
+        let selection_set = SelectionSet::new(type_condition.clone());
+        Self {
+            type_condition: Some(type_condition),
+            directives: Vec::new(),
+            selection_set,
+        }
+    }
+
+    pub fn without_type_condition(parent_selection_set_type: NamedType) -> Self {
+        Self {
+            type_condition: None,
+            directives: Vec::new(),
+            selection_set: SelectionSet::new(parent_selection_set_type),
+        }
+    }
+
     pub fn with_directive(mut self, directive: impl Into<Node<Directive>>) -> Self {
         self.directives.push(directive.into());
         self
@@ -503,19 +473,17 @@ impl InlineFragment {
         self
     }
 
-    fn with_ast_selections(
-        mut self,
-        schema: &Schema,
-        ast_selections: &[ast::Selection],
-    ) -> Result<Self, TypeError> {
-        self.selection_set.extend_from_ast(schema, ast_selections)?;
-        Ok(self)
-    }
-
     directive_methods!();
 }
 
 impl FragmentSpread {
+    pub fn new(fragment_name: Name) -> Self {
+        Self {
+            fragment_name,
+            directives: Vec::new(),
+        }
+    }
+
     pub fn with_directive(mut self, directive: impl Into<Node<Directive>>) -> Self {
         self.directives.push(directive.into());
         self

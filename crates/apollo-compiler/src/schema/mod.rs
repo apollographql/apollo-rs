@@ -5,7 +5,6 @@ use crate::FileId;
 use crate::Node;
 use crate::NodeLocation;
 use crate::NodeStr;
-use indexmap::Equivalent;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
 use std::collections::HashMap;
@@ -135,6 +134,13 @@ pub struct InputObjectType {
     pub description: Option<NodeStr>,
     pub directives: Vec<Component<Directive>>,
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
+}
+
+/// Could not find the requested field definition
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FieldLookupError {
+    NoSuchType,
+    NoSuchField,
 }
 
 macro_rules! directive_by_name_method {
@@ -302,11 +308,15 @@ impl Schema {
         &self,
         type_name: &str,
         field_name: &str,
-    ) -> Option<&Component<FieldDefinition>> {
+    ) -> Result<&Component<FieldDefinition>, FieldLookupError> {
+        let ty_def = self
+            .types
+            .get(type_name)
+            .ok_or(FieldLookupError::NoSuchType)?;
         self.meta_fields_definitions(type_name)
             .iter()
-            .find(|def| field_name.equivalent(&def.name))
-            .or_else(|| match self.types.get(type_name)? {
+            .find(|def| def.name == field_name)
+            .or_else(|| match ty_def {
                 ExtendedType::Object(ty) => ty.fields.get(field_name),
                 ExtendedType::Interface(ty) => ty.fields.get(field_name),
                 ExtendedType::Scalar(_)
@@ -314,6 +324,7 @@ impl Schema {
                 | ExtendedType::Enum(_)
                 | ExtendedType::InputObject(_) => None,
             })
+            .ok_or(FieldLookupError::NoSuchField)
     }
 
     /// Returns a map of interface names to names of types that implement that interface
@@ -412,7 +423,7 @@ impl Schema {
         if self
             .query_type
             .as_ref()
-            .is_some_and(|n| type_name.equivalent(&n.node))
+            .is_some_and(|n| n.node == type_name)
         {
             // __typename: String!
             // __schema: __Schema!
