@@ -212,9 +212,15 @@ pub struct InputObjectTypeExtension {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct Argument {
+    pub name: Name,
+    pub value: Node<Value>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Directive {
     pub name: Name,
-    pub arguments: Vec<(Name, Node<Value>)>,
+    pub arguments: Vec<Node<Argument>>,
 }
 
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
@@ -299,7 +305,7 @@ pub enum Selection {
 pub struct Field {
     pub alias: Option<Name>,
     pub name: Name,
-    pub arguments: Vec<(Name, Node<Value>)>,
+    pub arguments: Vec<Node<Argument>>,
     pub directives: Vec<Node<Directive>>,
     pub selection_set: Vec<Selection>,
 }

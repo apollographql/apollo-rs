@@ -507,14 +507,7 @@ impl Convert for cst::Directive {
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         Some(Self::Target {
             name: self.name()?.convert(file_id)?,
-            arguments: self
-                .arguments()
-                .map(|x| {
-                    x.arguments()
-                        .filter_map(|arg| arg.convert(file_id))
-                        .collect()
-                })
-                .unwrap_or_default(),
+            arguments: collect_opt(file_id, self.arguments(), |x| x.arguments()),
         })
     }
 }
@@ -650,13 +643,13 @@ impl Convert for cst::FieldDefinition {
 }
 
 impl Convert for cst::Argument {
-    type Target = (ast::Name, Node<ast::Value>);
+    type Target = ast::Argument;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         let name = self.name()?.convert(file_id)?;
         let value = self.value()?;
         let value = with_location(file_id, value.syntax(), value.convert(file_id)?);
-        Some((name, value))
+        Some(ast::Argument { name, value })
     }
 }
 
@@ -734,14 +727,7 @@ impl Convert for cst::Field {
         Some(Self::Target {
             alias: self.alias().convert(file_id)?,
             name: self.name()?.convert(file_id)?,
-            arguments: self
-                .arguments()
-                .map(|x| {
-                    x.arguments()
-                        .filter_map(|arg| arg.convert(file_id))
-                        .collect()
-                })
-                .unwrap_or_default(),
+            arguments: collect_opt(file_id, self.arguments(), |x| x.arguments()),
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
             // Use an empty Vec for a field without sub-selections
             selection_set: self.selection_set().convert(file_id)?.unwrap_or_default(),

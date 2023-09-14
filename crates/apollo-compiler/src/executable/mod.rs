@@ -10,7 +10,9 @@ mod serialize;
 #[cfg(test)]
 mod tests;
 
-pub use crate::ast::{Directive, Name, NamedType, OperationType, Type, Value, VariableDefinition};
+pub use crate::ast::{
+    Argument, Directive, Name, NamedType, OperationType, Type, Value, VariableDefinition,
+};
 use std::collections::HashSet;
 
 /// Executable definitions, annotated with type information
@@ -59,7 +61,7 @@ pub struct Field {
     pub ty: Type,
     pub alias: Option<Name>,
     pub name: Name,
-    pub arguments: Vec<(Name, Node<Value>)>,
+    pub arguments: Vec<Node<Argument>>,
     pub directives: Vec<Node<Directive>>,
     pub selection_set: SelectionSet,
 }
@@ -388,19 +390,12 @@ impl Field {
     }
 
     pub fn with_argument(mut self, name: impl Into<Name>, value: impl Into<Node<Value>>) -> Self {
-        self.arguments.push((name.into(), value.into()));
+        self.arguments.push((name, value).into());
         self
     }
 
-    pub fn with_arguments(
-        mut self,
-        arguments: impl IntoIterator<Item = (impl Into<Name>, impl Into<Node<Value>>)>,
-    ) -> Self {
-        self.arguments.extend(
-            arguments
-                .into_iter()
-                .map(|(name, value)| (name.into(), value.into())),
-        );
+    pub fn with_arguments(mut self, arguments: impl IntoIterator<Item = Node<Argument>>) -> Self {
+        self.arguments.extend(arguments);
         self
     }
 
