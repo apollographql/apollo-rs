@@ -81,6 +81,12 @@ interface Resource implements Node {
   url: String
 }
 
+# The validation for fragment spreads works on concrete types.
+type ConcreteResource implements Resource & Node {
+  id: ID!
+  url: String
+}
+
 fragment interfaceWithInterface on Node {
   ...resourceFragment
 }

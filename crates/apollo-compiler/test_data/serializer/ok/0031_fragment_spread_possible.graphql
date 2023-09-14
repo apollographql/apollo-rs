@@ -76,6 +76,11 @@ interface Resource implements Node {
   url: String
 }
 
+type ConcreteResource implements Resource & Node {
+  id: ID!
+  url: String
+}
+
 fragment interfaceWithInterface on Node {
   ...resourceFragment
 }
