@@ -222,8 +222,7 @@ impl Directive {
     pub fn argument_by_name(&self, name: &str) -> Option<&Node<Value>> {
         self.arguments
             .iter()
-            .find(|(arg_name, _value)| *arg_name == name)
-            .map(|(_name, value)| value)
+            .find_map(|arg| (arg.name == name).then_some(&arg.value))
     }
 
     serialize_method!();
@@ -603,5 +602,14 @@ impl From<i32> for Node<Value> {
 impl From<bool> for Node<Value> {
     fn from(value: bool) -> Self {
         Node::new_synthetic(value.into())
+    }
+}
+
+impl<N: Into<Name>, V: Into<Node<Value>>> From<(N, V)> for Node<Argument> {
+    fn from((name, value): (N, V)) -> Self {
+        Node::new_synthetic(Argument {
+            name: name.into(),
+            value: value.into(),
+        })
     }
 }

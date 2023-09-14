@@ -724,13 +724,19 @@ impl Value {
     }
 }
 
-fn serialize_arguments(state: &mut State, arguments: &[(Name, Node<Value>)]) -> fmt::Result {
+impl Argument {
+    fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+        state.write(&self.name)?;
+        state.write(": ")?;
+        self.value.serialize_impl(state)
+    }
+}
+
+fn serialize_arguments(state: &mut State, arguments: &[Node<Argument>]) -> fmt::Result {
     if !arguments.is_empty() {
         state.on_single_line(|state| {
-            comma_separated(state, "(", ")", arguments, |state, (name, value)| {
-                state.write(name)?;
-                state.write(": ")?;
-                value.serialize_impl(state)
+            comma_separated(state, "(", ")", arguments, |state, argument| {
+                argument.serialize_impl(state)
             })
         })?
     }
