@@ -5,15 +5,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct OperationValidationConfig {
-    /// When false, rules that require a schema to validate are disabled.
-    pub has_schema: bool,
-    /// The variables defined for this operation.
-    pub variables: Arc<Vec<hir::VariableDefinition>>,
-}
-
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct OperationValidationConfig2<'vars> {
+pub struct OperationValidationConfig<'vars> {
     /// When false, rules that require a schema to validate are disabled.
     pub has_schema: bool,
     /// The variables defined for this operation.
@@ -26,12 +18,15 @@ pub(crate) fn validate_operation(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = vec![];
 
-    let config = OperationValidationConfig2 {
+    let config = OperationValidationConfig {
         has_schema: true,
         variables: &operation.variables,
     };
 
-    diagnostics.extend(super::directive::validate_directives2(
+    let schema = db.schema();
+    let against_type = schema.root_operation(operation.operation_type);
+
+    diagnostics.extend(super::directive::validate_directives(
         db,
         operation.directives.iter(),
         operation.operation_type.into(),
@@ -49,6 +44,7 @@ pub(crate) fn validate_operation(
     ));
     diagnostics.extend(super::selection::validate_selection_set2(
         db,
+        against_type.map(|component| &component.node),
         &operation.selection_set,
         config,
     ));
@@ -63,7 +59,7 @@ pub(crate) fn validate_operation_definitions_inner(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    for file_id in db.type_definition_files() {
+    for file_id in db.executable_definition_files() {
         for definition in &db.ast(file_id).definitions {
             if let ast::Definition::OperationDefinition(operation) = definition {
                 // db.validate_operation(operation.clone());
@@ -73,15 +69,6 @@ pub(crate) fn validate_operation_definitions_inner(
     }
 
     let operations = db.operations(file_id);
-    for def in operations.iter() {
-        let config = OperationValidationConfig {
-            has_schema,
-            variables: def.variables.clone(),
-        };
-
-        // Validate the Selection Set recursively
-        diagnostics.extend(db.validate_selection_set(def.selection_set().clone(), config));
-    }
 
     // It is possible to have an unnamed (anonymous) operation definition only
     // if there is **one** operation definition.

@@ -19,7 +19,7 @@ pub fn validate_union_definition(
     db: &dyn ValidationDatabase,
     union_def: ast::TypeWithExtensions<ast::UnionTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = super::directive::validate_directives2(
+    let mut diagnostics = super::directive::validate_directives(
         db,
         union_def.directives(),
         ast::DirectiveLocation::Union,

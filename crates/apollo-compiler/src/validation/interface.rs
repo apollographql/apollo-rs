@@ -23,7 +23,7 @@ pub fn validate_interface_definition(
 
     let schema = db.schema();
 
-    diagnostics.extend(super::directive::validate_directives2(
+    diagnostics.extend(super::directive::validate_directives(
         db,
         interface.directives(),
         ast::DirectiveLocation::Interface,

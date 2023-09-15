@@ -1,9 +1,8 @@
 use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir,
     validation::RecursionStack,
-    Arc, Node, ValidationDatabase,
+    Node, ValidationDatabase,
 };
 use std::collections::HashMap;
 
@@ -75,7 +74,7 @@ pub fn validate_input_object_definition(
     db: &dyn ValidationDatabase,
     input_object: ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = super::directive::validate_directives2(
+    let mut diagnostics = super::directive::validate_directives(
         db,
         input_object.directives(),
         ast::DirectiveLocation::InputObject,
@@ -125,7 +124,7 @@ pub fn validate_input_value_definitions(
     let mut seen: HashMap<ast::Name, &Node<ast::InputValueDefinition>> = HashMap::new();
     for input_value in input_values {
         let name = &input_value.name;
-        diagnostics.extend(super::directive::validate_directives2(
+        diagnostics.extend(super::directive::validate_directives(
             db,
             input_value.directives.iter(),
             directive_location,
@@ -162,57 +161,5 @@ pub fn validate_input_value_definitions(
             seen.insert(name.clone(), input_value);
         }
     }
-    diagnostics
-}
-
-pub fn validate_input_values(
-    db: &dyn ValidationDatabase,
-    input_values: Arc<Vec<hir::InputValueDefinition>>,
-    // directive location depends on parent node location, so we pass this down from parent
-    dir_loc: hir::DirectiveLocation,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-    let mut seen: HashMap<&str, &hir::InputValueDefinition> = HashMap::new();
-
-    for input_value in input_values.iter() {
-        diagnostics.extend(db.validate_directives(
-            input_value.directives().to_vec(),
-            dir_loc,
-            // input values don't use variables
-            Arc::new(Vec::new()),
-        ));
-
-        let name = input_value.name();
-        if let Some(prev_value) = seen.get(name) {
-            if let (Some(original_value), Some(redefined_value)) =
-                (prev_value.loc(), input_value.loc())
-            {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        original_value.into(),
-                        DiagnosticData::UniqueInputValue {
-                            name: name.into(),
-                            original_value: original_value.into(),
-                            redefined_value: redefined_value.into(),
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            original_value,
-                            format!("previous definition of `{name}` here"),
-                        ),
-                        Label::new(redefined_value, format!("`{name}` redefined here")),
-                    ])
-                    .help(format!(
-                        "`{name}` field must only be defined once in this input object definition."
-                    )),
-                );
-            }
-        } else {
-            seen.insert(name, input_value);
-        }
-    }
-
     diagnostics
 }

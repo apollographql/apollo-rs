@@ -1,9 +1,9 @@
 use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir, schema,
+    schema,
     validation::ValidationDatabase,
-    Arc, Node,
+    Node,
 };
 use std::collections::HashMap;
 
@@ -11,135 +11,149 @@ use super::operation::OperationValidationConfig;
 
 pub fn validate_field(
     db: &dyn ValidationDatabase,
-    field: Arc<hir::Field>,
-    context: OperationValidationConfig,
+    // May be None if a parent selection was invalid
+    against_type: Option<&ast::NamedType>,
+    field: Node<ast::Field>,
+    context: OperationValidationConfig<'_>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = db.validate_directives(
-        field.directives().to_vec(),
-        hir::DirectiveLocation::Field,
+    // First do all the validation that we can without knowing the type of the field.
+
+    let mut diagnostics = super::directive::validate_directives(
+        db,
+        field.directives.iter(),
+        ast::DirectiveLocation::Field,
         context.variables.clone(),
     );
 
-    if let Some(field_definition) = field.field_definition(db.upcast()) {
-        if !field.arguments().is_empty() {
-            diagnostics.extend(db.validate_arguments(field.arguments().to_vec()));
-            for arg in field.arguments() {
-                let input_val = field_definition
-                    .arguments()
-                    .input_values()
-                    .iter()
-                    .find(|val| arg.name() == val.name())
-                    .cloned();
-                if let Some(input_val) = input_val {
-                    if let Some(diag) = db
-                        .validate_variable_usage(
-                            input_val.clone(),
-                            context.variables.clone(),
-                            arg.clone(),
-                        )
-                        .err()
-                    {
-                        diagnostics.push(diag)
-                    } else {
-                        let value_of_correct_type =
-                            db.validate_values(input_val.ty(), arg, context.variables.clone());
+    diagnostics.extend(super::argument::validate_arguments2(db, &field.arguments));
 
-                        if let Err(diag) = value_of_correct_type {
-                            diagnostics.extend(diag);
-                        }
-                    }
+    // Return early if we don't know the type--this can happen if we are nested deeply
+    // inside a selection set that has a wrong field, or if we are validating a standalone
+    // operation without a schema.
+    let Some(against_type) = against_type else {
+        return diagnostics;
+    };
+
+    let schema = db.schema();
+
+    if let Some(field_definition) = schema.type_field(against_type, &field.name) {
+        for argument in &field.arguments {
+            let arg_definition = field_definition
+                .arguments
+                .iter()
+                .find(|val| val.name == argument.name)
+                .cloned();
+            if let Some(arg_definition) = arg_definition {
+                if let Some(diag) = super::variable::validate_variable_usage2(
+                    db,
+                    arg_definition.clone(),
+                    context.variables.clone(),
+                    argument,
+                )
+                .err()
+                {
+                    diagnostics.push(diag)
                 } else {
-                    let mut labels = vec![Label::new(arg.loc, "argument name not found")];
-                    if let Some(loc) = field_definition.loc {
-                        labels.push(Label::new(loc, "field declared here"));
-                    };
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            arg.loc.into(),
-                            DiagnosticData::UndefinedArgument {
-                                name: arg.name().into(),
-                            },
-                        )
-                        .labels(labels),
-                    );
+                    diagnostics.extend(super::value::validate_values2(
+                        db,
+                        &arg_definition.ty,
+                        argument,
+                        context.variables,
+                    ));
                 }
+            } else {
+                let mut labels = vec![Label::new(
+                    *argument.location().unwrap(),
+                    "argument name not found",
+                )];
+                if let Some(&loc) = field_definition.location() {
+                    labels.push(Label::new(loc, "field declared here"));
+                };
+                diagnostics.push(
+                    ApolloDiagnostic::new(
+                        db,
+                        (*argument.location().unwrap()).into(),
+                        DiagnosticData::UndefinedArgument {
+                            name: argument.name.to_string(),
+                        },
+                    )
+                    .labels(labels),
+                );
             }
         }
 
-        for arg_def in field_definition.arguments().input_values() {
-            let arg_value = field
-                .arguments()
-                .iter()
-                .find(|value| value.name() == arg_def.name());
+        for arg_definition in &field_definition.arguments {
+            let arg_value = field.arguments.iter().find_map(|argument| {
+                (argument.name == arg_definition.name).then_some(&argument.value)
+            });
             let is_null = match arg_value {
                 None => true,
                 // Prevents explicitly providing `requiredArg: null`,
                 // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
                 // and it won't raise a validation error at this stage.
-                Some(value) => value.value().is_null(),
+                Some(value) => value.is_null(),
             };
 
-            if arg_def.is_required() && is_null {
+            if arg_definition.is_required() && is_null {
                 let mut diagnostic = ApolloDiagnostic::new(
                     db,
-                    field.loc.into(),
+                    (*field.location().unwrap()).into(),
                     DiagnosticData::RequiredArgument {
-                        name: arg_def.name().into(),
+                        name: arg_definition.name.to_string(),
                     },
                 );
                 diagnostic = diagnostic.label(Label::new(
-                    field.loc,
-                    format!("missing value for argument `{}`", arg_def.name()),
+                    *field.location().unwrap(),
+                    format!("missing value for argument `{}`", arg_definition.name),
                 ));
-                if let Some(loc) = arg_def.loc {
+                if let Some(&loc) = arg_definition.location() {
                     diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
                 }
 
                 diagnostics.push(diagnostic);
             }
         }
-    }
 
-    if context.has_schema {
-        let field_type = field.ty(db.upcast());
-        if let Some(field_type) = field_type {
-            match db.validate_leaf_field_selection(field.clone(), field_type) {
-                Err(diag) => diagnostics.push(diag),
-                Ok(_) => diagnostics
-                    .extend(db.validate_selection_set(field.selection_set().clone(), context)),
-            }
-        } else if let Some(parent_obj) = field.parent_obj.as_ref() {
-            let help = format!("`{}` is not defined on `{}` type", field.name(), parent_obj,);
-            let fname = field.name();
-            let diagnostic = ApolloDiagnostic::new(
+        match validate_leaf_field_selection(db, field.clone(), &field_definition.ty) {
+            Err(diag) => diagnostics.push(diag),
+            Ok(_) => diagnostics.extend(super::selection::validate_selection_set2(
                 db,
-                field.loc().into(),
-                DiagnosticData::UndefinedField {
-                    field: fname.into(),
-                    ty: field.parent_obj.clone().unwrap(),
-                },
-            )
-            .label(Label::new(
-                field.loc(),
-                format!("`{fname}` field is not defined"),
-            ))
-            .help(help);
-
-            let parent_type_loc = db
-                .find_type_definition_by_name(field.parent_obj.clone().unwrap())
-                .map(|type_def| type_def.loc());
-
-            let diagnostic = if let Some(parent_type_loc) = parent_type_loc {
-                diagnostic.label(Label::new(
-                    parent_type_loc,
-                    format!("`{}` declared here", field.parent_obj.as_ref().unwrap()),
-                ))
-            } else {
-                diagnostic
-            };
-            diagnostics.push(diagnostic);
+                Some(field_definition.ty.inner_named_type()),
+                &field.selection_set,
+                context,
+            )),
         }
+    } else {
+        let fname = &field.name;
+        let help = format!("`{fname}` is not defined on `{against_type}` type");
+        let diagnostic = ApolloDiagnostic::new(
+            db,
+            (*field.location().unwrap()).into(),
+            DiagnosticData::UndefinedField {
+                field: fname.to_string(),
+                ty: against_type.to_string(),
+            },
+        )
+        .label(Label::new(
+            *field.location().unwrap(),
+            format!("`{fname}` field is not defined"),
+        ))
+        .help(help);
+
+        let parent_type_loc = schema
+            .types
+            .get(against_type)
+            .and_then(|type_def| type_def.location().copied());
+
+        let diagnostic = if let Some(parent_type_loc) = parent_type_loc {
+            diagnostic.label(Label::new(
+                parent_type_loc,
+                format!("`{against_type}` declared here"),
+            ))
+        } else {
+            diagnostic
+        };
+        diagnostics.push(diagnostic);
     }
 
     diagnostics
@@ -149,7 +163,7 @@ pub fn validate_field_definition(
     db: &dyn ValidationDatabase,
     field: &Node<ast::FieldDefinition>,
 ) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = super::directive::validate_directives2(
+    let mut diagnostics = super::directive::validate_directives(
         db,
         field.directives.iter(),
         ast::DirectiveLocation::FieldDefinition,
@@ -271,27 +285,29 @@ pub fn validate_field_definitions(
 
 pub fn validate_leaf_field_selection(
     db: &dyn ValidationDatabase,
-    field: Arc<hir::Field>,
-    field_type: hir::Type,
+    field: Node<ast::Field>,
+    field_type: &ast::Type,
 ) -> Result<(), ApolloDiagnostic> {
-    let is_leaf = field.selection_set.selection.is_empty();
-    let tname = field_type.name();
-    let fname = field.name.src.clone();
+    let schema = db.schema();
 
-    let type_def = match db.find_type_definition_by_name(tname.clone()) {
+    let is_leaf = field.selection_set.is_empty();
+    let tname = field_type.inner_named_type();
+    let fname = &field.name;
+
+    let type_def = match schema.types.get(tname) {
         Some(type_def) => type_def,
         None => return Ok(()),
     };
 
     let (label, diagnostic_data) = if is_leaf {
         let label = match type_def {
-            hir::TypeDefinition::ObjectTypeDefinition(_) => {
+            schema::ExtendedType::Object(_) => {
                 format!("field `{fname}` type `{tname}` is an object and must select fields")
             }
-            hir::TypeDefinition::InterfaceTypeDefinition(_) => {
+            schema::ExtendedType::Interface(_) => {
                 format!("field `{fname}` type `{tname}` is an interface and must select fields")
             }
-            hir::TypeDefinition::UnionTypeDefinition(_) => {
+            schema::ExtendedType::Union(_) => {
                 format!("field `{fname}` type `{tname}` is an union and must select fields")
             }
             _ => return Ok(()),
@@ -299,10 +315,10 @@ pub fn validate_leaf_field_selection(
         (label, DiagnosticData::MissingSubselection)
     } else {
         let label = match type_def {
-            hir::TypeDefinition::EnumTypeDefinition(_) => {
+            schema::ExtendedType::Enum(_) => {
                 format!("field `{fname}` of type `{tname}` is an enum and cannot select any fields")
             }
-            hir::TypeDefinition::ScalarTypeDefinition(_) => format!(
+            schema::ExtendedType::Scalar(_) => format!(
                 "field `{fname}` of type `{tname}` is a scalar and cannot select any fields"
             ),
             _ => return Ok(()),
@@ -310,10 +326,12 @@ pub fn validate_leaf_field_selection(
         (label, DiagnosticData::DisallowedSubselection)
     };
 
-    Err(ApolloDiagnostic::new(db, field.loc.into(), diagnostic_data)
-        .label(Label::new(field.loc, label))
-        .label(Label::new(
-            type_def.loc(),
-            format!("`{tname}` declared here"),
-        )))
+    Err(
+        ApolloDiagnostic::new(db, (*field.location().unwrap()).into(), diagnostic_data)
+            .label(Label::new(*field.location().unwrap(), label))
+            .label(Label::new(
+                *type_def.location().unwrap(),
+                format!("`{tname}` declared here"),
+            )),
+    )
 }

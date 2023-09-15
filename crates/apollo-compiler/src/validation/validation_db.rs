@@ -5,8 +5,8 @@ use crate::{
     hir::*,
     schema,
     validation::{
-        self, argument, directive, enum_, extension, fragment, input_object, interface, object,
-        operation, scalar, selection, union_, value, variable,
+        self, argument, directive, enum_, extension, input_object, interface, object, operation,
+        scalar, union_,
     },
     Arc, FileId, HirDatabase, InputDatabase, Node, ReprDatabase,
 };
@@ -15,7 +15,6 @@ use apollo_parser::cst::CstNode;
 use std::collections::{hash_map::Entry, HashMap};
 
 use super::field;
-use super::operation::OperationValidationConfig;
 
 const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 
@@ -24,6 +23,10 @@ pub trait ValidationDatabase:
     Upcast<dyn HirDatabase> + InputDatabase + ReprDatabase + HirDatabase
 {
     fn ast_types(&self) -> Arc<ast::TypeSystem>;
+    fn ast_named_fragments(
+        &self,
+        file_id: FileId,
+    ) -> Arc<HashMap<ast::Name, Node<ast::FragmentDefinition>>>;
 
     /// Validate all documents.
     fn validate(&self) -> Vec<ApolloDiagnostic>;
@@ -103,14 +106,6 @@ pub trait ValidationDatabase:
     #[salsa::invoke(directive::validate_directive_definitions)]
     fn validate_directive_definitions(&self) -> Vec<ApolloDiagnostic>;
 
-    #[salsa::invoke(directive::validate_directives)]
-    fn validate_directives(
-        &self,
-        dirs: Vec<Directive>,
-        loc: DirectiveLocation,
-        var_defs: Arc<Vec<VariableDefinition>>,
-    ) -> Vec<ApolloDiagnostic>;
-
     #[salsa::invoke(input_object::validate_input_object_definitions)]
     fn validate_input_object_definitions(&self) -> Vec<ApolloDiagnostic>;
 
@@ -118,13 +113,6 @@ pub trait ValidationDatabase:
     fn validate_input_object_definition(
         &self,
         input_object: ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(input_object::validate_input_values)]
-    fn validate_input_values(
-        &self,
-        vals: Arc<Vec<InputValueDefinition>>,
-        dir_loc: DirectiveLocation,
     ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(object::validate_object_type_definitions)]
@@ -163,147 +151,11 @@ pub trait ValidationDatabase:
         fields: Vec<Node<ast::FieldDefinition>>,
     ) -> Vec<ApolloDiagnostic>;
 
-    #[salsa::invoke(field::validate_field)]
-    fn validate_field(
-        &self,
-        field: Arc<Field>,
-        context: OperationValidationConfig,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(field::validate_leaf_field_selection)]
-    fn validate_leaf_field_selection(
-        &self,
-        field: Arc<Field>,
-        field_ty: Type,
-    ) -> Result<(), ApolloDiagnostic>;
-
-    #[salsa::invoke(argument::validate_arguments_definition)]
-    fn validate_arguments_definition(
-        &self,
-        def: ArgumentsDefinition,
-        loc: DirectiveLocation,
-    ) -> Vec<ApolloDiagnostic>;
-
     #[salsa::invoke(argument::validate_arguments)]
     fn validate_arguments(&self, arg: Vec<Argument>) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(operation::validate_operation_definitions)]
     fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
-
-    /// Given a type definition, find all the types that can be used for fragment spreading.
-    ///
-    /// Spec: https://spec.graphql.org/October2021/#GetPossibleTypes()
-    #[salsa::invoke(fragment::get_possible_types)]
-    fn get_possible_types(&self, ty: TypeDefinition) -> Vec<TypeDefinition>;
-
-    #[salsa::invoke(fragment::validate_fragment_selection)]
-    fn validate_fragment_selection(&self, spread: FragmentSelection) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(fragment::validate_fragment_spread)]
-    fn validate_fragment_spread(
-        &self,
-        spread: Arc<FragmentSpread>,
-        context: OperationValidationConfig,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(fragment::validate_inline_fragment)]
-    fn validate_inline_fragment(
-        &self,
-        inline: Arc<InlineFragment>,
-        context: OperationValidationConfig,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(fragment::validate_fragment_definition)]
-    #[salsa::transparent]
-    fn validate_fragment_definition(
-        &self,
-        def: Arc<FragmentDefinition>,
-        context: OperationValidationConfig,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(fragment::validate_fragment_cycles)]
-    fn validate_fragment_cycles(&self, def: Arc<FragmentDefinition>) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(fragment::validate_fragment_type_condition)]
-    fn validate_fragment_type_condition(
-        &self,
-        type_cond: String,
-        loc: HirNodeLocation,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(fragment::validate_fragment_used)]
-    fn validate_fragment_used(
-        &self,
-        def: Arc<FragmentDefinition>,
-        file_id: FileId,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(selection::validate_selection_set)]
-    fn validate_selection_set(
-        &self,
-        sel_set: SelectionSet,
-        context: OperationValidationConfig,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(selection::validate_selection)]
-    fn validate_selection(
-        &self,
-        sel: Arc<Vec<Selection>>,
-        context: OperationValidationConfig,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(variable::validate_variable_definitions)]
-    fn validate_variable_definitions(
-        &self,
-        defs: Arc<Vec<VariableDefinition>>,
-        has_schema: bool,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::transparent]
-    #[salsa::invoke(variable::validate_variable_usage)]
-    fn validate_variable_usage(
-        &self,
-        var_usage: InputValueDefinition,
-        var_defs: Arc<Vec<VariableDefinition>>,
-        arg: Argument,
-    ) -> Result<(), ApolloDiagnostic>;
-
-    #[salsa::transparent]
-    #[salsa::invoke(value::validate_values)]
-    fn validate_values(
-        &self,
-        ty: &Type,
-        arg: &Argument,
-        var_defs: Arc<Vec<VariableDefinition>>,
-    ) -> Result<(), Vec<ApolloDiagnostic>>;
-
-    /// Check if two fields will output the same type.
-    ///
-    /// If the two fields output different types, returns an `Err` containing diagnostic information.
-    /// To simply check if outputs are the same, you can use `.is_ok()`:
-    /// ```rust,ignore
-    /// let is_same = db.same_response_shape(field_a, field_b).is_ok();
-    /// // `is_same` is `bool`
-    /// ```
-    ///
-    /// Spec: https://spec.graphql.org/October2021/#SameResponseShape()
-    #[salsa::invoke(selection::same_response_shape)]
-    fn same_response_shape(
-        &self,
-        field_a: Arc<Field>,
-        field_b: Arc<Field>,
-    ) -> Result<(), ApolloDiagnostic>;
-
-    /// Check if the fields in a given selection set can be merged.
-    ///
-    /// If the fields cannot be merged, returns an `Err` containing diagnostic information.
-    ///
-    /// Spec: https://spec.graphql.org/October2021/#FieldsInSetCanMerge()
-    #[salsa::invoke(selection::fields_in_set_can_merge)]
-    fn fields_in_set_can_merge(
-        &self,
-        selection_set: SelectionSet,
-    ) -> Result<(), Vec<ApolloDiagnostic>>;
 }
 
 fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
@@ -323,7 +175,6 @@ fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
         }
 
         let document = db.ast(file_id);
-        println!("{document}");
         for definition in document.definitions.iter() {
             match definition {
                 ast::Definition::SchemaDefinition(schema) => {
@@ -461,6 +312,22 @@ fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
         enums,
         input_objects,
     })
+}
+
+pub fn ast_named_fragments(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Arc<HashMap<ast::Name, Node<ast::FragmentDefinition>>> {
+    let document = db.ast(file_id);
+    let mut named_fragments = HashMap::new();
+    for definition in &document.definitions {
+        if let ast::Definition::FragmentDefinition(fragment) = definition {
+            named_fragments
+                .entry(fragment.name.clone())
+                .or_insert(fragment.clone());
+        }
+    }
+    Arc::new(named_fragments)
 }
 
 pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
@@ -728,8 +595,12 @@ fn validate_executable_inner(
     diagnostics.extend(super::operation::validate_operation_definitions_inner(
         db, file_id, has_schema,
     ));
-    for def in db.fragments(file_id).values() {
-        diagnostics.extend(db.validate_fragment_used(Arc::clone(def), file_id));
+    for def in db.ast_named_fragments(file_id).values() {
+        diagnostics.extend(super::fragment::validate_fragment_used(
+            db,
+            def.clone(),
+            file_id,
+        ));
     }
 
     diagnostics.sort_by_key(location_sort_key);
@@ -825,7 +696,7 @@ fragment q on Query {
         compiler.add_type_system(input_type_system, "schema.graphql");
         compiler.add_executable(input_executable, "query.graphql");
 
-        let diagnostics = compiler.validate();
+        let diagnostics = dbg!(compiler.validate());
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(

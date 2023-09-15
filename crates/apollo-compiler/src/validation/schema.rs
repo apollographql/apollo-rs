@@ -30,7 +30,7 @@ pub fn validate_schema_definition(
     }
     diagnostics.extend(validate_root_operation_definitions(db, &root_operations));
 
-    diagnostics.extend(super::directive::validate_directives2(
+    diagnostics.extend(super::directive::validate_directives(
         db,
         schema_definition.directives(),
         ast::DirectiveLocation::Schema,

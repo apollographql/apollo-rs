@@ -24,7 +24,7 @@ pub fn validate_object_type_definition(
 
     let schema = db.schema();
 
-    diagnostics.extend(super::directive::validate_directives2(
+    diagnostics.extend(super::directive::validate_directives(
         db,
         object.directives(),
         ast::DirectiveLocation::Object,

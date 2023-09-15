@@ -23,24 +23,6 @@ use crate::database::HirDatabase;
 use crate::hir::HirNodeLocation;
 use apollo_parser::cst::CstNode;
 
-#[derive(Debug, Eq)]
-struct ValidationSet {
-    name: String,
-    loc: Option<HirNodeLocation>,
-}
-
-impl std::hash::Hash for ValidationSet {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.name.hash(state);
-    }
-}
-
-impl PartialEq for ValidationSet {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name
-    }
-}
-
 /// Track used names in a recursive function.
 ///
 /// Pass the result of `stack.push(name)` to recursive calls. Use `stack.contains(name)` to check

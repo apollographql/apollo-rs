@@ -1,3 +1,4 @@
+#![allow(unused)]
 use crate::Arc;
 use crate::FileId;
 use crate::{HirDatabase, Source};

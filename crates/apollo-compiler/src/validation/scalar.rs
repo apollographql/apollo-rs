@@ -47,7 +47,7 @@ pub fn validate_scalar_definition(
             }
         }
 
-        diagnostics.extend(super::directive::validate_directives2(
+        diagnostics.extend(super::directive::validate_directives(
             db,
             scalar_def
                 .directives

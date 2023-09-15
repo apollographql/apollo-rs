@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::{self, DirectiveLocation},
+    hir,
     validation::ValidationDatabase,
     Node,
 };
@@ -99,12 +99,4 @@ pub fn validate_arguments(
     }
 
     diagnostics
-}
-
-pub fn validate_arguments_definition(
-    db: &dyn ValidationDatabase,
-    args_def: hir::ArgumentsDefinition,
-    dir_loc: DirectiveLocation,
-) -> Vec<ApolloDiagnostic> {
-    db.validate_input_values(args_def.input_values, dir_loc)
 }

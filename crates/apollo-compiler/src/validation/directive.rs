@@ -1,9 +1,9 @@
 use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir, schema,
-    validation::{RecursionStack, ValidationSet},
-    Arc, Node, ValidationDatabase,
+    schema,
+    validation::RecursionStack,
+    Node, ValidationDatabase,
 };
 use apollo_parser::cst::{self, CstNode};
 use std::collections::HashSet;
@@ -201,7 +201,7 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
 
 // TODO(@goto-bus-stop) This is a big function: should probably not be generic over the iterator
 // type
-pub fn validate_directives2<'dir>(
+pub fn validate_directives<'dir>(
     db: &dyn ValidationDatabase,
     dirs: impl Iterator<Item = &'dir Node<ast::Directive>>,
     dir_loc: ast::DirectiveLocation,
@@ -304,18 +304,14 @@ pub fn validate_directives2<'dir>(
                         db,
                         input_value.clone(),
                         var_defs,
-                        &argument,
+                        argument,
                     )
                     .err()
                     {
                         diagnostics.push(diag)
                     } else {
-                        let type_diags = super::value::validate_values2(
-                            db,
-                            &input_value.ty,
-                            &argument,
-                            var_defs,
-                        );
+                        let type_diags =
+                            super::value::validate_values2(db, &input_value.ty, argument, var_defs);
 
                         diagnostics.extend(type_diags);
                     }
@@ -376,189 +372,6 @@ pub fn validate_directives2<'dir>(
                     DiagnosticData::UndefinedDirective {
                         name: name.to_string(),
                     },
-                )
-                .label(Label::new(loc, "directive not defined")),
-            )
-        }
-    }
-
-    diagnostics
-}
-
-pub fn validate_directives(
-    db: &dyn ValidationDatabase,
-    dirs: Vec<hir::Directive>,
-    dir_loc: hir::DirectiveLocation,
-    var_defs: Arc<Vec<hir::VariableDefinition>>,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    let mut seen_dirs = HashSet::<ValidationSet>::new();
-
-    for dir in dirs {
-        diagnostics.extend(db.validate_arguments(dir.arguments().to_vec()));
-
-        let name = dir.name();
-        let loc = dir.loc();
-        let directive_definition = db.find_directive_definition_by_name(name.into());
-
-        let duplicate = ValidationSet {
-            name: name.to_string(),
-            loc: Some(loc),
-        };
-        if let Some(original) = seen_dirs.get(&duplicate) {
-            let is_repeatable = directive_definition
-                .as_ref()
-                .map(|def| def.repeatable())
-                // Assume unknown directives are repeatable to avoid producing confusing diagnostics
-                .unwrap_or(true);
-
-            if !is_repeatable {
-                // original loc must be Some
-                let original_loc = original.loc.expect("undefined original directive location");
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        loc.into(),
-                        DiagnosticData::UniqueDirective {
-                            name: name.to_string(),
-                            original_call: original_loc.into(),
-                            conflicting_call: loc.into(),
-                        },
-                    )
-                    .label(Label::new(
-                        original_loc,
-                        format!("directive {name} first called here"),
-                    ))
-                    .label(Label::new(
-                        loc,
-                        format!("directive {name} called again here"),
-                    )),
-                );
-            }
-        } else {
-            seen_dirs.insert(duplicate);
-        }
-
-        if let Some(directive_definition) = directive_definition {
-            let allowed_loc: HashSet<hir::DirectiveLocation> =
-                HashSet::from_iter(directive_definition.directive_locations().iter().cloned());
-            if !allowed_loc.contains(&dir_loc) {
-                let mut diag = ApolloDiagnostic::new(
-                        db,
-                        loc.into(),
-                        DiagnosticData::UnsupportedLocation {
-                            name: name.into(),
-                            dir_loc: match dir_loc {
-                                hir::DirectiveLocation::Query => ast::DirectiveLocation::Query,
-                                hir::DirectiveLocation::Mutation => ast::DirectiveLocation::Mutation,
-                                hir::DirectiveLocation::Subscription => ast::DirectiveLocation::Subscription,
-                                hir::DirectiveLocation::Field => ast::DirectiveLocation::Field,
-                                hir::DirectiveLocation::FragmentDefinition => ast::DirectiveLocation::FragmentDefinition,
-                                hir::DirectiveLocation::FragmentSpread => ast::DirectiveLocation::FragmentSpread,
-                                hir::DirectiveLocation::InlineFragment => ast::DirectiveLocation::InlineFragment,
-                                hir::DirectiveLocation::VariableDefinition => ast::DirectiveLocation::VariableDefinition,
-                                hir::DirectiveLocation::Schema => ast::DirectiveLocation::Schema,
-                                hir::DirectiveLocation::Object => ast::DirectiveLocation::Object,
-                                hir::DirectiveLocation::FieldDefinition => ast::DirectiveLocation::FieldDefinition,
-                                hir::DirectiveLocation::ArgumentDefinition => ast::DirectiveLocation::ArgumentDefinition,
-                                hir::DirectiveLocation::Interface => ast::DirectiveLocation::Interface,
-                                hir::DirectiveLocation::Union => ast::DirectiveLocation::Union,
-                                hir::DirectiveLocation::Enum => ast::DirectiveLocation::Enum,
-                                hir::DirectiveLocation::EnumValue => ast::DirectiveLocation::EnumValue,
-                                hir::DirectiveLocation::InputObject => ast::DirectiveLocation::InputObject,
-                                hir::DirectiveLocation::InputFieldDefinition => ast::DirectiveLocation::InputFieldDefinition,
-                                hir::DirectiveLocation::Scalar => ast::DirectiveLocation::Scalar,
-                            },
-                            directive_def: directive_definition.loc.into(),
-                        },
-                )
-                    .label(Label::new(loc, format!("{dir_loc} is not a valid location")))
-                    .help("the directive must be used in a location that the service has declared support for");
-                if !directive_definition.is_built_in() {
-                    diag = diag.label(Label::new(
-                        directive_definition.loc,
-                        format!("consider adding {dir_loc} directive location here"),
-                    ));
-                }
-                diagnostics.push(diag)
-            }
-
-            for arg in dir.arguments() {
-                let input_val = directive_definition
-                    .arguments()
-                    .input_values()
-                    .iter()
-                    .find(|val| arg.name() == val.name())
-                    .cloned();
-
-                // @b(a: true)
-                if let Some(input_val) = input_val {
-                    if let Some(diag) = db
-                        .validate_variable_usage(input_val.clone(), var_defs.clone(), arg.clone())
-                        .err()
-                    {
-                        diagnostics.push(diag)
-                    } else {
-                        let value_of_correct_type =
-                            db.validate_values(input_val.ty(), arg, var_defs.clone());
-
-                        if let Err(diag) = value_of_correct_type {
-                            diagnostics.extend(diag);
-                        }
-                    }
-                } else {
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            arg.loc.into(),
-                            DiagnosticData::UndefinedArgument {
-                                name: arg.name().into(),
-                            },
-                        )
-                        .label(Label::new(arg.loc, "argument by this name not found"))
-                        .label(Label::new(loc, "directive declared here")),
-                    );
-                }
-            }
-            for arg_def in directive_definition.arguments().input_values() {
-                let arg_value = dir
-                    .arguments()
-                    .iter()
-                    .find(|value| value.name() == arg_def.name());
-                let is_null = match arg_value {
-                    None => true,
-                    // Prevents explicitly providing `requiredArg: null`,
-                    // but you can still indirectly do the wrong thing by typing `requiredArg: $mayBeNull`
-                    // and it won't raise a validation error at this stage.
-                    Some(value) => value.value().is_null(),
-                };
-
-                if arg_def.is_required() && is_null {
-                    let mut diagnostic = ApolloDiagnostic::new(
-                        db,
-                        dir.loc.into(),
-                        DiagnosticData::RequiredArgument {
-                            name: arg_def.name().into(),
-                        },
-                    );
-                    diagnostic = diagnostic.label(Label::new(
-                        dir.loc,
-                        format!("missing value for argument `{}`", arg_def.name()),
-                    ));
-                    if let Some(loc) = arg_def.loc {
-                        diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
-                    }
-
-                    diagnostics.push(diagnostic);
-                }
-            }
-        } else {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    loc.into(),
-                    DiagnosticData::UndefinedDirective { name: name.into() },
                 )
                 .label(Label::new(loc, "directive not defined")),
             )
