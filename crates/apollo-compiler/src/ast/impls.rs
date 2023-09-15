@@ -429,6 +429,10 @@ impl Type {
         matches!(self, Type::NonNullNamed(_) | Type::NonNullList(_))
     }
 
+    pub fn is_named(&self) -> bool {
+        matches!(self, Type::Named(_) | Type::NonNullNamed(_))
+    }
+
     /// Can a value of this type be used when the `target` type is expected?
     ///
     /// Implementation of spec function `AreTypesCompatible()`.
