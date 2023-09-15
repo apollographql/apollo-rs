@@ -131,6 +131,53 @@ pub struct InputObjectType {
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
 }
 
+/// AST node that has been skipped during conversion to `Schema`
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ConstructionError {
+    /// Found multiple `schema` definitions,
+    /// or multiple type or directive definitions with the same name.
+    ///
+    /// `Definition::*Definition` variant
+    DefinitionCollision(ast::Definition),
+
+    /// Found an extension without a corresponding definition to extend
+    ///
+    /// `Definition::*Extension` variant
+    OrphanExtension(ast::Definition),
+
+    DuplicateRootOperation {
+        operation_type: ast::OperationType,
+        object_type: NamedType,
+    },
+
+    DuplicateImplementsInterface {
+        implementer_name: NamedType,
+        interface_name: Name,
+    },
+
+    FieldNameCollision {
+        /// Object type or interface type
+        type_name: NamedType,
+        field: Node<ast::FieldDefinition>,
+    },
+
+    EnumValueNameCollision {
+        enum_name: NamedType,
+        value: Node<ast::EnumValueDefinition>,
+    },
+
+    UnionMemberNameCollision {
+        union_name: NamedType,
+        member: NamedType,
+    },
+
+    InputFieldNameCollision {
+        /// Object type or interface type
+        type_name: NamedType,
+        field: Node<ast::InputValueDefinition>,
+    },
+}
+
 /// Could not find the requested field definition
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FieldLookupError {
@@ -187,8 +234,8 @@ impl Schema {
     /// It can then be filled programatically.
     #[allow(clippy::new_without_default)] // not a great implicit default in generic contexts
     pub fn new() -> Self {
-        let (schema, _orphan_definitions) = SchemaBuilder::new().build();
-        // _orphan_definitions already debug_assert’ed empty in SchemaBuilder::new
+        let (schema, _errors) = SchemaBuilder::new().build();
+        // _errors already debug_assert’ed empty in SchemaBuilder::new
         schema
     }
 
@@ -202,7 +249,7 @@ impl Schema {
     /// * `Definition::SchemaExtension` variants if no `Definition::SchemaDefinition` was found
     /// * `Definition::*TypeExtension` if no `Definition::*TypeDefinition` with the same name
     ///   was found, or if it is a different kind of type
-    pub fn from_ast(document: &ast::Document) -> (Self, impl Iterator<Item = ast::Definition>) {
+    pub fn from_ast(document: &ast::Document) -> (Self, Vec<ConstructionError>) {
         let mut builder = SchemaBuilder::new();
         builder.add_document(document);
         builder.build()
