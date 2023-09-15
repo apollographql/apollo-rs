@@ -229,6 +229,8 @@ pub fn validate_fragment_definition(
     context: OperationValidationConfig<'_>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
+    let schema = db.schema();
+
     diagnostics.extend(super::directive::validate_directives(
         db,
         fragment.directives.iter(),
@@ -254,9 +256,17 @@ pub fn validate_fragment_definition(
     diagnostics.extend(fragment_cycles_diagnostics);
 
     if !has_type_error && !has_cycles {
+        // If the type does not exist, do not attempt to validate the selections against it;
+        // it has either already raised an error, or we are validating an executable without
+        // a schema.
+        let type_condition = schema
+            .types
+            .contains_key(&fragment.type_condition)
+            .then_some(&fragment.type_condition);
+
         diagnostics.extend(super::selection::validate_selection_set2(
             db,
-            Some(&fragment.type_condition),
+            type_condition,
             &fragment.selection_set,
             context,
         ));

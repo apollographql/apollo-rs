@@ -696,7 +696,7 @@ fragment q on Query {
         compiler.add_type_system(input_type_system, "schema.graphql");
         compiler.add_executable(input_executable, "query.graphql");
 
-        let diagnostics = dbg!(compiler.validate());
+        let diagnostics = compiler.validate();
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(

@@ -15,11 +15,12 @@ pub struct OperationValidationConfig<'vars> {
 pub(crate) fn validate_operation(
     db: &dyn ValidationDatabase,
     operation: Node<ast::OperationDefinition>,
+    has_schema: bool,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = vec![];
 
     let config = OperationValidationConfig {
-        has_schema: true,
+        has_schema,
         variables: &operation.variables,
     };
 
@@ -62,8 +63,7 @@ pub(crate) fn validate_operation_definitions_inner(
     for file_id in db.executable_definition_files() {
         for definition in &db.ast(file_id).definitions {
             if let ast::Definition::OperationDefinition(operation) = definition {
-                // db.validate_operation(operation.clone());
-                diagnostics.extend(validate_operation(db, operation.clone()));
+                diagnostics.extend(validate_operation(db, operation.clone(), has_schema));
             }
         }
     }
