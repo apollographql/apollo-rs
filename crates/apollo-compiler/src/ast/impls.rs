@@ -481,10 +481,33 @@ impl EnumValueDefinition {
 }
 
 impl Selection {
+    pub fn location(&self) -> Option<&HirNodeLocation> {
+        match self {
+            Self::Field(field) => field.location(),
+            Self::FragmentSpread(fragment) => fragment.location(),
+            Self::InlineFragment(fragment) => fragment.location(),
+        }
+    }
+
     serialize_method!();
 }
 
 impl Field {
+    /// Get the name that will be used for this field selection in response formatting.
+    ///
+    /// For example, in this operation, the response name is "sourceField":
+    /// ```graphql
+    /// query GetField { sourceField }
+    /// ```
+    ///
+    /// But in this operation that uses an alias, the response name is "responseField":
+    /// ```graphql
+    /// query GetField { responseField: sourceField }
+    /// ```
+    pub fn response_name(&self) -> &Name {
+        self.alias.as_ref().unwrap_or(&self.name)
+    }
+
     directive_methods!();
     serialize_method!();
 }
