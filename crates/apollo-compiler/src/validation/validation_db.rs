@@ -5,8 +5,8 @@ use crate::{
     hir::*,
     schema,
     validation::{
-        self, argument, directive, enum_, extension, input_object, interface, object, operation,
-        scalar, union_,
+        self, directive, enum_, extension, input_object, interface, object, operation, scalar,
+        union_,
     },
     Arc, FileId, HirDatabase, InputDatabase, Node, ReprDatabase,
 };
@@ -150,9 +150,6 @@ pub trait ValidationDatabase:
         &self,
         fields: Vec<Node<ast::FieldDefinition>>,
     ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(argument::validate_arguments)]
-    fn validate_arguments(&self, arg: Vec<Argument>) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(operation::validate_operation_definitions)]
     fn validate_operation_definitions(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;

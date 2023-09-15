@@ -25,7 +25,7 @@ pub fn validate_field(
         context.variables.clone(),
     );
 
-    diagnostics.extend(super::argument::validate_arguments2(db, &field.arguments));
+    diagnostics.extend(super::argument::validate_arguments(db, &field.arguments));
 
     // Return early if we don't know the type--this can happen if we are nested deeply
     // inside a selection set that has a wrong field, or if we are validating a standalone

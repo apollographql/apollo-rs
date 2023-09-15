@@ -213,7 +213,7 @@ pub fn validate_directives<'dir>(
 
     let schema = db.schema();
     for dir in dirs {
-        diagnostics.extend(super::argument::validate_arguments2(db, &dir.arguments));
+        diagnostics.extend(super::argument::validate_arguments(db, &dir.arguments));
 
         let name = &dir.name;
         let Some(&loc) = dir.location() else { continue };
