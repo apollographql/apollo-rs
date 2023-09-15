@@ -71,7 +71,7 @@
             },
         ],
         help: Some(
-            "fragments cannot be defined on enums, scalars and input object",
+            "fragments cannot be defined on enums, scalars and input objects",
         ),
         data: InvalidFragmentTarget {
             ty: "Int",
@@ -112,7 +112,7 @@
             },
         ],
         help: Some(
-            "fragments cannot be defined on enums, scalars and input object",
+            "fragments cannot be defined on enums, scalars and input objects",
         ),
         data: InvalidFragmentTarget {
             ty: "Int",

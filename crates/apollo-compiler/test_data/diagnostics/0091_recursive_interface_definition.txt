@@ -77,4 +77,56 @@
             missing_interface: "B",
         },
     },
+    ApolloDiagnostic {
+        cache: {
+            -1: "built_in_types.graphql",
+            88: "0091_recursive_interface_definition.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 88,
+            },
+            offset: 164,
+            length: 12,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 88,
+                    },
+                    offset: 164,
+                    length: 12,
+                },
+                text: "fragment `recursive` cannot be applied",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 88,
+                    },
+                    offset: 88,
+                    length: 34,
+                },
+                text: "fragment declared with type condition `A` here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 88,
+                    },
+                    offset: 0,
+                    length: 43,
+                },
+                text: "type condition `A` is not assignable to this type",
+            },
+        ],
+        help: None,
+        data: InvalidFragmentSpread {
+            name: Some(
+                "recursive",
+            ),
+            type_name: "A",
+        },
+    },
 ]

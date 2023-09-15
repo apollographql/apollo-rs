@@ -17,8 +17,8 @@
                     file_id: FileId {
                         id: 86,
                     },
-                    offset: 93,
-                    length: 40,
+                    offset: 100,
+                    length: 17,
                 },
                 text: "`MissingSecondType` is defined here but not declared in the schema",
             },
@@ -41,7 +41,7 @@
             file_id: FileId {
                 id: 86,
             },
-            offset: 267,
+            offset: 385,
             length: 30,
         },
         labels: [
@@ -50,8 +50,8 @@
                     file_id: FileId {
                         id: 86,
                     },
-                    offset: 267,
-                    length: 30,
+                    offset: 392,
+                    length: 11,
                 },
                 text: "`MissingType` is defined here but not declared in the schema",
             },
@@ -74,7 +74,7 @@
             file_id: FileId {
                 id: 86,
             },
-            offset: 301,
+            offset: 419,
             length: 55,
         },
         labels: [
@@ -83,8 +83,8 @@
                     file_id: FileId {
                         id: 86,
                     },
-                    offset: 301,
-                    length: 55,
+                    offset: 456,
+                    length: 10,
                 },
                 text: "`Interface2` is defined here but not declared in the schema",
             },

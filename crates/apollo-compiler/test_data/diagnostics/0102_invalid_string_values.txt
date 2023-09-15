@@ -225,7 +225,7 @@
         ],
         help: None,
         data: IntCoercionError {
-            value: "829384293849283500000000000",
+            value: "829384293849283498239482938",
         },
     },
     ApolloDiagnostic {
@@ -989,7 +989,7 @@
                     offset: 401,
                     length: 8,
                 },
-                text: "field declared here as String type",
+                text: "field declared here as [String] type",
             },
             Label {
                 location: DiagnosticLocation {
@@ -1005,7 +1005,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "Int",
-            ty: "String",
+            ty: "[String]",
         },
     },
     ApolloDiagnostic {
@@ -1029,7 +1029,7 @@
                     offset: 401,
                     length: 8,
                 },
-                text: "field declared here as String type",
+                text: "field declared here as [String] type",
             },
             Label {
                 location: DiagnosticLocation {
@@ -1045,7 +1045,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "Int",
-            ty: "String",
+            ty: "[String]",
         },
     },
     ApolloDiagnostic {
@@ -1067,9 +1067,9 @@
                         id: 99,
                     },
                     offset: 573,
-                    length: 3,
+                    length: 4,
                 },
-                text: "field declared here as Int type",
+                text: "field declared here as Int! type",
             },
             Label {
                 location: DiagnosticLocation {
@@ -1085,7 +1085,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "String",
-            ty: "Int",
+            ty: "Int!",
         },
     },
     ApolloDiagnostic {
@@ -1107,9 +1107,9 @@
                         id: 99,
                     },
                     offset: 561,
-                    length: 3,
+                    length: 4,
                 },
-                text: "field declared here as Int type",
+                text: "field declared here as Int! type",
             },
             Label {
                 location: DiagnosticLocation {
@@ -1125,7 +1125,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "String",
-            ty: "Int",
+            ty: "Int!",
         },
     },
     ApolloDiagnostic {
@@ -1186,9 +1186,9 @@
                         id: 99,
                     },
                     offset: 561,
-                    length: 3,
+                    length: 4,
                 },
-                text: "field declared here as Int type",
+                text: "field declared here as Int! type",
             },
             Label {
                 location: DiagnosticLocation {
@@ -1204,7 +1204,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "String",
-            ty: "Int",
+            ty: "Int!",
         },
     },
     ApolloDiagnostic {
@@ -1313,8 +1313,8 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 882,
-                    length: 7,
+                    offset: 867,
+                    length: 23,
                 },
                 text: "argument defined here",
             },
@@ -1345,7 +1345,7 @@
                     offset: 1005,
                     length: 8,
                 },
-                text: "field declared here as String type",
+                text: "field declared here as [String] type",
             },
             Label {
                 location: DiagnosticLocation {
@@ -1361,7 +1361,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "Int",
-            ty: "String",
+            ty: "[String]",
         },
     },
     ApolloDiagnostic {
@@ -1373,8 +1373,8 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 4678,
-            length: 7,
+            offset: 4664,
+            length: 21,
         },
         labels: [
             Label {
@@ -1382,8 +1382,8 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 4678,
-                    length: 7,
+                    offset: 4664,
+                    length: 21,
                 },
                 text: "does not exist on `ComplexInput` type",
             },
@@ -1413,9 +1413,9 @@
                         id: -1,
                     },
                     offset: 2290,
-                    length: 7,
+                    length: 8,
                 },
-                text: "field declared here as Boolean type",
+                text: "field declared here as Boolean! type",
             },
             Label {
                 location: DiagnosticLocation {
@@ -1431,7 +1431,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "String",
-            ty: "Boolean",
+            ty: "Boolean!",
         },
     },
     ApolloDiagnostic {
@@ -1453,9 +1453,9 @@
                         id: -1,
                     },
                     offset: 2089,
-                    length: 7,
+                    length: 8,
                 },
-                text: "field declared here as Boolean type",
+                text: "field declared here as Boolean! type",
             },
             Label {
                 location: DiagnosticLocation {
@@ -1471,7 +1471,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "Enum",
-            ty: "Boolean",
+            ty: "Boolean!",
         },
     },
     ApolloDiagnostic {
@@ -1493,9 +1493,9 @@
                         id: 99,
                     },
                     offset: 4899,
-                    length: 3,
+                    length: 4,
                 },
-                text: "field declared here as Int type",
+                text: "field declared here as Int! type",
             },
             Label {
                 location: DiagnosticLocation {
@@ -1511,7 +1511,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "Null",
-            ty: "Int",
+            ty: "Int!",
         },
     },
     ApolloDiagnostic {
@@ -1533,9 +1533,9 @@
                         id: 99,
                     },
                     offset: 4918,
-                    length: 6,
+                    length: 7,
                 },
-                text: "field declared here as String type",
+                text: "field declared here as String! type",
             },
             Label {
                 location: DiagnosticLocation {
@@ -1551,7 +1551,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "Null",
-            ty: "String",
+            ty: "String!",
         },
     },
     ApolloDiagnostic {
@@ -1582,8 +1582,8 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 882,
-                    length: 7,
+                    offset: 867,
+                    length: 23,
                 },
                 text: "argument defined here",
             },
@@ -1722,8 +1722,8 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 5455,
-            length: 3,
+            offset: 5440,
+            length: 18,
         },
         labels: [
             Label {
@@ -1732,17 +1732,17 @@
                         id: 99,
                     },
                     offset: 882,
-                    length: 7,
+                    length: 8,
                 },
-                text: "field declared here as Boolean type",
+                text: "field declared here as Boolean! type",
             },
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 5455,
-                    length: 3,
+                    offset: 5440,
+                    length: 18,
                 },
                 text: "argument declared here is of Int type",
             },
@@ -1750,7 +1750,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "Int",
-            ty: "Boolean",
+            ty: "Boolean!",
         },
     },
     ApolloDiagnostic {
@@ -1762,8 +1762,8 @@
             file_id: FileId {
                 id: 99,
             },
-            offset: 5470,
-            length: 5,
+            offset: 5460,
+            length: 15,
         },
         labels: [
             Label {
@@ -1781,8 +1781,8 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 5470,
-                    length: 5,
+                    offset: 5460,
+                    length: 15,
                 },
                 text: "argument declared here is of String type",
             },
@@ -1821,8 +1821,8 @@
                     file_id: FileId {
                         id: 99,
                     },
-                    offset: 882,
-                    length: 7,
+                    offset: 867,
+                    length: 23,
                 },
                 text: "argument defined here",
             },
@@ -1853,7 +1853,7 @@
                     offset: 5734,
                     length: 8,
                 },
-                text: "field declared here as String type",
+                text: "field declared here as [String] type",
             },
             Label {
                 location: DiagnosticLocation {
@@ -1869,7 +1869,7 @@
         help: None,
         data: UnsupportedValueType {
             value: "Int",
-            ty: "String",
+            ty: "[String]",
         },
     },
 ]

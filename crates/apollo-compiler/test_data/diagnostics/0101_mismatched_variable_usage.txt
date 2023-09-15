@@ -79,4 +79,164 @@
             arg_name: "booleanArg",
         },
     },
+    ApolloDiagnostic {
+        cache: {
+            -1: "built_in_types.graphql",
+            98: "0101_mismatched_variable_usage.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 98,
+            },
+            offset: 331,
+            length: 30,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 266,
+                    length: 20,
+                },
+                text: "variable `booleanArg` of type `Boolean` is declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 331,
+                    length: 30,
+                },
+                text: "argument `nonNullBooleanArg` of type `Boolean!` is declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedVariableUsage {
+            var_name: "booleanArg",
+            arg_name: "nonNullBooleanArg",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            -1: "built_in_types.graphql",
+            98: "0101_mismatched_variable_usage.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 98,
+            },
+            offset: 463,
+            length: 35,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 394,
+                    length: 23,
+                },
+                text: "variable `booleanList` of type `[Boolean]` is declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 463,
+                    length: 35,
+                },
+                text: "argument `nonNullBooleanListArg` of type `[Boolean]!` is declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedVariableUsage {
+            var_name: "booleanList",
+            arg_name: "nonNullBooleanListArg",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            -1: "built_in_types.graphql",
+            98: "0101_mismatched_variable_usage.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 98,
+            },
+            offset: 577,
+            length: 22,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 637,
+                    length: 12,
+                },
+                text: "variable `intArg` of type `Int` is declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 577,
+                    length: 22,
+                },
+                text: "argument `nonNullIntArg` of type `Int!` is declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedVariableUsage {
+            var_name: "intArg",
+            arg_name: "nonNullIntArg",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            -1: "built_in_types.graphql",
+            98: "0101_mismatched_variable_usage.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 98,
+            },
+            offset: 859,
+            length: 22,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 931,
+                    length: 12,
+                },
+                text: "variable `intArg` of type `Int` is declared here",
+            },
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 98,
+                    },
+                    offset: 859,
+                    length: 22,
+                },
+                text: "argument `nonNullIntArg` of type `Int!` is declared here",
+            },
+        ],
+        help: None,
+        data: DisallowedVariableUsage {
+            var_name: "intArg",
+            arg_name: "nonNullIntArg",
+        },
+    },
 ]
