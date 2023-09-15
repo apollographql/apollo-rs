@@ -16,6 +16,10 @@ interface Interface {
   a: String
 }
 
+type JustImplements implements Interface {
+  a: String
+}
+
 fragment invalidInlineFragment on Interface {
   a
   ... on MissingType {
