@@ -2,7 +2,7 @@ use super::InputDatabase;
 use crate::ast;
 use crate::diagnostics::DiagnosticData;
 use crate::diagnostics::Label;
-use crate::executable::FromAstError;
+use crate::executable::ConstructionError;
 use crate::schema::Name;
 use crate::ApolloDiagnostic;
 use crate::Arc;
@@ -48,7 +48,7 @@ pub trait ReprDatabase: InputDatabase {
         file_id: FileId,
     ) -> (
         Arc<crate::ExecutableDocument>,
-        Result<(), Arc<FromAstError>>,
+        Result<(), Arc<Vec<ConstructionError>>>,
     );
 
     #[salsa::invoke(executable_document)]
@@ -162,7 +162,7 @@ fn executable_document_result(
     file_id: FileId,
 ) -> (
     Arc<crate::ExecutableDocument>,
-    Result<(), Arc<FromAstError>>,
+    Result<(), Arc<Vec<ConstructionError>>>,
 ) {
     let (doc, result) = crate::ExecutableDocument::from_ast(&db.schema(), &db.ast(file_id));
     (Arc::new(doc), result.map_err(Arc::new))

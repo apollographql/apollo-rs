@@ -150,7 +150,7 @@ macro_rules! directive_by_name_method {
     };
 }
 
-pub fn directives_by_name<'def: 'name, 'name>(
+fn directives_by_name<'def: 'name, 'name>(
     directives: &'def [Component<Directive>],
     name: &'name str,
 ) -> impl Iterator<Item = &'def Component<Directive>> + 'name {

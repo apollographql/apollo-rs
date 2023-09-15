@@ -80,17 +80,23 @@ pub struct InlineFragment {
     pub selection_set: SelectionSet,
 }
 
-/// AST nodes that have been skipped during conversion to `ExecutableDocument`
+/// AST node that has been skipped during conversion to `ExecutableDocument`
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FromAstError {
+pub enum ConstructionError {
     /// The schema does not define a root operation
     /// for the operation type of this operation definition
-    pub undefined_root_operation: Vec<Node<ast::OperationDefinition>>,
+    UndefinedRootOperation(Node<ast::OperationDefinition>),
     /// Could not resolve the type of this field because the schema does not define
     /// the type of its parent selection set
-    pub undefined_type: Vec<(NamedType, Node<ast::Field>)>,
+    UndefinedType {
+        type_name: NamedType,
+        field: Node<ast::Field>,
+    },
     /// Could not resolve the type of this field because the schema does not define it
-    pub undefined_field: Vec<Node<ast::Field>>,
+    UndefinedField {
+        type_name: NamedType,
+        field: Node<ast::Field>,
+    },
 }
 
 /// A request error returned by [`ExecutableDocument::get_operation`]
@@ -106,7 +112,10 @@ pub struct FromAstError {
 pub struct GetOperationError();
 
 impl ExecutableDocument {
-    pub fn from_ast(schema: &Schema, document: &ast::Document) -> (Self, Result<(), FromAstError>) {
+    pub fn from_ast(
+        schema: &Schema,
+        document: &ast::Document,
+    ) -> (Self, Result<(), Vec<ConstructionError>>) {
         self::from_ast::document_from_ast(schema, document)
     }
 
