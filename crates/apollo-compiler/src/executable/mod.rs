@@ -89,14 +89,32 @@ pub enum ConstructionError {
     /// Could not resolve the type of this field because the schema does not define
     /// the type of its parent selection set
     UndefinedType {
+        /// Which top-level executable definition contains this error
+        top_level: ExecutableDefinitionName,
+        /// Response keys (alias or name) of nested fields that contain the field with the error,
+        /// outer-most to inner-most.
+        ancestor_fields: Vec<Name>,
         type_name: NamedType,
         field: Node<ast::Field>,
     },
     /// Could not resolve the type of this field because the schema does not define it
     UndefinedField {
+        /// Which top-level executable definition contains this error
+        top_level: ExecutableDefinitionName,
+        /// Response keys (alias or name) of nested fields that contain the field with the error,
+        /// outer-most to inner-most.
+        ancestor_fields: Vec<Name>,
         type_name: NamedType,
         field: Node<ast::Field>,
     },
+}
+
+/// Designates by name a top-level definition in an executable document
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ExecutableDefinitionName {
+    AnonymousOperation,
+    NamedOperation(Name),
+    Fragment(Name),
 }
 
 /// A request error returned by [`ExecutableDocument::get_operation`]
