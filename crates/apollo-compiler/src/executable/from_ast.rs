@@ -32,12 +32,22 @@ pub(super) fn document_from_ast(
                                 .errors
                                 .push(ConstructionError::UndefinedRootOperation(operation.clone()))
                         }
+                    } else {
+                        errors
+                            .errors
+                            .push(ConstructionError::OperationNameCollision(operation.clone()));
                     }
                 } else if anonymous_operation.is_none() {
                     errors.top_level = ExecutableDefinitionName::AnonymousOperation;
                     if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
                         anonymous_operation = Some(operation.same_location(op));
                     }
+                } else {
+                    errors
+                        .errors
+                        .push(ConstructionError::DuplicateAnonymousOperation(
+                            operation.clone(),
+                        ))
                 }
             }
             ast::Definition::FragmentDefinition(fragment) => {
@@ -48,6 +58,10 @@ pub(super) fn document_from_ast(
                         &mut errors,
                         fragment,
                     )));
+                } else {
+                    errors
+                        .errors
+                        .push(ConstructionError::FragmentNameCollision(fragment.clone()))
                 }
             }
             _ => {}

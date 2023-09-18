@@ -83,9 +83,19 @@ pub struct InlineFragment {
 /// AST node that has been skipped during conversion to `ExecutableDocument`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ConstructionError {
+    /// Found multiple operations without a name
+    DuplicateAnonymousOperation(Node<ast::OperationDefinition>),
+
+    /// Found multiple operations with the same name
+    OperationNameCollision(Node<ast::OperationDefinition>),
+
+    /// Found multiple fragments with the same name
+    FragmentNameCollision(Node<ast::FragmentDefinition>),
+
     /// The schema does not define a root operation
     /// for the operation type of this operation definition
     UndefinedRootOperation(Node<ast::OperationDefinition>),
+
     /// Could not resolve the type of this field because the schema does not define
     /// the type of its parent selection set
     UndefinedType {
@@ -97,6 +107,7 @@ pub enum ConstructionError {
         type_name: NamedType,
         field: Node<ast::Field>,
     },
+
     /// Could not resolve the type of this field because the schema does not define it
     UndefinedField {
         /// Which top-level executable definition contains this error

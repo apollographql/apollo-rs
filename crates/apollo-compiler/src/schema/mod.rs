@@ -172,7 +172,6 @@ pub enum ConstructionError {
     },
 
     InputFieldNameCollision {
-        /// Object type or interface type
         type_name: NamedType,
         field: Node<ast::InputValueDefinition>,
     },
