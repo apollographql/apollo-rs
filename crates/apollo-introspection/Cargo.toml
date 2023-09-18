@@ -1,0 +1,16 @@
+[package]
+name = "apollo-introspection"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+apollo-compiler = { path = "..//apollo-compiler" }
+async-recursion = "1.0.5"
+futures = "0.3.28"
+indexmap = "2.0.0"
+serde_json_bytes = { version = "0.2.2", features = ["preserve_order"] }
+serde = { version = "1.0.188", features = ["derive"] }
+
+[dev-dependencies]
+expect-test = "1.4"
+serde_json = "1.0"
