@@ -151,8 +151,10 @@ fn tokens_reached(db: &dyn ReprDatabase, file_id: FileId) -> usize {
 
 fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
     let mut builder = crate::Schema::builder();
+    let executable_definitions_are_errors = true;
     for file_id in db.type_definition_files() {
-        builder.add_ast_document(&db.ast(file_id))
+        let ast = db.ast(file_id);
+        builder.add_ast_document(&ast, executable_definitions_are_errors)
     }
     Arc::new(builder.build())
 }

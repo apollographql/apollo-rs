@@ -6,7 +6,11 @@ struct BuildErrors {
     errors: Vec<BuildError>,
 }
 
-pub(crate) fn document_from_ast(schema: &Schema, document: &ast::Document) -> ExecutableDocument {
+pub(crate) fn document_from_ast(
+    schema: &Schema,
+    document: &ast::Document,
+    type_system_definitions_are_errors: bool,
+) -> ExecutableDocument {
     let mut named_operations = IndexMap::new();
     let mut anonymous_operation = None;
     let mut fragments = IndexMap::new();
@@ -59,7 +63,15 @@ pub(crate) fn document_from_ast(schema: &Schema, document: &ast::Document) -> Ex
                         .push(BuildError::FragmentNameCollision(fragment.clone()))
                 }
             }
-            _ => {}
+            _ => {
+                if type_system_definitions_are_errors {
+                    errors
+                        .errors
+                        .push(BuildError::UnexpectedTypeSystemDefinition(
+                            definition.clone(),
+                        ))
+                }
+            }
         }
     }
     let doc = ExecutableDocument {

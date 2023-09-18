@@ -48,7 +48,8 @@ impl Document {
     /// Build a schema with this AST document as its sole input.
     pub fn to_schema(&self) -> Schema {
         let mut builder = Schema::builder();
-        builder.add_ast_document(self);
+        let executable_definitions_are_errors = true;
+        builder.add_ast_document(self, executable_definitions_are_errors);
         builder.build()
     }
 
@@ -56,22 +57,34 @@ impl Document {
     ///
     /// This can be used to build a schema from multiple documents or source files.
     pub fn to_schema_builder(&self, builder: &mut SchemaBuilder) {
-        builder.add_ast_document(self)
+        let executable_definitions_are_errors = true;
+        builder.add_ast_document(self, executable_definitions_are_errors)
     }
 
     /// Build an executable document from this AST, with the given schema
     pub fn to_executable(&self, schema: &Schema) -> ExecutableDocument {
-        crate::executable::from_ast::document_from_ast(schema, self)
+        let type_system_definitions_are_errors = true;
+        crate::executable::from_ast::document_from_ast(
+            schema,
+            self,
+            type_system_definitions_are_errors,
+        )
     }
 
     /// Build a schema and executable document from this AST containing a mixture
     /// of type system definitions and executable definitions.
     /// This is mostly useful for unit tests.
     pub fn to_mixed(&self) -> (Schema, ExecutableDocument) {
+        let executable_definitions_are_errors = false;
+        let type_system_definitions_are_errors = false;
         let mut builder = Schema::builder();
-        builder.add_ast_document(self);
+        builder.add_ast_document(self, executable_definitions_are_errors);
         let schema = builder.build();
-        let executable = crate::executable::from_ast::document_from_ast(&schema, self);
+        let executable = crate::executable::from_ast::document_from_ast(
+            &schema,
+            self,
+            type_system_definitions_are_errors,
+        );
         (schema, executable)
     }
 

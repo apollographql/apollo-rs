@@ -98,6 +98,11 @@ pub struct InlineFragment {
 /// AST node that has been skipped during conversion to `ExecutableDocument`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BuildError {
+    /// Found a type system definition, which is unexpected when building an executable document.
+    ///
+    /// If this is intended, use `parse_mixed`.
+    UnexpectedTypeSystemDefinition(ast::Definition),
+
     /// Found multiple operations without a name
     DuplicateAnonymousOperation(Node<ast::OperationDefinition>),
 

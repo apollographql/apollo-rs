@@ -147,6 +147,11 @@ pub struct InputObjectType {
 /// AST node that has been skipped during conversion to `Schema`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BuildError {
+    /// Found an executable definition, which is unexpected when building a schema.
+    ///
+    /// If this is intended, use `parse_mixed`.
+    UnexpectedExecutableDefinition(ast::Definition),
+
     /// Found multiple `schema` definitions,
     /// or multiple type or directive definitions with the same name.
     ///

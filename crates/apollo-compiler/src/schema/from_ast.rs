@@ -53,7 +53,8 @@ impl SchemaBuilder {
             document
         });
 
-        builder.add_ast_document(built_in);
+        let executable_definitions_are_errors = true;
+        builder.add_ast_document(built_in, executable_definitions_are_errors);
         debug_assert!(
             builder.schema.build_errors.is_empty()
                 && builder.orphan_type_extensions.is_empty()
@@ -76,7 +77,11 @@ impl SchemaBuilder {
     /// Add an AST document to the schema being built
     ///
     /// Executable definitions, if any, will be silently ignored.
-    pub(crate) fn add_ast_document(&mut self, document: &ast::Document) {
+    pub(crate) fn add_ast_document(
+        &mut self,
+        document: &ast::Document,
+        executable_definitions_are_errors: bool,
+    ) {
         for definition in &document.definitions {
             match definition {
                 ast::Definition::SchemaDefinition(def) => {
@@ -270,7 +275,13 @@ impl SchemaBuilder {
                 }
                 ast::Definition::OperationDefinition(_)
                 | ast::Definition::FragmentDefinition(_) => {
-                    // Operation-only definitions are not relevant to the type system.
+                    if executable_definitions_are_errors {
+                        self.schema
+                            .build_errors
+                            .push(BuildError::UnexpectedExecutableDefinition(
+                                definition.clone(),
+                            ))
+                    }
                 }
             }
         }
