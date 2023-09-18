@@ -27,6 +27,22 @@ pub struct SourceFile {
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct ParseError(pub(crate) apollo_parser::Error);
 
+/// Parse a schema and executable document from the given source text
+/// containing a mixture of type system definitions and executable definitions.
+/// This is mostly useful for unit tests.
+///
+/// `path` is the filesystem path (or arbitrary string) used in diagnostics
+/// to identify this source file to users.
+///
+/// Parsing is fault-tolerant, so a schema and document are always returned.
+/// TODO: document how to validate
+pub fn parse_mixed(
+    source_text: impl Into<String>,
+    path: impl AsRef<Path>,
+) -> (Schema, ExecutableDocument) {
+    Parser::new().parse_mixed(source_text, path)
+}
+
 impl Parser {
     pub fn new() -> Self {
         Self::default()
@@ -136,6 +152,23 @@ impl Parser {
         path: impl AsRef<Path>,
     ) -> ExecutableDocument {
         self.parse_ast(source_text, path).to_executable(schema)
+    }
+
+    /// Parse a schema and executable document from the given source text
+    /// containing a mixture of type system definitions and executable definitions.
+    /// This is mostly useful for unit tests.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// Parsing is fault-tolerant, so a schema and document are always returned.
+    /// TODO: document how to validate
+    pub fn parse_mixed(
+        &mut self,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> (Schema, ExecutableDocument) {
+        self.parse_ast(source_text, path).to_mixed()
     }
 
     /// What level of recursion was reached during the last call to a `parse_*` method.

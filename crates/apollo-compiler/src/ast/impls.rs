@@ -64,6 +64,17 @@ impl Document {
         crate::executable::from_ast::document_from_ast(schema, self)
     }
 
+    /// Build a schema and executable document from this AST containing a mixture
+    /// of type system definitions and executable definitions.
+    /// This is mostly useful for unit tests.
+    pub fn to_mixed(&self) -> (Schema, ExecutableDocument) {
+        let mut builder = Schema::builder();
+        builder.add_ast_document(self);
+        let schema = builder.build();
+        let executable = crate::executable::from_ast::document_from_ast(&schema, self);
+        (schema, executable)
+    }
+
     serialize_method!();
 }
 
