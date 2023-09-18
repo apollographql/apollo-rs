@@ -16,6 +16,8 @@ use std::fmt::Write;
 pub struct Parser {
     recursion_limit: Option<usize>,
     token_limit: Option<usize>,
+    recursion_reached: usize,
+    tokens_reached: usize,
 }
 
 /// The result of parsing an input string in GraphQL syntax into an AST
@@ -33,18 +35,9 @@ pub struct ParseResult {
     pub document: Arc<Document>,
 
     pub syntax_errors: Vec<ParseError>,
-
-    /// What level of recursion was reached during parsing.
-    /// Compare with [`Parser::recursion_limit`].
-    pub recursion_reached: usize,
-
-    /// How many tokens were created during parsing.
-    /// Compare with [`Parser::token_limit`].
-    pub tokens_reached: usize,
 }
 
-// TODO: make `ApolloDiagnostic` constructible without a database
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub struct ParseError(pub(crate) apollo_parser::Error);
 
 impl fmt::Debug for ParseError {
@@ -68,11 +61,11 @@ impl Parser {
         self
     }
 
-    pub fn parse(&self, input: &str) -> ParseResult {
+    pub fn parse(&mut self, input: &str) -> ParseResult {
         self.parse_with_file_id(input, FileId::new())
     }
 
-    pub(crate) fn parse_with_file_id(&self, input: &str, file_id: FileId) -> ParseResult {
+    pub(crate) fn parse_with_file_id(&mut self, input: &str, file_id: FileId) -> ParseResult {
         let mut parser = apollo_parser::Parser::new(input);
         if let Some(value) = self.recursion_limit {
             parser = parser.recursion_limit(value)
@@ -82,17 +75,31 @@ impl Parser {
         }
         let tree = parser.parse();
         let syntax_errors = tree.errors().map(|err| ParseError(err.clone())).collect();
-        let recursion_reached = tree.recursion_limit().high;
-        let tokens_reached = tree.token_limit().high;
+        self.recursion_reached = tree.recursion_limit().high;
+        self.tokens_reached = tree.token_limit().high;
         let document = Arc::new(Document::from_cst(tree.document(), file_id));
         ParseResult {
             file_id,
             cst: tree.document(),
             document,
             syntax_errors,
-            recursion_reached,
-            tokens_reached,
         }
+    }
+
+    /// What level of recursion was reached during the last call to [`parse`][Self::parse].
+    ///
+    /// Collecting this on a corpus of documents can help decide
+    /// how to set [`recursion_limit`][Self::recursion_limit].
+    pub fn recursion_reached(&self) -> usize {
+        self.recursion_reached
+    }
+
+    /// How many tokens were created during the last call to [`parse`][Self::parse].
+    ///
+    /// Collecting this on a corpus of documents can help decide
+    /// how to set [`recursion_limit`][Self::token_limit].
+    pub fn tokens_reached(&self) -> usize {
+        self.tokens_reached
     }
 }
 
