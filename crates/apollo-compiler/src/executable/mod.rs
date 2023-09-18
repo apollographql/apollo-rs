@@ -19,6 +19,7 @@ pub use crate::ast::{
     Argument, Directive, Name, NamedType, OperationType, Type, Value, VariableDefinition,
 };
 use crate::Parser;
+use std::path::Path;
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone)]
@@ -168,9 +169,12 @@ impl ExecutableDocument {
 
     /// Parse an executable document with the default configuration.
     ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
     /// Create a [`Parser`] to use different parser configuration.
-    pub fn parse(schema: &Schema, source_text: impl Into<String>) -> Self {
-        Parser::new().parse_executable(schema, source_text)
+    pub fn parse(schema: &Schema, source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+        Parser::new().parse_executable(schema, source_text, path)
     }
 
     /// Returns an iterator of operations, both anonymous and named

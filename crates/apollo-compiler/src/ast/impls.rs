@@ -6,6 +6,7 @@ use crate::Parser;
 use crate::Schema;
 use std::fmt;
 use std::hash;
+use std::path::Path;
 
 pub(crate) fn directives_by_name<'def: 'name, 'name>(
     directives: &'def [Node<Directive>],
@@ -29,8 +30,11 @@ impl Document {
     }
 
     /// Parse `input` with the default configuration
-    pub fn parse(source_text: impl Into<String>) -> Self {
-        Self::parser().parse_ast(source_text)
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    pub fn parse(source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+        Self::parser().parse_ast(source_text, path)
     }
 
     pub fn parse_errors(&self) -> &[ParseError] {

@@ -51,7 +51,7 @@ impl SourceType {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Source {
     ty: SourceType,
-    filename: PathBuf,
+    pub(crate) filename: PathBuf,
     text: Arc<String>,
 }
 

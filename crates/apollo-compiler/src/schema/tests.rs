@@ -48,7 +48,7 @@ interface Inter {
   string: String
 }
 "#;
-    let schema = Schema::parse(input);
+    let schema = Schema::parse(input, "schema.graphql");
     assert_eq!(schema.to_string(), expected);
 }
 

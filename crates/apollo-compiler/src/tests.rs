@@ -77,11 +77,11 @@ fn serializer_tests() {
         let collected = collect_graphql_files(&test_data_dir, &[subdir]);
         for (input_path, input) in collected {
             let output_path = output_dir.join(input_path.file_name().unwrap());
-            let original = ast::Document::parse(&input);
+            let original = ast::Document::parse(&input, "input.graphql");
             let serialized = original.to_string();
             expect_file![output_path].assert_eq(&serialized);
 
-            let round_tripped = ast::Document::parse(&serialized);
+            let round_tripped = ast::Document::parse(&serialized, "serialized.graphql");
             if original != round_tripped {
                 panic!(
                     "Serialization does not round-trip for {input_path:?}:\n\

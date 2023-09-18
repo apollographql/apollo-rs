@@ -45,8 +45,10 @@ impl SchemaBuilder {
 
         static BUILT_IN_TYPES: std::sync::OnceLock<ast::Document> = std::sync::OnceLock::new();
         let built_in = BUILT_IN_TYPES.get_or_init(|| {
-            let input = include_str!("../built_in_types.graphql");
-            let document = ast::Document::parser().parse_with_file_id(input, FileId::BUILT_IN);
+            let input = include_str!("../built_in_types.graphql").to_owned();
+            let path = "built_in.graphql".into();
+            let id = FileId::BUILT_IN;
+            let document = ast::Document::parser().parse_with_file_id(input, path, id);
             debug_assert!(document.parse_errors().is_empty());
             document
         });
@@ -67,8 +69,8 @@ impl SchemaBuilder {
     /// Parse an input file with the default configuration as an additional input for this schema.
     ///
     /// Create a [`Parser`] to use different parser configuration.
-    pub fn parse(&mut self, source_text: impl Into<String>) {
-        Parser::new().parse_into_schema_builder(source_text, self)
+    pub fn parse(&mut self, source_text: impl Into<String>, path: impl AsRef<Path>) {
+        Parser::new().parse_into_schema_builder(source_text, path, self)
     }
 
     /// Add an AST document to the schema being built

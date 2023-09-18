@@ -26,6 +26,7 @@ pub use crate::ast::{
 use crate::Arc;
 use crate::Parser;
 use crate::SourceFile;
+use std::path::Path;
 
 /// High-level representation of a GraphQL schema
 #[derive(Debug, Clone)]
@@ -246,8 +247,8 @@ impl Schema {
     ///
     /// Create a [`Parser`] to use different parser configuration.
     /// Use [`builder()`][Self::builder] to build a schema from multiple parsed files.
-    pub fn parse(source_text: impl Into<String>) -> Self {
-        Parser::default().parse_schema(source_text)
+    pub fn parse(source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+        Parser::default().parse_schema(source_text, path)
     }
 
     /// Returns a new builder for creating a Schema from AST documents,

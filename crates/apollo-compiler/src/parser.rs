@@ -5,6 +5,8 @@ use crate::ExecutableDocument;
 use crate::FileId;
 use crate::Schema;
 use std::fmt;
+use std::path::Path;
+use std::path::PathBuf;
 
 /// Configuration for parsing an input string as GraphQL syntax
 #[derive(Default, Debug, Clone)]
@@ -17,6 +19,7 @@ pub struct Parser {
 
 #[derive(Debug)]
 pub struct SourceFile {
+    pub(crate) path: PathBuf,
     pub(crate) source_text: String,
     pub(crate) parse_errors: Vec<ParseError>,
 }
@@ -45,19 +48,26 @@ impl Parser {
 
     /// Parse the given source text into an AST document.
     ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
     /// Parsing is fault-tolerant, so a document is always returned.
     /// In case of a parse error, [`Document::parse_errors`] will return relevant information
     /// and some nodes may be missing in the constructed document.
-    pub fn parse_ast(&mut self, source_text: impl Into<String>) -> Document {
-        self.parse_with_file_id(source_text, FileId::new())
+    pub fn parse_ast(
+        &mut self,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Document {
+        self.parse_with_file_id(source_text.into(), path.as_ref().to_owned(), FileId::new())
     }
 
     pub(crate) fn parse_with_file_id(
         &mut self,
-        source_text: impl Into<String>,
+        source_text: String,
+        path: PathBuf,
         file_id: FileId,
     ) -> Document {
-        let source_text = source_text.into();
         let mut parser = apollo_parser::Parser::new(&source_text);
         if let Some(value) = self.recursion_limit {
             parser = parser.recursion_limit(value)
@@ -69,6 +79,7 @@ impl Parser {
         self.recursion_reached = tree.recursion_limit().high;
         self.tokens_reached = tree.token_limit().high;
         let source_file = Arc::new(SourceFile {
+            path,
             source_text,
             parse_errors: tree.errors().map(|err| ParseError(err.clone())).collect(),
         });
@@ -77,16 +88,26 @@ impl Parser {
 
     /// Parse the given source text as the sole input file of a schema.
     ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
     /// To have multiple files contribute to a schema,
     /// use [`Schema::builder`] and [`Parser::parse_into_schema_builder`].
     ///
     /// Parsing is fault-tolerant, so a schema is always returned.
     /// TODO: document how to validate
-    pub fn parse_schema(&mut self, source_text: impl Into<String>) -> Schema {
-        self.parse_ast(source_text).to_schema()
+    pub fn parse_schema(
+        &mut self,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Schema {
+        self.parse_ast(source_text, path).to_schema()
     }
 
     /// Parse the given source text as an additional input to a schema builder.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
     ///
     /// This can be used to build a schema from multiple source files.
     ///
@@ -95,12 +116,16 @@ impl Parser {
     pub fn parse_into_schema_builder(
         &mut self,
         source_text: impl Into<String>,
+        path: impl AsRef<Path>,
         builder: &mut SchemaBuilder,
     ) {
-        self.parse_ast(source_text).to_schema_builder(builder)
+        self.parse_ast(source_text, path).to_schema_builder(builder)
     }
 
     /// Parse the given source text into an executable document, with the given schema.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
     ///
     /// Parsing is fault-tolerant, so a document is always returned.
     /// TODO: document how to validate
@@ -108,8 +133,9 @@ impl Parser {
         &mut self,
         schema: &Schema,
         source_text: impl Into<String>,
+        path: impl AsRef<Path>,
     ) -> ExecutableDocument {
-        self.parse_ast(source_text).to_executable(schema)
+        self.parse_ast(source_text, path).to_executable(schema)
     }
 
     /// What level of recursion was reached during the last call to a `parse_*` method.
@@ -130,6 +156,12 @@ impl Parser {
 }
 
 impl SourceFile {
+    /// The filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+
     pub fn source_text(&self) -> &str {
         &self.source_text
     }
