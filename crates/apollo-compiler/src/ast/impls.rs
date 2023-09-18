@@ -298,8 +298,14 @@ impl Type {
         }
     }
 
+    /// Returns whether this type is non-null
     pub fn is_non_null(&self) -> bool {
         matches!(self, Type::NonNullNamed(_) | Type::NonNullList(_))
+    }
+
+    /// Returns whether this type is a list, on a non-null list
+    pub fn is_list(&self) -> bool {
+        matches!(self, Type::List(_) | Type::NonNullList(_))
     }
 
     serialize_method!();
@@ -360,7 +366,15 @@ impl Value {
         }
     }
 
-    pub fn as_str(&self) -> Option<&NodeStr> {
+    pub fn as_str(&self) -> Option<&str> {
+        if let Value::String(value) = self {
+            Some(value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_node_str(&self) -> Option<&NodeStr> {
         if let Value::String(value) = self {
             Some(value)
         } else {
@@ -544,6 +558,24 @@ impl From<i32> for Value {
     }
 }
 
+impl From<&'_ str> for Value {
+    fn from(value: &'_ str) -> Self {
+        Value::String(value.into())
+    }
+}
+
+impl From<&'_ String> for Value {
+    fn from(value: &'_ String) -> Self {
+        Value::String(value.into())
+    }
+}
+
+impl From<String> for Value {
+    fn from(value: String) -> Self {
+        Value::String(value.into())
+    }
+}
+
 impl From<bool> for Value {
     fn from(value: bool) -> Self {
         Value::Boolean(value)
@@ -570,6 +602,24 @@ impl From<f64> for Node<Value> {
 
 impl From<i32> for Node<Value> {
     fn from(value: i32) -> Self {
+        Node::new(value.into())
+    }
+}
+
+impl From<&'_ str> for Node<Value> {
+    fn from(value: &'_ str) -> Self {
+        Node::new(value.into())
+    }
+}
+
+impl From<&'_ String> for Node<Value> {
+    fn from(value: &'_ String) -> Self {
+        Node::new(value.into())
+    }
+}
+
+impl From<String> for Node<Value> {
+    fn from(value: String) -> Self {
         Node::new(value.into())
     }
 }

@@ -19,8 +19,8 @@ pub use crate::ast::{
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExecutableDocument {
-    pub named_operations: IndexMap<Name, Node<Operation>>,
     pub anonymous_operation: Option<Node<Operation>>,
+    pub named_operations: IndexMap<Name, Node<Operation>>,
     pub fragments: IndexMap<Name, Node<Fragment>>,
 }
 
@@ -112,6 +112,14 @@ pub enum ConstructionError {
 pub struct GetOperationError();
 
 impl ExecutableDocument {
+    pub fn new() -> Self {
+        Self {
+            anonymous_operation: None,
+            named_operations: IndexMap::new(),
+            fragments: IndexMap::new(),
+        }
+    }
+
     pub fn from_ast(
         schema: &Schema,
         document: &ast::Document,
