@@ -30,8 +30,6 @@ pub struct ParseResult {
     /// used in all [`Node`]s in [`document`][Self::document]
     pub file_id: FileId,
 
-    pub cst: cst::Document,
-
     pub document: Arc<Document>,
 
     pub syntax_errors: Vec<ParseError>,
@@ -80,7 +78,6 @@ impl Parser {
         let document = Arc::new(Document::from_cst(tree.document(), file_id));
         ParseResult {
             file_id,
-            cst: tree.document(),
             document,
             syntax_errors,
         }
