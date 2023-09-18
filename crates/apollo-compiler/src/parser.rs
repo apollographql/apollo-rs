@@ -53,7 +53,7 @@ impl Parser {
     ///
     /// Parsing is fault-tolerant, so a document is always returned.
     /// In case of a parse error, [`Document::parse_errors`] will return relevant information
-    /// and some nodes may be missing in the constructed document.
+    /// and some nodes may be missing in the built document.
     pub fn parse_ast(
         &mut self,
         source_text: impl Into<String>,

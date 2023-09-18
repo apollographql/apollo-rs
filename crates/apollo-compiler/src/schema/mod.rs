@@ -36,9 +36,9 @@ pub struct Schema {
     /// The schema (including parsed definitions) may have been modified since parsing.
     pub sources: IndexMap<FileId, Arc<SourceFile>>,
 
-    /// Errors that occurred when constructing this schema,
+    /// Errors that occurred when building this schema,
     /// either parsing a source file or converting from AST.
-    pub construction_errors: Vec<ConstructionError>,
+    pub build_errors: Vec<BuildError>,
 
     /// The description of the `schema` definition
     pub description: Option<NodeStr>,
@@ -146,7 +146,7 @@ pub struct InputObjectType {
 
 /// AST node that has been skipped during conversion to `Schema`
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ConstructionError {
+pub enum BuildError {
     /// Found multiple `schema` definitions,
     /// or multiple type or directive definitions with the same name.
     ///
@@ -746,7 +746,7 @@ impl PartialEq for Schema {
     fn eq(&self, other: &Self) -> bool {
         let Self {
             sources: _,
-            construction_errors: _,
+            build_errors: _,
             description,
             directives,
             directive_definitions,

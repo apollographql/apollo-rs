@@ -30,9 +30,9 @@ pub struct ExecutableDocument {
     /// The document may have been modified since.
     pub source: Option<(FileId, Arc<SourceFile>)>,
 
-    /// Errors that occurred when constructing this document,
+    /// Errors that occurred when building this document,
     /// either parsing a source file or converting from AST.
-    pub construction_errors: Vec<ConstructionError>,
+    pub build_errors: Vec<BuildError>,
 
     pub anonymous_operation: Option<Node<Operation>>,
     pub named_operations: IndexMap<Name, Node<Operation>>,
@@ -97,7 +97,7 @@ pub struct InlineFragment {
 
 /// AST node that has been skipped during conversion to `ExecutableDocument`
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ConstructionError {
+pub enum BuildError {
     /// Found multiple operations without a name
     DuplicateAnonymousOperation(Node<ast::OperationDefinition>),
 
@@ -160,7 +160,7 @@ impl ExecutableDocument {
     pub fn new() -> Self {
         Self {
             source: None,
-            construction_errors: Vec::new(),
+            build_errors: Vec::new(),
             anonymous_operation: None,
             named_operations: IndexMap::new(),
             fragments: IndexMap::new(),
@@ -251,12 +251,12 @@ impl ExecutableDocument {
 
 impl Eq for ExecutableDocument {}
 
-/// `source` and `construction_errors` are ignored for comparison
+/// `source` and `build_errors` are ignored for comparison
 impl PartialEq for ExecutableDocument {
     fn eq(&self, other: &Self) -> bool {
         let Self {
             source: _,
-            construction_errors: _,
+            build_errors: _,
             anonymous_operation,
             named_operations,
             fragments,

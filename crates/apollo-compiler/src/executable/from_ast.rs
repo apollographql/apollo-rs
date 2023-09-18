@@ -1,16 +1,16 @@
 use super::*;
 
-struct ConstructionErrors {
+struct BuildErrors {
     top_level: ExecutableDefinitionName,
     ancestor_fields: Vec<Name>,
-    errors: Vec<ConstructionError>,
+    errors: Vec<BuildError>,
 }
 
 pub(crate) fn document_from_ast(schema: &Schema, document: &ast::Document) -> ExecutableDocument {
     let mut named_operations = IndexMap::new();
     let mut anonymous_operation = None;
     let mut fragments = IndexMap::new();
-    let mut errors = ConstructionErrors {
+    let mut errors = BuildErrors {
         top_level: ExecutableDefinitionName::AnonymousOperation, // overwritten
         ancestor_fields: Vec::new(),
         errors: Vec::new(),
@@ -27,12 +27,12 @@ pub(crate) fn document_from_ast(schema: &Schema, document: &ast::Document) -> Ex
                         } else {
                             errors
                                 .errors
-                                .push(ConstructionError::UndefinedRootOperation(operation.clone()))
+                                .push(BuildError::UndefinedRootOperation(operation.clone()))
                         }
                     } else {
                         errors
                             .errors
-                            .push(ConstructionError::OperationNameCollision(operation.clone()));
+                            .push(BuildError::OperationNameCollision(operation.clone()));
                     }
                 } else if anonymous_operation.is_none() {
                     errors.top_level = ExecutableDefinitionName::AnonymousOperation;
@@ -42,9 +42,7 @@ pub(crate) fn document_from_ast(schema: &Schema, document: &ast::Document) -> Ex
                 } else {
                     errors
                         .errors
-                        .push(ConstructionError::DuplicateAnonymousOperation(
-                            operation.clone(),
-                        ))
+                        .push(BuildError::DuplicateAnonymousOperation(operation.clone()))
                 }
             }
             ast::Definition::FragmentDefinition(fragment) => {
@@ -58,7 +56,7 @@ pub(crate) fn document_from_ast(schema: &Schema, document: &ast::Document) -> Ex
                 } else {
                     errors
                         .errors
-                        .push(ConstructionError::FragmentNameCollision(fragment.clone()))
+                        .push(BuildError::FragmentNameCollision(fragment.clone()))
                 }
             }
             _ => {}
@@ -66,7 +64,7 @@ pub(crate) fn document_from_ast(schema: &Schema, document: &ast::Document) -> Ex
     }
     let doc = ExecutableDocument {
         source: document.source.clone(),
-        construction_errors: errors.errors,
+        build_errors: errors.errors,
         named_operations,
         anonymous_operation,
         fragments,
@@ -77,7 +75,7 @@ pub(crate) fn document_from_ast(schema: &Schema, document: &ast::Document) -> Ex
 impl Operation {
     fn from_ast(
         schema: &Schema,
-        errors: &mut ConstructionErrors,
+        errors: &mut BuildErrors,
         ast: &ast::OperationDefinition,
     ) -> Option<Self> {
         let ty = schema.root_operation(ast.operation_type)?.node.clone();
@@ -93,11 +91,7 @@ impl Operation {
 }
 
 impl Fragment {
-    fn from_ast(
-        schema: &Schema,
-        errors: &mut ConstructionErrors,
-        ast: &ast::FragmentDefinition,
-    ) -> Self {
+    fn from_ast(schema: &Schema, errors: &mut BuildErrors, ast: &ast::FragmentDefinition) -> Self {
         let mut selection_set = SelectionSet::new(ast.type_condition.clone());
         selection_set.extend_from_ast(schema, errors, &ast.selection_set);
         Self {
@@ -111,7 +105,7 @@ impl SelectionSet {
     fn extend_from_ast(
         &mut self,
         schema: &Schema,
-        errors: &mut ConstructionErrors,
+        errors: &mut BuildErrors,
         ast_selections: &[ast::Selection],
     ) {
         for selection in ast_selections {
@@ -133,7 +127,7 @@ impl SelectionSet {
                         errors.ancestor_fields.pop();
                     }
                     Err(FieldLookupError::NoSuchField) => {
-                        errors.errors.push(ConstructionError::UndefinedField {
+                        errors.errors.push(BuildError::UndefinedField {
                             top_level: errors.top_level.clone(),
                             ancestor_fields: errors.ancestor_fields.clone(),
                             type_name: self.ty.clone(),
@@ -141,7 +135,7 @@ impl SelectionSet {
                         })
                     }
                     Err(FieldLookupError::NoSuchType) => {
-                        errors.errors.push(ConstructionError::UndefinedType {
+                        errors.errors.push(BuildError::UndefinedType {
                             top_level: errors.top_level.clone(),
                             ancestor_fields: errors.ancestor_fields.clone(),
                             type_name: self.ty.clone(),
@@ -171,7 +165,7 @@ impl Field {
     fn with_ast_selections(
         mut self,
         schema: &Schema,
-        errors: &mut ConstructionErrors,
+        errors: &mut BuildErrors,
         ast_selections: &[ast::Selection],
     ) -> Self {
         self.selection_set
@@ -184,7 +178,7 @@ impl InlineFragment {
     fn with_ast_selections(
         mut self,
         schema: &Schema,
-        errors: &mut ConstructionErrors,
+        errors: &mut BuildErrors,
         ast_selections: &[ast::Selection],
     ) -> Self {
         self.selection_set
