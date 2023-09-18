@@ -9,6 +9,7 @@ pub mod diagnostics;
 pub mod executable;
 mod node;
 mod node_str;
+mod parser;
 pub mod schema;
 #[cfg(test)]
 mod tests;
@@ -25,6 +26,7 @@ pub use self::diagnostics::ApolloDiagnostic;
 pub use self::executable::ExecutableDocument;
 pub use self::node::{Node, NodeLocation};
 pub use self::node_str::NodeStr;
+pub use self::parser::{ParseError, Parser, SourceFile};
 use self::validation::ValidationDatabase;
 pub use schema::Schema;
 

@@ -77,21 +77,17 @@ fn serializer_tests() {
         let collected = collect_graphql_files(&test_data_dir, &[subdir]);
         for (input_path, input) in collected {
             let output_path = output_dir.join(input_path.file_name().unwrap());
-            let parse_result = ast::Document::parse(&input);
-            let serialized = parse_result.document.to_string();
+            let original = ast::Document::parse(&input);
+            let serialized = original.to_string();
             expect_file![output_path].assert_eq(&serialized);
 
-            // If there was a syntax error in the source document, the AST may omit the broken
-            // nodes.
-            if parse_result.syntax_errors.is_empty() {
-                let original = parse_result.document;
-                let round_tripped = ast::Document::parse(&serialized).document;
-                if original != round_tripped {
-                    panic!(
-                        "Serialization does not round-trip for {input_path:?}:\n\
-                    {input}\n=>\n{original:#?}\n=>\n{serialized}\n=>\n{round_tripped:#?}\n=>\n{round_tripped}\n"
-                    );
-                }
+            let round_tripped = ast::Document::parse(&serialized);
+            if original != round_tripped {
+                panic!(
+                    "Serialization does not round-trip for {input_path:?}:\n\
+                     {input}\n=>\n{original:#?}\n=>\n{serialized}\n=>\n\
+                     {round_tripped:#?}\n=>\n{round_tripped}\n"
+                );
             }
         }
     }

@@ -1,5 +1,8 @@
 use super::*;
+use crate::ParseError;
+use crate::Parser;
 use std::fmt;
+use std::hash;
 
 pub(crate) fn directives_by_name<'def: 'name, 'name>(
     directives: &'def [Node<Directive>],
@@ -12,6 +15,7 @@ impl Document {
     /// Create an empty document
     pub fn new() -> Self {
         Self {
+            source: None,
             definitions: Vec::new(),
         }
     }
@@ -22,11 +26,34 @@ impl Document {
     }
 
     /// Parse `input` with the default configuration
-    pub fn parse(input: &str) -> ParseResult {
-        Self::parser().parse(input)
+    pub fn parse(source_text: impl Into<String>) -> Self {
+        Self::parser().parse_ast(source_text)
+    }
+
+    pub fn parse_errors(&self) -> &[ParseError] {
+        if let Some((_id, source)) = &self.source {
+            source.parse_errors()
+        } else {
+            &[]
+        }
     }
 
     serialize_method!();
+}
+
+/// `source` is ignored for comparison
+impl PartialEq for Document {
+    fn eq(&self, other: &Self) -> bool {
+        self.definitions == other.definitions
+    }
+}
+
+impl Eq for Document {}
+
+impl hash::Hash for Document {
+    fn hash<H: hash::Hasher>(&self, state: &mut H) {
+        self.definitions.hash(state);
+    }
 }
 
 impl Default for Document {

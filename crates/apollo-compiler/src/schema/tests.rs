@@ -48,7 +48,7 @@ interface Inter {
   string: String
 }
 "#;
-    let (schema, _) = Schema::from_ast(&ast::Document::parse(input).document);
+    let (schema, _) = Schema::from_ast(&ast::Document::parse(input));
     assert_eq!(schema.to_string(), expected);
 }
 

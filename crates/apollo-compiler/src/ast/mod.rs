@@ -30,18 +30,26 @@
 //! that has chaining methods for setting serialization configuration,
 //! and also implements `Display` and `ToString`.
 
+use crate::Arc;
+use crate::FileId;
 use crate::Node;
 use crate::NodeStr;
+use crate::SourceFile;
 
+mod from_cst;
 pub(crate) mod impls;
-mod parse;
 pub(crate) mod serialize;
 
-pub use self::parse::{ParseResult, Parser};
 pub use self::serialize::Serialize;
 
-#[derive(Clone, Eq, PartialEq, Hash)]
+#[derive(Clone)]
 pub struct Document {
+    /// If this document was originally parsed from a source file,
+    /// that file and its ID.
+    ///
+    /// The document may have been modified since.
+    pub source: Option<(FileId, Arc<SourceFile>)>,
+
     pub definitions: Vec<Definition>,
 }
 

@@ -7,6 +7,8 @@ use crate::schema::Name;
 use crate::ApolloDiagnostic;
 use crate::Arc;
 use crate::FileId;
+use crate::ParseError;
+use crate::SourceFile;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -93,7 +95,15 @@ fn ast_parse_result(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ParseResult> 
     let syntax_errors = tree.errors();
     let recursion_reached = tree.recursion_limit().high;
     let tokens_reached = tree.token_limit().high;
-    let document = Arc::new(ast::Document::from_cst(tree.document(), file_id));
+    let source_file = Arc::new(SourceFile {
+        source_text: String::clone(&db.source_code(file_id)),
+        parse_errors: tree.errors().map(|err| ParseError(err.clone())).collect(),
+    });
+    let document = Arc::new(ast::Document::from_cst(
+        tree.document(),
+        file_id,
+        source_file,
+    ));
     Arc::new(ParseResult {
         document,
         recursion_reached,

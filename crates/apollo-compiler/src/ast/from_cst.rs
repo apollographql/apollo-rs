@@ -4,118 +4,20 @@ use crate::Arc;
 use crate::FileId;
 use crate::Node;
 use crate::NodeLocation;
+use crate::SourceFile;
 use apollo_parser::cst;
 use apollo_parser::cst::CstNode;
 use apollo_parser::SyntaxNode;
 use apollo_parser::S;
-use std::fmt;
-use std::fmt::Write;
-
-/// Configuration for parsing an input string in GraphQL syntax into an AST
-#[derive(Default)]
-pub struct Parser {
-    recursion_limit: Option<usize>,
-    token_limit: Option<usize>,
-    recursion_reached: usize,
-    tokens_reached: usize,
-}
-
-/// The result of parsing an input string in GraphQL syntax into an AST
-///
-/// This is not a [`Result`]: there can be both syntax errors and a non-empty [`Document`]
-/// since the parser is fault-tolerant.
-#[derive(Debug, Clone)]
-pub struct ParseResult {
-    /// Newly generated ID for the parsed file,
-    /// used in all [`Node`]s in [`document`][Self::document]
-    pub file_id: FileId,
-
-    pub document: Arc<Document>,
-
-    pub syntax_errors: Vec<ParseError>,
-}
-
-#[derive(Clone, Eq, PartialEq, Hash)]
-pub struct ParseError(pub(crate) apollo_parser::Error);
-
-impl fmt::Debug for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&self.0, f)
-    }
-}
-
-impl Parser {
-    /// Configure the recursion to use while parsing.
-    pub fn recursion_limit(&mut self, value: usize) -> &mut Self {
-        self.recursion_limit = Some(value);
-        self
-    }
-
-    /// Configure the limit on the number of tokens to parse.
-    /// If an input document is too big, parsing will be aborted.
-    /// By default, there is no limit.
-    pub fn token_limit(&mut self, value: usize) -> &mut Self {
-        self.token_limit = Some(value);
-        self
-    }
-
-    pub fn parse(&mut self, input: &str) -> ParseResult {
-        self.parse_with_file_id(input, FileId::new())
-    }
-
-    pub(crate) fn parse_with_file_id(&mut self, input: &str, file_id: FileId) -> ParseResult {
-        let mut parser = apollo_parser::Parser::new(input);
-        if let Some(value) = self.recursion_limit {
-            parser = parser.recursion_limit(value)
-        }
-        if let Some(value) = self.token_limit {
-            parser = parser.token_limit(value)
-        }
-        let tree = parser.parse();
-        let syntax_errors = tree.errors().map(|err| ParseError(err.clone())).collect();
-        self.recursion_reached = tree.recursion_limit().high;
-        self.tokens_reached = tree.token_limit().high;
-        let document = Arc::new(Document::from_cst(tree.document(), file_id));
-        ParseResult {
-            file_id,
-            document,
-            syntax_errors,
-        }
-    }
-
-    /// What level of recursion was reached during the last call to [`parse`][Self::parse].
-    ///
-    /// Collecting this on a corpus of documents can help decide
-    /// how to set [`recursion_limit`][Self::recursion_limit].
-    pub fn recursion_reached(&self) -> usize {
-        self.recursion_reached
-    }
-
-    /// How many tokens were created during the last call to [`parse`][Self::parse].
-    ///
-    /// Collecting this on a corpus of documents can help decide
-    /// how to set [`recursion_limit`][Self::token_limit].
-    pub fn tokens_reached(&self) -> usize {
-        self.tokens_reached
-    }
-}
-
-impl ParseResult {
-    /// Panics with a formatted message if there are parse error
-    pub fn assert_no_error(&self) {
-        if !self.syntax_errors.is_empty() {
-            let mut details = String::new();
-            for error in &self.syntax_errors {
-                writeln!(&mut details, "{error:?}").unwrap()
-            }
-            panic!("Syntax errors:\n{details}")
-        }
-    }
-}
 
 impl Document {
-    pub(crate) fn from_cst(document: cst::Document, file_id: FileId) -> Self {
+    pub(crate) fn from_cst(
+        document: cst::Document,
+        file_id: FileId,
+        source_file: Arc<SourceFile>,
+    ) -> Self {
         Self {
+            source: Some((file_id, source_file)),
             definitions: document
                 .definitions()
                 .filter_map(|def| def.convert(file_id))
