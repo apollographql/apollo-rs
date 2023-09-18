@@ -4,12 +4,11 @@ use indexmap::map::Entry;
 
 pub struct SchemaBuilder {
     schema: Schema,
-    schema_definition: SchemaDefinition,
+    schema_definition_status: SchemaDefinitionStatus,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
-    errors: Vec<ConstructionError>,
 }
 
-enum SchemaDefinition {
+enum SchemaDefinitionStatus {
     Found,
     NoneSoFar {
         orphan_extensions: Vec<Node<ast::SchemaExtension>>,
@@ -28,6 +27,8 @@ impl SchemaBuilder {
     pub fn new() -> Self {
         let mut builder = SchemaBuilder {
             schema: Schema {
+                sources: IndexMap::new(),
+                construction_errors: Vec::new(),
                 description: None,
                 directives: Vec::new(),
                 directive_definitions: IndexMap::new(),
@@ -36,11 +37,10 @@ impl SchemaBuilder {
                 mutation_type: None,
                 subscription_type: None,
             },
-            schema_definition: SchemaDefinition::NoneSoFar {
+            schema_definition_status: SchemaDefinitionStatus::NoneSoFar {
                 orphan_extensions: Vec::new(),
             },
             orphan_type_extensions: IndexMap::new(),
-            errors: Vec::new(),
         };
 
         static BUILT_IN_TYPES: std::sync::OnceLock<ast::Document> = std::sync::OnceLock::new();
@@ -53,10 +53,11 @@ impl SchemaBuilder {
 
         builder.add_document(built_in);
         debug_assert!(
-            builder.orphan_type_extensions.is_empty()
+            builder.schema.construction_errors.is_empty()
+                && builder.orphan_type_extensions.is_empty()
                 && matches!(
-                    &builder.schema_definition,
-                    SchemaDefinition::NoneSoFar { orphan_extensions }
+                    &builder.schema_definition_status,
+                    SchemaDefinitionStatus::NoneSoFar { orphan_extensions }
                     if orphan_extensions.is_empty()
                 )
         );
@@ -70,14 +71,14 @@ impl SchemaBuilder {
         for definition in &document.definitions {
             match definition {
                 ast::Definition::SchemaDefinition(def) => {
-                    if let SchemaDefinition::NoneSoFar { orphan_extensions } =
-                        &self.schema_definition
+                    if let SchemaDefinitionStatus::NoneSoFar { orphan_extensions } =
+                        &self.schema_definition_status
                     {
-                        self.schema
-                            .set_ast(&mut self.errors, def, orphan_extensions);
-                        self.schema_definition = SchemaDefinition::Found;
+                        self.schema.set_ast(def, orphan_extensions);
+                        self.schema_definition_status = SchemaDefinitionStatus::Found;
                     } else {
-                        self.errors
+                        self.schema
+                            .construction_errors
                             .push(ConstructionError::DefinitionCollision(definition.clone()))
                     }
                 }
@@ -85,104 +86,112 @@ impl SchemaBuilder {
                     if !insert_sticky(&mut self.schema.directive_definitions, &def.name, || {
                         def.clone()
                     }) {
-                        self.errors
+                        self.schema
+                            .construction_errors
                             .push(ConstructionError::DefinitionCollision(definition.clone()))
                     }
                 }
                 ast::Definition::ScalarTypeDefinition(def) => {
                     if !insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Scalar(ScalarType::from_ast(
-                            &mut self.errors,
+                            &mut self.schema.construction_errors,
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
                                 .unwrap_or_default(),
                         ))
                     }) {
-                        self.errors
+                        self.schema
+                            .construction_errors
                             .push(ConstructionError::DefinitionCollision(definition.clone()))
                     }
                 }
                 ast::Definition::ObjectTypeDefinition(def) => {
                     if !insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Object(ObjectType::from_ast(
-                            &mut self.errors,
+                            &mut self.schema.construction_errors,
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
                                 .unwrap_or_default(),
                         ))
                     }) {
-                        self.errors
+                        self.schema
+                            .construction_errors
                             .push(ConstructionError::DefinitionCollision(definition.clone()))
                     }
                 }
                 ast::Definition::InterfaceTypeDefinition(def) => {
                     if !insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Interface(InterfaceType::from_ast(
-                            &mut self.errors,
+                            &mut self.schema.construction_errors,
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
                                 .unwrap_or_default(),
                         ))
                     }) {
-                        self.errors
+                        self.schema
+                            .construction_errors
                             .push(ConstructionError::DefinitionCollision(definition.clone()))
                     }
                 }
                 ast::Definition::UnionTypeDefinition(def) => {
                     if !insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Union(UnionType::from_ast(
-                            &mut self.errors,
+                            &mut self.schema.construction_errors,
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
                                 .unwrap_or_default(),
                         ))
                     }) {
-                        self.errors
+                        self.schema
+                            .construction_errors
                             .push(ConstructionError::DefinitionCollision(definition.clone()))
                     }
                 }
                 ast::Definition::EnumTypeDefinition(def) => {
                     if insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Enum(EnumType::from_ast(
-                            &mut self.errors,
+                            &mut self.schema.construction_errors,
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
                                 .unwrap_or_default(),
                         ))
                     }) {
-                        self.errors
+                        self.schema
+                            .construction_errors
                             .push(ConstructionError::DefinitionCollision(definition.clone()))
                     }
                 }
                 ast::Definition::InputObjectTypeDefinition(def) => {
                     if !insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::InputObject(InputObjectType::from_ast(
-                            &mut self.errors,
+                            &mut self.schema.construction_errors,
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
                                 .unwrap_or_default(),
                         ))
                     }) {
-                        self.errors
+                        self.schema
+                            .construction_errors
                             .push(ConstructionError::DefinitionCollision(definition.clone()))
                     }
                 }
-                ast::Definition::SchemaExtension(ext) => match &mut self.schema_definition {
-                    SchemaDefinition::Found => self.schema.extend_ast(&mut self.errors, ext),
-                    SchemaDefinition::NoneSoFar { orphan_extensions } => {
+                ast::Definition::SchemaExtension(ext) => match &mut self.schema_definition_status {
+                    SchemaDefinitionStatus::Found => self.schema.extend_ast(ext),
+                    SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
                         orphan_extensions.push(ext.clone())
                     }
                 },
                 ast::Definition::ScalarTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Scalar(ty) = ty {
-                            ty.make_mut().extend_ast(&mut self.errors, ext)
+                            ty.make_mut()
+                                .extend_ast(&mut self.schema.construction_errors, ext)
                         }
                     } else {
                         self.orphan_type_extensions
@@ -194,7 +203,8 @@ impl SchemaBuilder {
                 ast::Definition::ObjectTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Object(ty) = ty {
-                            ty.make_mut().extend_ast(&mut self.errors, ext)
+                            ty.make_mut()
+                                .extend_ast(&mut self.schema.construction_errors, ext)
                         }
                     } else {
                         self.orphan_type_extensions
@@ -206,7 +216,8 @@ impl SchemaBuilder {
                 ast::Definition::InterfaceTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Interface(ty) = ty {
-                            ty.make_mut().extend_ast(&mut self.errors, ext)
+                            ty.make_mut()
+                                .extend_ast(&mut self.schema.construction_errors, ext)
                         }
                     } else {
                         self.orphan_type_extensions
@@ -218,7 +229,8 @@ impl SchemaBuilder {
                 ast::Definition::UnionTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Union(ty) = ty {
-                            ty.make_mut().extend_ast(&mut self.errors, ext)
+                            ty.make_mut()
+                                .extend_ast(&mut self.schema.construction_errors, ext)
                         }
                     } else {
                         self.orphan_type_extensions
@@ -230,7 +242,8 @@ impl SchemaBuilder {
                 ast::Definition::EnumTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Enum(ty) = ty {
-                            ty.make_mut().extend_ast(&mut self.errors, ext)
+                            ty.make_mut()
+                                .extend_ast(&mut self.schema.construction_errors, ext)
                         }
                     } else {
                         self.orphan_type_extensions
@@ -242,7 +255,8 @@ impl SchemaBuilder {
                 ast::Definition::InputObjectTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::InputObject(ty) = ty {
-                            ty.make_mut().extend_ast(&mut self.errors, ext)
+                            ty.make_mut()
+                                .extend_ast(&mut self.schema.construction_errors, ext)
                         }
                     } else {
                         self.orphan_type_extensions
@@ -264,9 +278,11 @@ impl SchemaBuilder {
     /// * `Definition::SchemaExtension` variants if no `Definition::SchemaDefinition` was found
     /// * `Definition::*TypeExtension` if no `Definition::*TypeDefinition` with the same name
     ///   was found, or if it is a different kind of type
-    pub fn build(mut self) -> (Schema, Vec<ConstructionError>) {
+    pub fn build(mut self) -> Schema {
         let orphan_schema_extensions =
-            if let SchemaDefinition::NoneSoFar { orphan_extensions } = self.schema_definition {
+            if let SchemaDefinitionStatus::NoneSoFar { orphan_extensions } =
+                self.schema_definition_status
+            {
                 // Implict `schema`, ignoring extensions
                 let if_has_object_type = |ty: OperationType| {
                     let name = ty.default_type_name();
@@ -283,25 +299,24 @@ impl SchemaBuilder {
             } else {
                 Vec::new()
             };
-        self.errors.extend(
+        self.schema.construction_errors.extend(
             orphan_schema_extensions.into_iter().map(|ext| {
                 ConstructionError::OrphanExtension(ast::Definition::SchemaExtension(ext))
             }),
         );
-        self.errors.extend(
+        self.schema.construction_errors.extend(
             self.orphan_type_extensions
                 .into_values()
                 .flatten()
                 .map(|ext| ConstructionError::OrphanExtension(ext)),
         );
-        (self.schema, self.errors)
+        self.schema
     }
 }
 
 impl Schema {
     fn set_ast(
         &mut self,
-        errors: &mut Vec<ConstructionError>,
         definition: &Node<ast::SchemaDefinition>,
         extensions: &[Node<ast::SchemaExtension>],
     ) {
@@ -311,21 +326,13 @@ impl Schema {
             .iter()
             .map(|d| d.to_component(ComponentOrigin::Definition))
             .collect();
-        self.add_root_operations(
-            errors,
-            ComponentOrigin::Definition,
-            &definition.root_operations,
-        );
+        self.add_root_operations(ComponentOrigin::Definition, &definition.root_operations);
         for ext in extensions {
-            self.extend_ast(errors, ext)
+            self.extend_ast(ext)
         }
     }
 
-    fn extend_ast(
-        &mut self,
-        errors: &mut Vec<ConstructionError>,
-        extension: &Node<ast::SchemaExtension>,
-    ) {
+    fn extend_ast(&mut self, extension: &Node<ast::SchemaExtension>) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
         self.directives.extend(
             extension
@@ -333,12 +340,11 @@ impl Schema {
                 .iter()
                 .map(|d| d.to_component(origin.clone())),
         );
-        self.add_root_operations(errors, origin, &extension.root_operations)
+        self.add_root_operations(origin, &extension.root_operations)
     }
 
     fn add_root_operations(
         &mut self,
-        errors: &mut Vec<ConstructionError>,
         origin: ComponentOrigin,
         root_operations: &[(ast::OperationType, Name)],
     ) {
@@ -351,10 +357,11 @@ impl Schema {
             if entry.is_none() {
                 *entry = Some(object_type_name.to_component(origin.clone()))
             } else {
-                errors.push(ConstructionError::DuplicateRootOperation {
-                    operation_type: *operation_type,
-                    object_type: object_type_name.clone(),
-                })
+                self.construction_errors
+                    .push(ConstructionError::DuplicateRootOperation {
+                        operation_type: *operation_type,
+                        object_type: object_type_name.clone(),
+                    })
             }
         }
     }

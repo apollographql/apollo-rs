@@ -2,7 +2,6 @@ use super::InputDatabase;
 use crate::ast;
 use crate::diagnostics::DiagnosticData;
 use crate::diagnostics::Label;
-use crate::executable::ConstructionError;
 use crate::schema::Name;
 use crate::ApolloDiagnostic;
 use crate::Arc;
@@ -43,15 +42,6 @@ pub trait ReprDatabase: InputDatabase {
 
     #[salsa::invoke(schema)]
     fn schema(&self) -> Arc<crate::Schema>;
-
-    #[salsa::invoke(executable_document_result)]
-    fn executable_document_result(
-        &self,
-        file_id: FileId,
-    ) -> (
-        Arc<crate::ExecutableDocument>,
-        Result<(), Arc<Vec<ConstructionError>>>,
-    );
 
     #[salsa::invoke(executable_document)]
     fn executable_document(&self, file_id: FileId) -> Arc<crate::ExecutableDocument>;
@@ -163,23 +153,14 @@ fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
     for file_id in db.type_definition_files() {
         builder.add_document(&db.ast(file_id))
     }
-    let (schema, _orphan_extensions) = builder.build();
-    Arc::new(schema)
-}
-
-fn executable_document_result(
-    db: &dyn ReprDatabase,
-    file_id: FileId,
-) -> (
-    Arc<crate::ExecutableDocument>,
-    Result<(), Arc<Vec<ConstructionError>>>,
-) {
-    let (doc, result) = crate::ExecutableDocument::from_ast(&db.schema(), &db.ast(file_id));
-    (Arc::new(doc), result.map_err(Arc::new))
+    Arc::new(builder.build())
 }
 
 fn executable_document(db: &dyn ReprDatabase, file_id: FileId) -> Arc<crate::ExecutableDocument> {
-    db.executable_document_result(file_id).0
+    Arc::new(crate::ExecutableDocument::from_ast(
+        &db.schema(),
+        &db.ast(file_id),
+    ))
 }
 
 fn implementers_map(db: &dyn ReprDatabase) -> Arc<HashMap<Name, HashSet<Name>>> {

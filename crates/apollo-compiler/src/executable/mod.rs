@@ -1,8 +1,11 @@
 use crate::ast;
 use crate::ast::impls::directives_by_name;
 use crate::schema::FieldLookupError;
+use crate::Arc;
+use crate::FileId;
 use crate::Node;
 use crate::Schema;
+use crate::SourceFile;
 use indexmap::map::Entry;
 use indexmap::IndexMap;
 use std::collections::HashSet;
@@ -17,8 +20,18 @@ pub use crate::ast::{
 };
 
 /// Executable definitions, annotated with type information
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct ExecutableDocument {
+    /// If this document was originally parsed from a source file,
+    /// that file and its ID.
+    ///
+    /// The document may have been modified since.
+    pub source: Option<(FileId, Arc<SourceFile>)>,
+
+    /// Errors that occurred when constructing this document,
+    /// either parsing a source file or converting from AST.
+    pub construction_errors: Vec<ConstructionError>,
+
     pub anonymous_operation: Option<Node<Operation>>,
     pub named_operations: IndexMap<Name, Node<Operation>>,
     pub fragments: IndexMap<Name, Node<Fragment>>,
@@ -141,19 +154,15 @@ pub enum ExecutableDefinitionName {
 pub struct GetOperationError();
 
 impl ExecutableDocument {
+    /// Create an empty document, to be filled programatically
     pub fn new() -> Self {
         Self {
+            source: None,
+            construction_errors: Vec::new(),
             anonymous_operation: None,
             named_operations: IndexMap::new(),
             fragments: IndexMap::new(),
         }
-    }
-
-    pub fn from_ast(
-        schema: &Schema,
-        document: &ast::Document,
-    ) -> (Self, Result<(), Vec<ConstructionError>>) {
-        self::from_ast::document_from_ast(schema, document)
     }
 
     /// Returns an iterator of operations, both anonymous and named
@@ -226,6 +235,24 @@ impl ExecutableDocument {
     }
 
     serialize_method!();
+}
+
+impl Eq for ExecutableDocument {}
+
+/// `source` and `construction_errors` are ignored for comparison
+impl PartialEq for ExecutableDocument {
+    fn eq(&self, other: &Self) -> bool {
+        let Self {
+            source: _,
+            construction_errors: _,
+            anonymous_operation,
+            named_operations,
+            fragments,
+        } = self;
+        *anonymous_operation == other.anonymous_operation
+            && *named_operations == other.named_operations
+            && *fragments == other.fragments
+    }
 }
 
 impl<'a> OperationRef<'a> {

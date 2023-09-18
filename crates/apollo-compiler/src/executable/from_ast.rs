@@ -6,10 +6,13 @@ struct ConstructionErrors {
     errors: Vec<ConstructionError>,
 }
 
-pub(super) fn document_from_ast(
-    schema: &Schema,
-    document: &ast::Document,
-) -> (ExecutableDocument, Result<(), Vec<ConstructionError>>) {
+impl ExecutableDocument {
+    pub(crate) fn from_ast(schema: &Schema, document: &ast::Document) -> Self {
+        document_from_ast(schema, document)
+    }
+}
+
+pub(super) fn document_from_ast(schema: &Schema, document: &ast::Document) -> ExecutableDocument {
     let mut named_operations = IndexMap::new();
     let mut anonymous_operation = None;
     let mut fragments = IndexMap::new();
@@ -68,15 +71,13 @@ pub(super) fn document_from_ast(
         }
     }
     let doc = ExecutableDocument {
+        source: document.source.clone(),
+        construction_errors: errors.errors,
         named_operations,
         anonymous_operation,
         fragments,
     };
-    if errors.errors.is_empty() {
-        (doc, Ok(()))
-    } else {
-        (doc, Err(errors.errors))
-    }
+    doc
 }
 
 impl Operation {

@@ -23,10 +23,21 @@ pub use crate::ast::{
     Directive, DirectiveDefinition, DirectiveLocation, EnumValueDefinition, FieldDefinition,
     InputValueDefinition, Name, NamedType, Type, Value,
 };
+use crate::Arc;
+use crate::SourceFile;
 
 /// High-level representation of a GraphQL schema
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Schema {
+    /// Source files, if any, that were parsed to contribute to this schema.
+    ///
+    /// The schema (including parsed definitions) may have been modified since parsing.
+    pub sources: IndexMap<FileId, Arc<SourceFile>>,
+
+    /// Errors that occurred when constructing this schema,
+    /// either parsing a source file or converting from AST.
+    pub construction_errors: Vec<ConstructionError>,
+
     /// The description of the `schema` definition
     pub description: Option<NodeStr>,
 
@@ -233,9 +244,7 @@ impl Schema {
     /// It can then be filled programatically.
     #[allow(clippy::new_without_default)] // not a great implicit default in generic contexts
     pub fn new() -> Self {
-        let (schema, _errors) = SchemaBuilder::new().build();
-        // _errors already debug_assert’ed empty in SchemaBuilder::new
-        schema
+        SchemaBuilder::new().build()
     }
 
     /// Returns a schema built from one AST document
@@ -248,7 +257,7 @@ impl Schema {
     /// * `Definition::SchemaExtension` variants if no `Definition::SchemaDefinition` was found
     /// * `Definition::*TypeExtension` if no `Definition::*TypeDefinition` with the same name
     ///   was found, or if it is a different kind of type
-    pub fn from_ast(document: &ast::Document) -> (Self, Vec<ConstructionError>) {
+    pub fn from_ast(document: &ast::Document) -> Self {
         let mut builder = SchemaBuilder::new();
         builder.add_document(document);
         builder.build()
@@ -735,6 +744,31 @@ impl InputObjectType {
 
     directive_methods!();
     serialize_method!();
+}
+
+impl Eq for Schema {}
+
+impl PartialEq for Schema {
+    fn eq(&self, other: &Self) -> bool {
+        let Self {
+            sources: _,
+            construction_errors: _,
+            description,
+            directives,
+            directive_definitions,
+            types,
+            query_type,
+            mutation_type,
+            subscription_type,
+        } = self;
+        *description == other.description
+            && *directives == other.directives
+            && *directive_definitions == other.directive_definitions
+            && *types == other.types
+            && *query_type == other.query_type
+            && *mutation_type == other.mutation_type
+            && *subscription_type == other.subscription_type
+    }
 }
 
 impl From<Node<ScalarType>> for ExtendedType {
