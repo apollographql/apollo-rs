@@ -10,7 +10,7 @@ use indexmap::map::Entry;
 use indexmap::IndexMap;
 use std::collections::HashSet;
 
-mod from_ast;
+pub(crate) mod from_ast;
 mod serialize;
 #[cfg(test)]
 mod tests;
@@ -18,6 +18,7 @@ mod tests;
 pub use crate::ast::{
     Argument, Directive, Name, NamedType, OperationType, Type, Value, VariableDefinition,
 };
+use crate::Parser;
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone)]
@@ -163,6 +164,13 @@ impl ExecutableDocument {
             named_operations: IndexMap::new(),
             fragments: IndexMap::new(),
         }
+    }
+
+    /// Parse an executable document with the default configuration.
+    ///
+    /// Create a [`Parser`] to use different parser configuration.
+    pub fn parse(schema: &Schema, source_text: impl Into<String>) -> Self {
+        Parser::new().parse_executable(schema, source_text)
     }
 
     /// Returns an iterator of operations, both anonymous and named

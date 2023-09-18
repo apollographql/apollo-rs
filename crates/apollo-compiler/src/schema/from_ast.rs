@@ -51,7 +51,7 @@ impl SchemaBuilder {
             document
         });
 
-        builder.add_document(built_in);
+        builder.add_ast_document(built_in);
         debug_assert!(
             builder.schema.construction_errors.is_empty()
                 && builder.orphan_type_extensions.is_empty()
@@ -64,10 +64,17 @@ impl SchemaBuilder {
         builder
     }
 
+    /// Parse an input file with the default configuration as an additional input for this schema.
+    ///
+    /// Create a [`Parser`] to use different parser configuration.
+    pub fn parse(&mut self, source_text: impl Into<String>) {
+        Parser::new().parse_into_schema_builder(source_text, self)
+    }
+
     /// Add an AST document to the schema being built
     ///
     /// Executable definitions, if any, will be silently ignored.
-    pub fn add_document(&mut self, document: &ast::Document) {
+    pub(crate) fn add_ast_document(&mut self, document: &ast::Document) {
         for definition in &document.definitions {
             match definition {
                 ast::Definition::SchemaDefinition(def) => {

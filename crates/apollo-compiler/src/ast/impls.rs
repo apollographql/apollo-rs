@@ -1,6 +1,9 @@
 use super::*;
+use crate::schema::SchemaBuilder;
+use crate::ExecutableDocument;
 use crate::ParseError;
 use crate::Parser;
+use crate::Schema;
 use std::fmt;
 use std::hash;
 
@@ -36,6 +39,25 @@ impl Document {
         } else {
             &[]
         }
+    }
+
+    /// Build a schema with this AST document as its sole input.
+    pub fn to_schema(&self) -> Schema {
+        let mut builder = Schema::builder();
+        builder.add_ast_document(self);
+        builder.build()
+    }
+
+    /// Add this AST document as an additional input to a schema builder.
+    ///
+    /// This can be used to build a schema from multiple documents or source files.
+    pub fn to_schema_builder(&self, builder: &mut SchemaBuilder) {
+        builder.add_ast_document(self)
+    }
+
+    /// Build an executable document from this AST, with the given schema
+    pub fn to_executable(&self, schema: &Schema) -> ExecutableDocument {
+        crate::executable::from_ast::document_from_ast(schema, self)
     }
 
     serialize_method!();

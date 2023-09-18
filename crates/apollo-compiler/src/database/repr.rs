@@ -151,16 +151,13 @@ fn tokens_reached(db: &dyn ReprDatabase, file_id: FileId) -> usize {
 fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
     let mut builder = crate::Schema::builder();
     for file_id in db.type_definition_files() {
-        builder.add_document(&db.ast(file_id))
+        builder.add_ast_document(&db.ast(file_id))
     }
     Arc::new(builder.build())
 }
 
 fn executable_document(db: &dyn ReprDatabase, file_id: FileId) -> Arc<crate::ExecutableDocument> {
-    Arc::new(crate::ExecutableDocument::from_ast(
-        &db.schema(),
-        &db.ast(file_id),
-    ))
+    Arc::new(db.ast(file_id).to_executable(&db.schema()))
 }
 
 fn implementers_map(db: &dyn ReprDatabase) -> Arc<HashMap<Name, HashSet<Name>>> {

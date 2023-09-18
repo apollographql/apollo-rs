@@ -1,6 +1,9 @@
 use crate::ast::Document;
+use crate::schema::SchemaBuilder;
 use crate::Arc;
+use crate::ExecutableDocument;
 use crate::FileId;
+use crate::Schema;
 use std::fmt;
 
 /// Configuration for parsing an input string as GraphQL syntax
@@ -22,6 +25,10 @@ pub struct SourceFile {
 pub struct ParseError(pub(crate) apollo_parser::Error);
 
 impl Parser {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Configure the recursion to use while parsing.
     pub fn recursion_limit(&mut self, value: usize) -> &mut Self {
         self.recursion_limit = Some(value);
@@ -36,6 +43,11 @@ impl Parser {
         self
     }
 
+    /// Parse the given source text into an AST document.
+    ///
+    /// Parsing is fault-tolerant, so a document is always returned.
+    /// In case of a parse error, [`Document::parse_errors`] will return relevant information
+    /// and some nodes may be missing in the constructed document.
     pub fn parse_ast(&mut self, source_text: impl Into<String>) -> Document {
         self.parse_with_file_id(source_text, FileId::new())
     }
@@ -63,7 +75,44 @@ impl Parser {
         Document::from_cst(tree.document(), file_id, source_file)
     }
 
-    /// What level of recursion was reached during the last call to [`parse`][Self::parse].
+    /// Parse the given source text as the sole input file of a schema.
+    ///
+    /// To have multiple files contribute to a schema,
+    /// use [`Schema::builder`] and [`Parser::parse_into_schema_builder`].
+    ///
+    /// Parsing is fault-tolerant, so a schema is always returned.
+    /// TODO: document how to validate
+    pub fn parse_schema(&mut self, source_text: impl Into<String>) -> Schema {
+        self.parse_ast(source_text).to_schema()
+    }
+
+    /// Parse the given source text as an additional input to a schema builder.
+    ///
+    /// This can be used to build a schema from multiple source files.
+    ///
+    /// Parsing is fault-tolerant, so this is infallible.
+    /// TODO: document how to validate.
+    pub fn parse_into_schema_builder(
+        &mut self,
+        source_text: impl Into<String>,
+        builder: &mut SchemaBuilder,
+    ) {
+        self.parse_ast(source_text).to_schema_builder(builder)
+    }
+
+    /// Parse the given source text into an executable document, with the given schema.
+    ///
+    /// Parsing is fault-tolerant, so a document is always returned.
+    /// TODO: document how to validate
+    pub fn parse_executable(
+        &mut self,
+        schema: &Schema,
+        source_text: impl Into<String>,
+    ) -> ExecutableDocument {
+        self.parse_ast(source_text).to_executable(schema)
+    }
+
+    /// What level of recursion was reached during the last call to a `parse_*` method.
     ///
     /// Collecting this on a corpus of documents can help decide
     /// how to set [`recursion_limit`][Self::recursion_limit].
@@ -71,7 +120,7 @@ impl Parser {
         self.recursion_reached
     }
 
-    /// How many tokens were created during the last call to [`parse`][Self::parse].
+    /// How many tokens were created during the last call to a `parse_*` method.
     ///
     /// Collecting this on a corpus of documents can help decide
     /// how to set [`recursion_limit`][Self::token_limit].

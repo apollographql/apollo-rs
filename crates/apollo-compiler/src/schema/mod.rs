@@ -24,6 +24,7 @@ pub use crate::ast::{
     InputValueDefinition, Name, NamedType, Type, Value,
 };
 use crate::Arc;
+use crate::Parser;
 use crate::SourceFile;
 
 /// High-level representation of a GraphQL schema
@@ -232,12 +233,6 @@ macro_rules! directive_methods {
 }
 
 impl Schema {
-    /// Returns a new builder for creating a Schema from AST documents,
-    /// initialized with built-in directives, built-in scalars, and introspection types
-    pub fn builder() -> SchemaBuilder {
-        SchemaBuilder::new()
-    }
-
     /// Returns an (almost) empty schema.
     ///
     /// It starts with built-in directives, built-in scalars, and introspection types.
@@ -247,20 +242,18 @@ impl Schema {
         SchemaBuilder::new().build()
     }
 
-    /// Returns a schema built from one AST document
+    /// Parse a single source file into a schema, with the default parser configuration.
     ///
-    /// The schema also contains built-in directives, built-in scalars, and introspection types.
-    ///
-    /// Additionally, orphan extensions that are not represented in `Schema`
-    /// are returned separately:
-    ///
-    /// * `Definition::SchemaExtension` variants if no `Definition::SchemaDefinition` was found
-    /// * `Definition::*TypeExtension` if no `Definition::*TypeDefinition` with the same name
-    ///   was found, or if it is a different kind of type
-    pub fn from_ast(document: &ast::Document) -> Self {
-        let mut builder = SchemaBuilder::new();
-        builder.add_document(document);
-        builder.build()
+    /// Create a [`Parser`] to use different parser configuration.
+    /// Use [`builder()`][Self::builder] to build a schema from multiple parsed files.
+    pub fn parse(source_text: impl Into<String>) -> Self {
+        Parser::default().parse_schema(source_text)
+    }
+
+    /// Returns a new builder for creating a Schema from AST documents,
+    /// initialized with built-in directives, built-in scalars, and introspection types
+    pub fn builder() -> SchemaBuilder {
+        SchemaBuilder::new()
     }
 
     /// Returns the type with the given name, if it is a scalar type

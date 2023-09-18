@@ -6,13 +6,7 @@ struct ConstructionErrors {
     errors: Vec<ConstructionError>,
 }
 
-impl ExecutableDocument {
-    pub(crate) fn from_ast(schema: &Schema, document: &ast::Document) -> Self {
-        document_from_ast(schema, document)
-    }
-}
-
-pub(super) fn document_from_ast(schema: &Schema, document: &ast::Document) -> ExecutableDocument {
+pub(crate) fn document_from_ast(schema: &Schema, document: &ast::Document) -> ExecutableDocument {
     let mut named_operations = IndexMap::new();
     let mut anonymous_operation = None;
     let mut fragments = IndexMap::new();
