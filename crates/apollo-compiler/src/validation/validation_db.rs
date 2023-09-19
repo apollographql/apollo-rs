@@ -257,20 +257,20 @@ fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
 
     let schema = ast::TypeWithExtensions {
         definition: schema_definition.unwrap_or_else(|| {
-            Node::new_synthetic(ast::SchemaDefinition {
+            Node::new(ast::SchemaDefinition {
                 description: None,
                 directives: vec![],
                 root_operations: {
                     let mut operations = Vec::with_capacity(3);
-                    let query_name = ast::Name::new_synthetic("Query");
+                    let query_name = ast::Name::new("Query");
                     if objects.contains_key(&query_name) {
                         operations.push((ast::OperationType::Query, query_name));
                     }
-                    let mutation_name = ast::Name::new_synthetic("Mutation");
+                    let mutation_name = ast::Name::new("Mutation");
                     if objects.contains_key(&mutation_name) {
                         operations.push((ast::OperationType::Mutation, mutation_name));
                     }
-                    let subscription_name = ast::Name::new_synthetic("Subscription");
+                    let subscription_name = ast::Name::new("Subscription");
                     if objects.contains_key(&subscription_name) {
                         operations.push((ast::OperationType::Subscription, subscription_name));
                     }

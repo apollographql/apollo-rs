@@ -28,7 +28,7 @@ pub(crate) fn validate_operation(
     let against_type = schema.root_operation(operation.operation_type);
 
     let named_fragments = db.ast_named_fragments(operation.location().unwrap().file_id());
-    let q = ast::NamedType::new_synthetic("Query");
+    let q = ast::NamedType::new("Query");
     let is_introspection_query = operation.operation_type == ast::OperationType::Query
         && super::selection::operation_fields(
             &named_fragments,

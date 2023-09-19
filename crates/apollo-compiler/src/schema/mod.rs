@@ -5,13 +5,10 @@ use crate::FileId;
 use crate::Node;
 use crate::NodeLocation;
 use crate::NodeStr;
-use indexmap::Equivalent;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
-use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::hash::Hash;
 use std::sync::OnceLock;
 
 mod component;
@@ -26,10 +23,23 @@ pub use crate::ast::{
     Directive, DirectiveDefinition, DirectiveLocation, EnumValueDefinition, FieldDefinition,
     InputValueDefinition, Name, NamedType, Type, Value,
 };
+use crate::Arc;
+use crate::Parser;
+use crate::SourceFile;
+use std::path::Path;
 
 /// High-level representation of a GraphQL schema
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Schema {
+    /// Source files, if any, that were parsed to contribute to this schema.
+    ///
+    /// The schema (including parsed definitions) may have been modified since parsing.
+    pub sources: IndexMap<FileId, Arc<SourceFile>>,
+
+    /// Errors that occurred when building this schema,
+    /// either parsing a source file or converting from AST.
+    pub build_errors: Vec<BuildError>,
+
     /// The description of the `schema` definition
     pub description: Option<NodeStr>,
 
@@ -77,12 +87,7 @@ pub struct ScalarType {
 pub struct ObjectType {
     pub name: Name,
     pub description: Option<NodeStr>,
-
-    /// * Keys: name of the implemented interface
-    /// * Values: which object type extension defined this implementation,
-    ///   or `None` for the object type definition.
     pub implements_interfaces: IndexMap<Name, ComponentOrigin>,
-
     pub directives: Vec<Component<Directive>>,
 
     /// Explicit field definitions.
@@ -139,6 +144,64 @@ pub struct InputObjectType {
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
 }
 
+/// AST node that has been skipped during conversion to `Schema`
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BuildError {
+    /// Found an executable definition, which is unexpected when building a schema.
+    ///
+    /// If this is intended, use `parse_mixed`.
+    UnexpectedExecutableDefinition(ast::Definition),
+
+    /// Found multiple `schema` definitions,
+    /// or multiple type or directive definitions with the same name.
+    ///
+    /// `Definition::*Definition` variant
+    DefinitionCollision(ast::Definition),
+
+    /// Found an extension without a corresponding definition to extend
+    ///
+    /// `Definition::*Extension` variant
+    OrphanExtension(ast::Definition),
+
+    DuplicateRootOperation {
+        operation_type: ast::OperationType,
+        object_type: NamedType,
+    },
+
+    DuplicateImplementsInterface {
+        implementer_name: NamedType,
+        interface_name: Name,
+    },
+
+    FieldNameCollision {
+        /// Object type or interface type
+        type_name: NamedType,
+        field: Node<ast::FieldDefinition>,
+    },
+
+    EnumValueNameCollision {
+        enum_name: NamedType,
+        value: Node<ast::EnumValueDefinition>,
+    },
+
+    UnionMemberNameCollision {
+        union_name: NamedType,
+        member: NamedType,
+    },
+
+    InputFieldNameCollision {
+        type_name: NamedType,
+        field: Node<ast::InputValueDefinition>,
+    },
+}
+
+/// Could not find the requested field definition
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FieldLookupError {
+    NoSuchType,
+    NoSuchField,
+}
+
 macro_rules! directive_by_name_method {
     () => {
         /// Returns the first directive with the given name, if any.
@@ -151,7 +214,7 @@ macro_rules! directive_by_name_method {
     };
 }
 
-pub fn directives_by_name<'def: 'name, 'name>(
+fn directives_by_name<'def: 'name, 'name>(
     directives: &'def [Component<Directive>],
     name: &'name str,
 ) -> impl Iterator<Item = &'def Component<Directive>> + 'name {
@@ -176,46 +239,31 @@ macro_rules! directive_methods {
 }
 
 impl Schema {
-    /// Returns a new builder for creating a Schema from AST documents,
-    /// initialized with built-in directives, built-in scalars, and introspection types
-    pub fn builder() -> SchemaBuilder {
-        SchemaBuilder::new()
-    }
-
     /// Returns an (almost) empty schema.
     ///
     /// It starts with built-in directives, built-in scalars, and introspection types.
     /// It can then be filled programatically.
     #[allow(clippy::new_without_default)] // not a great implicit default in generic contexts
     pub fn new() -> Self {
-        let (schema, _orphan_definitions) = SchemaBuilder::new().build();
-        // _orphan_definitions already debug_assert’ed empty in SchemaBuilder::new
-        schema
+        SchemaBuilder::new().build()
     }
 
-    /// Returns a schema built from one AST document
+    /// Parse a single source file into a schema, with the default parser configuration.
     ///
-    /// The schema also contains built-in directives, built-in scalars, and introspection types.
-    ///
-    /// Additionally, orphan extensions that are not represented in `Schema`
-    /// are returned separately:
-    ///
-    /// * `Definition::SchemaExtension` variants if no `Definition::SchemaDefinition` was found
-    /// * `Definition::*TypeExtension` if no `Definition::*TypeDefinition` with the same name
-    ///   was found, or if it is a different kind of type
-    pub fn from_ast(document: &ast::Document) -> (Self, impl Iterator<Item = ast::Definition>) {
-        let mut builder = SchemaBuilder::new();
-        builder.add_document(document);
-        builder.build()
+    /// Create a [`Parser`] to use different parser configuration.
+    /// Use [`builder()`][Self::builder] to build a schema from multiple parsed files.
+    pub fn parse(source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+        Parser::default().parse_schema(source_text, path)
+    }
+
+    /// Returns a new builder for creating a Schema from AST documents,
+    /// initialized with built-in directives, built-in scalars, and introspection types
+    pub fn builder() -> SchemaBuilder {
+        SchemaBuilder::new()
     }
 
     /// Returns the type with the given name, if it is a scalar type
-    ///
-    /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_scalar<N>(&self, name: &N) -> Option<&ScalarType>
-    where
-        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
-    {
+    pub fn get_scalar(&self, name: &str) -> Option<&Node<ScalarType>> {
         if let Some(ExtendedType::Scalar(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -224,12 +272,7 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a object type
-    ///
-    /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_object<N>(&self, name: &N) -> Option<&ObjectType>
-    where
-        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
-    {
+    pub fn get_object(&self, name: &str) -> Option<&Node<ObjectType>> {
         if let Some(ExtendedType::Object(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -238,12 +281,7 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a interface type
-    ///
-    /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_interface<N>(&self, name: &N) -> Option<&InterfaceType>
-    where
-        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
-    {
+    pub fn get_interface(&self, name: &str) -> Option<&Node<InterfaceType>> {
         if let Some(ExtendedType::Interface(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -252,12 +290,7 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a union type
-    ///
-    /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_union<N>(&self, name: &N) -> Option<&UnionType>
-    where
-        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
-    {
+    pub fn get_union(&self, name: &str) -> Option<&Node<UnionType>> {
         if let Some(ExtendedType::Union(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -266,12 +299,7 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a enum type
-    ///
-    /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_enum<N>(&self, name: &N) -> Option<&EnumType>
-    where
-        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
-    {
+    pub fn get_enum(&self, name: &str) -> Option<&Node<EnumType>> {
         if let Some(ExtendedType::Enum(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -280,12 +308,7 @@ impl Schema {
     }
 
     /// Returns the type with the given name, if it is a input object type
-    ///
-    /// `name` can be of type [`&Name`][Name] or `&str`.
-    pub fn get_input_object<N>(&self, name: &N) -> Option<&InputObjectType>
-    where
-        N: ?Sized + Eq + Hash + Equivalent<NodeStr>,
-    {
+    pub fn get_input_object(&self, name: &str) -> Option<&Node<InputObjectType>> {
         if let Some(ExtendedType::InputObject(ty)) = self.types.get(name) {
             Some(ty)
         } else {
@@ -330,21 +353,19 @@ impl Schema {
     }
 
     /// Returns the definition of a type’s explicit field or meta-field.
-    ///
-    /// `type_name` and `field_name` can be of type [`&Name`][Name] or `&str`.
-    pub fn type_field<N1, N2>(
+    pub fn type_field(
         &self,
-        type_name: &N1,
-        field_name: &N2,
-    ) -> Option<&Component<FieldDefinition>>
-    where
-        N1: ?Sized + Eq + Hash + Equivalent<NodeStr>,
-        N2: ?Sized + Eq + Hash + Equivalent<NodeStr>,
-    {
+        type_name: &str,
+        field_name: &str,
+    ) -> Result<&Component<FieldDefinition>, FieldLookupError> {
+        let ty_def = self
+            .types
+            .get(type_name)
+            .ok_or(FieldLookupError::NoSuchType)?;
         self.meta_fields_definitions(type_name)
             .iter()
-            .find(|def| field_name.equivalent(&def.name))
-            .or_else(|| match self.types.get(type_name)? {
+            .find(|def| def.name == field_name)
+            .or_else(|| match ty_def {
                 ExtendedType::Object(ty) => ty.fields.get(field_name),
                 ExtendedType::Interface(ty) => ty.fields.get(field_name),
                 ExtendedType::Scalar(_)
@@ -352,14 +373,17 @@ impl Schema {
                 | ExtendedType::Enum(_)
                 | ExtendedType::InputObject(_) => None,
             })
+            .ok_or(FieldLookupError::NoSuchField)
     }
 
     /// Returns a map of interface names to names of types that implement that interface
     ///
     /// `Schema` only stores the inverse relationship
     /// (in [`ObjectType::implements_interfaces`] and [`InterfaceType::implements_interfaces`]),
-    /// so finding the implementers of even one interface requires a linear scan.
-    /// Gathering them all at once amorticizes that cost, if the map is cached.
+    /// so iterating the implementers of an interface requires a linear scan
+    /// of all types in the schema.
+    /// If that is repeated for multiple interfaces,
+    /// gathering them all at once amorticizes that cost.
     #[doc(hidden)] // use the Salsa query instead
     pub fn implementers_map(&self) -> HashMap<Name, HashSet<Name>> {
         let mut map = HashMap::<Name, HashSet<Name>>::new();
@@ -385,28 +409,19 @@ impl Schema {
     ///
     /// * `maybe_subtype` implements the interface `abstract_type`
     /// * `maybe_subtype` is a member of the union type `abstract_type`
-    ///
-    /// `abstract_type` and `maybe_subtype` can be of type [`&Name`][Name] or `&str`.
-    ///
-    /// The `implementers_map` argument can be created with
-    /// the [`implementers_map`][Self::implementers_map] method.
-    /// This may return incorrect results if the schema was modified since the map was created.
-    #[doc(hidden)] // use the Salsa query instead
-    pub fn is_subtype<N1, N2>(
-        &self,
-        implementers_map: &HashMap<Name, HashSet<Name>>,
-        abstract_type: &N1,
-        maybe_subtype: &N2,
-    ) -> bool
-    where
-        N1: ?Sized + Eq + Hash,
-        N2: ?Sized + Eq + Hash,
-        NodeStr: Borrow<N1> + Borrow<N2>,
-    {
+    pub fn is_subtype(&self, abstract_type: &str, maybe_subtype: &str) -> bool {
         self.types.get(abstract_type).is_some_and(|ty| match ty {
-            ExtendedType::Interface(_) => implementers_map
-                .get(abstract_type)
-                .is_some_and(|implementers| implementers.contains(maybe_subtype)),
+            ExtendedType::Interface(_) => self.types.get(maybe_subtype).is_some_and(|ty2| {
+                match ty2 {
+                    ExtendedType::Object(def) => &def.implements_interfaces,
+                    ExtendedType::Interface(def) => &def.implements_interfaces,
+                    ExtendedType::Scalar(_)
+                    | ExtendedType::Union(_)
+                    | ExtendedType::Enum(_)
+                    | ExtendedType::InputObject(_) => return false,
+                }
+                .contains_key(abstract_type)
+            }),
             ExtendedType::Union(def) => def.members.contains_key(maybe_subtype),
             ExtendedType::Scalar(_)
             | ExtendedType::Object(_)
@@ -416,42 +431,40 @@ impl Schema {
     }
 
     /// Return the meta-fields of the given type
-    pub(crate) fn meta_fields_definitions<N>(
+    pub(crate) fn meta_fields_definitions(
         &self,
-        type_name: &N,
-    ) -> &'static [Component<FieldDefinition>]
-    where
-        N: ?Sized + Equivalent<NodeStr>,
-    {
+        type_name: &str,
+    ) -> &'static [Component<FieldDefinition>] {
         static ROOT_QUERY_FIELDS: LazyLock<[Component<FieldDefinition>; 3]> = LazyLock::new(|| {
             [
                 // __typename: String!
-                Component::new_synthetic(FieldDefinition {
+                Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new_synthetic("__typename"),
+                    name: Name::new("__typename"),
                     arguments: Vec::new(),
                     ty: Type::new_named("String").non_null(),
                     directives: Vec::new(),
                 }),
                 // __schema: __Schema!
-                Component::new_synthetic(FieldDefinition {
+                Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new_synthetic("__schema"),
+                    name: Name::new("__schema"),
                     arguments: Vec::new(),
                     ty: Type::new_named("__Schema").non_null(),
                     directives: Vec::new(),
                 }),
                 // __type(name: String!): __Type
-                Component::new_synthetic(FieldDefinition {
+                Component::new(FieldDefinition {
                     description: None,
-                    name: Name::new_synthetic("__type"),
-                    arguments: vec![Node::new_synthetic(InputValueDefinition {
+                    name: Name::new("__type"),
+                    arguments: vec![InputValueDefinition {
                         description: None,
-                        name: Name::new_synthetic("name"),
+                        name: Name::new("name"),
                         ty: ast::Type::new_named("String").non_null(),
                         default_value: None,
                         directives: Vec::new(),
-                    })],
+                    }
+                    .into()],
                     ty: Type::new_named("__Type"),
                     directives: Vec::new(),
                 }),
@@ -460,7 +473,7 @@ impl Schema {
         if self
             .query_type
             .as_ref()
-            .is_some_and(|n| type_name.equivalent(&n.node))
+            .is_some_and(|n| n.node == type_name)
         {
             // __typename: String!
             // __schema: __Schema!
@@ -469,6 +482,35 @@ impl Schema {
         } else {
             // __typename: String!
             std::slice::from_ref(&ROOT_QUERY_FIELDS.get()[0])
+        }
+    }
+
+    /// Returns whether the type `ty` is defined as is an input type
+    ///
+    /// <https://spec.graphql.org/October2021/#sec-Input-and-Output-Types>
+    pub fn is_input_type(&self, ty: &Type) -> bool {
+        match self.types.get(ty.inner_named_type()) {
+            Some(ExtendedType::Scalar(_))
+            | Some(ExtendedType::Enum(_))
+            | Some(ExtendedType::InputObject(_)) => true,
+            Some(ExtendedType::Object(_))
+            | Some(ExtendedType::Interface(_))
+            | Some(ExtendedType::Union(_))
+            | None => false,
+        }
+    }
+
+    /// Returns whether the type `ty` is defined as is an output type
+    ///
+    /// <https://spec.graphql.org/October2021/#sec-Input-and-Output-Types>
+    pub fn is_output_type(&self, ty: &Type) -> bool {
+        match self.types.get(ty.inner_named_type()) {
+            Some(ExtendedType::Scalar(_))
+            | Some(ExtendedType::Object(_))
+            | Some(ExtendedType::Interface(_))
+            | Some(ExtendedType::Union(_))
+            | Some(ExtendedType::Enum(_)) => true,
+            Some(ExtendedType::InputObject(_)) | None => false,
         }
     }
 
@@ -573,6 +615,17 @@ impl ExtendedType {
             Self::Union(ty) => directives_by_name(&ty.directives, name),
             Self::Enum(ty) => directives_by_name(&ty.directives, name),
             Self::InputObject(ty) => directives_by_name(&ty.directives, name),
+        }
+    }
+
+    pub fn description(&self) -> Option<&NodeStr> {
+        match self {
+            Self::Scalar(ty) => ty.description.as_ref(),
+            Self::Object(ty) => ty.description.as_ref(),
+            Self::Interface(ty) => ty.description.as_ref(),
+            Self::Union(ty) => ty.description.as_ref(),
+            Self::Enum(ty) => ty.description.as_ref(),
+            Self::InputObject(ty) => ty.description.as_ref(),
         }
     }
 
@@ -709,6 +762,31 @@ impl InputObjectType {
 
     directive_methods!();
     serialize_method!();
+}
+
+impl Eq for Schema {}
+
+impl PartialEq for Schema {
+    fn eq(&self, other: &Self) -> bool {
+        let Self {
+            sources: _,
+            build_errors: _,
+            description,
+            directives,
+            directive_definitions,
+            types,
+            query_type,
+            mutation_type,
+            subscription_type,
+        } = self;
+        *description == other.description
+            && *directives == other.directives
+            && *directive_definitions == other.directive_definitions
+            && *types == other.types
+            && *query_type == other.query_type
+            && *mutation_type == other.mutation_type
+            && *subscription_type == other.subscription_type
+    }
 }
 
 impl From<Node<ScalarType>> for ExtendedType {

@@ -266,11 +266,11 @@ pub enum DiagnosticData {
         // field type
         ty: &'static str,
     },
-    #[error("`${name}` variable must be of an input type")]
+    #[error("`{name}` field must be of an input type")]
     InputType {
-        // variable name
+        /// Field name.
         name: String,
-        // variable type
+        /// The kind of type that the field is declared with.
         ty: &'static str,
     },
     #[error(
@@ -281,6 +281,13 @@ pub enum DiagnosticData {
     QueryRootOperationType,
     #[error("built-in scalars must be omitted for brevity")]
     BuiltInScalarDefinition,
+    #[error("`${name}` variable must be of an input type")]
+    VariableInputType {
+        /// Varialbe name.
+        name: String,
+        /// The kind of type that the variable is declared with.
+        ty: &'static str,
+    },
     #[error("unused variable: `{name}`")]
     UnusedVariable { name: String },
     #[error("`{name}` field must return an object type")]

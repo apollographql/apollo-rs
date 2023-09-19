@@ -34,7 +34,7 @@ impl<T> Node<T> {
     }
 
     /// Create a new `Node` for something created programatically, not parsed from a source file
-    pub fn new_synthetic(node: T) -> Self {
+    pub fn new(node: T) -> Self {
         Self(Arc::new(NodeInner {
             location: None,
             node,
@@ -138,5 +138,11 @@ impl<T: hash::Hash> hash::Hash for NodeInner<T> {
 impl<T> AsRef<T> for Node<T> {
     fn as_ref(&self) -> &T {
         self
+    }
+}
+
+impl<T> From<T> for Node<T> {
+    fn from(node: T) -> Self {
+        Self::new(node)
     }
 }

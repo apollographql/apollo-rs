@@ -25,7 +25,7 @@ impl NodeStr {
 
     /// Create a new `NodeStr` programatically, not parsed from a source file
     #[inline]
-    pub fn new_synthetic(value: &str) -> Self {
+    pub fn new(value: &str) -> Self {
         Self(ThinArc::from_header_and_slice(None, value.as_bytes()))
     }
 
@@ -116,7 +116,7 @@ impl Ord for NodeStr {
 impl PartialOrd for NodeStr {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.as_str().partial_cmp(other.as_str())
+        Some(self.cmp(other))
     }
 }
 
@@ -145,6 +145,27 @@ impl PartialOrd<&'_ str> for NodeStr {
     #[inline]
     fn partial_cmp(&self, other: &&'_ str) -> Option<std::cmp::Ordering> {
         self.as_str().partial_cmp(*other)
+    }
+}
+
+impl From<&'_ str> for NodeStr {
+    #[inline]
+    fn from(value: &'_ str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<&'_ String> for NodeStr {
+    #[inline]
+    fn from(value: &'_ String) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<String> for NodeStr {
+    #[inline]
+    fn from(value: String) -> Self {
+        Self::new(&value)
     }
 }
 

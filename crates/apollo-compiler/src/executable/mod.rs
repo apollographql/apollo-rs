@@ -1,11 +1,18 @@
 use crate::ast;
+use crate::ast::impls::directives_by_name;
+use crate::schema;
+use crate::Arc;
+use crate::FileId;
 use crate::Node;
+use crate::Parser;
 use crate::Schema;
+use crate::SourceFile;
 use indexmap::map::Entry;
 use indexmap::IndexMap;
-use std::fmt;
+use std::collections::HashSet;
+use std::path::Path;
 
-mod from_ast;
+pub(crate) mod from_ast;
 mod serialize;
 #[cfg(test)]
 mod tests;
@@ -13,13 +20,22 @@ mod tests;
 pub use crate::ast::{
     Argument, Directive, Name, NamedType, OperationType, Type, Value, VariableDefinition,
 };
-use std::collections::HashSet;
 
 /// Executable definitions, annotated with type information
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct ExecutableDocument {
-    pub named_operations: IndexMap<Name, Node<Operation>>,
+    /// If this document was originally parsed from a source file,
+    /// that file and its ID.
+    ///
+    /// The document may have been modified since.
+    pub source: Option<(FileId, Arc<SourceFile>)>,
+
+    /// Errors that occurred when building this document,
+    /// either parsing a source file or converting from AST.
+    pub build_errors: Vec<BuildError>,
+
     pub anonymous_operation: Option<Node<Operation>>,
+    pub named_operations: IndexMap<Name, Node<Operation>>,
     pub fragments: IndexMap<Name, Node<Fragment>>,
 }
 
@@ -57,8 +73,8 @@ pub enum Selection {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Field {
-    /// The type of this field, resolved from context and schema
-    pub ty: Type,
+    /// The definition of this field in an object type or interface type definition in the schema
+    pub definition: Node<schema::FieldDefinition>,
     pub alias: Option<Name>,
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
@@ -79,17 +95,57 @@ pub struct InlineFragment {
     pub selection_set: SelectionSet,
 }
 
-/// Tried to create a selection set that would be invalid for the given schema.
-///
-/// This is not full validation of the executable document,
-/// only some type-related cases cause this error to be returned.
+/// AST node that has been skipped during conversion to `ExecutableDocument`
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TypeError(&'static str);
+pub enum BuildError {
+    /// Found a type system definition, which is unexpected when building an executable document.
+    ///
+    /// If this is intended, use `parse_mixed`.
+    UnexpectedTypeSystemDefinition(ast::Definition),
 
-impl fmt::Display for TypeError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}, validate for details", self.0)
-    }
+    /// Found multiple operations without a name
+    DuplicateAnonymousOperation(Node<ast::OperationDefinition>),
+
+    /// Found multiple operations with the same name
+    OperationNameCollision(Node<ast::OperationDefinition>),
+
+    /// Found multiple fragments with the same name
+    FragmentNameCollision(Node<ast::FragmentDefinition>),
+
+    /// The schema does not define a root operation
+    /// for the operation type of this operation definition
+    UndefinedRootOperation(Node<ast::OperationDefinition>),
+
+    /// Could not resolve the type of this field because the schema does not define
+    /// the type of its parent selection set
+    UndefinedType {
+        /// Which top-level executable definition contains this error
+        top_level: ExecutableDefinitionName,
+        /// Response keys (alias or name) of nested fields that contain the field with the error,
+        /// outer-most to inner-most.
+        ancestor_fields: Vec<Name>,
+        type_name: NamedType,
+        field: Node<ast::Field>,
+    },
+
+    /// Could not resolve the type of this field because the schema does not define it
+    UndefinedField {
+        /// Which top-level executable definition contains this error
+        top_level: ExecutableDefinitionName,
+        /// Response keys (alias or name) of nested fields that contain the field with the error,
+        /// outer-most to inner-most.
+        ancestor_fields: Vec<Name>,
+        type_name: NamedType,
+        field: Node<ast::Field>,
+    },
+}
+
+/// Designates by name a top-level definition in an executable document
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ExecutableDefinitionName {
+    AnonymousOperation,
+    NamedOperation(Name),
+    Fragment(Name),
 }
 
 /// A request error returned by [`ExecutableDocument::get_operation`]
@@ -105,8 +161,25 @@ impl fmt::Display for TypeError {
 pub struct GetOperationError();
 
 impl ExecutableDocument {
-    pub fn from_ast(schema: &Schema, document: &ast::Document) -> Result<Self, TypeError> {
-        self::from_ast::document_from_ast(schema, document)
+    /// Create an empty document, to be filled programatically
+    pub fn new() -> Self {
+        Self {
+            source: None,
+            build_errors: Vec::new(),
+            anonymous_operation: None,
+            named_operations: IndexMap::new(),
+            fragments: IndexMap::new(),
+        }
+    }
+
+    /// Parse an executable document with the default configuration.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// Create a [`Parser`] to use different parser configuration.
+    pub fn parse(schema: &Schema, source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+        Parser::new().parse_executable(schema, source_text, path)
     }
 
     /// Returns an iterator of operations, both anonymous and named
@@ -132,13 +205,10 @@ impl ExecutableDocument {
     /// with that name, which is expected to exist. When it is not given / null / `None`,
     /// the document is expected to contain a single operation (which may or may not be named)
     /// to avoid ambiguity.
-    pub fn get_operation<N>(
+    pub fn get_operation(
         &self,
-        name_request: Option<&N>,
-    ) -> Result<OperationRef<'_>, GetOperationError>
-    where
-        N: std::hash::Hash + indexmap::Equivalent<Name>,
-    {
+        name_request: Option<&str>,
+    ) -> Result<OperationRef<'_>, GetOperationError> {
         if let Some(name) = name_request {
             // Honor the request
             self.named_operations
@@ -158,7 +228,48 @@ impl ExecutableDocument {
         .ok_or(GetOperationError())
     }
 
+    /// Similar to [`get_operation`][Self::get_operation] but returns a mutable reference.
+    pub fn get_operation_mut(
+        &mut self,
+        name_request: Option<&str>,
+    ) -> Result<&mut Operation, GetOperationError> {
+        if let Some(name) = name_request {
+            // Honor the request
+            self.named_operations.get_mut(name)
+        } else if let Some(op) = &mut self.anonymous_operation {
+            // No name request, return the anonymous operation if it’s the only operation
+            self.named_operations.is_empty().then_some(op)
+        } else {
+            // No name request or anonymous operation, return a named operation if it’s the only one
+            let len = self.named_operations.len();
+            self.named_operations
+                .values_mut()
+                .next()
+                .and_then(|op| (len == 1).then_some(op))
+        }
+        .map(Node::make_mut)
+        .ok_or(GetOperationError())
+    }
+
     serialize_method!();
+}
+
+impl Eq for ExecutableDocument {}
+
+/// `source` and `build_errors` are ignored for comparison
+impl PartialEq for ExecutableDocument {
+    fn eq(&self, other: &Self) -> bool {
+        let Self {
+            source: _,
+            build_errors: _,
+            anonymous_operation,
+            named_operations,
+            fragments,
+        } = self;
+        *anonymous_operation == other.anonymous_operation
+            && *named_operations == other.named_operations
+            && *fragments == other.fragments
+    }
 }
 
 impl<'a> OperationRef<'a> {
@@ -231,52 +342,24 @@ impl Operation {
         self.operation_type == OperationType::Query
             && is_introspection_impl(document, &mut HashSet::new(), &self.selection_set)
     }
+
+    directive_methods!();
 }
 
 impl Fragment {
     pub fn type_condition(&self) -> &NamedType {
         &self.selection_set.ty
     }
+
+    directive_methods!();
 }
 
 impl SelectionSet {
     /// Create a new selection set
-    pub fn new(schema: &Schema, ty: NamedType) -> Result<Self, TypeError> {
-        if schema.types.contains_key(&ty) {
-            Ok(Self {
-                ty,
-                selections: Vec::new(),
-            })
-        } else {
-            Err(TypeError("no type definition with that name"))
-        }
-    }
-
-    /// Create a new selection set for the root of an operation
-    pub fn for_operation(
-        schema: &Schema,
-        operation_type: OperationType,
-    ) -> Result<Self, TypeError> {
-        let ty = schema
-            .root_operation(operation_type)
-            .ok_or(TypeError(
-                "missing root operation definition for the operation type",
-            ))?
-            .node
-            .clone();
-        if let Some(def) = schema.types.get(&ty) {
-            if def.is_object() {
-                Ok(Self {
-                    ty,
-                    selections: Vec::new(),
-                })
-            } else {
-                Err(TypeError(
-                    "type definition for the root operation is not an object type",
-                ))
-            }
-        } else {
-            Err(TypeError("missing type definition for the root operation"))
+    pub fn new(ty: impl Into<NamedType>) -> Self {
+        Self {
+            ty: ty.into(),
+            selections: Vec::new(),
         }
     }
 
@@ -291,47 +374,53 @@ impl SelectionSet {
 
     /// Create a new field to be added to this selection set with [`push`][Self::push]
     ///
-    /// Returns an error if the type of this selection set does not have a field named `name`,
-    /// or if that field’s own type is not defined.
-    pub fn new_field(&self, schema: &Schema, name: Name) -> Result<Field, TypeError> {
-        let ty = schema
-            .type_field(&self.ty, &name)
-            .ok_or(TypeError("no field definition with that name"))?
-            .ty
-            .clone();
-        let selection_set = SelectionSet::new(schema, ty.inner_named_type().clone())?;
-        Ok(Field {
-            ty,
-            alias: None,
-            name,
-            arguments: Vec::new(),
-            directives: Vec::new(),
-            selection_set,
-        })
+    /// Returns an error if the type of this selection set is not defined
+    /// or does not have a field named `name`.
+    pub fn new_field(
+        &self,
+        schema: &Schema,
+        name: impl Into<Name>,
+    ) -> Result<Field, schema::FieldLookupError> {
+        let name = name.into();
+        let definition = schema.type_field(&self.ty, &name)?.node.clone();
+        Ok(Field::new(name, definition))
     }
 
     /// Create a new inline fragment to be added to this selection set with [`push`][Self::push]
     pub fn new_inline_fragment(
         &self,
-        schema: &Schema,
-        type_condition: Option<NamedType>,
-    ) -> Result<InlineFragment, TypeError> {
-        let inner_parent_type = type_condition.clone().unwrap_or(self.ty.clone());
-        let inner = SelectionSet::new(schema, inner_parent_type)?;
-        Ok(InlineFragment {
-            type_condition,
-            directives: Vec::new(),
-            selection_set: inner,
-        })
+        opt_type_condition: Option<impl Into<NamedType>>,
+    ) -> InlineFragment {
+        if let Some(type_condition) = opt_type_condition {
+            InlineFragment::with_type_condition(type_condition)
+        } else {
+            InlineFragment::without_type_condition(self.ty.clone())
+        }
     }
 
     /// Create a new fragment spread to be added to this selection set with [`push`][Self::push]
-    pub fn new_fragment_spread(&self, fragment_name: Name) -> FragmentSpread {
-        FragmentSpread {
-            fragment_name,
-            directives: Vec::new(),
+    pub fn new_fragment_spread(&self, fragment_name: impl Into<Name>) -> FragmentSpread {
+        FragmentSpread::new(fragment_name)
+    }
+}
+
+impl Selection {
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// This method is best for repeatable directives. For non-repeatable directives,
+    /// see [`directive_by_name`][Self::directive_by_name] (singular)
+    pub fn directives_by_name<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Node<Directive>> + 'name {
+        match self {
+            Selection::Field(field) => directives_by_name(&field.directives, name),
+            Selection::FragmentSpread(spread) => directives_by_name(&spread.directives, name),
+            Selection::InlineFragment(inline) => directives_by_name(&inline.directives, name),
         }
     }
+
+    directive_by_name_method!();
 }
 
 impl From<Node<Field>> for Selection {
@@ -354,25 +443,45 @@ impl From<Node<FragmentSpread>> for Selection {
 
 impl From<Field> for Selection {
     fn from(value: Field) -> Self {
-        Self::Field(Node::new_synthetic(value))
+        Self::Field(Node::new(value))
     }
 }
 
 impl From<InlineFragment> for Selection {
     fn from(value: InlineFragment) -> Self {
-        Self::InlineFragment(Node::new_synthetic(value))
+        Self::InlineFragment(Node::new(value))
     }
 }
 
 impl From<FragmentSpread> for Selection {
     fn from(value: FragmentSpread) -> Self {
-        Self::FragmentSpread(Node::new_synthetic(value))
+        Self::FragmentSpread(Node::new(value))
     }
 }
 
 impl Field {
-    pub fn with_alias(mut self, alias: impl Into<Option<Name>>) -> Self {
-        self.alias = alias.into();
+    /// Create a new field with the given name and type.
+    ///
+    /// See [`SelectionSet::new_field`] too look up the type in a schema instead.
+    pub fn new(name: impl Into<Name>, definition: Node<schema::FieldDefinition>) -> Self {
+        let selection_set = SelectionSet::new(definition.ty.inner_named_type().clone());
+        Field {
+            definition,
+            alias: None,
+            name: name.into(),
+            arguments: Vec::new(),
+            directives: Vec::new(),
+            selection_set,
+        }
+    }
+
+    pub fn with_alias(mut self, alias: impl Into<Name>) -> Self {
+        self.alias = Some(alias.into());
+        self
+    }
+
+    pub fn with_opt_alias(mut self, alias: Option<impl Into<Name>>) -> Self {
+        self.alias = alias.map(Into::into);
         self
     }
 
@@ -412,17 +521,45 @@ impl Field {
         self
     }
 
-    fn with_ast_selections(
-        mut self,
-        schema: &Schema,
-        ast_selections: &[ast::Selection],
-    ) -> Result<Self, TypeError> {
-        self.selection_set.extend_from_ast(schema, ast_selections)?;
-        Ok(self)
+    /// Returns the response key for this field: the alias if there is one, or the name
+    pub fn response_key(&self) -> &Name {
+        self.alias.as_ref().unwrap_or(&self.name)
     }
+
+    /// The type of this field, from the field definition
+    pub fn ty(&self) -> &Type {
+        &self.definition.ty
+    }
+
+    /// Look up in `schema` the definition of the inner type of this field.
+    ///
+    /// The inner type is [`ty()`][Self::ty] after unwrapping non-null and list markers.
+    pub fn inner_type_def<'a>(&self, schema: &'a Schema) -> Option<&'a schema::ExtendedType> {
+        schema.types.get(self.ty().inner_named_type())
+    }
+
+    directive_methods!();
 }
 
 impl InlineFragment {
+    pub fn with_type_condition(type_condition: impl Into<NamedType>) -> Self {
+        let type_condition = type_condition.into();
+        let selection_set = SelectionSet::new(type_condition.clone());
+        Self {
+            type_condition: Some(type_condition),
+            directives: Vec::new(),
+            selection_set,
+        }
+    }
+
+    pub fn without_type_condition(parent_selection_set_type: impl Into<NamedType>) -> Self {
+        Self {
+            type_condition: None,
+            directives: Vec::new(),
+            selection_set: SelectionSet::new(parent_selection_set_type),
+        }
+    }
+
     pub fn with_directive(mut self, directive: impl Into<Node<Directive>>) -> Self {
         self.directives.push(directive.into());
         self
@@ -449,17 +586,17 @@ impl InlineFragment {
         self
     }
 
-    fn with_ast_selections(
-        mut self,
-        schema: &Schema,
-        ast_selections: &[ast::Selection],
-    ) -> Result<Self, TypeError> {
-        self.selection_set.extend_from_ast(schema, ast_selections)?;
-        Ok(self)
-    }
+    directive_methods!();
 }
 
 impl FragmentSpread {
+    pub fn new(fragment_name: impl Into<Name>) -> Self {
+        Self {
+            fragment_name: fragment_name.into(),
+            directives: Vec::new(),
+        }
+    }
+
     pub fn with_directive(mut self, directive: impl Into<Node<Directive>>) -> Self {
         self.directives.push(directive.into());
         self
@@ -472,4 +609,6 @@ impl FragmentSpread {
         self.directives.extend(directives);
         self
     }
+
+    directive_methods!();
 }

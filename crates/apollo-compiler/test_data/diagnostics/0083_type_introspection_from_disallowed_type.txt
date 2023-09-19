@@ -8,6 +8,180 @@
             file_id: FileId {
                 id: 80,
             },
+            offset: 473,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 80,
+                    },
+                    offset: 473,
+                    length: 11,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "graph",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            80: "0083_type_introspection_from_disallowed_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 80,
+            },
+            offset: 496,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 80,
+                    },
+                    offset: 496,
+                    length: 14,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "requires",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            80: "0083_type_introspection_from_disallowed_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 80,
+            },
+            offset: 522,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 80,
+                    },
+                    offset: 522,
+                    length: 14,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "provides",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            80: "0083_type_introspection_from_disallowed_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 80,
+            },
+            offset: 473,
+            length: 11,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 80,
+                    },
+                    offset: 473,
+                    length: 11,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "graph",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            80: "0083_type_introspection_from_disallowed_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 80,
+            },
+            offset: 496,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 80,
+                    },
+                    offset: 496,
+                    length: 14,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "requires",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            80: "0083_type_introspection_from_disallowed_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 80,
+            },
+            offset: 522,
+            length: 14,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 80,
+                    },
+                    offset: 522,
+                    length: 14,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "provides",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            80: "0083_type_introspection_from_disallowed_type.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 80,
+            },
             offset: 46,
             length: 123,
         },

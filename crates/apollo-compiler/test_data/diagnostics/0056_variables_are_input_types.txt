@@ -26,7 +26,7 @@
         help: Some(
             "objects, unions, and interfaces cannot be used because variables can only be of input type",
         ),
-        data: InputType {
+        data: VariableInputType {
             name: "cat",
             ty: "object",
         },
@@ -98,7 +98,7 @@
         help: Some(
             "objects, unions, and interfaces cannot be used because variables can only be of input type",
         ),
-        data: InputType {
+        data: VariableInputType {
             name: "dog",
             ty: "object",
         },
@@ -170,7 +170,7 @@
         help: Some(
             "objects, unions, and interfaces cannot be used because variables can only be of input type",
         ),
-        data: InputType {
+        data: VariableInputType {
             name: "pets",
             ty: "interface",
         },
@@ -242,7 +242,7 @@
         help: Some(
             "objects, unions, and interfaces cannot be used because variables can only be of input type",
         ),
-        data: InputType {
+        data: VariableInputType {
             name: "catOrDog",
             ty: "union",
         },

@@ -8,6 +8,64 @@
             file_id: FileId {
                 id: 3,
             },
+            offset: 147,
+            length: 7,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 3,
+                    },
+                    offset: 147,
+                    length: 7,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "petType",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            3: "0003_anonymous_and_named_operation.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 3,
+            },
+            offset: 147,
+            length: 7,
+        },
+        labels: [
+            Label {
+                location: DiagnosticLocation {
+                    file_id: FileId {
+                        id: 3,
+                    },
+                    offset: 147,
+                    length: 7,
+                },
+                text: "not found in this scope",
+            },
+        ],
+        help: None,
+        data: UndefinedDefinition {
+            name: "petType",
+        },
+    },
+    ApolloDiagnostic {
+        cache: {
+            0: "built_in_types.graphql",
+            3: "0003_anonymous_and_named_operation.graphql",
+        },
+        location: DiagnosticLocation {
+            file_id: FileId {
+                id: 3,
+            },
             offset: 0,
             length: 15,
         },

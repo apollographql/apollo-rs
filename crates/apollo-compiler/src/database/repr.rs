@@ -6,6 +6,8 @@ use crate::schema::Name;
 use crate::ApolloDiagnostic;
 use crate::Arc;
 use crate::FileId;
+use crate::ParseError;
+use crate::SourceFile;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -42,10 +44,7 @@ pub trait ReprDatabase: InputDatabase {
     fn schema(&self) -> Arc<crate::Schema>;
 
     #[salsa::invoke(executable_document)]
-    fn executable_document(
-        &self,
-        file_id: FileId,
-    ) -> Result<Arc<crate::ExecutableDocument>, crate::executable::TypeError>;
+    fn executable_document(&self, file_id: FileId) -> Arc<crate::ExecutableDocument>;
 
     // TODO: another database trait? what to name it?
 
@@ -53,18 +52,12 @@ pub trait ReprDatabase: InputDatabase {
     ///
     /// `Schema` only stores the inverse relationship
     /// (in [`ObjectType::implements_interfaces`] and [`InterfaceType::implements_interfaces`]),
-    /// so finding the implementers of even one interface requires a linear scan.
-    /// Gathering them all at once and caching amorticizes that cost.
+    /// so iterating the implementers of an interface requires a linear scan
+    /// of all types in the schema.
+    /// If that is repeated for multiple interfaces,
+    /// gathering them all at once amorticizes that cost.
     #[salsa::invoke(implementers_map)]
     fn implementers_map(&self) -> Arc<HashMap<Name, HashSet<Name>>>;
-
-    /// Returns whether `maybe_subtype` is a subtype of `abstract_type`, which means either:
-    ///
-    /// * `maybe_subtype` implements the interface `abstract_type`
-    /// * `maybe_subtype` is a member of the union type `abstract_type`
-    #[salsa::invoke(is_subtype)]
-    #[salsa::transparent]
-    fn is_subtype(&self, abstract_type: &str, maybe_subtype: &str) -> bool;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -92,7 +85,16 @@ fn ast_parse_result(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ParseResult> 
     let syntax_errors = tree.errors();
     let recursion_reached = tree.recursion_limit().high;
     let tokens_reached = tree.token_limit().high;
-    let document = Arc::new(ast::Document::from_cst(tree.document(), file_id));
+    let source_file = Arc::new(SourceFile {
+        path: db.input(file_id).filename,
+        source_text: String::clone(&db.source_code(file_id)),
+        parse_errors: tree.errors().map(|err| ParseError(err.clone())).collect(),
+    });
+    let document = Arc::new(ast::Document::from_cst(
+        tree.document(),
+        file_id,
+        source_file,
+    ));
     Arc::new(ParseResult {
         document,
         recursion_reached,
@@ -149,25 +151,18 @@ fn tokens_reached(db: &dyn ReprDatabase, file_id: FileId) -> usize {
 
 fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
     let mut builder = crate::Schema::builder();
+    let executable_definitions_are_errors = true;
     for file_id in db.type_definition_files() {
-        builder.add_document(&db.ast(file_id))
+        let ast = db.ast(file_id);
+        builder.add_ast_document(&ast, executable_definitions_are_errors)
     }
-    let (schema, _orphan_extensions) = builder.build();
-    Arc::new(schema)
+    Arc::new(builder.build())
 }
 
-fn executable_document(
-    db: &dyn ReprDatabase,
-    file_id: FileId,
-) -> Result<Arc<crate::ExecutableDocument>, crate::executable::TypeError> {
-    crate::ExecutableDocument::from_ast(&db.schema(), &db.ast(file_id)).map(Arc::new)
+fn executable_document(db: &dyn ReprDatabase, file_id: FileId) -> Arc<crate::ExecutableDocument> {
+    Arc::new(db.ast(file_id).to_executable(&db.schema()))
 }
 
 fn implementers_map(db: &dyn ReprDatabase) -> Arc<HashMap<Name, HashSet<Name>>> {
     Arc::new(db.schema().implementers_map())
-}
-
-fn is_subtype(db: &dyn ReprDatabase, abstract_type: &str, maybe_subtype: &str) -> bool {
-    db.schema()
-        .is_subtype(&db.implementers_map(), abstract_type, maybe_subtype)
 }

@@ -1,37 +1,15 @@
 use super::*;
 use crate::hir::HirNodeLocation;
+use crate::schema::SchemaBuilder;
+use crate::ExecutableDocument;
+use crate::ParseError;
+use crate::Parser;
+use crate::Schema;
 use std::fmt;
+use std::hash;
+use std::path::Path;
 
-macro_rules! directive_by_name_method {
-    () => {
-        /// Returns the first directive with the given name, if any.
-        ///
-        /// This method is best for non-repeatable directives. For repeatable directives,
-        /// see [`directives_by_name`][Self::directives_by_name] (plural)
-        pub fn directive_by_name(&self, name: &str) -> Option<&Node<Directive>> {
-            self.directives_by_name(name).next()
-        }
-    };
-}
-
-macro_rules! directive_methods {
-    () => {
-        /// Returns an iterator of directives with the given name.
-        ///
-        /// This method is best for repeatable directives. For non-repeatable directives,
-        /// see [`directive_by_name`][Self::directive_by_name] (singular)
-        pub fn directives_by_name<'def: 'name, 'name>(
-            &'def self,
-            name: &'name str,
-        ) -> impl Iterator<Item = &'def Node<Directive>> + 'name {
-            directives_by_name(&self.directives, name)
-        }
-
-        directive_by_name_method!();
-    };
-}
-
-fn directives_by_name<'def: 'name, 'name>(
+pub(crate) fn directives_by_name<'def: 'name, 'name>(
     directives: &'def [Node<Directive>],
     name: &'name str,
 ) -> impl Iterator<Item = &'def Node<Directive>> + 'name {
@@ -42,6 +20,7 @@ impl Document {
     /// Create an empty document
     pub fn new() -> Self {
         Self {
+            source: None,
             definitions: Vec::new(),
         }
     }
@@ -52,11 +31,80 @@ impl Document {
     }
 
     /// Parse `input` with the default configuration
-    pub fn parse(input: &str) -> ParseResult {
-        Self::parser().parse(input)
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    pub fn parse(source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+        Self::parser().parse_ast(source_text, path)
+    }
+
+    pub fn parse_errors(&self) -> &[ParseError] {
+        if let Some((_id, source)) = &self.source {
+            source.parse_errors()
+        } else {
+            &[]
+        }
+    }
+
+    /// Build a schema with this AST document as its sole input.
+    pub fn to_schema(&self) -> Schema {
+        let mut builder = Schema::builder();
+        let executable_definitions_are_errors = true;
+        builder.add_ast_document(self, executable_definitions_are_errors);
+        builder.build()
+    }
+
+    /// Add this AST document as an additional input to a schema builder.
+    ///
+    /// This can be used to build a schema from multiple documents or source files.
+    pub fn to_schema_builder(&self, builder: &mut SchemaBuilder) {
+        let executable_definitions_are_errors = true;
+        builder.add_ast_document(self, executable_definitions_are_errors)
+    }
+
+    /// Build an executable document from this AST, with the given schema
+    pub fn to_executable(&self, schema: &Schema) -> ExecutableDocument {
+        let type_system_definitions_are_errors = true;
+        crate::executable::from_ast::document_from_ast(
+            schema,
+            self,
+            type_system_definitions_are_errors,
+        )
+    }
+
+    /// Build a schema and executable document from this AST containing a mixture
+    /// of type system definitions and executable definitions.
+    /// This is mostly useful for unit tests.
+    pub fn to_mixed(&self) -> (Schema, ExecutableDocument) {
+        let executable_definitions_are_errors = false;
+        let type_system_definitions_are_errors = false;
+        let mut builder = Schema::builder();
+        builder.add_ast_document(self, executable_definitions_are_errors);
+        let schema = builder.build();
+        let executable = crate::executable::from_ast::document_from_ast(
+            &schema,
+            self,
+            type_system_definitions_are_errors,
+        );
+        (schema, executable)
     }
 
     serialize_method!();
+}
+
+/// `source` is ignored for comparison
+impl PartialEq for Document {
+    fn eq(&self, other: &Self) -> bool {
+        self.definitions == other.definitions
+    }
+}
+
+impl Eq for Document {}
+
+impl hash::Hash for Document {
+    fn hash<H: hash::Hasher>(&self, state: &mut H) {
+        self.definitions.hash(state);
+    }
 }
 
 impl Default for Document {
@@ -389,7 +437,7 @@ impl VariableDefinition {
 impl Type {
     /// Returns a new `Type::Named` with with a synthetic `Name` (not parsed from a source file)
     pub fn new_named(name: &str) -> Self {
-        Type::Named(Name::new_synthetic(name))
+        Type::Named(Name::new(name))
     }
 
     /// Returns this type made non-null, if it isn’t already.
@@ -425,8 +473,14 @@ impl Type {
         }
     }
 
+    /// Returns whether this type is non-null
     pub fn is_non_null(&self) -> bool {
         matches!(self, Type::NonNullNamed(_) | Type::NonNullList(_))
+    }
+
+    /// Returns whether this type is a list, on a non-null list
+    pub fn is_list(&self) -> bool {
+        matches!(self, Type::List(_) | Type::NonNullList(_))
     }
 
     pub fn is_named(&self) -> bool {
@@ -543,7 +597,15 @@ impl Value {
         }
     }
 
-    pub fn as_str(&self) -> Option<&NodeStr> {
+    pub fn as_str(&self) -> Option<&str> {
+        if let Value::String(value) = self {
+            Some(value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_node_str(&self) -> Option<&NodeStr> {
         if let Value::String(value) = self {
             Some(value)
         } else {
@@ -742,6 +804,24 @@ impl From<i32> for Value {
     }
 }
 
+impl From<&'_ str> for Value {
+    fn from(value: &'_ str) -> Self {
+        Value::String(value.into())
+    }
+}
+
+impl From<&'_ String> for Value {
+    fn from(value: &'_ String) -> Self {
+        Value::String(value.into())
+    }
+}
+
+impl From<String> for Value {
+    fn from(value: String) -> Self {
+        Value::String(value.into())
+    }
+}
+
 impl From<bool> for Value {
     fn from(value: bool) -> Self {
         Value::Boolean(value)
@@ -750,37 +830,55 @@ impl From<bool> for Value {
 
 impl From<()> for Node<Value> {
     fn from(value: ()) -> Self {
-        Node::new_synthetic(value.into())
+        Node::new(value.into())
     }
 }
 
 impl From<ordered_float::OrderedFloat<f64>> for Node<Value> {
     fn from(value: ordered_float::OrderedFloat<f64>) -> Self {
-        Node::new_synthetic(value.into())
+        Node::new(value.into())
     }
 }
 
 impl From<f64> for Node<Value> {
     fn from(value: f64) -> Self {
-        Node::new_synthetic(value.into())
+        Node::new(value.into())
     }
 }
 
 impl From<i32> for Node<Value> {
     fn from(value: i32) -> Self {
-        Node::new_synthetic(value.into())
+        Node::new(value.into())
+    }
+}
+
+impl From<&'_ str> for Node<Value> {
+    fn from(value: &'_ str) -> Self {
+        Node::new(value.into())
+    }
+}
+
+impl From<&'_ String> for Node<Value> {
+    fn from(value: &'_ String) -> Self {
+        Node::new(value.into())
+    }
+}
+
+impl From<String> for Node<Value> {
+    fn from(value: String) -> Self {
+        Node::new(value.into())
     }
 }
 
 impl From<bool> for Node<Value> {
     fn from(value: bool) -> Self {
-        Node::new_synthetic(value.into())
+        Node::new(value.into())
     }
 }
 
 impl<N: Into<Name>, V: Into<Node<Value>>> From<(N, V)> for Node<Argument> {
     fn from((name, value): (N, V)) -> Self {
-        Node::new_synthetic(Argument {
+        Node::new(Argument {
             name: name.into(),
             value: value.into(),
         })

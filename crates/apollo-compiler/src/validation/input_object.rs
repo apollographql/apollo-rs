@@ -160,6 +160,47 @@ pub fn validate_input_value_definitions(
         } else {
             seen.insert(name.clone(), input_value);
         }
+
+        /* TODO(@goto-bus-stop) Port to new AST
+        // Input values must only contain input types.
+        let loc = input_value
+            .loc()
+            .expect("undefined input value definition location");
+        if let Some(field_ty) = input_value.ty().type_def(db.upcast()) {
+            if !input_value.ty().is_input_type(db.upcast()) {
+                diagnostics.push(
+                    ApolloDiagnostic::new(db, loc.into(), DiagnosticData::InputType {
+                        name: input_value.name().into(),
+                        ty: field_ty.kind(),
+                    })
+                        .label(Label::new(loc, format!("this is of `{}` type", field_ty.kind())))
+                        .help(format!("Scalars, Enums, and Input Objects are input types. Change `{}` field to take one of these input types.", input_value.name())),
+                );
+            }
+        } else if let Some(field_ty_loc) = input_value.ty().loc() {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    field_ty_loc.into(),
+                    DiagnosticData::UndefinedDefinition {
+                        name: input_value.name().into(),
+                    },
+                )
+                .label(Label::new(field_ty_loc, "not found in this scope")),
+            );
+        } else {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    loc.into(),
+                    DiagnosticData::UndefinedDefinition {
+                        name: input_value.ty().name(),
+                    },
+                )
+                .label(Label::new(loc, "not found in this scope")),
+            );
+        }
+        */
     }
     diagnostics
 }

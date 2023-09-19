@@ -48,7 +48,7 @@ interface Inter {
   string: String
 }
 "#;
-    let (schema, _) = Schema::from_ast(&ast::Document::parse(input).document);
+    let schema = Schema::parse(input, "schema.graphql");
     assert_eq!(schema.to_string(), expected);
 }
 
@@ -106,51 +106,57 @@ fn is_subtype() {
     }
 
     let ctx = gen_schema_types("union UnionType = Foo | Bar | Baz");
-    assert!(ctx.db.is_subtype("UnionType", "Foo"));
-    assert!(ctx.db.is_subtype("UnionType", "Bar"));
-    assert!(ctx.db.is_subtype("UnionType", "Baz"));
-    assert!(!ctx.db.is_subtype("UnionType", "UnionType"));
-    assert!(!ctx.db.is_subtype("UnionType", "Query"));
-    assert!(!ctx.db.is_subtype("UnionType", "NotAType"));
-    assert!(!ctx.db.is_subtype("NotAType", "Foo"));
-    assert!(!ctx.db.is_subtype("Foo", "UnionType"));
+    let schema = ctx.db.schema();
+    assert!(schema.is_subtype("UnionType", "Foo"));
+    assert!(schema.is_subtype("UnionType", "Bar"));
+    assert!(schema.is_subtype("UnionType", "Baz"));
+    assert!(!schema.is_subtype("UnionType", "UnionType"));
+    assert!(!schema.is_subtype("UnionType", "Query"));
+    assert!(!schema.is_subtype("UnionType", "NotAType"));
+    assert!(!schema.is_subtype("NotAType", "Foo"));
+    assert!(!schema.is_subtype("Foo", "UnionType"));
 
     let ctx = gen_schema_interfaces("type ObjectType implements Foo & Bar & Baz { me: String }");
-    assert!(ctx.db.is_subtype("Foo", "ObjectType"));
-    assert!(ctx.db.is_subtype("Bar", "ObjectType"));
-    assert!(ctx.db.is_subtype("Baz", "ObjectType"));
-    assert!(!ctx.db.is_subtype("Baz", "ObjectType2"));
-    assert!(!ctx.db.is_subtype("Foo", "Foo"));
-    assert!(!ctx.db.is_subtype("Foo", "Query"));
-    assert!(!ctx.db.is_subtype("Foo", "NotAType"));
-    assert!(!ctx.db.is_subtype("ObjectType", "Foo"));
+    let schema = ctx.db.schema();
+    assert!(schema.is_subtype("Foo", "ObjectType"));
+    assert!(schema.is_subtype("Bar", "ObjectType"));
+    assert!(schema.is_subtype("Baz", "ObjectType"));
+    assert!(!schema.is_subtype("Baz", "ObjectType2"));
+    assert!(!schema.is_subtype("Foo", "Foo"));
+    assert!(!schema.is_subtype("Foo", "Query"));
+    assert!(!schema.is_subtype("Foo", "NotAType"));
+    assert!(!schema.is_subtype("ObjectType", "Foo"));
 
     let ctx =
         gen_schema_interfaces("interface InterfaceType implements Foo & Bar & Baz { me: String }");
-    assert!(ctx.db.is_subtype("Foo", "InterfaceType"));
-    assert!(ctx.db.is_subtype("Bar", "InterfaceType"));
-    assert!(ctx.db.is_subtype("Baz", "InterfaceType"));
-    assert!(!ctx.db.is_subtype("Baz", "InterfaceType2"));
-    assert!(!ctx.db.is_subtype("Foo", "Foo"));
-    assert!(!ctx.db.is_subtype("Foo", "Query"));
-    assert!(!ctx.db.is_subtype("Foo", "NotAType"));
-    assert!(!ctx.db.is_subtype("InterfaceType", "Foo"));
+    let schema = ctx.db.schema();
+    assert!(schema.is_subtype("Foo", "InterfaceType"));
+    assert!(schema.is_subtype("Bar", "InterfaceType"));
+    assert!(schema.is_subtype("Baz", "InterfaceType"));
+    assert!(!schema.is_subtype("Baz", "InterfaceType2"));
+    assert!(!schema.is_subtype("Foo", "Foo"));
+    assert!(!schema.is_subtype("Foo", "Query"));
+    assert!(!schema.is_subtype("Foo", "NotAType"));
+    assert!(!schema.is_subtype("InterfaceType", "Foo"));
 
     let ctx = gen_schema_types("extend union UnionType2 = Baz");
-    assert!(ctx.db.is_subtype("UnionType2", "Foo"));
-    assert!(ctx.db.is_subtype("UnionType2", "Bar"));
-    assert!(ctx.db.is_subtype("UnionType2", "Baz"));
+    let schema = ctx.db.schema();
+    assert!(schema.is_subtype("UnionType2", "Foo"));
+    assert!(schema.is_subtype("UnionType2", "Bar"));
+    assert!(schema.is_subtype("UnionType2", "Baz"));
 
     let ctx = gen_schema_interfaces("extend type ObjectType2 implements Baz { me2: String }");
-    assert!(ctx.db.is_subtype("Foo", "ObjectType2"));
-    assert!(ctx.db.is_subtype("Bar", "ObjectType2"));
-    assert!(ctx.db.is_subtype("Baz", "ObjectType2"));
+    let schema = ctx.db.schema();
+    assert!(schema.is_subtype("Foo", "ObjectType2"));
+    assert!(schema.is_subtype("Bar", "ObjectType2"));
+    assert!(schema.is_subtype("Baz", "ObjectType2"));
 
     let ctx =
         gen_schema_interfaces("extend interface InterfaceType2 implements Baz { me2: String }");
-    assert!(ctx.db.is_subtype("Foo", "InterfaceType2"));
-    assert!(ctx.db.is_subtype("Bar", "InterfaceType2"));
-    assert!(ctx.db.is_subtype("Baz", "InterfaceType2"));
+    let schema = ctx.db.schema();
+    assert!(schema.is_subtype("Foo", "InterfaceType2"));
+    assert!(schema.is_subtype("Bar", "InterfaceType2"));
+    assert!(schema.is_subtype("Baz", "InterfaceType2"));
 }
 
 fn with_supergraph_boilerplate(content: &str) -> String {

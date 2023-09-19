@@ -34,7 +34,7 @@ use std::fmt;
 /// [annotate_snippets]: https://github.com/apollographql/apollo-rs/blob/a7f616454a53dcb8496725ceac6c63eacddefb2c/crates/apollo-parser/examples/annotate_snippet.rs
 /// [miette crate]: https://docs.rs/miette/3.2.0/miette/index.html
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub(crate) enum ErrorData {
     Eof,
     LimitExceeded,
@@ -60,7 +60,7 @@ impl fmt::Display for ErrorData {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, thiserror::Error)]
+#[derive(PartialEq, Eq, Clone, Hash, thiserror::Error)]
 #[error("ERROR@{index}:{} {message:?} {data}", .index + .data.len())]
 pub struct Error {
     pub(crate) message: String,

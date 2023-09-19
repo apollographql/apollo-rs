@@ -89,12 +89,12 @@ pub(crate) fn same_response_shape(
 ) -> Result<(), ApolloDiagnostic> {
     let schema = db.schema();
     // 1. Let typeA be the return type of fieldA.
-    let Some(full_type_a) = schema.type_field(field_a.against_type, &field_a.field.name) else {
+    let Ok(full_type_a) = schema.type_field(field_a.against_type, &field_a.field.name) else {
         return Ok(()); // Can't do much if we don't know the type
     };
     let mut type_a = &full_type_a.ty;
     // 2. Let typeB be the return type of fieldB.
-    let Some(full_type_b) = schema.type_field(field_b.against_type, &field_b.field.name) else {
+    let Ok(full_type_b) = schema.type_field(field_b.against_type, &field_b.field.name) else {
         return Ok(()); // Can't do much if we don't know the type
     };
     let mut type_b = &full_type_b.ty;
@@ -322,7 +322,7 @@ pub(crate) fn fields_in_set_can_merge(
         let Some((field_a, rest)) = fields_for_name.split_first() else {
             continue; // Nothing to merge
         };
-        let Some(parent_a) = schema.type_field(field_a.against_type, &field_a.field.name) else {
+        let Ok(parent_a) = schema.type_field(field_a.against_type, &field_a.field.name) else {
             continue; // Can't do much if we don't know the type
         };
 

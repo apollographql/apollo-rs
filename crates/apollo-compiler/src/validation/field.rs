@@ -36,7 +36,7 @@ pub fn validate_field(
 
     let schema = db.schema();
 
-    if let Some(field_definition) = schema.type_field(against_type, &field.name) {
+    if let Ok(field_definition) = schema.type_field(against_type, &field.name) {
         for argument in &field.arguments {
             let arg_definition = field_definition
                 .arguments

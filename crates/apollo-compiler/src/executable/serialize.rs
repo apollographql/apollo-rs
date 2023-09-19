@@ -26,7 +26,7 @@ impl ExecutableDocument {
 
 impl Operation {
     fn to_ast(&self, name: Option<&Name>) -> ast::Definition {
-        ast::Definition::OperationDefinition(Node::new_synthetic(ast::OperationDefinition {
+        ast::Definition::OperationDefinition(Node::new(ast::OperationDefinition {
             operation_type: self.operation_type,
             name: name.cloned(),
             variables: self.variables.clone(),
@@ -38,7 +38,7 @@ impl Operation {
 
 impl Fragment {
     fn to_ast(&self, name: &Name) -> ast::Definition {
-        ast::Definition::FragmentDefinition(Node::new_synthetic(ast::FragmentDefinition {
+        ast::Definition::FragmentDefinition(Node::new(ast::FragmentDefinition {
             name: name.clone(),
             type_condition: self.selection_set.ty.clone(),
             directives: self.directives.clone(),
@@ -52,7 +52,7 @@ impl SelectionSet {
         self.selections
             .iter()
             .map(|selection| match selection {
-                Selection::Field(field) => ast::Selection::Field(Node::new_synthetic(ast::Field {
+                Selection::Field(field) => ast::Selection::Field(Node::new(ast::Field {
                     alias: field.alias.clone(),
                     name: field.name.clone(),
                     arguments: field.arguments.clone(),
@@ -60,13 +60,13 @@ impl SelectionSet {
                     selection_set: field.selection_set.to_ast(),
                 })),
                 Selection::FragmentSpread(fragment_spread) => {
-                    ast::Selection::FragmentSpread(Node::new_synthetic(ast::FragmentSpread {
+                    ast::Selection::FragmentSpread(Node::new(ast::FragmentSpread {
                         fragment_name: fragment_spread.fragment_name.clone(),
                         directives: fragment_spread.directives.clone(),
                     }))
                 }
                 Selection::InlineFragment(inline_fragment) => {
-                    ast::Selection::InlineFragment(Node::new_synthetic(ast::InlineFragment {
+                    ast::Selection::InlineFragment(Node::new(ast::InlineFragment {
                         type_condition: inline_fragment.type_condition.clone(),
                         directives: inline_fragment.directives.clone(),
                         selection_set: inline_fragment.selection_set.to_ast(),

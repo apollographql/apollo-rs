@@ -68,10 +68,10 @@ impl ComponentOrigin {
 
 impl<T> Component<T> {
     /// Mark `node` as coming from a synthetic (no source location) definition (not an extension)
-    pub fn new_synthetic(node: T) -> Self {
+    pub fn new(node: T) -> Self {
         Self {
             origin: ComponentOrigin::Definition,
-            node: Node::new_synthetic(node),
+            node: Node::new(node),
         }
     }
 }
@@ -96,6 +96,12 @@ impl<T> AsRef<T> for Component<T> {
     }
 }
 
+impl<T> From<T> for Component<T> {
+    fn from(node: T) -> Self {
+        Component::new(node)
+    }
+}
+
 /// A string component of a type or `schema`, for example the name of a union member type.
 ///
 /// Wraps a [`NodeStr`] and adds its origin: either a (`schema` or type) definition
@@ -112,10 +118,10 @@ pub struct ComponentStr {
 impl ComponentStr {
     /// Mark `value` as coming from a synthetic (no source location) definition (not an extension)
     #[inline]
-    pub fn new_synthetic(value: &str) -> Self {
+    pub fn new(value: &str) -> Self {
         Self {
             origin: ComponentOrigin::Definition,
-            node: NodeStr::new_synthetic(value),
+            node: NodeStr::new(value),
         }
     }
 }
@@ -126,5 +132,29 @@ impl Deref for ComponentStr {
     #[inline]
     fn deref(&self) -> &Self::Target {
         &self.node
+    }
+}
+
+impl AsRef<str> for ComponentStr {
+    fn as_ref(&self) -> &str {
+        self
+    }
+}
+
+impl From<&'_ str> for ComponentStr {
+    fn from(value: &'_ str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<&'_ String> for ComponentStr {
+    fn from(value: &'_ String) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<String> for ComponentStr {
+    fn from(value: String) -> Self {
+        Self::new(&value)
     }
 }

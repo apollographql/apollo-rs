@@ -9,6 +9,7 @@ pub mod diagnostics;
 pub mod executable;
 mod node;
 mod node_str;
+mod parser;
 pub mod schema;
 #[cfg(test)]
 mod tests;
@@ -25,6 +26,7 @@ pub use self::diagnostics::ApolloDiagnostic;
 pub use self::executable::ExecutableDocument;
 pub use self::node::{Node, NodeLocation};
 pub use self::node_str::NodeStr;
+pub use self::parser::{parse_mixed, ParseError, Parser, SourceFile};
 use self::validation::ValidationDatabase;
 pub use schema::Schema;
 
@@ -536,7 +538,11 @@ type Product {
   weight: Int
 }
 
-directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
+directive @join__field(graph: join__Graph) on FIELD_DEFINITION
+enum join__Graph {
+  INVENTORY
+  PRODUCTS
+}
 "#;
 
         let mut compiler = ApolloCompiler::new();
@@ -713,6 +719,11 @@ fragment vipCustomer on User {
         let input = r#"
 schema {
   query: customPetQuery,
+}
+
+enum PetType {
+  CAT,
+  DOG,
 }
 
 type customPetQuery {

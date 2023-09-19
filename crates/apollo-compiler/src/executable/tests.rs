@@ -27,7 +27,7 @@ fn is_introspection_operation() {
 
     let mut compiler = ApolloCompiler::new();
     let id = compiler.add_document(query_input, "query.graphql");
-    let doc = compiler.db.executable_document(id).unwrap();
+    let doc = compiler.db.executable_document(id);
     assert!(doc.named_operations["TypeIntrospect"].is_introspection(&doc));
 }
 
@@ -64,8 +64,8 @@ fn is_not_introspection_operation() {
     let query_id = compiler.add_document(query_input, "query.graphql");
     let mutation_id = compiler.add_document(mutation_input, "mutation.graphql");
 
-    let query_doc = compiler.db.executable_document(query_id).unwrap();
-    let mutation_doc = compiler.db.executable_document(mutation_id).unwrap();
+    let query_doc = compiler.db.executable_document(query_id);
+    let mutation_doc = compiler.db.executable_document(mutation_id);
 
     assert!(!query_doc.named_operations["CheckStock"].is_introspection(&query_doc));
     assert!(!mutation_doc.named_operations["PurchaseBasket"].is_introspection(&mutation_doc));
@@ -147,11 +147,8 @@ fn is_introspection_deep() {
     let query_not_introspect_id =
         compiler.add_document(&query_input_not_introspect, "query2.graphql");
 
-    let query_doc = compiler.db.executable_document(query_id).unwrap();
-    let query_not_introspect_doc = compiler
-        .db
-        .executable_document(query_not_introspect_id)
-        .unwrap();
+    let query_doc = compiler.db.executable_document(query_id);
+    let query_not_introspect_doc = compiler.db.executable_document(query_not_introspect_id);
 
     assert!(query_doc.named_operations["IntrospectDeepFragments"].is_introspection(&query_doc));
     assert!(
@@ -203,8 +200,8 @@ fn is_introspection_repeated_fragment() {
     let query_id_indirect = compiler.add_document(query_input_indirect, "indirect.graphql");
     let query_id_direct = compiler.add_document(query_input_direct, "direct.graphql");
 
-    let query_doc_indirect = compiler.db.executable_document(query_id_indirect).unwrap();
-    let query_doc_direct = compiler.db.executable_document(query_id_direct).unwrap();
+    let query_doc_indirect = compiler.db.executable_document(query_id_indirect);
+    let query_doc_direct = compiler.db.executable_document(query_id_direct);
 
     assert!(
         query_doc_indirect.named_operations["IntrospectRepeatedIndirectFragment"]
