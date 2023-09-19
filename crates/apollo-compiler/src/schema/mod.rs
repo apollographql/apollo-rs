@@ -258,6 +258,12 @@ impl Schema {
 
     /// Returns a new builder for creating a Schema from AST documents,
     /// initialized with built-in directives, built-in scalars, and introspection types
+    ///
+    /// ```rust
+    /// use apollo_compiler::Schema;
+    ///
+    /// let empty_schema = Schema::builder().build();
+    /// ```
     pub fn builder() -> SchemaBuilder {
         SchemaBuilder::new()
     }
