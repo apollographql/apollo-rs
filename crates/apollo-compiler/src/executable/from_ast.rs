@@ -138,7 +138,7 @@ impl SelectionSet {
                         );
                         errors.ancestor_fields.pop();
                     }
-                    Err(FieldLookupError::NoSuchField) => {
+                    Err(schema::FieldLookupError::NoSuchField) => {
                         errors.errors.push(BuildError::UndefinedField {
                             top_level: errors.top_level.clone(),
                             ancestor_fields: errors.ancestor_fields.clone(),
@@ -146,7 +146,7 @@ impl SelectionSet {
                             field: ast.clone(),
                         })
                     }
-                    Err(FieldLookupError::NoSuchType) => {
+                    Err(schema::FieldLookupError::NoSuchType) => {
                         errors.errors.push(BuildError::UndefinedType {
                             top_level: errors.top_level.clone(),
                             ancestor_fields: errors.ancestor_fields.clone(),

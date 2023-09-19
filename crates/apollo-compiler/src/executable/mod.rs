@@ -1,14 +1,16 @@
 use crate::ast;
 use crate::ast::impls::directives_by_name;
-use crate::schema::FieldLookupError;
+use crate::schema;
 use crate::Arc;
 use crate::FileId;
 use crate::Node;
+use crate::Parser;
 use crate::Schema;
 use crate::SourceFile;
 use indexmap::map::Entry;
 use indexmap::IndexMap;
 use std::collections::HashSet;
+use std::path::Path;
 
 pub(crate) mod from_ast;
 mod serialize;
@@ -18,8 +20,6 @@ mod tests;
 pub use crate::ast::{
     Argument, Directive, Name, NamedType, OperationType, Type, Value, VariableDefinition,
 };
-use crate::Parser;
-use std::path::Path;
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone)]
@@ -73,8 +73,8 @@ pub enum Selection {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Field {
-    /// The type of this field, resolved from context and schema
-    pub ty: Type,
+    /// The definition of this field in an object type or interface type definition in the schema
+    pub definition: Node<schema::FieldDefinition>,
     pub alias: Option<Name>,
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
@@ -380,10 +380,10 @@ impl SelectionSet {
         &self,
         schema: &Schema,
         name: impl Into<Name>,
-    ) -> Result<Field, FieldLookupError> {
+    ) -> Result<Field, schema::FieldLookupError> {
         let name = name.into();
-        let ty = schema.type_field(&self.ty, &name)?.ty.clone();
-        Ok(Field::new(name, ty))
+        let definition = schema.type_field(&self.ty, &name)?.node.clone();
+        Ok(Field::new(name, definition))
     }
 
     /// Create a new inline fragment to be added to this selection set with [`push`][Self::push]
@@ -463,10 +463,10 @@ impl Field {
     /// Create a new field with the given name and type.
     ///
     /// See [`SelectionSet::new_field`] too look up the type in a schema instead.
-    pub fn new(name: impl Into<Name>, ty: Type) -> Self {
-        let selection_set = SelectionSet::new(ty.inner_named_type().clone());
+    pub fn new(name: impl Into<Name>, definition: Node<schema::FieldDefinition>) -> Self {
+        let selection_set = SelectionSet::new(definition.ty.inner_named_type().clone());
         Field {
-            ty,
+            definition,
             alias: None,
             name: name.into(),
             arguments: Vec::new(),
@@ -524,6 +524,18 @@ impl Field {
     /// Returns the response key for this field: the alias if there is one, or the name
     pub fn response_key(&self) -> &Name {
         self.alias.as_ref().unwrap_or(&self.name)
+    }
+
+    /// The type of this field, from the field definition
+    pub fn ty(&self) -> &Type {
+        &self.definition.ty
+    }
+
+    /// Look up in `schema` the definition of the inner type of this field.
+    ///
+    /// The inner type is [`ty()`][Self::ty] after unwrapping non-null and list markers.
+    pub fn inner_type_def<'a>(&self, schema: &'a Schema) -> Option<&'a schema::ExtendedType> {
+        schema.types.get(self.ty().inner_named_type())
     }
 
     directive_methods!();
