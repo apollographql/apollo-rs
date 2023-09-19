@@ -1,0 +1,6 @@
+INT@1:2 "1"
+COMMA@2:3 ","
+WHITESPACE@3:4 " "
+EOF@5:5
+ERROR@0:1 "Unexpected character \"+\"" +
+ERROR@0:1 "Unexpected character \"+\"" +
