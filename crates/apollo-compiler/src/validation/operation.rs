@@ -1,7 +1,7 @@
 use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir, Arc, FileId, Node, ValidationDatabase,
+    FileId, Node, ValidationDatabase,
 };
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -26,6 +26,121 @@ pub(crate) fn validate_operation(
 
     let schema = db.schema();
     let against_type = schema.root_operation(operation.operation_type);
+
+    let named_fragments = db.ast_named_fragments(operation.location().unwrap().file_id());
+    let q = ast::NamedType::new_synthetic("Query");
+    let is_introspection_query = operation.operation_type == ast::OperationType::Query
+        && super::selection::operation_fields(
+            &named_fragments,
+            against_type
+                .map(|component| &component.node)
+                .unwrap_or_else(|| &q),
+            &operation.selection_set,
+        )
+        .iter()
+        .all(|field| {
+            matches!(
+                field.field.name.as_str(),
+                "__type" | "__schema" | "__typename"
+            )
+        });
+
+    if against_type.is_none() && config.has_schema && !is_introspection_query {
+        let operation_word = match operation.operation_type {
+            ast::OperationType::Query => "query",
+            ast::OperationType::Mutation => "mutation",
+            ast::OperationType::Subscription => "subscription",
+        };
+
+        let diagnostic = ApolloDiagnostic::new(
+            db,
+            (*operation.location().unwrap()).into(),
+            DiagnosticData::UnsupportedOperation { ty: operation_word },
+        )
+        .label(Label::new(
+            *operation.location().unwrap(),
+            format!(
+                "{} operation is not defined in the schema and is therefore not supported",
+                match operation.operation_type {
+                    ast::OperationType::Query => "Query",
+                    ast::OperationType::Mutation => "Mutation",
+                    ast::OperationType::Subscription => "Subscription",
+                }
+            ),
+        ));
+        let diagnostic = if let Some(schema_loc) = db.hir_schema().loc() {
+            diagnostic.label(Label::new(
+                schema_loc,
+                format!("Consider defining a `{operation_word}` root operation type here"),
+            ))
+        } else {
+            diagnostic.help(format!(
+                "consider defining a `{operation_word}` root operation type in your schema"
+            ))
+        };
+        diagnostics.push(diagnostic);
+    }
+
+    if operation.operation_type == ast::OperationType::Subscription {
+        let fields = super::selection::operation_fields(
+            &named_fragments,
+            against_type
+                .map(|component| &component.node)
+                .unwrap_or_else(|| &q),
+            &operation.selection_set,
+        );
+
+        if fields.len() > 1 {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    (*operation.location().unwrap()).into(),
+                    DiagnosticData::SingleRootField {
+                        fields: fields.len(),
+                        subscription: (*operation.location().unwrap()).into(),
+                    },
+                )
+                .label(Label::new(
+                    *operation.location().unwrap(),
+                    format!("subscription with {} root fields", fields.len()),
+                ))
+                .help(format!(
+                    "There are {} root fields: {}. This is not allowed.",
+                    fields.len(),
+                    fields
+                        .iter()
+                        .map(|field| field.field.name.as_str())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )),
+            );
+        }
+
+        let has_introspection_fields = fields
+            .iter()
+            .find(|field| {
+                matches!(
+                    field.field.name.as_str(),
+                    "__type" | "__schema" | "__typename"
+                )
+            })
+            .map(|field| field.field);
+        if let Some(field) = has_introspection_fields {
+            diagnostics.push(
+                ApolloDiagnostic::new(
+                    db,
+                    (*field.location().unwrap()).into(),
+                    DiagnosticData::IntrospectionField {
+                        field: field.name.to_string(),
+                    },
+                )
+                .label(Label::new(
+                    *field.location().unwrap(),
+                    format!("{} is an introspection field", field.name),
+                )),
+            );
+        }
+    }
 
     diagnostics.extend(super::directive::validate_directives(
         db,
@@ -93,16 +208,6 @@ pub(crate) fn validate_operation_definitions_inner(
         diagnostics.extend(missing_ident);
     }
 
-    if has_schema {
-        let subscription_operations = db.upcast().subscription_operations(file_id);
-        let query_operations = db.upcast().query_operations(file_id);
-        let mutation_operations = db.upcast().mutation_operations(file_id);
-
-        diagnostics.extend(db.validate_subscription_operations(subscription_operations));
-        diagnostics.extend(db.validate_query_operations(query_operations));
-        diagnostics.extend(db.validate_mutation_operations(mutation_operations));
-    }
-
     diagnostics
 }
 
@@ -111,174 +216,6 @@ pub fn validate_operation_definitions(
     file_id: FileId,
 ) -> Vec<ApolloDiagnostic> {
     validate_operation_definitions_inner(db, file_id, false)
-}
-
-pub fn validate_subscription_operations(
-    db: &dyn ValidationDatabase,
-    subscriptions: Arc<Vec<Arc<hir::OperationDefinition>>>,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    // Subscription fields must not have an introspection field in the selection set.
-    //
-    // Return an Introspection Field error in case of an introspection field existing as the root field in the set.
-    for op in subscriptions.iter() {
-        for selection in op.selection_set().selection() {
-            if let hir::Selection::Field(field) = selection {
-                if field.is_introspection() {
-                    let field_name = field.name();
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            field.loc().into(),
-                            DiagnosticData::IntrospectionField {
-                                field: field_name.into(),
-                            },
-                        )
-                        .label(Label::new(
-                            field.loc(),
-                            format!("{field_name} is an introspection field"),
-                        )),
-                    );
-                }
-            }
-        }
-    }
-
-    // A Subscription operation definition can only have **one** root level
-    // field.
-    if !subscriptions.is_empty() {
-        let single_root_field: Vec<ApolloDiagnostic> = subscriptions
-            .iter()
-            .filter_map(|op| {
-                let mut fields = op.fields(db.upcast()).as_ref().clone();
-                fields.extend(op.fields_in_inline_fragments(db.upcast()).as_ref().clone());
-                fields.extend(op.fields_in_fragment_spread(db.upcast()).as_ref().clone());
-                if fields.len() > 1 {
-                    let field_names: Vec<&str> = fields.iter().map(|f| f.name()).collect();
-                    Some(
-                        ApolloDiagnostic::new(
-                            db,
-                            op.loc().into(),
-                            DiagnosticData::SingleRootField {
-                                fields: fields.len(),
-                                subscription: op.loc().into(),
-                            },
-                        )
-                        .label(Label::new(
-                            op.loc(),
-                            format!("subscription with {} root fields", fields.len()),
-                        ))
-                        .help(format!(
-                            "There are {} root fields: {}. This is not allowed.",
-                            fields.len(),
-                            field_names.join(", ")
-                        )),
-                    )
-                } else {
-                    None
-                }
-            })
-            .collect();
-        diagnostics.extend(single_root_field);
-    }
-
-    // All query, subscription and mutation operations must be against legally
-    // defined schema root operation types.
-    //
-    //   * subscription operation - subscription root operation
-    if !subscriptions.is_empty() && db.hir_schema().subscription().is_none() {
-        let unsupported_ops: Vec<ApolloDiagnostic> = subscriptions
-            .iter()
-            .map(|op| {
-                let diagnostic = ApolloDiagnostic::new(db, op.loc().into(), DiagnosticData::UnsupportedOperation { ty: "subscription" })
-                    .label(Label::new(op.loc(), "Subscription operation is not defined in the schema and is therefore not supported"));
-                if let Some(schema_loc) = db.hir_schema().loc() {
-                    diagnostic.label(Label::new(schema_loc, "Consider defining a `subscription` root operation type here"))
-                } else {
-                    diagnostic.help("consider defining a `subscription` root operation type in your schema")
-                }
-            })
-            .collect();
-        diagnostics.extend(unsupported_ops)
-    }
-
-    diagnostics
-}
-
-pub fn validate_query_operations(
-    db: &dyn ValidationDatabase,
-    queries: Arc<Vec<Arc<hir::OperationDefinition>>>,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    // All query, subscription and mutation operations must be against legally
-    // defined schema root operation types.
-    //
-    //   * query operation - query root operation
-    if !queries.is_empty() && db.hir_schema().query().is_none() {
-        let unsupported_ops: Vec<ApolloDiagnostic> =
-            queries
-                .iter()
-                .filter_map(|op| {
-                    if !op.is_introspection(db.upcast()) {
-                        let diagnostic = ApolloDiagnostic::new(
-                            db,
-                            op.loc().into(),
-                            DiagnosticData::UnsupportedOperation { ty: "query" },
-                        )
-                        .label(Label::new(
-                            op.loc(),
-                            "Query operation is not defined in the schema and is therefore not supported",
-                        ));
-                        if let Some(schema_loc) = db.hir_schema().loc() {
-                            Some(diagnostic.label(Label::new(
-                                schema_loc,
-                                "Consider defining a `query` root operation type here",
-                            )))
-                        } else {
-                            Some(diagnostic.help(
-                                "consider defining a `query` root operation type in your schema",
-                            ))
-                        }
-                    } else {
-                        None
-                    }
-                })
-                .collect();
-        diagnostics.extend(unsupported_ops)
-    }
-
-    diagnostics
-}
-
-pub fn validate_mutation_operations(
-    db: &dyn ValidationDatabase,
-    mutations: Arc<Vec<Arc<hir::OperationDefinition>>>,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    // All query, subscription and mutation operations must be against legally
-    // defined schema root operation types.
-    //
-    //   * mutation operation - mutation root operation
-    if !mutations.is_empty() && db.hir_schema().mutation().is_none() {
-        let unsupported_ops: Vec<ApolloDiagnostic> = mutations
-            .iter()
-            .map(|op| {
-                let diagnostic = ApolloDiagnostic::new(db, op.loc().into(), DiagnosticData::UnsupportedOperation { ty: "mutation" })
-                    .label(Label::new(op.loc(), "Mutation operation is not defined in the schema and is therefore not supported"));
-                if let Some(schema_loc) = db.hir_schema().loc() {
-                    diagnostic.label(Label::new(schema_loc, "Consider defining a `mutation` root operation type here"))
-                } else {
-                    diagnostic.help("consider defining a `mutation` root operation type in your schema")
-                }
-            })
-            .collect();
-        diagnostics.extend(unsupported_ops)
-    }
-
-    diagnostics
 }
 
 #[cfg(test)]

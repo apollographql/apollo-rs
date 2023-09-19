@@ -2,7 +2,6 @@ use crate::{
     ast,
     database::db::Upcast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    hir::*,
     schema,
     validation::{
         self, directive, enum_, extension, input_object, interface, object, operation, scalar,
@@ -120,24 +119,6 @@ pub trait ValidationDatabase:
 
     #[salsa::invoke(extension::validate_extensions)]
     fn validate_extensions(&self) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(operation::validate_subscription_operations)]
-    fn validate_subscription_operations(
-        &self,
-        defs: Arc<Vec<Arc<OperationDefinition>>>,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(operation::validate_query_operations)]
-    fn validate_query_operations(
-        &self,
-        defs: Arc<Vec<Arc<OperationDefinition>>>,
-    ) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(operation::validate_mutation_operations)]
-    fn validate_mutation_operations(
-        &self,
-        mutations: Arc<Vec<Arc<OperationDefinition>>>,
-    ) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(object::validate_object_type_definition)]
     fn validate_object_type_definition(

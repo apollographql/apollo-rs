@@ -19,7 +19,7 @@ pub(crate) struct FieldAgainstType<'a> {
 }
 
 // TODO(@goto-bus-stop) remove intermediate allocations
-fn operation_fields<'a>(
+pub(crate) fn operation_fields<'a>(
     named_fragments: &'a HashMap<ast::Name, Node<ast::FragmentDefinition>>,
     against_type: &'a ast::NamedType,
     selections: &'a [ast::Selection],
