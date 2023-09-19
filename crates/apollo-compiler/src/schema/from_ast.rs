@@ -166,7 +166,7 @@ impl SchemaBuilder {
                     }
                 }
                 ast::Definition::EnumTypeDefinition(def) => {
-                    if insert_sticky(&mut self.schema.types, &def.name, || {
+                    if !insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Enum(EnumType::from_ast(
                             &mut self.schema.build_errors,
                             def,
