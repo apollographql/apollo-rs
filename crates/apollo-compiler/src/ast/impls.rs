@@ -191,6 +191,31 @@ impl Definition {
         }
     }
 
+    /// Return the name of this type definition or extension.
+    ///
+    /// Operations may be anonymous, and schema definitions never have a name, in that case this function returns `None`.
+    pub fn name(&self) -> Option<&Name> {
+        match self {
+            Self::OperationDefinition(def) => def.name.as_ref(),
+            Self::FragmentDefinition(def) => Some(&def.name),
+            Self::DirectiveDefinition(def) => Some(&def.name),
+            Self::SchemaDefinition(_) => None,
+            Self::ScalarTypeDefinition(def) => Some(&def.name),
+            Self::ObjectTypeDefinition(def) => Some(&def.name),
+            Self::InterfaceTypeDefinition(def) => Some(&def.name),
+            Self::UnionTypeDefinition(def) => Some(&def.name),
+            Self::EnumTypeDefinition(def) => Some(&def.name),
+            Self::InputObjectTypeDefinition(def) => Some(&def.name),
+            Self::SchemaExtension(_) => None,
+            Self::ScalarTypeExtension(def) => Some(&def.name),
+            Self::ObjectTypeExtension(def) => Some(&def.name),
+            Self::InterfaceTypeExtension(def) => Some(&def.name),
+            Self::UnionTypeExtension(def) => Some(&def.name),
+            Self::EnumTypeExtension(def) => Some(&def.name),
+            Self::InputObjectTypeExtension(def) => Some(&def.name),
+        }
+    }
+
     /// Returns an iterator of directives with the given name.
     ///
     /// This method is best for repeatable directives. For non-repeatable directives,
