@@ -44,7 +44,7 @@ pub struct Schema {
     pub description: Option<NodeStr>,
 
     /// Directives applied to the `schema` definition or a `schema` extension
-    pub directives: Vec<Component<Directive>>,
+    pub directives: Directives,
 
     /// Built-in and explicit directive definitions
     pub directive_definitions: IndexMap<Name, Node<DirectiveDefinition>>,
@@ -63,6 +63,9 @@ pub struct Schema {
     pub subscription_type: Option<ComponentStr>,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Default)]
+pub struct Directives(pub Vec<Component<Directive>>);
+
 /// The definition of a named type, with all information from type extensions folded in.
 ///
 /// The source location is that of the "main" definition.
@@ -80,7 +83,7 @@ pub enum ExtendedType {
 pub struct ScalarType {
     pub name: Name,
     pub description: Option<NodeStr>,
-    pub directives: Vec<Component<Directive>>,
+    pub directives: Directives,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -88,7 +91,7 @@ pub struct ObjectType {
     pub name: Name,
     pub description: Option<NodeStr>,
     pub implements_interfaces: IndexMap<Name, ComponentOrigin>,
-    pub directives: Vec<Component<Directive>>,
+    pub directives: Directives,
 
     /// Explicit field definitions.
     ///
@@ -107,7 +110,7 @@ pub struct InterfaceType {
     ///   or `None` for the interface type definition.
     pub implements_interfaces: IndexMap<Name, ComponentOrigin>,
 
-    pub directives: Vec<Component<Directive>>,
+    pub directives: Directives,
 
     /// Explicit field definitions.
     ///
@@ -120,7 +123,7 @@ pub struct InterfaceType {
 pub struct UnionType {
     pub name: Name,
     pub description: Option<NodeStr>,
-    pub directives: Vec<Component<Directive>>,
+    pub directives: Directives,
 
     /// * Key: name of a member object type
     /// * Value: which union type extension defined this implementation,
@@ -132,7 +135,7 @@ pub struct UnionType {
 pub struct EnumType {
     pub name: Name,
     pub description: Option<NodeStr>,
-    pub directives: Vec<Component<Directive>>,
+    pub directives: Directives,
     pub values: IndexMap<Name, Component<EnumValueDefinition>>,
 }
 
@@ -140,7 +143,7 @@ pub struct EnumType {
 pub struct InputObjectType {
     pub name: Name,
     pub description: Option<NodeStr>,
-    pub directives: Vec<Component<Directive>>,
+    pub directives: Directives,
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
 }
 
@@ -200,42 +203,6 @@ pub enum BuildError {
 pub enum FieldLookupError {
     NoSuchType,
     NoSuchField,
-}
-
-macro_rules! directive_by_name_method {
-    () => {
-        /// Returns the first directive with the given name, if any.
-        ///
-        /// This method is best for non-repeatable directives. For repeatable directives,
-        /// see [`directives_by_name`][Self::directives_by_name] (plural)
-        pub fn directive_by_name(&self, name: &str) -> Option<&Component<Directive>> {
-            self.directives_by_name(name).next()
-        }
-    };
-}
-
-fn directives_by_name<'def: 'name, 'name>(
-    directives: &'def [Component<Directive>],
-    name: &'name str,
-) -> impl Iterator<Item = &'def Component<Directive>> + 'name {
-    directives.iter().filter(move |dir| dir.name == name)
-}
-
-macro_rules! directive_methods {
-    () => {
-        /// Returns an iterator of directives with the given name.
-        ///
-        /// This method is best for repeatable directives. For non-repeatable directives,
-        /// see [`directive_by_name`][Self::directive_by_name] (singular)
-        pub fn directives_by_name<'def: 'name, 'name>(
-            &'def self,
-            name: &'name str,
-        ) -> impl Iterator<Item = &'def Component<Directive>> + 'name {
-            directives_by_name(&self.directives, name)
-        }
-
-        directive_by_name_method!();
-    };
 }
 
 impl Schema {
@@ -449,7 +416,7 @@ impl Schema {
                     name: Name::new("__typename"),
                     arguments: Vec::new(),
                     ty: Type::new_named("String").non_null(),
-                    directives: Vec::new(),
+                    directives: ast::Directives::new(),
                 }),
                 // __schema: __Schema!
                 Component::new(FieldDefinition {
@@ -457,7 +424,7 @@ impl Schema {
                     name: Name::new("__schema"),
                     arguments: Vec::new(),
                     ty: Type::new_named("__Schema").non_null(),
-                    directives: Vec::new(),
+                    directives: ast::Directives::new(),
                 }),
                 // __type(name: String!): __Type
                 Component::new(FieldDefinition {
@@ -468,11 +435,11 @@ impl Schema {
                         name: Name::new("name"),
                         ty: ast::Type::new_named("String").non_null().into(),
                         default_value: None,
-                        directives: Vec::new(),
+                        directives: ast::Directives::new(),
                     }
                     .into()],
                     ty: Type::new_named("__Type"),
-                    directives: Vec::new(),
+                    directives: ast::Directives::new(),
                 }),
             ]
         });
@@ -520,7 +487,6 @@ impl Schema {
         }
     }
 
-    directive_methods!();
     serialize_method!();
 }
 
@@ -606,21 +572,14 @@ impl ExtendedType {
         }
     }
 
-    /// Returns an iterator of directives with the given name.
-    ///
-    /// This method is best for repeatable directives. For non-repeatable directives,
-    /// see [`directive_by_name`][Self::directive_by_name] (singular)
-    pub fn directives_by_name<'def: 'name, 'name>(
-        &'def self,
-        name: &'name str,
-    ) -> impl Iterator<Item = &'def Component<Directive>> + 'name {
+    pub fn directives(&self) -> &Directives {
         match self {
-            Self::Scalar(ty) => directives_by_name(&ty.directives, name),
-            Self::Object(ty) => directives_by_name(&ty.directives, name),
-            Self::Interface(ty) => directives_by_name(&ty.directives, name),
-            Self::Union(ty) => directives_by_name(&ty.directives, name),
-            Self::Enum(ty) => directives_by_name(&ty.directives, name),
-            Self::InputObject(ty) => directives_by_name(&ty.directives, name),
+            Self::Scalar(ty) => &ty.directives,
+            Self::Object(ty) => &ty.directives,
+            Self::Interface(ty) => &ty.directives,
+            Self::Union(ty) => &ty.directives,
+            Self::Enum(ty) => &ty.directives,
+            Self::InputObject(ty) => &ty.directives,
         }
     }
 
@@ -635,7 +594,6 @@ impl ExtendedType {
         }
     }
 
-    directive_by_name_method!();
     serialize_method!();
 }
 
@@ -651,7 +609,6 @@ impl ScalarType {
             .collect()
     }
 
-    directive_methods!();
     serialize_method!();
 }
 
@@ -677,7 +634,6 @@ impl ObjectType {
             .collect()
     }
 
-    directive_methods!();
     serialize_method!();
 }
 
@@ -703,7 +659,6 @@ impl InterfaceType {
             .collect()
     }
 
-    directive_methods!();
     serialize_method!();
 }
 
@@ -724,7 +679,6 @@ impl UnionType {
             .collect()
     }
 
-    directive_methods!();
     serialize_method!();
 }
 
@@ -745,7 +699,6 @@ impl EnumType {
             .collect()
     }
 
-    directive_methods!();
     serialize_method!();
 }
 
@@ -766,8 +719,77 @@ impl InputObjectType {
             .collect()
     }
 
-    directive_methods!();
     serialize_method!();
+}
+
+impl Directives {
+    pub fn new() -> Self {
+        Self(Vec::new())
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// This method is best for repeatable directives. For non-repeatable directives,
+    /// see [`directive_by_name`][Self::directive_by_name] (singular)
+    pub fn get_all<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Component<Directive>> + 'name {
+        self.0.iter().filter(move |dir| dir.name == name)
+    }
+
+    /// Returns the first directive with the given name, if any.
+    ///
+    /// This method is best for non-repeatable directives. For repeatable directives,
+    /// see [`directives_by_name`][Self::directives_by_name] (plural)
+    pub fn get(&self, name: &str) -> Option<&Component<Directive>> {
+        self.get_all(name).next()
+    }
+
+    serialize_method!();
+}
+
+impl std::ops::Deref for Directives {
+    type Target = Vec<Component<Directive>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for Directives {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<'a> IntoIterator for &'a Directives {
+    type Item = &'a Component<Directive>;
+
+    type IntoIter = std::slice::Iter<'a, Component<Directive>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a mut Directives {
+    type Item = &'a mut Component<Directive>;
+
+    type IntoIter = std::slice::IterMut<'a, Component<Directive>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter_mut()
+    }
+}
+
+impl<D> FromIterator<D> for Directives
+where
+    D: Into<Component<Directive>>,
+{
+    fn from_iter<T: IntoIterator<Item = D>>(iter: T) -> Self {
+        Self(iter.into_iter().map(Into::into).collect())
+    }
 }
 
 impl Eq for Schema {}

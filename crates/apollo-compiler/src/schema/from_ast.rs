@@ -30,7 +30,7 @@ impl SchemaBuilder {
                 sources: IndexMap::new(),
                 build_errors: Vec::new(),
                 description: None,
-                directives: Vec::new(),
+                directives: Directives::new(),
                 directive_definitions: IndexMap::new(),
                 types: IndexMap::new(),
                 query_type: None,

@@ -135,7 +135,9 @@ impl Convert for cst::OperationDefinition {
             variables: collect_opt(file_id, self.variable_definitions(), |x| {
                 x.variable_definitions()
             }),
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             selection_set: self
                 .selection_set()?
                 .selections()
@@ -152,7 +154,9 @@ impl Convert for cst::FragmentDefinition {
         Some(Self::Target {
             name: self.fragment_name()?.name()?.convert(file_id)?,
             type_condition: self.type_condition()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             selection_set: self.selection_set().convert(file_id)??,
         })
     }
@@ -195,7 +199,9 @@ impl Convert for cst::SchemaDefinition {
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         Some(Self::Target {
             description: self.description().convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             // This may represent a syntactically invalid thing: a schema without any root
             // operation definitions. However the presence of a broken schema definition does
             // affect whether a default schema definition should be inserted, so we bubble up the
@@ -215,7 +221,9 @@ impl Convert for cst::ScalarTypeDefinition {
         Some(Self::Target {
             description: self.description().convert(file_id)?,
             name: self.name()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
         })
     }
 }
@@ -228,7 +236,9 @@ impl Convert for cst::ObjectTypeDefinition {
             description: self.description().convert(file_id)?,
             name: self.name()?.convert(file_id)?,
             implements_interfaces: self.implements_interfaces().convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
         })
     }
@@ -242,7 +252,9 @@ impl Convert for cst::InterfaceTypeDefinition {
             description: self.description().convert(file_id)?,
             name: self.name()?.convert(file_id)?,
             implements_interfaces: self.implements_interfaces().convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
         })
     }
@@ -255,7 +267,9 @@ impl Convert for cst::UnionTypeDefinition {
         Some(Self::Target {
             description: self.description().convert(file_id)?,
             name: self.name()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             members: self
                 .union_member_types()
                 .map_or_else(Default::default, |member_types| {
@@ -275,7 +289,9 @@ impl Convert for cst::EnumTypeDefinition {
         Some(Self::Target {
             description: self.description().convert(file_id)?,
             name: self.name()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             values: collect_opt(file_id, self.enum_values_definition(), |x| {
                 x.enum_value_definitions()
             }),
@@ -290,7 +306,9 @@ impl Convert for cst::InputObjectTypeDefinition {
         Some(Self::Target {
             description: self.description().convert(file_id)?,
             name: self.name()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             fields: collect_opt(file_id, self.input_fields_definition(), |x| {
                 x.input_value_definitions()
             }),
@@ -303,7 +321,9 @@ impl Convert for cst::SchemaExtension {
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         Some(Self::Target {
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             root_operations: self
                 .root_operation_type_definitions()
                 .filter_map(|x| x.convert(file_id))
@@ -318,7 +338,9 @@ impl Convert for cst::ScalarTypeExtension {
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         Some(Self::Target {
             name: self.name()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
         })
     }
 }
@@ -330,7 +352,9 @@ impl Convert for cst::ObjectTypeExtension {
         Some(Self::Target {
             name: self.name()?.convert(file_id)?,
             implements_interfaces: self.implements_interfaces().convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
         })
     }
@@ -343,7 +367,9 @@ impl Convert for cst::InterfaceTypeExtension {
         Some(Self::Target {
             name: self.name()?.convert(file_id)?,
             implements_interfaces: self.implements_interfaces().convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             fields: collect_opt(file_id, self.fields_definition(), |x| x.field_definitions()),
         })
     }
@@ -355,7 +381,9 @@ impl Convert for cst::UnionTypeExtension {
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         Some(Self::Target {
             name: self.name()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             members: self
                 .union_member_types()
                 .map_or_else(Default::default, |member_types| {
@@ -374,7 +402,9 @@ impl Convert for cst::EnumTypeExtension {
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         Some(Self::Target {
             name: self.name()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             values: collect_opt(file_id, self.enum_values_definition(), |x| {
                 x.enum_value_definitions()
             }),
@@ -388,7 +418,9 @@ impl Convert for cst::InputObjectTypeExtension {
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         Some(Self::Target {
             name: self.name()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             fields: collect_opt(file_id, self.input_fields_definition(), |x| {
                 x.input_value_definitions()
             }),
@@ -506,7 +538,9 @@ impl Convert for cst::VariableDefinition {
             name: self.variable()?.name()?.convert(file_id)?,
             ty: with_location(file_id, ty.syntax(), ty.convert(file_id)?),
             default_value,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
         })
     }
 }
@@ -544,7 +578,9 @@ impl Convert for cst::FieldDefinition {
                 x.input_value_definitions()
             }),
             ty: self.ty()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
         })
     }
 }
@@ -580,7 +616,9 @@ impl Convert for cst::InputValueDefinition {
             name: self.name()?.convert(file_id)?,
             ty: with_location(file_id, ty.syntax(), ty.convert(file_id)?),
             default_value,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
         })
     }
 }
@@ -592,7 +630,9 @@ impl Convert for cst::EnumValueDefinition {
         Some(Self::Target {
             description: self.description().convert(file_id)?,
             value: self.enum_value()?.name()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
         })
     }
 }
@@ -636,7 +676,9 @@ impl Convert for cst::Field {
             alias: self.alias().convert(file_id)?,
             name: self.name()?.convert(file_id)?,
             arguments: collect_opt(file_id, self.arguments(), |x| x.arguments()),
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             // Use an empty Vec for a field without sub-selections
             selection_set: self.selection_set().convert(file_id)?.unwrap_or_default(),
         })
@@ -649,7 +691,9 @@ impl Convert for cst::FragmentSpread {
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         Some(Self::Target {
             fragment_name: self.fragment_name()?.name()?.convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
         })
     }
 }
@@ -660,7 +704,9 @@ impl Convert for cst::InlineFragment {
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         Some(Self::Target {
             type_condition: self.type_condition().convert(file_id)?,
-            directives: collect_opt(file_id, self.directives(), |x| x.directives()),
+            directives: ast::Directives(collect_opt(file_id, self.directives(), |x| {
+                x.directives()
+            })),
             selection_set: self.selection_set().convert(file_id)??,
         })
     }
