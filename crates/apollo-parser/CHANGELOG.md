@@ -17,7 +17,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [0.6.1](https://crates.io/crates/apollo-parser/0.6.1) - 2023-18-28
+# [0.6.2](https://crates.io/crates/apollo-parser/0.6.2) - 2023-09-08
+## Fixes
+- **fixes to conversions from AST string nodes to Rust Strings - [goto-bus-stop], [pull/633], [issue/609], [issue/611]**
+  This fix affects the `String::from(ast::StringValue)` conversion function, which returns the contents of a GraphQL string node.
+  `"\""` was previously interpreted as just a backslash, now it is correctly interpreted as a double quote. For block strings, indentation is stripped as required by the spec.
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/633]: https://github.com/apollographql/apollo-rs/pull/633
+[issue/609]: https://github.com/apollographql/apollo-rs/issues/609
+[issue/611]: https://github.com/apollographql/apollo-rs/issues/611
+
+# [0.6.1](https://crates.io/crates/apollo-parser/0.6.1) - 2023-08-28
 ## Fixes
 - **fix lexing escape-sequence-like text in block strings - [goto-bus-stop], [pull/638], [issue/632]**
   Fixes a regression in 0.6.0 that could cause apollo-parser to reject valid input if a
