@@ -21,6 +21,7 @@ pub use validation_db::{ValidationDatabase, ValidationStorage};
 
 use crate::database::HirDatabase;
 use crate::hir::HirNodeLocation;
+use crate::FileId;
 use apollo_parser::cst::CstNode;
 
 /// Track used names in a recursive function.
@@ -48,6 +49,10 @@ impl Drop for RecursionStack<'_> {
 
 /// Find the closest CST node of the requested type that contains the whole range indicated by `location`.
 fn lookup_cst_node<T: CstNode>(db: &dyn HirDatabase, location: HirNodeLocation) -> Option<T> {
+    if location.file_id == FileId::BUILT_IN {
+        return None;
+    }
+
     let document = db.cst(location.file_id).document();
     let root = document.syntax();
     let element = root.covering_element(location.text_range);

@@ -1,7 +1,6 @@
 [
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             98: "0101_mismatched_variable_usage.graphql",
         },
         location: DiagnosticLocation {
@@ -41,7 +40,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             98: "0101_mismatched_variable_usage.graphql",
         },
         location: DiagnosticLocation {
@@ -81,7 +79,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             98: "0101_mismatched_variable_usage.graphql",
         },
         location: DiagnosticLocation {
@@ -121,7 +118,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             98: "0101_mismatched_variable_usage.graphql",
         },
         location: DiagnosticLocation {
@@ -161,7 +157,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             98: "0101_mismatched_variable_usage.graphql",
         },
         location: DiagnosticLocation {
@@ -201,7 +196,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             98: "0101_mismatched_variable_usage.graphql",
         },
         location: DiagnosticLocation {

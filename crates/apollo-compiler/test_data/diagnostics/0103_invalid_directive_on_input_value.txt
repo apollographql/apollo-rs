@@ -1,7 +1,6 @@
 [
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             100: "0103_invalid_directive_on_input_value.graphql",
         },
         location: DiagnosticLocation {
@@ -40,7 +39,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             100: "0103_invalid_directive_on_input_value.graphql",
         },
         location: DiagnosticLocation {

@@ -1,7 +1,6 @@
 [
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             84: "0087_fragment_type_condition_on_composite_types.graphql",
         },
         location: DiagnosticLocation {
@@ -38,7 +37,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             84: "0087_fragment_type_condition_on_composite_types.graphql",
         },
         location: DiagnosticLocation {
@@ -79,7 +77,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             84: "0087_fragment_type_condition_on_composite_types.graphql",
         },
         location: DiagnosticLocation {

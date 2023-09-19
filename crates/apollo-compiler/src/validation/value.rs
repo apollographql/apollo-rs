@@ -3,7 +3,7 @@ use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
     validation::ValidationDatabase,
-    Node,
+    FileId, Node,
 };
 use apollo_parser::cst::{self, CstNode};
 
@@ -12,10 +12,12 @@ fn unsupported_type(
     value: &Node<ast::Value>,
     declared_type: &ast::Type,
 ) -> ApolloDiagnostic {
-    let type_location = super::lookup_cst_location(
-        db.upcast(),
-        *declared_type.inner_named_type().location().unwrap(),
-        |mut cst: cst::Type| {
+    // Careful: built in nodes do not have associated source code
+    let type_location = *declared_type.inner_named_type().location().unwrap();
+    let type_location = if type_location.file_id == FileId::BUILT_IN {
+        None
+    } else {
+        super::lookup_cst_location(db.upcast(), type_location, |mut cst: cst::Type| {
             while let Some(parent) = cst.syntax().parent() {
                 if let Some(ty) = cst::Type::cast(parent) {
                     cst = ty;
@@ -24,27 +26,27 @@ fn unsupported_type(
                 }
             }
             Some(cst.syntax().text_range())
-        },
-    );
+        })
+    };
 
-    ApolloDiagnostic::new(
+    let mut diagnostic = ApolloDiagnostic::new(
         db,
         (*value.location().unwrap()).into(),
         DiagnosticData::UnsupportedValueType {
             value: value.kind().into(),
             ty: declared_type.to_string(),
         },
-    )
-    .labels([
-        Label::new(
-            type_location.unwrap(),
+    );
+    if let Some(type_location) = type_location {
+        diagnostic = diagnostic.label(Label::new(
+            type_location,
             format!("field declared here as {} type", declared_type),
-        ),
-        Label::new(
-            *value.location().unwrap(),
-            format!("argument declared here is of {} type", value.kind()),
-        ),
-    ])
+        ));
+    }
+    diagnostic.label(Label::new(
+        *value.location().unwrap(),
+        format!("argument declared here is of {} type", value.kind()),
+    ))
 }
 
 //for bigint

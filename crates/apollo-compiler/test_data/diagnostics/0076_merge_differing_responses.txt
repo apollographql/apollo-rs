@@ -1,7 +1,6 @@
 [
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             73: "0076_merge_differing_responses.graphql",
         },
         location: DiagnosticLocation {
@@ -54,7 +53,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             73: "0076_merge_differing_responses.graphql",
         },
         location: DiagnosticLocation {

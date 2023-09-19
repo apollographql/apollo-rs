@@ -1,7 +1,6 @@
 [
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             18: "0018_schema_with_specified_scalar_missing_values.graphql",
         },
         location: DiagnosticLocation {

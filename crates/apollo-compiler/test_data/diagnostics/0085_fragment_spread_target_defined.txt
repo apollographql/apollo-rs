@@ -1,7 +1,6 @@
 [
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             82: "0085_fragment_spread_target_defined.graphql",
         },
         location: DiagnosticLocation {

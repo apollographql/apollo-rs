@@ -1,7 +1,6 @@
 [
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {
@@ -38,7 +37,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {
@@ -75,7 +73,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {
@@ -112,7 +109,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {
@@ -149,7 +145,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {
@@ -186,7 +181,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             66: "0066_subselection_of_scalar.graphql",
         },
         location: DiagnosticLocation {

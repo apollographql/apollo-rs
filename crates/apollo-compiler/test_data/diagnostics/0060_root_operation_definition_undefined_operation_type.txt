@@ -1,7 +1,6 @@
 [
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             60: "0060_root_operation_definition_undefined_operation_type.graphql",
         },
         location: DiagnosticLocation {

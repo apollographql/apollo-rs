@@ -1,7 +1,6 @@
 [
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             19: "0019_enum_definition_with_duplicate_values.graphql",
         },
         location: DiagnosticLocation {
@@ -57,7 +56,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             19: "0019_enum_definition_with_duplicate_values.graphql",
         },
         location: DiagnosticLocation {

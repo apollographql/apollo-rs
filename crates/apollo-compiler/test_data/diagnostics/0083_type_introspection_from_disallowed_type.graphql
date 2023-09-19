@@ -2,13 +2,13 @@ query getProduct {
   size
   topProducts {
     __type(name: "User") {
-        name
-        fields {
+      name
+      fields {
         name
         type {
-            name
+          name
         }
-        }
+      }
     }
     name
     inStock

@@ -1,7 +1,6 @@
 [
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             48: "0048_duplicate_field_argument_definition_names.graphql",
         },
         location: DiagnosticLocation {
@@ -56,7 +55,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             48: "0048_duplicate_field_argument_definition_names.graphql",
         },
         location: DiagnosticLocation {

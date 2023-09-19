@@ -1,7 +1,6 @@
 [
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -40,7 +39,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -89,7 +87,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -128,7 +125,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -167,7 +163,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -216,7 +211,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -265,7 +259,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -314,7 +307,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -353,7 +345,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -392,7 +383,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -431,7 +421,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -480,7 +469,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -519,7 +507,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -558,7 +545,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -597,7 +583,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -646,7 +631,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -695,7 +679,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -744,7 +727,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
@@ -793,7 +775,6 @@
     },
     ApolloDiagnostic {
         cache: {
-            -1: "built_in_types.graphql",
             50: "0050_directives_in_invalid_locations.graphql",
         },
         location: DiagnosticLocation {
