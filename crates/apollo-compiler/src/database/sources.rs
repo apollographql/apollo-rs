@@ -85,7 +85,11 @@ impl Source {
             text: Arc::new(text.into()),
         }
     }
+
     /// Create a GraphQL type system file with built in types.
+    // TODO(goto-bus-stop,SimonSapin): remove
+    #[allow(unused)]
+    #[deprecated = "New AST does not have this"]
     pub(crate) fn built_in(filename: PathBuf, text: impl Into<String>) -> Self {
         Self {
             ty: SourceType::BuiltIn,

@@ -68,7 +68,7 @@ pub(crate) fn validate_operation(
                 }
             ),
         ));
-        let diagnostic = if let Some(schema_loc) = db.hir_schema().loc() {
+        let diagnostic = if let Some(schema_loc) = Option::<crate::hir::HirNodeLocation>::None {
             diagnostic.label(Label::new(
                 schema_loc,
                 format!("Consider defining a `{operation_word}` root operation type here"),
