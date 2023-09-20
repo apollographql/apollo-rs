@@ -1,8 +1,9 @@
 #![allow(unused)]
+pub use crate::node::NodeLocation as HirNodeLocation;
 use crate::Arc;
 use crate::FileId;
 use crate::{HirDatabase, Source};
-use apollo_parser::{cst, SyntaxNode};
+use apollo_parser::cst;
 use indexmap::IndexMap;
 use ordered_float::{self, OrderedFloat};
 use rowan::TextRange;
@@ -3735,48 +3736,6 @@ impl InputObjectTypeExtension {
     /// Get the source location information for this HIR node.
     pub fn loc(&self) -> HirNodeLocation {
         self.loc
-    }
-}
-
-/// The source location of a parsed node: file ID and range within that file.
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
-pub struct HirNodeLocation {
-    pub(crate) file_id: FileId,
-    pub(crate) text_range: rowan::TextRange,
-}
-
-impl HirNodeLocation {
-    pub(crate) fn new(file_id: FileId, node: &'_ SyntaxNode) -> Self {
-        Self {
-            file_id,
-            text_range: node.text_range(),
-        }
-    }
-
-    /// Returns the file ID for this location
-    pub fn file_id(&self) -> FileId {
-        self.file_id
-    }
-
-    /// Returns the offset from the start of the file to the start of the range, in UTF-8 bytes
-    pub fn offset(&self) -> usize {
-        self.text_range.start().into()
-    }
-
-    /// Returns the offset from the start of the file to the end of the range, in UTF-8 bytes
-    pub fn end_offset(&self) -> usize {
-        self.text_range.end().into()
-    }
-
-    /// Returns the length of the range, in UTF-8 bytes
-    pub fn node_len(&self) -> usize {
-        self.text_range.len().into()
-    }
-}
-
-impl<Cst: cst::CstNode> From<(FileId, &'_ Cst)> for HirNodeLocation {
-    fn from((file_id, node): (FileId, &'_ Cst)) -> Self {
-        Self::new(file_id, node.syntax())
     }
 }
 

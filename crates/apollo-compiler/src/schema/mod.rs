@@ -540,7 +540,7 @@ impl ExtendedType {
     /// Return the source location of the type's base definition.
     ///
     /// If the type has extensions, those are not covered by this location.
-    pub fn location(&self) -> Option<&'_ NodeLocation> {
+    pub fn location(&self) -> Option<NodeLocation> {
         match self {
             Self::Scalar(ty) => ty.location(),
             Self::Object(ty) => ty.location(),
