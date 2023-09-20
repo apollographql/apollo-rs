@@ -54,7 +54,7 @@ pub(crate) fn validate_operation(
 
         let diagnostic = ApolloDiagnostic::new(
             db,
-            (operation.location().unwrap()).into(),
+            operation.location().unwrap().into(),
             DiagnosticData::UnsupportedOperation { ty: operation_word },
         )
         .label(Label::new(
@@ -67,17 +67,10 @@ pub(crate) fn validate_operation(
                     ast::OperationType::Subscription => "Subscription",
                 }
             ),
+        ))
+        .help(format!(
+            "consider defining a `{operation_word}` root operation type in your schema"
         ));
-        let diagnostic = if let Some(schema_loc) = Option::<crate::hir::HirNodeLocation>::None {
-            diagnostic.label(Label::new(
-                schema_loc,
-                format!("Consider defining a `{operation_word}` root operation type here"),
-            ))
-        } else {
-            diagnostic.help(format!(
-                "consider defining a `{operation_word}` root operation type in your schema"
-            ))
-        };
         diagnostics.push(diagnostic);
     }
 
