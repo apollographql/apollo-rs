@@ -150,6 +150,10 @@ fn tokens_reached(db: &dyn ReprDatabase, file_id: FileId) -> usize {
 }
 
 fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
+    if let Some(schema) = db.schema_input() {
+        return schema;
+    }
+
     let mut builder = crate::Schema::builder();
     let executable_definitions_are_errors = true;
     for file_id in db.type_definition_files() {

@@ -92,10 +92,22 @@ impl ApolloCompiler {
         // TODO(@goto-bus-stop) can we make salsa fill in these defaults for us…?
         db.set_recursion_limit(None);
         db.set_token_limit(None);
+        db.set_schema_input(None);
         db.set_type_system_hir_input(None);
         db.set_source_files(vec![]);
 
         Self { db }
+    }
+
+    /// Create a new compiler with a pre-loaded GraphQL schema.
+    ///
+    /// This compiler can then only be used for executable documents that execute against that
+    /// schema.
+    pub fn from_schema(schema: Arc<Schema>) -> Self {
+        let mut compiler = Self::new();
+        compiler.db.set_schema_input(Some(schema));
+
+        compiler
     }
 
     /// Configure the recursion limit to use during parsing.
@@ -126,6 +138,9 @@ impl ApolloCompiler {
 
     /// Add or update a pre-computed input for type system definitions
     pub fn set_type_system_hir(&mut self, schema: Arc<hir::TypeSystem>) {
+        if self.db.schema_input().is_some() {
+            panic!("Do not combine the old type system HIR and the new Schema inputs");
+        }
         if !self.db.type_definition_files().is_empty() {
             panic!(
                 "Having both string inputs and pre-computed inputs \
@@ -168,7 +183,7 @@ impl ApolloCompiler {
     ///
     /// Returns a `FileId` that you can use to update the source text of this document.
     pub fn add_document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        if self.db.type_system_hir_input().is_some() {
+        if self.db.type_system_hir_input().is_some() || self.db.schema_input().is_some() {
             panic!(
                 "Having both string inputs and pre-computed inputs \
                  for type system definitions is not supported"
@@ -187,7 +202,7 @@ impl ApolloCompiler {
     ///
     /// Returns a `FileId` that you can use to update the source text of this document.
     pub fn add_type_system(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        if self.db.type_system_hir_input().is_some() {
+        if self.db.type_system_hir_input().is_some() || self.db.schema_input().is_some() {
             panic!(
                 "Having both string inputs and pre-computed inputs \
                  for type system definitions is not supported"
@@ -1272,7 +1287,7 @@ type Query @withDirective {
     }
 
     #[test]
-    fn precomputed_schema_can_multi_thread() {
+    fn old_precomputed_schema_can_multi_thread() {
         let schema = r#"
 type Query {
     website: URL,
@@ -1310,9 +1325,53 @@ type Query {
     }
 
     #[test]
-    fn interfaces_in_precomputed_hir() {
+    fn precomputed_schema_can_multi_thread() {
+        use crate::executable::Selection;
+
+        let sdl = r#"
+type Query {
+    website: URL,
+    amount: Int
+}
+"#;
+        let query = "{ website }";
+
+        let mut compiler = ApolloCompiler::new();
+        compiler.add_type_system(sdl, "schema.graphql");
+        let schema = compiler.db.schema();
+
+        let handles: Vec<_> = (0..2)
+            .map(|_| {
+                let cloned = Arc::clone(&schema); // cheap refcount increment
+                std::thread::spawn(move || {
+                    let mut compiler = ApolloCompiler::from_schema(cloned);
+                    let query_id = compiler.add_executable(query, "query.graphql");
+                    let document = compiler.db.executable_document(query_id);
+                    let selections = &document
+                        .anonymous_operation
+                        .as_ref()?
+                        .selection_set
+                        .selections;
+
+                    match selections.get(0)? {
+                        Selection::Field(field) => {
+                            Some(field.definition.ty.inner_named_type().to_string())
+                        }
+                        _ => None,
+                    }
+                })
+            })
+            .collect();
+        assert_eq!(handles.len(), 2);
+        for handle in handles {
+            assert_eq!(handle.join().unwrap().as_deref(), Some("URL"));
+        }
+    }
+
+    #[test]
+    fn validate_with_precomputed_schema() {
         let schema = r#"
-        schema {
+          schema {
             query: Query
           }
 
@@ -1357,12 +1416,20 @@ type Query {
         let mut compiler = ApolloCompiler::new();
         compiler.add_type_system(schema, "schema.graphql");
 
-        let type_system = compiler.db.type_system();
-        let mut another_compiler = ApolloCompiler::new();
-        another_compiler.set_type_system_hir(type_system);
+        let type_system = compiler.db.schema();
+        let mut another_compiler = ApolloCompiler::from_schema(type_system);
 
-        let interfaces = another_compiler.db.interfaces();
-        assert_eq!(interfaces.len(), 1);
-        assert!(another_compiler.validate().is_empty())
+        let file_id =
+            another_compiler.add_executable("{ person { pets { name } } }", "query.graphql");
+        for diag in another_compiler.validate() {
+            println!("{diag}");
+        }
+        assert!(another_compiler.validate().is_empty());
+
+        another_compiler.update_executable(file_id, "{ person { pets { dogBreed } } }");
+        for diag in another_compiler.validate() {
+            println!("{diag}");
+        }
+        assert_eq!(another_compiler.validate().len(), 1);
     }
 }
