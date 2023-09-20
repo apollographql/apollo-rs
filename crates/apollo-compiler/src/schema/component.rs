@@ -36,12 +36,12 @@ pub struct ExtensionId {
 impl ExtensionId {
     pub fn new<T>(extension: &Node<T>) -> Self {
         Self {
-            arc: Arc::new(extension.location().cloned()),
+            arc: Arc::new(extension.location()),
         }
     }
 
-    pub fn location(&self) -> Option<&NodeLocation> {
-        (*self.arc).as_ref()
+    pub fn location(&self) -> Option<NodeLocation> {
+        *self.arc
     }
 }
 

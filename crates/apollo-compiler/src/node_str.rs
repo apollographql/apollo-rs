@@ -38,8 +38,8 @@ impl NodeStr {
     }
 
     #[inline]
-    pub fn location(&self) -> Option<&NodeLocation> {
-        self.0.header.header.as_ref()
+    pub fn location(&self) -> Option<NodeLocation> {
+        self.0.header.header
     }
 
     #[inline]

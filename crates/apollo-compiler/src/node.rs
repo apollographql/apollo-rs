@@ -49,8 +49,8 @@ impl<T> Node<T> {
         }))
     }
 
-    pub fn location(&self) -> Option<&NodeLocation> {
-        self.0.location.as_ref()
+    pub fn location(&self) -> Option<NodeLocation> {
+        self.0.location
     }
 
     /// Whether this node is located in `FileId::BUILT_IN`,
