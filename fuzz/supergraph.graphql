@@ -1,54 +1,3 @@
-use apollo_compiler::Schema;
-use apollo_parser::Parser;
-use apollo_smith::{Document, DocumentBuilder};
-use libfuzzer_sys::arbitrary::{Result, Unstructured};
-use log::debug;
-
-/// This generate an arbitrary valid GraphQL document
-pub fn generate_valid_document(input: &[u8]) -> Result<String> {
-    drop(env_logger::try_init());
-
-    let mut u = Unstructured::new(input);
-    let gql_doc = DocumentBuilder::new(&mut u)?;
-    let document = gql_doc.finish();
-
-    Ok(document.into())
-}
-
-/// Log the error and the document generated for these errors
-/// Save it into files
-pub fn log_gql_doc(gql_doc: &str, errors: &str) {
-    log::debug!("writing test case to test.graphql ...");
-    std::fs::write("test_case.graphql", gql_doc).unwrap();
-    std::fs::write("test_case_error.log", errors).unwrap();
-}
-
-pub fn generate_valid_operation(input: &[u8]) -> Result<(String, String)> {
-    drop(env_logger::try_init());
-
-    let ts = Parser::new(SUPERGRAPH).parse();
-
-    // let diagnostics = compiler.validate();
-    // if diagnostics.len() > 0 {
-    //     for diag in diagnostics {
-    //         debug!("{}", diag);
-    //     }
-    //     panic!("validation errors in supergraph")
-    // }
-
-    let mut u = Unstructured::new(input);
-    let mut doc = DocumentBuilder::with_document(
-        &mut u,
-        Document::try_from(ts.document()).expect("document should not have errors"),
-    )?;
-
-    let operation_def: String = doc.operation_definition()?.unwrap().into();
-    let doc: String = doc.finish().into();
-
-    Ok((operation_def, doc))
-}
-
-const SUPERGRAPH: &'static str = r#"
 schema
   @core(feature: "https://specs.apollo.dev/core/v0.1")
   @core(feature: "https://specs.apollo.dev/join/v0.1") {
@@ -135,5 +84,3 @@ type User
   reviews: [Review] @join__field(graph: REVIEWS)
   username: String @join__field(graph: ACCOUNTS)
 }
-
-"#;

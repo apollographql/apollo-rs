@@ -17,13 +17,12 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4"
 apollo-compiler = { path = "../crates/apollo-compiler" }
-apollo-smith = { path = "../crates/apollo-smith" }
+apollo-parser = { path = "../crates/apollo-parser" }
+apollo-smith = { path = "../crates/apollo-smith", features = ["parser-impl"] }
 env_logger = "0.10.0"
 log = "0.4.14"
 similar-asserts = "1.5.0"
-
-[dependencies.apollo-parser]
-path = "../crates/apollo-parser"
+router-bridge = { path = "../../apollographql/federation-rs/federation-2/router-bridge" }
 
 [[bin]]
 name = "parser"
@@ -40,5 +39,11 @@ doc = false
 [[bin]]
 name = "reparse"
 path = "fuzz_targets/reparse.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "validation"
+path = "fuzz_targets/validation.rs"
 test = false
 doc = false
