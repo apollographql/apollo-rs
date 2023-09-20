@@ -1,6 +1,7 @@
 use super::sources::{FileId, Source, SourceType};
 use crate::hir::TypeSystem;
 use crate::Arc;
+use crate::Schema;
 use ariadne::{Cache as AriadneCache, Source as AriadneSource};
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -64,10 +65,13 @@ pub trait InputDatabase {
     #[salsa::input]
     fn token_limit(&self) -> Option<usize>;
 
-    /// Get input source of the corresponding file.
+    #[salsa::input]
+    fn schema_input(&self) -> Option<Arc<Schema>>;
+
     #[salsa::input]
     fn type_system_hir_input(&self) -> Option<Arc<TypeSystem>>;
 
+    /// Get input source of the corresponding file.
     #[salsa::input]
     fn input(&self, file_id: FileId) -> Source;
 
