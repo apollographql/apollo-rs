@@ -44,24 +44,24 @@ pub fn validate_variable_definitions2(
                         schema::ExtendedType::InputObject(_) => "input object",
                     };
                     diagnostics.push(
-                        ApolloDiagnostic::new(db, (*variable.location().unwrap()).into(), DiagnosticData::InputType {
+                        ApolloDiagnostic::new(db, (variable.location().unwrap()).into(), DiagnosticData::InputType {
                             name: variable.name.to_string(),
                             ty: kind,
                         })
-                        .label(Label::new(*ty.inner_named_type().location().unwrap(), format!("this is of `{kind}` type")))
+                        .label(Label::new(ty.inner_named_type().location().unwrap(), format!("this is of `{kind}` type")))
                         .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),
                         );
                 }
                 None => diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        (*variable.location().unwrap()).into(),
+                        (variable.location().unwrap()).into(),
                         DiagnosticData::UndefinedDefinition {
                             name: ty.inner_named_type().to_string(),
                         },
                     )
                     .label(Label::new(
-                        *ty.inner_named_type().location().unwrap(),
+                        ty.inner_named_type().location().unwrap(),
                         "not found in the type system",
                     )),
                 ),
@@ -70,8 +70,8 @@ pub fn validate_variable_definitions2(
 
         match seen.entry(variable.name.clone()) {
             Entry::Occupied(original) => {
-                let original_definition = *original.get().location().unwrap();
-                let redefined_definition = *variable.location().unwrap();
+                let original_definition = original.get().location().unwrap();
+                let redefined_definition = variable.location().unwrap();
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
@@ -249,7 +249,7 @@ pub fn validate_unused_variables(
 
     diagnostics.extend(unused_vars.map(|unused_var| {
         // unused var location is always Some
-        let loc = *unused_var.location().expect("missing location information");
+        let loc = unused_var.location().expect("missing location information");
         let whole_variable_location =
             super::lookup_cst_location(db.upcast(), loc, |cst: cst::Variable| {
                 Some(cst.syntax().text_range())
@@ -286,7 +286,7 @@ pub fn validate_variable_usage2(
             if !is_allowed {
                 return Err(ApolloDiagnostic::new(
                     db,
-                    (*argument.location().unwrap()).into(),
+                    (argument.location().unwrap()).into(),
                     DiagnosticData::DisallowedVariableUsage {
                         var_name: var_def.name.to_string(),
                         arg_name: argument.name.to_string(),
@@ -294,14 +294,14 @@ pub fn validate_variable_usage2(
                 )
                 .labels([
                     Label::new(
-                        *var_def.location().unwrap(),
+                        var_def.location().unwrap(),
                         format!(
                             "variable `{}` of type `{}` is declared here",
                             var_def.name, var_def.ty,
                         ),
                     ),
                     Label::new(
-                        *argument.location().unwrap(),
+                        argument.location().unwrap(),
                         format!(
                             "argument `{}` of type `{}` is declared here",
                             argument.name, var_usage.ty,
@@ -312,13 +312,13 @@ pub fn validate_variable_usage2(
         } else {
             let usage_location = super::lookup_cst_location(
                 db.upcast(),
-                *var_name.location().unwrap(),
+                var_name.location().unwrap(),
                 |cst: cst::Variable| Some(cst.syntax().text_range()),
             );
 
             return Err(ApolloDiagnostic::new(
                 db,
-                (*argument.location().unwrap()).into(),
+                (argument.location().unwrap()).into(),
                 DiagnosticData::UndefinedVariable {
                     name: var_name.to_string(),
                 },

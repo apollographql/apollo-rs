@@ -32,7 +32,7 @@ pub fn validate_scalar_definition(
             .next()
             .is_some();
         if !has_specified_by {
-            if let Some(&location) = scalar_def.location() {
+            if let Some(location) = scalar_def.location() {
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,

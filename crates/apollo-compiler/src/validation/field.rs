@@ -63,16 +63,16 @@ pub fn validate_field(
                 }
             } else {
                 let mut labels = vec![Label::new(
-                    *argument.location().unwrap(),
+                    argument.location().unwrap(),
                     "argument name not found",
                 )];
-                if let Some(&loc) = field_definition.location() {
+                if let Some(loc) = field_definition.location() {
                     labels.push(Label::new(loc, "field declared here"));
                 };
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        (*argument.location().unwrap()).into(),
+                        argument.location().unwrap().into(),
                         DiagnosticData::UndefinedArgument {
                             name: argument.name.to_string(),
                         },
@@ -97,16 +97,16 @@ pub fn validate_field(
             if arg_definition.is_required() && is_null {
                 let mut diagnostic = ApolloDiagnostic::new(
                     db,
-                    (*field.location().unwrap()).into(),
+                    field.location().unwrap().into(),
                     DiagnosticData::RequiredArgument {
                         name: arg_definition.name.to_string(),
                     },
                 );
                 diagnostic = diagnostic.label(Label::new(
-                    *field.location().unwrap(),
+                    field.location().unwrap(),
                     format!("missing value for argument `{}`", arg_definition.name),
                 ));
-                if let Some(&loc) = arg_definition.location() {
+                if let Some(loc) = arg_definition.location() {
                     diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
                 }
 
@@ -128,14 +128,14 @@ pub fn validate_field(
         let help = format!("`{fname}` is not defined on `{against_type}` type");
         let diagnostic = ApolloDiagnostic::new(
             db,
-            (*field.location().unwrap()).into(),
+            field.location().unwrap().into(),
             DiagnosticData::UndefinedField {
                 field: fname.to_string(),
                 ty: against_type.to_string(),
             },
         )
         .label(Label::new(
-            *field.location().unwrap(),
+            field.location().unwrap(),
             format!("`{fname}` field is not defined"),
         ))
         .help(help);
@@ -143,7 +143,7 @@ pub fn validate_field(
         let parent_type_loc = schema
             .types
             .get(against_type)
-            .and_then(|type_def| type_def.location().copied());
+            .and_then(|type_def| type_def.location());
 
         let diagnostic = if let Some(parent_type_loc) = parent_type_loc {
             diagnostic.label(Label::new(
@@ -197,12 +197,12 @@ pub fn validate_field_definitions(
         //
         // Returns Unique Field error.
         let fname = &field.name;
-        let redefined_definition = *field
+        let redefined_definition = field
             .location()
             .expect("undefined field definition location");
 
         if let Some(prev_field) = seen.get(fname) {
-            let original_definition = *prev_field
+            let original_definition = prev_field
                 .location()
                 .expect("undefined field definition location");
 
@@ -232,7 +232,7 @@ pub fn validate_field_definitions(
         }
 
         // Field types in Object Types must be of output type
-        let loc = *field
+        let loc = field
             .location()
             .expect("undefined field definition location");
         if let Some(field_ty) = schema.types.get(field.ty.inner_named_type()) {
@@ -255,7 +255,7 @@ pub fn validate_field_definitions(
                         .help(format!("Scalars, Objects, Interfaces, Unions and Enums are output types. Change `{}` field to return one of these output types.", field.name)),
                 );
             }
-        } else if let Some(&field_ty_loc) = field.ty.inner_named_type().location() {
+        } else if let Some(field_ty_loc) = field.ty.inner_named_type().location() {
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
@@ -327,10 +327,10 @@ pub fn validate_leaf_field_selection(
     };
 
     Err(
-        ApolloDiagnostic::new(db, (*field.location().unwrap()).into(), diagnostic_data)
-            .label(Label::new(*field.location().unwrap(), label))
+        ApolloDiagnostic::new(db, field.location().unwrap().into(), diagnostic_data)
+            .label(Label::new(field.location().unwrap(), label))
             .label(Label::new(
-                *type_def.location().unwrap(),
+                type_def.location().unwrap(),
                 format!("`{tname}` declared here"),
             )),
     )

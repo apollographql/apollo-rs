@@ -18,7 +18,7 @@ pub fn validate_schema_definition(
         .iter()
         .any(|&(operation_type, _)| operation_type == ast::OperationType::Query);
     if !has_query {
-        if let Some(&location) = schema_definition.definition.location() {
+        if let Some(location) = schema_definition.definition.location() {
             diagnostics.push(
                 ApolloDiagnostic::new(db, location.into(), DiagnosticData::QueryRootOperationType)
                     .label(Label::new(
@@ -55,11 +55,9 @@ pub fn validate_root_operation_definitions(
     let mut seen: HashSet<ast::NamedType> = HashSet::new();
     let whole_op_def_location = |name: &ast::Name| {
         name.location().and_then(|loc| {
-            super::lookup_cst_location(
-                db.upcast(),
-                *loc,
-                |cst: cst::RootOperationTypeDefinition| Some(cst.syntax().text_range()),
-            )
+            super::lookup_cst_location(db.upcast(), loc, |cst: cst::RootOperationTypeDefinition| {
+                Some(cst.syntax().text_range())
+            })
         })
     };
 

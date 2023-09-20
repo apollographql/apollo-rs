@@ -51,13 +51,13 @@ pub fn validate_interface_definition(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    (*implements_interface.location().unwrap()).into(),
+                    (implements_interface.location().unwrap()).into(),
                     DiagnosticData::RecursiveInterfaceDefinition {
                         name: implements_interface.to_string(),
                     },
                 )
                 .label(Label::new(
-                    *implements_interface.location().unwrap(),
+                    implements_interface.location().unwrap(),
                     format!("interface {implements_interface} cannot implement itself"),
                 )),
             );
@@ -95,7 +95,7 @@ pub fn validate_interface_definition(
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        (*interface.definition.location().unwrap()).into(),
+                        (interface.definition.location().unwrap()).into(),
                         DiagnosticData::MissingInterfaceField {
                             interface: implements_interface.to_string(),
                             field: super_field.name.to_string(),
@@ -103,20 +103,20 @@ pub fn validate_interface_definition(
                     )
                     .labels([
                         Label::new(
-                            *implements_interface.location().unwrap(),
+                            implements_interface.location().unwrap(),
                             format!(
                                 "implementation of interface {implements_interface} declared here"
                             ),
                         ),
                         Label::new(
-                            *super_field.location().unwrap(),
+                            super_field.location().unwrap(),
                             format!(
                                 "`{}` was originally defined by {} here",
                                 super_field.name, implements_interface
                             ),
                         ),
                         Label::new(
-                            *interface.definition.location().unwrap(),
+                            interface.definition.location().unwrap(),
                             format!("add `{}` field to this interface", super_field.name),
                         ),
                     ])
@@ -157,7 +157,7 @@ pub fn validate_implements_interfaces(
         }
 
         // interface_name.loc should always be Some
-        let loc = *interface_name
+        let loc = interface_name
             .location()
             .expect("missing implements interface location");
         diagnostics.push(
@@ -187,11 +187,11 @@ pub fn validate_implements_interfaces(
             continue;
         }
 
-        let definition_loc = *implementor.location().expect("missing interface location");
-        // let via_loc = *via_interface
+        let definition_loc = implementor.location().expect("missing interface location");
+        // let via_loc = via_interface
         //     .location()
         //     .expect("missing implements interface location");
-        let transitive_loc = *transitive_interface
+        let transitive_loc = transitive_interface
             .location()
             .expect("missing implements interface location");
         diagnostics.push(
@@ -221,18 +221,18 @@ pub fn validate_implements_interfaces(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    (*name.location().unwrap()).into(),
+                    (name.location().unwrap()).into(),
                     DiagnosticData::DuplicateImplementsInterface {
                         ty: implementor_name.to_string(),
                         interface: name.to_string(),
                     },
                 )
                 .label(Label::new(
-                    *original.location().unwrap(),
+                    original.location().unwrap(),
                     format!("`{name}` interface implementation previously declared here"),
                 ))
                 .label(Label::new(
-                    *name.location().unwrap(),
+                    name.location().unwrap(),
                     format!("`{name}` interface implementation declared again here"),
                 )),
             );

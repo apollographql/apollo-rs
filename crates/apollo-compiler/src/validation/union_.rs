@@ -31,12 +31,12 @@ pub fn validate_union_definition(
 
     let mut seen: HashSet<ast::Name> = HashSet::new();
     for union_member in union_def.members() {
-        let member_location = *union_member.location().unwrap();
+        let member_location = union_member.location().unwrap();
         // A Union type must include one or more unique member types.
         //
         // Return a Unique Definition error in case of a duplicate member.
         if let Some(prev_def) = seen.get(union_member) {
-            let original_definition = *prev_def.location().unwrap();
+            let original_definition = prev_def.location().unwrap();
 
             diagnostics.push(
                 ApolloDiagnostic::new(

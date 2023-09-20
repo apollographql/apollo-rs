@@ -149,10 +149,10 @@ pub fn validate_directive_definition(
     //
     // Returns Recursive Definition error.
     if let Err(directive) = FindRecursiveDirective::check(&db.schema(), &def) {
-        let Some(&definition_location) = def.location() else {
+        let Some(definition_location) = def.location() else {
             return vec![];
         };
-        let Some(&directive_location) = directive.location() else {
+        let Some(directive_location) = directive.location() else {
             return vec![];
         };
         let head_location = super::lookup_cst_location(
@@ -216,7 +216,7 @@ pub fn validate_directives<'dir>(
         diagnostics.extend(super::argument::validate_arguments(db, &dir.arguments));
 
         let name = &dir.name;
-        let Some(&loc) = dir.location() else { continue };
+        let Some(loc) = dir.location() else { continue };
         let directive_definition = schema.directive_definitions.get(name);
 
         if let Some(original) = seen_directives.get(name) {
@@ -228,7 +228,7 @@ pub fn validate_directives<'dir>(
             if !is_repeatable {
                 let original_loc = super::lookup_cst_location(
                     db.upcast(),
-                    *original
+                    original
                         .location()
                         .expect("undefined original directive location"),
                     |cst: cst::Directive| {
@@ -239,7 +239,7 @@ pub fn validate_directives<'dir>(
                         )
                     },
                 )
-                .or(original.location().copied())
+                .or(original.location())
                 .expect("undefined original directive location");
                 diagnostics.push(
                     ApolloDiagnostic::new(
@@ -275,14 +275,14 @@ pub fn validate_directives<'dir>(
                         DiagnosticData::UnsupportedLocation {
                             name: name.to_string(),
                             dir_loc,
-                            directive_def: (*directive_definition.location().unwrap()).into(),
+                            directive_def: directive_definition.location().unwrap().into(),
                         },
                 )
                     .label(Label::new(loc, format!("{dir_loc} is not a valid location")))
                     .help("the directive must be used in a location that the service has declared support for");
                 if !directive_definition.is_built_in() {
                     diag = diag.label(Label::new(
-                        *directive_definition.location().unwrap(),
+                        directive_definition.location().unwrap(),
                         format!("consider adding {dir_loc} directive location here"),
                     ));
                 }
@@ -319,13 +319,13 @@ pub fn validate_directives<'dir>(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            (*argument.location().unwrap()).into(),
+                            argument.location().unwrap().into(),
                             DiagnosticData::UndefinedArgument {
                                 name: argument.name.to_string(),
                             },
                         )
                         .label(Label::new(
-                            *argument.name.location().unwrap(),
+                            argument.name.location().unwrap(),
                             "argument by this name not found",
                         ))
                         .label(Label::new(loc, "directive declared here")),
@@ -348,16 +348,16 @@ pub fn validate_directives<'dir>(
                 if arg_def.is_required() && is_null {
                     let mut diagnostic = ApolloDiagnostic::new(
                         db,
-                        (*dir.location().unwrap()).into(),
+                        dir.location().unwrap().into(),
                         DiagnosticData::RequiredArgument {
                             name: arg_def.name.to_string(),
                         },
                     );
                     diagnostic = diagnostic.label(Label::new(
-                        *dir.location().unwrap(),
+                        dir.location().unwrap(),
                         format!("missing value for argument `{}`", arg_def.name),
                     ));
-                    if let Some(&loc) = arg_def.location() {
+                    if let Some(loc) = arg_def.location() {
                         diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
                     }
 

@@ -18,7 +18,7 @@ pub fn validate_arguments(
     let argument_location = |name: &ast::Name| {
         super::lookup_cst_location(
             db.upcast(),
-            *name.location().unwrap(),
+            name.location().unwrap(),
             |cst: cst::Argument| Some(cst.syntax().text_range()),
         )
     };

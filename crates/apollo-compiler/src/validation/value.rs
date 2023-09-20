@@ -13,7 +13,7 @@ fn unsupported_type(
     declared_type: &ast::Type,
 ) -> ApolloDiagnostic {
     // Careful: built in nodes do not have associated source code
-    let type_location = *declared_type.inner_named_type().location().unwrap();
+    let type_location = declared_type.inner_named_type().location().unwrap();
     let type_location = if type_location.file_id == FileId::BUILT_IN {
         None
     } else {
@@ -31,7 +31,7 @@ fn unsupported_type(
 
     let mut diagnostic = ApolloDiagnostic::new(
         db,
-        (*value.location().unwrap()).into(),
+        (value.location().unwrap()).into(),
         DiagnosticData::UnsupportedValueType {
             value: value.kind().into(),
             ty: declared_type.to_string(),
@@ -44,7 +44,7 @@ fn unsupported_type(
         ));
     }
     diagnostic.label(Label::new(
-        *value.location().unwrap(),
+        value.location().unwrap(),
         format!("argument declared here is of {} type", value.kind()),
     ))
 }
@@ -103,13 +103,13 @@ pub fn value_of_correct_type2(
                         diagnostics.push(
                             ApolloDiagnostic::new(
                                 db,
-                                (*arg_value.location().unwrap()).into(),
+                                (arg_value.location().unwrap()).into(),
                                 DiagnosticData::IntCoercionError {
                                     value: int.to_string(),
                                 },
                             )
                             .label(Label::new(
-                                *arg_value.location().unwrap(),
+                                arg_value.location().unwrap(),
                                 "cannot be coerced to an 32-bit integer",
                             )),
                         )
@@ -209,14 +209,14 @@ pub fn value_of_correct_type2(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            (*value.location().unwrap()).into(),
+                            (value.location().unwrap()).into(),
                             DiagnosticData::UndefinedValue {
                                 value: value.to_string(),
                                 definition: ty.inner_named_type().to_string(),
                             },
                         )
                         .label(Label::new(
-                            *arg_value.location().unwrap(),
+                            arg_value.location().unwrap(),
                             format!("does not exist on `{}` type", ty.inner_named_type()),
                         )),
                     );
@@ -253,14 +253,14 @@ pub fn value_of_correct_type2(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            (*value.location().unwrap()).into(),
+                            (value.location().unwrap()).into(),
                             DiagnosticData::UndefinedValue {
                                 value: name.to_string(),
                                 definition: ty.inner_named_type().to_string(),
                             },
                         )
                         .label(Label::new(
-                            *value.location().unwrap(),
+                            value.location().unwrap(),
                             format!("does not exist on `{}` type", ty.inner_named_type()),
                         )),
                     );
@@ -280,16 +280,16 @@ pub fn value_of_correct_type2(
                     if (ty.is_non_null() && f.default_value.is_none()) && (is_missing || is_null) {
                         let mut diagnostic = ApolloDiagnostic::new(
                             db,
-                            (*arg_value.location().unwrap()).into(),
+                            (arg_value.location().unwrap()).into(),
                             DiagnosticData::RequiredArgument {
                                 name: input_name.to_string(),
                             },
                         );
                         diagnostic = diagnostic.label(Label::new(
-                            *arg_value.location().unwrap(),
+                            arg_value.location().unwrap(),
                             format!("missing value for argument `{input_name}`"),
                         ));
-                        if let Some(&loc) = f.location() {
+                        if let Some(loc) = f.location() {
                             diagnostic = diagnostic.label(Label::new(loc, "argument defined here"));
                         }
 

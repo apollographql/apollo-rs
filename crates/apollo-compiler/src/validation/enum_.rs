@@ -35,8 +35,8 @@ pub fn validate_enum_definition(
         //
         // Return a Unique Definition error in case of a duplicate value.
         if let Some(prev_def) = seen.get(&enum_val.value) {
-            let original_definition = *prev_def.location().unwrap();
-            let redefined_definition = *enum_val.location().unwrap();
+            let original_definition = prev_def.location().unwrap();
+            let redefined_definition = enum_val.location().unwrap();
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
@@ -87,7 +87,7 @@ pub(crate) fn validate_enum_value(
     //
     // Return a Capitalized Value warning if enum value is not capitalized.
     if enum_val.value != enum_val.value.to_uppercase().as_str() {
-        let location = *enum_val.location().unwrap();
+        let location = enum_val.location().unwrap();
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,

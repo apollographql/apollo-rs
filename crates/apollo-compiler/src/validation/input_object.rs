@@ -84,16 +84,16 @@ pub fn validate_input_object_definition(
 
     if let Err(input_val) = FindRecursiveInputValue::check(db, &input_object) {
         let mut labels = vec![Label::new(
-            *input_object.definition.location().unwrap(),
+            input_object.definition.location().unwrap(),
             "cyclical input object definition",
         )];
-        if let Some(&loc) = input_val.location() {
+        if let Some(loc) = input_val.location() {
             labels.push(Label::new(loc, "refers to itself here"));
         };
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                (*input_object.definition.location().unwrap()).into(),
+                (input_object.definition.location().unwrap()).into(),
                 DiagnosticData::RecursiveInputObjectDefinition {
                     name: input_object.definition.name.to_string(),
                 },
@@ -132,7 +132,7 @@ pub fn validate_input_value_definitions(
         ));
 
         if let Some(prev_value) = seen.get(name) {
-            if let (Some(&original_value), Some(&redefined_value)) =
+            if let (Some(original_value), Some(redefined_value)) =
                 (prev_value.location(), input_value.location())
             {
                 diagnostics.push(

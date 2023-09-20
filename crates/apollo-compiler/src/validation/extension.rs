@@ -32,13 +32,13 @@ pub fn validate_extensions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic>
                 // Non-extensions
                 _ => continue,
             };
-            let name_location = *name.location().unwrap();
+            let name_location = name.location().unwrap();
 
             let Some(definition) = schema.types.get(name) else {
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        (*extension.location().unwrap()).into(),
+                        extension.location().unwrap().into(),
                         DiagnosticData::UndefinedDefinition {
                             name: name.to_string(),
                         },
@@ -61,7 +61,7 @@ pub fn validate_extensions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic>
                     // Definition/extension kinds are the same
                 }
                 (definition, extension) => {
-                    let definition_location = *match definition {
+                    let definition_location = match definition {
                         ExtendedType::Scalar(def) => def.location(),
                         ExtendedType::Object(def) => def.location(),
                         ExtendedType::Interface(def) => def.location(),
@@ -82,15 +82,15 @@ pub fn validate_extensions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic>
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            (*extension.location().unwrap()).into(),
+                            extension.location().unwrap().into(),
                             DiagnosticData::WrongTypeExtension {
                                 name: name.to_string(),
                                 definition: definition_location.into(),
-                                extension: (*extension.location().unwrap()).into(),
+                                extension: extension.location().unwrap().into(),
                             },
                         )
                         .label(Label::new(
-                            *extension.location().unwrap(),
+                            extension.location().unwrap(),
                             format!(
                                 "adding {} {}, but `{}` is {} {}",
                                 particle(extension.kind()),

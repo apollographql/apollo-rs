@@ -54,11 +54,11 @@ pub(crate) fn validate_operation(
 
         let diagnostic = ApolloDiagnostic::new(
             db,
-            (*operation.location().unwrap()).into(),
+            (operation.location().unwrap()).into(),
             DiagnosticData::UnsupportedOperation { ty: operation_word },
         )
         .label(Label::new(
-            *operation.location().unwrap(),
+            operation.location().unwrap(),
             format!(
                 "{} operation is not defined in the schema and is therefore not supported",
                 match operation.operation_type {
@@ -94,14 +94,14 @@ pub(crate) fn validate_operation(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    (*operation.location().unwrap()).into(),
+                    (operation.location().unwrap()).into(),
                     DiagnosticData::SingleRootField {
                         fields: fields.len(),
-                        subscription: (*operation.location().unwrap()).into(),
+                        subscription: (operation.location().unwrap()).into(),
                     },
                 )
                 .label(Label::new(
-                    *operation.location().unwrap(),
+                    operation.location().unwrap(),
                     format!("subscription with {} root fields", fields.len()),
                 ))
                 .help(format!(
@@ -129,13 +129,13 @@ pub(crate) fn validate_operation(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    (*field.location().unwrap()).into(),
+                    (field.location().unwrap()).into(),
                     DiagnosticData::IntrospectionField {
                         field: field.name.to_string(),
                     },
                 )
                 .label(Label::new(
-                    *field.location().unwrap(),
+                    field.location().unwrap(),
                     format!("{} is an introspection field", field.name),
                 )),
             );

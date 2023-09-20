@@ -1,5 +1,5 @@
 use super::*;
-use crate::hir::HirNodeLocation;
+use crate::node::NodeLocation;
 use crate::schema::SchemaBuilder;
 use crate::ExecutableDocument;
 use crate::ParseError;
@@ -169,7 +169,7 @@ impl Definition {
         }
     }
 
-    pub fn location(&self) -> Option<&HirNodeLocation> {
+    pub fn location(&self) -> Option<NodeLocation> {
         match self {
             Self::OperationDefinition(def) => def.location(),
             Self::FragmentDefinition(def) => def.location(),
@@ -560,7 +560,7 @@ impl EnumValueDefinition {
 }
 
 impl Selection {
-    pub fn location(&self) -> Option<&HirNodeLocation> {
+    pub fn location(&self) -> Option<NodeLocation> {
         match self {
             Self::Field(field) => field.location(),
             Self::FragmentSpread(fragment) => fragment.location(),

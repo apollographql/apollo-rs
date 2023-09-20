@@ -378,7 +378,7 @@ fn validate_type_system_names(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnost
 
         if let Some(name) = ast_def.name() {
             let is_custom_scalar = matches!(ast_def, ast::Definition::ScalarTypeDefinition(scalar) if !scalar.is_built_in());
-            let redefined_definition = *name.location().unwrap();
+            let redefined_definition = name.location().unwrap();
 
             // TODO(@goto-bus-stop) Check if this is a validation that we should actually do
             if is_custom_scalar && BUILT_IN_SCALARS.contains(&name.as_str()) {
@@ -395,7 +395,7 @@ fn validate_type_system_names(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnost
                 );
             } else if !scope.insert(name.clone()) {
                 let original = scope.get(name).unwrap();
-                let original_definition = *original.location().unwrap();
+                let original_definition = original.location().unwrap();
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
@@ -538,7 +538,7 @@ fn validate_executable_inner(
             if def.is_executable_definition() {
                 continue;
             }
-            let Some(&location) = def.location() else {
+            let Some(location) = def.location() else {
                 continue;
             };
             diagnostics.push(
