@@ -1,8 +1,9 @@
-pub use crate::hir::HirNodeLocation as NodeLocation;
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
 use crate::Arc;
 use crate::FileId;
+use apollo_parser::cst::CstNode;
+use apollo_parser::SyntaxNode;
 use std::fmt;
 use std::hash;
 
@@ -22,6 +23,13 @@ pub struct Node<T>(Arc<NodeInner<T>>);
 struct NodeInner<T> {
     location: Option<NodeLocation>,
     node: T,
+}
+
+/// The source location of a parsed node: file ID and range within that file.
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+pub struct NodeLocation {
+    pub(crate) file_id: FileId,
+    pub(crate) text_range: rowan::TextRange,
 }
 
 impl<T> Node<T> {
@@ -144,5 +152,41 @@ impl<T> AsRef<T> for Node<T> {
 impl<T> From<T> for Node<T> {
     fn from(node: T) -> Self {
         Self::new(node)
+    }
+}
+
+impl NodeLocation {
+    pub(crate) fn new(file_id: FileId, node: &'_ SyntaxNode) -> Self {
+        Self {
+            file_id,
+            text_range: node.text_range(),
+        }
+    }
+
+    /// Returns the file ID for this location
+    pub fn file_id(&self) -> FileId {
+        self.file_id
+    }
+
+    /// Returns the offset from the start of the file to the start of the range, in UTF-8 bytes
+    pub fn offset(&self) -> usize {
+        self.text_range.start().into()
+    }
+
+    /// Returns the offset from the start of the file to the end of the range, in UTF-8 bytes
+    pub fn end_offset(&self) -> usize {
+        self.text_range.end().into()
+    }
+
+    /// Returns the length of the range, in UTF-8 bytes
+    pub fn node_len(&self) -> usize {
+        self.text_range.len().into()
+    }
+}
+
+impl<Cst: CstNode> From<(FileId, &'_ Cst)> for NodeLocation {
+    /// Create a location pointing to an apollo-parser CST node.
+    fn from((file_id, node): (FileId, &'_ Cst)) -> Self {
+        Self::new(file_id, node.syntax())
     }
 }
