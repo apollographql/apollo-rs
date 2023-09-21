@@ -17,6 +17,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
+# [x.x.x] (unreleased) - 2023-mm-dd
+## Fixes
+- **fixes lexing of plus and minus signs in numbers - [SimonSapin], [pull/646]**
+  Plus signs are errors in GraphQL syntax.
+  Minus signs are errors if they’re not followed by a digit, even if followed by EOF.
+
+[pull/646]: https://github.com/apollographql/apollo-rs/pull/646
+
 # [0.6.2](https://crates.io/crates/apollo-parser/0.6.2) - 2023-09-08
 ## Fixes
 - **fixes to conversions from AST string nodes to Rust Strings - [goto-bus-stop], [pull/633], [issue/609], [issue/611]**
