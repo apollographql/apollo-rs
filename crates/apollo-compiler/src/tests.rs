@@ -24,6 +24,7 @@ use crate::{ast, ApolloCompiler, ApolloDiagnostic, CstDatabase, FileId};
 // $env:UPDATE_EXPECT=1; cargo test --package apollo-compiler
 // ```
 #[test]
+#[serial_test::serial]
 fn compiler_tests() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
         let mut compiler = ApolloCompiler::new();
@@ -70,6 +71,7 @@ fn assert_diagnostics_are_absent(errors: &[ApolloDiagnostic], path: &Path) {
 }
 
 #[test]
+#[serial_test::serial]
 fn serializer_tests() {
     let test_data_dir = test_data_dir();
     for subdir in ["ok", "diagnostics"] {
