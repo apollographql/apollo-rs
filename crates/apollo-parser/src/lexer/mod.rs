@@ -513,7 +513,7 @@ impl<'a> Cursor<'a> {
                 ))
             }
             State::MinusSign => Err(Error::new(
-                format!("Unexpected character \"-\""),
+                "Unexpected character \"-\"",
                 self.current_str().to_string(),
             )),
             _ => {
