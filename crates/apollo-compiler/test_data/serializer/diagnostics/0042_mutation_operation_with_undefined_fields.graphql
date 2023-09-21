@@ -15,4 +15,7 @@ type Result {
   id: String
 }
 
-union PetType = Cat | Dog
+enum PetType {
+  CAT
+  DOG
+}

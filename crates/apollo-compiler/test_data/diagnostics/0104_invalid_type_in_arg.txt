@@ -1,12 +1,11 @@
 [
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            100: "0103_invalid_type_in_arg.graphql",
+            101: "0104_invalid_type_in_arg.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 100,
+                id: 101,
             },
             offset: 135,
             length: 23,
@@ -15,12 +14,12 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 100,
+                        id: 101,
                     },
                     offset: 135,
                     length: 23,
                 },
-                text: "this is of `ObjectTypeDefinition` type",
+                text: "this is an object",
             },
         ],
         help: Some(
@@ -28,17 +27,16 @@
         ),
         data: InputType {
             name: "thisIsWrong",
-            ty: "ObjectTypeDefinition",
+            ty: "object",
         },
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            100: "0103_invalid_type_in_arg.graphql",
+            101: "0104_invalid_type_in_arg.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 100,
+                id: 101,
             },
             offset: 204,
             length: 6,
@@ -47,7 +45,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 100,
+                        id: 101,
                     },
                     offset: 204,
                     length: 6,
@@ -57,17 +55,16 @@
         ],
         help: None,
         data: UndefinedDefinition {
-            name: "a",
+            name: "number",
         },
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            100: "0103_invalid_type_in_arg.graphql",
+            101: "0104_invalid_type_in_arg.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 100,
+                id: 101,
             },
             offset: 215,
             length: 6,
@@ -76,7 +73,7 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 100,
+                        id: 101,
                     },
                     offset: 215,
                     length: 6,
@@ -86,17 +83,16 @@
         ],
         help: None,
         data: UndefinedDefinition {
-            name: "b",
+            name: "number",
         },
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            100: "0103_invalid_type_in_arg.graphql",
+            101: "0104_invalid_type_in_arg.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 100,
+                id: 101,
             },
             offset: 255,
             length: 13,
@@ -105,12 +101,12 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 100,
+                        id: 101,
                     },
                     offset: 255,
                     length: 13,
                 },
-                text: "this is of `ObjectTypeDefinition` type",
+                text: "this is an object",
             },
         ],
         help: Some(
@@ -118,17 +114,16 @@
         ),
         data: InputType {
             name: "a",
-            ty: "ObjectTypeDefinition",
+            ty: "object",
         },
     },
     ApolloDiagnostic {
         cache: {
-            0: "built_in_types.graphql",
-            100: "0103_invalid_type_in_arg.graphql",
+            101: "0104_invalid_type_in_arg.graphql",
         },
         location: DiagnosticLocation {
             file_id: FileId {
-                id: 100,
+                id: 101,
             },
             offset: 270,
             length: 18,
@@ -137,12 +132,12 @@
             Label {
                 location: DiagnosticLocation {
                     file_id: FileId {
-                        id: 100,
+                        id: 101,
                     },
                     offset: 270,
                     length: 18,
                 },
-                text: "this is of `UnionTypeDefinition` type",
+                text: "this is a union",
             },
         ],
         help: Some(
@@ -150,7 +145,7 @@
         ),
         data: InputType {
             name: "b",
-            ty: "UnionTypeDefinition",
+            ty: "union",
         },
     },
 ]

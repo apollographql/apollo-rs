@@ -4,6 +4,11 @@ schema {
   mutation: customPetMutation
 }
 
+enum PetType {
+  CAT
+  DOG
+}
+
 type customPetQuery {
   name: String
   age: Int

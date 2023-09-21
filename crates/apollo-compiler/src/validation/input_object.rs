@@ -1,6 +1,7 @@
 use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
+    schema,
     validation::RecursionStack,
     Node, ValidationDatabase,
 };
@@ -120,7 +121,10 @@ pub fn validate_input_value_definitions(
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
 ) -> Vec<ApolloDiagnostic> {
+    let schema = db.schema();
+
     let mut diagnostics = Vec::new();
+
     let mut seen: HashMap<ast::Name, &Node<ast::InputValueDefinition>> = HashMap::new();
     for input_value in input_values {
         let name = &input_value.name;
@@ -161,46 +165,44 @@ pub fn validate_input_value_definitions(
             seen.insert(name.clone(), input_value);
         }
 
-        /* TODO(@goto-bus-stop) Port to new AST
         // Input values must only contain input types.
         let loc = input_value
-            .loc()
+            .location()
             .expect("undefined input value definition location");
-        if let Some(field_ty) = input_value.ty().type_def(db.upcast()) {
-            if !input_value.ty().is_input_type(db.upcast()) {
+        if let Some(field_ty) = schema.types.get(input_value.ty.inner_named_type()) {
+            if !field_ty.is_input_type() {
+                let (particle, kind) = match field_ty {
+                    schema::ExtendedType::Scalar(_) => unreachable!(),
+                    schema::ExtendedType::Object(_) => ("an", "object"),
+                    schema::ExtendedType::Interface(_) => ("an", "interface"),
+                    schema::ExtendedType::Union(_) => ("a", "union"),
+                    schema::ExtendedType::Enum(_) => unreachable!(),
+                    schema::ExtendedType::InputObject(_) => unreachable!(),
+                };
                 diagnostics.push(
                     ApolloDiagnostic::new(db, loc.into(), DiagnosticData::InputType {
-                        name: input_value.name().into(),
-                        ty: field_ty.kind(),
+                        name: input_value.name.to_string(),
+                        ty: kind,
                     })
-                        .label(Label::new(loc, format!("this is of `{}` type", field_ty.kind())))
-                        .help(format!("Scalars, Enums, and Input Objects are input types. Change `{}` field to take one of these input types.", input_value.name())),
+                        .label(Label::new(loc, format!("this is {particle} {kind}")))
+                        .help(format!("Scalars, Enums, and Input Objects are input types. Change `{}` field to take one of these input types.", input_value.name)),
                 );
             }
-        } else if let Some(field_ty_loc) = input_value.ty().loc() {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    field_ty_loc.into(),
-                    DiagnosticData::UndefinedDefinition {
-                        name: input_value.name().into(),
-                    },
-                )
-                .label(Label::new(field_ty_loc, "not found in this scope")),
-            );
         } else {
+            let named_type = input_value.ty.inner_named_type();
+            let loc = named_type.location().unwrap();
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
                     loc.into(),
                     DiagnosticData::UndefinedDefinition {
-                        name: input_value.ty().name(),
+                        name: named_type.to_string(),
                     },
                 )
                 .label(Label::new(loc, "not found in this scope")),
             );
         }
-        */
     }
+
     diagnostics
 }
