@@ -23,7 +23,7 @@
             },
         ],
         help: Some(
-            "GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are 2 operations in this document.",
+            "GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.",
         ),
         data: MissingIdent,
     },

@@ -167,38 +167,30 @@ pub(crate) fn validate_operation_definitions_inner(
     has_schema: bool,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
+    let mut anonymous_definitions: Vec<&Node<ast::OperationDefinition>> = vec![];
+    let mut num_definitions = 0;
 
-    for file_id in db.executable_definition_files() {
-        for definition in &db.ast(file_id).definitions {
-            if let ast::Definition::OperationDefinition(operation) = definition {
-                diagnostics.extend(validate_operation(db, operation.clone(), has_schema));
+    let document = db.ast(file_id);
+
+    for definition in &document.definitions {
+        if let ast::Definition::OperationDefinition(operation) = definition {
+            diagnostics.extend(validate_operation(db, operation.clone(), has_schema));
+
+            num_definitions += 1;
+            if operation.name.is_none() {
+                anonymous_definitions.push(operation);
             }
         }
     }
 
-    let operations = db.operations(file_id);
-
-    // It is possible to have an unnamed (anonymous) operation definition only
-    // if there is **one** operation definition.
-    //
-    // Return a Missing Indent error if there are multiple operations and one or
-    // more are missing a name.
-    let op_len = operations.len();
-    if op_len > 1 {
-        let missing_ident: Vec<ApolloDiagnostic> = operations
-            .iter()
-            .filter_map(|op| {
-                if op.name().is_none() {
-                    return Some(
-                        ApolloDiagnostic::new(db, op.loc().into(), DiagnosticData::MissingIdent)
-                            .label(Label::new(op.loc(), "provide a name for this definition"))
-                            .help(format!("GraphQL allows a short-hand form for defining query operations when only that one operation exists in the document. There are {op_len} operations in this document.")),
-                    );
-                }
-                None
-            })
-            .collect();
-        diagnostics.extend(missing_ident);
+    if num_definitions > 1 {
+        diagnostics.extend(
+            anonymous_definitions.into_iter().map(|operation| {
+                ApolloDiagnostic::new(db, operation.location().unwrap().into(), DiagnosticData::MissingIdent)
+                    .label(Label::new(operation.location().unwrap(), "provide a name for this definition"))
+                    .help(format!("GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document."))
+            }),
+        );
     }
 
     diagnostics
