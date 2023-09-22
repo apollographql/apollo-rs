@@ -1,4 +1,4 @@
-use apollo_compiler::{ApolloCompiler, HirDatabase};
+use apollo_compiler::{ApolloCompiler, ReprDatabase};
 use criterion::*;
 
 fn compile(schema: &str, query: &str) -> ApolloCompiler {
@@ -6,15 +6,18 @@ fn compile(schema: &str, query: &str) -> ApolloCompiler {
     compiler.add_type_system(schema, "schema.graphql");
     let executable_id = compiler.add_executable(query, "query.graphql");
 
-    compiler.db.operations(executable_id);
-    compiler.db.object_types();
+    black_box(compiler.db.executable_document(executable_id));
+    black_box(compiler.db.schema());
 
     compiler
 }
 
 fn compile_and_validate(schema: &str, query: &str) {
-    let compiler = compile(query, schema);
-    compiler.validate();
+    let mut compiler = ApolloCompiler::new();
+    compiler.add_type_system(schema, "schema.graphql");
+    compiler.add_executable(query, "query.graphql");
+
+    black_box(compiler.validate());
 }
 
 fn bench_simple_query_compiler(c: &mut Criterion) {
