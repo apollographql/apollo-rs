@@ -9,7 +9,7 @@ type Query {
   field: T
 }
 
-{
+query {
   field {
     ...F
   }

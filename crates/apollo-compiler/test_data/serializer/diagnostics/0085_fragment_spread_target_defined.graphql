@@ -6,7 +6,7 @@ type Query {
   dog: Dog
 }
 
-{
+query {
   dog {
     ...undefinedFragment
   }

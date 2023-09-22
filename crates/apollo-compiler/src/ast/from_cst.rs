@@ -684,7 +684,14 @@ impl Convert for cst::Value {
                 } else {
                     let token = &v.syntax().first_token()?;
                     let text = token.text();
-                    debug_assert!(text.chars().all(|c| c.is_ascii_digit()));
+                    debug_assert!(
+                        text.strip_prefix('-')
+                            .unwrap_or(text)
+                            .chars()
+                            .all(|c| c.is_ascii_digit()),
+                        "{:?}",
+                        text
+                    );
                     A::BigInt(ast::NodeStr::new_parsed(
                         text,
                         NodeLocation::new(file_id, self.syntax()),

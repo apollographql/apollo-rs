@@ -7,7 +7,7 @@ type Query {
   fieldB: Int
 }
 
-{
+query {
   fieldA @repeatable @repeatable
   fieldB @unique @unique
 }

@@ -17,6 +17,8 @@ pub(crate) struct State<'config, 'fmt, 'fmt2> {
     config: Config<'config>,
     indent_level: usize,
     output: &'fmt mut fmt::Formatter<'fmt2>,
+    /// Have we not written anything yet?
+    output_empty: bool,
 }
 
 impl<'a, T> Serialize<'a, T> {
@@ -56,6 +58,7 @@ macro_rules! display {
 
 impl<'config, 'fmt, 'fmt2> State<'config, 'fmt, 'fmt2> {
     pub(crate) fn write(&mut self, str: &str) -> fmt::Result {
+        self.output_empty = false;
         self.output.write_str(str)
     }
 
@@ -173,7 +176,10 @@ impl OperationDefinition {
             directives,
             selection_set,
         } = self;
-        let shorthand = *operation_type == OperationType::Query
+        // Only use shorthand when this is the first item.
+        // If not, it might be following a `[lookahead != "{"]` grammar production
+        let shorthand = state.output_empty
+            && *operation_type == OperationType::Query
             && name.is_none()
             && variables.is_empty()
             && directives.is_empty();
@@ -897,6 +903,7 @@ macro_rules! impl_display {
                         config: self.config.clone(),
                         indent_level: 0,
                         output: f,
+                        output_empty: true,
                     })
                 }
             }
