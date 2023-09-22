@@ -74,14 +74,13 @@ pub(crate) fn document_from_ast(
             }
         }
     }
-    let doc = ExecutableDocument {
+    ExecutableDocument {
         source: document.source.clone(),
         build_errors: errors.errors,
         named_operations,
         anonymous_operation,
         fragments,
-    };
-    doc
+    }
 }
 
 impl Operation {

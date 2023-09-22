@@ -63,7 +63,7 @@ fn lookup_cst_node<T: CstNode>(db: &dyn HirDatabase, location: HirNodeLocation) 
 fn lookup_cst_location<T: CstNode>(
     db: &dyn HirDatabase,
     reference_location: HirNodeLocation,
-    build_range: impl Fn(T) -> Option<apollo_parser::TextRange>,
+    build_range: impl Fn(T) -> Option<rowan::TextRange>,
 ) -> Option<HirNodeLocation> {
     let node = lookup_cst_node::<T>(db, reference_location)?;
     build_range(node).map(|text_range| HirNodeLocation {

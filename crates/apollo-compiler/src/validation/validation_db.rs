@@ -587,7 +587,6 @@ pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<
 mod tests {
     use super::ValidationDatabase;
     use crate::ApolloCompiler;
-    use crate::HirDatabase;
 
     #[test]
     fn executable_and_type_system_definitions() {

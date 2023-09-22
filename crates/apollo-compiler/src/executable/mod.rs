@@ -22,7 +22,7 @@ pub use crate::ast::{
 };
 
 /// Executable definitions, annotated with type information
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ExecutableDocument {
     /// If this document was originally parsed from a source file,
     /// that file and its ID.
@@ -163,13 +163,7 @@ pub struct GetOperationError();
 impl ExecutableDocument {
     /// Create an empty document, to be filled programatically
     pub fn new() -> Self {
-        Self {
-            source: None,
-            build_errors: Vec::new(),
-            anonymous_operation: None,
-            named_operations: IndexMap::new(),
-            fragments: IndexMap::new(),
-        }
+        Self::default()
     }
 
     /// Parse an executable document with the default configuration.

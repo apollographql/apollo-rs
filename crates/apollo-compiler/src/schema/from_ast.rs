@@ -108,7 +108,6 @@ impl SchemaBuilder {
                 ast::Definition::ScalarTypeDefinition(def) => {
                     if !insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Scalar(ScalarType::from_ast(
-                            &mut self.schema.build_errors,
                             def,
                             self.orphan_type_extensions
                                 .remove(&def.name)
@@ -204,7 +203,7 @@ impl SchemaBuilder {
                 ast::Definition::ScalarTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Scalar(ty) = ty {
-                            ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
+                            ty.make_mut().extend_ast(ext)
                         }
                     } else {
                         self.orphan_type_extensions
@@ -322,7 +321,7 @@ impl SchemaBuilder {
             self.orphan_type_extensions
                 .into_values()
                 .flatten()
-                .map(|ext| BuildError::OrphanExtension(ext)),
+                .map(BuildError::OrphanExtension),
         );
         self.schema
     }
@@ -382,7 +381,6 @@ impl Schema {
 
 impl ScalarType {
     fn from_ast(
-        errors: &mut Vec<BuildError>,
         definition: &Node<ast::ScalarTypeDefinition>,
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
@@ -397,17 +395,13 @@ impl ScalarType {
         };
         for def in &extensions {
             if let ast::Definition::ScalarTypeExtension(ext) = def {
-                ty.extend_ast(errors, ext)
+                ty.extend_ast(ext)
             }
         }
         definition.same_location(ty)
     }
 
-    fn extend_ast(
-        &mut self,
-        _errors: &mut Vec<BuildError>,
-        extension: &Node<ast::ScalarTypeExtension>,
-    ) {
+    fn extend_ast(&mut self, extension: &Node<ast::ScalarTypeExtension>) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
         self.directives.extend(
             extension

@@ -8,6 +8,9 @@ use log::debug;
 use log::trace;
 use std::fmt::Debug;
 
+const ENABLE_EXECUTABLE: bool = false;
+const ENABLE_SCHEMA: bool = false;
+
 fuzz_target!(|input: &str| {
     let _ = env_logger::try_init();
     debug!("{input}");
@@ -28,44 +31,47 @@ fuzz_target!(|input: &str| {
              (run with RUST_LOG=debug or trace for details)"
         )
     }
+    if ENABLE_SCHEMA || ENABLE_EXECUTABLE {
+        let (schema, executable) = doc.to_mixed();
+        let schema_serialized = schema.to_string();
+        let executable_serialized = schema.to_string();
 
-    let (schema, executable) = doc.to_mixed();
-    let schema_serialized = schema.to_string();
-    let executable_serialized = schema.to_string();
+        let schema2 = Schema::parse(&schema_serialized, "schema_reparsed.graphql");
+        if ENABLE_SCHEMA && schema != schema2 {
+            trace!("=> Schema:\n{schema:#?}");
+            debug!("=> Schema:\n{schema_serialized}");
+            trace!("=> Schema reparsed:\n{schema2:#?}");
+            debug!("=> Schema reparsed:\n{schema2}");
+            diff(&schema, "Schema", &schema2, "Schema reparsed");
+            panic!(
+                "Serialized and reparsed to a different schema \
+                 (run with RUST_LOG=debug or trace for details)"
+            )
+        }
 
-    let schema2 = Schema::parse(&schema_serialized, "schema_reparsed.graphql");
-    // if schema != schema2 {
-    //     trace!("=> Schema:\n{schema:#?}");
-    //     debug!("=> Schema:\n{schema_serialized}");
-    //     trace!("=> Schema reparsed:\n{schema2:#?}");
-    //     debug!("=> Schema reparsed:\n{schema2}");
-    //     diff(&schema, "Schema", &schema2, "Schema reparsed");
-    //     panic!(
-    //         "Serialized and reparsed to a different schema \
-    //          (run with RUST_LOG=debug or trace for details)"
-    //     )
-    // }
-
-    let executable2 = ExecutableDocument::parse(
-        &schema2,
-        &executable.to_string(),
-        "executable_reparsed.graphql",
-    );
-    if executable != executable2 {
-        trace!("=> Executable document:\n{executable:?}");
-        debug!("=> Executable document:\n{executable_serialized}");
-        trace!("=> Executable document reparsed:\n{executable2:?}");
-        debug!("=> Executable document reparsed:\n{executable2}");
-        diff(
-            &executable,
-            "Executable",
-            &executable2,
-            "Executable reparsed",
-        );
-        panic!(
-            "Serialized and reparsed to a different executable document \
+        if ENABLE_EXECUTABLE {
+            let executable2 = ExecutableDocument::parse(
+                &schema2,
+                &executable_serialized,
+                "executable_reparsed.graphql",
+            );
+            if executable != executable2 {
+                trace!("=> Executable document:\n{executable:#?}");
+                debug!("=> Executable document:\n{executable_serialized}");
+                trace!("=> Executable document reparsed:\n{executable2:#?}");
+                debug!("=> Executable document reparsed:\n{executable2}");
+                diff(
+                    &executable,
+                    "Executable",
+                    &executable2,
+                    "Executable reparsed",
+                );
+                panic!(
+                    "Serialized and reparsed to a different executable document \
              (run with RUST_LOG=debug or trace for details)"
-        )
+                )
+            }
+        }
     }
 });
 

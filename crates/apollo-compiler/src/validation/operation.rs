@@ -188,7 +188,7 @@ pub(crate) fn validate_operation_definitions_inner(
             anonymous_definitions.into_iter().map(|operation| {
                 ApolloDiagnostic::new(db, operation.location().unwrap().into(), DiagnosticData::MissingIdent)
                     .label(Label::new(operation.location().unwrap(), "provide a name for this definition"))
-                    .help(format!("GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document."))
+                    .help("GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.")
             }),
         );
     }
