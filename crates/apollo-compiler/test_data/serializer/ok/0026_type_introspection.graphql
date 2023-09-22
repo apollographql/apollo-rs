@@ -6,7 +6,7 @@ type Query {
 
 scalar Date @specifiedBy(url: "datespec.com")
 
-{
+query {
   __type(name: "User") {
     name
     fields {

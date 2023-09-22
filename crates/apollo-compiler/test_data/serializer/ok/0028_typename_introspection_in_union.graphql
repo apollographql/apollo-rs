@@ -14,7 +14,7 @@ type Query {
   firstSearchResult: SearchResult
 }
 
-{
+query {
   firstSearchResult {
     __typename
     ... on Person {
