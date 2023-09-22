@@ -15,7 +15,7 @@ fn compile(schema: &str, query: &str) -> ApolloCompiler {
 fn compile_and_validate(schema: &str, query: &str) {
     let mut compiler = ApolloCompiler::new();
     compiler.add_type_system(schema, "schema.graphql");
-    let executable_id = compiler.add_executable(query, "query.graphql");
+    compiler.add_executable(query, "query.graphql");
 
     black_box(compiler.validate());
 }
