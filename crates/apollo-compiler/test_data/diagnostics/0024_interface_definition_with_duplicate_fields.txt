@@ -3,32 +3,14 @@
         cache: {
             24: "0024_interface_definition_with_duplicate_fields.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 24,
-            },
-            offset: 80,
-            length: 12,
-        },
+        location: 80..+12 @24,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 24,
-                    },
-                    offset: 80,
-                    length: 12,
-                },
+                location: 80..+12 @24,
                 text: "previous definition of `name` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 24,
-                    },
-                    offset: 95,
-                    length: 12,
-                },
+                location: 95..+12 @24,
                 text: "`name` redefined here",
             },
         ],
@@ -37,20 +19,8 @@
         ),
         data: UniqueField {
             field: "name",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 24,
-                },
-                offset: 80,
-                length: 12,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 24,
-                },
-                offset: 95,
-                length: 12,
-            },
+            original_definition: 80..+12 @24,
+            redefined_definition: 95..+12 @24,
         },
     },
 ]

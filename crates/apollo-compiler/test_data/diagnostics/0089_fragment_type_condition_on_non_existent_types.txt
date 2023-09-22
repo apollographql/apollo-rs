@@ -3,22 +3,10 @@
         cache: {
             86: "0089_fragment_type_condition_on_non_existent_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 93,
-            length: 40,
-        },
+        location: 93..+40 @86,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 100,
-                    length: 17,
-                },
+                location: 100..+17 @86,
                 text: "`MissingSecondType` is defined here but not declared in the schema",
             },
         ],
@@ -35,22 +23,10 @@
         cache: {
             86: "0089_fragment_type_condition_on_non_existent_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 385,
-            length: 30,
-        },
+        location: 385..+30 @86,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 392,
-                    length: 11,
-                },
+                location: 392..+11 @86,
                 text: "`MissingType` is defined here but not declared in the schema",
             },
         ],
@@ -67,22 +43,10 @@
         cache: {
             86: "0089_fragment_type_condition_on_non_existent_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 86,
-            },
-            offset: 419,
-            length: 55,
-        },
+        location: 419..+55 @86,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 86,
-                    },
-                    offset: 456,
-                    length: 10,
-                },
+                location: 456..+10 @86,
                 text: "`Interface2` is defined here but not declared in the schema",
             },
         ],

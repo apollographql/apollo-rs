@@ -3,22 +3,10 @@
         cache: {
             4: "0004_subscription_with_multiple_root_fields.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 4,
-            },
-            offset: 0,
-            length: 87,
-        },
+        location: 0..+87 @4,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 4,
-                    },
-                    offset: 0,
-                    length: 87,
-                },
+                location: 0..+87 @4,
                 text: "subscription with 2 root fields",
             },
         ],
@@ -27,13 +15,7 @@
         ),
         data: SingleRootField {
             fields: 2,
-            subscription: DiagnosticLocation {
-                file_id: FileId {
-                    id: 4,
-                },
-                offset: 0,
-                length: 87,
-            },
+            subscription: 0..+87 @4,
         },
     },
 ]

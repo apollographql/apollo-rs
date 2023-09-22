@@ -3,42 +3,18 @@
         cache: {
             87: "0090_fragment_spread_impossible.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 476,
-            length: 26,
-        },
+        location: 476..+26 @87,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 476,
-                    length: 26,
-                },
+                location: 476..+26 @87,
                 text: "fragment `catInDogFragmentInvalid` cannot be applied",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 638,
-                    length: 77,
-                },
+                location: 638..+77 @87,
                 text: "fragment declared with type condition `Dog` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 262,
-                    length: 65,
-                },
+                location: 262..+65 @87,
                 text: "type condition `Dog` is not assignable to this type",
             },
         ],
@@ -54,42 +30,18 @@
         cache: {
             87: "0090_fragment_spread_impossible.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 571,
-            length: 28,
-        },
+        location: 571..+28 @87,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 571,
-                    length: 28,
-                },
+                location: 571..+28 @87,
                 text: "fragment `nonIntersectingInterfaces` cannot be applied",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 879,
-                    length: 68,
-                },
+                location: 879..+68 @87,
                 text: "fragment declared with type condition `Pet` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 262,
-                    length: 65,
-                },
+                location: 262..+65 @87,
                 text: "type condition `Pet` is not assignable to this type",
             },
         ],
@@ -105,32 +57,14 @@
         cache: {
             87: "0090_fragment_spread_impossible.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 682,
-            length: 31,
-        },
+        location: 682..+31 @87,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 682,
-                    length: 31,
-                },
+                location: 682..+31 @87,
                 text: "fragment applied with type condition `Cat` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 108,
-                    length: 61,
-                },
+                location: 108..+61 @87,
                 text: "type condition `Cat` is not assignable to this type",
             },
         ],
@@ -144,32 +78,14 @@
         cache: {
             87: "0090_fragment_spread_impossible.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 759,
-            length: 31,
-        },
+        location: 759..+31 @87,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 759,
-                    length: 31,
-                },
+                location: 759..+31 @87,
                 text: "fragment applied with type condition `Dog` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 33,
-                    length: 38,
-                },
+                location: 33..+38 @87,
                 text: "type condition `Dog` is not assignable to this type",
             },
         ],
@@ -183,32 +99,14 @@
         cache: {
             87: "0090_fragment_spread_impossible.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 844,
-            length: 31,
-        },
+        location: 844..+31 @87,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 844,
-                    length: 31,
-                },
+                location: 844..+31 @87,
                 text: "fragment applied with type condition `Cat` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 403,
-                    length: 34,
-                },
+                location: 403..+34 @87,
                 text: "type condition `Cat` is not assignable to this type",
             },
         ],
@@ -222,42 +120,18 @@
         cache: {
             87: "0090_fragment_spread_impossible.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 87,
-            },
-            offset: 925,
-            length: 20,
-        },
+        location: 925..+20 @87,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 925,
-                    length: 20,
-                },
+                location: 925..+20 @87,
                 text: "fragment `sentientFragment2` cannot be applied",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 949,
-                    length: 49,
-                },
+                location: 949..+49 @87,
                 text: "fragment declared with type condition `Sentient` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 87,
-                    },
-                    offset: 73,
-                    length: 33,
-                },
+                location: 73..+33 @87,
                 text: "type condition `Sentient` is not assignable to this type",
             },
         ],

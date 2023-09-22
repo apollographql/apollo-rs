@@ -3,32 +3,14 @@
         cache: {
             79: "0082_introspection_types_in_mutation.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 79,
-            },
-            offset: 202,
-            length: 99,
-        },
+        location: 202..+99 @79,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 79,
-                    },
-                    offset: 202,
-                    length: 99,
-                },
+                location: 202..+99 @79,
                 text: "`__type` field is not defined",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 79,
-                    },
-                    offset: 114,
-                    length: 62,
-                },
+                location: 114..+62 @79,
                 text: "`MyMutationRootType` declared here",
             },
         ],

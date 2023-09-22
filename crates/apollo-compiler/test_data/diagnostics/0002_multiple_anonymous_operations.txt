@@ -3,22 +3,10 @@
         cache: {
             2: "0002_multiple_anonymous_operations.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 2,
-            },
-            offset: 0,
-            length: 15,
-        },
+        location: 0..+15 @2,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 2,
-                    },
-                    offset: 0,
-                    length: 15,
-                },
+                location: 0..+15 @2,
                 text: "provide a name for this definition",
             },
         ],
@@ -31,22 +19,10 @@
         cache: {
             2: "0002_multiple_anonymous_operations.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 2,
-            },
-            offset: 17,
-            length: 57,
-        },
+        location: 17..+57 @2,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 2,
-                    },
-                    offset: 17,
-                    length: 57,
-                },
+                location: 17..+57 @2,
                 text: "provide a name for this definition",
             },
         ],

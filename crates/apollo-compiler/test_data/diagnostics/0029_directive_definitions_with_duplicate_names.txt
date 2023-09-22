@@ -3,32 +3,14 @@
         cache: {
             29: "0029_directive_definitions_with_duplicate_names.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 29,
-            },
-            offset: 116,
-            length: 3,
-        },
+        location: 116..+3 @29,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 29,
-                    },
-                    offset: 91,
-                    length: 3,
-                },
+                location: 91..+3 @29,
                 text: "previous definition of `foo` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 29,
-                    },
-                    offset: 116,
-                    length: 3,
-                },
+                location: 116..+3 @29,
                 text: "`foo` redefined here",
             },
         ],
@@ -38,20 +20,8 @@
         data: UniqueDefinition {
             ty: "directive",
             name: "foo",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 29,
-                },
-                offset: 91,
-                length: 3,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 29,
-                },
-                offset: 116,
-                length: 3,
-            },
+            original_definition: 91..+3 @29,
+            redefined_definition: 116..+3 @29,
         },
     },
 ]

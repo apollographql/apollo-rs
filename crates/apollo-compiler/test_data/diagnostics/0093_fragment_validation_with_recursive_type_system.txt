@@ -3,32 +3,14 @@
         cache: {
             90: "0093_fragment_validation_with_recursive_type_system.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 90,
-            },
-            offset: 73,
-            length: 42,
-        },
+        location: 73..+42 @90,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 90,
-                    },
-                    offset: 139,
-                    length: 1,
-                },
+                location: 139..+1 @90,
                 text: "implementation of A declared by B here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 90,
-                    },
-                    offset: 73,
-                    length: 42,
-                },
+                location: 73..+42 @90,
                 text: "A must also be implemented here",
             },
         ],
@@ -41,32 +23,14 @@
         cache: {
             90: "0093_fragment_validation_with_recursive_type_system.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 90,
-            },
-            offset: 116,
-            length: 42,
-        },
+        location: 116..+42 @90,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 90,
-                    },
-                    offset: 96,
-                    length: 1,
-                },
+                location: 96..+1 @90,
                 text: "implementation of B declared by A here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 90,
-                    },
-                    offset: 116,
-                    length: 42,
-                },
+                location: 116..+42 @90,
                 text: "B must also be implemented here",
             },
         ],

@@ -3,32 +3,14 @@
         cache: {
             47: "0047_duplicate_field_arguments.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 47,
-            },
-            offset: 84,
-            length: 10,
-        },
+        location: 84..+10 @47,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 47,
-                    },
-                    offset: 73,
-                    length: 9,
-                },
+                location: 73..+9 @47,
                 text: "previously provided `arg` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 47,
-                    },
-                    offset: 84,
-                    length: 10,
-                },
+                location: 84..+10 @47,
                 text: "`arg` provided again here",
             },
         ],
@@ -37,20 +19,8 @@
         ),
         data: UniqueArgument {
             name: "arg",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 47,
-                },
-                offset: 73,
-                length: 9,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 47,
-                },
-                offset: 84,
-                length: 10,
-            },
+            original_definition: 73..+9 @47,
+            redefined_definition: 84..+10 @47,
         },
     },
 ]

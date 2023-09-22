@@ -3,32 +3,14 @@
         cache: {
             30: "0030_schema_with_duplicate_input_objects.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 30,
-            },
-            offset: 162,
-            length: 7,
-        },
+        location: 162..+7 @30,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 30,
-                    },
-                    offset: 121,
-                    length: 7,
-                },
+                location: 121..+7 @30,
                 text: "previous definition of `Point2D` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 30,
-                    },
-                    offset: 162,
-                    length: 7,
-                },
+                location: 162..+7 @30,
                 text: "`Point2D` redefined here",
             },
         ],
@@ -38,20 +20,8 @@
         data: UniqueDefinition {
             ty: "type",
             name: "Point2D",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 30,
-                },
-                offset: 121,
-                length: 7,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 30,
-                },
-                offset: 162,
-                length: 7,
-            },
+            original_definition: 121..+7 @30,
+            redefined_definition: 162..+7 @30,
         },
     },
 ]

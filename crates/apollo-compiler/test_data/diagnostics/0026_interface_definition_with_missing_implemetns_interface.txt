@@ -3,32 +3,14 @@
         cache: {
             26: "0026_interface_definition_with_missing_implemetns_interface.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 26,
-            },
-            offset: 149,
-            length: 96,
-        },
+        location: 149..+96 @26,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 26,
-                    },
-                    offset: 102,
-                    length: 4,
-                },
+                location: 102..+4 @26,
                 text: "implementation of Node declared by Resource here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 26,
-                    },
-                    offset: 149,
-                    length: 96,
-                },
+                location: 149..+96 @26,
                 text: "Node must also be implemented here",
             },
         ],

@@ -3,32 +3,14 @@
         cache: {
             19: "0019_enum_definition_with_duplicate_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 19,
-            },
-            offset: 84,
-            length: 3,
-        },
+        location: 84..+3 @19,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 19,
-                    },
-                    offset: 60,
-                    length: 3,
-                },
+                location: 60..+3 @19,
                 text: "previous definition of `CAT` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 19,
-                    },
-                    offset: 84,
-                    length: 3,
-                },
+                location: 84..+3 @19,
                 text: "`CAT` redefined here",
             },
         ],
@@ -38,52 +20,22 @@
         data: UniqueDefinition {
             ty: "enum value",
             name: "CAT",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 19,
-                },
-                offset: 60,
-                length: 3,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 19,
-                },
-                offset: 84,
-                length: 3,
-            },
+            original_definition: 60..+3 @19,
+            redefined_definition: 84..+3 @19,
         },
     },
     ApolloDiagnostic {
         cache: {
             19: "0019_enum_definition_with_duplicate_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 19,
-            },
-            offset: 157,
-            length: 16,
-        },
+        location: 157..+16 @19,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 19,
-                    },
-                    offset: 108,
-                    length: 16,
-                },
+                location: 108..+16 @19,
                 text: "previous definition of `THRIVE_PET_FOODS` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 19,
-                    },
-                    offset: 157,
-                    length: 16,
-                },
+                location: 157..+16 @19,
                 text: "`THRIVE_PET_FOODS` redefined here",
             },
         ],
@@ -93,20 +45,8 @@
         data: UniqueDefinition {
             ty: "enum value",
             name: "THRIVE_PET_FOODS",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 19,
-                },
-                offset: 108,
-                length: 16,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 19,
-                },
-                offset: 157,
-                length: 16,
-            },
+            original_definition: 108..+16 @19,
+            redefined_definition: 157..+16 @19,
         },
     },
 ]

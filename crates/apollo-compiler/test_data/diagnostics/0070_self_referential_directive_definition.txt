@@ -3,32 +3,14 @@
         cache: {
             70: "0070_self_referential_directive_definition.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 100,
-            length: 77,
-        },
+        location: 100..+77 @70,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 100,
-                    length: 25,
-                },
+                location: 100..+25 @70,
                 text: "recursive directive definition",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 138,
-                    length: 15,
-                },
+                location: 138..+15 @70,
                 text: "refers to itself here",
             },
         ],
@@ -41,32 +23,14 @@
         cache: {
             70: "0070_self_referential_directive_definition.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 290,
-            length: 88,
-        },
+        location: 290..+88 @70,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 290,
-                    length: 25,
-                },
+                location: 290..+25 @70,
                 text: "recursive directive definition",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 235,
-                    length: 54,
-                },
+                location: 235..+54 @70,
                 text: "refers to itself here",
             },
         ],
@@ -79,32 +43,14 @@
         cache: {
             70: "0070_self_referential_directive_definition.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 380,
-            length: 60,
-        },
+        location: 380..+60 @70,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 380,
-                    length: 16,
-                },
+                location: 380..+16 @70,
                 text: "recursive directive definition",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 532,
-                    length: 6,
-                },
+                location: 532..+6 @70,
                 text: "refers to itself here",
             },
         ],
@@ -117,32 +63,14 @@
         cache: {
             70: "0070_self_referential_directive_definition.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 441,
-            length: 60,
-        },
+        location: 441..+60 @70,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 441,
-                    length: 16,
-                },
+                location: 441..+16 @70,
                 text: "recursive directive definition",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 410,
-                    length: 6,
-                },
+                location: 410..+6 @70,
                 text: "refers to itself here",
             },
         ],
@@ -155,32 +83,14 @@
         cache: {
             70: "0070_self_referential_directive_definition.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 502,
-            length: 60,
-        },
+        location: 502..+60 @70,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 502,
-                    length: 16,
-                },
+                location: 502..+16 @70,
                 text: "recursive directive definition",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 471,
-                    length: 6,
-                },
+                location: 471..+6 @70,
                 text: "refers to itself here",
             },
         ],
@@ -193,32 +103,14 @@
         cache: {
             70: "0070_self_referential_directive_definition.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 70,
-            },
-            offset: 705,
-            length: 75,
-        },
+        location: 705..+75 @70,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 705,
-                    length: 16,
-                },
+                location: 705..+16 @70,
                 text: "recursive directive definition",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 70,
-                    },
-                    offset: 621,
-                    length: 6,
-                },
+                location: 621..+6 @70,
                 text: "refers to itself here",
             },
         ],

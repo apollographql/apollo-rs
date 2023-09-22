@@ -3,32 +3,14 @@
         cache: {
             68: "0068_subselection_of_union.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 68,
-            },
-            offset: 27,
-            length: 4,
-        },
+        location: 27..+4 @68,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 27,
-                    length: 4,
-                },
+                location: 27..+4 @68,
                 text: "field `pet1` type `CatOrDog` is an union and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 257,
-                    length: 26,
-                },
+                location: 257..+26 @68,
                 text: "`CatOrDog` declared here",
             },
         ],
@@ -39,32 +21,14 @@
         cache: {
             68: "0068_subselection_of_union.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 68,
-            },
-            offset: 34,
-            length: 4,
-        },
+        location: 34..+4 @68,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 34,
-                    length: 4,
-                },
+                location: 34..+4 @68,
                 text: "field `pet2` type `CatOrDog` is an union and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 257,
-                    length: 26,
-                },
+                location: 257..+26 @68,
                 text: "`CatOrDog` declared here",
             },
         ],
@@ -75,32 +39,14 @@
         cache: {
             68: "0068_subselection_of_union.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 68,
-            },
-            offset: 41,
-            length: 4,
-        },
+        location: 41..+4 @68,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 41,
-                    length: 4,
-                },
+                location: 41..+4 @68,
                 text: "field `pet3` type `CatOrDog` is an union and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 257,
-                    length: 26,
-                },
+                location: 257..+26 @68,
                 text: "`CatOrDog` declared here",
             },
         ],
@@ -111,32 +57,14 @@
         cache: {
             68: "0068_subselection_of_union.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 68,
-            },
-            offset: 48,
-            length: 4,
-        },
+        location: 48..+4 @68,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 48,
-                    length: 4,
-                },
+                location: 48..+4 @68,
                 text: "field `pet4` type `CatOrDog` is an union and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 257,
-                    length: 26,
-                },
+                location: 257..+26 @68,
                 text: "`CatOrDog` declared here",
             },
         ],
@@ -147,32 +75,14 @@
         cache: {
             68: "0068_subselection_of_union.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 68,
-            },
-            offset: 55,
-            length: 4,
-        },
+        location: 55..+4 @68,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 55,
-                    length: 4,
-                },
+                location: 55..+4 @68,
                 text: "field `pet5` type `CatOrDog` is an union and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 257,
-                    length: 26,
-                },
+                location: 257..+26 @68,
                 text: "`CatOrDog` declared here",
             },
         ],
@@ -183,32 +93,14 @@
         cache: {
             68: "0068_subselection_of_union.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 68,
-            },
-            offset: 62,
-            length: 4,
-        },
+        location: 62..+4 @68,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 62,
-                    length: 4,
-                },
+                location: 62..+4 @68,
                 text: "field `pet6` type `CatOrDog` is an union and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 68,
-                    },
-                    offset: 257,
-                    length: 26,
-                },
+                location: 257..+26 @68,
                 text: "`CatOrDog` declared here",
             },
         ],

@@ -3,22 +3,10 @@
         cache: {
             9: "0009_operation_with_undefined_variables_in_fragment.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 9,
-            },
-            offset: 173,
-            length: 16,
-        },
+        location: 173..+16 @9,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 9,
-                    },
-                    offset: 183,
-                    length: 6,
-                },
+                location: 183..+6 @9,
                 text: "not found in this scope",
             },
         ],

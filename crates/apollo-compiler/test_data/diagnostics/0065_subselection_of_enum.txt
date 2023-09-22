@@ -3,32 +3,14 @@
         cache: {
             65: "0065_subselection_of_enum.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 26,
-            length: 13,
-        },
+        location: 26..+13 @65,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 26,
-                    length: 13,
-                },
+                location: 26..+13 @65,
                 text: "field `pet1` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
+                location: 230..+36 @65,
                 text: "`Pet` declared here",
             },
         ],
@@ -39,32 +21,14 @@
         cache: {
             65: "0065_subselection_of_enum.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 42,
-            length: 13,
-        },
+        location: 42..+13 @65,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 42,
-                    length: 13,
-                },
+                location: 42..+13 @65,
                 text: "field `pet2` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
+                location: 230..+36 @65,
                 text: "`Pet` declared here",
             },
         ],
@@ -75,32 +39,14 @@
         cache: {
             65: "0065_subselection_of_enum.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 58,
-            length: 13,
-        },
+        location: 58..+13 @65,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 58,
-                    length: 13,
-                },
+                location: 58..+13 @65,
                 text: "field `pet3` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
+                location: 230..+36 @65,
                 text: "`Pet` declared here",
             },
         ],
@@ -111,32 +57,14 @@
         cache: {
             65: "0065_subselection_of_enum.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 74,
-            length: 13,
-        },
+        location: 74..+13 @65,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 74,
-                    length: 13,
-                },
+                location: 74..+13 @65,
                 text: "field `pet4` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
+                location: 230..+36 @65,
                 text: "`Pet` declared here",
             },
         ],
@@ -147,32 +75,14 @@
         cache: {
             65: "0065_subselection_of_enum.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 90,
-            length: 13,
-        },
+        location: 90..+13 @65,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 90,
-                    length: 13,
-                },
+                location: 90..+13 @65,
                 text: "field `pet5` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
+                location: 230..+36 @65,
                 text: "`Pet` declared here",
             },
         ],
@@ -183,32 +93,14 @@
         cache: {
             65: "0065_subselection_of_enum.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 65,
-            },
-            offset: 106,
-            length: 13,
-        },
+        location: 106..+13 @65,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 106,
-                    length: 13,
-                },
+                location: 106..+13 @65,
                 text: "field `pet6` of type `Pet` is an enum and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 65,
-                    },
-                    offset: 230,
-                    length: 36,
-                },
+                location: 230..+36 @65,
                 text: "`Pet` declared here",
             },
         ],

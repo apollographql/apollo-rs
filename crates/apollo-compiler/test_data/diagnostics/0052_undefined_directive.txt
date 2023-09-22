@@ -3,22 +3,10 @@
         cache: {
             52: "0052_undefined_directive.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 52,
-            },
-            offset: 46,
-            length: 11,
-        },
+        location: 46..+11 @52,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 52,
-                    },
-                    offset: 46,
-                    length: 11,
-                },
+                location: 46..+11 @52,
                 text: "directive not defined",
             },
         ],

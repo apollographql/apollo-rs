@@ -3,32 +3,14 @@
         cache: {
             92: "0095_interface_implementation_declared_once.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 92,
-            },
-            offset: 66,
-            length: 4,
-        },
+        location: 66..+4 @92,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 59,
-                    length: 4,
-                },
+                location: 59..+4 @92,
                 text: "`Intf` interface implementation previously declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 66,
-                    length: 4,
-                },
+                location: 66..+4 @92,
                 text: "`Intf` interface implementation declared again here",
             },
         ],
@@ -42,32 +24,14 @@
         cache: {
             92: "0095_interface_implementation_declared_once.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 92,
-            },
-            offset: 174,
-            length: 4,
-        },
+        location: 174..+4 @92,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 117,
-                    length: 4,
-                },
+                location: 117..+4 @92,
                 text: "`Intf` interface implementation previously declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 174,
-                    length: 4,
-                },
+                location: 174..+4 @92,
                 text: "`Intf` interface implementation declared again here",
             },
         ],
@@ -81,32 +45,14 @@
         cache: {
             92: "0095_interface_implementation_declared_once.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 92,
-            },
-            offset: 216,
-            length: 4,
-        },
+        location: 216..+4 @92,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 209,
-                    length: 4,
-                },
+                location: 209..+4 @92,
                 text: "`Intf` interface implementation previously declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 92,
-                    },
-                    offset: 216,
-                    length: 4,
-                },
+                location: 216..+4 @92,
                 text: "`Intf` interface implementation declared again here",
             },
         ],

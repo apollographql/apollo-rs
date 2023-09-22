@@ -3,22 +3,10 @@
         cache: {
             7: "0007_operation_with_undefined_variables.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 7,
-            },
-            offset: 35,
-            length: 25,
-        },
+        location: 35..+25 @7,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 7,
-                    },
-                    offset: 42,
-                    length: 18,
-                },
+                location: 42..+18 @7,
                 text: "not found in this scope",
             },
         ],

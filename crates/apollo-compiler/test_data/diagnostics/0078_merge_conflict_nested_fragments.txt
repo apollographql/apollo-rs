@@ -3,32 +3,14 @@
         cache: {
             75: "0078_merge_conflict_nested_fragments.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 75,
-            },
-            offset: 206,
-            length: 4,
-        },
+        location: 206..+4 @75,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 75,
-                    },
-                    offset: 179,
-                    length: 4,
-                },
+                location: 179..+4 @75,
                 text: "field `y` is selected from field `c` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 75,
-                    },
-                    offset: 206,
-                    length: 4,
-                },
+                location: 206..+4 @75,
                 text: "but the same field `y` is also selected from field `d` here",
             },
         ],
@@ -37,52 +19,22 @@
         ),
         data: ConflictingField {
             field: "d",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 75,
-                },
-                offset: 179,
-                length: 4,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 75,
-                },
-                offset: 206,
-                length: 4,
-            },
+            original_selection: 179..+4 @75,
+            redefined_selection: 206..+4 @75,
         },
     },
     ApolloDiagnostic {
         cache: {
             75: "0078_merge_conflict_nested_fragments.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 75,
-            },
-            offset: 240,
-            length: 4,
-        },
+        location: 240..+4 @75,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 75,
-                    },
-                    offset: 145,
-                    length: 4,
-                },
+                location: 145..+4 @75,
                 text: "field `x` is selected from field `a` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 75,
-                    },
-                    offset: 240,
-                    length: 4,
-                },
+                location: 240..+4 @75,
                 text: "but the same field `x` is also selected from field `b` here",
             },
         ],
@@ -91,20 +43,8 @@
         ),
         data: ConflictingField {
             field: "b",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 75,
-                },
-                offset: 145,
-                length: 4,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 75,
-                },
-                offset: 240,
-                length: 4,
-            },
+            original_selection: 145..+4 @75,
+            redefined_selection: 240..+4 @75,
         },
     },
 ]

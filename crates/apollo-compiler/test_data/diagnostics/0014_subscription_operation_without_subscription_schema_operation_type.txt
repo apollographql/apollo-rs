@@ -3,22 +3,10 @@
         cache: {
             14: "0014_subscription_operation_without_subscription_schema_operation_type.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 14,
-            },
-            offset: 0,
-            length: 75,
-        },
+        location: 0..+75 @14,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 14,
-                    },
-                    offset: 0,
-                    length: 75,
-                },
+                location: 0..+75 @14,
                 text: "Subscription operation is not defined in the schema and is therefore not supported",
             },
         ],

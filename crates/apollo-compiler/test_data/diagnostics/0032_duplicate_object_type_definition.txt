@@ -3,32 +3,14 @@
         cache: {
             32: "0032_duplicate_object_type_definition.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 32,
-            },
-            offset: 36,
-            length: 5,
-        },
+        location: 36..+5 @32,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 32,
-                    },
-                    offset: 5,
-                    length: 5,
-                },
+                location: 5..+5 @32,
                 text: "previous definition of `Query` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 32,
-                    },
-                    offset: 36,
-                    length: 5,
-                },
+                location: 36..+5 @32,
                 text: "`Query` redefined here",
             },
         ],
@@ -38,20 +20,8 @@
         data: UniqueDefinition {
             ty: "type",
             name: "Query",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 32,
-                },
-                offset: 5,
-                length: 5,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 32,
-                },
-                offset: 36,
-                length: 5,
-            },
+            original_definition: 5..+5 @32,
+            redefined_definition: 36..+5 @32,
         },
     },
 ]

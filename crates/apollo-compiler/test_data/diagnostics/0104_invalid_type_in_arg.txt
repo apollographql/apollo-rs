@@ -3,22 +3,10 @@
         cache: {
             101: "0104_invalid_type_in_arg.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 101,
-            },
-            offset: 135,
-            length: 23,
-        },
+        location: 135..+23 @101,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 101,
-                    },
-                    offset: 135,
-                    length: 23,
-                },
+                location: 135..+23 @101,
                 text: "this is an object",
             },
         ],
@@ -34,22 +22,10 @@
         cache: {
             101: "0104_invalid_type_in_arg.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 101,
-            },
-            offset: 204,
-            length: 6,
-        },
+        location: 204..+6 @101,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 101,
-                    },
-                    offset: 204,
-                    length: 6,
-                },
+                location: 204..+6 @101,
                 text: "not found in this scope",
             },
         ],
@@ -62,22 +38,10 @@
         cache: {
             101: "0104_invalid_type_in_arg.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 101,
-            },
-            offset: 215,
-            length: 6,
-        },
+        location: 215..+6 @101,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 101,
-                    },
-                    offset: 215,
-                    length: 6,
-                },
+                location: 215..+6 @101,
                 text: "not found in this scope",
             },
         ],
@@ -90,22 +54,10 @@
         cache: {
             101: "0104_invalid_type_in_arg.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 101,
-            },
-            offset: 255,
-            length: 13,
-        },
+        location: 255..+13 @101,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 101,
-                    },
-                    offset: 255,
-                    length: 13,
-                },
+                location: 255..+13 @101,
                 text: "this is an object",
             },
         ],
@@ -121,22 +73,10 @@
         cache: {
             101: "0104_invalid_type_in_arg.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 101,
-            },
-            offset: 270,
-            length: 18,
-        },
+        location: 270..+18 @101,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 101,
-                    },
-                    offset: 270,
-                    length: 18,
-                },
+                location: 270..+18 @101,
                 text: "this is a union",
             },
         ],

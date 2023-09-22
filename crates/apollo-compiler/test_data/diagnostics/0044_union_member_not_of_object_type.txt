@@ -3,22 +3,10 @@
         cache: {
             44: "0044_union_member_not_of_object_type.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 44,
-            },
-            offset: 219,
-            length: 3,
-        },
+        location: 219..+3 @44,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 44,
-                    },
-                    offset: 219,
-                    length: 3,
-                },
+                location: 219..+3 @44,
                 text: "This is a an interface",
             },
         ],

@@ -1,5 +1,6 @@
 use crate::Arc;
 use std::{
+    fmt,
     num::NonZeroI64,
     path::{Path, PathBuf},
     sync::atomic,
@@ -111,9 +112,15 @@ impl Source {
     }
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct FileId {
     id: NonZeroI64,
+}
+
+impl fmt::Debug for FileId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.id.fmt(f)
+    }
 }
 
 /// The next file ID to use. This is global so file IDs do not conflict between different compiler
@@ -131,11 +138,6 @@ impl FileId {
         Self {
             id: NonZeroI64::new(id).unwrap(),
         }
-    }
-
-    // Exposed for tests, but relying on the test order is probably not a good idea…
-    pub(crate) fn to_i64(self) -> i64 {
-        self.id.get()
     }
 
     /// Reset file ID back to 1, used to get consistent results in tests.

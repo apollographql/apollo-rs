@@ -3,22 +3,10 @@
         cache: {
             23: "0023_interface_definition_with_cyclic_implements_interfaces.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 23,
-            },
-            offset: 87,
-            length: 11,
-        },
+        location: 87..+11 @23,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 23,
-                    },
-                    offset: 87,
-                    length: 11,
-                },
+                location: 87..+11 @23,
                 text: "interface NamedEntity cannot implement itself",
             },
         ],

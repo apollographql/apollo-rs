@@ -3,32 +3,14 @@
         cache: {
             58: "0058_fragment_definitions_with_duplicate_names.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 58,
-            },
-            offset: 244,
-            length: 11,
-        },
+        location: 244..+11 @58,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 58,
-                    },
-                    offset: 196,
-                    length: 11,
-                },
+                location: 196..+11 @58,
                 text: "previous definition of `petFragment` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 58,
-                    },
-                    offset: 244,
-                    length: 11,
-                },
+                location: 244..+11 @58,
                 text: "`petFragment` redefined here",
             },
         ],
@@ -38,20 +20,8 @@
         data: UniqueDefinition {
             ty: "fragment",
             name: "petFragment",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 58,
-                },
-                offset: 196,
-                length: 11,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 58,
-                },
-                offset: 244,
-                length: 11,
-            },
+            original_definition: 196..+11 @58,
+            redefined_definition: 244..+11 @58,
         },
     },
 ]

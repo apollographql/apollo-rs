@@ -3,208 +3,88 @@
         cache: {
             71: "0074_merge_identical_fields.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 71,
-            },
-            offset: 247,
-            length: 4,
-        },
+        location: 247..+4 @71,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 71,
-                    },
-                    offset: 230,
-                    length: 14,
-                },
+                location: 230..+14 @71,
                 text: "`name` has type `String` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 71,
-                    },
-                    offset: 247,
-                    length: 4,
-                },
+                location: 247..+4 @71,
                 text: "but the same field name has type `String!` here",
             },
         ],
         help: None,
         data: ConflictingField {
             field: "nickname",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 71,
-                },
-                offset: 230,
-                length: 14,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 71,
-                },
-                offset: 247,
-                length: 4,
-            },
+            original_selection: 230..+14 @71,
+            redefined_selection: 247..+4 @71,
         },
     },
     ApolloDiagnostic {
         cache: {
             71: "0074_merge_identical_fields.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 71,
-            },
-            offset: 247,
-            length: 4,
-        },
+        location: 247..+4 @71,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 71,
-                    },
-                    offset: 230,
-                    length: 14,
-                },
+                location: 230..+14 @71,
                 text: "`name` has type `String` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 71,
-                    },
-                    offset: 247,
-                    length: 4,
-                },
+                location: 247..+4 @71,
                 text: "but the same field name has type `String!` here",
             },
         ],
         help: None,
         data: ConflictingField {
             field: "nickname",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 71,
-                },
-                offset: 230,
-                length: 14,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 71,
-                },
-                offset: 247,
-                length: 4,
-            },
+            original_selection: 230..+14 @71,
+            redefined_selection: 247..+4 @71,
         },
     },
     ApolloDiagnostic {
         cache: {
             71: "0074_merge_identical_fields.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 71,
-            },
-            offset: 325,
-            length: 14,
-        },
+        location: 325..+14 @71,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 71,
-                    },
-                    offset: 312,
-                    length: 10,
-                },
+                location: 312..+10 @71,
                 text: "`fido` has type `String!` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 71,
-                    },
-                    offset: 325,
-                    length: 14,
-                },
+                location: 325..+14 @71,
                 text: "but the same field name has type `String` here",
             },
         ],
         help: None,
         data: ConflictingField {
             field: "name",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 71,
-                },
-                offset: 312,
-                length: 10,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 71,
-                },
-                offset: 325,
-                length: 14,
-            },
+            original_selection: 312..+10 @71,
+            redefined_selection: 325..+14 @71,
         },
     },
     ApolloDiagnostic {
         cache: {
             71: "0074_merge_identical_fields.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 71,
-            },
-            offset: 325,
-            length: 14,
-        },
+        location: 325..+14 @71,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 71,
-                    },
-                    offset: 312,
-                    length: 10,
-                },
+                location: 312..+10 @71,
                 text: "`fido` has type `String!` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 71,
-                    },
-                    offset: 325,
-                    length: 14,
-                },
+                location: 325..+14 @71,
                 text: "but the same field name has type `String` here",
             },
         ],
         help: None,
         data: ConflictingField {
             field: "name",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 71,
-                },
-                offset: 312,
-                length: 10,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 71,
-                },
-                offset: 325,
-                length: 14,
-            },
+            original_selection: 312..+10 @71,
+            redefined_selection: 325..+14 @71,
         },
     },
 ]

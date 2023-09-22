@@ -3,188 +3,80 @@
         cache: {
             77: "0080_directive_is_unique_with_extensions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 77,
-            },
-            offset: 79,
-            length: 14,
-        },
+        location: 79..+14 @77,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 77,
-                    },
-                    offset: 110,
-                    length: 14,
-                },
+                location: 110..+14 @77,
                 text: "directive nonRepeatable first called here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 77,
-                    },
-                    offset: 79,
-                    length: 14,
-                },
+                location: 79..+14 @77,
                 text: "directive nonRepeatable called again here",
             },
         ],
         help: None,
         data: UniqueDirective {
             name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 77,
-                },
-                offset: 110,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 77,
-                },
-                offset: 79,
-                length: 14,
-            },
+            original_call: 110..+14 @77,
+            conflicting_call: 79..+14 @77,
         },
     },
     ApolloDiagnostic {
         cache: {
             77: "0080_directive_is_unique_with_extensions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 77,
-            },
-            offset: 148,
-            length: 14,
-        },
+        location: 148..+14 @77,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 77,
-                    },
-                    offset: 110,
-                    length: 14,
-                },
+                location: 110..+14 @77,
                 text: "directive nonRepeatable first called here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 77,
-                    },
-                    offset: 148,
-                    length: 14,
-                },
+                location: 148..+14 @77,
                 text: "directive nonRepeatable called again here",
             },
         ],
         help: None,
         data: UniqueDirective {
             name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 77,
-                },
-                offset: 110,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 77,
-                },
-                offset: 148,
-                length: 14,
-            },
+            original_call: 110..+14 @77,
+            conflicting_call: 148..+14 @77,
         },
     },
     ApolloDiagnostic {
         cache: {
             77: "0080_directive_is_unique_with_extensions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 77,
-            },
-            offset: 214,
-            length: 14,
-        },
+        location: 214..+14 @77,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 77,
-                    },
-                    offset: 178,
-                    length: 14,
-                },
+                location: 178..+14 @77,
                 text: "directive nonRepeatable first called here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 77,
-                    },
-                    offset: 214,
-                    length: 14,
-                },
+                location: 214..+14 @77,
                 text: "directive nonRepeatable called again here",
             },
         ],
         help: None,
         data: UniqueDirective {
             name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 77,
-                },
-                offset: 178,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 77,
-                },
-                offset: 214,
-                length: 14,
-            },
+            original_call: 178..+14 @77,
+            conflicting_call: 214..+14 @77,
         },
     },
     ApolloDiagnostic {
         cache: {
             77: "0080_directive_is_unique_with_extensions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 77,
-            },
-            offset: 323,
-            length: 4,
-        },
+        location: 323..+4 @77,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 77,
-                    },
-                    offset: 273,
-                    length: 4,
-                },
+                location: 273..+4 @77,
                 text: "previous definition of `Intf` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 77,
-                    },
-                    offset: 323,
-                    length: 4,
-                },
+                location: 323..+4 @77,
                 text: "`Intf` redefined here",
             },
         ],
@@ -194,20 +86,8 @@
         data: UniqueDefinition {
             ty: "type",
             name: "Intf",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 77,
-                },
-                offset: 273,
-                length: 4,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 77,
-                },
-                offset: 323,
-                length: 4,
-            },
+            original_definition: 273..+4 @77,
+            redefined_definition: 323..+4 @77,
         },
     },
 ]

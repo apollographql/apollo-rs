@@ -3,42 +3,18 @@
         cache: {
             34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 34,
-            },
-            offset: 0,
-            length: 56,
-        },
+        location: 0..+56 @34,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 34,
-                    },
-                    offset: 22,
-                    length: 4,
-                },
+                location: 22..+4 @34,
                 text: "implementation of interface Node declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 34,
-                    },
-                    offset: 0,
-                    length: 56,
-                },
+                location: 0..+56 @34,
                 text: "add `id` field to this object",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 34,
-                    },
-                    offset: 77,
-                    length: 7,
-                },
+                location: 77..+7 @34,
                 text: "`id` was originally defined by Node here",
             },
         ],
@@ -54,42 +30,18 @@
         cache: {
             34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 34,
-            },
-            offset: 0,
-            length: 56,
-        },
+        location: 0..+56 @34,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 34,
-                    },
-                    offset: 29,
-                    length: 8,
-                },
+                location: 29..+8 @34,
                 text: "implementation of interface Resource declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 34,
-                    },
-                    offset: 0,
-                    length: 56,
-                },
+                location: 0..+56 @34,
                 text: "add `width` field to this object",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 34,
-                    },
-                    offset: 111,
-                    length: 10,
-                },
+                location: 111..+10 @34,
                 text: "`width` was originally defined by Resource here",
             },
         ],

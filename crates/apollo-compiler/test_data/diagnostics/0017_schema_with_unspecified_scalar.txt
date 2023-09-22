@@ -3,22 +3,10 @@
         cache: {
             17: "0017_schema_with_unspecified_scalar.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 17,
-            },
-            offset: 31,
-            length: 10,
-        },
+        location: 31..+10 @17,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 17,
-                    },
-                    offset: 31,
-                    length: 10,
-                },
+                location: 31..+10 @17,
                 text: "consider adding a @specifiedBy directive to this scalar definition",
             },
         ],

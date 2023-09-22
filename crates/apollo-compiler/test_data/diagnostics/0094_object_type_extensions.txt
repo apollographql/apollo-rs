@@ -3,32 +3,14 @@
         cache: {
             91: "0094_object_type_extensions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 91,
-            },
-            offset: 64,
-            length: 8,
-        },
+        location: 64..+8 @91,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 91,
-                    },
-                    offset: 64,
-                    length: 8,
-                },
+                location: 64..+8 @91,
                 text: "previous definition of `age` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 91,
-                    },
-                    offset: 75,
-                    length: 8,
-                },
+                location: 75..+8 @91,
                 text: "`age` redefined here",
             },
         ],
@@ -37,52 +19,22 @@
         ),
         data: UniqueField {
             field: "age",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 91,
-                },
-                offset: 64,
-                length: 8,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 91,
-                },
-                offset: 75,
-                length: 8,
-            },
+            original_definition: 64..+8 @91,
+            redefined_definition: 75..+8 @91,
         },
     },
     ApolloDiagnostic {
         cache: {
             91: "0094_object_type_extensions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 91,
-            },
-            offset: 113,
-            length: 12,
-        },
+        location: 113..+12 @91,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 91,
-                    },
-                    offset: 113,
-                    length: 12,
-                },
+                location: 113..+12 @91,
                 text: "previous definition of `name` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 91,
-                    },
-                    offset: 161,
-                    length: 12,
-                },
+                location: 161..+12 @91,
                 text: "`name` redefined here",
             },
         ],
@@ -91,104 +43,44 @@
         ),
         data: UniqueField {
             field: "name",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 91,
-                },
-                offset: 113,
-                length: 12,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 91,
-                },
-                offset: 161,
-                length: 12,
-            },
+            original_definition: 113..+12 @91,
+            redefined_definition: 161..+12 @91,
         },
     },
     ApolloDiagnostic {
         cache: {
             91: "0094_object_type_extensions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 91,
-            },
-            offset: 290,
-            length: 14,
-        },
+        location: 290..+14 @91,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 91,
-                    },
-                    offset: 233,
-                    length: 14,
-                },
+                location: 233..+14 @91,
                 text: "directive nonRepeatable first called here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 91,
-                    },
-                    offset: 290,
-                    length: 14,
-                },
+                location: 290..+14 @91,
                 text: "directive nonRepeatable called again here",
             },
         ],
         help: None,
         data: UniqueDirective {
             name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 91,
-                },
-                offset: 233,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 91,
-                },
-                offset: 290,
-                length: 14,
-            },
+            original_call: 233..+14 @91,
+            conflicting_call: 290..+14 @91,
         },
     },
     ApolloDiagnostic {
         cache: {
             91: "0094_object_type_extensions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 91,
-            },
-            offset: 469,
-            length: 4,
-        },
+        location: 469..+4 @91,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 91,
-                    },
-                    offset: 386,
-                    length: 4,
-                },
+                location: 386..+4 @91,
                 text: "`Base` interface implementation previously declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 91,
-                    },
-                    offset: 469,
-                    length: 4,
-                },
+                location: 469..+4 @91,
                 text: "`Base` interface implementation declared again here",
             },
         ],
@@ -202,42 +94,18 @@
         cache: {
             91: "0094_object_type_extensions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 91,
-            },
-            offset: 537,
-            length: 82,
-        },
+        location: 537..+82 @91,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 91,
-                    },
-                    offset: 583,
-                    length: 17,
-                },
+                location: 583..+17 @91,
                 text: "implementation of interface ExtendedInterface declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 91,
-                    },
-                    offset: 537,
-                    length: 82,
-                },
+                location: 537..+82 @91,
                 text: "add `fail` field to this object",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 91,
-                    },
-                    offset: 659,
-                    length: 13,
-                },
+                location: 659..+13 @91,
                 text: "`fail` was originally defined by ExtendedInterface here",
             },
         ],

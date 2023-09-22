@@ -3,32 +3,14 @@
         cache: {
             46: "0046_duplicate_directive_arguments.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 46,
-            },
-            offset: 74,
-            length: 42,
-        },
+        location: 74..+42 @46,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 46,
-                    },
-                    offset: 30,
-                    length: 42,
-                },
+                location: 30..+42 @46,
                 text: "previously provided `url` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 46,
-                    },
-                    offset: 74,
-                    length: 42,
-                },
+                location: 74..+42 @46,
                 text: "`url` provided again here",
             },
         ],
@@ -37,52 +19,22 @@
         ),
         data: UniqueArgument {
             name: "url",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 46,
-                },
-                offset: 30,
-                length: 42,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 46,
-                },
-                offset: 74,
-                length: 42,
-            },
+            original_definition: 30..+42 @46,
+            redefined_definition: 74..+42 @46,
         },
     },
     ApolloDiagnostic {
         cache: {
             46: "0046_duplicate_directive_arguments.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 46,
-            },
-            offset: 189,
-            length: 8,
-        },
+        location: 189..+8 @46,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 46,
-                    },
-                    offset: 178,
-                    length: 9,
-                },
+                location: 178..+9 @46,
                 text: "previously provided `if` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 46,
-                    },
-                    offset: 189,
-                    length: 8,
-                },
+                location: 189..+8 @46,
                 text: "`if` provided again here",
             },
         ],
@@ -91,20 +43,8 @@
         ),
         data: UniqueArgument {
             name: "if",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 46,
-                },
-                offset: 178,
-                length: 9,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 46,
-                },
-                offset: 189,
-                length: 8,
-            },
+            original_definition: 178..+9 @46,
+            redefined_definition: 189..+8 @46,
         },
     },
 ]

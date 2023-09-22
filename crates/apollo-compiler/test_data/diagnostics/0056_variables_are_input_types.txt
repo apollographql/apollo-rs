@@ -3,22 +3,10 @@
         cache: {
             56: "0056_variables_are_input_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 56,
-            },
-            offset: 15,
-            length: 9,
-        },
+        location: 15..+9 @56,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 21,
-                    length: 3,
-                },
+                location: 21..+3 @56,
                 text: "this is of `object` type",
             },
         ],
@@ -34,32 +22,14 @@
         cache: {
             56: "0056_variables_are_input_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 56,
-            },
-            offset: 55,
-            length: 18,
-        },
+        location: 55..+18 @56,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 15,
-                    length: 9,
-                },
+                location: 15..+9 @56,
                 text: "variable `cat` of type `Cat` is declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 55,
-                    length: 18,
-                },
+                location: 55..+18 @56,
                 text: "argument `atOtherHomes` of type `Boolean` is declared here",
             },
         ],
@@ -73,22 +43,10 @@
         cache: {
             56: "0056_variables_are_input_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 56,
-            },
-            offset: 101,
-            length: 10,
-        },
+        location: 101..+10 @56,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 107,
-                    length: 3,
-                },
+                location: 107..+3 @56,
                 text: "this is of `object` type",
             },
         ],
@@ -104,32 +62,14 @@
         cache: {
             56: "0056_variables_are_input_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 56,
-            },
-            offset: 142,
-            length: 18,
-        },
+        location: 142..+18 @56,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 101,
-                    length: 10,
-                },
+                location: 101..+10 @56,
                 text: "variable `dog` of type `Dog!` is declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 142,
-                    length: 18,
-                },
+                location: 142..+18 @56,
                 text: "argument `atOtherHomes` of type `Boolean` is declared here",
             },
         ],
@@ -143,22 +83,10 @@
         cache: {
             56: "0056_variables_are_input_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 56,
-            },
-            offset: 190,
-            length: 12,
-        },
+        location: 190..+12 @56,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 198,
-                    length: 3,
-                },
+                location: 198..+3 @56,
                 text: "this is of `interface` type",
             },
         ],
@@ -174,32 +102,14 @@
         cache: {
             56: "0056_variables_are_input_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 56,
-            },
-            offset: 220,
-            length: 21,
-        },
+        location: 220..+21 @56,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 190,
-                    length: 12,
-                },
+                location: 190..+12 @56,
                 text: "variable `pets` of type `[Pet]` is declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 220,
-                    length: 21,
-                },
+                location: 220..+21 @56,
                 text: "argument `booleanListArg` of type `[Boolean!]` is declared here",
             },
         ],
@@ -213,22 +123,10 @@
         cache: {
             56: "0056_variables_are_input_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 56,
-            },
-            offset: 266,
-            length: 19,
-        },
+        location: 266..+19 @56,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 277,
-                    length: 8,
-                },
+                location: 277..+8 @56,
                 text: "this is of `union` type",
             },
         ],
@@ -244,32 +142,14 @@
         cache: {
             56: "0056_variables_are_input_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 56,
-            },
-            offset: 316,
-            length: 23,
-        },
+        location: 316..+23 @56,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 266,
-                    length: 19,
-                },
+                location: 266..+19 @56,
                 text: "variable `catOrDog` of type `CatOrDog` is declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 316,
-                    length: 23,
-                },
+                location: 316..+23 @56,
                 text: "argument `atOtherHomes` of type `Boolean` is declared here",
             },
         ],
@@ -283,22 +163,10 @@
         cache: {
             56: "0056_variables_are_input_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 56,
-            },
-            offset: 369,
-            length: 17,
-        },
+        location: 369..+17 @56,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 380,
-                    length: 6,
-                },
+                location: 380..+6 @56,
                 text: "not found in the type system",
             },
         ],
@@ -311,32 +179,14 @@
         cache: {
             56: "0056_variables_are_input_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 56,
-            },
-            offset: 417,
-            length: 23,
-        },
+        location: 417..+23 @56,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 369,
-                    length: 17,
-                },
+                location: 369..+17 @56,
                 text: "variable `catOrDog` of type `Dragon` is declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 56,
-                    },
-                    offset: 417,
-                    length: 23,
-                },
+                location: 417..+23 @56,
                 text: "argument `atOtherHomes` of type `Boolean` is declared here",
             },
         ],

@@ -3,22 +3,10 @@
         cache: {
             16: "0016_schema_with_built_in_scalar_definition.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 16,
-            },
-            offset: 37,
-            length: 3,
-        },
+        location: 37..+3 @16,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 16,
-                    },
-                    offset: 37,
-                    length: 3,
-                },
+                location: 37..+3 @16,
                 text: "remove this scalar definition",
             },
         ],

@@ -3,22 +3,10 @@
         cache: {
             45: "0045_operation_with_unused_variable_in_fragment.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 45,
-            },
-            offset: 19,
-            length: 9,
-        },
+        location: 19..+9 @45,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 45,
-                    },
-                    offset: 19,
-                    length: 9,
-                },
+                location: 19..+9 @45,
                 text: "this variable is never used",
             },
         ],
@@ -31,22 +19,10 @@
         cache: {
             45: "0045_operation_with_unused_variable_in_fragment.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 45,
-            },
-            offset: 69,
-            length: 83,
-        },
+        location: 69..+83 @45,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 45,
-                    },
-                    offset: 69,
-                    length: 83,
-                },
+                location: 69..+83 @45,
                 text: "`unusedFrag` is defined here",
             },
         ],

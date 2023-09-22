@@ -3,22 +3,10 @@
         cache: {
             36: "0036_object_type_with_non_output_field_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 36,
-            },
-            offset: 240,
-            length: 4,
-        },
+        location: 240..+4 @36,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 36,
-                    },
-                    offset: 240,
-                    length: 4,
-                },
+                location: 240..+4 @36,
                 text: "not found in this scope",
             },
         ],
@@ -31,22 +19,10 @@
         cache: {
             36: "0036_object_type_with_non_output_field_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 36,
-            },
-            offset: 247,
-            length: 20,
-        },
+        location: 247..+20 @36,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 36,
-                    },
-                    offset: 247,
-                    length: 20,
-                },
+                location: 247..+20 @36,
                 text: "this is an input object",
             },
         ],
@@ -62,22 +38,10 @@
         cache: {
             36: "0036_object_type_with_non_output_field_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 36,
-            },
-            offset: 276,
-            length: 8,
-        },
+        location: 276..+8 @36,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 36,
-                    },
-                    offset: 276,
-                    length: 8,
-                },
+                location: 276..+8 @36,
                 text: "not found in this scope",
             },
         ],
@@ -90,22 +54,10 @@
         cache: {
             36: "0036_object_type_with_non_output_field_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 36,
-            },
-            offset: 425,
-            length: 5,
-        },
+        location: 425..+5 @36,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 36,
-                    },
-                    offset: 425,
-                    length: 5,
-                },
+                location: 425..+5 @36,
                 text: "not found in this scope",
             },
         ],

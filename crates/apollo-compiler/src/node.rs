@@ -26,7 +26,7 @@ struct NodeInner<T> {
 }
 
 /// The source location of a parsed node: file ID and range within that file.
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub struct NodeLocation {
     pub(crate) file_id: FileId,
     pub(crate) text_range: rowan::TextRange,
@@ -117,13 +117,7 @@ impl<T> Clone for Node<T> {
 impl<T: fmt::Debug> fmt::Debug for Node<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(location) = self.location() {
-            write!(
-                f,
-                "@{:?}:{}..{} ",
-                location.file_id().to_i64(),
-                location.offset(),
-                location.end_offset()
-            )?
+            write!(f, "{location:?} ")?
         }
         self.0.node.fmt(f)
     }
@@ -188,5 +182,17 @@ impl<Cst: CstNode> From<(FileId, &'_ Cst)> for NodeLocation {
     /// Create a location pointing to an apollo-parser CST node.
     fn from((file_id, node): (FileId, &'_ Cst)) -> Self {
         Self::new(file_id, node.syntax())
+    }
+}
+
+impl fmt::Debug for NodeLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}..{} @{:?}",
+            self.offset(),
+            self.end_offset(),
+            self.file_id,
+        )
     }
 }

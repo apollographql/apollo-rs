@@ -3,22 +3,10 @@
         cache: {
             20: "0020_enum_values_with_uncapitalised_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 20,
-            },
-            offset: 43,
-            length: 3,
-        },
+        location: 43..+3 @20,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 20,
-                    },
-                    offset: 43,
-                    length: 3,
-                },
+                location: 43..+3 @20,
                 text: "consider capitalizing CAt",
             },
         ],
@@ -31,22 +19,10 @@
         cache: {
             20: "0020_enum_values_with_uncapitalised_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 20,
-            },
-            offset: 51,
-            length: 6,
-        },
+        location: 51..+6 @20,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 20,
-                    },
-                    offset: 51,
-                    length: 6,
-                },
+                location: 51..+6 @20,
                 text: "consider capitalizing DOG_gO",
             },
         ],
@@ -59,22 +35,10 @@
         cache: {
             20: "0020_enum_values_with_uncapitalised_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 20,
-            },
-            offset: 70,
-            length: 4,
-        },
+        location: 70..+4 @20,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 20,
-                    },
-                    offset: 70,
-                    length: 4,
-                },
+                location: 70..+4 @20,
                 text: "consider capitalizing _fox",
             },
         ],
@@ -87,22 +51,10 @@
         cache: {
             20: "0020_enum_values_with_uncapitalised_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 20,
-            },
-            offset: 79,
-            length: 8,
-        },
+        location: 79..+8 @20,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 20,
-                    },
-                    offset: 79,
-                    length: 8,
-                },
+                location: 79..+8 @20,
                 text: "consider capitalizing squirrel",
             },
         ],
@@ -115,22 +67,10 @@
         cache: {
             20: "0020_enum_values_with_uncapitalised_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 20,
-            },
-            offset: 92,
-            length: 7,
-        },
+        location: 92..+7 @20,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 20,
-                    },
-                    offset: 92,
-                    length: 7,
-                },
+                location: 92..+7 @20,
                 text: "consider capitalizing PARRot1",
             },
         ],

@@ -3,32 +3,14 @@
         cache: {
             22: "0022_duplicate_interface_definitions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 22,
-            },
-            offset: 106,
-            length: 11,
-        },
+        location: 106..+11 @22,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 22,
-                    },
-                    offset: 64,
-                    length: 11,
-                },
+                location: 64..+11 @22,
                 text: "previous definition of `NamedEntity` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 22,
-                    },
-                    offset: 106,
-                    length: 11,
-                },
+                location: 106..+11 @22,
                 text: "`NamedEntity` redefined here",
             },
         ],
@@ -38,20 +20,8 @@
         data: UniqueDefinition {
             ty: "type",
             name: "NamedEntity",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 22,
-                },
-                offset: 64,
-                length: 11,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 22,
-                },
-                offset: 106,
-                length: 11,
-            },
+            original_definition: 64..+11 @22,
+            redefined_definition: 106..+11 @22,
         },
     },
 ]

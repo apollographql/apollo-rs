@@ -3,22 +3,10 @@
         cache: {
             62: "0062_root_operation_with_list.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 62,
-            },
-            offset: 18,
-            length: 1,
-        },
+        location: 18..+1 @62,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 62,
-                    },
-                    offset: 18,
-                    length: 1,
-                },
+                location: 18..+1 @62,
                 text: "expected R_CURLY, got [",
             },
         ],
@@ -31,22 +19,10 @@
         cache: {
             62: "0062_root_operation_with_list.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 62,
-            },
-            offset: 18,
-            length: 1,
-        },
+        location: 18..+1 @62,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 62,
-                    },
-                    offset: 18,
-                    length: 1,
-                },
+                location: 18..+1 @62,
                 text: "expected a StringValue, Name or OperationDefinition",
             },
         ],
@@ -59,22 +35,10 @@
         cache: {
             62: "0062_root_operation_with_list.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 62,
-            },
-            offset: 19,
-            length: 6,
-        },
+        location: 19..+6 @62,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 62,
-                    },
-                    offset: 19,
-                    length: 6,
-                },
+                location: 19..+6 @62,
                 text: "expected definition",
             },
         ],
@@ -87,22 +51,10 @@
         cache: {
             62: "0062_root_operation_with_list.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 62,
-            },
-            offset: 25,
-            length: 1,
-        },
+        location: 25..+1 @62,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 62,
-                    },
-                    offset: 25,
-                    length: 1,
-                },
+                location: 25..+1 @62,
                 text: "expected a StringValue, Name or OperationDefinition",
             },
         ],
@@ -115,22 +67,10 @@
         cache: {
             62: "0062_root_operation_with_list.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 62,
-            },
-            offset: 27,
-            length: 1,
-        },
+        location: 27..+1 @62,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 62,
-                    },
-                    offset: 27,
-                    length: 1,
-                },
+                location: 27..+1 @62,
                 text: "expected a StringValue, Name or OperationDefinition",
             },
         ],
@@ -143,22 +83,10 @@
         cache: {
             62: "0062_root_operation_with_list.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 62,
-            },
-            offset: 0,
-            length: 17,
-        },
+        location: 0..+17 @62,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 62,
-                    },
-                    offset: 0,
-                    length: 17,
-                },
+                location: 0..+17 @62,
                 text: "`query` root operation type must be defined here",
             },
         ],

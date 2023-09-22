@@ -3,32 +3,14 @@
         cache: {
             48: "0048_duplicate_field_argument_definition_names.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 48,
-            },
-            offset: 34,
-            length: 12,
-        },
+        location: 34..+12 @48,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 48,
-                    },
-                    offset: 34,
-                    length: 12,
-                },
+                location: 34..+12 @48,
                 text: "previous definition of `arg` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 48,
-                    },
-                    offset: 48,
-                    length: 12,
-                },
+                location: 48..+12 @48,
                 text: "`arg` redefined here",
             },
         ],
@@ -37,52 +19,22 @@
         ),
         data: UniqueInputValue {
             name: "arg",
-            original_value: DiagnosticLocation {
-                file_id: FileId {
-                    id: 48,
-                },
-                offset: 34,
-                length: 12,
-            },
-            redefined_value: DiagnosticLocation {
-                file_id: FileId {
-                    id: 48,
-                },
-                offset: 48,
-                length: 12,
-            },
+            original_value: 34..+12 @48,
+            redefined_value: 48..+12 @48,
         },
     },
     ApolloDiagnostic {
         cache: {
             48: "0048_duplicate_field_argument_definition_names.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 48,
-            },
-            offset: 144,
-            length: 12,
-        },
+        location: 144..+12 @48,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 48,
-                    },
-                    offset: 144,
-                    length: 12,
-                },
+                location: 144..+12 @48,
                 text: "previous definition of `arg` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 48,
-                    },
-                    offset: 158,
-                    length: 12,
-                },
+                location: 158..+12 @48,
                 text: "`arg` redefined here",
             },
         ],
@@ -91,20 +43,8 @@
         ),
         data: UniqueInputValue {
             name: "arg",
-            original_value: DiagnosticLocation {
-                file_id: FileId {
-                    id: 48,
-                },
-                offset: 144,
-                length: 12,
-            },
-            redefined_value: DiagnosticLocation {
-                file_id: FileId {
-                    id: 48,
-                },
-                offset: 158,
-                length: 12,
-            },
+            original_value: 144..+12 @48,
+            redefined_value: 158..+12 @48,
         },
     },
 ]

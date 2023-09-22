@@ -3,22 +3,10 @@
         cache: {
             59: "0059_root_operation_object_type.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 59,
-            },
-            offset: 13,
-            length: 20,
-        },
+        location: 13..+20 @59,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 59,
-                    },
-                    offset: 13,
-                    length: 20,
-                },
+                location: 13..+20 @59,
                 text: "This is an interface",
             },
         ],

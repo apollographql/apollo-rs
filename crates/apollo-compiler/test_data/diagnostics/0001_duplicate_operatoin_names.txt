@@ -3,32 +3,14 @@
         cache: {
             1: "0001_duplicate_operatoin_names.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 1,
-            },
-            offset: 31,
-            length: 7,
-        },
+        location: 31..+7 @1,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 1,
-                    },
-                    offset: 6,
-                    length: 7,
-                },
+                location: 6..+7 @1,
                 text: "previous definition of `getName` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 1,
-                    },
-                    offset: 31,
-                    length: 7,
-                },
+                location: 31..+7 @1,
                 text: "`getName` redefined here",
             },
         ],
@@ -38,20 +20,8 @@
         data: UniqueDefinition {
             ty: "operation",
             name: "getName",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 1,
-                },
-                offset: 6,
-                length: 7,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 1,
-                },
-                offset: 31,
-                length: 7,
-            },
+            original_definition: 6..+7 @1,
+            redefined_definition: 31..+7 @1,
         },
     },
 ]

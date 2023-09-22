@@ -3,312 +3,132 @@
         cache: {
             78: "0081_directive_is_unique_type_system.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 78,
-            },
-            offset: 112,
-            length: 14,
-        },
+        location: 112..+14 @78,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 97,
-                    length: 14,
-                },
+                location: 97..+14 @78,
                 text: "directive nonRepeatable first called here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 112,
-                    length: 14,
-                },
+                location: 112..+14 @78,
                 text: "directive nonRepeatable called again here",
             },
         ],
         help: None,
         data: UniqueDirective {
             name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 97,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 112,
-                length: 14,
-            },
+            original_call: 97..+14 @78,
+            conflicting_call: 112..+14 @78,
         },
     },
     ApolloDiagnostic {
         cache: {
             78: "0081_directive_is_unique_type_system.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 78,
-            },
-            offset: 177,
-            length: 14,
-        },
+        location: 177..+14 @78,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 162,
-                    length: 14,
-                },
+                location: 162..+14 @78,
                 text: "directive nonRepeatable first called here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 177,
-                    length: 14,
-                },
+                location: 177..+14 @78,
                 text: "directive nonRepeatable called again here",
             },
         ],
         help: None,
         data: UniqueDirective {
             name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 162,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 177,
-                length: 14,
-            },
+            original_call: 162..+14 @78,
+            conflicting_call: 177..+14 @78,
         },
     },
     ApolloDiagnostic {
         cache: {
             78: "0081_directive_is_unique_type_system.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 78,
-            },
-            offset: 251,
-            length: 14,
-        },
+        location: 251..+14 @78,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 236,
-                    length: 14,
-                },
+                location: 236..+14 @78,
                 text: "directive nonRepeatable first called here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 251,
-                    length: 14,
-                },
+                location: 251..+14 @78,
                 text: "directive nonRepeatable called again here",
             },
         ],
         help: None,
         data: UniqueDirective {
             name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 236,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 251,
-                length: 14,
-            },
+            original_call: 236..+14 @78,
+            conflicting_call: 251..+14 @78,
         },
     },
     ApolloDiagnostic {
         cache: {
             78: "0081_directive_is_unique_type_system.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 78,
-            },
-            offset: 305,
-            length: 14,
-        },
+        location: 305..+14 @78,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 290,
-                    length: 14,
-                },
+                location: 290..+14 @78,
                 text: "directive nonRepeatable first called here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 305,
-                    length: 14,
-                },
+                location: 305..+14 @78,
                 text: "directive nonRepeatable called again here",
             },
         ],
         help: None,
         data: UniqueDirective {
             name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 290,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 305,
-                length: 14,
-            },
+            original_call: 290..+14 @78,
+            conflicting_call: 305..+14 @78,
         },
     },
     ApolloDiagnostic {
         cache: {
             78: "0081_directive_is_unique_type_system.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 78,
-            },
-            offset: 351,
-            length: 14,
-        },
+        location: 351..+14 @78,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 336,
-                    length: 14,
-                },
+                location: 336..+14 @78,
                 text: "directive nonRepeatable first called here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 351,
-                    length: 14,
-                },
+                location: 351..+14 @78,
                 text: "directive nonRepeatable called again here",
             },
         ],
         help: None,
         data: UniqueDirective {
             name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 336,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 351,
-                length: 14,
-            },
+            original_call: 336..+14 @78,
+            conflicting_call: 351..+14 @78,
         },
     },
     ApolloDiagnostic {
         cache: {
             78: "0081_directive_is_unique_type_system.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 78,
-            },
-            offset: 397,
-            length: 14,
-        },
+        location: 397..+14 @78,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 382,
-                    length: 14,
-                },
+                location: 382..+14 @78,
                 text: "directive nonRepeatable first called here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 78,
-                    },
-                    offset: 397,
-                    length: 14,
-                },
+                location: 397..+14 @78,
                 text: "directive nonRepeatable called again here",
             },
         ],
         help: None,
         data: UniqueDirective {
             name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 382,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 78,
-                },
-                offset: 397,
-                length: 14,
-            },
+            original_call: 382..+14 @78,
+            conflicting_call: 397..+14 @78,
         },
     },
 ]

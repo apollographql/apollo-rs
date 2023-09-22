@@ -3,32 +3,14 @@
         cache: {
             67: "0067_subselection_of_interface.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 67,
-            },
-            offset: 31,
-            length: 4,
-        },
+        location: 31..+4 @67,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 31,
-                    length: 4,
-                },
+                location: 31..+4 @67,
                 text: "field `pet1` type `Pet` is an interface and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 181,
-                    length: 31,
-                },
+                location: 181..+31 @67,
                 text: "`Pet` declared here",
             },
         ],
@@ -39,32 +21,14 @@
         cache: {
             67: "0067_subselection_of_interface.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 67,
-            },
-            offset: 38,
-            length: 4,
-        },
+        location: 38..+4 @67,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 38,
-                    length: 4,
-                },
+                location: 38..+4 @67,
                 text: "field `pet2` type `Pet` is an interface and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 181,
-                    length: 31,
-                },
+                location: 181..+31 @67,
                 text: "`Pet` declared here",
             },
         ],
@@ -75,32 +39,14 @@
         cache: {
             67: "0067_subselection_of_interface.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 67,
-            },
-            offset: 45,
-            length: 4,
-        },
+        location: 45..+4 @67,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 45,
-                    length: 4,
-                },
+                location: 45..+4 @67,
                 text: "field `pet3` type `Pet` is an interface and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 181,
-                    length: 31,
-                },
+                location: 181..+31 @67,
                 text: "`Pet` declared here",
             },
         ],
@@ -111,32 +57,14 @@
         cache: {
             67: "0067_subselection_of_interface.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 67,
-            },
-            offset: 52,
-            length: 4,
-        },
+        location: 52..+4 @67,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 52,
-                    length: 4,
-                },
+                location: 52..+4 @67,
                 text: "field `pet4` type `Pet` is an interface and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 181,
-                    length: 31,
-                },
+                location: 181..+31 @67,
                 text: "`Pet` declared here",
             },
         ],
@@ -147,32 +75,14 @@
         cache: {
             67: "0067_subselection_of_interface.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 67,
-            },
-            offset: 59,
-            length: 4,
-        },
+        location: 59..+4 @67,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 59,
-                    length: 4,
-                },
+                location: 59..+4 @67,
                 text: "field `pet5` type `Pet` is an interface and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 181,
-                    length: 31,
-                },
+                location: 181..+31 @67,
                 text: "`Pet` declared here",
             },
         ],
@@ -183,32 +93,14 @@
         cache: {
             67: "0067_subselection_of_interface.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 67,
-            },
-            offset: 66,
-            length: 4,
-        },
+        location: 66..+4 @67,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 66,
-                    length: 4,
-                },
+                location: 66..+4 @67,
                 text: "field `pet6` type `Pet` is an interface and must select fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 67,
-                    },
-                    offset: 181,
-                    length: 31,
-                },
+                location: 181..+31 @67,
                 text: "`Pet` declared here",
             },
         ],

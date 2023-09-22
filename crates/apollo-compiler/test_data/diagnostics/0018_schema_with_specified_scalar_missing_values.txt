@@ -3,22 +3,10 @@
         cache: {
             18: "0018_schema_with_specified_scalar_missing_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 18,
-            },
-            offset: 46,
-            length: 10,
-        },
+        location: 46..+10 @18,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 18,
-                    },
-                    offset: 46,
-                    length: 10,
-                },
+                location: 46..+10 @18,
                 text: "consider adding a @specifiedBy directive to this scalar definition",
             },
         ],

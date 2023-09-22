@@ -3,32 +3,14 @@
         cache: {
             53: "0053_argument_name_is_not_defined.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 53,
-            },
-            offset: 133,
-            length: 7,
-        },
+        location: 133..+7 @53,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 133,
-                    length: 7,
-                },
+                location: 133..+7 @53,
                 text: "argument name not found",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 69,
-                    length: 21,
-                },
+                location: 69..+21 @53,
                 text: "field declared here",
             },
         ],
@@ -41,32 +23,14 @@
         cache: {
             53: "0053_argument_name_is_not_defined.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 53,
-            },
-            offset: 142,
-            length: 7,
-        },
+        location: 142..+7 @53,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 142,
-                    length: 7,
-                },
+                location: 142..+7 @53,
                 text: "argument name not found",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 69,
-                    length: 21,
-                },
+                location: 69..+21 @53,
                 text: "field declared here",
             },
         ],
@@ -79,32 +43,14 @@
         cache: {
             53: "0053_argument_name_is_not_defined.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 53,
-            },
-            offset: 176,
-            length: 7,
-        },
+        location: 176..+7 @53,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 176,
-                    length: 7,
-                },
+                location: 176..+7 @53,
                 text: "argument name not found",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 53,
-                    },
-                    offset: 15,
-                    length: 21,
-                },
+                location: 15..+21 @53,
                 text: "field declared here",
             },
         ],

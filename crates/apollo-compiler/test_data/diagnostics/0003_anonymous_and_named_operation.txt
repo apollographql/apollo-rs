@@ -3,22 +3,10 @@
         cache: {
             3: "0003_anonymous_and_named_operation.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 3,
-            },
-            offset: 0,
-            length: 15,
-        },
+        location: 0..+15 @3,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 3,
-                    },
-                    offset: 0,
-                    length: 15,
-                },
+                location: 0..+15 @3,
                 text: "provide a name for this definition",
             },
         ],
@@ -31,32 +19,14 @@
         cache: {
             3: "0003_anonymous_and_named_operation.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 3,
-            },
-            offset: 38,
-            length: 25,
-        },
+        location: 38..+25 @3,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 3,
-                    },
-                    offset: 38,
-                    length: 25,
-                },
+                location: 38..+25 @3,
                 text: "missing value for argument `name`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 3,
-                    },
-                    offset: 123,
-                    length: 13,
-                },
+                location: 123..+13 @3,
                 text: "argument defined here",
             },
         ],

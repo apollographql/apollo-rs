@@ -3,32 +3,14 @@
         cache: {
             55: "0055_duplicate_variable_definitions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 55,
-            },
-            offset: 48,
-            length: 22,
-        },
+        location: 48..+22 @55,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 55,
-                    },
-                    offset: 24,
-                    length: 22,
-                },
+                location: 24..+22 @55,
                 text: "previous definition of `atOtherHomes` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 55,
-                    },
-                    offset: 48,
-                    length: 22,
-                },
+                location: 48..+22 @55,
                 text: "`atOtherHomes` redefined here",
             },
         ],
@@ -38,20 +20,8 @@
         data: UniqueDefinition {
             ty: "variable",
             name: "atOtherHomes",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 55,
-                },
-                offset: 24,
-                length: 22,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 55,
-                },
-                offset: 48,
-                length: 22,
-            },
+            original_definition: 24..+22 @55,
+            redefined_definition: 48..+22 @55,
         },
     },
 ]

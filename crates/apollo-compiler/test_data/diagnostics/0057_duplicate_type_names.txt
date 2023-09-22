@@ -3,32 +3,14 @@
         cache: {
             57: "0057_duplicate_type_names.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 57,
-            },
-            offset: 86,
-            length: 5,
-        },
+        location: 86..+5 @57,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 57,
-                    },
-                    offset: 10,
-                    length: 5,
-                },
+                location: 10..+5 @57,
                 text: "previous definition of `World` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 57,
-                    },
-                    offset: 86,
-                    length: 5,
-                },
+                location: 86..+5 @57,
                 text: "`World` redefined here",
             },
         ],
@@ -38,52 +20,22 @@
         data: UniqueDefinition {
             ty: "type",
             name: "World",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 57,
-                },
-                offset: 10,
-                length: 5,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 57,
-                },
-                offset: 86,
-                length: 5,
-            },
+            original_definition: 10..+5 @57,
+            redefined_definition: 86..+5 @57,
         },
     },
     ApolloDiagnostic {
         cache: {
             57: "0057_duplicate_type_names.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 57,
-            },
-            offset: 199,
-            length: 1,
-        },
+        location: 199..+1 @57,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 57,
-                    },
-                    offset: 135,
-                    length: 1,
-                },
+                location: 135..+1 @57,
                 text: "previous definition of `X` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 57,
-                    },
-                    offset: 199,
-                    length: 1,
-                },
+                location: 199..+1 @57,
                 text: "`X` redefined here",
             },
         ],
@@ -93,52 +45,22 @@
         data: UniqueDefinition {
             ty: "type",
             name: "X",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 57,
-                },
-                offset: 135,
-                length: 1,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 57,
-                },
-                offset: 199,
-                length: 1,
-            },
+            original_definition: 135..+1 @57,
+            redefined_definition: 199..+1 @57,
         },
     },
     ApolloDiagnostic {
         cache: {
             57: "0057_duplicate_type_names.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 57,
-            },
-            offset: 227,
-            length: 1,
-        },
+        location: 227..+1 @57,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 57,
-                    },
-                    offset: 135,
-                    length: 1,
-                },
+                location: 135..+1 @57,
                 text: "previous definition of `X` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 57,
-                    },
-                    offset: 227,
-                    length: 1,
-                },
+                location: 227..+1 @57,
                 text: "`X` redefined here",
             },
         ],
@@ -148,52 +70,22 @@
         data: UniqueDefinition {
             ty: "type",
             name: "X",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 57,
-                },
-                offset: 135,
-                length: 1,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 57,
-                },
-                offset: 227,
-                length: 1,
-            },
+            original_definition: 135..+1 @57,
+            redefined_definition: 227..+1 @57,
         },
     },
     ApolloDiagnostic {
         cache: {
             57: "0057_duplicate_type_names.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 57,
-            },
-            offset: 244,
-            length: 1,
-        },
+        location: 244..+1 @57,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 57,
-                    },
-                    offset: 135,
-                    length: 1,
-                },
+                location: 135..+1 @57,
                 text: "previous definition of `X` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 57,
-                    },
-                    offset: 244,
-                    length: 1,
-                },
+                location: 244..+1 @57,
                 text: "`X` redefined here",
             },
         ],
@@ -203,20 +95,8 @@
         data: UniqueDefinition {
             ty: "type",
             name: "X",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 57,
-                },
-                offset: 135,
-                length: 1,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 57,
-                },
-                offset: 244,
-                length: 1,
-            },
+            original_definition: 135..+1 @57,
+            redefined_definition: 244..+1 @57,
         },
     },
 ]

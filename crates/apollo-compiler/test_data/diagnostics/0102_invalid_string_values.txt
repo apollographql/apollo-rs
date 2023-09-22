@@ -3,32 +3,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1507,
-            length: 1,
-        },
+        location: 1507..+1 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 187,
-                    length: 6,
-                },
+                location: 187..+6 @99,
                 text: "field declared here as String type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1507,
-                    length: 1,
-                },
+                location: 1507..+1 @99,
                 text: "argument declared here is of Int type",
             },
         ],
@@ -42,32 +24,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1591,
-            length: 3,
-        },
+        location: 1591..+3 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 187,
-                    length: 6,
-                },
+                location: 187..+6 @99,
                 text: "field declared here as String type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1591,
-                    length: 3,
-                },
+                location: 1591..+3 @99,
                 text: "argument declared here is of Float type",
             },
         ],
@@ -81,32 +45,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1679,
-            length: 4,
-        },
+        location: 1679..+4 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 187,
-                    length: 6,
-                },
+                location: 187..+6 @99,
                 text: "field declared here as String type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1679,
-                    length: 4,
-                },
+                location: 1679..+4 @99,
                 text: "argument declared here is of Boolean type",
             },
         ],
@@ -120,32 +66,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1775,
-            length: 3,
-        },
+        location: 1775..+3 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 187,
-                    length: 6,
-                },
+                location: 187..+6 @99,
                 text: "field declared here as String type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1775,
-                    length: 3,
-                },
+                location: 1775..+3 @99,
                 text: "argument declared here is of Enum type",
             },
         ],
@@ -159,32 +87,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1853,
-            length: 3,
-        },
+        location: 1853..+3 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 96,
-                    length: 3,
-                },
+                location: 96..+3 @99,
                 text: "field declared here as Int type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1853,
-                    length: 3,
-                },
+                location: 1853..+3 @99,
                 text: "argument declared here is of String type",
             },
         ],
@@ -198,22 +108,10 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 1931,
-            length: 27,
-        },
+        location: 1931..+27 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1931,
-                    length: 27,
-                },
+                location: 1931..+27 @99,
                 text: "cannot be coerced to an 32-bit integer",
             },
         ],
@@ -226,32 +124,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2041,
-            length: 3,
-        },
+        location: 2041..+3 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 96,
-                    length: 3,
-                },
+                location: 96..+3 @99,
                 text: "field declared here as Int type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2041,
-                    length: 3,
-                },
+                location: 2041..+3 @99,
                 text: "argument declared here is of Enum type",
             },
         ],
@@ -265,32 +145,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2124,
-            length: 3,
-        },
+        location: 2124..+3 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 96,
-                    length: 3,
-                },
+                location: 96..+3 @99,
                 text: "field declared here as Int type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2124,
-                    length: 3,
-                },
+                location: 2124..+3 @99,
                 text: "argument declared here is of Float type",
             },
         ],
@@ -304,32 +166,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2201,
-            length: 5,
-        },
+        location: 2201..+5 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 96,
-                    length: 3,
-                },
+                location: 96..+3 @99,
                 text: "field declared here as Int type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2201,
-                    length: 5,
-                },
+                location: 2201..+5 @99,
                 text: "argument declared here is of Float type",
             },
         ],
@@ -343,32 +187,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2287,
-            length: 7,
-        },
+        location: 2287..+7 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 318,
-                    length: 5,
-                },
+                location: 318..+5 @99,
                 text: "field declared here as Float type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2287,
-                    length: 7,
-                },
+                location: 2287..+7 @99,
                 text: "argument declared here is of String type",
             },
         ],
@@ -382,32 +208,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2376,
-            length: 4,
-        },
+        location: 2376..+4 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 318,
-                    length: 5,
-                },
+                location: 318..+5 @99,
                 text: "field declared here as Float type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2376,
-                    length: 4,
-                },
+                location: 2376..+4 @99,
                 text: "argument declared here is of Boolean type",
             },
         ],
@@ -421,32 +229,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2463,
-            length: 3,
-        },
+        location: 2463..+3 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 318,
-                    length: 5,
-                },
+                location: 318..+5 @99,
                 text: "field declared here as Float type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2463,
-                    length: 3,
-                },
+                location: 2463..+3 @99,
                 text: "argument declared here is of Enum type",
             },
         ],
@@ -460,32 +250,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2550,
-            length: 1,
-        },
+        location: 2550..+1 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 233,
-                    length: 7,
-                },
+                location: 233..+7 @99,
                 text: "field declared here as Boolean type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2550,
-                    length: 1,
-                },
+                location: 2550..+1 @99,
                 text: "argument declared here is of Int type",
             },
         ],
@@ -499,32 +271,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2637,
-            length: 3,
-        },
+        location: 2637..+3 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 233,
-                    length: 7,
-                },
+                location: 233..+7 @99,
                 text: "field declared here as Boolean type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2637,
-                    length: 3,
-                },
+                location: 2637..+3 @99,
                 text: "argument declared here is of Float type",
             },
         ],
@@ -538,32 +292,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2727,
-            length: 6,
-        },
+        location: 2727..+6 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 233,
-                    length: 7,
-                },
+                location: 233..+7 @99,
                 text: "field declared here as Boolean type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2727,
-                    length: 6,
-                },
+                location: 2727..+6 @99,
                 text: "argument declared here is of String type",
             },
         ],
@@ -577,32 +313,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2822,
-            length: 4,
-        },
+        location: 2822..+4 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 233,
-                    length: 7,
-                },
+                location: 233..+7 @99,
                 text: "field declared here as Boolean type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2822,
-                    length: 4,
-                },
+                location: 2822..+4 @99,
                 text: "argument declared here is of Enum type",
             },
         ],
@@ -616,32 +334,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2897,
-            length: 3,
-        },
+        location: 2897..+3 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 353,
-                    length: 2,
-                },
+                location: 353..+2 @99,
                 text: "field declared here as ID type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2897,
-                    length: 3,
-                },
+                location: 2897..+3 @99,
                 text: "argument declared here is of Float type",
             },
         ],
@@ -655,32 +355,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 2973,
-            length: 4,
-        },
+        location: 2973..+4 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 353,
-                    length: 2,
-                },
+                location: 353..+2 @99,
                 text: "field declared here as ID type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 2973,
-                    length: 4,
-                },
+                location: 2973..+4 @99,
                 text: "argument declared here is of Boolean type",
             },
         ],
@@ -694,32 +376,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3051,
-            length: 9,
-        },
+        location: 3051..+9 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 353,
-                    length: 2,
-                },
+                location: 353..+2 @99,
                 text: "field declared here as ID type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3051,
-                    length: 9,
-                },
+                location: 3051..+9 @99,
                 text: "argument declared here is of Enum type",
             },
         ],
@@ -733,32 +397,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3150,
-            length: 1,
-        },
+        location: 3150..+1 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1099,
-                    length: 10,
-                },
+                location: 1099..+10 @99,
                 text: "field declared here as DogCommand type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3150,
-                    length: 1,
-                },
+                location: 3150..+1 @99,
                 text: "argument declared here is of Int type",
             },
         ],
@@ -772,32 +418,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3222,
-            length: 3,
-        },
+        location: 3222..+3 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1099,
-                    length: 10,
-                },
+                location: 1099..+10 @99,
                 text: "field declared here as DogCommand type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3222,
-                    length: 3,
-                },
+                location: 3222..+3 @99,
                 text: "argument declared here is of Float type",
             },
         ],
@@ -811,32 +439,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3297,
-            length: 5,
-        },
+        location: 3297..+5 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1099,
-                    length: 10,
-                },
+                location: 1099..+10 @99,
                 text: "field declared here as DogCommand type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3297,
-                    length: 5,
-                },
+                location: 3297..+5 @99,
                 text: "argument declared here is of String type",
             },
         ],
@@ -850,32 +460,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3375,
-            length: 4,
-        },
+        location: 3375..+4 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1099,
-                    length: 10,
-                },
+                location: 1099..+10 @99,
                 text: "field declared here as DogCommand type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3375,
-                    length: 4,
-                },
+                location: 3375..+4 @99,
                 text: "argument declared here is of Boolean type",
             },
         ],
@@ -889,22 +481,10 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3461,
-            length: 6,
-        },
+        location: 3461..+6 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3461,
-                    length: 6,
-                },
+                location: 3461..+6 @99,
                 text: "does not exist on `DogCommand` type",
             },
         ],
@@ -918,22 +498,10 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3555,
-            length: 3,
-        },
+        location: 3555..+3 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3555,
-                    length: 3,
-                },
+                location: 3555..+3 @99,
                 text: "does not exist on `DogCommand` type",
             },
         ],
@@ -947,32 +515,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3663,
-            length: 1,
-        },
+        location: 3663..+1 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 401,
-                    length: 8,
-                },
+                location: 401..+8 @99,
                 text: "field declared here as [String] type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3663,
-                    length: 1,
-                },
+                location: 3663..+1 @99,
                 text: "argument declared here is of Int type",
             },
         ],
@@ -986,32 +536,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3767,
-            length: 1,
-        },
+        location: 3767..+1 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 401,
-                    length: 8,
-                },
+                location: 401..+8 @99,
                 text: "field declared here as [String] type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3767,
-                    length: 1,
-                },
+                location: 3767..+1 @99,
                 text: "argument declared here is of Int type",
             },
         ],
@@ -1025,32 +557,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3876,
-            length: 5,
-        },
+        location: 3876..+5 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 573,
-                    length: 4,
-                },
+                location: 573..+4 @99,
                 text: "field declared here as Int! type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3876,
-                    length: 5,
-                },
+                location: 3876..+5 @99,
                 text: "argument declared here is of String type",
             },
         ],
@@ -1064,32 +578,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3889,
-            length: 5,
-        },
+        location: 3889..+5 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 561,
-                    length: 4,
-                },
+                location: 561..+4 @99,
                 text: "field declared here as Int! type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3889,
-                    length: 5,
-                },
+                location: 3889..+5 @99,
                 text: "argument declared here is of String type",
             },
         ],
@@ -1103,32 +599,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3968,
-            length: 25,
-        },
+        location: 3968..+25 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3968,
-                    length: 25,
-                },
+                location: 3968..+25 @99,
                 text: "missing value for argument `req2`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 567,
-                    length: 10,
-                },
+                location: 567..+10 @99,
                 text: "argument defined here",
             },
         ],
@@ -1141,32 +619,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 3987,
-            length: 5,
-        },
+        location: 3987..+5 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 561,
-                    length: 4,
-                },
+                location: 561..+4 @99,
                 text: "field declared here as Int! type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 3987,
-                    length: 5,
-                },
+                location: 3987..+5 @99,
                 text: "argument declared here is of String type",
             },
         ],
@@ -1180,32 +640,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4043,
-            length: 24,
-        },
+        location: 4043..+24 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4043,
-                    length: 24,
-                },
+                location: 4043..+24 @99,
                 text: "missing value for argument `req1`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 555,
-                    length: 10,
-                },
+                location: 555..+10 @99,
                 text: "argument defined here",
             },
         ],
@@ -1218,32 +660,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4043,
-            length: 24,
-        },
+        location: 4043..+24 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4043,
-                    length: 24,
-                },
+                location: 4043..+24 @99,
                 text: "missing value for argument `req2`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 567,
-                    length: 10,
-                },
+                location: 567..+10 @99,
                 text: "argument defined here",
             },
         ],
@@ -1256,32 +680,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4187,
-            length: 15,
-        },
+        location: 4187..+15 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4187,
-                    length: 15,
-                },
+                location: 4187..+15 @99,
                 text: "missing value for argument `requiredField`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 867,
-                    length: 23,
-                },
+                location: 867..+23 @99,
                 text: "argument defined here",
             },
         ],
@@ -1294,32 +700,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4334,
-            length: 1,
-        },
+        location: 4334..+1 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 1005,
-                    length: 8,
-                },
+                location: 1005..+8 @99,
                 text: "field declared here as [String] type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4334,
-                    length: 1,
-                },
+                location: 4334..+1 @99,
                 text: "argument declared here is of Int type",
             },
         ],
@@ -1333,22 +721,10 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4664,
-            length: 21,
-        },
+        location: 4664..+21 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4664,
-                    length: 21,
-                },
+                location: 4664..+21 @99,
                 text: "does not exist on `ComplexInput` type",
             },
         ],
@@ -1362,22 +738,10 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4781,
-            length: 5,
-        },
+        location: 4781..+5 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4781,
-                    length: 5,
-                },
+                location: 4781..+5 @99,
                 text: "argument declared here is of String type",
             },
         ],
@@ -1391,22 +755,10 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4809,
-            length: 4,
-        },
+        location: 4809..+4 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4809,
-                    length: 4,
-                },
+                location: 4809..+4 @99,
                 text: "argument declared here is of Enum type",
             },
         ],
@@ -1420,32 +772,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4906,
-            length: 4,
-        },
+        location: 4906..+4 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4899,
-                    length: 4,
-                },
+                location: 4899..+4 @99,
                 text: "field declared here as Int! type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4906,
-                    length: 4,
-                },
+                location: 4906..+4 @99,
                 text: "argument declared here is of Null type",
             },
         ],
@@ -1459,32 +793,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4928,
-            length: 4,
-        },
+        location: 4928..+4 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4918,
-                    length: 7,
-                },
+                location: 4918..+7 @99,
                 text: "field declared here as String! type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4928,
-                    length: 4,
-                },
+                location: 4928..+4 @99,
                 text: "argument declared here is of Null type",
             },
         ],
@@ -1498,32 +814,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 4955,
-            length: 39,
-        },
+        location: 4955..+39 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 4955,
-                    length: 39,
-                },
+                location: 4955..+39 @99,
                 text: "missing value for argument `requiredField`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 867,
-                    length: 23,
-                },
+                location: 867..+23 @99,
                 text: "argument defined here",
             },
         ],
@@ -1536,32 +834,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5177,
-            length: 5,
-        },
+        location: 5177..+5 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5171,
-                    length: 3,
-                },
+                location: 5171..+3 @99,
                 text: "field declared here as Int type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5177,
-                    length: 5,
-                },
+                location: 5177..+5 @99,
                 text: "argument declared here is of String type",
             },
         ],
@@ -1575,32 +855,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5199,
-            length: 1,
-        },
+        location: 5199..+1 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5190,
-                    length: 6,
-                },
+                location: 5190..+6 @99,
                 text: "field declared here as String type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5199,
-                    length: 1,
-                },
+                location: 5199..+1 @99,
                 text: "argument declared here is of Int type",
             },
         ],
@@ -1614,32 +876,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5223,
-            length: 16,
-        },
+        location: 5223..+16 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5208,
-                    length: 12,
-                },
+                location: 5208..+12 @99,
                 text: "field declared here as ComplexInput type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5223,
-                    length: 16,
-                },
+                location: 5223..+16 @99,
                 text: "argument declared here is of String type",
             },
         ],
@@ -1653,32 +897,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5440,
-            length: 18,
-        },
+        location: 5440..+18 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 882,
-                    length: 8,
-                },
+                location: 882..+8 @99,
                 text: "field declared here as Boolean! type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5440,
-                    length: 18,
-                },
+                location: 5440..+18 @99,
                 text: "argument declared here is of Int type",
             },
         ],
@@ -1692,32 +918,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5460,
-            length: 15,
-        },
+        location: 5460..+15 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 936,
-                    length: 3,
-                },
+                location: 936..+3 @99,
                 text: "field declared here as Int type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5460,
-                    length: 15,
-                },
+                location: 5460..+15 @99,
                 text: "argument declared here is of String type",
             },
         ],
@@ -1731,32 +939,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5610,
-            length: 13,
-        },
+        location: 5610..+13 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5610,
-                    length: 13,
-                },
+                location: 5610..+13 @99,
                 text: "missing value for argument `requiredField`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 867,
-                    length: 23,
-                },
+                location: 867..+23 @99,
                 text: "argument defined here",
             },
         ],
@@ -1769,32 +959,14 @@
         cache: {
             99: "0102_invalid_string_values.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 99,
-            },
-            offset: 5753,
-            length: 1,
-        },
+        location: 5753..+1 @99,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5734,
-                    length: 8,
-                },
+                location: 5734..+8 @99,
                 text: "field declared here as [String] type",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 99,
-                    },
-                    offset: 5753,
-                    length: 1,
-                },
+                location: 5753..+1 @99,
                 text: "argument declared here is of Int type",
             },
         ],

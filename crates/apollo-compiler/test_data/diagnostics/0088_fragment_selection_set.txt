@@ -3,32 +3,14 @@
         cache: {
             85: "0088_fragment_selection_set.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 85,
-            },
-            offset: 138,
-            length: 45,
-        },
+        location: 138..+45 @85,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 85,
-                    },
-                    offset: 138,
-                    length: 45,
-                },
+                location: 138..+45 @85,
                 text: "`topProduct` field is not defined",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 85,
-                    },
-                    offset: 0,
-                    length: 52,
-                },
+                location: 0..+52 @85,
                 text: "`Query` declared here",
             },
         ],
@@ -44,32 +26,14 @@
         cache: {
             85: "0088_fragment_selection_set.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 85,
-            },
-            offset: 278,
-            length: 16,
-        },
+        location: 278..+16 @85,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 85,
-                    },
-                    offset: 278,
-                    length: 16,
-                },
+                location: 278..+16 @85,
                 text: "`notExistingField` field is not defined",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 85,
-                    },
-                    offset: 54,
-                    length: 50,
-                },
+                location: 54..+50 @85,
                 text: "`Product` declared here",
             },
         ],

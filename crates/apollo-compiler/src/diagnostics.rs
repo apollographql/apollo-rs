@@ -6,7 +6,7 @@ use crate::FileId;
 use std::fmt;
 use thiserror::Error;
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct DiagnosticLocation {
     file_id: FileId,
     offset: usize,
@@ -65,6 +65,12 @@ impl From<HirNodeLocation> for DiagnosticLocation {
             offset: location.offset(),
             length: location.node_len(),
         }
+    }
+}
+
+impl fmt::Debug for DiagnosticLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}..+{} @{:?}", self.offset, self.length, self.file_id)
     }
 }
 

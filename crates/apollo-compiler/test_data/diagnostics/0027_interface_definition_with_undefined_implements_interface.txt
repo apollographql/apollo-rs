@@ -3,22 +3,10 @@
         cache: {
             27: "0027_interface_definition_with_undefined_implements_interface.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 27,
-            },
-            offset: 144,
-            length: 3,
-        },
+        location: 144..+3 @27,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 27,
-                    },
-                    offset: 144,
-                    length: 3,
-                },
+                location: 144..+3 @27,
                 text: "not found in this scope",
             },
         ],

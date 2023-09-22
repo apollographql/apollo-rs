@@ -3,32 +3,14 @@
         cache: {
             72: "0075_merge_conflicting_args.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
-            offset: 630,
-            length: 33,
-        },
+        location: 630..+33 @72,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 611,
-                    length: 15,
-                },
+                location: 611..+15 @72,
                 text: "field `doesKnowCommand` provides one argument value here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 646,
-                    length: 16,
-                },
+                location: 646..+16 @72,
                 text: "but a different value here",
             },
         ],
@@ -37,52 +19,22 @@
         ),
         data: ConflictingField {
             field: "doesKnowCommand",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 595,
-                length: 32,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 630,
-                length: 33,
-            },
+            original_selection: 595..+32 @72,
+            redefined_selection: 630..+33 @72,
         },
     },
     ApolloDiagnostic {
         cache: {
             72: "0075_merge_conflicting_args.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
-            offset: 630,
-            length: 33,
-        },
+        location: 630..+33 @72,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 611,
-                    length: 15,
-                },
+                location: 611..+15 @72,
                 text: "field `doesKnowCommand` provides one argument value here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 646,
-                    length: 16,
-                },
+                location: 646..+16 @72,
                 text: "but a different value here",
             },
         ],
@@ -91,52 +43,22 @@
         ),
         data: ConflictingField {
             field: "doesKnowCommand",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 595,
-                length: 32,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 630,
-                length: 33,
-            },
+            original_selection: 595..+32 @72,
+            redefined_selection: 630..+33 @72,
         },
     },
     ApolloDiagnostic {
         cache: {
             72: "0075_merge_conflicting_args.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
-            offset: 749,
-            length: 40,
-        },
+        location: 749..+40 @72,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 730,
-                    length: 15,
-                },
+                location: 730..+15 @72,
                 text: "field `doesKnowCommand` provides one argument value here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 765,
-                    length: 23,
-                },
+                location: 765..+23 @72,
                 text: "but a different value here",
             },
         ],
@@ -145,52 +67,22 @@
         ),
         data: ConflictingField {
             field: "doesKnowCommand",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 714,
-                length: 32,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 749,
-                length: 40,
-            },
+            original_selection: 714..+32 @72,
+            redefined_selection: 749..+40 @72,
         },
     },
     ApolloDiagnostic {
         cache: {
             72: "0075_merge_conflicting_args.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
-            offset: 749,
-            length: 40,
-        },
+        location: 749..+40 @72,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 730,
-                    length: 15,
-                },
+                location: 730..+15 @72,
                 text: "field `doesKnowCommand` provides one argument value here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 765,
-                    length: 23,
-                },
+                location: 765..+23 @72,
                 text: "but a different value here",
             },
         ],
@@ -199,52 +91,22 @@
         ),
         data: ConflictingField {
             field: "doesKnowCommand",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 714,
-                length: 32,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 749,
-                length: 40,
-            },
+            original_selection: 714..+32 @72,
+            redefined_selection: 749..+40 @72,
         },
     },
     ApolloDiagnostic {
         cache: {
             72: "0075_merge_conflicting_args.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
-            offset: 876,
-            length: 36,
-        },
+        location: 876..+36 @72,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 853,
-                    length: 19,
-                },
+                location: 853..+19 @72,
                 text: "field `doesKnowCommand` provides one argument value here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 892,
-                    length: 19,
-                },
+                location: 892..+19 @72,
                 text: "but a different value here",
             },
         ],
@@ -253,52 +115,22 @@
         ),
         data: ConflictingField {
             field: "doesKnowCommand",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 837,
-                length: 36,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 876,
-                length: 36,
-            },
+            original_selection: 837..+36 @72,
+            redefined_selection: 876..+36 @72,
         },
     },
     ApolloDiagnostic {
         cache: {
             72: "0075_merge_conflicting_args.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
-            offset: 876,
-            length: 36,
-        },
+        location: 876..+36 @72,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 853,
-                    length: 19,
-                },
+                location: 853..+19 @72,
                 text: "field `doesKnowCommand` provides one argument value here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 892,
-                    length: 19,
-                },
+                location: 892..+19 @72,
                 text: "but a different value here",
             },
         ],
@@ -307,52 +139,22 @@
         ),
         data: ConflictingField {
             field: "doesKnowCommand",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 837,
-                length: 36,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 876,
-                length: 36,
-            },
+            original_selection: 837..+36 @72,
+            redefined_selection: 876..+36 @72,
         },
     },
     ApolloDiagnostic {
         cache: {
             72: "0075_merge_conflicting_args.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
-            offset: 985,
-            length: 15,
-        },
+        location: 985..+15 @72,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 966,
-                    length: 15,
-                },
+                location: 966..+15 @72,
                 text: "field `doesKnowCommand` is selected with argument `dogCommand` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 985,
-                    length: 15,
-                },
+                location: 985..+15 @72,
                 text: "but argument `dogCommand` is not provided here",
             },
         ],
@@ -361,52 +163,22 @@
         ),
         data: ConflictingField {
             field: "doesKnowCommand",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 950,
-                length: 32,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 985,
-                length: 15,
-            },
+            original_selection: 950..+32 @72,
+            redefined_selection: 985..+15 @72,
         },
     },
     ApolloDiagnostic {
         cache: {
             72: "0075_merge_conflicting_args.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
-            offset: 985,
-            length: 15,
-        },
+        location: 985..+15 @72,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 966,
-                    length: 15,
-                },
+                location: 966..+15 @72,
                 text: "field `doesKnowCommand` is selected with argument `dogCommand` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 985,
-                    length: 15,
-                },
+                location: 985..+15 @72,
                 text: "but argument `dogCommand` is not provided here",
             },
         ],
@@ -415,52 +187,22 @@
         ),
         data: ConflictingField {
             field: "doesKnowCommand",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 950,
-                length: 32,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 985,
-                length: 15,
-            },
+            original_selection: 950..+32 @72,
+            redefined_selection: 985..+15 @72,
         },
     },
     ApolloDiagnostic {
         cache: {
             72: "0075_merge_conflicting_args.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
-            offset: 1061,
-            length: 18,
-        },
+        location: 1061..+18 @72,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 1053,
-                    length: 4,
-                },
+                location: 1053..+4 @72,
                 text: "field `isAtLocation` is selected with argument `x` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 1061,
-                    length: 18,
-                },
+                location: 1061..+18 @72,
                 text: "but argument `x` is not provided here",
             },
         ],
@@ -469,52 +211,22 @@
         ),
         data: ConflictingField {
             field: "isAtLocation",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 1040,
-                length: 18,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 1061,
-                length: 18,
-            },
+            original_selection: 1040..+18 @72,
+            redefined_selection: 1061..+18 @72,
         },
     },
     ApolloDiagnostic {
         cache: {
             72: "0075_merge_conflicting_args.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 72,
-            },
-            offset: 1061,
-            length: 18,
-        },
+        location: 1061..+18 @72,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 1053,
-                    length: 4,
-                },
+                location: 1053..+4 @72,
                 text: "field `isAtLocation` is selected with argument `x` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 72,
-                    },
-                    offset: 1061,
-                    length: 18,
-                },
+                location: 1061..+18 @72,
                 text: "but argument `x` is not provided here",
             },
         ],
@@ -523,20 +235,8 @@
         ),
         data: ConflictingField {
             field: "isAtLocation",
-            original_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 1040,
-                length: 18,
-            },
-            redefined_selection: DiagnosticLocation {
-                file_id: FileId {
-                    id: 72,
-                },
-                offset: 1061,
-                length: 18,
-            },
+            original_selection: 1040..+18 @72,
+            redefined_selection: 1061..+18 @72,
         },
     },
 ]

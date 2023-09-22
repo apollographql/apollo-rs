@@ -3,32 +3,14 @@
         cache: {
             66: "0066_subselection_of_scalar.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 28,
-            length: 13,
-        },
+        location: 28..+13 @66,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 28,
-                    length: 13,
-                },
+                location: 28..+13 @66,
                 text: "field `url1` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
+                location: 232..+67 @66,
                 text: "`URL` declared here",
             },
         ],
@@ -39,32 +21,14 @@
         cache: {
             66: "0066_subselection_of_scalar.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 44,
-            length: 13,
-        },
+        location: 44..+13 @66,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 44,
-                    length: 13,
-                },
+                location: 44..+13 @66,
                 text: "field `url2` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
+                location: 232..+67 @66,
                 text: "`URL` declared here",
             },
         ],
@@ -75,32 +39,14 @@
         cache: {
             66: "0066_subselection_of_scalar.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 60,
-            length: 13,
-        },
+        location: 60..+13 @66,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 60,
-                    length: 13,
-                },
+                location: 60..+13 @66,
                 text: "field `url3` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
+                location: 232..+67 @66,
                 text: "`URL` declared here",
             },
         ],
@@ -111,32 +57,14 @@
         cache: {
             66: "0066_subselection_of_scalar.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 76,
-            length: 13,
-        },
+        location: 76..+13 @66,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 76,
-                    length: 13,
-                },
+                location: 76..+13 @66,
                 text: "field `url4` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
+                location: 232..+67 @66,
                 text: "`URL` declared here",
             },
         ],
@@ -147,32 +75,14 @@
         cache: {
             66: "0066_subselection_of_scalar.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 92,
-            length: 13,
-        },
+        location: 92..+13 @66,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 92,
-                    length: 13,
-                },
+                location: 92..+13 @66,
                 text: "field `url5` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
+                location: 232..+67 @66,
                 text: "`URL` declared here",
             },
         ],
@@ -183,32 +93,14 @@
         cache: {
             66: "0066_subselection_of_scalar.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 66,
-            },
-            offset: 108,
-            length: 13,
-        },
+        location: 108..+13 @66,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 108,
-                    length: 13,
-                },
+                location: 108..+13 @66,
                 text: "field `url6` of type `URL` is a scalar and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 66,
-                    },
-                    offset: 232,
-                    length: 67,
-                },
+                location: 232..+67 @66,
                 text: "`URL` declared here",
             },
         ],

@@ -3,32 +3,14 @@
         cache: {
             40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 40,
-            },
-            offset: 21,
-            length: 4,
-        },
+        location: 21..+4 @40,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 40,
-                    },
-                    offset: 21,
-                    length: 4,
-                },
+                location: 21..+4 @40,
                 text: "`size` field is not defined",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 40,
-                    },
-                    offset: 38,
-                    length: 52,
-                },
+                location: 38..+52 @40,
                 text: "`Query` declared here",
             },
         ],
@@ -44,32 +26,14 @@
         cache: {
             40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 40,
-            },
-            offset: 28,
-            length: 6,
-        },
+        location: 28..+6 @40,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 40,
-                    },
-                    offset: 28,
-                    length: 6,
-                },
+                location: 28..+6 @40,
                 text: "`weight` field is not defined",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 40,
-                    },
-                    offset: 38,
-                    length: 52,
-                },
+                location: 38..+52 @40,
                 text: "`Query` declared here",
             },
         ],

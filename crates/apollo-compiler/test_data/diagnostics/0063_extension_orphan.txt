@@ -3,22 +3,10 @@
         cache: {
             63: "0063_extension_orphan.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 25,
-            length: 52,
-        },
+        location: 25..+52 @63,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 39,
-                    length: 1,
-                },
+                location: 39..+1 @63,
                 text: "`A` type definition does not exist",
             },
         ],
@@ -31,22 +19,10 @@
         cache: {
             63: "0063_extension_orphan.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 78,
-            length: 29,
-        },
+        location: 78..+29 @63,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 90,
-                    length: 1,
-                },
+                location: 90..+1 @63,
                 text: "`B` type definition does not exist",
             },
         ],
@@ -59,22 +35,10 @@
         cache: {
             63: "0063_extension_orphan.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 141,
-            length: 23,
-        },
+        location: 141..+23 @63,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 154,
-                    length: 1,
-                },
+                location: 154..+1 @63,
                 text: "`C` type definition does not exist",
             },
         ],
@@ -87,22 +51,10 @@
         cache: {
             63: "0063_extension_orphan.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 165,
-            length: 35,
-        },
+        location: 165..+35 @63,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 182,
-                    length: 1,
-                },
+                location: 182..+1 @63,
                 text: "`D` type definition does not exist",
             },
         ],
@@ -115,22 +67,10 @@
         cache: {
             63: "0063_extension_orphan.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 201,
-            length: 31,
-        },
+        location: 201..+31 @63,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 214,
-                    length: 1,
-                },
+                location: 214..+1 @63,
                 text: "`E` type definition does not exist",
             },
         ],
@@ -143,22 +83,10 @@
         cache: {
             63: "0063_extension_orphan.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 63,
-            },
-            offset: 233,
-            length: 26,
-        },
+        location: 233..+26 @63,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 63,
-                    },
-                    offset: 245,
-                    length: 1,
-                },
+                location: 245..+1 @63,
                 text: "`F` type definition does not exist",
             },
         ],

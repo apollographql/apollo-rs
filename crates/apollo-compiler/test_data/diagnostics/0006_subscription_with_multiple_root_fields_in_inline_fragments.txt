@@ -3,22 +3,10 @@
         cache: {
             6: "0006_subscription_with_multiple_root_fields_in_inline_fragments.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 6,
-            },
-            offset: 0,
-            length: 149,
-        },
+        location: 0..+149 @6,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 6,
-                    },
-                    offset: 0,
-                    length: 149,
-                },
+                location: 0..+149 @6,
                 text: "subscription with 2 root fields",
             },
         ],
@@ -27,13 +15,7 @@
         ),
         data: SingleRootField {
             fields: 2,
-            subscription: DiagnosticLocation {
-                file_id: FileId {
-                    id: 6,
-                },
-                offset: 0,
-                length: 149,
-            },
+            subscription: 0..+149 @6,
         },
     },
 ]

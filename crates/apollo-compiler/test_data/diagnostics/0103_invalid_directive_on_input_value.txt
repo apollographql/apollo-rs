@@ -3,32 +3,14 @@
         cache: {
             100: "0103_invalid_directive_on_input_value.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 100,
-            },
-            offset: 111,
-            length: 8,
-        },
+        location: 111..+8 @100,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 100,
-                    },
-                    offset: 111,
-                    length: 8,
-                },
+                location: 111..+8 @100,
                 text: "missing value for argument `arg`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 100,
-                    },
-                    offset: 19,
-                    length: 12,
-                },
+                location: 19..+12 @100,
                 text: "argument defined here",
             },
         ],
@@ -41,32 +23,14 @@
         cache: {
             100: "0103_invalid_directive_on_input_value.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 100,
-            },
-            offset: 154,
-            length: 8,
-        },
+        location: 154..+8 @100,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 100,
-                    },
-                    offset: 154,
-                    length: 8,
-                },
+                location: 154..+8 @100,
                 text: "missing value for argument `arg`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 100,
-                    },
-                    offset: 19,
-                    length: 12,
-                },
+                location: 19..+12 @100,
                 text: "argument defined here",
             },
         ],

@@ -3,32 +3,14 @@
         cache: {
             41: "0041_subscription_operation_with_undefined_fields.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 41,
-            },
-            offset: 21,
-            length: 26,
-        },
+        location: 21..+26 @41,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 41,
-                    },
-                    offset: 21,
-                    length: 26,
-                },
+                location: 21..+26 @41,
                 text: "`undefinedSubscriptionField` field is not defined",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 41,
-                    },
-                    offset: 51,
-                    length: 42,
-                },
+                location: 51..+42 @41,
                 text: "`Subscription` declared here",
             },
         ],

@@ -3,42 +3,18 @@
         cache: {
             25: "0025_interface_definition_with_missing_transitive_fields.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 25,
-            },
-            offset: 135,
-            length: 76,
-        },
+        location: 135..+76 @25,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 25,
-                    },
-                    offset: 162,
-                    length: 8,
-                },
+                location: 162..+8 @25,
                 text: "implementation of interface Resource declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 25,
-                    },
-                    offset: 121,
-                    length: 10,
-                },
+                location: 121..+10 @25,
                 text: "`width` was originally defined by Resource here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 25,
-                    },
-                    offset: 135,
-                    length: 76,
-                },
+                location: 135..+76 @25,
                 text: "add `width` field to this interface",
             },
         ],

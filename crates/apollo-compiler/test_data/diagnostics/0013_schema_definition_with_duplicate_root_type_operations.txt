@@ -3,32 +3,14 @@
         cache: {
             13: "0013_schema_definition_with_duplicate_root_type_operations.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 13,
-            },
-            offset: 36,
-            length: 28,
-        },
+        location: 36..+28 @13,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 13,
-                    },
-                    offset: 11,
-                    length: 21,
-                },
+                location: 11..+21 @13,
                 text: "previous definition of `customPetQuery` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 13,
-                    },
-                    offset: 36,
-                    length: 28,
-                },
+                location: 36..+28 @13,
                 text: "`customPetQuery` redefined here",
             },
         ],
@@ -38,20 +20,8 @@
         data: UniqueDefinition {
             ty: "root operation type definition",
             name: "customPetQuery",
-            original_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 13,
-                },
-                offset: 11,
-                length: 21,
-            },
-            redefined_definition: DiagnosticLocation {
-                file_id: FileId {
-                    id: 13,
-                },
-                offset: 36,
-                length: 28,
-            },
+            original_definition: 11..+21 @13,
+            redefined_definition: 36..+28 @13,
         },
     },
 ]

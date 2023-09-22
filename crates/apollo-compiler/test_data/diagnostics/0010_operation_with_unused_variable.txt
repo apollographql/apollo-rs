@@ -3,22 +3,10 @@
         cache: {
             10: "0010_operation_with_unused_variable.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 10,
-            },
-            offset: 19,
-            length: 15,
-        },
+        location: 19..+15 @10,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 10,
-                    },
-                    offset: 19,
-                    length: 15,
-                },
+                location: 19..+15 @10,
                 text: "this variable is never used",
             },
         ],

@@ -3,22 +3,10 @@
         cache: {
             61: "0061_root_operation_with_default_undefined_query.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 61,
-            },
-            offset: 13,
-            length: 12,
-        },
+        location: 13..+12 @61,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 61,
-                    },
-                    offset: 13,
-                    length: 12,
-                },
+                location: 13..+12 @61,
                 text: "not found in this scope",
             },
         ],

@@ -3,32 +3,14 @@
         cache: {
             84: "0087_fragment_type_condition_on_composite_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 84,
-            },
-            offset: 52,
-            length: 25,
-        },
+        location: 52..+25 @84,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 52,
-                    length: 25,
-                },
+                location: 52..+25 @84,
                 text: "field `price` of type `Int` is a scalar and cannot select any fields",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: -1,
-                    },
-                    offset: 2963,
-                    length: 150,
-                },
+                location: 2963..+150 @-1,
                 text: "`Int` declared here",
             },
         ],
@@ -39,32 +21,14 @@
         cache: {
             84: "0087_fragment_type_condition_on_composite_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 84,
-            },
-            offset: 108,
-            length: 29,
-        },
+        location: 108..+29 @84,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 108,
-                    length: 29,
-                },
+                location: 108..+29 @84,
                 text: "fragment declares unsupported type condition `Int`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: -1,
-                    },
-                    offset: 2963,
-                    length: 150,
-                },
+                location: 2963..+150 @-1,
                 text: "`Int` is defined here",
             },
         ],
@@ -79,32 +43,14 @@
         cache: {
             84: "0087_fragment_type_condition_on_composite_types.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 84,
-            },
-            offset: 328,
-            length: 25,
-        },
+        location: 328..+25 @84,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 84,
-                    },
-                    offset: 328,
-                    length: 25,
-                },
+                location: 328..+25 @84,
                 text: "fragment declares unsupported type condition `Int`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: -1,
-                    },
-                    offset: 2963,
-                    length: 150,
-                },
+                location: 2963..+150 @-1,
                 text: "`Int` is defined here",
             },
         ],

@@ -3,22 +3,10 @@
         cache: {
             83: "0086_unused_fragment.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 83,
-            },
-            offset: 147,
-            length: 43,
-        },
+        location: 147..+43 @83,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 83,
-                    },
-                    offset: 147,
-                    length: 43,
-                },
+                location: 147..+43 @83,
                 text: "`nameFragment` is defined here",
             },
         ],

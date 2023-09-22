@@ -3,32 +3,14 @@
         cache: {
             96: "0099_input_object_extensions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 96,
-            },
-            offset: 22,
-            length: 13,
-        },
+        location: 22..+13 @96,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 96,
-                    },
-                    offset: 22,
-                    length: 13,
-                },
+                location: 22..+13 @96,
                 text: "previous definition of `field` here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 96,
-                    },
-                    offset: 67,
-                    length: 13,
-                },
+                location: 67..+13 @96,
                 text: "`field` redefined here",
             },
         ],
@@ -37,72 +19,30 @@
         ),
         data: UniqueInputValue {
             name: "field",
-            original_value: DiagnosticLocation {
-                file_id: FileId {
-                    id: 96,
-                },
-                offset: 22,
-                length: 13,
-            },
-            redefined_value: DiagnosticLocation {
-                file_id: FileId {
-                    id: 96,
-                },
-                offset: 67,
-                length: 13,
-            },
+            original_value: 22..+13 @96,
+            redefined_value: 67..+13 @96,
         },
     },
     ApolloDiagnostic {
         cache: {
             96: "0099_input_object_extensions.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 96,
-            },
-            offset: 211,
-            length: 14,
-        },
+        location: 211..+14 @96,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 96,
-                    },
-                    offset: 147,
-                    length: 14,
-                },
+                location: 147..+14 @96,
                 text: "directive nonRepeatable first called here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 96,
-                    },
-                    offset: 211,
-                    length: 14,
-                },
+                location: 211..+14 @96,
                 text: "directive nonRepeatable called again here",
             },
         ],
         help: None,
         data: UniqueDirective {
             name: "nonRepeatable",
-            original_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 96,
-                },
-                offset: 147,
-                length: 14,
-            },
-            conflicting_call: DiagnosticLocation {
-                file_id: FileId {
-                    id: 96,
-                },
-                offset: 211,
-                length: 14,
-            },
+            original_call: 147..+14 @96,
+            conflicting_call: 211..+14 @96,
         },
     },
 ]

@@ -3,32 +3,14 @@
         cache: {
             81: "0084_circular_non_nullable_input_objects.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 81,
-            },
-            offset: 62,
-            length: 49,
-        },
+        location: 62..+49 @81,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 81,
-                    },
-                    offset: 62,
-                    length: 49,
-                },
+                location: 62..+49 @81,
                 text: "cyclical input object definition",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 81,
-                    },
-                    offset: 231,
-                    length: 13,
-                },
+                location: 231..+13 @81,
                 text: "refers to itself here",
             },
         ],
@@ -41,32 +23,14 @@
         cache: {
             81: "0084_circular_non_nullable_input_objects.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 81,
-            },
-            offset: 113,
-            length: 48,
-        },
+        location: 113..+48 @81,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 81,
-                    },
-                    offset: 113,
-                    length: 48,
-                },
+                location: 113..+48 @81,
                 text: "cyclical input object definition",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 81,
-                    },
-                    offset: 78,
-                    length: 15,
-                },
+                location: 78..+15 @81,
                 text: "refers to itself here",
             },
         ],
@@ -79,32 +43,14 @@
         cache: {
             81: "0084_circular_non_nullable_input_objects.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 81,
-            },
-            offset: 163,
-            length: 49,
-        },
+        location: 163..+49 @81,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 81,
-                    },
-                    offset: 163,
-                    length: 49,
-                },
+                location: 163..+49 @81,
                 text: "cyclical input object definition",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 81,
-                    },
-                    offset: 130,
-                    length: 13,
-                },
+                location: 130..+13 @81,
                 text: "refers to itself here",
             },
         ],
@@ -117,32 +63,14 @@
         cache: {
             81: "0084_circular_non_nullable_input_objects.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 81,
-            },
-            offset: 214,
-            length: 32,
-        },
+        location: 214..+32 @81,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 81,
-                    },
-                    offset: 214,
-                    length: 32,
-                },
+                location: 214..+32 @81,
                 text: "cyclical input object definition",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 81,
-                    },
-                    offset: 179,
-                    length: 15,
-                },
+                location: 179..+15 @81,
                 text: "refers to itself here",
             },
         ],

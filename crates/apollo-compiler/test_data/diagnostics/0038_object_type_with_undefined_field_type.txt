@@ -3,22 +3,10 @@
         cache: {
             38: "0038_object_type_with_undefined_field_type.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 38,
-            },
-            offset: 33,
-            length: 3,
-        },
+        location: 33..+3 @38,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 38,
-                    },
-                    offset: 33,
-                    length: 3,
-                },
+                location: 33..+3 @38,
                 text: "not found in this scope",
             },
         ],
@@ -31,22 +19,10 @@
         cache: {
             38: "0038_object_type_with_undefined_field_type.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 38,
-            },
-            offset: 53,
-            length: 6,
-        },
+        location: 53..+6 @38,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 38,
-                    },
-                    offset: 53,
-                    length: 6,
-                },
+                location: 53..+6 @38,
                 text: "not found in this scope",
             },
         ],

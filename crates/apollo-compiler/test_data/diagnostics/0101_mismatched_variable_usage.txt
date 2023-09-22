@@ -3,32 +3,14 @@
         cache: {
             98: "0101_mismatched_variable_usage.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 98,
-            },
-            offset: 79,
-            length: 19,
-        },
+        location: 79..+19 @98,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 29,
-                    length: 12,
-                },
+                location: 29..+12 @98,
                 text: "variable `intArg` of type `Int` is declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 79,
-                    length: 19,
-                },
+                location: 79..+19 @98,
                 text: "argument `booleanArg` of type `Boolean` is declared here",
             },
         ],
@@ -42,32 +24,14 @@
         cache: {
             98: "0101_mismatched_variable_usage.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 98,
-            },
-            offset: 208,
-            length: 27,
-        },
+        location: 208..+27 @98,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 144,
-                    length: 26,
-                },
+                location: 144..+26 @98,
                 text: "variable `booleanListArg` of type `[Boolean]` is declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 208,
-                    length: 27,
-                },
+                location: 208..+27 @98,
                 text: "argument `booleanArg` of type `Boolean` is declared here",
             },
         ],
@@ -81,32 +45,14 @@
         cache: {
             98: "0101_mismatched_variable_usage.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 98,
-            },
-            offset: 331,
-            length: 30,
-        },
+        location: 331..+30 @98,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 266,
-                    length: 20,
-                },
+                location: 266..+20 @98,
                 text: "variable `booleanArg` of type `Boolean` is declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 331,
-                    length: 30,
-                },
+                location: 331..+30 @98,
                 text: "argument `nonNullBooleanArg` of type `Boolean!` is declared here",
             },
         ],
@@ -120,32 +66,14 @@
         cache: {
             98: "0101_mismatched_variable_usage.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 98,
-            },
-            offset: 463,
-            length: 35,
-        },
+        location: 463..+35 @98,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 394,
-                    length: 23,
-                },
+                location: 394..+23 @98,
                 text: "variable `booleanList` of type `[Boolean]` is declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 463,
-                    length: 35,
-                },
+                location: 463..+35 @98,
                 text: "argument `nonNullBooleanListArg` of type `[Boolean]!` is declared here",
             },
         ],
@@ -159,32 +87,14 @@
         cache: {
             98: "0101_mismatched_variable_usage.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 98,
-            },
-            offset: 577,
-            length: 22,
-        },
+        location: 577..+22 @98,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 637,
-                    length: 12,
-                },
+                location: 637..+12 @98,
                 text: "variable `intArg` of type `Int` is declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 577,
-                    length: 22,
-                },
+                location: 577..+22 @98,
                 text: "argument `nonNullIntArg` of type `Int!` is declared here",
             },
         ],
@@ -198,32 +108,14 @@
         cache: {
             98: "0101_mismatched_variable_usage.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 98,
-            },
-            offset: 859,
-            length: 22,
-        },
+        location: 859..+22 @98,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 931,
-                    length: 12,
-                },
+                location: 931..+12 @98,
                 text: "variable `intArg` of type `Int` is declared here",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 98,
-                    },
-                    offset: 859,
-                    length: 22,
-                },
+                location: 859..+22 @98,
                 text: "argument `nonNullIntArg` of type `Int!` is declared here",
             },
         ],

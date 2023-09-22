@@ -3,32 +3,14 @@
         cache: {
             54: "0054_argument_not_provided.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 54,
-            },
-            offset: 281,
-            length: 12,
-        },
+        location: 281..+12 @54,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 281,
-                    length: 12,
-                },
+                location: 281..+12 @54,
                 text: "missing value for argument `req1`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 38,
-                    length: 10,
-                },
+                location: 38..+10 @54,
                 text: "argument defined here",
             },
         ],
@@ -41,32 +23,14 @@
         cache: {
             54: "0054_argument_not_provided.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 54,
-            },
-            offset: 281,
-            length: 12,
-        },
+        location: 281..+12 @54,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 281,
-                    length: 12,
-                },
+                location: 281..+12 @54,
                 text: "missing value for argument `req2`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 50,
-                    length: 10,
-                },
+                location: 50..+10 @54,
                 text: "argument defined here",
             },
         ],
@@ -79,32 +43,14 @@
         cache: {
             54: "0054_argument_not_provided.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 54,
-            },
-            offset: 332,
-            length: 33,
-        },
+        location: 332..+33 @54,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 332,
-                    length: 33,
-                },
+                location: 332..+33 @54,
                 text: "missing value for argument `req1`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 38,
-                    length: 10,
-                },
+                location: 38..+10 @54,
                 text: "argument defined here",
             },
         ],
@@ -117,32 +63,14 @@
         cache: {
             54: "0054_argument_not_provided.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 54,
-            },
-            offset: 401,
-            length: 5,
-        },
+        location: 401..+5 @54,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 401,
-                    length: 5,
-                },
+                location: 401..+5 @54,
                 text: "missing value for argument `if`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: -1,
-                    },
-                    offset: 2062,
-                    length: 35,
-                },
+                location: 2062..+35 @-1,
                 text: "argument defined here",
             },
         ],
@@ -155,32 +83,14 @@
         cache: {
             54: "0054_argument_not_provided.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 54,
-            },
-            offset: 407,
-            length: 22,
-        },
+        location: 407..+22 @54,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 407,
-                    length: 22,
-                },
+                location: 407..+22 @54,
                 text: "missing value for argument `if`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: -1,
-                    },
-                    offset: 2262,
-                    length: 36,
-                },
+                location: 2262..+36 @-1,
                 text: "argument defined here",
             },
         ],
@@ -193,32 +103,14 @@
         cache: {
             54: "0054_argument_not_provided.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 54,
-            },
-            offset: 416,
-            length: 12,
-        },
+        location: 416..+12 @54,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 416,
-                    length: 5,
-                },
+                location: 416..+5 @54,
                 text: "argument by this name not found",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 407,
-                    length: 22,
-                },
+                location: 407..+22 @54,
                 text: "directive declared here",
             },
         ],
@@ -231,32 +123,14 @@
         cache: {
             54: "0054_argument_not_provided.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 54,
-            },
-            offset: 467,
-            length: 24,
-        },
+        location: 467..+24 @54,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 467,
-                    length: 24,
-                },
+                location: 467..+24 @54,
                 text: "missing value for argument `req1`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 38,
-                    length: 10,
-                },
+                location: 38..+10 @54,
                 text: "argument defined here",
             },
         ],
@@ -269,32 +143,14 @@
         cache: {
             54: "0054_argument_not_provided.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 54,
-            },
-            offset: 496,
-            length: 29,
-        },
+        location: 496..+29 @54,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 496,
-                    length: 29,
-                },
+                location: 496..+29 @54,
                 text: "missing value for argument `req2`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 102,
-                    length: 10,
-                },
+                location: 102..+10 @54,
                 text: "argument defined here",
             },
         ],
@@ -307,32 +163,14 @@
         cache: {
             54: "0054_argument_not_provided.graphql",
         },
-        location: DiagnosticLocation {
-            file_id: FileId {
-                id: 54,
-            },
-            offset: 530,
-            length: 47,
-        },
+        location: 530..+47 @54,
         labels: [
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 530,
-                    length: 47,
-                },
+                location: 530..+47 @54,
                 text: "missing value for argument `req2`",
             },
             Label {
-                location: DiagnosticLocation {
-                    file_id: FileId {
-                        id: 54,
-                    },
-                    offset: 102,
-                    length: 10,
-                },
+                location: 102..+10 @54,
                 text: "argument defined here",
             },
         ],
