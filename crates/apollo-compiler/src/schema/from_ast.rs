@@ -359,9 +359,10 @@ impl Schema {
     fn add_root_operations(
         &mut self,
         origin: ComponentOrigin,
-        root_operations: &[(ast::OperationType, Name)],
+        root_operations: &[Node<(ast::OperationType, Name)>],
     ) {
-        for (operation_type, object_type_name) in root_operations {
+        for op in root_operations {
+            let (operation_type, object_type_name) = &**op;
             let entry = match operation_type {
                 ast::OperationType::Query => &mut self.query_type,
                 ast::OperationType::Mutation => &mut self.mutation_type,

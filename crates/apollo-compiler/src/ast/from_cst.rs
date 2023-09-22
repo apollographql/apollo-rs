@@ -433,12 +433,12 @@ impl Convert for cst::OperationType {
 }
 
 impl Convert for cst::RootOperationTypeDefinition {
-    type Target = (ast::OperationType, ast::NamedType);
+    type Target = Node<(ast::OperationType, ast::NamedType)>;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
         let ty = self.operation_type()?.convert(file_id)?;
         let name = self.named_type()?.name()?.convert(file_id)?;
-        Some((ty, name))
+        Some(with_location(file_id, self.syntax(), (ty, name)))
     }
 }
 
@@ -501,9 +501,10 @@ impl Convert for cst::VariableDefinition {
         } else {
             None
         };
+        let ty = &self.ty()?;
         Some(Self::Target {
             name: self.variable()?.name()?.convert(file_id)?,
-            ty: self.ty()?.convert(file_id)?,
+            ty: with_location(file_id, ty.syntax(), ty.convert(file_id)?),
             default_value,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
         })
@@ -573,10 +574,11 @@ impl Convert for cst::InputValueDefinition {
         } else {
             None
         };
+        let ty = &self.ty()?;
         Some(Self::Target {
             description: self.description().convert(file_id)?,
             name: self.name()?.convert(file_id)?,
-            ty: self.ty()?.convert(file_id)?,
+            ty: with_location(file_id, ty.syntax(), ty.convert(file_id)?),
             default_value,
             directives: collect_opt(file_id, self.directives(), |x| x.directives()),
         })

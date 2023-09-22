@@ -118,7 +118,7 @@ pub struct DirectiveDefinition {
 pub struct SchemaDefinition {
     pub description: Option<NodeStr>,
     pub directives: Vec<Node<Directive>>,
-    pub root_operations: Vec<(OperationType, NamedType)>,
+    pub root_operations: Vec<Node<(OperationType, NamedType)>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -173,7 +173,7 @@ pub struct InputObjectTypeDefinition {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct SchemaExtension {
     pub directives: Vec<Node<Directive>>,
-    pub root_operations: Vec<(OperationType, NamedType)>,
+    pub root_operations: Vec<Node<(OperationType, NamedType)>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -264,7 +264,7 @@ pub enum DirectiveLocation {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct VariableDefinition {
     pub name: Name,
-    pub ty: Type,
+    pub ty: Node<Type>,
     pub default_value: Option<Node<Value>>,
     pub directives: Vec<Node<Directive>>,
 }
@@ -290,7 +290,7 @@ pub struct FieldDefinition {
 pub struct InputValueDefinition {
     pub description: Option<NodeStr>,
     pub name: Name,
-    pub ty: Type,
+    pub ty: Node<Type>,
     pub default_value: Option<Node<Value>>,
     pub directives: Vec<Node<Directive>>,
 }

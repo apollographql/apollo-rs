@@ -19,7 +19,7 @@ impl FindRecursiveInputValue<'_> {
         seen: &mut RecursionStack<'_>,
         def: &Node<ast::InputValueDefinition>,
     ) -> Result<(), Node<ast::InputValueDefinition>> {
-        return match &def.ty {
+        return match &*def.ty {
             // NonNull type followed by Named type is the one that's not allowed
             // to be cyclical, so this is only case we care about.
             //

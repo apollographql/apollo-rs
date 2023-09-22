@@ -1,10 +1,9 @@
 use crate::{
     ast,
     diagnostics::{DiagnosticData, Label},
-    schema, ApolloDiagnostic, ValidationDatabase,
+    schema, ApolloDiagnostic, Node, NodeLocation, ValidationDatabase,
 };
-use apollo_parser::cst::{self, CstNode};
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 pub fn validate_schema_definition(
     db: &dyn ValidationDatabase,
@@ -16,7 +15,7 @@ pub fn validate_schema_definition(
     // A GraphQL schema must have a Query root operation.
     let has_query = root_operations
         .iter()
-        .any(|&(operation_type, _)| operation_type == ast::OperationType::Query);
+        .any(|op| op.0 == ast::OperationType::Query);
     if !has_query {
         if let Some(location) = schema_definition.definition.location() {
             diagnostics.push(
@@ -46,54 +45,43 @@ pub fn validate_schema_definition(
 // Return a Unique Operation Definition error in case of a duplicate name.
 pub fn validate_root_operation_definitions(
     db: &dyn ValidationDatabase,
-    root_op_defs: &[(ast::OperationType, ast::NamedType)],
+    root_op_defs: &[Node<(ast::OperationType, ast::NamedType)>],
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
 
-    let mut seen: HashSet<ast::NamedType> = HashSet::new();
-    let whole_op_def_location = |name: &ast::Name| {
-        name.location().and_then(|loc| {
-            super::lookup_cst_location(db.upcast(), loc, |cst: cst::RootOperationTypeDefinition| {
-                Some(cst.syntax().text_range())
-            })
-        })
-    };
+    let mut seen: HashMap<_, NodeLocation> = HashMap::new();
 
-    for (_op_type, name) in root_op_defs {
-        // All root operations in a schema definition must be unique.
-        //
-        // Return a Unique Operation Definition error in case of a duplicate name.
-        if let Some(prev_def) = seen.get(name) {
-            if let (Some(original_definition), Some(redefined_definition)) =
-                (whole_op_def_location(prev_def), whole_op_def_location(name))
-            {
+    for op in root_op_defs {
+        let (_op_type, name) = &**op;
+        if let Some(loc) = op.location() {
+            // All root operations in a schema definition must be unique.
+            //
+            // Return a Unique Operation Definition error in case of a duplicate name.
+            if let Some(&prev_loc) = seen.get(name) {
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        redefined_definition.into(),
+                        loc.into(),
                         DiagnosticData::UniqueDefinition {
                             ty: "root operation type definition",
                             name: name.to_string(),
-                            original_definition: original_definition.into(),
-                            redefined_definition: redefined_definition.into(),
+                            original_definition: prev_loc.into(),
+                            redefined_definition: loc.into(),
                         },
                     )
                     .labels([
-                        Label::new(
-                            original_definition,
-                            format!("previous definition of `{name}` here"),
-                        ),
-                        Label::new(redefined_definition, format!("`{name}` redefined here")),
+                        Label::new(prev_loc, format!("previous definition of `{name}` here")),
+                        Label::new(loc, format!("`{name}` redefined here")),
                     ])
                     .help(format!(
                         "`{name}` must only be defined once in this document."
                     )),
                 );
+            } else {
+                seen.insert(name, loc);
             }
-        } else {
-            seen.insert(name.clone());
         }
 
         // Root Operation Named Type must be of Object Type.
@@ -102,7 +90,7 @@ pub fn validate_root_operation_definitions(
         let type_def = schema.types.get(name);
         if let Some(type_def) = type_def {
             if !matches!(type_def, schema::ExtendedType::Object(_)) {
-                if let Some(op_loc) = whole_op_def_location(name) {
+                if let Some(op_loc) = op.location() {
                     let (particle, kind) = match type_def {
                         schema::ExtendedType::Scalar(_) => ("an", "scalar"),
                         schema::ExtendedType::Union(_) => ("an", "union"),
@@ -125,7 +113,7 @@ pub fn validate_root_operation_definitions(
                     );
                 }
             }
-        } else if let Some(op_loc) = whole_op_def_location(name) {
+        } else if let Some(op_loc) = op.location() {
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,

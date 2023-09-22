@@ -25,11 +25,11 @@ impl Schema {
             && implicit_op(&self.query_type, OperationType::Query)
             && implicit_op(&self.mutation_type, OperationType::Mutation)
             && implicit_op(&self.subscription_type, OperationType::Subscription);
-        let root_ops = |ext: Option<&ExtensionId>| -> Vec<(OperationType, Name)> {
+        let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {
             let root_op = |op: &Option<ComponentStr>, ty| {
                 op.as_ref()
                     .filter(|name| name.origin.extension_id() == ext)
-                    .map(|name| (ty, name.node.clone()))
+                    .map(|name| (ty, name.node.clone()).into())
                     .into_iter()
             };
             root_op(&self.query_type, OperationType::Query)

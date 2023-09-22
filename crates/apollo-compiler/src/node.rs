@@ -4,6 +4,7 @@ use crate::Arc;
 use crate::FileId;
 use apollo_parser::cst::CstNode;
 use apollo_parser::SyntaxNode;
+use rowan::TextRange;
 use std::fmt;
 use std::hash;
 
@@ -29,7 +30,7 @@ struct NodeInner<T> {
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub struct NodeLocation {
     pub(crate) file_id: FileId,
-    pub(crate) text_range: rowan::TextRange,
+    pub(crate) text_range: TextRange,
 }
 
 impl<T> Node<T> {
@@ -123,6 +124,12 @@ impl<T: fmt::Debug> fmt::Debug for Node<T> {
     }
 }
 
+impl<T: fmt::Display> fmt::Display for Node<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        T::fmt(self, f)
+    }
+}
+
 impl<T: Eq> Eq for NodeInner<T> {}
 
 impl<T: PartialEq> PartialEq for NodeInner<T> {
@@ -175,6 +182,24 @@ impl NodeLocation {
     /// Returns the length of the range, in UTF-8 bytes
     pub fn node_len(&self) -> usize {
         self.text_range.len().into()
+    }
+
+    /// Best effort at making a location with the given start and end
+    pub fn recompose(start_of: Option<Self>, end_of: Option<Self>) -> Option<Self> {
+        match (start_of, end_of) {
+            (None, None) => None,
+            (None, single @ Some(_)) | (single @ Some(_), None) => single,
+            (Some(start), Some(end)) => {
+                if start.file_id != end.file_id {
+                    // Pick one aribtrarily
+                    return Some(end);
+                }
+                Some(NodeLocation {
+                    file_id: start.file_id,
+                    text_range: TextRange::new(start.text_range.start(), end.text_range.end()),
+                })
+            }
+        }
     }
 }
 
