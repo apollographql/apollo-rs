@@ -140,8 +140,18 @@ impl FileId {
 
     /// Reset file ID back to 1, used to get consistent results in tests.
     #[cfg(test)]
-    pub(crate) fn reset() {
-        NEXT.store(1, atomic::Ordering::SeqCst);
+    pub(crate) fn with_deterministic_ids(f: impl FnOnce()) {
+        static MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+        let _mutex_guard = MUTEX.lock().unwrap();
+
+        struct RestoreOnDrop(i64);
+        impl Drop for RestoreOnDrop {
+            fn drop(&mut self) {
+                NEXT.store(self.0, atomic::Ordering::Release)
+            }
+        }
+        let _restore_on_drop = NEXT.swap(1, atomic::Ordering::AcqRel);
+        f()
     }
 
     const fn const_new(id: i64) -> Self {
