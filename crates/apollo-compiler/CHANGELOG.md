@@ -4,7 +4,7 @@ All notable changes to `apollo-compiler` will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- # [x.x.x] (unreleased) - 2021-mm-dd
+<!-- # [x.x.x] (unreleased) - 2023-mm-dd
 
 > Important: X breaking changes below, indicated by **BREAKING**
 
@@ -15,8 +15,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Fixes
 
 ## Maintenance
-## Documentation -->
-# [x.x.x] (unreleased) - 2021-mm-dd
+## Documentation-->
+
+<!--
+# [x.x.x] (unreleased) - 2023-mm-dd
 
 ## Features
 - Add `validate_standalone_executable` function to validate an executable document without access to a schema, by [goto-bus-stop] in [pull/631], [issue/629]
@@ -36,6 +38,29 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [goto-bus-stop]: https://github.com/goto-bus-stop
 [pull/631]: https://github.com/apollographql/apollo-rs/pull/631
 [issue/629]: https://github.com/apollographql/apollo-rs/issues/629
+-->
+
+# [0.11.2](https://crates.io/crates/apollo-compiler/0.11.2) - 2023-09-11
+
+## Fixes
+- validate input value types, by [goto-bus-stop] in [pull/642]
+
+  This fixes an oversight in the validation rules implemented by `compiler.db.validate()`. Previously, incorrect
+  types on input values and arguments were not reported:
+  ```graphql
+  type ObjectType {
+    id: ID!
+  }
+  input InputObject {
+    # accepted in <= 0.11.1, reports "TypeThatDoesNotExist is not in scope" in 0.11.2
+    property: TypeThatDoesNotExist
+    # accepted in <= 0.11.1, reports "ObjectType is not an input type" in 0.11.2
+    inputType: ObjectType
+  }
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/642]: https://github.com/apollographql/apollo-rs/pull/642
 
 # [0.12.0] (unreleased) - 2023-mm-dd
 

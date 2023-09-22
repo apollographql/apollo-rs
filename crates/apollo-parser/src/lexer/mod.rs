@@ -49,7 +49,7 @@ enum State {
     Whitespace,
     Comment,
     SpreadOperator,
-    PlusMinus,
+    MinusSign,
 }
 
 impl<'a> Lexer<'a> {
@@ -162,9 +162,9 @@ impl<'a> Cursor<'a> {
                             token.kind = TokenKind::Name;
                             state = State::Ident;
                         }
-                        '+' | '-' => {
+                        '-' => {
                             token.kind = TokenKind::Int;
-                            state = State::PlusMinus;
+                            state = State::MinusSign;
                         }
                         c if c.is_ascii_digit() => {
                             token.kind = TokenKind::Int;
@@ -441,7 +441,7 @@ impl<'a> Cursor<'a> {
                     }
                     _ => break,
                 },
-                State::PlusMinus => match c {
+                State::MinusSign => match c {
                     curr if curr.is_ascii_digit() => {
                         state = State::IntLiteral;
                     }
@@ -512,6 +512,10 @@ impl<'a> Cursor<'a> {
                     token.index,
                 ))
             }
+            State::MinusSign => Err(Error::new(
+                "Unexpected character \"-\"",
+                self.current_str().to_string(),
+            )),
             _ => {
                 if let Some(mut err) = self.err() {
                     err.set_data(self.current_str().to_string());
