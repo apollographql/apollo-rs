@@ -80,32 +80,22 @@ pub fn value_of_correct_type2(
         // accepted. All other input values, including strings with numeric
         // content, must raise a request error indicating an incorrect
         // type. If the integer input value represents a value less than
-        // -231 or greater than or equal to 231, a request error should be
+        // -2^31 or greater than or equal to 2^31, a request error should be
         // raised.
         // When expected as an input type, any string (such as "4") or
         // integer (such as 4 or -4) input value should be coerced to ID
-        ast::Value::Int(_) => match &type_definition {
-            schema::ExtendedType::Scalar(scalar) => {
-                if scalar.is_built_in()
-                    && matches!(ty.inner_named_type().as_str(), "String" | "Boolean")
-                {
-                    diagnostics.push(unsupported_type(db, arg_value, ty));
-                }
-            }
-            _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
-        },
-        ast::Value::BigInt(int) => match &type_definition {
-            schema::ExtendedType::Scalar(scalar) => {
-                if scalar.is_built_in()
-                    && matches!(ty.inner_named_type().as_str(), "Int" | "Float" | "ID")
-                {
-                    if int.parse::<i32>().is_err() {
+        ast::Value::Int(int) => match &type_definition {
+            schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
+            schema::ExtendedType::Scalar(_) => match ty.inner_named_type().as_str() {
+                "ID" => {}
+                "Int" => {
+                    if int.try_to_i32().is_err() {
                         diagnostics.push(
                             ApolloDiagnostic::new(
                                 db,
                                 (arg_value.location().unwrap()).into(),
                                 DiagnosticData::IntCoercionError {
-                                    value: int.to_string(),
+                                    value: int.as_str().to_owned(),
                                 },
                             )
                             .label(Label::new(
@@ -114,22 +104,49 @@ pub fn value_of_correct_type2(
                             )),
                         )
                     }
-                } else if scalar.is_built_in()
-                    && matches!(ty.inner_named_type().as_str(), "String" | "Boolean")
-                {
-                    diagnostics.push(unsupported_type(db, arg_value, ty));
                 }
-            }
+                "Float" => {
+                    if int.try_to_f64().is_err() {
+                        diagnostics.push(
+                            ApolloDiagnostic::new(
+                                db,
+                                (arg_value.location().unwrap()).into(),
+                                DiagnosticData::FloatCoercionError {
+                                    value: int.as_str().to_owned(),
+                                },
+                            )
+                            .label(Label::new(
+                                arg_value.location().unwrap(),
+                                "cannot be coerced to a finite 64-bit float",
+                            )),
+                        )
+                    }
+                }
+                _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
+            },
             _ => diagnostics.push(unsupported_type(db, arg_value, ty)),
         },
         // When expected as an input type, both integer and float input
         // values are accepted. All other input values, including strings
         // with numeric content, must raise a request error indicating an
         // incorrect type.
-        ast::Value::Float(_) => match &type_definition {
-            schema::ExtendedType::Scalar(scalar) => {
-                if scalar.is_built_in() && ty.inner_named_type() != "Float" {
-                    diagnostics.push(unsupported_type(db, arg_value, ty));
+        ast::Value::Float(float) => match &type_definition {
+            schema::ExtendedType::Scalar(scalar) if !scalar.is_built_in() => {}
+            schema::ExtendedType::Scalar(_) if ty.inner_named_type() == "Float" => {
+                if float.try_to_f64().is_err() {
+                    diagnostics.push(
+                        ApolloDiagnostic::new(
+                            db,
+                            (arg_value.location().unwrap()).into(),
+                            DiagnosticData::FloatCoercionError {
+                                value: float.as_str().to_owned(),
+                            },
+                        )
+                        .label(Label::new(
+                            arg_value.location().unwrap(),
+                            "cannot be coerced to a finite 64-bit float",
+                        )),
+                    )
                 }
             }
             _ => diagnostics.push(unsupported_type(db, arg_value, ty)),

@@ -677,27 +677,10 @@ impl Convert for cst::Value {
                 &String::from(v),
                 NodeLocation::new(file_id, self.syntax()),
             )),
-            C::FloatValue(v) => A::Float(f64::try_from(v).ok()?.into()),
-            C::IntValue(v) => {
-                if let Ok(i) = i32::try_from(v) {
-                    A::Int(i)
-                } else {
-                    let token = &v.syntax().first_token()?;
-                    let text = token.text();
-                    debug_assert!(
-                        text.strip_prefix('-')
-                            .unwrap_or(text)
-                            .chars()
-                            .all(|c| c.is_ascii_digit()),
-                        "{:?}",
-                        text
-                    );
-                    A::BigInt(ast::NodeStr::new_parsed(
-                        text,
-                        NodeLocation::new(file_id, self.syntax()),
-                    ))
-                }
-            }
+            C::FloatValue(v) => A::Float(ast::FloatValue::new_parsed(
+                v.syntax().first_token()?.text(),
+            )),
+            C::IntValue(v) => A::Int(ast::IntValue::new_parsed(v.syntax().first_token()?.text())),
             C::BooleanValue(v) => A::Boolean(bool::try_from(v).ok()?),
             C::NullValue(_) => A::Null,
             C::EnumValue(v) => A::Enum(v.name()?.convert(file_id)?),

@@ -340,18 +340,18 @@ pub enum Value {
         /// The value after escape sequences are resolved
         NodeStr,
     ),
-    Float(ordered_float::OrderedFloat<f64>),
-    Int(i32),
-    /// Integer syntax (without a decimal point) but overflows `i32`.
-    /// Valid in contexts where the expected GraphQL type is `Float`.
-    BigInt(
-        /// Must only contain ASCII decimal digits
-        NodeStr,
-    ),
+    Float(FloatValue),
+    Int(IntValue),
     Boolean(bool),
     List(Vec<Node<Value>>),
     Object(Vec<(Name, Node<Value>)>),
 }
+
+#[derive(Clone, Eq, PartialEq, Hash)]
+pub struct IntValue(String);
+
+#[derive(Clone, Eq, PartialEq, Hash)]
+pub struct FloatValue(String);
 
 /// Trait implemented by extensible type definitions, to associate the extension type with the base
 /// definition type.

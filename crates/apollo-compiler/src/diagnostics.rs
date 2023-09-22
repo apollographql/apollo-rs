@@ -324,6 +324,11 @@ pub enum DiagnosticData {
         /// The int value that cannot be coerced
         value: String,
     },
+    #[error("float cannot represent non-finite 64-bit floating point value")]
+    FloatCoercionError {
+        /// The float value that cannot be coerced
+        value: String,
+    },
     #[error("non-repeatable directive {name} can only be used once per location")]
     UniqueDirective {
         /// Name of the non-unique directive.

@@ -640,22 +640,15 @@ impl Value {
 
     pub fn to_f64(&self) -> Option<f64> {
         match self {
-            Value::Float(value) => Some(**value),
-            Value::BigInt(value) => {
-                if let Ok(f) = value.parse::<f64>() {
-                    f.is_finite().then_some(f)
-                } else {
-                    // TODO: panic for invalid BigInt string value? (contains non-ASCII-digit characters)
-                    None
-                }
-            }
+            Value::Float(value) => value.try_to_f64().ok(),
+            Value::Int(value) => value.try_to_f64().ok(),
             _ => None,
         }
     }
 
     pub fn to_i32(&self) -> Option<i32> {
-        if let Value::Int(value) = *self {
-            Some(value)
+        if let Value::Int(value) = self {
+            value.try_to_i32().ok()
         } else {
             None
         }
@@ -693,7 +686,6 @@ impl Value {
             Value::String(_) => "String",
             Value::Float(_) => "Float",
             Value::Int(_) => "Int",
-            Value::BigInt(_) => "BigInt",
             Value::Boolean(_) => "Boolean",
             Value::List(_) => "List",
             Value::Object(_) => "Object",
@@ -701,6 +693,140 @@ impl Value {
     }
 
     serialize_method!();
+}
+
+impl IntValue {
+    /// Constructs from a string matching the [`IntValue`
+    /// grammar specification](https://spec.graphql.org/October2021/#IntValue)
+    ///
+    /// To convert an `i32`, use `from` or `into` instead.
+    pub fn new_parsed(text: &str) -> Self {
+        debug_assert!(Self::valid_syntax(text));
+        Self(text.into())
+    }
+
+    fn valid_syntax(text: &str) -> bool {
+        match text.strip_prefix('-').unwrap_or(text).as_bytes() {
+            [b'0'..=b'9'] => true,
+            [b'1'..=b'9', rest @ ..] => rest.iter().all(|b| b.is_ascii_digit()),
+            _ => false,
+        }
+    }
+
+    /// Returns the string representation
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
+    /// Converts to `i32`, returning an error on overflow
+    ///
+    /// Note: parsing is expected to succeed with a correctly-constructed `IntValue`,
+    /// leaving overflow as the only error case.
+    pub fn try_to_i32(&self) -> Result<i32, std::num::ParseIntError> {
+        self.0.parse()
+    }
+
+    /// Converts to a finite `f64`, returning an error on overflow to infinity
+    ///
+    /// An `IntValue` signals integer syntax was used, but is also valid in contexts
+    /// where a `Float` is expected.
+    ///
+    /// Note: parsing is expected to succeed with a correctly-constructed `IntValue`,
+    /// leaving overflow as the only error case.
+    pub fn try_to_f64(&self) -> Result<f64, ()> {
+        try_to_f64(&self.0)
+    }
+}
+
+impl FloatValue {
+    /// Constructs from a string matching the [`FloatValue`
+    /// grammar specification](https://spec.graphql.org/October2021/#IntValue)
+    ///
+    /// To convert an `f64`, use `from` or `into` instead.
+    pub fn new_parsed(text: &str) -> Self {
+        debug_assert!(Self::valid_syntax(text));
+        Self(text.into())
+    }
+
+    fn valid_syntax(mut text: &str) -> bool {
+        if let Some((mantissa, exponent)) = text.split_once(['e', 'E']) {
+            let exponent = exponent.strip_prefix(['+', '-']).unwrap_or(exponent);
+            if !exponent.bytes().all(|b| b.is_ascii_digit()) {
+                return false;
+            }
+            text = mantissa
+        }
+        text.split_once('.').is_some_and(|(integer, fractional)| {
+            IntValue::valid_syntax(integer)
+                && !fractional.is_empty()
+                && fractional.bytes().all(|b| b.is_ascii_digit())
+        })
+    }
+
+    /// Returns the string representation
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
+    /// Converts to a finite `f64`, returning an error on overflow to infinity
+    ///
+    /// Note: parsing is expected to succeed with a correctly-constructed `FloatValue`,
+    /// leaving overflow as the only error case.
+    pub fn try_to_f64(&self) -> Result<f64, ()> {
+        try_to_f64(&self.0)
+    }
+}
+
+fn try_to_f64(text: &str) -> Result<f64, ()> {
+    let float = text
+        .parse::<f64>()
+        .map_err(|err| debug_assert!(false, "{err}"))?;
+    debug_assert!(!float.is_nan());
+    if float.is_finite() {
+        Ok(float)
+    } else {
+        Err(())
+    }
+}
+
+impl From<i32> for IntValue {
+    fn from(value: i32) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl From<f64> for FloatValue {
+    fn from(value: f64) -> Self {
+        let mut value = value.to_string();
+        if !value.contains('.') {
+            value.push_str(".0")
+        }
+        Self(value)
+    }
+}
+
+impl fmt::Display for IntValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl fmt::Display for FloatValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl fmt::Debug for IntValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl fmt::Debug for FloatValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
 }
 
 impl From<Node<OperationDefinition>> for Definition {
@@ -811,12 +937,6 @@ impl From<()> for Value {
     }
 }
 
-impl From<ordered_float::OrderedFloat<f64>> for Value {
-    fn from(value: ordered_float::OrderedFloat<f64>) -> Self {
-        Value::Float(value)
-    }
-}
-
 impl From<f64> for Value {
     fn from(value: f64) -> Self {
         Value::Float(value.into())
@@ -825,7 +945,7 @@ impl From<f64> for Value {
 
 impl From<i32> for Value {
     fn from(value: i32) -> Self {
-        Value::Int(value)
+        Value::Int(value.into())
     }
 }
 
@@ -855,12 +975,6 @@ impl From<bool> for Value {
 
 impl From<()> for Node<Value> {
     fn from(value: ()) -> Self {
-        Node::new(value.into())
-    }
-}
-
-impl From<ordered_float::OrderedFloat<f64>> for Node<Value> {
-    fn from(value: ordered_float::OrderedFloat<f64>) -> Self {
         Node::new(value.into())
     }
 }
