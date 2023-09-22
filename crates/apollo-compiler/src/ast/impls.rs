@@ -733,7 +733,7 @@ impl IntValue {
     ///
     /// Note: parsing is expected to succeed with a correctly-constructed `IntValue`,
     /// leaving overflow as the only error case.
-    pub fn try_to_f64(&self) -> Result<f64, ()> {
+    pub fn try_to_f64(&self) -> Result<f64, FloatOverflowError> {
         try_to_f64(&self.0)
     }
 }
@@ -772,20 +772,22 @@ impl FloatValue {
     ///
     /// Note: parsing is expected to succeed with a correctly-constructed `FloatValue`,
     /// leaving overflow as the only error case.
-    pub fn try_to_f64(&self) -> Result<f64, ()> {
+    pub fn try_to_f64(&self) -> Result<f64, FloatOverflowError> {
         try_to_f64(&self.0)
     }
 }
 
-fn try_to_f64(text: &str) -> Result<f64, ()> {
-    let float = text
-        .parse::<f64>()
-        .map_err(|err| debug_assert!(false, "{err}"))?;
+fn try_to_f64(text: &str) -> Result<f64, FloatOverflowError> {
+    let parsed = text.parse::<f64>();
+    debug_assert!(parsed.is_ok(), "{}", parsed.unwrap_err());
+    let Ok(float) = parsed else {
+        return Err(FloatOverflowError {});
+    };
     debug_assert!(!float.is_nan());
     if float.is_finite() {
         Ok(float)
     } else {
-        Err(())
+        Err(FloatOverflowError {})
     }
 }
 
@@ -826,6 +828,18 @@ impl fmt::Debug for IntValue {
 impl fmt::Debug for FloatValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+impl fmt::Display for FloatOverflowError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("value magnitude too large to be converted to `f64`")
+    }
+}
+
+impl fmt::Debug for FloatOverflowError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self, f)
     }
 }
 

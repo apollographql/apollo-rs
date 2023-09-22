@@ -353,6 +353,11 @@ pub struct IntValue(String);
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct FloatValue(String);
 
+/// `IntValue` or `FloatValue` magnitude too large to be converted to `f64`.
+#[derive(Clone, Eq, PartialEq)]
+#[non_exhaustive]
+pub struct FloatOverflowError {}
+
 /// Trait implemented by extensible type definitions, to associate the extension type with the base
 /// definition type.
 pub trait Extensible {
