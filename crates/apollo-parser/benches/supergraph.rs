@@ -12,15 +12,14 @@ fn parse_schema(schema: &str) {
 
     let document = tree.document();
 
+    // Simulate a basic field traversal operation.
     for definition in document.definitions() {
-        if let ast::Definition::OperationDefinition(operation) = definition {
-            let selection_set = operation
-                .selection_set()
-                .expect("the node SelectionSet is not optional in the spec; qed");
-            for selection in selection_set.selections() {
-                if let ast::Selection::Field(field) = selection {
-                    let _selection_set = field.selection_set();
-                }
+        if let ast::Definition::ObjectTypeDefinition(operation) = definition {
+            let fields = operation
+                .fields_definition()
+                .expect("the node FieldsDefinition is not optional in the spec; qed");
+            for field in fields.field_definitions() {
+                black_box(field.ty());
             }
         }
     }
@@ -42,7 +41,7 @@ fn bench_supergraph_lexer(c: &mut Criterion) {
             let lexer = Lexer::new(schema);
 
             for token_res in lexer {
-                let _ = token_res;
+                black_box(token_res.unwrap());
             }
         })
     });
