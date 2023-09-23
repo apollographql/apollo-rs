@@ -8,8 +8,8 @@
 use apollo_compiler::ast;
 use apollo_compiler::ApolloCompiler;
 use apollo_compiler::ApolloDiagnostic;
-use apollo_compiler::CstDatabase;
 use apollo_compiler::FileId;
+use apollo_compiler::ReprDatabase;
 use expect_test::expect_file;
 use indexmap::IndexMap;
 use std::env;
@@ -34,8 +34,8 @@ fn validation() {
         let errors = compiler.validate();
         assert_diagnostics_are_absent(&errors, path);
 
-        let cst = compiler.db.cst(file_id);
-        format!("{cst:?}")
+        let ast = compiler.db.ast(file_id);
+        format!("{ast:#?}")
     });
 
     dir_tests(&test_data_dir(), &["diagnostics"], "txt", |text, path| {

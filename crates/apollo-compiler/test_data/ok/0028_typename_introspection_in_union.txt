@@ -1,155 +1,144 @@
-- DOCUMENT@0..292
-    - UNION_TYPE_DEFINITION@0..35
-        - union_KW@0..5 "union"
-        - WHITESPACE@5..6 " "
-        - NAME@6..18
-            - IDENT@6..18 "SearchResult"
-        - WHITESPACE@18..19 " "
-        - UNION_MEMBER_TYPES@19..35
-            - EQ@19..20 "="
-            - WHITESPACE@20..21 " "
-            - NAMED_TYPE@21..26
-                - NAME@21..26
-                    - IDENT@21..26 "Photo"
-            - WHITESPACE@26..27 " "
-            - PIPE@27..28 "|"
-            - WHITESPACE@28..29 " "
-            - NAMED_TYPE@29..35
-                - NAME@29..35
-                    - IDENT@29..35 "Person"
-    - WHITESPACE@35..37 "\n\n"
-    - OBJECT_TYPE_DEFINITION@37..78
-        - type_KW@37..41 "type"
-        - WHITESPACE@41..42 " "
-        - NAME@42..48
-            - IDENT@42..48 "Person"
-        - WHITESPACE@48..49 " "
-        - FIELDS_DEFINITION@49..78
-            - L_CURLY@49..50 "{"
-            - WHITESPACE@50..53 "\n  "
-            - FIELD_DEFINITION@53..65
-                - NAME@53..57
-                    - IDENT@53..57 "name"
-                - COLON@57..58 ":"
-                - WHITESPACE@58..59 " "
-                - NAMED_TYPE@59..65
-                    - NAME@59..65
-                        - IDENT@59..65 "String"
-            - WHITESPACE@65..68 "\n  "
-            - FIELD_DEFINITION@68..76
-                - NAME@68..71
-                    - IDENT@68..71 "age"
-                - COLON@71..72 ":"
-                - WHITESPACE@72..73 " "
-                - NAMED_TYPE@73..76
-                    - NAME@73..76
-                        - IDENT@73..76 "Int"
-            - WHITESPACE@76..77 "\n"
-            - R_CURLY@77..78 "}"
-    - WHITESPACE@78..80 "\n\n"
-    - OBJECT_TYPE_DEFINITION@80..121
-        - type_KW@80..84 "type"
-        - WHITESPACE@84..85 " "
-        - NAME@85..90
-            - IDENT@85..90 "Photo"
-        - WHITESPACE@90..91 " "
-        - FIELDS_DEFINITION@91..121
-            - L_CURLY@91..92 "{"
-            - WHITESPACE@92..95 "\n  "
-            - FIELD_DEFINITION@95..106
-                - NAME@95..101
-                    - IDENT@95..101 "height"
-                - COLON@101..102 ":"
-                - WHITESPACE@102..103 " "
-                - NAMED_TYPE@103..106
-                    - NAME@103..106
-                        - IDENT@103..106 "Int"
-            - WHITESPACE@106..109 "\n  "
-            - FIELD_DEFINITION@109..119
-                - NAME@109..114
-                    - IDENT@109..114 "width"
-                - COLON@114..115 ":"
-                - WHITESPACE@115..116 " "
-                - NAMED_TYPE@116..119
-                    - NAME@116..119
-                        - IDENT@116..119 "Int"
-            - WHITESPACE@119..120 "\n"
-            - R_CURLY@120..121 "}"
-    - WHITESPACE@121..123 "\n\n"
-    - OBJECT_TYPE_DEFINITION@123..171
-        - type_KW@123..127 "type"
-        - WHITESPACE@127..128 " "
-        - NAME@128..133
-            - IDENT@128..133 "Query"
-        - WHITESPACE@133..134 " "
-        - FIELDS_DEFINITION@134..171
-            - L_CURLY@134..135 "{"
-            - WHITESPACE@135..138 "\n  "
-            - FIELD_DEFINITION@138..169
-                - NAME@138..155
-                    - IDENT@138..155 "firstSearchResult"
-                - COLON@155..156 ":"
-                - WHITESPACE@156..157 " "
-                - NAMED_TYPE@157..169
-                    - NAME@157..169
-                        - IDENT@157..169 "SearchResult"
-            - WHITESPACE@169..170 "\n"
-            - R_CURLY@170..171 "}"
-    - WHITESPACE@171..173 "\n\n"
-    - OPERATION_DEFINITION@173..292
-        - SELECTION_SET@173..292
-            - L_CURLY@173..174 "{"
-            - WHITESPACE@174..177 "\n  "
-            - FIELD@177..290
-                - NAME@177..194
-                    - IDENT@177..194 "firstSearchResult"
-                - WHITESPACE@194..195 " "
-                - SELECTION_SET@195..290
-                    - L_CURLY@195..196 "{"
-                    - WHITESPACE@196..201 "\n    "
-                    - FIELD@201..211
-                        - NAME@201..211
-                            - IDENT@201..211 "__typename"
-                    - WHITESPACE@211..216 "\n    "
-                    - INLINE_FRAGMENT@216..248
-                        - SPREAD@216..219 "..."
-                        - WHITESPACE@219..220 " "
-                        - TYPE_CONDITION@220..229
-                            - on_KW@220..222 "on"
-                            - WHITESPACE@222..223 " "
-                            - NAMED_TYPE@223..229
-                                - NAME@223..229
-                                    - IDENT@223..229 "Person"
-                        - WHITESPACE@229..230 " "
-                        - SELECTION_SET@230..248
-                            - L_CURLY@230..231 "{"
-                            - WHITESPACE@231..238 "\n      "
-                            - FIELD@238..242
-                                - NAME@238..242
-                                    - IDENT@238..242 "name"
-                            - WHITESPACE@242..247 "\n    "
-                            - R_CURLY@247..248 "}"
-                    - WHITESPACE@248..253 "\n    "
-                    - INLINE_FRAGMENT@253..286
-                        - SPREAD@253..256 "..."
-                        - WHITESPACE@256..257 " "
-                        - TYPE_CONDITION@257..265
-                            - on_KW@257..259 "on"
-                            - WHITESPACE@259..260 " "
-                            - NAMED_TYPE@260..265
-                                - NAME@260..265
-                                    - IDENT@260..265 "Photo"
-                        - WHITESPACE@265..266 " "
-                        - SELECTION_SET@266..286
-                            - L_CURLY@266..267 "{"
-                            - WHITESPACE@267..274 "\n      "
-                            - FIELD@274..280
-                                - NAME@274..280
-                                    - IDENT@274..280 "height"
-                            - WHITESPACE@280..285 "\n    "
-                            - R_CURLY@285..286 "}"
-                    - WHITESPACE@286..289 "\n  "
-                    - R_CURLY@289..290 "}"
-            - WHITESPACE@290..291 "\n"
-            - R_CURLY@291..292 "}"
-recursion limit: 500, high: 3
+0..35 @27 UnionTypeDefinition {
+    description: None,
+    name: "SearchResult",
+    directives: [],
+    members: [
+        "Photo",
+        "Person",
+    ],
+}
+37..78 @27 ObjectTypeDefinition {
+    description: None,
+    name: "Person",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        53..65 @27 FieldDefinition {
+            description: None,
+            name: "name",
+            arguments: [],
+            ty: Named(
+                "String",
+            ),
+            directives: [],
+        },
+        68..76 @27 FieldDefinition {
+            description: None,
+            name: "age",
+            arguments: [],
+            ty: Named(
+                "Int",
+            ),
+            directives: [],
+        },
+    ],
+}
+80..121 @27 ObjectTypeDefinition {
+    description: None,
+    name: "Photo",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        95..106 @27 FieldDefinition {
+            description: None,
+            name: "height",
+            arguments: [],
+            ty: Named(
+                "Int",
+            ),
+            directives: [],
+        },
+        109..119 @27 FieldDefinition {
+            description: None,
+            name: "width",
+            arguments: [],
+            ty: Named(
+                "Int",
+            ),
+            directives: [],
+        },
+    ],
+}
+123..171 @27 ObjectTypeDefinition {
+    description: None,
+    name: "Query",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        138..169 @27 FieldDefinition {
+            description: None,
+            name: "firstSearchResult",
+            arguments: [],
+            ty: Named(
+                "SearchResult",
+            ),
+            directives: [],
+        },
+    ],
+}
+173..292 @27 OperationDefinition {
+    operation_type: Query,
+    name: None,
+    variables: [],
+    directives: [],
+    selection_set: [
+        Field(
+            177..290 @27 Field {
+                alias: None,
+                name: "firstSearchResult",
+                arguments: [],
+                directives: [],
+                selection_set: [
+                    Field(
+                        201..211 @27 Field {
+                            alias: None,
+                            name: "__typename",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                    InlineFragment(
+                        216..248 @27 InlineFragment {
+                            type_condition: Some(
+                                "Person",
+                            ),
+                            directives: [],
+                            selection_set: [
+                                Field(
+                                    238..242 @27 Field {
+                                        alias: None,
+                                        name: "name",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [],
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                    InlineFragment(
+                        253..286 @27 InlineFragment {
+                            type_condition: Some(
+                                "Photo",
+                            ),
+                            directives: [],
+                            selection_set: [
+                                Field(
+                                    274..280 @27 Field {
+                                        alias: None,
+                                        name: "height",
+                                        arguments: [],
+                                        directives: [],
+                                        selection_set: [],
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                ],
+            },
+        ),
+    ],
+}
+

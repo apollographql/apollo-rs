@@ -225,7 +225,7 @@ pub struct Argument {
     pub value: Node<Value>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Default)]
+#[derive(Clone, Eq, PartialEq, Hash, Default)]
 pub struct Directives(pub Vec<Node<Directive>>);
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]

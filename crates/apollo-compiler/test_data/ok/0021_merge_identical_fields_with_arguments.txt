@@ -1,241 +1,201 @@
-- DOCUMENT@0..593
-    - ENUM_TYPE_DEFINITION@0..32
-        - enum_KW@0..4 "enum"
-        - WHITESPACE@4..5 " "
-        - NAME@5..15
-            - IDENT@5..15 "DogCommand"
-        - WHITESPACE@15..16 " "
-        - ENUM_VALUES_DEFINITION@16..32
-            - L_CURLY@16..17 "{"
-            - WHITESPACE@17..20 "\n  "
-            - ENUM_VALUE_DEFINITION@20..23
-                - ENUM_VALUE@20..23
-                    - NAME@20..23
-                        - IDENT@20..23 "SIT"
-            - WHITESPACE@23..26 "\n  "
-            - ENUM_VALUE_DEFINITION@26..30
-                - ENUM_VALUE@26..30
-                    - NAME@26..30
-                        - IDENT@26..30 "HEEL"
-            - WHITESPACE@30..31 "\n"
-            - R_CURLY@31..32 "}"
-    - WHITESPACE@32..34 "\n\n"
-    - OBJECT_TYPE_DEFINITION@34..97
-        - type_KW@34..38 "type"
-        - WHITESPACE@38..39 " "
-        - NAME@39..42
-            - IDENT@39..42 "Dog"
-        - WHITESPACE@42..43 " "
-        - FIELDS_DEFINITION@43..97
-            - L_CURLY@43..44 "{"
-            - WHITESPACE@44..47 "\n  "
-            - FIELD_DEFINITION@47..95
-                - NAME@47..62
-                    - IDENT@47..62 "doesKnowCommand"
-                - ARGUMENTS_DEFINITION@62..86
-                    - L_PAREN@62..63 "("
-                    - INPUT_VALUE_DEFINITION@63..85
-                        - NAME@63..73
-                            - IDENT@63..73 "dogCommand"
-                        - COLON@73..74 ":"
-                        - WHITESPACE@74..75 " "
-                        - NAMED_TYPE@75..85
-                            - NAME@75..85
-                                - IDENT@75..85 "DogCommand"
-                    - R_PAREN@85..86 ")"
-                - COLON@86..87 ":"
-                - WHITESPACE@87..88 " "
-                - NAMED_TYPE@88..95
-                    - NAME@88..95
-                        - IDENT@88..95 "Boolean"
-            - WHITESPACE@95..96 "\n"
-            - R_CURLY@96..97 "}"
-    - WHITESPACE@97..99 "\n\n"
-    - OBJECT_TYPE_DEFINITION@99..124
-        - type_KW@99..103 "type"
-        - WHITESPACE@103..104 " "
-        - NAME@104..109
-            - IDENT@104..109 "Query"
-        - WHITESPACE@109..110 " "
-        - FIELDS_DEFINITION@110..124
-            - L_CURLY@110..111 "{"
-            - WHITESPACE@111..114 "\n  "
-            - FIELD_DEFINITION@114..122
-                - NAME@114..117
-                    - IDENT@114..117 "pet"
-                - COLON@117..118 ":"
-                - WHITESPACE@118..119 " "
-                - NAMED_TYPE@119..122
-                    - NAME@119..122
-                        - IDENT@119..122 "Dog"
-            - WHITESPACE@122..123 "\n"
-            - R_CURLY@123..124 "}"
-    - WHITESPACE@124..126 "\n\n"
-    - OPERATION_DEFINITION@126..204
-        - OPERATION_TYPE@126..131
-            - query_KW@126..131 "query"
-        - WHITESPACE@131..132 " "
-        - NAME@132..143
-            - IDENT@132..143 "queryPupper"
-        - WHITESPACE@143..144 " "
-        - SELECTION_SET@144..204
-            - L_CURLY@144..145 "{"
-            - WHITESPACE@145..148 "\n  "
-            - FIELD@148..202
-                - NAME@148..151
-                    - IDENT@148..151 "pet"
-                - WHITESPACE@151..152 " "
-                - SELECTION_SET@152..202
-                    - L_CURLY@152..153 "{"
-                    - WHITESPACE@153..158 "\n    "
-                    - FRAGMENT_SPREAD@158..198
-                        - SPREAD@158..161 "..."
-                        - FRAGMENT_NAME@161..198
-                            - NAME@161..198
-                                - IDENT@161..198 "mergeIdenticalFieldsWithIdenticalArgs"
-                    - WHITESPACE@198..201 "\n  "
-                    - R_CURLY@201..202 "}"
-            - WHITESPACE@202..203 "\n"
-            - R_CURLY@203..204 "}"
-    - WHITESPACE@204..206 "\n\n"
-    - OPERATION_DEFINITION@206..316
-        - OPERATION_TYPE@206..211
-            - query_KW@206..211 "query"
-        - WHITESPACE@211..212 " "
-        - NAME@212..228
-            - IDENT@212..228 "queryPupperAgain"
-        - VARIABLE_DEFINITIONS@228..253
-            - L_PAREN@228..229 "("
-            - VARIABLE_DEFINITION@229..252
-                - VARIABLE@229..240
-                    - DOLLAR@229..230 "$"
-                    - NAME@230..240
-                        - IDENT@230..240 "dogCommand"
-                - COLON@240..241 ":"
-                - WHITESPACE@241..242 " "
-                - NAMED_TYPE@242..252
-                    - NAME@242..252
-                        - IDENT@242..252 "DogCommand"
-            - R_PAREN@252..253 ")"
-        - WHITESPACE@253..254 " "
-        - SELECTION_SET@254..316
-            - L_CURLY@254..255 "{"
-            - WHITESPACE@255..258 "\n  "
-            - FIELD@258..314
-                - NAME@258..261
-                    - IDENT@258..261 "pet"
-                - WHITESPACE@261..262 " "
-                - SELECTION_SET@262..314
-                    - L_CURLY@262..263 "{"
-                    - WHITESPACE@263..268 "\n    "
-                    - FRAGMENT_SPREAD@268..310
-                        - SPREAD@268..271 "..."
-                        - FRAGMENT_NAME@271..310
-                            - NAME@271..310
-                                - IDENT@271..310 "mergeIdenticalFieldsWithIdenticalValues"
-                    - WHITESPACE@310..313 "\n  "
-                    - R_CURLY@313..314 "}"
-            - WHITESPACE@314..315 "\n"
-            - R_CURLY@315..316 "}"
-    - WHITESPACE@316..318 "\n\n"
-    - FRAGMENT_DEFINITION@318..445
-        - fragment_KW@318..326 "fragment"
-        - WHITESPACE@326..327 " "
-        - FRAGMENT_NAME@327..364
-            - NAME@327..364
-                - IDENT@327..364 "mergeIdenticalFieldsWithIdenticalArgs"
-        - WHITESPACE@364..365 " "
-        - TYPE_CONDITION@365..371
-            - on_KW@365..367 "on"
-            - WHITESPACE@367..368 " "
-            - NAMED_TYPE@368..371
-                - NAME@368..371
-                    - IDENT@368..371 "Dog"
-        - WHITESPACE@371..372 " "
-        - SELECTION_SET@372..445
-            - L_CURLY@372..373 "{"
-            - WHITESPACE@373..376 "\n  "
-            - FIELD@376..408
-                - NAME@376..391
-                    - IDENT@376..391 "doesKnowCommand"
-                - ARGUMENTS@391..408
-                    - L_PAREN@391..392 "("
-                    - ARGUMENT@392..407
-                        - NAME@392..402
-                            - IDENT@392..402 "dogCommand"
-                        - COLON@402..403 ":"
-                        - WHITESPACE@403..404 " "
-                        - ENUM_VALUE@404..407
-                            - NAME@404..407
-                                - IDENT@404..407 "SIT"
-                    - R_PAREN@407..408 ")"
-            - WHITESPACE@408..411 "\n  "
-            - FIELD@411..443
-                - NAME@411..426
-                    - IDENT@411..426 "doesKnowCommand"
-                - ARGUMENTS@426..443
-                    - L_PAREN@426..427 "("
-                    - ARGUMENT@427..442
-                        - NAME@427..437
-                            - IDENT@427..437 "dogCommand"
-                        - COLON@437..438 ":"
-                        - WHITESPACE@438..439 " "
-                        - ENUM_VALUE@439..442
-                            - NAME@439..442
-                                - IDENT@439..442 "SIT"
-                    - R_PAREN@442..443 ")"
-            - WHITESPACE@443..444 "\n"
-            - R_CURLY@444..445 "}"
-    - WHITESPACE@445..447 "\n\n"
-    - FRAGMENT_DEFINITION@447..592
-        - fragment_KW@447..455 "fragment"
-        - WHITESPACE@455..456 " "
-        - FRAGMENT_NAME@456..495
-            - NAME@456..495
-                - IDENT@456..495 "mergeIdenticalFieldsWithIdenticalValues"
-        - WHITESPACE@495..496 " "
-        - TYPE_CONDITION@496..502
-            - on_KW@496..498 "on"
-            - WHITESPACE@498..499 " "
-            - NAMED_TYPE@499..502
-                - NAME@499..502
-                    - IDENT@499..502 "Dog"
-        - WHITESPACE@502..503 " "
-        - SELECTION_SET@503..592
-            - L_CURLY@503..504 "{"
-            - WHITESPACE@504..507 "\n  "
-            - FIELD@507..547
-                - NAME@507..522
-                    - IDENT@507..522 "doesKnowCommand"
-                - ARGUMENTS@522..547
-                    - L_PAREN@522..523 "("
-                    - ARGUMENT@523..546
-                        - NAME@523..533
-                            - IDENT@523..533 "dogCommand"
-                        - COLON@533..534 ":"
-                        - WHITESPACE@534..535 " "
-                        - VARIABLE@535..546
-                            - DOLLAR@535..536 "$"
-                            - NAME@536..546
-                                - IDENT@536..546 "dogCommand"
-                    - R_PAREN@546..547 ")"
-            - WHITESPACE@547..550 "\n  "
-            - FIELD@550..590
-                - NAME@550..565
-                    - IDENT@550..565 "doesKnowCommand"
-                - ARGUMENTS@565..590
-                    - L_PAREN@565..566 "("
-                    - ARGUMENT@566..589
-                        - NAME@566..576
-                            - IDENT@566..576 "dogCommand"
-                        - COLON@576..577 ":"
-                        - WHITESPACE@577..578 " "
-                        - VARIABLE@578..589
-                            - DOLLAR@578..579 "$"
-                            - NAME@579..589
-                                - IDENT@579..589 "dogCommand"
-                    - R_PAREN@589..590 ")"
-            - WHITESPACE@590..591 "\n"
-            - R_CURLY@591..592 "}"
-    - WHITESPACE@592..593 "\n"
-recursion limit: 500, high: 2
+0..32 @21 EnumTypeDefinition {
+    description: None,
+    name: "DogCommand",
+    directives: [],
+    values: [
+        20..23 @21 EnumValueDefinition {
+            description: None,
+            value: "SIT",
+            directives: [],
+        },
+        26..30 @21 EnumValueDefinition {
+            description: None,
+            value: "HEEL",
+            directives: [],
+        },
+    ],
+}
+34..97 @21 ObjectTypeDefinition {
+    description: None,
+    name: "Dog",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        47..95 @21 FieldDefinition {
+            description: None,
+            name: "doesKnowCommand",
+            arguments: [
+                63..85 @21 InputValueDefinition {
+                    description: None,
+                    name: "dogCommand",
+                    ty: 75..85 @21 Named(
+                        "DogCommand",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            ty: Named(
+                "Boolean",
+            ),
+            directives: [],
+        },
+    ],
+}
+99..124 @21 ObjectTypeDefinition {
+    description: None,
+    name: "Query",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        114..122 @21 FieldDefinition {
+            description: None,
+            name: "pet",
+            arguments: [],
+            ty: Named(
+                "Dog",
+            ),
+            directives: [],
+        },
+    ],
+}
+126..204 @21 OperationDefinition {
+    operation_type: Query,
+    name: Some(
+        "queryPupper",
+    ),
+    variables: [],
+    directives: [],
+    selection_set: [
+        Field(
+            148..202 @21 Field {
+                alias: None,
+                name: "pet",
+                arguments: [],
+                directives: [],
+                selection_set: [
+                    FragmentSpread(
+                        158..198 @21 FragmentSpread {
+                            fragment_name: "mergeIdenticalFieldsWithIdenticalArgs",
+                            directives: [],
+                        },
+                    ),
+                ],
+            },
+        ),
+    ],
+}
+206..316 @21 OperationDefinition {
+    operation_type: Query,
+    name: Some(
+        "queryPupperAgain",
+    ),
+    variables: [
+        229..252 @21 VariableDefinition {
+            name: "dogCommand",
+            ty: 242..252 @21 Named(
+                "DogCommand",
+            ),
+            default_value: None,
+            directives: [],
+        },
+    ],
+    directives: [],
+    selection_set: [
+        Field(
+            258..314 @21 Field {
+                alias: None,
+                name: "pet",
+                arguments: [],
+                directives: [],
+                selection_set: [
+                    FragmentSpread(
+                        268..310 @21 FragmentSpread {
+                            fragment_name: "mergeIdenticalFieldsWithIdenticalValues",
+                            directives: [],
+                        },
+                    ),
+                ],
+            },
+        ),
+    ],
+}
+318..445 @21 FragmentDefinition {
+    name: "mergeIdenticalFieldsWithIdenticalArgs",
+    type_condition: "Dog",
+    directives: [],
+    selection_set: [
+        Field(
+            376..408 @21 Field {
+                alias: None,
+                name: "doesKnowCommand",
+                arguments: [
+                    392..407 @21 Argument {
+                        name: "dogCommand",
+                        value: 404..407 @21 Enum(
+                            "SIT",
+                        ),
+                    },
+                ],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+        Field(
+            411..443 @21 Field {
+                alias: None,
+                name: "doesKnowCommand",
+                arguments: [
+                    427..442 @21 Argument {
+                        name: "dogCommand",
+                        value: 439..442 @21 Enum(
+                            "SIT",
+                        ),
+                    },
+                ],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+    ],
+}
+447..592 @21 FragmentDefinition {
+    name: "mergeIdenticalFieldsWithIdenticalValues",
+    type_condition: "Dog",
+    directives: [],
+    selection_set: [
+        Field(
+            507..547 @21 Field {
+                alias: None,
+                name: "doesKnowCommand",
+                arguments: [
+                    523..546 @21 Argument {
+                        name: "dogCommand",
+                        value: 535..546 @21 Variable(
+                            "dogCommand",
+                        ),
+                    },
+                ],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+        Field(
+            550..590 @21 Field {
+                alias: None,
+                name: "doesKnowCommand",
+                arguments: [
+                    566..589 @21 Argument {
+                        name: "dogCommand",
+                        value: 578..589 @21 Variable(
+                            "dogCommand",
+                        ),
+                    },
+                ],
+                directives: [],
+                selection_set: [],
+            },
+        ),
+    ],
+}
+
