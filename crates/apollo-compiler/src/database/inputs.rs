@@ -1,5 +1,4 @@
 use super::sources::{FileId, Source, SourceType};
-use crate::hir::TypeSystem;
 use crate::Arc;
 use crate::Schema;
 use ariadne::{Cache as AriadneCache, Source as AriadneSource};
@@ -68,9 +67,6 @@ pub trait InputDatabase {
     #[salsa::input]
     fn schema_input(&self) -> Option<Arc<Schema>>;
 
-    #[salsa::input]
-    fn type_system_hir_input(&self) -> Option<Arc<TypeSystem>>;
-
     /// Get input source of the corresponding file.
     #[salsa::input]
     fn input(&self, file_id: FileId) -> Source;
@@ -110,12 +106,6 @@ pub trait InputDatabase {
 }
 
 fn source_code(db: &dyn InputDatabase, file_id: FileId) -> Arc<String> {
-    // For diagnostics, also include sources for a precomputed input.
-    if let Some(precomputed) = db.type_system_hir_input() {
-        if let Some(source) = precomputed.inputs.get(&file_id) {
-            return source.text().clone();
-        }
-    }
     db.input(file_id).text().clone()
 }
 

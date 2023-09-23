@@ -23,7 +23,6 @@ ariadne = { version = "0.3.0", features = ["auto-color"] }
 indexmap = "2.0.0"
 rowan = "0.15.5"
 salsa = "0.16.1"
-ordered-float = { version = "4.0.0", features = ["std"] }
 thiserror = "1.0.31"
 triomphe = "0.1.9"
 

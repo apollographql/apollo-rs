@@ -1,8 +1,8 @@
 use crate::ast::DirectiveLocation;
-use crate::database::hir::HirNodeLocation;
 use crate::database::{InputDatabase, SourceCache};
 use crate::Arc;
 use crate::FileId;
+use crate::NodeLocation;
 use std::fmt;
 use thiserror::Error;
 
@@ -58,8 +58,8 @@ impl From<(FileId, usize, usize)> for DiagnosticLocation {
     }
 }
 
-impl From<HirNodeLocation> for DiagnosticLocation {
-    fn from(location: HirNodeLocation) -> Self {
+impl From<NodeLocation> for DiagnosticLocation {
+    fn from(location: NodeLocation) -> Self {
         Self {
             file_id: location.file_id(),
             offset: location.offset(),
