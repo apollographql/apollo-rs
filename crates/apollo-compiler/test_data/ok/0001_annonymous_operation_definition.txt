@@ -1,64 +1,62 @@
-- DOCUMENT@0..87
-    - WHITESPACE@0..1 "\n"
-    - OPERATION_DEFINITION@1..31
-        - OPERATION_TYPE@1..6
-            - query_KW@1..6 "query"
-        - WHITESPACE@6..7 " "
-        - SELECTION_SET@7..31
-            - L_CURLY@7..8 "{"
-            - WHITESPACE@8..11 "\n  "
-            - FIELD@11..29
-                - NAME@11..14
-                    - IDENT@11..14 "cat"
-                - WHITESPACE@14..15 " "
-                - SELECTION_SET@15..29
-                    - L_CURLY@15..16 "{"
-                    - WHITESPACE@16..21 "\n    "
-                    - FIELD@21..25
-                        - NAME@21..25
-                            - IDENT@21..25 "name"
-                    - WHITESPACE@25..28 "\n  "
-                    - R_CURLY@28..29 "}"
-            - WHITESPACE@29..30 "\n"
-            - R_CURLY@30..31 "}"
-    - WHITESPACE@31..33 "\n\n"
-    - OBJECT_TYPE_DEFINITION@33..58
-        - type_KW@33..37 "type"
-        - WHITESPACE@37..38 " "
-        - NAME@38..43
-            - IDENT@38..43 "Query"
-        - WHITESPACE@43..44 " "
-        - FIELDS_DEFINITION@44..58
-            - L_CURLY@44..45 "{"
-            - WHITESPACE@45..48 "\n  "
-            - FIELD_DEFINITION@48..56
-                - NAME@48..51
-                    - IDENT@48..51 "cat"
-                - COLON@51..52 ":"
-                - WHITESPACE@52..53 " "
-                - NAMED_TYPE@53..56
-                    - NAME@53..56
-                        - IDENT@53..56 "Pet"
-            - WHITESPACE@56..57 "\n"
-            - R_CURLY@57..58 "}"
-    - WHITESPACE@58..60 "\n\n"
-    - OBJECT_TYPE_DEFINITION@60..87
-        - type_KW@60..64 "type"
-        - WHITESPACE@64..65 " "
-        - NAME@65..68
-            - IDENT@65..68 "Pet"
-        - WHITESPACE@68..69 " "
-        - FIELDS_DEFINITION@69..87
-            - L_CURLY@69..70 "{"
-            - WHITESPACE@70..73 "\n  "
-            - FIELD_DEFINITION@73..85
-                - NAME@73..77
-                    - IDENT@73..77 "name"
-                - COLON@77..78 ":"
-                - WHITESPACE@78..79 " "
-                - NAMED_TYPE@79..85
-                    - NAME@79..85
-                        - IDENT@79..85 "String"
-            - WHITESPACE@85..86 "\n"
-            - R_CURLY@86..87 "}"
-recursion limit: 500, high: 2
+1..31 @1 OperationDefinition {
+    operation_type: Query,
+    name: None,
+    variables: [],
+    directives: [],
+    selection_set: [
+        Field(
+            11..29 @1 Field {
+                alias: None,
+                name: "cat",
+                arguments: [],
+                directives: [],
+                selection_set: [
+                    Field(
+                        21..25 @1 Field {
+                            alias: None,
+                            name: "name",
+                            arguments: [],
+                            directives: [],
+                            selection_set: [],
+                        },
+                    ),
+                ],
+            },
+        ),
+    ],
+}
+33..58 @1 ObjectTypeDefinition {
+    description: None,
+    name: "Query",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        48..56 @1 FieldDefinition {
+            description: None,
+            name: "cat",
+            arguments: [],
+            ty: Named(
+                "Pet",
+            ),
+            directives: [],
+        },
+    ],
+}
+60..87 @1 ObjectTypeDefinition {
+    description: None,
+    name: "Pet",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        73..85 @1 FieldDefinition {
+            description: None,
+            name: "name",
+            arguments: [],
+            ty: Named(
+                "String",
+            ),
+            directives: [],
+        },
+    ],
+}
+

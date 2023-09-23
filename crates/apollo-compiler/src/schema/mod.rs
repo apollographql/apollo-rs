@@ -61,7 +61,7 @@ pub struct Schema {
     pub subscription_type: Option<ComponentStr>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Default)]
+#[derive(Clone, Eq, PartialEq, Hash, Default)]
 pub struct Directives(pub Vec<Component<Directive>>);
 
 /// The definition of a named type, with all information from type extensions folded in.
@@ -750,6 +750,12 @@ impl Directives {
     }
 
     serialize_method!();
+}
+
+impl std::fmt::Debug for Directives {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
 }
 
 impl std::ops::Deref for Directives {

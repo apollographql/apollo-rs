@@ -381,6 +381,12 @@ impl Directives {
     serialize_method!();
 }
 
+impl std::fmt::Debug for Directives {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 impl std::ops::Deref for Directives {
     type Target = Vec<Node<Directive>>;
 
@@ -861,13 +867,13 @@ impl fmt::Display for FloatValue {
 
 impl fmt::Debug for IntValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0.fmt(f)
+        fmt::Display::fmt(&self.0, f)
     }
 }
 
 impl fmt::Debug for FloatValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0.fmt(f)
+        fmt::Display::fmt(&self.0, f)
     }
 }
 
