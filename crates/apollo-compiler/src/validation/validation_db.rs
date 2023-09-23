@@ -1,13 +1,12 @@
 use crate::{
     ast,
-    database::db::Upcast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
     validation::{
         self, directive, enum_, extension, input_object, interface, object, operation, scalar,
         union_,
     },
-    Arc, FileId, HirDatabase, InputDatabase, Node, ReprDatabase,
+    Arc, FileId, InputDatabase, Node, ReprDatabase,
 };
 use std::collections::{hash_map::Entry, HashMap, HashSet};
 
@@ -16,9 +15,7 @@ use super::field;
 const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 
 #[salsa::query_group(ValidationStorage)]
-pub trait ValidationDatabase:
-    Upcast<dyn HirDatabase> + InputDatabase + ReprDatabase + HirDatabase
-{
+pub trait ValidationDatabase: InputDatabase + ReprDatabase {
     fn ast_types(&self) -> Arc<ast::TypeSystem>;
     fn ast_named_fragments(
         &self,

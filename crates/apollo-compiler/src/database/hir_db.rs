@@ -11,8 +11,8 @@ use crate::database::document;
 use crate::database::FileId;
 use crate::hir::*;
 use crate::Arc;
+use crate::CstDatabase;
 use crate::InputDatabase;
-use crate::ReprDatabase;
 
 const INTROSPECTION_OBJECT_TYS: [&str; 6] = [
     "__Schema",
@@ -29,7 +29,7 @@ const INTROSPECTION_ENUM_TYS: [&str; 2] = ["__TypeKind", "__DirectiveLocation"];
 // as a result of parser errors should be ignored.
 
 #[salsa::query_group(HirStorage)]
-pub trait HirDatabase: InputDatabase + ReprDatabase {
+pub trait HirDatabase: InputDatabase + CstDatabase {
     /// Return all type system definitions defined in the compiler.
     #[salsa::invoke(type_system_definitions)]
     fn type_system_definitions(&self) -> Arc<TypeSystemDefinitions>;
