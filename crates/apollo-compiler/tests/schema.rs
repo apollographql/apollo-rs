@@ -1,5 +1,4 @@
 use apollo_compiler::ApolloCompiler;
-use apollo_compiler::HirDatabase;
 use apollo_compiler::ReprDatabase;
 use apollo_compiler::Schema;
 
@@ -24,9 +23,13 @@ fn find_definitions_with_directive() {
     let mut compiler = ApolloCompiler::new();
     compiler.add_document(schema, "schema.graphql");
 
-    let key_definitions = compiler.db.find_types_with_directive(String::from("key"));
-    let mut key_definition_names: Vec<&str> =
-        key_definitions.iter().map(|def| def.name()).collect();
+    let schema = compiler.db.schema();
+    let mut key_definition_names: Vec<&str> = schema
+        .types
+        .iter()
+        .filter(|(_name, def)| def.directives().has("key"))
+        .map(|(name, _def)| name.as_str())
+        .collect();
     key_definition_names.sort();
     assert_eq!(key_definition_names, ["ObjectOne", "ObjectTwo"])
 }

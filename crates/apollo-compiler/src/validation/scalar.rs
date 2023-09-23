@@ -27,7 +27,7 @@ pub fn validate_scalar_definition(
     if !scalar_def.is_built_in() {
         // Custom scalars must provide a scalar specification URL via the
         // @specifiedBy directive
-        let has_specified_by = scalar_def.directives.get("specifiedBy").is_some();
+        let has_specified_by = scalar_def.directives.has("specifiedBy");
         if !has_specified_by {
             if let Some(location) = scalar_def.location() {
                 diagnostics.push(

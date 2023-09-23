@@ -390,6 +390,13 @@ impl SelectionSet {
     pub fn new_fragment_spread(&self, fragment_name: impl Into<Name>) -> FragmentSpread {
         FragmentSpread::new(fragment_name)
     }
+
+    /// Returns an iterator of field selections directly in this selection set.
+    ///
+    /// Does not recur into inline fragments or fragment spreads.
+    pub fn fields(&self) -> impl Iterator<Item = &Node<Field>> {
+        self.selections.iter().filter_map(|sel| sel.as_field())
+    }
 }
 
 impl Selection {
@@ -435,6 +442,32 @@ impl From<InlineFragment> for Selection {
 impl From<FragmentSpread> for Selection {
     fn from(value: FragmentSpread) -> Self {
         Self::FragmentSpread(Node::new(value))
+    }
+}
+
+impl Selection {
+    pub fn as_field(&self) -> Option<&Node<Field>> {
+        if let Self::Field(field) = self {
+            Some(field)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_inline_fragment(&self) -> Option<&Node<InlineFragment>> {
+        if let Self::InlineFragment(inline) = self {
+            Some(inline)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_fragment_spread(&self) -> Option<&Node<FragmentSpread>> {
+        if let Self::FragmentSpread(spread) = self {
+            Some(spread)
+        } else {
+            None
+        }
     }
 }
 
@@ -583,5 +616,9 @@ impl FragmentSpread {
     ) -> Self {
         self.directives.extend(directives);
         self
+    }
+
+    pub fn fragment_def<'a>(&self, document: &'a ExecutableDocument) -> Option<&'a Node<Fragment>> {
+        document.fragments.get(&self.fragment_name)
     }
 }

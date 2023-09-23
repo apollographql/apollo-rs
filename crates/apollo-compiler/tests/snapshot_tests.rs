@@ -26,7 +26,7 @@ use std::path::PathBuf;
 // $env:UPDATE_EXPECT=1; cargo test --package apollo-compiler
 // ```
 #[test]
-fn compiler_tests() {
+fn validation() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
         let mut compiler = ApolloCompiler::new();
         let file_id = compiler.add_document(text, path.file_name().unwrap());
@@ -72,7 +72,7 @@ fn assert_diagnostics_are_absent(errors: &[ApolloDiagnostic], path: &Path) {
 }
 
 #[test]
-fn serializer_tests() {
+fn serialize_and_reparse_ast() {
     FileId::with_deterministic_ids(|| {
         let test_data_dir = test_data_dir();
         for subdir in ["ok", "diagnostics"] {

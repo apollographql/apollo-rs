@@ -744,6 +744,11 @@ impl Directives {
         self.get_all(name).next()
     }
 
+    /// Returns whether there is a directive with the given name
+    pub fn has(&self, name: &str) -> bool {
+        self.get(name).is_some()
+    }
+
     serialize_method!();
 }
 

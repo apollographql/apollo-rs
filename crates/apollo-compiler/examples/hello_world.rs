@@ -1,8 +1,11 @@
-use std::{fs, path::Path};
+use apollo_compiler::executable;
+use apollo_compiler::ApolloCompiler;
+use apollo_compiler::Node;
+use apollo_compiler::ReprDatabase;
+use std::fs;
+use std::path::Path;
 
-use apollo_compiler::{hir, ApolloCompiler, Arc, HirDatabase};
-
-fn compile_query() -> Option<Arc<hir::FragmentDefinition>> {
+fn compile_query() -> Option<Node<executable::Fragment>> {
     let file = Path::new("crates/apollo-compiler/examples/query_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
 
@@ -10,27 +13,30 @@ fn compile_query() -> Option<Arc<hir::FragmentDefinition>> {
     let document_id = compiler.add_document(&src, file);
     // let errors = ctx.validate();
 
-    let operations = compiler.db.operations(document_id);
-    let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
+    let document = compiler.db.executable_document(document_id);
+    let operation_names: Vec<_> = document
+        .named_operations
+        .keys()
+        .map(|n| n.as_str())
+        .collect();
     assert_eq!(["ExampleQuery"], operation_names.as_slice());
-    let frags = compiler.db.fragments(document_id);
-    let fragments: Vec<_> = frags.keys().map(|name| &**name).collect();
+    let fragments: Vec<_> = document
+        .fragments
+        .keys()
+        .map(|name| name.as_str())
+        .collect();
     assert_eq!(["vipCustomer"], fragments.as_slice());
 
-    let operation_variables: Vec<&str> = operations
+    let operation_variables: Vec<&str> = document
+        .named_operations
+        .get("ExampleQuery")?
+        .variables
         .iter()
-        .find(|op| op.name() == Some("ExampleQuery"))?
-        .variables()
-        .iter()
-        .map(|var| var.name())
+        .map(|var| var.name.as_str())
         .collect();
 
     assert_eq!(operation_variables, ["definedVariable"]);
-    compiler
-        .db
-        .fragments(document_id)
-        .get("vipCustomer")
-        .cloned()
+    document.fragments.get("vipCustomer").cloned()
 }
 
 fn main() -> Result<(), ()> {
