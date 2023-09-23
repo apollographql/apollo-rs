@@ -1,8 +1,9 @@
 use std::{fmt, path::Path, sync::Arc};
 
 use apollo_compiler::{
-    database::{HirStorage, InputStorage, ReprStorage},
-    FileId, HirDatabase, InputDatabase, ReprDatabase, Source,
+    database::{InputStorage, ReprStorage},
+    schema::Name,
+    FileId, InputDatabase, ReprDatabase, Source,
 };
 use miette::{Diagnostic, Report, SourceSpan};
 use thiserror::Error;
@@ -42,7 +43,7 @@ impl Linter {
 
 // Includes all the necessary database's storage units that will now be
 // accessible from LinterDatabase.
-#[salsa::database(InputStorage, ReprStorage, HirStorage, LintValidationStorage)]
+#[salsa::database(InputStorage, ReprStorage, LintValidationStorage)]
 #[derive(Default)]
 pub struct LinterDatabase {
     pub storage: salsa::Storage<LinterDatabase>,
@@ -60,25 +61,9 @@ impl salsa::ParallelDatabase for LinterDatabase {
     }
 }
 
-// We need this upcast to upcast LinterDatabase query groups to Apollo
-// Compiler's HirDatabase.
-pub trait Upcast<T: ?Sized> {
-    fn upcast(&self) -> &T;
-}
-
-impl Upcast<dyn HirDatabase> for LinterDatabase {
-    fn upcast(&self) -> &(dyn HirDatabase + 'static) {
-        self
-    }
-}
-
 // LintValidation database. It's based on four other Apollo Compiler databases.
-// We are also making sure we can upcast to HirDatabase with Upcast<dyn
-// HirDatabase>.
 #[salsa::query_group(LintValidationStorage)]
-pub trait LintValidation:
-    Upcast<dyn HirDatabase> + InputDatabase + ReprDatabase + HirDatabase
-{
+pub trait LintValidation: InputDatabase + ReprDatabase {
     // Define any queries that should be part of this database.
     fn lint(&self) -> Vec<LintDiagnostic>;
     fn capitalised_definitions(&self) -> Vec<LintDiagnostic>;
@@ -95,40 +80,40 @@ fn lint(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
 }
 
 fn capitalised_definitions(db: &dyn LintValidation) -> Vec<LintDiagnostic> {
-    db.all_operations()
-        .iter()
-        .filter_map(|def| def.name_src())
-        .chain(
-            db.types_definitions_by_name()
-                .values()
-                .map(|def| def.name_src()),
-        )
-        .chain(db.all_fragments().values().map(|def| def.name_src()))
-        .chain(
-            db.directive_definitions()
-                .values()
-                .map(|def| def.name_src()),
-        )
-        .filter_map(|name| {
-            if !name.src().chars().next()?.is_uppercase() {
-                if let Some(loc) = name.loc() {
+    let mut lints = Vec::new();
+    for &id in db.executable_definition_files().iter() {
+        let doc = db.executable_document(id);
+        capitalised_names(db, doc.named_operations.keys(), &mut lints);
+        capitalised_names(db, doc.fragments.keys(), &mut lints);
+    }
+    let schema = db.schema();
+    capitalised_names(db, schema.types.keys(), &mut lints);
+    capitalised_names(db, schema.directive_definitions.keys(), &mut lints);
+    lints
+}
+
+fn capitalised_names<'a>(
+    db: &dyn LintValidation,
+    names: impl IntoIterator<Item = &'a Name>,
+    lints: &mut Vec<LintDiagnostic>,
+) {
+    for name in names {
+        if let Some(first_char) = name.chars().next() {
+            if !first_char.is_uppercase() {
+                if let Some(loc) = name.location() {
                     let offset = loc.offset();
                     let len = loc.node_len();
 
-                    Some(LintDiagnostic::CapitalisedDefinitions(
+                    lints.push(LintDiagnostic::CapitalisedDefinitions(
                         CapitalisedDefinitions {
                             src: Arc::new(db.source_code(loc.file_id()).to_string()),
                             definition: (offset, len).into(),
                         },
                     ))
-                } else {
-                    None
                 }
-            } else {
-                None
             }
-        })
-        .collect()
+        }
+    }
 }
 
 // Lint Diagnostics.
