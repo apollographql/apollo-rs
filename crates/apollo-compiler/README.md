@@ -94,7 +94,7 @@ assert!(diagnostics.is_empty());
 #### Accessing fragment definition field types
 
 ```rust
-use apollo_compiler::{ApolloCompiler, hir, HirDatabase};
+use apollo_compiler::{ApolloCompiler, ReprDatabase, Node, executable};
 use miette::Result;
 
 fn main() -> Result<()> {
@@ -132,19 +132,21 @@ fn main() -> Result<()> {
     }
     assert!(diagnostics.is_empty());
 
-    let op = compiler.db.find_operation(query_id, Some("getUser".into()))
-        .expect("getUser query does not exist");
-    let fragment_in_op: Vec<hir::FragmentDefinition> = op.selection_set().selection().iter().filter_map(|sel| match sel {
-        hir::Selection::FragmentSpread(frag) => {
-            Some(frag.fragment(&compiler.db)?.as_ref().clone())
+    let document = compiler.db.executable_document(query_id);
+    let op = document.get_operation(Some("getUser")).expect("getUser query does not exist");
+    let fragment_in_op: Vec<&executable::Fragment> = op.selection_set.selections.iter().filter_map(|sel| match sel {
+        executable::Selection::FragmentSpread(spread) => {
+            Some(document.fragments.get(&spread.fragment_name)?.as_ref())
         }
         _ => None
     }).collect();
 
-    let fragment_fields: Vec<hir::Field> = fragment_in_op.iter().flat_map(|frag| frag.selection_set().fields()).collect();
-    let field_ty: Vec<String> = fragment_fields
+    let fragment_fields: Vec<&Node<executable::Field>> = fragment_in_op.iter().flat_map(|frag| {
+        frag.selection_set.fields()
+    }).collect();
+    let field_ty: Vec<&str> = fragment_fields
         .iter()
-        .filter_map(|f| Some(f.ty(&compiler.db)?.name()))
+        .map(|f| f.ty().inner_named_type().as_str())
         .collect();
     assert_eq!(field_ty, ["ID", "String", "URL"]);
     Ok(())
@@ -153,7 +155,7 @@ fn main() -> Result<()> {
 
 #### Get a directive defined on a field used in a query operation definition.
 ```rust
-use apollo_compiler::{ApolloCompiler, hir, HirDatabase};
+use apollo_compiler::{ApolloCompiler, ReprDatabase, Node, executable};
 use anyhow::{anyhow, Result};
 
 fn main() -> Result<()> {
@@ -205,26 +207,25 @@ fn main() -> Result<()> {
         .collect::<Vec<_>>();
     assert!(error_diagnostics.is_empty());
 
-    let operations = compiler.db.operations(query_id);
-    let get_product_op = operations
-        .iter()
-        .find(|op| op.name() == Some("getProduct"))
+    let document = compiler.db.executable_document(query_id);
+    let get_product_op = document
+        .get_operation(Some("getProduct"))
         .expect("getProduct query does not exist");
-    let op_fields = get_product_op.fields(&compiler.db);
 
-    let in_stock_field = op_fields
-        .iter()
-        .find(|f| f.name() == "topProducts")
+    let in_stock_field = &get_product_op
+        .selection_set
+        .fields()
+        .find(|f| f.name == "topProducts")
         .expect("topProducts field does not exist")
-        .selection_set()
-        .field("inStock")
+        .selection_set
+        .fields()
+        .find(|f| f.name == "inStock")
         .expect("inStock field does not exist")
-        .field_definition(&compiler.db)
-        .expect("field definition does not exist");
-    let in_stock_directive: Vec<&str> = in_stock_field
-        .directives()
+        .definition;
+    let in_stock_directive: Vec<_> = in_stock_field
+        .directives
         .iter()
-        .map(|dir| dir.name())
+        .map(|dir| &dir.name)
         .collect();
     assert_eq!(in_stock_directive, ["join__field"]);
     Ok(())

@@ -1,35 +1,28 @@
 //! This example collects all directives declared on the fields that are queried by an operation.
-use apollo_compiler::{
-    hir::{Directive, Field},
-    ApolloCompiler, FileId, HirDatabase,
-};
 
-fn get_directives_used_in_query(compiler: &ApolloCompiler, query_id: &FileId) -> Vec<Directive> {
+use apollo_compiler::executable::Directive;
+use apollo_compiler::ApolloCompiler;
+use apollo_compiler::FileId;
+use apollo_compiler::Node;
+use apollo_compiler::ReprDatabase;
+
+fn get_directives_used_in_query(
+    compiler: &ApolloCompiler,
+    query_id: &FileId,
+) -> Vec<Node<Directive>> {
     // seed the stack with top-level fields
-    let mut stack: Vec<Field> =
-        compiler
-            .db
-            .operations(*query_id)
-            .iter()
-            .fold(vec![], |mut acc, operation_definition| {
-                acc.extend(
-                    operation_definition
-                        .selection_set()
-                        .fields()
-                        .iter()
-                        .cloned(),
-                );
-                acc
-            });
+    let doc = &compiler.db.executable_document(*query_id);
+    let mut stack: Vec<_> = doc
+        .all_operations()
+        .flat_map(|op| op.definition().selection_set.fields())
+        .collect();
 
     let mut directives = vec![];
 
     // depth first search for nested fields with directives
     while let Some(field) = stack.pop() {
-        if let Some(field_definition) = &field.field_definition(&compiler.db) {
-            directives.extend(field_definition.directives().iter().cloned());
-        }
-        stack.extend(field.selection_set().fields().iter().cloned());
+        directives.extend(field.definition.directives.iter().cloned());
+        stack.extend(field.selection_set.fields());
     }
 
     directives

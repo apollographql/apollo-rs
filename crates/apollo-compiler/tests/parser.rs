@@ -1,6 +1,5 @@
 use apollo_compiler::ApolloCompiler;
-use apollo_compiler::CstDatabase;
-use apollo_compiler::HirDatabase;
+use apollo_compiler::ReprDatabase;
 
 #[test]
 fn it_errors_when_selection_set_recursion_limit_exceeded() {
@@ -14,13 +13,11 @@ fn it_errors_when_selection_set_recursion_limit_exceeded() {
     }
     "#;
     let mut compiler = ApolloCompiler::new().recursion_limit(1);
-    let doc_id = compiler.add_document(schema, "schema.graphql");
-
-    let ast = compiler.db.cst(doc_id);
-
-    assert_eq!(ast.recursion_limit().high, 2);
-    assert_eq!(ast.errors().len(), 1);
-    assert_eq!(ast.document().definitions().count(), 1);
+    let id = compiler.add_document(schema, "schema.graphql");
+    let ast = compiler.db.ast(id);
+    assert_eq!(compiler.db.recursion_reached(id), 2);
+    assert_eq!(ast.parse_errors().len(), 1);
+    assert_eq!(ast.definitions.len(), 1);
 }
 
 #[test]
@@ -37,13 +34,11 @@ fn it_passes_when_selection_set_recursion_limit_is_not_exceeded() {
     }
     "#;
     let mut compiler = ApolloCompiler::new().recursion_limit(7);
-    let doc_id = compiler.add_document(schema, "schema.graphql");
-
-    let ast = compiler.db.cst(doc_id);
-
-    assert_eq!(ast.recursion_limit().high, 4);
-    assert_eq!(ast.errors().len(), 0);
-    assert_eq!(ast.document().definitions().count(), 1);
+    let id = compiler.add_document(schema, "schema.graphql");
+    let ast = compiler.db.ast(id);
+    assert_eq!(compiler.db.recursion_reached(id), 4);
+    assert_eq!(ast.parse_errors().len(), 0);
+    assert_eq!(ast.definitions.len(), 1);
 }
 
 #[test]
@@ -54,19 +49,14 @@ fn it_errors_when_selection_set_token_limit_is_exceeded() {
     }
     "#;
     let mut compiler = ApolloCompiler::new().token_limit(18);
-    let doc_id = compiler.add_document(schema, "schema.graphql");
-
-    let ast = compiler.db.cst(doc_id);
-
-    assert_eq!(ast.errors().len(), 1);
+    let id = compiler.add_document(schema, "schema.graphql");
+    let ast = compiler.db.ast(id);
+    assert_eq!(ast.parse_errors().len(), 1);
     assert_eq!(
-        ast.errors().next(),
-        Some(&apollo_parser::Error::limit(
-            "token limit reached, aborting lexing",
-            47
-        ))
+        format!("{:?}", ast.parse_errors()[0]),
+        "ERROR@47:47 \"token limit reached, aborting lexing\" "
     );
-    assert_eq!(ast.document().definitions().count(), 1);
+    assert_eq!(ast.definitions.len(), 1);
 }
 
 #[test]
@@ -83,31 +73,21 @@ fn it_errors_with_multiple_limits() {
         }
     "#;
     let mut compiler = ApolloCompiler::new().token_limit(22).recursion_limit(10);
-    let doc_id = compiler.add_document(schema, "schema.graphql");
-
-    let ast = compiler.db.cst(doc_id);
-
-    assert_eq!(ast.errors().len(), 1);
+    let id = compiler.add_document(schema, "schema.graphql");
+    let ast = compiler.db.ast(id);
+    assert_eq!(ast.parse_errors().len(), 1);
     assert_eq!(
-        ast.errors().next(),
-        Some(&apollo_parser::Error::limit(
-            "token limit reached, aborting lexing",
-            142
-        ))
+        format!("{:?}", ast.parse_errors()[0]),
+        "ERROR@142:142 \"token limit reached, aborting lexing\" "
     );
 
     let mut compiler = ApolloCompiler::new().recursion_limit(3).token_limit(200);
-    let doc_id = compiler.add_document(schema, "schema.graphql");
-
-    let ast = compiler.db.cst(doc_id);
-
-    assert_eq!(ast.errors().len(), 1);
+    let id = compiler.add_document(schema, "schema.graphql");
+    let ast = compiler.db.ast(id);
+    assert_eq!(ast.parse_errors().len(), 1);
     assert_eq!(
-        ast.errors().next(),
-        Some(&apollo_parser::Error::limit(
-            "parser recursion limit reached",
-            101
-        ))
+        format!("{:?}", ast.parse_errors()[0]),
+        "ERROR@101:101 \"parser recursion limit reached\" "
     );
 }
 
@@ -125,12 +105,10 @@ fn token_limit_with_multiple_sources() {
 
     let mut compiler = ApolloCompiler::new();
     compiler.add_type_system(schema, "schema.graphql");
-    let ts = compiler.db.type_system();
+    let schema = compiler.db.schema();
 
-    let mut compiler2 = ApolloCompiler::new().token_limit(2);
-    compiler2.set_type_system_hir(ts);
-    compiler2.add_executable(query, "query.graphql");
-    let parser_errors = compiler2.db.syntax_errors();
-
-    assert_eq!(parser_errors.len(), 1);
+    let mut compiler2 = ApolloCompiler::from_schema(schema).token_limit(2);
+    let id = compiler2.add_executable(query, "query.graphql");
+    let ast = compiler2.db.ast(id);
+    assert_eq!(ast.parse_errors().len(), 1);
 }

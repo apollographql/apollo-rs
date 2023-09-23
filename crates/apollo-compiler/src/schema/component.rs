@@ -155,6 +155,12 @@ impl PartialEq for ComponentStr {
     }
 }
 
+impl PartialEq<str> for ComponentStr {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str() == other
+    }
+}
+
 impl Deref for ComponentStr {
     type Target = NodeStr;
 

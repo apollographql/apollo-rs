@@ -1,9 +1,7 @@
 use apollo_compiler::executable::Selection;
-use apollo_compiler::hir;
-use apollo_compiler::hir::TypeDefinition;
+use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::ApolloCompiler;
 use apollo_compiler::Arc;
-use apollo_compiler::HirDatabase;
 use apollo_compiler::ReprDatabase;
 use std::collections::HashMap;
 
@@ -64,8 +62,8 @@ type User {
   profilePic(size: Int): URL
 }
 
-scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
-"#;
+    scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+    "#;
 
     let mut compiler = ApolloCompiler::new();
     let document_id = compiler.add_document(input, "document.graphql");
@@ -76,24 +74,17 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     }
     assert!(diagnostics.is_empty());
 
-    let operations = compiler.db.operations(document_id);
-    let operation_names: Vec<_> = operations.iter().filter_map(|op| op.name()).collect();
+    let doc = compiler.db.executable_document(document_id);
+    let operation_names: Vec<_> = doc.named_operations.keys().map(|n| n.as_str()).collect();
     assert_eq!(["ExampleQuery"], operation_names.as_slice());
 
-    let fragments = compiler.db.fragments(document_id);
-    let fragment_names: Vec<_> = fragments.keys().map(|name| &**name).collect();
+    let fragment_names: Vec<_> = doc.fragments.keys().map(|n| n.as_str()).collect();
     assert_eq!(["vipCustomer"], fragment_names.as_slice());
 
-    let operation_variables: Vec<String> = match operations
-        .iter()
-        .find(|op| op.name() == Some("ExampleQuery"))
-    {
-        Some(op) => op
-            .variables()
-            .iter()
-            .map(|var| var.name().to_string())
-            .collect(),
-        None => Vec::new(),
+    let result = doc.get_operation(Some("ExampleQuery"));
+    let operation_variables = match &result {
+        Ok(op) => op.variables.iter().map(|var| var.name.as_str()).collect(),
+        Err(_) => Vec::new(),
     };
     assert_eq!(
         ["definedVariable", "definedVariable2"],
@@ -130,13 +121,9 @@ type Query {
     }
     assert!(diagnostics.is_empty());
 
-    let operations = compiler.db.operations(document_id);
-    let fields = operations
-        .iter()
-        .find(|op| op.name() == Some("ExampleQuery"))
-        .unwrap()
-        .fields(&compiler.db);
-    let field_names: Vec<&str> = fields.iter().map(|f| f.name()).collect();
+    let doc = compiler.db.executable_document(document_id);
+    let op = doc.get_operation(Some("ExampleQuery")).unwrap();
+    let field_names: Vec<&str> = op.selection_set.fields().map(|f| f.name.as_str()).collect();
     assert_eq!(
         field_names,
         ["name", "price", "dimensions", "size", "weight"]
@@ -186,60 +173,61 @@ union Union = Concrete
     let diagnostics = compiler.validate();
     assert!(diagnostics.is_empty());
 
-    let operations = compiler.db.operations(document_id);
-    let fields = operations
-        .iter()
-        .find(|op| op.name() == Some("ExampleQuery"))
-        .unwrap()
-        .fields(&compiler.db);
+    let doc = compiler.db.executable_document(document_id);
+    let op = doc.get_operation(Some("ExampleQuery")).unwrap();
+    let fields: Vec<_> = op.selection_set.fields().collect();
 
-    let interface_field = fields.iter().find(|f| f.name() == "interface").unwrap();
+    let interface_field = fields.iter().find(|f| f.name == "interface").unwrap();
 
-    let interface_fields = interface_field.selection_set().fields();
+    let interface_fields = interface_field.selection_set.fields();
     let interface_selection_fields_types: HashMap<_, _> = interface_fields
-        .iter()
-        .map(|f| (f.name(), f.ty(&compiler.db).map(|f| f.name())))
+        .map(|f| (f.name.as_str(), f.ty().inner_named_type().as_str()))
         .collect();
     assert_eq!(
         interface_selection_fields_types,
-        HashMap::from([("a", Some("String".to_string()))])
+        HashMap::from([("a", "String")])
     );
 
-    let inline_fragments: Vec<_> = interface_field.selection_set().inline_fragments();
+    let inline_fragments: Vec<_> = interface_field
+        .selection_set
+        .selections
+        .iter()
+        .filter_map(|sel| sel.as_inline_fragment())
+        .collect();
 
     assert_eq!(inline_fragments.len(), 1);
     let inline_fragment = inline_fragments.first().unwrap();
-    assert_eq!(inline_fragment.type_condition(), Some("Concrete"));
+    assert_eq!(inline_fragment.type_condition, Some("Concrete".into()));
 
-    let inline_fragment_fields = inline_fragment.selection_set().fields();
+    let inline_fragment_fields = inline_fragment.selection_set.fields();
     let inline_fragment_fields_types: HashMap<_, _> = inline_fragment_fields
-        .iter()
-        .map(|f| (f.name(), f.ty(&compiler.db).map(|ty| ty.name())))
+        .map(|f| (f.name.as_str(), f.ty().inner_named_type().as_str()))
         .collect();
-    assert_eq!(
-        inline_fragment_fields_types,
-        HashMap::from([("b", Some("Int".to_string()))])
-    );
+    assert_eq!(inline_fragment_fields_types, HashMap::from([("b", "Int")]));
 
-    let union_field = fields.iter().find(|f| f.name() == "union").unwrap();
+    let union_field = fields.iter().find(|f| f.name == "union").unwrap();
 
-    let union_inline_fragments: Vec<_> = union_field.selection_set().inline_fragments();
+    let union_inline_fragments: Vec<_> = union_field
+        .selection_set
+        .selections
+        .iter()
+        .filter_map(|sel| sel.as_inline_fragment())
+        .collect();
 
     assert_eq!(union_inline_fragments.len(), 1);
     let union_inline_fragment = union_inline_fragments.first().unwrap();
-    assert_eq!(union_inline_fragment.type_condition(), Some("Concrete"));
+    assert_eq!(
+        union_inline_fragment.type_condition,
+        Some("Concrete".into())
+    );
 
-    let union_inline_fragment_fields = union_inline_fragment.selection_set().fields();
+    let union_inline_fragment_fields = union_inline_fragment.selection_set.fields();
     let union_inline_fragment_field_types: HashMap<_, _> = union_inline_fragment_fields
-        .iter()
-        .map(|f| (f.name(), f.ty(&compiler.db).map(|ty| ty.name())))
+        .map(|f| (f.name.as_str(), f.ty().inner_named_type().as_str()))
         .collect();
     assert_eq!(
         union_inline_fragment_field_types,
-        HashMap::from([
-            ("a", Some("String".to_string())),
-            ("b", Some("Int".to_string())),
-        ])
+        HashMap::from([("a", "String"), ("b", "Int"),])
     );
 }
 
@@ -285,49 +273,42 @@ enum join__Graph {
     }
     assert!(diagnostics.is_empty());
 
+    let doc = compiler.db.executable_document(document_id);
     // Get the types of the two top level fields - topProducts and size
-    let operations = compiler.db.operations(document_id);
-    let get_product_op = operations
+    let get_product_op = doc.get_operation(Some("getProduct")).unwrap();
+    let op_fields: Vec<_> = get_product_op.selection_set.fields().collect();
+    let name_field_def: Vec<_> = op_fields
         .iter()
-        .find(|op| op.name() == Some("getProduct"))
-        .unwrap();
-    let op_fields = get_product_op.fields(&compiler.db);
-    let name_field_def: Vec<String> = op_fields
-        .iter()
-        .filter_map(|field| Some(field.ty(&compiler.db)?.name()))
+        .map(|field| field.ty().inner_named_type())
         .collect();
     assert_eq!(name_field_def, ["Int", "Product"]);
 
     // get the types of the two topProducts selection set fields - name and inStock
-    let top_products = op_fields
+    let top_product_fields: Vec<_> = op_fields
         .iter()
-        .find(|f| f.name() == "topProducts")
+        .find(|f| f.name == "topProducts")
         .unwrap()
-        .selection_set()
-        .fields();
-
-    let top_product_fields: Vec<String> = top_products
-        .iter()
-        .filter_map(|f| Some(f.ty(&compiler.db)?.name()))
+        .selection_set
+        .fields()
+        .map(|f| f.ty().inner_named_type())
         .collect();
     assert_eq!(top_product_fields, ["String", "Boolean"]);
 
     // you can also search for a field in a selection_set and then get its
     // field definition. This looks for topProducts' inStock field's
     // directives.
-    let in_stock_field = op_fields
+    let in_stock_directive: Vec<_> = op_fields
         .iter()
-        .find(|f| f.name() == "topProducts")
+        .find(|f| f.name == "topProducts")
         .unwrap()
-        .selection_set()
-        .field("inStock")
+        .selection_set
+        .fields()
+        .find(|f| f.name == "inStock")
         .unwrap()
-        .field_definition(&compiler.db)
-        .unwrap();
-    let in_stock_directive: Vec<&str> = in_stock_field
-        .directives()
+        .definition
+        .directives
         .iter()
-        .map(|dir| dir.name())
+        .map(|dir| &dir.name)
         .collect();
     assert_eq!(in_stock_directive, ["join__field"]);
 }
@@ -415,32 +396,22 @@ fragment vipCustomer on User {
     }
     assert!(diagnostics.is_empty());
 
-    let op = compiler
-        .db
-        .find_operation(query_id, Some("getProduct".into()));
-    let fragment_in_op: Vec<hir::FragmentDefinition> = op
+    let doc = compiler.db.executable_document(query_id);
+    let op = doc.get_operation(Some("getProduct")).unwrap();
+    let fragment_in_op: Vec<_> = op
+        .selection_set
+        .fields()
+        .find(|field| field.name == "customer")
         .unwrap()
-        .fields(&compiler.db)
+        .selection_set
+        .selections
         .iter()
-        .find(|field| field.name() == "customer")
-        .unwrap()
-        .selection_set()
-        .selection()
-        .iter()
-        .filter_map(|sel| match sel {
-            hir::Selection::FragmentSpread(frag) => {
-                Some(frag.fragment(&compiler.db)?.as_ref().clone())
-            }
-            _ => None,
-        })
+        .filter_map(|sel| sel.as_fragment_spread()?.fragment_def(&doc))
         .collect();
-    let fragment_fields: Vec<hir::Field> = fragment_in_op
+    let field_ty: Vec<_> = fragment_in_op
         .iter()
-        .flat_map(|frag| frag.selection_set().fields())
-        .collect();
-    let field_ty: Vec<String> = fragment_fields
-        .iter()
-        .filter_map(|f| Some(f.ty(&compiler.db)?.name()))
+        .flat_map(|frag| frag.selection_set.fields())
+        .map(|f| f.ty().inner_named_type())
         .collect();
     assert_eq!(field_ty, ["ID", "String", "URL"])
 }
@@ -505,12 +476,14 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     }
     assert!(diagnostics.is_empty());
 
-    let scalars = compiler.db.scalars();
+    let schema = compiler.db.schema();
 
-    let directives: Vec<&str> = scalars["URL"]
-        .self_directives()
+    let directives: Vec<_> = schema
+        .get_scalar("URL")
+        .unwrap()
+        .directives
         .iter()
-        .map(|directive| directive.name())
+        .map(|directive| &directive.name)
         .collect();
     assert_eq!(directives, ["specifiedBy"]);
 }
@@ -538,12 +511,8 @@ enum Pet {
     }
     assert!(diagnostics.is_empty());
 
-    let enums = compiler.db.enums();
-    let enum_values: Vec<&str> = enums["Pet"]
-        .self_values()
-        .iter()
-        .map(|enum_val| enum_val.enum_value())
-        .collect();
+    let schema = compiler.db.schema();
+    let enum_values: Vec<_> = schema.get_enum("Pet").unwrap().values.keys().collect();
     assert_eq!(enum_values, ["CAT", "DOG", "FOX"]);
 }
 
@@ -580,29 +549,15 @@ type SearchQuery {
     }
     assert!(diagnostics.is_empty());
 
-    let unions = compiler.db.unions();
-    let union_members: Vec<&str> = unions["SearchResult"]
-        .self_members()
-        .iter()
-        .map(|member| member.name())
-        .collect();
+    let schema = compiler.db.schema();
+    let union_type = schema.get_union("SearchResult").unwrap();
+    let union_members: Vec<_> = union_type.members.iter().collect();
     assert_eq!(union_members, ["Photo", "Person"]);
 
-    let photo_object = unions["SearchResult"]
-        .self_members()
-        .iter()
-        .find(|mem| mem.name() == "Person")
-        .unwrap()
-        .object(&compiler.db);
+    let photo_object = schema.get_object("Person").unwrap();
 
-    if let Some(photo) = photo_object {
-        let fields: Vec<&str> = photo
-            .self_fields()
-            .iter()
-            .map(|field| field.name())
-            .collect();
-        assert_eq!(fields, ["name", "age"])
-    }
+    let fields: Vec<_> = photo_object.fields.keys().collect();
+    assert_eq!(fields, ["name", "age"])
 }
 
 #[test]
@@ -628,9 +583,9 @@ type Book @delegateField(name: "pageCount") @delegateField(name: "author") {
     }
     assert!(diagnostics.is_empty());
 
-    let directives = compiler.db.directive_definitions();
-    let locations: Vec<_> = directives["delegateField"]
-        .directive_locations()
+    let schema = compiler.db.schema();
+    let locations: Vec<_> = schema.directive_definitions["delegateField"]
+        .locations
         .iter()
         .map(|loc| loc.name())
         .collect();
@@ -663,11 +618,12 @@ input Point2D {
     }
     assert!(diagnostics.is_empty());
 
-    let input_objects = compiler.db.input_objects();
-    let fields: Vec<&str> = input_objects["Point2D"]
-        .self_fields()
-        .iter()
-        .map(|val| val.name())
+    let schema = compiler.db.schema();
+    let fields: Vec<_> = schema
+        .get_input_object("Point2D")
+        .unwrap()
+        .fields
+        .keys()
         .collect();
 
     assert_eq!(fields, ["x", "y"]);
@@ -694,16 +650,10 @@ directive @directiveB(name: String) on OBJECT | INTERFACE
     }
     assert!(diagnostics.is_empty());
 
-    let book_obj = compiler
-        .db
-        .find_object_type_by_name("Book".to_string())
-        .unwrap();
+    let schema = compiler.db.schema();
+    let book_obj = schema.get_object("Book").unwrap();
 
-    let directive_names: Vec<&str> = book_obj
-        .self_directives()
-        .iter()
-        .map(|d| d.name())
-        .collect();
+    let directive_names: Vec<_> = book_obj.directives.iter().map(|d| &d.name).collect();
     assert_eq!(directive_names, ["directiveA", "directiveB"]);
 }
 
@@ -732,66 +682,37 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     }
     assert!(diagnostics.is_empty());
 
-    let person_obj = compiler.db.find_object_type_by_name("Person".to_string());
+    let schema = compiler.db.schema();
+    let person = schema.get_object("Person").unwrap();
 
-    if let Some(person) = person_obj {
-        let field_ty_directive: Vec<String> = person
-            .self_fields()
-            .iter()
-            .filter_map(|f| {
-                // get access to the actual definition the field is using
-                if let Some(field_ty) = f.ty().type_def(&compiler.db) {
-                    match field_ty {
-                        // get that definition's directives, for example
-                        TypeDefinition::ScalarTypeDefinition(scalar) => {
-                            let dir_names: Vec<String> = scalar
-                                .self_directives()
-                                .iter()
-                                .map(|dir| dir.name().to_owned())
-                                .collect();
-                            return Some(dir_names);
-                        }
-                        _ => return None,
-                    }
-                }
-                None
-            })
-            .flatten()
-            .collect();
-        assert_eq!(field_ty_directive, ["specifiedBy"]);
+    let field_ty_directive: Vec<_> = person
+        .fields
+        .values()
+        .filter_map(|f| {
+            // get access to the actual definition the field is using
+            match schema.types.get(f.ty.inner_named_type())? {
+                ExtendedType::Scalar(scalar) => Some(scalar),
+                _ => None,
+            }
+        })
+        .flat_map(|scalar| {
+            // get that definition's directives, for example
+            scalar.directives.iter().map(|dir| &dir.name)
+        })
+        .collect();
+    assert_eq!(field_ty_directive, ["specifiedBy"]);
 
-        let field_arg_ty_vals: Vec<String> = person
-            .self_fields()
-            .iter()
-            .flat_map(|f| {
-                let enum_vals: Vec<String> = f
-                    .arguments()
-                    .input_values()
-                    .iter()
-                    .filter_map(|val| {
-                        if let Some(input_ty) = val.ty().type_def(&compiler.db) {
-                            match input_ty {
-                                // get that definition's directives, for example
-                                TypeDefinition::EnumTypeDefinition(enum_) => {
-                                    let dir_names: Vec<String> = enum_
-                                        .self_values()
-                                        .iter()
-                                        .map(|enum_val| enum_val.enum_value().to_owned())
-                                        .collect();
-                                    return Some(dir_names);
-                                }
-                                _ => return None,
-                            }
-                        }
-                        None
-                    })
-                    .flatten()
-                    .collect();
-                enum_vals
-            })
-            .collect();
-        assert_eq!(field_arg_ty_vals, ["INT", "FLOAT"])
-    }
+    let field_arg_ty_vals: Vec<_> = person
+        .fields
+        .values()
+        .flat_map(|field| &field.arguments)
+        .filter_map(|arg| match schema.types.get(arg.ty.inner_named_type())? {
+            ExtendedType::Enum(enum_) => Some(enum_.values.keys()),
+            _ => None,
+        })
+        .flatten()
+        .collect();
+    assert_eq!(field_arg_ty_vals, ["INT", "FLOAT"])
 }
 
 #[test]
@@ -814,32 +735,25 @@ scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     }
     assert!(diagnostics.is_empty());
 
-    let person_obj = compiler.db.find_input_object_by_name("Person".to_string());
+    let schema = compiler.db.schema();
+    let person = schema.get_input_object("Person").unwrap();
 
-    if let Some(person) = person_obj {
-        let field_ty_directive: Vec<String> = person
-            .self_fields()
-            .iter()
-            .filter_map(|f| {
-                if let Some(field_ty) = f.ty().type_def(&compiler.db) {
-                    match field_ty {
-                        TypeDefinition::ScalarTypeDefinition(scalar) => {
-                            let dir_names: Vec<String> = scalar
-                                .self_directives()
-                                .iter()
-                                .map(|dir| dir.name().to_owned())
-                                .collect();
-                            return Some(dir_names);
-                        }
-                        _ => return None,
-                    }
-                }
-                None
-            })
-            .flatten()
-            .collect();
-        assert_eq!(field_ty_directive, ["specifiedBy"]);
-    }
+    let field_ty_directive: Vec<_> = person
+        .fields
+        .values()
+        .filter_map(|f| {
+            // get access to the actual definition the field is using
+            match schema.types.get(f.ty.inner_named_type())? {
+                ExtendedType::Scalar(scalar) => Some(scalar),
+                _ => None,
+            }
+        })
+        .flat_map(|scalar| {
+            // get that definition's directives, for example
+            scalar.directives.iter().map(|dir| &dir.name)
+        })
+        .collect();
+    assert_eq!(field_ty_directive, ["specifiedBy"]);
 }
 
 #[test]
@@ -930,11 +844,16 @@ type User
     // the scalar warning diagnostic
     assert_eq!(diagnostics.len(), 1);
 
-    let object_types = compiler.db.object_types();
-    let object_names: Vec<_> = object_types.keys().map(|name| &**name).collect();
+    let schema = compiler.db.schema();
+    let object_names: Vec<_> = schema
+        .types
+        .iter()
+        .filter(|(_name, def)| def.is_object() && !def.is_built_in())
+        .map(|(name, _def)| name)
+        .collect();
     assert_eq!(
+        object_names,
         ["Mutation", "Product", "Query", "Review", "User"],
-        object_names.as_slice()
     );
 }
 
@@ -962,10 +881,23 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     let snapshot = compiler.snapshot();
     let snapshot2 = compiler.snapshot();
 
-    let thread1 = std::thread::spawn(move || snapshot.find_object_type_by_name("Query".into()));
-    let thread2 = std::thread::spawn(move || snapshot2.scalars());
+    let thread1 = std::thread::spawn(move || {
+        let schema = snapshot.schema();
+        assert!(schema.get_object("Query").is_some());
+    });
+    let thread2 = std::thread::spawn(move || {
+        let schema = snapshot2.schema();
+        assert_eq!(
+            schema
+                .types
+                .values()
+                .filter(|ty| ty.is_scalar() && !ty.is_built_in())
+                .count(),
+            1
+        );
+    });
 
-    thread1.join().expect("object_type_by_name panicked");
+    thread1.join().expect("get_object return None");
     thread2.join().expect("scalars failed");
 }
 
@@ -981,11 +913,9 @@ type Query {
     let mut compiler = ApolloCompiler::new();
     let input_id = compiler.add_document(input, "document.graphql");
 
-    let object_type = compiler
-        .db
-        .find_object_type_by_name("Query".into())
-        .unwrap();
-    assert!(object_type.self_directives().is_empty());
+    let schema = compiler.db.schema();
+    let object_type = schema.get_object("Query").unwrap();
+    assert!(object_type.directives.is_empty());
 
     let input = r#"
 type Query @withDirective {
@@ -995,49 +925,9 @@ type Query @withDirective {
 "#;
     compiler.update_document(input_id, input);
 
-    let object_type = compiler
-        .db
-        .find_object_type_by_name("Query".into())
-        .unwrap();
-    assert_eq!(object_type.self_directives().len(), 1);
-}
-
-#[test]
-fn old_precomputed_schema_can_multi_thread() {
-    let schema = r#"
-type Query {
-    website: URL,
-    amount: Int
-}
-"#;
-    let query = "{ website }";
-
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_type_system(schema, "schema.graphql");
-    let type_system = compiler.db.type_system();
-
-    let handles: Vec<_> = (0..2)
-        .map(|_| {
-            let cloned = Arc::clone(&type_system); // cheap refcount increment
-            std::thread::spawn(move || {
-                let mut compiler = ApolloCompiler::new();
-                let query_id = compiler.add_executable(query, "query.graphql");
-                compiler.set_type_system_hir(cloned);
-                compiler
-                    .db
-                    .find_operation(query_id, None)
-                    .unwrap()
-                    .fields(&compiler.db)[0]
-                    .ty(&compiler.db)
-                    .unwrap()
-                    .name()
-            })
-        })
-        .collect();
-    assert_eq!(handles.len(), 2);
-    for handle in handles {
-        assert_eq!(handle.join().unwrap(), "URL");
-    }
+    let schema = compiler.db.schema();
+    let object_type = schema.get_object("Query").unwrap();
+    assert_eq!(object_type.directives.len(), 1);
 }
 
 #[test]
