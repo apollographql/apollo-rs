@@ -17,9 +17,7 @@ use salsa::ParallelDatabase;
 use std::path::Path;
 
 pub use self::arc::Arc;
-pub use self::database::{
-    hir, CstDatabase, FileId, HirDatabase, InputDatabase, ReprDatabase, RootDatabase, Source,
-};
+pub use self::database::{FileId, InputDatabase, ReprDatabase, RootDatabase, Source};
 pub use self::diagnostics::ApolloDiagnostic;
 pub use self::executable::ExecutableDocument;
 pub use self::node::{Node, NodeLocation};
@@ -91,7 +89,6 @@ impl ApolloCompiler {
         db.set_recursion_limit(None);
         db.set_token_limit(None);
         db.set_schema_input(None);
-        db.set_type_system_hir_input(None);
         db.set_source_files(vec![]);
 
         Self { db }
@@ -134,20 +131,6 @@ impl ApolloCompiler {
         self
     }
 
-    /// Add or update a pre-computed input for type system definitions
-    pub fn set_type_system_hir(&mut self, schema: Arc<hir::TypeSystem>) {
-        if self.db.schema_input().is_some() {
-            panic!("Do not combine the old type system HIR and the new Schema inputs");
-        }
-        if !self.db.type_definition_files().is_empty() {
-            panic!(
-                "Having both string inputs and pre-computed inputs \
-                 for type system definitions is not supported"
-            )
-        }
-        self.db.set_type_system_hir_input(Some(schema))
-    }
-
     fn add_input(&mut self, source: Source) -> FileId {
         let file_id = FileId::new();
         let mut sources = self.db.source_files();
@@ -167,7 +150,7 @@ impl ApolloCompiler {
     ///
     /// Returns a `FileId` that you can use to update the source text of this document.
     pub fn add_document(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        if self.db.type_system_hir_input().is_some() || self.db.schema_input().is_some() {
+        if self.db.schema_input().is_some() {
             panic!(
                 "Having both string inputs and pre-computed inputs \
                  for type system definitions is not supported"
@@ -185,7 +168,7 @@ impl ApolloCompiler {
     ///
     /// Returns a `FileId` that you can use to update the source text of this document.
     pub fn add_type_system(&mut self, input: &str, path: impl AsRef<Path>) -> FileId {
-        if self.db.type_system_hir_input().is_some() || self.db.schema_input().is_some() {
+        if self.db.schema_input().is_some() {
             panic!(
                 "Having both string inputs and pre-computed inputs \
                  for type system definitions is not supported"

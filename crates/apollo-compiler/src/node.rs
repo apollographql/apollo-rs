@@ -2,7 +2,6 @@ use crate::schema::Component;
 use crate::schema::ComponentOrigin;
 use crate::Arc;
 use crate::FileId;
-use apollo_parser::cst::CstNode;
 use apollo_parser::SyntaxNode;
 use rowan::TextRange;
 use std::fmt;
@@ -200,13 +199,6 @@ impl NodeLocation {
                 })
             }
         }
-    }
-}
-
-impl<Cst: CstNode> From<(FileId, &'_ Cst)> for NodeLocation {
-    /// Create a location pointing to an apollo-parser CST node.
-    fn from((file_id, node): (FileId, &'_ Cst)) -> Self {
-        Self::new(file_id, node.syntax())
     }
 }
 
