@@ -1,6 +1,35 @@
-use super::*;
-use crate::ApolloCompiler;
-use crate::ReprDatabase;
+use apollo_compiler::ApolloCompiler;
+use apollo_compiler::HirDatabase;
+use apollo_compiler::ReprDatabase;
+use apollo_compiler::Schema;
+
+#[test]
+fn find_definitions_with_directive() {
+    let schema = r#"
+        type ObjectOne @key(field: "id") {
+          id: ID!
+          inStock: Boolean!
+        }
+
+        type ObjectTwo @key(field: "name") {
+          name: String!
+          address: String!
+        }
+
+        type ObjectThree {
+            price: Int
+        }
+    "#;
+
+    let mut compiler = ApolloCompiler::new();
+    compiler.add_document(schema, "schema.graphql");
+
+    let key_definitions = compiler.db.find_types_with_directive(String::from("key"));
+    let mut key_definition_names: Vec<&str> =
+        key_definitions.iter().map(|def| def.name()).collect();
+    key_definition_names.sort();
+    assert_eq!(key_definition_names, ["ObjectOne", "ObjectTwo"])
+}
 
 #[test]
 fn test_schema_reserialize() {

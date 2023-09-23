@@ -1,21 +1,23 @@
 //! High-level representation of a GraphQL schema
 
 use crate::ast;
+use crate::Arc;
 use crate::FileId;
 use crate::Node;
 use crate::NodeLocation;
 use crate::NodeStr;
+use crate::Parser;
+use crate::SourceFile;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::path::Path;
 use std::sync::OnceLock;
 
 mod component;
 mod from_ast;
 mod serialize;
-#[cfg(test)]
-mod tests;
 
 pub use self::component::{Component, ComponentOrigin, ComponentStr, ExtensionId};
 pub use self::from_ast::SchemaBuilder;
@@ -23,10 +25,6 @@ pub use crate::ast::{
     Directive, DirectiveDefinition, DirectiveLocation, EnumValueDefinition, FieldDefinition,
     InputValueDefinition, Name, NamedType, Type, Value,
 };
-use crate::Arc;
-use crate::Parser;
-use crate::SourceFile;
-use std::path::Path;
 
 /// High-level representation of a GraphQL schema
 #[derive(Debug, Clone)]

@@ -5,15 +5,17 @@
 // This is also an exact setup as we have in `apollo-parser`, in the future we
 // might want to consider merging the two dirs. (@lrlna)
 
-use indexmap::IndexMap;
-use std::{
-    env, fs,
-    path::{Path, PathBuf},
-};
-
+use apollo_compiler::ast;
+use apollo_compiler::ApolloCompiler;
+use apollo_compiler::ApolloDiagnostic;
+use apollo_compiler::CstDatabase;
+use apollo_compiler::FileId;
 use expect_test::expect_file;
-
-use crate::{ast, ApolloCompiler, ApolloDiagnostic, CstDatabase, FileId};
+use indexmap::IndexMap;
+use std::env;
+use std::fs;
+use std::path::Path;
+use std::path::PathBuf;
 
 // To run these tests and update files:
 // ```bash
