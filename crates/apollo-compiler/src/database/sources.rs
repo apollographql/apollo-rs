@@ -141,8 +141,8 @@ impl FileId {
     }
 
     /// Reset file ID back to 1, used to get consistent results in tests.
-    #[cfg(test)]
-    pub(crate) fn with_deterministic_ids(f: impl FnOnce()) {
+    #[doc(hidden)]
+    pub fn with_deterministic_ids(f: impl FnOnce()) {
         static MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
         let _mutex_guard = MUTEX.lock().unwrap();
 
