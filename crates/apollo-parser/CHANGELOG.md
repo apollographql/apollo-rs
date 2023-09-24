@@ -25,11 +25,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Stack overflow was observed with little more than 2000
   nesting levels or repetitions in the new test.
   Defaulting to a quarter of that leaves a comfortable margin.
-- **fixes lexing of plus and minus signs in numbers - [SimonSapin], [pull/646]**
-  Plus signs are errors in GraphQL syntax.
-  Minus signs are errors if they’re not followed by a digit, even if followed by EOF.
+- **fix various lexer bugs - [SimonSapin], [pull/646], [pull/652]**
+  The lexer was too permissive in emitting tokens instead of errors
+  in various cases around numbers, strings, and EOF.
 
 [pull/646]: https://github.com/apollographql/apollo-rs/pull/646
+[pull/652]: https://github.com/apollographql/apollo-rs/pull/652
 [pull/662]: https://github.com/apollographql/apollo-rs/pull/662
 [Issue 666]: https://github.com/apollographql/apollo-rs/issues/666
 

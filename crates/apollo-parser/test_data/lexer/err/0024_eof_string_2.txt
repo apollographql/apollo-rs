@@ -1,6 +1,2 @@
-ERROR@0:1 "Unexpected character \"`\"" `
-WHITESPACE@1:2 " "
-COMMENT@2:20 "# Artificial error"
-WHITESPACE@20:21 "\n"
-STRING_VALUE@21:24 "\"\\u"
-EOF@24:24
+ERROR@0:3 "unterminated string value" "\u
+EOF@3:3
