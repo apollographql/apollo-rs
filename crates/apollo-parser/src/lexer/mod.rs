@@ -35,7 +35,6 @@ pub struct Lexer<'a> {
 #[derive(Debug)]
 enum State {
     Start,
-    Done,
     Ident,
     StringLiteralEscapedUnicode(usize),
     StringLiteral,
@@ -137,7 +136,10 @@ impl<'a> Cursor<'a> {
             index: self.index(),
         };
 
-        while let Some(c) = self.bump() {
+        loop {
+            let Some(c) = self.bump() else {
+                return self.eof(state, token);
+            };
             match state {
                 State::Start => {
                     match c {
@@ -251,18 +253,14 @@ impl<'a> Cursor<'a> {
                     curr if is_ident_char(curr) || curr.is_ascii_digit() => {}
                     _ => {
                         token.data = self.prev_str();
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                 },
                 State::Whitespace => match c {
                     curr if is_whitespace(curr) => {}
                     _ => {
                         token.data = self.prev_str();
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                 },
                 State::BlockStringLiteral => match c {
@@ -273,9 +271,7 @@ impl<'a> Cursor<'a> {
                         // Require two additional quotes to complete the triple quote.
                         if self.eatc('"') && self.eatc('"') {
                             token.data = self.current_str();
-
-                            state = State::Done;
-                            break;
+                            return self.done(token);
                         }
                     }
                     _ => {}
@@ -293,9 +289,7 @@ impl<'a> Cursor<'a> {
                         } else {
                             token.data = self.current_str();
                         }
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                     '\\' => {
                         state = State::StringLiteralBackslash;
@@ -313,9 +307,7 @@ impl<'a> Cursor<'a> {
                             c.to_string(),
                         ));
                         token.data = self.current_str();
-                        state = State::Done;
-
-                        break;
+                        return self.done(token);
                     }
                     c if !c.is_ascii_hexdigit() => {
                         self.add_err(Error::new("invalid unicode escape sequence", c.to_string()));
@@ -336,9 +328,7 @@ impl<'a> Cursor<'a> {
                 State::StringLiteral => match c {
                     '"' => {
                         token.data = self.current_str();
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                     curr if is_line_terminator(curr) => {
                         self.add_err(Error::new("unexpected line terminator", "".to_string()));
@@ -389,9 +379,7 @@ impl<'a> Cursor<'a> {
                     }
                     _ => {
                         token.data = self.prev_str();
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                 },
                 State::FloatLiteral => match c {
@@ -409,9 +397,7 @@ impl<'a> Cursor<'a> {
                     }
                     _ => {
                         token.data = self.prev_str();
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                 },
                 State::ExponentLiteral => match c {
@@ -429,17 +415,13 @@ impl<'a> Cursor<'a> {
                         ));
                     }
                 },
-                State::SpreadOperator => match c {
-                    '.' => {
-                        if self.eatc('.') {
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-
-                        break;
+                State::SpreadOperator => {
+                    if c == '.' && self.eatc('.') {
+                        token.data = self.current_str();
+                        return Ok(token);
                     }
-                    _ => break,
-                },
+                    return self.unterminated_spread_operator(&token);
+                }
                 State::MinusSign => match c {
                     curr if curr.is_ascii_digit() => {
                         state = State::IntLiteral;
@@ -455,28 +437,16 @@ impl<'a> Cursor<'a> {
                 State::Comment => match c {
                     curr if is_line_terminator(curr) => {
                         token.data = self.prev_str();
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                     _ => {}
                 },
-                State::Done => unreachable!("must finalize loop when State::Done"),
             }
         }
+    }
 
+    fn eof(&mut self, state: State, mut token: Token<'a>) -> Result<Token<'a>, Error> {
         match state {
-            State::Done => {
-                if let Some(mut err) = self.err() {
-                    err.set_data(token.data.to_string());
-                    err.index = token.index;
-                    self.err = None;
-
-                    return Err(err);
-                }
-
-                Ok(token)
-            }
             State::Start => {
                 token.index += 1;
                 Ok(token)
@@ -498,24 +468,20 @@ impl<'a> Cursor<'a> {
                     token.index,
                 ))
             }
-            State::SpreadOperator => {
-                let data = if self.is_pending() {
-                    self.prev_str()
-                } else {
-                    self.current_str()
-                };
-
-                Err(Error::with_loc(
-                    "Unterminated spread operator",
-                    data.to_string(),
-                    token.index,
-                ))
-            }
+            State::SpreadOperator => self.unterminated_spread_operator(&token),
             State::MinusSign => Err(Error::new(
                 "Unexpected character \"-\"",
                 self.current_str().to_string(),
             )),
-            _ => {
+            State::Ident
+            | State::StringLiteralEscapedUnicode(_)
+            | State::BlockStringLiteralBackslash
+            | State::StringLiteralBackslash
+            | State::IntLiteral
+            | State::FloatLiteral
+            | State::ExponentLiteral
+            | State::Whitespace
+            | State::Comment => {
                 if let Some(mut err) = self.err() {
                     err.set_data(self.current_str().to_string());
                     return Err(err);
@@ -526,6 +492,30 @@ impl<'a> Cursor<'a> {
                 Ok(token)
             }
         }
+    }
+
+    fn unterminated_spread_operator(&mut self, token: &Token<'a>) -> Result<Token<'a>, Error> {
+        let data = if self.is_pending() {
+            self.prev_str()
+        } else {
+            self.current_str()
+        };
+
+        Err(Error::with_loc(
+            "Unterminated spread operator",
+            data.to_string(),
+            token.index,
+        ))
+    }
+
+    fn done(&mut self, token: Token<'a>) -> Result<Token<'a>, Error> {
+        if let Some(mut err) = self.err() {
+            err.set_data(token.data.to_string());
+            err.index = token.index;
+            self.err = None;
+            return Err(err);
+        }
+        Ok(token)
     }
 }
 
