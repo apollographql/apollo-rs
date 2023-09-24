@@ -535,7 +535,11 @@ impl<'a> Cursor<'a> {
                     curr.to_string(),
                 ))
             }
-            State::StringLiteral | State::BlockStringLiteral => {
+            State::StringLiteral
+            | State::BlockStringLiteral
+            | State::StringLiteralEscapedUnicode(_)
+            | State::BlockStringLiteralBackslash
+            | State::StringLiteralBackslash => {
                 let curr = self.drain();
 
                 Err(Error::with_loc(
@@ -556,9 +560,6 @@ impl<'a> Cursor<'a> {
                 ))
             }
             State::Ident
-            | State::StringLiteralEscapedUnicode(_)
-            | State::BlockStringLiteralBackslash
-            | State::StringLiteralBackslash
             | State::LeadingZero
             | State::IntegerPart
             | State::FractionalPart
