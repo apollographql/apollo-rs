@@ -155,11 +155,11 @@ impl<'a> Cursor<'a> {
                             token.kind = TokenKind::Spread;
                             state = State::SpreadOperator;
                         }
-                        c if is_whitespace(c) => {
+                        c if is_whitespace_assimilated(c) => {
                             token.kind = TokenKind::Whitespace;
                             state = State::Whitespace;
                         }
-                        c if is_ident_char(c) => {
+                        c if is_name_start(c) => {
                             token.kind = TokenKind::Name;
                             state = State::Ident;
                         }
@@ -250,14 +250,14 @@ impl<'a> Cursor<'a> {
                     };
                 }
                 State::Ident => match c {
-                    curr if is_ident_char(curr) || curr.is_ascii_digit() => {}
+                    curr if is_name_continue(curr) => {}
                     _ => {
                         token.data = self.prev_str();
                         return self.done(token);
                     }
                 },
                 State::Whitespace => match c {
-                    curr if is_whitespace(curr) => {}
+                    curr if is_whitespace_assimilated(curr) => {}
                     _ => {
                         token.data = self.prev_str();
                         return self.done(token);
@@ -519,36 +519,30 @@ impl<'a> Cursor<'a> {
     }
 }
 
-fn is_whitespace(c: char) -> bool {
-    // from rust's lexer:
+/// Ignored tokens other than comments and commas are assimilated to whitespace
+/// <https://spec.graphql.org/October2021/#Ignored>
+fn is_whitespace_assimilated(c: char) -> bool {
     matches!(
         c,
-        // ASCII
+        // https://spec.graphql.org/October2021/#WhiteSpace
         '\u{0009}'   // \t
-        | '\u{000A}' // \n
-        | '\u{000B}' // vertical tab
-        | '\u{000C}' // form feed
-        | '\u{000D}' // \r
         | '\u{0020}' // space
-
-        // Unicode BOM (Byte Order Mark)
-        | '\u{FEFF}'
-
-        // NEXT LINE from latin1
-        | '\u{0085}'
-
-        // Bidi markers
-        | '\u{200E}' // LEFT-TO-RIGHT MARK
-        | '\u{200F}' // RIGHT-TO-LEFT MARK
-
-        // Dedicated whitespace characters from Unicode
-        | '\u{2028}' // LINE SEPARATOR
-        | '\u{2029}' // PARAGRAPH SEPARATOR
+        // https://spec.graphql.org/October2021/#LineTerminator
+        | '\u{000A}' // \n
+        | '\u{000D}' // \r
+        // https://spec.graphql.org/October2021/#UnicodeBOM
+        | '\u{FEFF}' // Unicode BOM (Byte Order Mark)
     )
 }
 
-fn is_ident_char(c: char) -> bool {
+/// <https://spec.graphql.org/October2021/#NameStart>
+fn is_name_start(c: char) -> bool {
     matches!(c, 'a'..='z' | 'A'..='Z' | '_')
+}
+
+/// <https://spec.graphql.org/October2021/#NameContinue>
+fn is_name_continue(c: char) -> bool {
+    matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_')
 }
 
 fn is_line_terminator(c: char) -> bool {
