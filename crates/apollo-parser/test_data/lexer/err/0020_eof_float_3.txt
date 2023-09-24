@@ -1,6 +1,2 @@
-ERROR@0:1 "Unexpected character \"`\"" `
-WHITESPACE@1:2 " "
-COMMENT@2:20 "# Artificial error"
-WHITESPACE@20:21 "\n"
-FLOAT@21:24 "2e-"
-EOF@24:24
+ERROR@0:3 "Unexpected EOF in float value" 2e-
+EOF@3:3

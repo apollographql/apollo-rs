@@ -42,9 +42,13 @@ enum State {
     BlockStringLiteral,
     BlockStringLiteralBackslash,
     StringLiteralBackslash,
-    IntLiteral,
-    FloatLiteral,
-    ExponentLiteral,
+    LeadingZero,
+    IntegerPart,
+    DecimalPoint,
+    FractionalPart,
+    ExponentIndicator,
+    ExponentSign,
+    ExponentDigit,
     Whitespace,
     Comment,
     SpreadOperator,
@@ -167,9 +171,13 @@ impl<'a> Cursor<'a> {
                             token.kind = TokenKind::Int;
                             state = State::MinusSign;
                         }
+                        '0' => {
+                            token.kind = TokenKind::Int;
+                            state = State::LeadingZero;
+                        }
                         c if c.is_ascii_digit() => {
                             token.kind = TokenKind::Int;
-                            state = State::IntLiteral;
+                            state = State::IntegerPart;
                         }
                         '!' => {
                             token.kind = TokenKind::Bang;
@@ -367,52 +375,118 @@ impl<'a> Cursor<'a> {
                         state = State::StringLiteral;
                     }
                 },
-                State::IntLiteral => match c {
-                    curr if curr.is_ascii_digit() => {}
+                State::LeadingZero => match c {
                     '.' => {
                         token.kind = TokenKind::Float;
-                        state = State::FloatLiteral;
+                        state = State::DecimalPoint;
                     }
                     'e' | 'E' => {
                         token.kind = TokenKind::Float;
-                        state = State::ExponentLiteral;
+                        state = State::ExponentIndicator;
                     }
-                    _ => {
-                        token.data = self.prev_str();
-                        return self.done(token);
-                    }
-                },
-                State::FloatLiteral => match c {
-                    curr if curr.is_ascii_digit() => {}
-                    '.' => {
-                        self.add_err(Error::new(
-                            format!("Unexpected character `{}`", c),
-                            c.to_string(),
+                    _ if c.is_ascii_digit() => {
+                        return Err(Error::new(
+                            "Numbers must not have non-significant leading zeroes",
+                            self.current_str().to_string(),
                         ));
-
-                        continue;
                     }
-                    'e' | 'E' => {
-                        state = State::ExponentLiteral;
+                    _ if is_name_start(c) => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}` as integer suffix"),
+                            self.current_str().to_string(),
+                        ));
                     }
                     _ => {
                         token.data = self.prev_str();
                         return self.done(token);
                     }
                 },
-                State::ExponentLiteral => match c {
+                State::IntegerPart => match c {
+                    curr if curr.is_ascii_digit() => {}
+                    '.' => {
+                        token.kind = TokenKind::Float;
+                        state = State::DecimalPoint;
+                    }
+                    'e' | 'E' => {
+                        token.kind = TokenKind::Float;
+                        state = State::ExponentIndicator;
+                    }
+                    _ if is_name_start(c) => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}` as integer suffix"),
+                            self.current_str().to_string(),
+                        ));
+                    }
+                    _ => {
+                        token.data = self.prev_str();
+                        return self.done(token);
+                    }
+                },
+                State::DecimalPoint => match c {
                     curr if curr.is_ascii_digit() => {
-                        state = State::FloatLiteral;
+                        state = State::FractionalPart;
+                    }
+                    _ => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}`, expected fractional digit"),
+                            self.current_str().to_string(),
+                        ));
+                    }
+                },
+                State::FractionalPart => match c {
+                    curr if curr.is_ascii_digit() => {}
+                    'e' | 'E' => {
+                        state = State::ExponentIndicator;
+                    }
+                    _ if c == '.' || is_name_start(c) => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}` as float suffix"),
+                            self.current_str().to_string(),
+                        ));
+                    }
+                    _ => {
+                        token.data = self.prev_str();
+                        return self.done(token);
+                    }
+                },
+                State::ExponentIndicator => match c {
+                    _ if c.is_ascii_digit() => {
+                        state = State::ExponentDigit;
                     }
                     '+' | '-' => {
-                        state = State::FloatLiteral;
+                        state = State::ExponentSign;
                     }
                     _ => {
-                        let err = self.current_str();
                         return Err(Error::new(
-                            format!("Unexpected character `{}`", err),
-                            err.to_string(),
+                            format!("Unexpected character `{c}`, expected exponent digit or sign"),
+                            self.current_str().to_string(),
+                        ))
+                    }
+                },
+                State::ExponentSign => match c {
+                    _ if c.is_ascii_digit() => {
+                        state = State::ExponentDigit;
+                    }
+                    _ => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}`, expected exponent digit"),
+                            self.current_str().to_string(),
+                        ))
+                    }
+                },
+                State::ExponentDigit => match c {
+                    _ if c.is_ascii_digit() => {
+                        state = State::ExponentDigit;
+                    }
+                    _ if c == '.' || is_name_start(c) => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}` as float suffix"),
+                            self.current_str().to_string(),
                         ));
+                    }
+                    _ => {
+                        token.data = self.prev_str();
+                        return self.done(token);
                     }
                 },
                 State::SpreadOperator => {
@@ -423,15 +497,17 @@ impl<'a> Cursor<'a> {
                     return self.unterminated_spread_operator(&token);
                 }
                 State::MinusSign => match c {
+                    '0' => {
+                        state = State::LeadingZero;
+                    }
                     curr if curr.is_ascii_digit() => {
-                        state = State::IntLiteral;
+                        state = State::IntegerPart;
                     }
                     _ => {
-                        let curr = self.current_str();
                         return Err(Error::new(
-                            format!("Unexpected character `{}`", curr),
-                            curr.to_string(),
-                        ));
+                            format!("Unexpected character `{c}`"),
+                            self.current_str().to_string(),
+                        ))
                     }
                 },
                 State::Comment => match c {
@@ -473,13 +549,20 @@ impl<'a> Cursor<'a> {
                 "Unexpected character \"-\"",
                 self.current_str().to_string(),
             )),
+            State::DecimalPoint | State::ExponentIndicator | State::ExponentSign => {
+                Err(Error::new(
+                    "Unexpected EOF in float value",
+                    self.current_str().to_string(),
+                ))
+            }
             State::Ident
             | State::StringLiteralEscapedUnicode(_)
             | State::BlockStringLiteralBackslash
             | State::StringLiteralBackslash
-            | State::IntLiteral
-            | State::FloatLiteral
-            | State::ExponentLiteral
+            | State::LeadingZero
+            | State::IntegerPart
+            | State::FractionalPart
+            | State::ExponentDigit
             | State::Whitespace
             | State::Comment => {
                 if let Some(mut err) = self.err() {
