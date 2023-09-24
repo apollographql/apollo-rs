@@ -1,2 +1,2 @@
-EOF@9:9
 ERROR@0:9 "Unexpected character `.`" 456E34.54
+EOF@9:9
