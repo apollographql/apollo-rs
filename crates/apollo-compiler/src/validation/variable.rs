@@ -1,9 +1,8 @@
 use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema, Node, ValidationDatabase,
+    schema, Node, NodeLocation, ValidationDatabase,
 };
-use apollo_parser::cst::{self, CstNode};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 
@@ -225,6 +224,16 @@ pub fn validate_unused_variables(
         .iter()
         .map(|var| var.name.clone())
         .collect();
+    let locations: HashMap<_, _> = operation
+        .variables
+        .iter()
+        .map(|var| {
+            (
+                &var.name,
+                NodeLocation::recompose(var.location(), var.name.location()),
+            )
+        })
+        .collect();
     let mut used_vars = HashSet::<ast::Name>::new();
     walk_selections(
         &db.ast(operation.location().unwrap().file_id()),
@@ -248,24 +257,15 @@ pub fn validate_unused_variables(
     let unused_vars = defined_vars.difference(&used_vars);
 
     diagnostics.extend(unused_vars.map(|unused_var| {
-        // unused var location is always Some
-        let loc = unused_var.location().expect("missing location information");
-        let whole_variable_location =
-            super::lookup_cst_location(db.upcast(), loc, |cst: cst::Variable| {
-                Some(cst.syntax().text_range())
-            })
-            .unwrap_or(loc);
+        let loc = locations[unused_var].expect("missing location information");
         ApolloDiagnostic::new(
             db,
-            whole_variable_location.into(),
+            loc.into(),
             DiagnosticData::UnusedVariable {
                 name: unused_var.to_string(),
             },
         )
-        .label(Label::new(
-            whole_variable_location,
-            "this variable is never used",
-        ))
+        .label(Label::new(loc, "this variable is never used"))
     }));
 
     diagnostics
@@ -310,21 +310,15 @@ pub fn validate_variable_usage2(
                 ]));
             }
         } else {
-            let usage_location = super::lookup_cst_location(
-                db.upcast(),
-                var_name.location().unwrap(),
-                |cst: cst::Variable| Some(cst.syntax().text_range()),
-            );
-
             return Err(ApolloDiagnostic::new(
                 db,
-                (argument.location().unwrap()).into(),
+                argument.location().unwrap().into(),
                 DiagnosticData::UndefinedVariable {
                     name: var_name.to_string(),
                 },
             )
             .label(Label::new(
-                usage_location.unwrap(),
+                argument.value.location().unwrap(),
                 "not found in this scope",
             )));
         }
@@ -364,7 +358,7 @@ fn is_variable_usage_allowed2(
 
         // 3.d. Let nullable_location_ty be the unwrapped
         // nullable type of location_ty.
-        return variable_ty.is_assignable_to(&location_ty.clone().nullable());
+        return variable_ty.is_assignable_to(&location_ty.as_ref().clone().nullable());
     }
 
     variable_ty.is_assignable_to(location_ty)

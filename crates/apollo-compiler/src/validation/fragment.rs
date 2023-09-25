@@ -5,7 +5,6 @@ use crate::{
     validation::RecursionStack,
     FileId, Node, NodeLocation, ValidationDatabase,
 };
-use apollo_parser::cst;
 use std::collections::{HashMap, HashSet};
 
 use super::operation::OperationValidationConfig;
@@ -324,17 +323,7 @@ pub fn validate_fragment_cycles(
     let mut visited = visited.push(def.name.to_string());
 
     if let Err(cycle) = detect_fragment_cycles(&named_fragments, &def.selection_set, &mut visited) {
-        let head_location = super::lookup_cst_location(
-            db.upcast(),
-            def.location().unwrap(),
-            |node: cst::FragmentDefinition| {
-                let fragment_token = node.fragment_token()?;
-                let name_token = node.fragment_name()?.name()?.ident_token()?;
-
-                Some(fragment_token.text_range().cover(name_token.text_range()))
-            },
-        )
-        .or(def.location());
+        let head_location = NodeLocation::recompose(def.location(), def.name.location());
 
         diagnostics.push(
             ApolloDiagnostic::new(

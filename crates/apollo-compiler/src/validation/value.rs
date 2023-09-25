@@ -3,30 +3,19 @@ use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
     validation::ValidationDatabase,
-    FileId, Node,
+    Node,
 };
-use apollo_parser::cst::{self, CstNode};
 
 fn unsupported_type(
     db: &dyn ValidationDatabase,
     value: &Node<ast::Value>,
-    declared_type: &ast::Type,
+    declared_type: &Node<ast::Type>,
 ) -> ApolloDiagnostic {
     // Careful: built in nodes do not have associated source code
-    let type_location = declared_type.inner_named_type().location().unwrap();
-    let type_location = if type_location.file_id == FileId::BUILT_IN {
+    let type_location = if declared_type.is_built_in() {
         None
     } else {
-        super::lookup_cst_location(db.upcast(), type_location, |mut cst: cst::Type| {
-            while let Some(parent) = cst.syntax().parent() {
-                if let Some(ty) = cst::Type::cast(parent) {
-                    cst = ty;
-                } else {
-                    break;
-                }
-            }
-            Some(cst.syntax().text_range())
-        })
+        declared_type.location()
     };
 
     let mut diagnostic = ApolloDiagnostic::new(
@@ -54,7 +43,7 @@ fn unsupported_type(
 */
 pub fn validate_values2(
     db: &dyn ValidationDatabase,
-    ty: &ast::Type,
+    ty: &Node<ast::Type>,
     argument: &Node<ast::Argument>,
     var_defs: &[Node<ast::VariableDefinition>],
 ) -> Vec<ApolloDiagnostic> {
@@ -65,7 +54,7 @@ pub fn validate_values2(
 
 pub fn value_of_correct_type2(
     db: &dyn ValidationDatabase,
-    ty: &ast::Type,
+    ty: &Node<ast::Type>,
     arg_value: &Node<ast::Value>,
     var_defs: &[Node<ast::VariableDefinition>],
     diagnostics: &mut Vec<ApolloDiagnostic>,

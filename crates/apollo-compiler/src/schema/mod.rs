@@ -466,7 +466,7 @@ impl Schema {
                     arguments: vec![InputValueDefinition {
                         description: None,
                         name: Name::new("name"),
-                        ty: ast::Type::new_named("String").non_null(),
+                        ty: ast::Type::new_named("String").non_null().into(),
                         default_value: None,
                         directives: Vec::new(),
                     }

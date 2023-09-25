@@ -280,13 +280,10 @@ impl SchemaDefinition {
         state.write("schema")?;
         serialize_directives(state, directives)?;
         state.write(" ")?;
-        curly_brackets_space_separated(
-            state,
-            root_operations,
-            |state, (operation_type, operation_name)| {
-                display!(state, "{}: {}", operation_type, operation_name)
-            },
-        )
+        curly_brackets_space_separated(state, root_operations, |state, op| {
+            let (operation_type, operation_name) = &**op;
+            display!(state, "{}: {}", operation_type, operation_name)
+        })
     }
 }
 
@@ -444,13 +441,10 @@ impl SchemaExtension {
         serialize_directives(state, directives)?;
         if !root_operations.is_empty() {
             state.write(" ")?;
-            curly_brackets_space_separated(
-                state,
-                root_operations,
-                |state, (operation_type, operation_name)| {
-                    display!(state, "{}: {}", operation_type, operation_name)
-                },
-            )?;
+            curly_brackets_space_separated(state, root_operations, |state, op| {
+                let (operation_type, operation_name) = &**op;
+                display!(state, "{}: {}", operation_type, operation_name)
+            })?;
         }
         Ok(())
     }
@@ -884,13 +878,6 @@ macro_rules! impl_display {
 
             /// Serialize to GraphQL syntax with the default configuration
             impl Display for crate::Arc<$ty> {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    self.serialize().fmt(f)
-                }
-            }
-
-            /// Serialize to GraphQL syntax with the default configuration
-            impl Display for Node<$ty> {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     self.serialize().fmt(f)
                 }

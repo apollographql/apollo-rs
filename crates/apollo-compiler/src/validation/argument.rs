@@ -1,33 +1,24 @@
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     validation::ValidationDatabase,
-    Node,
+    Node, NodeLocation,
 };
-use apollo_parser::cst::{self, CstNode};
 
 pub fn validate_arguments(
     db: &dyn ValidationDatabase,
     arguments: &[Node<ast::Argument>],
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-    let mut seen: HashSet<ast::Name> = HashSet::new();
-
-    let argument_location = |name: &ast::Name| {
-        super::lookup_cst_location(
-            db.upcast(),
-            name.location().unwrap(),
-            |cst: cst::Argument| Some(cst.syntax().text_range()),
-        )
-    };
+    let mut seen = HashMap::<_, Option<NodeLocation>>::new();
 
     for argument in arguments {
         let name = &argument.name;
         if let Some(original) = seen.get(name) {
-            let original_definition = argument_location(original).unwrap();
-            let redefined_definition = argument_location(name).unwrap();
+            let original_definition = original.unwrap();
+            let redefined_definition = argument.location().unwrap();
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
@@ -51,7 +42,7 @@ pub fn validate_arguments(
                 .help(format!("`{name}` argument must only be provided once.")),
             );
         } else {
-            seen.insert(name.clone());
+            seen.insert(name, argument.location());
         }
     }
 

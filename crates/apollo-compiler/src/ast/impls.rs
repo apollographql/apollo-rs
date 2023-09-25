@@ -547,7 +547,7 @@ impl FieldDefinition {
 
 impl InputValueDefinition {
     pub fn is_required(&self) -> bool {
-        matches!(self.ty, Type::NonNullNamed(_) | Type::NonNullList(_))
+        matches!(*self.ty, Type::NonNullNamed(_) | Type::NonNullList(_))
     }
 
     directive_methods!();
@@ -939,7 +939,7 @@ macro_rules! iter_extensible_method {
 
 impl TypeWithExtensions<SchemaDefinition> {
     iter_extensible_method!(directives, Node<Directive>);
-    iter_extensible_method!(root_operations, (OperationType, NamedType));
+    iter_extensible_method!(root_operations, Node<(OperationType, NamedType)>);
 }
 
 impl TypeWithExtensions<ObjectTypeDefinition> {

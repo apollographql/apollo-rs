@@ -9,8 +9,6 @@ use crate::{
     },
     Arc, FileId, HirDatabase, InputDatabase, Node, ReprDatabase,
 };
-use apollo_parser::cst;
-use apollo_parser::cst::CstNode;
 use std::collections::{hash_map::Entry, HashMap, HashSet};
 
 use super::field;
@@ -264,15 +262,16 @@ fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
                     let mut operations = Vec::with_capacity(3);
                     let query_name = ast::Name::new("Query");
                     if objects.contains_key(&query_name) {
-                        operations.push((ast::OperationType::Query, query_name));
+                        operations.push((ast::OperationType::Query, query_name).into());
                     }
                     let mutation_name = ast::Name::new("Mutation");
                     if objects.contains_key(&mutation_name) {
-                        operations.push((ast::OperationType::Mutation, mutation_name));
+                        operations.push((ast::OperationType::Mutation, mutation_name).into());
                     }
                     let subscription_name = ast::Name::new("Subscription");
                     if objects.contains_key(&subscription_name) {
-                        operations.push((ast::OperationType::Subscription, subscription_name));
+                        operations
+                            .push((ast::OperationType::Subscription, subscription_name).into());
                     }
                     operations
                 },
@@ -432,38 +431,30 @@ fn validate_executable_names(
     let mut diagnostics = Vec::new();
 
     // Different node types use different namespaces.
-    let mut fragment_scope = HashMap::<String, cst::Name>::new();
+    let mut fragment_scope = HashMap::new();
     let mut operation_scope = HashMap::new();
 
-    let executable_definitions = db
-        .cst(file_id)
-        .document()
-        .syntax()
-        .children()
-        .filter_map(cst::Definition::cast)
-        .filter(|def| def.is_executable_definition());
-
-    for cst_def in executable_definitions {
-        let ty_ = match cst_def {
-            cst::Definition::OperationDefinition(_) => "operation",
-            cst::Definition::FragmentDefinition(_) => "fragment",
+    for ast_def in &db.ast(file_id).definitions {
+        let ty_ = match ast_def {
+            ast::Definition::OperationDefinition(_) => "operation",
+            ast::Definition::FragmentDefinition(_) => "fragment",
             // Type system definitions are not checked here.
-            _ => unreachable!(),
+            _ => continue,
         };
-        let scope = match cst_def {
-            cst::Definition::OperationDefinition(_) => &mut operation_scope,
-            cst::Definition::FragmentDefinition(_) => &mut fragment_scope,
+        let scope = match ast_def {
+            ast::Definition::OperationDefinition(_) => &mut operation_scope,
+            ast::Definition::FragmentDefinition(_) => &mut fragment_scope,
             // Type system definitions are not checked here.
             _ => unreachable!(),
         };
 
-        if let Some(name_node) = cst_def.name() {
-            let name = &*name_node.text();
-            match scope.entry(name.to_string()) {
+        if let Some(name_node) = ast_def.name() {
+            let name = name_node.as_str();
+            match scope.entry(name_node) {
                 Entry::Occupied(entry) => {
-                    let original = entry.get();
-                    let original_definition = (file_id, original.syntax().text_range());
-                    let redefined_definition = (file_id, name_node.syntax().text_range());
+                    let original: &&ast::Name = entry.get();
+                    let original_definition = original.location().unwrap();
+                    let redefined_definition = name_node.location().unwrap();
 
                     diagnostics.push(
                         ApolloDiagnostic::new(
@@ -471,7 +462,7 @@ fn validate_executable_names(
                             redefined_definition.into(),
                             DiagnosticData::UniqueDefinition {
                                 ty: ty_,
-                                name: name.to_string(),
+                                name: name.to_owned(),
                                 original_definition: original_definition.into(),
                                 redefined_definition: redefined_definition.into(),
                             },

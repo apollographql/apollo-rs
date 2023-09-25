@@ -3,10 +3,9 @@ use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
     validation::RecursionStack,
-    Node, ValidationDatabase,
+    Node, NodeLocation, ValidationDatabase,
 };
-use apollo_parser::cst::{self, CstNode};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 /// This struct just groups functions that are used to find self-referential directives.
 /// The way to use it is to call `FindRecursiveDirective::check`.
@@ -152,19 +151,13 @@ pub fn validate_directive_definition(
         let Some(definition_location) = def.location() else {
             return vec![];
         };
+        let Some(head_location) = NodeLocation::recompose(def.location(), def.name.location())
+        else {
+            return vec![];
+        };
         let Some(directive_location) = directive.location() else {
             return vec![];
         };
-        let head_location = super::lookup_cst_location(
-            db.upcast(),
-            definition_location,
-            |node: cst::DirectiveDefinition| {
-                let directive_token = node.directive_token()?;
-                let name_token = node.name()?.ident_token()?;
-
-                Some(directive_token.text_range().cover(name_token.text_range()))
-            },
-        );
 
         diagnostics.push(
             ApolloDiagnostic::new(
@@ -174,10 +167,7 @@ pub fn validate_directive_definition(
                     name: def.name.to_string(),
                 },
             )
-            .label(Label::new(
-                head_location.unwrap_or(definition_location),
-                "recursive directive definition",
-            ))
+            .label(Label::new(head_location, "recursive directive definition"))
             .label(Label::new(directive_location, "refers to itself here")),
         );
     }
@@ -209,38 +199,25 @@ pub fn validate_directives<'dir>(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    let mut seen_directives = HashSet::<ast::Name>::new();
+    let mut seen_directives = HashMap::<_, NodeLocation>::new();
 
     let schema = db.schema();
     for dir in dirs {
         diagnostics.extend(super::argument::validate_arguments(db, &dir.arguments));
 
         let name = &dir.name;
-        let Some(loc) = dir.location() else { continue };
+        let Some(loc) = dir.location() else {
+            continue;
+        };
         let directive_definition = schema.directive_definitions.get(name);
 
-        if let Some(original) = seen_directives.get(name) {
+        if let Some(&original_loc) = seen_directives.get(name) {
             let is_repeatable = directive_definition
                 .map(|def| def.repeatable)
                 // Assume unknown directives are repeatable to avoid producing confusing diagnostics
                 .unwrap_or(true);
 
             if !is_repeatable {
-                let original_loc = super::lookup_cst_location(
-                    db.upcast(),
-                    original
-                        .location()
-                        .expect("undefined original directive location"),
-                    |cst: cst::Directive| {
-                        Some(
-                            cst.at_token()?
-                                .text_range()
-                                .cover(cst.name()?.syntax().text_range()),
-                        )
-                    },
-                )
-                .or(original.location())
-                .expect("undefined original directive location");
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
@@ -261,8 +238,8 @@ pub fn validate_directives<'dir>(
                     )),
                 );
             }
-        } else {
-            seen_directives.insert(dir.name.clone());
+        } else if let Some(loc) = NodeLocation::recompose(dir.location(), dir.name.location()) {
+            seen_directives.insert(&dir.name, loc);
         }
 
         if let Some(directive_definition) = directive_definition {
