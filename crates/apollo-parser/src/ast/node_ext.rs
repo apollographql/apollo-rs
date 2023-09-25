@@ -167,6 +167,8 @@ fn unescape_string(input: &str) -> String {
                     break;
                 };
 
+                // TODO: https://github.com/apollographql/apollo-rs/issues/657 needs
+                // changes both here and in `lexer/mod.rs`
                 let mut unicode = || {
                     // 1. Let value be the 16-bit hexadecimal value represented
                     // by the sequence of hexadecimal digits within EscapedUnicode.

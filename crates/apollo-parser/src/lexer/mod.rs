@@ -326,7 +326,24 @@ impl<'a> Cursor<'a> {
                     _ => {
                         if remaining <= 1 {
                             state = State::StringLiteral;
-
+                            let hex_end = self.offset + 1;
+                            let hex_start = hex_end - 4;
+                            let hex = &self.source[hex_start..hex_end];
+                            // `is_ascii_hexdigit()` checks in previous iterations ensures
+                            // this `unwrap()` does not panic:
+                            let code_point = u32::from_str_radix(hex, 16).unwrap();
+                            if char::from_u32(code_point).is_none() {
+                                // TODO: https://github.com/apollographql/apollo-rs/issues/657 needs
+                                // changes both here and in `ast/node_ext.rs`
+                                let escape_sequence_start = hex_start - 2; // include "\u"
+                                let escape_sequence = &self.source[escape_sequence_start..hex_end];
+                                self.add_err(Error::new(
+                                    "surrogate code point is invalid in unicode escape sequence \
+                                     (paired surrogate not supported yet: \
+                                     https://github.com/apollographql/apollo-rs/issues/657)",
+                                    escape_sequence.to_owned(),
+                                ));
+                            }
                             continue;
                         }
 
