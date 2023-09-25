@@ -41,9 +41,7 @@ fn parse<'a>(p: &mut Parser<'a>) -> Result<(), Token<'a>> {
                 // type, so both opening and closing brackets `[]`.
                 p.err_at_token(&token, "expected item type");
             }
-            if let Some(T![']']) = p.peek() {
-                p.eat(S![']']);
-            }
+            p.expect(T![']'], S![']'])
         }
         Some(TokenKind::Name) => {
             let _guard = p.start_node(SyntaxKind::NAMED_TYPE);
