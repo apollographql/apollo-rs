@@ -701,7 +701,7 @@ impl IntValue {
     ///
     /// To convert an `i32`, use `from` or `into` instead.
     pub fn new_parsed(text: &str) -> Self {
-        debug_assert!(Self::valid_syntax(text));
+        debug_assert!(IntValue::valid_syntax(text), "{text:?}");
         Self(text.into())
     }
 
@@ -744,23 +744,31 @@ impl FloatValue {
     ///
     /// To convert an `f64`, use `from` or `into` instead.
     pub fn new_parsed(text: &str) -> Self {
-        debug_assert!(Self::valid_syntax(text));
+        debug_assert!(FloatValue::valid_syntax(text), "{text:?}");
         Self(text.into())
     }
 
-    fn valid_syntax(mut text: &str) -> bool {
+    fn valid_syntax(text: &str) -> bool {
         if let Some((mantissa, exponent)) = text.split_once(['e', 'E']) {
             let exponent = exponent.strip_prefix(['+', '-']).unwrap_or(exponent);
             if !exponent.bytes().all(|b| b.is_ascii_digit()) {
                 return false;
             }
-            text = mantissa
+            if let Some((int, fract)) = mantissa.split_once('.') {
+                Self::valid_fractional_syntax(int, fract)
+            } else {
+                IntValue::valid_syntax(mantissa)
+            }
+        } else {
+            text.split_once('.')
+                .is_some_and(|(int, fract)| Self::valid_fractional_syntax(int, fract))
         }
-        text.split_once('.').is_some_and(|(integer, fractional)| {
-            IntValue::valid_syntax(integer)
-                && !fractional.is_empty()
-                && fractional.bytes().all(|b| b.is_ascii_digit())
-        })
+    }
+
+    fn valid_fractional_syntax(integer: &str, fractional: &str) -> bool {
+        IntValue::valid_syntax(integer)
+            && !fractional.is_empty()
+            && fractional.bytes().all(|b| b.is_ascii_digit())
     }
 
     /// Returns the string representation
@@ -793,17 +801,20 @@ fn try_to_f64(text: &str) -> Result<f64, FloatOverflowError> {
 
 impl From<i32> for IntValue {
     fn from(value: i32) -> Self {
-        Self(value.to_string())
+        let text = value.to_string();
+        debug_assert!(IntValue::valid_syntax(&text), "{text:?}");
+        Self(text)
     }
 }
 
 impl From<f64> for FloatValue {
     fn from(value: f64) -> Self {
-        let mut value = value.to_string();
-        if !value.contains('.') {
-            value.push_str(".0")
+        let mut text = value.to_string();
+        if !text.contains('.') {
+            text.push_str(".0")
         }
-        Self(value)
+        debug_assert!(FloatValue::valid_syntax(&text), "{text:?}");
+        Self(text)
     }
 }
 
