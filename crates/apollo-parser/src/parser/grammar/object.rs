@@ -104,7 +104,13 @@ fn implements_interface(p: &mut Parser, is_interfaces: bool) {
             ty::named_type(p);
             if let Some(node) = p.peek_data() {
                 if !is_definition(node) {
+                    // TODO: use a loop instead of recursion
+                    if p.recursion_limit.check_and_increment() {
+                        p.limit_err("parser recursion limit reached");
+                        return;
+                    }
                     implements_interface(p, true);
+                    p.recursion_limit.decrement()
                 }
 
                 return;

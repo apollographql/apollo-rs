@@ -18,4 +18,4 @@
             - WHITESPACE@20..21 "\n"
             - R_CURLY@21..22 "}"
 - ERROR@9:10 "expected a Variable Definition" )
-recursion limit: 4096, high: 1
+recursion limit: 500, high: 1

@@ -86,6 +86,19 @@ pub struct Parser<'a> {
     accept_errors: bool,
 }
 
+/// Chosen experimentally with:
+///
+/// * apollo-parser 0.6.2+ (e05abbf4f)
+/// * Rust 1.72.1
+/// * aarch64-apple-darwin
+/// * Unoptimized (default `cargo test` profile)
+///
+/// This couldn’t be set to much more than 2000 before the `recursion_limit` test below
+/// hit "fatal runtime error: stack overflow"
+///
+/// Defaulting to around a quarter of that, to keep a comfortable safety margin.
+const DEFAULT_RECURSION_LIMIT: usize = 500;
+
 impl<'a> Parser<'a> {
     /// Create a new instance of a parser given an input string.
     pub fn new(input: &'a str) -> Self {
@@ -97,7 +110,7 @@ impl<'a> Parser<'a> {
             builder: Rc::new(RefCell::new(SyntaxTreeBuilder::new())),
             ignored: vec![],
             errors: Vec::new(),
-            recursion_limit: Default::default(),
+            recursion_limit: LimitTracker::new(DEFAULT_RECURSION_LIMIT),
             accept_errors: true,
         }
     }
@@ -453,7 +466,8 @@ impl Checkpoint {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Error, Parser};
+    use super::DEFAULT_RECURSION_LIMIT;
+    use crate::{Error, Parser, SyntaxTree};
     use expect_test::expect;
 
     #[test]
@@ -500,7 +514,10 @@ mod tests {
         let parser = Parser::new(source).recursion_limit(3).token_limit(200);
         let ast = parser.parse();
         let errors = ast.errors().collect::<Vec<_>>();
-        assert_eq!(errors, &[&Error::limit("parser limit(3) reached", 121),]);
+        assert_eq!(
+            errors,
+            &[&Error::limit("parser recursion limit reached", 121),]
+        );
     }
 
     #[test]
@@ -600,5 +617,171 @@ mod tests {
             .parse();
         // token count includes EOF token.
         assert_eq!(ast.token_limit().high, 26);
+    }
+
+    #[test]
+    fn recursion_limit() {
+        // A factor 50 makes this test to run in ~1 second on a laptop from 2021,
+        // in unoptimized mode
+        const SMASH_THE_STACK_FACTOR: usize = 50;
+
+        wide(2, |ast| assert_eq!(ast.errors, []));
+        wide(DEFAULT_RECURSION_LIMIT - 2, |ast| {
+            assert_eq!(ast.errors.len(), 0, "{:?}", ast.errors[0])
+        });
+        wide(DEFAULT_RECURSION_LIMIT * SMASH_THE_STACK_FACTOR, |_ast| {
+            // TODO: remove use of recursion to parse repetition and uncomment:
+            // assert_eq!(ast.errors.len(), 0)
+        });
+
+        deep(2, |ast| assert_eq!(ast.errors, []));
+        deep(DEFAULT_RECURSION_LIMIT - 2, |ast| {
+            assert_eq!(ast.errors.len(), 0, "{:?}", ast.errors[0])
+        });
+        deep(DEFAULT_RECURSION_LIMIT * SMASH_THE_STACK_FACTOR, |ast| {
+            // Parsing nested structures without recursion on the call stack
+            // is possible but not as easy as it would require an explicit stack.
+
+            // The recursion limit triggered and protected against stack overflow.
+            assert_eq!(ast.errors.len(), 1);
+            assert!(ast.errors[0].message.contains("recursion limit reached"));
+        });
+
+        fn deep(count: usize, each: impl Fn(SyntaxTree)) {
+            let check = |input: String| each(Parser::new(&input).parse());
+
+            // Nested list type
+            let mut doc = String::new();
+            doc.push_str("type O { field: ");
+            doc.push_str(&"[".repeat(count));
+            doc.push_str("Int");
+            doc.push_str(&"]".repeat(count));
+            doc.push_str(" }");
+            check(doc);
+
+            // Nested list value
+            let mut doc = String::new();
+            doc.push_str("type O { field(arg: T = ");
+            doc.push_str(&"[".repeat(count));
+            doc.push_str("0");
+            doc.push_str(&"]".repeat(count));
+            doc.push_str("): Int }");
+            check(doc);
+
+            // Nested object value
+            let mut doc = String::new();
+            doc.push_str("type O { field(arg: T = ");
+            doc.push_str(&"{f: ".repeat(count));
+            doc.push_str("0");
+            doc.push_str(&"}".repeat(count));
+            doc.push_str("): Int }");
+            check(doc);
+
+            // Nested selection set
+            let mut doc = String::new();
+            doc.push_str("query { ");
+            doc.push_str(&"f { ".repeat(count));
+            doc.push_str("f ");
+            doc.push_str(&"}".repeat(count));
+            doc.push_str("}");
+            check(doc);
+        }
+
+        fn wide(count: usize, each: impl Fn(SyntaxTree)) {
+            let check = |input: String| each(Parser::new(&input).parse());
+
+            // Repeated top-level definitions
+            let mut doc = String::new();
+            doc.push_str(&"directive @d on FIELD ".repeat(count));
+            check(doc);
+
+            // Repeated directive applications
+            let mut doc = String::new();
+            doc.push_str("scalar Url");
+            doc.push_str(&" @d".repeat(count));
+            check(doc);
+
+            // Repeated root operation
+            let mut doc = String::new();
+            doc.push_str("schema {");
+            doc.push_str(&" query: Q".repeat(count));
+            doc.push_str(" }");
+            check(doc);
+
+            // Repeated implements interface
+            let mut doc = String::new();
+            doc.push_str("type O implements");
+            doc.push_str(&" & I".repeat(count));
+            check(doc);
+
+            // Repeated object type field
+            let mut doc = String::new();
+            doc.push_str("type O {");
+            doc.push_str(&" f: T".repeat(count));
+            doc.push_str("}");
+            check(doc);
+
+            // Repeated enum value field
+            let mut doc = String::new();
+            doc.push_str("enum E {");
+            doc.push_str(&" V".repeat(count));
+            doc.push_str("}");
+            check(doc);
+
+            // Repeated union member
+            let mut doc = String::new();
+            doc.push_str("union U = ");
+            doc.push_str(&" | T".repeat(count));
+            check(doc);
+
+            // Repeated input object type field
+            let mut doc = String::new();
+            doc.push_str("input In {");
+            doc.push_str(&" f: T".repeat(count));
+            doc.push_str("}");
+            check(doc);
+
+            // Repeated input object value field
+            let mut doc = String::new();
+            doc.push_str("type O { field(arg: T = {");
+            doc.push_str(&" f: 0".repeat(count));
+            doc.push_str(" }): Int }");
+            check(doc);
+
+            // Repeated list value item
+            let mut doc = String::new();
+            doc.push_str("type O { field(arg: T = [");
+            doc.push_str(&" 0,".repeat(count));
+            doc.push_str(" ]): Int }");
+            check(doc);
+
+            // Repeated field argument definitions
+            let mut doc = String::new();
+            doc.push_str("type O { field(");
+            doc.push_str(&"a: T ".repeat(count));
+            doc.push_str("): Int }");
+            check(doc);
+
+            // Repeated field selection
+            let mut doc = String::new();
+            doc.push_str("query {");
+            doc.push_str(&" f".repeat(count));
+            doc.push_str(" }");
+            check(doc);
+
+            // Repeated field argument
+            let mut doc = String::new();
+            doc.push_str("query { f(");
+            doc.push_str(&" a: 0".repeat(count));
+            doc.push_str(") }");
+            check(doc);
+
+            // Repeated variable definition
+            let mut doc = String::new();
+            doc.push_str("query Q(");
+            doc.push_str(&" $v: Int".repeat(count));
+            doc.push_str(" ) { f }");
+            check(doc);
+        }
     }
 }

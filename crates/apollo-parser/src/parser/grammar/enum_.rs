@@ -101,7 +101,14 @@ pub(crate) fn enum_value_definition(p: &mut Parser) {
         }
         if p.peek().is_some() {
             guard.finish_node();
-            return enum_value_definition(p);
+            // TODO: use a loop instead of recursion
+            if p.recursion_limit.check_and_increment() {
+                p.limit_err("parser recursion limit reached");
+                return;
+            }
+            enum_value_definition(p);
+            p.recursion_limit.decrement();
+            return;
         }
     }
 

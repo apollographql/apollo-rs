@@ -29,4 +29,4 @@
 - ERROR@36:37 "expected R_CURLY, got ]" ]
 - ERROR@36:37 "expected a StringValue, Name or OperationDefinition" ]
 - ERROR@38:39 "expected a StringValue, Name or OperationDefinition" }
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 2

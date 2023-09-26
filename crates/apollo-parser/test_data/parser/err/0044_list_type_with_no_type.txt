@@ -57,4 +57,4 @@
 - ERROR@65:66 "expected a StringValue, Name or OperationDefinition" ]
 - ERROR@66:67 "expected a StringValue, Name or OperationDefinition" ]
 - ERROR@68:69 "expected a StringValue, Name or OperationDefinition" }
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 3

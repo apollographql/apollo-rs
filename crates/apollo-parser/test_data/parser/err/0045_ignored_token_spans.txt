@@ -37,4 +37,4 @@
     - WHITESPACE@114..115 "\n"
 - ERROR@0:4 "expected definition" cats
 - ERROR@78:82 "expected definition" cats
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 0

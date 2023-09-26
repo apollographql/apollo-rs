@@ -47,4 +47,4 @@ type Vehicle @key(fields: "
 }
 
 - ERROR@237:237 "expected R_PAREN, got EOF" EOF
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 2

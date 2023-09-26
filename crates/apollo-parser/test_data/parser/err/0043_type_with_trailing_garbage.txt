@@ -58,4 +58,4 @@
             - R_CURLY@80..81 "}"
     - WHITESPACE@81..82 "\n"
 - ERROR@48:52 "expected a type" name
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 1

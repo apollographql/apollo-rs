@@ -712,4 +712,4 @@
             - WHITESPACE@1925..1926 "\n"
             - R_CURLY@1926..1927 "}"
     - WHITESPACE@1927..1928 "\n"
-recursion limit: 4096, high: 3
+recursion limit: 500, high: 3

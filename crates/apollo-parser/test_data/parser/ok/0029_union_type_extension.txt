@@ -25,4 +25,4 @@
             - NAMED_TYPE@48..54
                 - NAME@48..54
                     - IDENT@48..54 "Person"
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 2

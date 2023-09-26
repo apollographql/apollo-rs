@@ -23,7 +23,15 @@ pub(crate) fn root_operation_type_definition(p: &mut Parser, is_operation_type: 
             ty::named_type(p);
             if p.peek().is_some() {
                 guard.finish_node();
-                return root_operation_type_definition(p, true);
+
+                // TODO use a loop instead of recursion
+                if p.recursion_limit.check_and_increment() {
+                    p.limit_err("parser recursion limit reached");
+                    return;
+                }
+                root_operation_type_definition(p, true);
+                p.recursion_limit.decrement();
+                return;
             }
         } else {
             p.err("expected a Name Type");
@@ -61,14 +69,14 @@ pub(crate) fn operation_definition(p: &mut Parser) {
             }
 
             match p.peek() {
-                Some(T!['{']) => selection::top_selection_set(p),
+                Some(T!['{']) => selection::selection_set(p),
                 _ => p.err_and_pop("expected a Selection Set"),
             }
         }
         Some(T!['{']) => {
             let _g = p.start_node(SyntaxKind::OPERATION_DEFINITION);
 
-            selection::top_selection_set(p)
+            selection::selection_set(p)
         }
         _ => p.err_and_pop("expected an Operation Type or a Selection Set"),
     }

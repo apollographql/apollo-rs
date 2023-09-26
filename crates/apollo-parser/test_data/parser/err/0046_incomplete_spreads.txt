@@ -16,4 +16,4 @@
             - R_CURLY@15..16 "}"
     - WHITESPACE@16..17 "\n"
 - ERROR@10:13 "expected an Inline Fragment or a Fragment Spread" ...
-recursion limit: 4096, high: 2
+recursion limit: 500, high: 2

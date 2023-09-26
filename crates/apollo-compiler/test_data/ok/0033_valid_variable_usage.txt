@@ -224,4 +224,4 @@
             - WHITESPACE@508..509 "\n"
             - R_CURLY@509..510 "}"
     - WHITESPACE@510..512 "\n\n"
-recursion limit: 4096, high: 2
+recursion limit: 500, high: 4
