@@ -2,7 +2,7 @@ use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
-    validation::RecursionStack,
+    validation::{RecursionGuard, RecursionStack},
     Node, NodeLocation, ValidationDatabase,
 };
 use std::collections::{HashMap, HashSet};
@@ -16,7 +16,7 @@ struct FindRecursiveDirective<'s> {
 impl FindRecursiveDirective<'_> {
     fn type_definition(
         &self,
-        seen: &mut RecursionStack<'_>,
+        seen: &mut RecursionGuard<'_>,
         def: &schema::ExtendedType,
     ) -> Result<(), Node<ast::Directive>> {
         match def {
@@ -51,7 +51,7 @@ impl FindRecursiveDirective<'_> {
 
     fn input_value(
         &self,
-        seen: &mut RecursionStack<'_>,
+        seen: &mut RecursionGuard<'_>,
         input_value: &Node<ast::InputValueDefinition>,
     ) -> Result<(), Node<ast::Directive>> {
         for directive in &input_value.directives {
@@ -68,7 +68,7 @@ impl FindRecursiveDirective<'_> {
 
     fn enum_value(
         &self,
-        seen: &mut RecursionStack<'_>,
+        seen: &mut RecursionGuard<'_>,
         enum_value: &Node<ast::EnumValueDefinition>,
     ) -> Result<(), Node<ast::Directive>> {
         for directive in &enum_value.directives {
@@ -80,7 +80,7 @@ impl FindRecursiveDirective<'_> {
 
     fn directives(
         &self,
-        seen: &mut RecursionStack<'_>,
+        seen: &mut RecursionGuard<'_>,
         directives: &[schema::Component<ast::Directive>],
     ) -> Result<(), Node<ast::Directive>> {
         for directive in directives {
@@ -91,12 +91,12 @@ impl FindRecursiveDirective<'_> {
 
     fn directive(
         &self,
-        seen: &mut RecursionStack<'_>,
+        seen: &mut RecursionGuard<'_>,
         directive: &Node<ast::Directive>,
     ) -> Result<(), Node<ast::Directive>> {
         if !seen.contains(&directive.name) {
             if let Some(def) = self.schema.directive_definitions.get(&directive.name) {
-                self.directive_definition(seen.push(directive.name.to_string()), def)?;
+                self.directive_definition(seen.push(&directive.name), def)?;
             }
         } else if seen.first() == Some(&directive.name) {
             // Only report an error & bail out early if this is the *initial* directive.
@@ -111,10 +111,10 @@ impl FindRecursiveDirective<'_> {
 
     fn directive_definition(
         &self,
-        mut seen: RecursionStack<'_>,
+        mut seen: RecursionGuard<'_>,
         def: &Node<ast::DirectiveDefinition>,
     ) -> Result<(), Node<ast::Directive>> {
-        let mut guard = seen.push(def.name.to_string());
+        let mut guard = seen.push(&def.name);
         for input_value in &def.arguments {
             self.input_value(&mut guard, input_value)?;
         }
@@ -126,8 +126,9 @@ impl FindRecursiveDirective<'_> {
         schema: &schema::Schema,
         directive_def: &Node<ast::DirectiveDefinition>,
     ) -> Result<(), Node<ast::Directive>> {
+        let mut recursion_stack = RecursionStack::new();
         FindRecursiveDirective { schema }
-            .directive_definition(RecursionStack(&mut vec![]), directive_def)
+            .directive_definition(recursion_stack.guard(), directive_def)
     }
 }
 

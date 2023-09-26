@@ -2,7 +2,7 @@ use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
-    validation::RecursionStack,
+    validation::{RecursionGuard, RecursionStack},
     Node, ValidationDatabase,
 };
 use std::collections::HashMap;
@@ -16,7 +16,7 @@ struct FindRecursiveInputValue<'a> {
 impl FindRecursiveInputValue<'_> {
     fn input_value_definition(
         &self,
-        seen: &mut RecursionStack<'_>,
+        seen: &mut RecursionGuard<'_>,
         def: &Node<ast::InputValueDefinition>,
     ) -> Result<(), Node<ast::InputValueDefinition>> {
         return match &*def.ty {
@@ -27,7 +27,7 @@ impl FindRecursiveInputValue<'_> {
             ast::Type::NonNullNamed(name) => {
                 if !seen.contains(name) {
                     if let Some(def) = self.db.ast_types().input_objects.get(name) {
-                        self.input_object_definition(seen.push(name.to_string()), def)?
+                        self.input_object_definition(seen.push(name), def)?
                     }
                 } else if seen.first() == Some(name) {
                     return Err(def.clone());
@@ -41,10 +41,10 @@ impl FindRecursiveInputValue<'_> {
 
     fn input_object_definition(
         &self,
-        mut seen: RecursionStack<'_>,
+        mut seen: RecursionGuard<'_>,
         input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
     ) -> Result<(), Node<ast::InputValueDefinition>> {
-        let mut guard = seen.push(input_object.definition.name.to_string());
+        let mut guard = seen.push(&input_object.definition.name);
         for input_value in input_object.fields() {
             self.input_value_definition(&mut guard, input_value)?;
         }
@@ -56,8 +56,9 @@ impl FindRecursiveInputValue<'_> {
         db: &dyn ValidationDatabase,
         input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
     ) -> Result<(), Node<ast::InputValueDefinition>> {
+        let mut recursion_stack = RecursionStack::new();
         FindRecursiveInputValue { db }
-            .input_object_definition(RecursionStack(&mut vec![]), input_object)
+            .input_object_definition(recursion_stack.guard(), input_object)
     }
 }
 
