@@ -7,38 +7,43 @@ use std::collections::{HashMap, HashSet};
 /// Given a type definition, find all the type names that can be used for fragment spreading.
 ///
 /// Spec: https://spec.graphql.org/October2021/#GetPossibleTypes()
-pub(crate) fn get_possible_types<'a>(
-    schema: &'a schema::Schema,
-    type_name: &'a ast::Name,
-) -> HashSet<&'a ast::NamedType> {
+fn get_possible_types(
+    db: &dyn ValidationDatabase,
+    type_name: &ast::Name,
+) -> HashSet<ast::NamedType> {
+    let schema = db.schema();
+    let implementers_map = db.implementers_map();
+
     match schema.types.get(type_name) {
         // 1. If `type` is an object type, return a set containing `type`.
-        Some(schema::ExtendedType::Object(_)) => std::iter::once(type_name).collect(),
+        Some(schema::ExtendedType::Object(_)) => {
+            let mut set = HashSet::new();
+            set.insert(type_name.clone());
+            set
+        }
         // 2. If `type` is an interface type, return the set of types implementing `type`.
-        Some(schema::ExtendedType::Interface(_)) => {
-            // TODO(@goto-bus-stop): use db.implementers_map()
-            schema
-                .types
+        Some(schema::ExtendedType::Interface(_)) => match implementers_map.get(type_name) {
+            // Only return object types.
+            Some(implementers) => implementers
                 .iter()
-                .filter_map(|(name, ty)| {
-                    let implements = match ty {
-                        schema::ExtendedType::Object(object) => &object.implements_interfaces,
-                        _ => return None,
-                    };
-
-                    if implements.contains(type_name) {
-                        Some(name)
+                .filter_map(|name| {
+                    if matches!(
+                        schema.types.get(name),
+                        Some(schema::ExtendedType::Object(_))
+                    ) {
+                        Some(name.clone())
                     } else {
                         None
                     }
                 })
-                .collect()
-        }
+                .collect(),
+            None => Default::default(),
+        },
         // 3. If `type` is a union type, return the set of possible types of `type`.
         Some(schema::ExtendedType::Union(union_)) => union_
             .members
             .iter()
-            .map(|component| &component.name)
+            .map(|component| component.name.clone())
             .collect(),
         _ => Default::default(),
     }
@@ -65,8 +70,8 @@ fn validate_fragment_spread_type(
         return diagnostics;
     };
 
-    let concrete_parent_types = get_possible_types(&schema, against_type);
-    let concrete_condition_types = get_possible_types(&schema, type_condition);
+    let concrete_parent_types = get_possible_types(db, against_type);
+    let concrete_condition_types = get_possible_types(db, type_condition);
 
     let mut applicable_types = concrete_parent_types.intersection(&concrete_condition_types);
     if applicable_types.next().is_none() {
