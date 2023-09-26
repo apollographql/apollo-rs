@@ -620,6 +620,8 @@ mod tests {
     }
 
     #[test]
+    // single char v.s. multiple is less important than consistency between consecutive calls:
+    #[allow(clippy::single_char_add_str)]
     fn recursion_limit() {
         // A factor 50 makes this test to run in ~1 second on a laptop from 2021,
         // in unoptimized mode
