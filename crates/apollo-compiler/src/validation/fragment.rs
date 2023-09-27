@@ -2,7 +2,7 @@ use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
-    validation::RecursionStack,
+    validation::{RecursionGuard, RecursionStack},
     FileId, Node, NodeLocation, ValidationDatabase,
 };
 use std::collections::{HashMap, HashSet};
@@ -287,7 +287,7 @@ pub fn validate_fragment_cycles(
     fn detect_fragment_cycles(
         named_fragments: &HashMap<ast::Name, Node<ast::FragmentDefinition>>,
         selection_set: &[ast::Selection],
-        visited: &mut RecursionStack<'_>,
+        visited: &mut RecursionGuard<'_>,
     ) -> Result<(), ast::Selection> {
         for selection in selection_set {
             match selection {
@@ -303,7 +303,7 @@ pub fn validate_fragment_cycles(
                         detect_fragment_cycles(
                             named_fragments,
                             &fragment.selection_set,
-                            &mut visited.push(fragment.name.to_string()),
+                            &mut visited.push(&fragment.name),
                         )?;
                     }
                 }
@@ -317,12 +317,11 @@ pub fn validate_fragment_cycles(
         Ok(())
     }
 
-    // Split RecursionStack initialisation for lifetime reasons
-    let mut visited = vec![];
-    let mut visited = RecursionStack(&mut visited);
-    let mut visited = visited.push(def.name.to_string());
+    let mut visited = RecursionStack::with_root(def.name.clone());
 
-    if let Err(cycle) = detect_fragment_cycles(&named_fragments, &def.selection_set, &mut visited) {
+    if let Err(cycle) =
+        detect_fragment_cycles(&named_fragments, &def.selection_set, &mut visited.guard())
+    {
         let head_location = NodeLocation::recompose(def.location(), def.name.location());
 
         diagnostics.push(
