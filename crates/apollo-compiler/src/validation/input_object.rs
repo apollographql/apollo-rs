@@ -44,9 +44,8 @@ impl FindRecursiveInputValue<'_> {
         mut seen: RecursionGuard<'_>,
         input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
     ) -> Result<(), Node<ast::InputValueDefinition>> {
-        let mut guard = seen.push(&input_object.definition.name);
         for input_value in input_object.fields() {
-            self.input_value_definition(&mut guard, input_value)?;
+            self.input_value_definition(&mut seen, input_value)?;
         }
 
         Ok(())
@@ -56,7 +55,7 @@ impl FindRecursiveInputValue<'_> {
         db: &dyn ValidationDatabase,
         input_object: &ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
     ) -> Result<(), Node<ast::InputValueDefinition>> {
-        let mut recursion_stack = RecursionStack::new();
+        let mut recursion_stack = RecursionStack::with_root(input_object.definition.name.clone());
         FindRecursiveInputValue { db }
             .input_object_definition(recursion_stack.guard(), input_object)
     }

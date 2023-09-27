@@ -18,22 +18,19 @@ mod value;
 mod variable;
 
 use crate::NodeStr;
+use indexmap::IndexSet;
 pub use validation_db::{ValidationDatabase, ValidationStorage};
 
 /// Track used names in a recursive function.
 struct RecursionStack {
-    seen: Vec<NodeStr>,
+    seen: IndexSet<NodeStr>,
 }
 
 impl RecursionStack {
-    fn new() -> Self {
-        Self {
-            seen: Default::default(),
-        }
-    }
-
     fn with_root(root: NodeStr) -> Self {
-        Self { seen: vec![root] }
+        let mut seen = IndexSet::new();
+        seen.insert(root);
+        Self { seen }
     }
 
     /// Return the actual API for tracking recursive uses.
@@ -47,20 +44,23 @@ impl RecursionStack {
 /// Pass the result of `guard.push(name)` to recursive calls. Use `guard.contains(name)` to check
 /// if the name was used somewhere up the call stack. When a guard is dropped, its name is removed
 /// from the list.
-struct RecursionGuard<'a>(&'a mut Vec<NodeStr>);
+struct RecursionGuard<'a>(&'a mut IndexSet<NodeStr>);
 impl RecursionGuard<'_> {
     /// Mark that we saw a name.
     fn push(&mut self, name: &NodeStr) -> RecursionGuard<'_> {
-        self.0.push(name.clone());
+        debug_assert!(
+            self.0.insert(name.clone()),
+            "cannot push the same name twice to RecursionGuard, check contains() first"
+        );
         RecursionGuard(self.0)
     }
     /// Check if we saw a name somewhere up the call stack.
-    fn contains(&self, name: &str) -> bool {
+    fn contains(&self, name: &NodeStr) -> bool {
         self.0.iter().any(|seen| seen == name)
     }
     /// Return the name where we started.
-    fn first(&self) -> Option<&str> {
-        self.0.get(0).map(|s| s.as_str())
+    fn first(&self) -> Option<&NodeStr> {
+        self.0.first()
     }
 }
 

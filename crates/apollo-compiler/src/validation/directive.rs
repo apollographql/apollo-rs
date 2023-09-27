@@ -114,9 +114,8 @@ impl FindRecursiveDirective<'_> {
         mut seen: RecursionGuard<'_>,
         def: &Node<ast::DirectiveDefinition>,
     ) -> Result<(), Node<ast::Directive>> {
-        let mut guard = seen.push(&def.name);
         for input_value in &def.arguments {
-            self.input_value(&mut guard, input_value)?;
+            self.input_value(&mut seen, input_value)?;
         }
 
         Ok(())
@@ -126,7 +125,7 @@ impl FindRecursiveDirective<'_> {
         schema: &schema::Schema,
         directive_def: &Node<ast::DirectiveDefinition>,
     ) -> Result<(), Node<ast::Directive>> {
-        let mut recursion_stack = RecursionStack::new();
+        let mut recursion_stack = RecursionStack::with_root(directive_def.name.clone());
         FindRecursiveDirective { schema }
             .directive_definition(recursion_stack.guard(), directive_def)
     }
