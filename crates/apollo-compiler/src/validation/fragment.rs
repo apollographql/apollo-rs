@@ -21,24 +21,11 @@ fn get_possible_types(
             set.insert(type_name.clone());
             set
         }
-        // 2. If `type` is an interface type, return the set of types implementing `type`.
-        Some(schema::ExtendedType::Interface(_)) => match implementers_map.get(type_name) {
-            // Only return object types.
-            Some(implementers) => implementers
-                .iter()
-                .filter_map(|name| {
-                    if matches!(
-                        schema.types.get(name),
-                        Some(schema::ExtendedType::Object(_))
-                    ) {
-                        Some(name.clone())
-                    } else {
-                        None
-                    }
-                })
-                .collect(),
-            None => Default::default(),
-        },
+        // 2. If `type` is an interface type, return the set of object types implementing `type`.
+        Some(schema::ExtendedType::Interface(_)) => implementers_map
+            .get(type_name)
+            .map(|implementers| implementers.objects.clone())
+            .unwrap_or_default(),
         // 3. If `type` is a union type, return the set of possible types of `type`.
         Some(schema::ExtendedType::Union(union_)) => union_
             .members
