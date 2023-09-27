@@ -28,8 +28,6 @@ fuzz_target!(|data: &[u8]| {
     let js_diagnostics =
         router_bridge::validate::validate(&ts, &op).expect("js validation should succeed");
 
-    assert_eq!(js_diagnostics.errors.clone().unwrap().len(), 1);
-
     // early return if js and rust validation errors don't match
     let mut should_panic = false;
     match js_diagnostics.errors {
@@ -38,7 +36,7 @@ fuzz_target!(|data: &[u8]| {
                 should_panic = true;
                 debug!("JS ERRORS FOUND BUT NOT RUST");
                 for diag in js_diag {
-                    debug!("{}", diag)
+                    debug!("{}", diag);
                 }
             }
             Err(rust_diagnostics) => {
