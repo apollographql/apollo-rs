@@ -9,13 +9,6 @@ use std::fmt;
 use std::hash;
 use std::path::Path;
 
-pub(crate) fn directives_by_name<'def: 'name, 'name>(
-    directives: &'def [Node<Directive>],
-    name: &'name str,
-) -> impl Iterator<Item = &'def Node<Directive>> + 'name {
-    directives.iter().filter(move |dir| dir.name == name)
-}
-
 impl Document {
     /// Create an empty document
     pub fn new() -> Self {
@@ -216,36 +209,29 @@ impl Definition {
         }
     }
 
-    /// Returns an iterator of directives with the given name.
-    ///
-    /// This method is best for repeatable directives. For non-repeatable directives,
-    /// see [`directive_by_name`][Self::directive_by_name] (singular)
-    pub fn directives_by_name<'def: 'name, 'name>(
-        &'def self,
-        name: &'name str,
-    ) -> impl Iterator<Item = &'def Node<Directive>> + 'name {
+    pub fn directives(&self) -> &Directives {
+        static EMPTY: Directives = Directives(Vec::new());
         match self {
-            Self::OperationDefinition(def) => directives_by_name(&def.directives, name),
-            Self::FragmentDefinition(def) => directives_by_name(&def.directives, name),
-            Self::DirectiveDefinition(_) => directives_by_name(&[], name),
-            Self::SchemaDefinition(def) => directives_by_name(&def.directives, name),
-            Self::ScalarTypeDefinition(def) => directives_by_name(&def.directives, name),
-            Self::ObjectTypeDefinition(def) => directives_by_name(&def.directives, name),
-            Self::InterfaceTypeDefinition(def) => directives_by_name(&def.directives, name),
-            Self::UnionTypeDefinition(def) => directives_by_name(&def.directives, name),
-            Self::EnumTypeDefinition(def) => directives_by_name(&def.directives, name),
-            Self::InputObjectTypeDefinition(def) => directives_by_name(&def.directives, name),
-            Self::SchemaExtension(def) => directives_by_name(&def.directives, name),
-            Self::ScalarTypeExtension(def) => directives_by_name(&def.directives, name),
-            Self::ObjectTypeExtension(def) => directives_by_name(&def.directives, name),
-            Self::InterfaceTypeExtension(def) => directives_by_name(&def.directives, name),
-            Self::UnionTypeExtension(def) => directives_by_name(&def.directives, name),
-            Self::EnumTypeExtension(def) => directives_by_name(&def.directives, name),
-            Self::InputObjectTypeExtension(def) => directives_by_name(&def.directives, name),
+            Self::DirectiveDefinition(_) => &EMPTY,
+            Self::OperationDefinition(def) => &def.directives,
+            Self::FragmentDefinition(def) => &def.directives,
+            Self::SchemaDefinition(def) => &def.directives,
+            Self::ScalarTypeDefinition(def) => &def.directives,
+            Self::ObjectTypeDefinition(def) => &def.directives,
+            Self::InterfaceTypeDefinition(def) => &def.directives,
+            Self::UnionTypeDefinition(def) => &def.directives,
+            Self::EnumTypeDefinition(def) => &def.directives,
+            Self::InputObjectTypeDefinition(def) => &def.directives,
+            Self::SchemaExtension(def) => &def.directives,
+            Self::ScalarTypeExtension(def) => &def.directives,
+            Self::ObjectTypeExtension(def) => &def.directives,
+            Self::InterfaceTypeExtension(def) => &def.directives,
+            Self::UnionTypeExtension(def) => &def.directives,
+            Self::EnumTypeExtension(def) => &def.directives,
+            Self::InputObjectTypeExtension(def) => &def.directives,
         }
     }
 
-    directive_by_name_method!();
     serialize_method!();
 }
 
@@ -275,12 +261,10 @@ impl fmt::Debug for Definition {
 }
 
 impl OperationDefinition {
-    directive_methods!();
     serialize_method!();
 }
 
 impl FragmentDefinition {
-    directive_methods!();
     serialize_method!();
 }
 
@@ -289,7 +273,6 @@ impl DirectiveDefinition {
 }
 
 impl SchemaDefinition {
-    directive_methods!();
     serialize_method!();
 }
 impl Extensible for SchemaDefinition {
@@ -297,7 +280,6 @@ impl Extensible for SchemaDefinition {
 }
 
 impl ScalarTypeDefinition {
-    directive_methods!();
     serialize_method!();
 }
 impl Extensible for ScalarTypeDefinition {
@@ -305,7 +287,6 @@ impl Extensible for ScalarTypeDefinition {
 }
 
 impl ObjectTypeDefinition {
-    directive_methods!();
     serialize_method!();
 }
 impl Extensible for ObjectTypeDefinition {
@@ -313,7 +294,6 @@ impl Extensible for ObjectTypeDefinition {
 }
 
 impl InterfaceTypeDefinition {
-    directive_methods!();
     serialize_method!();
 }
 impl Extensible for InterfaceTypeDefinition {
@@ -321,7 +301,6 @@ impl Extensible for InterfaceTypeDefinition {
 }
 
 impl UnionTypeDefinition {
-    directive_methods!();
     serialize_method!();
 }
 impl Extensible for UnionTypeDefinition {
@@ -329,7 +308,6 @@ impl Extensible for UnionTypeDefinition {
 }
 
 impl EnumTypeDefinition {
-    directive_methods!();
     serialize_method!();
 }
 impl Extensible for EnumTypeDefinition {
@@ -337,7 +315,6 @@ impl Extensible for EnumTypeDefinition {
 }
 
 impl InputObjectTypeDefinition {
-    directive_methods!();
     serialize_method!();
 }
 impl Extensible for InputObjectTypeDefinition {
@@ -345,38 +322,92 @@ impl Extensible for InputObjectTypeDefinition {
 }
 
 impl SchemaExtension {
-    directive_methods!();
     serialize_method!();
 }
 
 impl ScalarTypeExtension {
-    directive_methods!();
     serialize_method!();
 }
 
 impl ObjectTypeExtension {
-    directive_methods!();
     serialize_method!();
 }
 
 impl InterfaceTypeExtension {
-    directive_methods!();
     serialize_method!();
 }
 
 impl UnionTypeExtension {
-    directive_methods!();
     serialize_method!();
 }
 
 impl EnumTypeExtension {
-    directive_methods!();
     serialize_method!();
 }
 
 impl InputObjectTypeExtension {
-    directive_methods!();
     serialize_method!();
+}
+
+impl Directives {
+    pub fn new() -> Self {
+        Self(Vec::new())
+    }
+
+    /// Returns an iterator of directives with the given name.
+    ///
+    /// This method is best for repeatable directives. For non-repeatable directives,
+    /// see [`directive_by_name`][Self::directive_by_name] (singular)
+    pub fn get_all<'def: 'name, 'name>(
+        &'def self,
+        name: &'name str,
+    ) -> impl Iterator<Item = &'def Node<Directive>> + 'name {
+        self.0.iter().filter(move |dir| dir.name == name)
+    }
+
+    /// Returns the first directive with the given name, if any.
+    ///
+    /// This method is best for non-repeatable directives. For repeatable directives,
+    /// see [`directives_by_name`][Self::directives_by_name] (plural)
+    pub fn get(&self, name: &str) -> Option<&Node<Directive>> {
+        self.get_all(name).next()
+    }
+
+    serialize_method!();
+}
+
+impl std::ops::Deref for Directives {
+    type Target = Vec<Node<Directive>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for Directives {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<'a> IntoIterator for &'a Directives {
+    type Item = &'a Node<Directive>;
+
+    type IntoIter = std::slice::Iter<'a, Node<Directive>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a mut Directives {
+    type Item = &'a mut Node<Directive>;
+
+    type IntoIter = std::slice::IterMut<'a, Node<Directive>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter_mut()
+    }
 }
 
 impl Directive {
@@ -455,7 +486,6 @@ impl From<OperationType> for DirectiveLocation {
 }
 
 impl VariableDefinition {
-    directive_methods!();
     serialize_method!();
 }
 
@@ -541,7 +571,6 @@ impl Type {
 }
 
 impl FieldDefinition {
-    directive_methods!();
     serialize_method!();
 }
 
@@ -550,12 +579,10 @@ impl InputValueDefinition {
         matches!(*self.ty, Type::NonNullNamed(_) | Type::NonNullList(_))
     }
 
-    directive_methods!();
     serialize_method!();
 }
 
 impl EnumValueDefinition {
-    directive_methods!();
     serialize_method!();
 }
 
@@ -587,17 +614,14 @@ impl Field {
         self.alias.as_ref().unwrap_or(&self.name)
     }
 
-    directive_methods!();
     serialize_method!();
 }
 
 impl FragmentSpread {
-    directive_methods!();
     serialize_method!();
 }
 
 impl InlineFragment {
-    directive_methods!();
     serialize_method!();
 }
 

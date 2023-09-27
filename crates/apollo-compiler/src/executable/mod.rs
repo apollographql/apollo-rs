@@ -1,5 +1,4 @@
 use crate::ast;
-use crate::ast::impls::directives_by_name;
 use crate::schema;
 use crate::Arc;
 use crate::FileId;
@@ -18,7 +17,8 @@ mod serialize;
 mod tests;
 
 pub use crate::ast::{
-    Argument, Directive, Name, NamedType, OperationType, Type, Value, VariableDefinition,
+    Argument, Directive, Directives, Name, NamedType, OperationType, Type, Value,
+    VariableDefinition,
 };
 
 /// Executable definitions, annotated with type information
@@ -43,7 +43,7 @@ pub struct ExecutableDocument {
 pub struct Operation {
     pub operation_type: OperationType,
     pub variables: Vec<Node<VariableDefinition>>,
-    pub directives: Vec<Node<Directive>>,
+    pub directives: Directives,
     pub selection_set: SelectionSet,
 }
 
@@ -54,7 +54,7 @@ pub enum OperationRef<'a> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Fragment {
-    pub directives: Vec<Node<Directive>>,
+    pub directives: Directives,
     pub selection_set: SelectionSet,
 }
 
@@ -78,20 +78,20 @@ pub struct Field {
     pub alias: Option<Name>,
     pub name: Name,
     pub arguments: Vec<Node<Argument>>,
-    pub directives: Vec<Node<Directive>>,
+    pub directives: Directives,
     pub selection_set: SelectionSet,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FragmentSpread {
     pub fragment_name: Name,
-    pub directives: Vec<Node<Directive>>,
+    pub directives: Directives,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InlineFragment {
     pub type_condition: Option<NamedType>,
-    pub directives: Vec<Node<Directive>>,
+    pub directives: Directives,
     pub selection_set: SelectionSet,
 }
 
@@ -336,16 +336,12 @@ impl Operation {
         self.operation_type == OperationType::Query
             && is_introspection_impl(document, &mut HashSet::new(), &self.selection_set)
     }
-
-    directive_methods!();
 }
 
 impl Fragment {
     pub fn type_condition(&self) -> &NamedType {
         &self.selection_set.ty
     }
-
-    directive_methods!();
 }
 
 impl SelectionSet {
@@ -399,22 +395,13 @@ impl SelectionSet {
 }
 
 impl Selection {
-    /// Returns an iterator of directives with the given name.
-    ///
-    /// This method is best for repeatable directives. For non-repeatable directives,
-    /// see [`directive_by_name`][Self::directive_by_name] (singular)
-    pub fn directives_by_name<'def: 'name, 'name>(
-        &'def self,
-        name: &'name str,
-    ) -> impl Iterator<Item = &'def Node<Directive>> + 'name {
+    pub fn directives(&self) -> &Directives {
         match self {
-            Selection::Field(field) => directives_by_name(&field.directives, name),
-            Selection::FragmentSpread(spread) => directives_by_name(&spread.directives, name),
-            Selection::InlineFragment(inline) => directives_by_name(&inline.directives, name),
+            Self::Field(sel) => &sel.directives,
+            Self::FragmentSpread(sel) => &sel.directives,
+            Self::InlineFragment(sel) => &sel.directives,
         }
     }
-
-    directive_by_name_method!();
 }
 
 impl From<Node<Field>> for Selection {
@@ -464,7 +451,7 @@ impl Field {
             alias: None,
             name: name.into(),
             arguments: Vec::new(),
-            directives: Vec::new(),
+            directives: Directives::new(),
             selection_set,
         }
     }
@@ -531,8 +518,6 @@ impl Field {
     pub fn inner_type_def<'a>(&self, schema: &'a Schema) -> Option<&'a schema::ExtendedType> {
         schema.types.get(self.ty().inner_named_type())
     }
-
-    directive_methods!();
 }
 
 impl InlineFragment {
@@ -541,7 +526,7 @@ impl InlineFragment {
         let selection_set = SelectionSet::new(type_condition.clone());
         Self {
             type_condition: Some(type_condition),
-            directives: Vec::new(),
+            directives: Directives::new(),
             selection_set,
         }
     }
@@ -549,7 +534,7 @@ impl InlineFragment {
     pub fn without_type_condition(parent_selection_set_type: impl Into<NamedType>) -> Self {
         Self {
             type_condition: None,
-            directives: Vec::new(),
+            directives: Directives::new(),
             selection_set: SelectionSet::new(parent_selection_set_type),
         }
     }
@@ -579,15 +564,13 @@ impl InlineFragment {
         self.selection_set.extend(selections);
         self
     }
-
-    directive_methods!();
 }
 
 impl FragmentSpread {
     pub fn new(fragment_name: impl Into<Name>) -> Self {
         Self {
             fragment_name: fragment_name.into(),
-            directives: Vec::new(),
+            directives: Directives::new(),
         }
     }
 
@@ -603,6 +586,4 @@ impl FragmentSpread {
         self.directives.extend(directives);
         self
     }
-
-    directive_methods!();
 }

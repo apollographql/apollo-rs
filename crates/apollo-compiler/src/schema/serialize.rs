@@ -46,7 +46,7 @@ impl Schema {
             Some(ast::Definition::SchemaDefinition(Node::new(
                 ast::SchemaDefinition {
                     description: self.description.clone(),
-                    directives: components(&self.directives, None),
+                    directives: ast::Directives(components(&self.directives, None)),
                     root_operations: root_ops(None),
                 },
             )))
@@ -54,7 +54,7 @@ impl Schema {
         .into_iter()
         .chain(schema_extensions.into_iter().map(move |ext| {
             ast::Definition::SchemaExtension(Node::new(ast::SchemaExtension {
-                directives: components(&self.directives, Some(ext)),
+                directives: ast::Directives(components(&self.directives, Some(ext))),
                 root_operations: root_ops(Some(ext)),
             }))
         }))
@@ -92,13 +92,13 @@ impl ScalarType {
             ast::ScalarTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
-                directives: components(&self.directives, None),
+                directives: ast::Directives(components(&self.directives, None)),
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
             ast::Definition::ScalarTypeExtension(Node::new(ast::ScalarTypeExtension {
                 name: name.clone(),
-                directives: components(&self.directives, Some(ext)),
+                directives: ast::Directives(components(&self.directives, Some(ext))),
             }))
         }))
     }
@@ -111,7 +111,7 @@ impl ObjectType {
                 description: self.description.clone(),
                 name: name.clone(),
                 implements_interfaces: names(&self.implements_interfaces, None),
-                directives: components(&self.directives, None),
+                directives: ast::Directives(components(&self.directives, None)),
                 fields: components(self.fields.values(), None),
             },
         )))
@@ -119,7 +119,7 @@ impl ObjectType {
             ast::Definition::ObjectTypeExtension(Node::new(ast::ObjectTypeExtension {
                 name: name.clone(),
                 implements_interfaces: names(&self.implements_interfaces, Some(ext)),
-                directives: components(&self.directives, Some(ext)),
+                directives: ast::Directives(components(&self.directives, Some(ext))),
                 fields: components(self.fields.values(), Some(ext)),
             }))
         }))
@@ -133,7 +133,7 @@ impl InterfaceType {
                 description: self.description.clone(),
                 name: name.clone(),
                 implements_interfaces: names(&self.implements_interfaces, None),
-                directives: components(&self.directives, None),
+                directives: ast::Directives(components(&self.directives, None)),
                 fields: components(self.fields.values(), None),
             },
         )))
@@ -141,7 +141,7 @@ impl InterfaceType {
             ast::Definition::InterfaceTypeExtension(Node::new(ast::InterfaceTypeExtension {
                 name: name.clone(),
                 implements_interfaces: names(&self.implements_interfaces, Some(ext)),
-                directives: components(&self.directives, Some(ext)),
+                directives: ast::Directives(components(&self.directives, Some(ext))),
                 fields: components(self.fields.values(), Some(ext)),
             }))
         }))
@@ -154,14 +154,14 @@ impl UnionType {
             ast::UnionTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
-                directives: components(&self.directives, None),
+                directives: ast::Directives(components(&self.directives, None)),
                 members: names(&self.members, None),
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
             ast::Definition::UnionTypeExtension(Node::new(ast::UnionTypeExtension {
                 name: name.clone(),
-                directives: components(&self.directives, Some(ext)),
+                directives: ast::Directives(components(&self.directives, Some(ext))),
                 members: names(&self.members, Some(ext)),
             }))
         }))
@@ -174,14 +174,14 @@ impl EnumType {
             ast::EnumTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
-                directives: components(&self.directives, None),
+                directives: ast::Directives(components(&self.directives, None)),
                 values: components(self.values.values(), None),
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
             ast::Definition::EnumTypeExtension(Node::new(ast::EnumTypeExtension {
                 name: name.clone(),
-                directives: components(&self.directives, Some(ext)),
+                directives: ast::Directives(components(&self.directives, Some(ext))),
                 values: components(self.values.values(), Some(ext)),
             }))
         }))
@@ -194,14 +194,14 @@ impl InputObjectType {
             ast::InputObjectTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
-                directives: components(&self.directives, None),
+                directives: ast::Directives(components(&self.directives, None)),
                 fields: components(self.fields.values(), None),
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
             ast::Definition::InputObjectTypeExtension(Node::new(ast::InputObjectTypeExtension {
                 name: name.clone(),
-                directives: components(&self.directives, Some(ext)),
+                directives: ast::Directives(components(&self.directives, Some(ext))),
                 fields: components(self.fields.values(), Some(ext)),
             }))
         }))

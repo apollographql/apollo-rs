@@ -196,7 +196,7 @@ impl OperationDefinition {
                     })
                 })?
             }
-            serialize_directives(state, directives)?;
+            directives.serialize_impl(state)?;
             state.write(" ")?;
         }
         curly_brackets_space_separated(state, selection_set, |state, sel| sel.serialize_impl(state))
@@ -212,7 +212,7 @@ impl FragmentDefinition {
             selection_set,
         } = self;
         display!(state, "fragment {} on {}", name, type_condition)?;
-        serialize_directives(state, directives)?;
+        directives.serialize_impl(state)?;
         state.write(" ")?;
         curly_brackets_space_separated(state, selection_set, |state, sel| sel.serialize_impl(state))
     }
@@ -278,7 +278,7 @@ impl SchemaDefinition {
         } = self;
         serialize_description(state, description)?;
         state.write("schema")?;
-        serialize_directives(state, directives)?;
+        directives.serialize_impl(state)?;
         state.write(" ")?;
         curly_brackets_space_separated(state, root_operations, |state, op| {
             let (operation_type, operation_name) = &**op;
@@ -297,7 +297,7 @@ impl ScalarTypeDefinition {
         serialize_description(state, description)?;
         state.write("scalar ")?;
         state.write(name)?;
-        serialize_directives(state, directives)
+        directives.serialize_impl(state)
     }
 }
 
@@ -320,7 +320,7 @@ fn serialize_object_type_like(
     state: &mut State,
     name: &str,
     implements_interfaces: &[Name],
-    directives: &[Node<Directive>],
+    directives: &Directives,
     fields: &[Node<FieldDefinition>],
 ) -> Result<(), fmt::Error> {
     state.write(name)?;
@@ -332,7 +332,7 @@ fn serialize_object_type_like(
             state.write(name)?;
         }
     }
-    serialize_directives(state, directives)?;
+    directives.serialize_impl(state)?;
 
     if !fields.is_empty() {
         state.write(" ")?;
@@ -373,11 +373,11 @@ impl UnionTypeDefinition {
 fn serialize_union(
     state: &mut State,
     name: &str,
-    directives: &[Node<Directive>],
+    directives: &Directives,
     members: &[Name],
 ) -> fmt::Result {
     state.write(name)?;
-    serialize_directives(state, directives)?;
+    directives.serialize_impl(state)?;
     if let Some((first, rest)) = members.split_first() {
         state.write(" = ")?;
         state.write(first)?;
@@ -400,7 +400,7 @@ impl EnumTypeDefinition {
         serialize_description(state, description)?;
         state.write("enum ")?;
         state.write(name)?;
-        serialize_directives(state, directives)?;
+        directives.serialize_impl(state)?;
         if !values.is_empty() {
             state.write(" ")?;
             curly_brackets_space_separated(state, values, |state, value| {
@@ -422,7 +422,7 @@ impl InputObjectTypeDefinition {
         serialize_description(state, description)?;
         state.write("input ")?;
         state.write(name)?;
-        serialize_directives(state, directives)?;
+        directives.serialize_impl(state)?;
         if !fields.is_empty() {
             state.write(" ")?;
             curly_brackets_space_separated(state, fields, |state, f| f.serialize_impl(state))?;
@@ -438,7 +438,7 @@ impl SchemaExtension {
             root_operations,
         } = self;
         state.write("extend schema")?;
-        serialize_directives(state, directives)?;
+        directives.serialize_impl(state)?;
         if !root_operations.is_empty() {
             state.write(" ")?;
             curly_brackets_space_separated(state, root_operations, |state, op| {
@@ -455,7 +455,7 @@ impl ScalarTypeExtension {
         let Self { name, directives } = self;
         state.write("extend scalar ")?;
         state.write(name)?;
-        serialize_directives(state, directives)
+        directives.serialize_impl(state)
     }
 }
 
@@ -506,7 +506,7 @@ impl EnumTypeExtension {
         } = self;
         state.write("extend enum ")?;
         state.write(name)?;
-        serialize_directives(state, directives)?;
+        directives.serialize_impl(state)?;
         if !values.is_empty() {
             state.write(" ")?;
             curly_brackets_space_separated(state, values, |state, value| {
@@ -526,7 +526,7 @@ impl InputObjectTypeExtension {
         } = self;
         state.write("extend input ")?;
         state.write(name)?;
-        serialize_directives(state, directives)?;
+        directives.serialize_impl(state)?;
         if !fields.is_empty() {
             state.write(" ")?;
             curly_brackets_space_separated(state, fields, |state, f| f.serialize_impl(state))?;
@@ -535,12 +535,14 @@ impl InputObjectTypeExtension {
     }
 }
 
-fn serialize_directives(state: &mut State, directives: &[Node<Directive>]) -> fmt::Result {
-    for dir in directives {
-        state.write(" ")?;
-        dir.serialize_impl(state)?;
+impl Directives {
+    fn serialize_impl(&self, state: &mut State) -> fmt::Result {
+        for dir in self {
+            state.write(" ")?;
+            dir.serialize_impl(state)?;
+        }
+        Ok(())
     }
-    Ok(())
 }
 
 impl Directive {
@@ -568,7 +570,7 @@ impl VariableDefinition {
             state.write(" = ")?;
             value.serialize_impl(state)?
         }
-        serialize_directives(state, directives)
+        directives.serialize_impl(state)
     }
 }
 
@@ -586,7 +588,7 @@ impl FieldDefinition {
         serialize_arguments_definition(state, arguments)?;
         state.write(": ")?;
         display!(state, ty)?;
-        serialize_directives(state, directives)
+        directives.serialize_impl(state)
     }
 }
 
@@ -607,7 +609,7 @@ impl InputValueDefinition {
             state.write(" = ")?;
             value.serialize_impl(state)?
         }
-        serialize_directives(state, directives)
+        directives.serialize_impl(state)
     }
 }
 
@@ -620,7 +622,7 @@ impl EnumValueDefinition {
         } = self;
         serialize_description(state, description)?;
         state.write(value)?;
-        serialize_directives(state, directives)
+        directives.serialize_impl(state)
     }
 }
 
@@ -649,7 +651,7 @@ impl Field {
         }
         state.write(name)?;
         serialize_arguments(state, arguments)?;
-        serialize_directives(state, directives)?;
+        directives.serialize_impl(state)?;
         if !selection_set.is_empty() {
             state.write(" ")?;
             curly_brackets_space_separated(state, selection_set, |state, sel| {
@@ -668,7 +670,7 @@ impl FragmentSpread {
         } = self;
         state.write("...")?;
         state.write(fragment_name)?;
-        serialize_directives(state, directives)
+        directives.serialize_impl(state)
     }
 }
 
@@ -685,7 +687,7 @@ impl InlineFragment {
         } else {
             state.write("...")?;
         }
-        serialize_directives(state, directives)?;
+        directives.serialize_impl(state)?;
         state.write(" ")?;
         curly_brackets_space_separated(state, selection_set, |state, sel| sel.serialize_impl(state))
     }
@@ -910,6 +912,7 @@ impl_display! {
     UnionTypeExtension
     EnumTypeExtension
     InputObjectTypeExtension
+    Directives
     Directive
     VariableDefinition
     FieldDefinition
