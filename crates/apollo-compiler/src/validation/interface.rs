@@ -179,7 +179,8 @@ pub fn validate_implements_interfaces(
     let transitive_interfaces = interface_definitions.iter().flat_map(|&(name, interface)| {
         interface
             .implements_interfaces
-            .keys()
+            .iter()
+            .map(|component| &component.node)
             .zip(std::iter::repeat(name))
     });
     for (transitive_interface, via_interface) in transitive_interfaces {

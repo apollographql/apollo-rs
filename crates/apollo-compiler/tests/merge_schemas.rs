@@ -1,11 +1,13 @@
 use apollo_compiler::ast;
 use apollo_compiler::schema;
 use apollo_compiler::schema::Component;
+use apollo_compiler::schema::ComponentStr;
 use apollo_compiler::schema::ExtendedType;
 use apollo_compiler::ApolloCompiler;
 use apollo_compiler::ReprDatabase;
 use apollo_compiler::Schema;
 use indexmap::IndexMap;
+use indexmap::IndexSet;
 
 type MergeError = &'static str;
 
@@ -87,6 +89,14 @@ where
     Ok(())
 }
 
+fn merge_sets(merged: &mut IndexSet<ComponentStr>, new: &IndexSet<ComponentStr>) {
+    for value in new {
+        if !merged.contains(value) {
+            merged.insert(value.clone());
+        }
+    }
+}
+
 fn merge_type_definitions(merged: &mut ExtendedType, new: &ExtendedType) -> Result<(), MergeError> {
     match (merged, new) {
         (ExtendedType::Scalar(merged), ExtendedType::Scalar(new)) => {
@@ -125,11 +135,10 @@ fn merge_object_types(
 ) -> Result<(), &'static str> {
     merge_options(&mut merged.description, &new.description)?;
     merge_vecs(&mut merged.directives, &new.directives)?;
-    merge_maps(
+    merge_sets(
         &mut merged.implements_interfaces,
         &new.implements_interfaces,
-        |_, _| Ok(()), // ignore origin differences
-    )?;
+    );
     merge_maps(&mut merged.fields, &new.fields, merge_fields)
 }
 
@@ -139,11 +148,10 @@ fn merge_interface_types(
 ) -> Result<(), &'static str> {
     merge_options(&mut merged.description, &new.description)?;
     merge_vecs(&mut merged.directives, &new.directives)?;
-    merge_maps(
+    merge_sets(
         &mut merged.implements_interfaces,
         &new.implements_interfaces,
-        |_, _| Ok(()), // ignore origin differences
-    )?;
+    );
     merge_maps(&mut merged.fields, &new.fields, merge_fields)
 }
 
@@ -153,11 +161,8 @@ fn merge_union_types(
 ) -> Result<(), &'static str> {
     merge_options(&mut merged.description, &new.description)?;
     merge_vecs(&mut merged.directives, &new.directives)?;
-    merge_maps(
-        &mut merged.members,
-        &new.members,
-        |_, _| Ok(()), // ignore origin differences
-    )
+    merge_sets(&mut merged.members, &new.members);
+    Ok(())
 }
 
 fn merge_enum_types(
