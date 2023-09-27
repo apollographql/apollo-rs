@@ -807,13 +807,36 @@ impl PartialEq for Schema {
             mutation_type,
             subscription_type,
         } = self;
+        type RoopOp = Option<ComponentStr>;
+        let root_operation_is_equivalent =
+            |a: &RoopOp, b: &RoopOp, ty: ast::OperationType| match (a, b) {
+                (None, Some(name)) => {
+                    name == ty.default_type_name() && other.get_object(name).is_some()
+                }
+                (Some(name), None) => {
+                    name == ty.default_type_name() && self.get_object(name).is_some()
+                }
+                _ => a == b,
+            };
         *description == other.description
             && *directives == other.directives
             && *directive_definitions == other.directive_definitions
             && *types == other.types
-            && *query_type == other.query_type
-            && *mutation_type == other.mutation_type
-            && *subscription_type == other.subscription_type
+            && root_operation_is_equivalent(
+                query_type,
+                &other.query_type,
+                ast::OperationType::Query,
+            )
+            && root_operation_is_equivalent(
+                mutation_type,
+                &other.mutation_type,
+                ast::OperationType::Mutation,
+            )
+            && root_operation_is_equivalent(
+                subscription_type,
+                &other.subscription_type,
+                ast::OperationType::Subscription,
+            )
     }
 }
 

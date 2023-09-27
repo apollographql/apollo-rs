@@ -15,7 +15,9 @@ impl Schema {
 impl Schema {
     fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         let implicit_op = |opt: &Option<ComponentStr>, ty: OperationType| match opt {
-            Some(name) => name.as_str() == ty.default_type_name(),
+            Some(name) => {
+                name.as_str() == ty.default_type_name() && self.get_object(name).is_some()
+            }
             None => true,
         };
         let schema_extensions = self.extensions();
@@ -64,12 +66,14 @@ impl Schema {
                 .filter(|def| !def.is_built_in())
                 .map(|def| ast::Definition::DirectiveDefinition(def.clone())),
         )
-        .chain(
-            self.types
-                .iter()
-                .filter(|(_name, def)| !def.is_built_in())
-                .flat_map(|(name, def)| def.to_ast(name)),
-        )
+        .chain(self.types.iter().flat_map(|(name, def)| {
+            let mut iter = def.to_ast(name);
+            // skip the definition of built-in scalars but keep extensions if any
+            if def.is_built_in() {
+                iter.next();
+            }
+            iter
+        }))
     }
 }
 
