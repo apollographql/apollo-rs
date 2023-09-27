@@ -152,4 +152,4 @@
                         - IDENT@239..244 "First"
             - WHITESPACE@244..245 "\n"
             - R_CURLY@245..246 "}"
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 2

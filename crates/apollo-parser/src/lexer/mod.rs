@@ -107,8 +107,7 @@ impl<'a> Iterator for Lexer<'a> {
             return None;
         }
 
-        self.limit_tracker.consume();
-        if self.limit_tracker.limited() {
+        if self.limit_tracker.check_and_increment() {
             self.finished = true;
             return Some(Err(Error::limit(
                 "token limit reached, aborting lexing",

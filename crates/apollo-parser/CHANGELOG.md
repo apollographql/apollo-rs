@@ -19,11 +19,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2023-mm-dd
 ## Fixes
+- **apply recursion limit where needed, reduce its default from 4096 to 500 [SimonSapin], [pull/662]**
+  The limit was only tracked for nested selection sets, but the parser turns out
+  to use recursion in other cases too. [Issue 666] tracks reducing them.
+  Stack overflow was observed with little more than 2000
+  nesting levels or repetitions in the new test.
+  Defaulting to a quarter of that leaves a comfortable margin.
 - **fixes lexing of plus and minus signs in numbers - [SimonSapin], [pull/646]**
   Plus signs are errors in GraphQL syntax.
   Minus signs are errors if they’re not followed by a digit, even if followed by EOF.
 
 [pull/646]: https://github.com/apollographql/apollo-rs/pull/646
+[pull/662]: https://github.com/apollographql/apollo-rs/pull/662
+[Issue 666]: https://github.com/apollographql/apollo-rs/issues/666
 
 # [0.6.2](https://crates.io/crates/apollo-parser/0.6.2) - 2023-09-08
 ## Fixes

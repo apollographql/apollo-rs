@@ -2808,4 +2808,4 @@
             - WHITESPACE@6366..6367 "\n"
             - R_CURLY@6367..6368 "}"
     - WHITESPACE@6368..6369 "\n"
-recursion limit: 4096, high: 3
+recursion limit: 500, high: 8

@@ -8,4 +8,4 @@
         - WHITESPACE@16..17 " "
         - ERROR@17..18 "}"
 - ERROR@17:18 "expected a Selection Set" }
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 0

@@ -12,4 +12,4 @@
                 - AT@19..20 "@"
                 - NAME@20..30
                     - IDENT@20..30 "deprecated"
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 0

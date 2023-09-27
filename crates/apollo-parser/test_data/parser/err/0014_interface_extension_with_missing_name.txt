@@ -18,4 +18,4 @@
             - WHITESPACE@33..34 "\n"
             - R_CURLY@34..35 "}"
 - ERROR@17:18 "expected a Name" {
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 0

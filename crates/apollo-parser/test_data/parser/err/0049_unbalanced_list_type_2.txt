@@ -28,4 +28,4 @@
             - R_CURLY@38..39 "}"
     - WHITESPACE@39..40 "\n"
 - ERROR@38:39 "expected R_BRACK, got }" }
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 3

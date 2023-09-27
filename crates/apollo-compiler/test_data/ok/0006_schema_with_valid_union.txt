@@ -111,4 +111,4 @@
                         - IDENT@196..208 "SearchResult"
             - WHITESPACE@208..209 "\n"
             - R_CURLY@209..210 "}"
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 1

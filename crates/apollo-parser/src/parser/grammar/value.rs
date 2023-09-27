@@ -91,7 +91,12 @@ pub(crate) fn list_value(p: &mut Parser) {
         } else if node == TokenKind::Eof {
             break;
         } else {
+            if p.recursion_limit.check_and_increment() {
+                p.limit_err("parser recursion limit reached");
+                return;
+            }
             value(p, true);
+            p.recursion_limit.decrement()
         }
     }
 }
@@ -107,7 +112,13 @@ pub(crate) fn object_value(p: &mut Parser) {
 
     match p.peek() {
         Some(TokenKind::Name) => {
+            if p.recursion_limit.check_and_increment() {
+                p.limit_err("parser recursion limit reached");
+                return;
+            }
             object_field(p);
+            p.recursion_limit.decrement();
+
             if let Some(T!['}']) = p.peek() {
                 p.bump(S!['}']);
             } else {
@@ -135,7 +146,14 @@ pub(crate) fn object_field(p: &mut Parser) {
             value(p, true);
             if p.peek().is_some() {
                 guard.finish_node();
-                object_field(p)
+
+                // TODO: use a loop instead of recursion
+                if p.recursion_limit.check_and_increment() {
+                    p.limit_err("parser recursion limit reached");
+                    return;
+                }
+                object_field(p);
+                p.recursion_limit.decrement();
             }
         }
     }
