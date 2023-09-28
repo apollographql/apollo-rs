@@ -743,6 +743,17 @@ type TestObject {
             "cannot query field `nickname` on type `TestObject`"
         );
         assert_eq!(diagnostics[0].get_line_column(), Some((4, 8)));
+        let json = expect_test::expect![[r#"
+            {
+              "locations": [
+                {
+                  "column": 8,
+                  "line": 4
+                }
+              ],
+              "message": "cannot query field `nickname` on type `TestObject`"
+            }"#]];
+        json.assert_eq(&serde_json::to_string_pretty(&diagnostics[0].to_json()).unwrap());
     }
 
     #[test]
