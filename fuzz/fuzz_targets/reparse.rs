@@ -8,8 +8,8 @@ use log::debug;
 use log::trace;
 use std::fmt::Debug;
 
-const ENABLE_EXECUTABLE: bool = false;
-const ENABLE_SCHEMA: bool = false;
+const ENABLE_EXECUTABLE: bool = true;
+const ENABLE_SCHEMA: bool = true;
 
 fuzz_target!(|input: &str| {
     let _ = env_logger::try_init();

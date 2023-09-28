@@ -422,15 +422,15 @@ impl ObjectType {
         let mut ty = Self {
             name: definition.name.clone(),
             description: definition.description.clone(),
-            implements_interfaces: collect_sticky(
+            implements_interfaces: collect_sticky_set(
                 definition
                     .implements_interfaces
                     .iter()
-                    .map(|name| (name, ComponentOrigin::Definition)),
-                |dup_key, _| {
+                    .map(|name| name.to_component(ComponentOrigin::Definition)),
+                |dup| {
                     errors.push(BuildError::DuplicateImplementsInterface {
                         implementer_name: definition.name.clone(),
-                        interface_name: dup_key.clone(),
+                        interface_name: dup.node,
                     })
                 },
             ),
@@ -472,16 +472,16 @@ impl ObjectType {
                 .iter()
                 .map(|d| d.to_component(origin.clone())),
         );
-        extend_sticky(
+        extend_sticky_set(
             &mut self.implements_interfaces,
             extension
                 .implements_interfaces
                 .iter()
-                .map(|name| (name, origin.clone())),
-            |dup_key, _| {
+                .map(|name| name.to_component(origin.clone())),
+            |dup| {
                 errors.push(BuildError::DuplicateImplementsInterface {
                     implementer_name: extension.name.clone(),
-                    interface_name: dup_key.clone(),
+                    interface_name: dup.node,
                 })
             },
         );
@@ -510,15 +510,15 @@ impl InterfaceType {
         let mut ty = Self {
             name: definition.name.clone(),
             description: definition.description.clone(),
-            implements_interfaces: collect_sticky(
+            implements_interfaces: collect_sticky_set(
                 definition
                     .implements_interfaces
                     .iter()
-                    .map(|name| (name, ComponentOrigin::Definition)),
-                |dup_key, _| {
+                    .map(|name| name.to_component(ComponentOrigin::Definition)),
+                |dup| {
                     errors.push(BuildError::DuplicateImplementsInterface {
                         implementer_name: definition.name.clone(),
-                        interface_name: dup_key.clone(),
+                        interface_name: dup.node,
                     })
                 },
             ),
@@ -560,16 +560,16 @@ impl InterfaceType {
                 .iter()
                 .map(|d| d.to_component(origin.clone())),
         );
-        extend_sticky(
+        extend_sticky_set(
             &mut self.implements_interfaces,
             extension
                 .implements_interfaces
                 .iter()
-                .map(|name| (name, origin.clone())),
-            |dup_key, _| {
+                .map(|name| name.to_component(origin.clone())),
+            |dup| {
                 errors.push(BuildError::DuplicateImplementsInterface {
                     implementer_name: extension.name.clone(),
-                    interface_name: dup_key.clone(),
+                    interface_name: dup.node,
                 })
             },
         );
@@ -603,15 +603,15 @@ impl UnionType {
                 .iter()
                 .map(|d| d.to_component(ComponentOrigin::Definition))
                 .collect(),
-            members: collect_sticky(
+            members: collect_sticky_set(
                 definition
                     .members
                     .iter()
-                    .map(|name| (name, ComponentOrigin::Definition)),
-                |dup_key, _| {
+                    .map(|name| name.to_component(ComponentOrigin::Definition)),
+                |dup| {
                     errors.push(BuildError::UnionMemberNameCollision {
                         union_name: definition.name.clone(),
-                        member: dup_key.clone(),
+                        member: dup.node,
                     })
                 },
             ),
@@ -636,13 +636,16 @@ impl UnionType {
                 .iter()
                 .map(|d| d.to_component(origin.clone())),
         );
-        extend_sticky(
+        extend_sticky_set(
             &mut self.members,
-            extension.members.iter().map(|name| (name, origin.clone())),
-            |dup_key, _| {
+            extension
+                .members
+                .iter()
+                .map(|name| name.to_component(origin.clone())),
+            |dup| {
                 errors.push(BuildError::UnionMemberNameCollision {
                     union_name: extension.name.clone(),
-                    member: dup_key.clone(),
+                    member: dup.node,
                 })
             },
         );
@@ -825,4 +828,26 @@ fn collect_sticky<'a, V>(
     let mut map = IndexMap::new();
     extend_sticky(&mut map, iter, duplicate);
     map
+}
+
+fn extend_sticky_set(
+    set: &mut IndexSet<ComponentStr>,
+    iter: impl IntoIterator<Item = ComponentStr>,
+    mut duplicate: impl FnMut(ComponentStr),
+) {
+    for value in iter.into_iter() {
+        if !set.contains(&value) {
+            set.insert(value);
+        } else {
+            duplicate(value)
+        }
+    }
+}
+fn collect_sticky_set(
+    iter: impl IntoIterator<Item = ComponentStr>,
+    duplicate: impl FnMut(ComponentStr),
+) -> IndexSet<ComponentStr> {
+    let mut set = IndexSet::new();
+    extend_sticky_set(&mut set, iter, duplicate);
+    set
 }

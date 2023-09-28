@@ -219,10 +219,10 @@ fn components<'a, T: 'a>(
         .collect()
 }
 
-fn names(names: &IndexMap<Name, ComponentOrigin>, ext: Option<&ExtensionId>) -> Vec<Name> {
+fn names(names: &IndexSet<ComponentStr>, ext: Option<&ExtensionId>) -> Vec<Name> {
     names
         .iter()
-        .filter(|(_name, origin)| origin.extension_id() == ext)
-        .map(|(name, _origin)| name.clone())
+        .filter(|component| component.origin.extension_id() == ext)
+        .map(|component| component.node.clone())
         .collect()
 }

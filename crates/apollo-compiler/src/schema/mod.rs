@@ -90,7 +90,7 @@ pub struct ScalarType {
 pub struct ObjectType {
     pub name: Name,
     pub description: Option<NodeStr>,
-    pub implements_interfaces: IndexMap<Name, ComponentOrigin>,
+    pub implements_interfaces: IndexSet<ComponentStr>,
     pub directives: Directives,
 
     /// Explicit field definitions.
@@ -108,7 +108,7 @@ pub struct InterfaceType {
     /// * Key: name of an implemented interface
     /// * Value: which interface type extension defined this implementation,
     ///   or `None` for the interface type definition.
-    pub implements_interfaces: IndexMap<Name, ComponentOrigin>,
+    pub implements_interfaces: IndexSet<ComponentStr>,
 
     pub directives: Directives,
 
@@ -128,7 +128,7 @@ pub struct UnionType {
     /// * Key: name of a member object type
     /// * Value: which union type extension defined this implementation,
     ///   or `None` for the union type definition.
-    pub members: IndexMap<NamedType, ComponentOrigin>,
+    pub members: IndexSet<ComponentStr>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -369,8 +369,8 @@ impl Schema {
                 | ExtendedType::Enum(_)
                 | ExtendedType::InputObject(_) => continue,
             };
-            for interface in interfaces.keys() {
-                map.entry(interface.clone())
+            for interface in interfaces {
+                map.entry(interface.node.clone())
                     .or_default()
                     .insert(ty_name.clone());
             }
@@ -393,9 +393,9 @@ impl Schema {
                     | ExtendedType::Enum(_)
                     | ExtendedType::InputObject(_) => return false,
                 }
-                .contains_key(abstract_type)
+                .contains(abstract_type)
             }),
-            ExtendedType::Union(def) => def.members.contains_key(maybe_subtype),
+            ExtendedType::Union(def) => def.members.contains(maybe_subtype),
             ExtendedType::Scalar(_)
             | ExtendedType::Object(_)
             | ExtendedType::Enum(_)
@@ -623,8 +623,8 @@ impl ObjectType {
             .flat_map(|dir| dir.origin.extension_id())
             .chain(
                 self.implements_interfaces
-                    .values()
-                    .flat_map(|origin| origin.extension_id()),
+                    .iter()
+                    .flat_map(|component| component.origin.extension_id()),
             )
             .chain(
                 self.fields
@@ -648,8 +648,8 @@ impl InterfaceType {
             .flat_map(|dir| dir.origin.extension_id())
             .chain(
                 self.implements_interfaces
-                    .values()
-                    .flat_map(|origin| origin.extension_id()),
+                    .iter()
+                    .flat_map(|component| component.origin.extension_id()),
             )
             .chain(
                 self.fields
@@ -673,8 +673,8 @@ impl UnionType {
             .flat_map(|dir| dir.origin.extension_id())
             .chain(
                 self.members
-                    .values()
-                    .flat_map(|origin| origin.extension_id()),
+                    .iter()
+                    .flat_map(|component| component.origin.extension_id()),
             )
             .collect()
     }

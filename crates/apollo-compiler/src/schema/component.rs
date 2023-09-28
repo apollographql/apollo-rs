@@ -1,6 +1,7 @@
 use crate::Node;
 use crate::NodeLocation;
 use crate::NodeStr;
+use std::hash;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use triomphe::Arc;
@@ -12,7 +13,7 @@ use triomphe::Arc;
 ///
 /// Implements [`Deref`] and [`DerefMut`]
 /// so that methods and fields of `Node<T>` and `T` can be accessed directly.
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Component<T> {
     pub origin: ComponentOrigin,
     pub node: Node<T>,
@@ -51,8 +52,8 @@ impl PartialEq for ExtensionId {
     }
 }
 
-impl std::hash::Hash for ExtensionId {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+impl hash::Hash for ExtensionId {
+    fn hash<H: hash::Hasher>(&self, state: &mut H) {
         Arc::as_ptr(&self.arc).hash(state);
     }
 }
@@ -73,6 +74,20 @@ impl<T> Component<T> {
             origin: ComponentOrigin::Definition,
             node: Node::new(node),
         }
+    }
+}
+
+impl<T: hash::Hash> hash::Hash for Component<T> {
+    fn hash<H: hash::Hasher>(&self, state: &mut H) {
+        self.node.hash(state); // ignore `origin`
+    }
+}
+
+impl<T: Eq> Eq for Component<T> {}
+
+impl<T: PartialEq> PartialEq for Component<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.node == other.node // ignore `origin`
     }
 }
 
@@ -109,7 +124,7 @@ impl<T> From<T> for Component<T> {
 ///
 /// Implements [`Deref`]
 /// so that methods and fields of `NodeStr` and [`str`] can be accessed directly.
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct ComponentStr {
     pub origin: ComponentOrigin,
     pub node: NodeStr,
@@ -126,12 +141,38 @@ impl ComponentStr {
     }
 }
 
+impl hash::Hash for ComponentStr {
+    fn hash<H: hash::Hasher>(&self, state: &mut H) {
+        self.node.hash(state); // ignore `origin`
+    }
+}
+
+impl Eq for ComponentStr {}
+
+impl PartialEq for ComponentStr {
+    fn eq(&self, other: &Self) -> bool {
+        self.node == other.node // ignore `origin`
+    }
+}
+
 impl Deref for ComponentStr {
     type Target = NodeStr;
 
     #[inline]
     fn deref(&self) -> &Self::Target {
         &self.node
+    }
+}
+
+impl std::borrow::Borrow<NodeStr> for ComponentStr {
+    fn borrow(&self) -> &NodeStr {
+        self
+    }
+}
+
+impl std::borrow::Borrow<str> for ComponentStr {
+    fn borrow(&self) -> &str {
+        self
     }
 }
 

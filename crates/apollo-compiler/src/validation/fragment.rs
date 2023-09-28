@@ -31,7 +31,7 @@ pub fn get_possible_types<'a>(
                         _ => return None,
                     };
 
-                    if implements.contains_key(&intf.name) {
+                    if implements.contains(&intf.name) {
                         Some(name)
                     } else {
                         None
@@ -40,7 +40,11 @@ pub fn get_possible_types<'a>(
                 .collect()
         }
         // 3. If `type` is a union type, return the set of possible types of `type`.
-        Some(schema::ExtendedType::Union(union_)) => union_.members.keys().collect(),
+        Some(schema::ExtendedType::Union(union_)) => union_
+            .members
+            .iter()
+            .map(|component| &component.node)
+            .collect(),
         _ => Default::default(),
     }
 }
