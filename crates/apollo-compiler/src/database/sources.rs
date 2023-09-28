@@ -125,7 +125,8 @@ impl fmt::Debug for FileId {
 
 /// The next file ID to use. This is global so file IDs do not conflict between different compiler
 /// instances.
-static NEXT: atomic::AtomicI64 = atomic::AtomicI64::new(1);
+static NEXT: atomic::AtomicI64 = atomic::AtomicI64::new(INITIAL);
+static INITIAL: i64 = 1;
 
 impl FileId {
     /// The ID of the file implicitly added to type systems, for built-in scalars and introspection types
@@ -134,26 +135,18 @@ impl FileId {
     // Returning a different value every time does not sound like good `impl Default`
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        let id = NEXT.fetch_add(1, atomic::Ordering::Relaxed);
+        let id = NEXT.fetch_add(1, atomic::Ordering::AcqRel);
         Self {
             id: NonZeroI64::new(id).unwrap(),
         }
     }
 
     /// Reset file ID back to 1, used to get consistent results in tests.
+    ///
+    /// All tests in the process must use `#[serial_test::serial]`
     #[doc(hidden)]
-    pub fn with_deterministic_ids(f: impl FnOnce()) {
-        static MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
-        let _mutex_guard = MUTEX.lock().unwrap();
-
-        struct RestoreOnDrop(i64);
-        impl Drop for RestoreOnDrop {
-            fn drop(&mut self) {
-                NEXT.store(self.0, atomic::Ordering::Release)
-            }
-        }
-        let _restore_on_drop = NEXT.swap(1, atomic::Ordering::AcqRel);
-        f()
+    pub fn reset() {
+        NEXT.store(INITIAL, atomic::Ordering::Release)
     }
 
     const fn const_new(id: i64) -> Self {

@@ -5,6 +5,8 @@
 // This is also an exact setup as we have in `apollo-parser`, in the future we
 // might want to consider merging the two dirs. (@lrlna)
 
+// Note: ALL #[test] functions must also have #[serial], to make FileId::reset
+
 use apollo_compiler::ast;
 use apollo_compiler::ApolloCompiler;
 use apollo_compiler::ApolloDiagnostic;
@@ -12,6 +14,7 @@ use apollo_compiler::FileId;
 use apollo_compiler::ReprDatabase;
 use expect_test::expect_file;
 use indexmap::IndexMap;
+use serial_test::serial;
 use std::env;
 use std::fs;
 use std::path::Path;
@@ -26,6 +29,7 @@ use std::path::PathBuf;
 // $env:UPDATE_EXPECT=1; cargo test --package apollo-compiler
 // ```
 #[test]
+#[serial]
 fn validation() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
         let mut compiler = ApolloCompiler::new();
@@ -72,29 +76,29 @@ fn assert_diagnostics_are_absent(errors: &[ApolloDiagnostic], path: &Path) {
 }
 
 #[test]
+#[serial]
 fn serialize_and_reparse_ast() {
-    FileId::with_deterministic_ids(|| {
-        let test_data_dir = test_data_dir();
-        for subdir in ["ok", "diagnostics"] {
-            let output_dir = test_data_dir.join("serializer").join(subdir);
-            let collected = collect_graphql_files(&test_data_dir, &[subdir]);
-            for (input_path, input) in collected {
-                let output_path = output_dir.join(input_path.file_name().unwrap());
-                let original = ast::Document::parse(&input, "input.graphql");
-                let serialized = original.to_string();
-                expect_file![output_path].assert_eq(&serialized);
+    FileId::reset();
+    let test_data_dir = test_data_dir();
+    for subdir in ["ok", "diagnostics"] {
+        let output_dir = test_data_dir.join("serializer").join(subdir);
+        let collected = collect_graphql_files(&test_data_dir, &[subdir]);
+        for (input_path, input) in collected {
+            let output_path = output_dir.join(input_path.file_name().unwrap());
+            let original = ast::Document::parse(&input, "input.graphql");
+            let serialized = original.to_string();
+            expect_file![output_path].assert_eq(&serialized);
 
-                let round_tripped = ast::Document::parse(&serialized, "serialized.graphql");
-                if original != round_tripped {
-                    panic!(
-                        "Serialization does not round-trip for {input_path:?}:\n\
+            let round_tripped = ast::Document::parse(&serialized, "serialized.graphql");
+            if original != round_tripped {
+                panic!(
+                    "Serialization does not round-trip for {input_path:?}:\n\
                      {input}\n=>\n{original:#?}\n=>\n{serialized}\n=>\n\
                      {round_tripped:#?}\n=>\n{round_tripped}\n"
-                    );
-                }
+                );
             }
         }
-    })
+    }
 }
 
 /// Compares input code taken from a `.graphql` file in test_fixtures and its
@@ -108,14 +112,13 @@ fn dir_tests<F>(test_data_dir: &Path, paths: &[&str], outfile_extension: &str, f
 where
     F: Fn(&str, &Path) -> String,
 {
-    FileId::with_deterministic_ids(|| {
-        for (path, input_code) in collect_graphql_files(test_data_dir, paths) {
-            let mut actual = f(&input_code, &path);
-            actual.push('\n');
-            let path = path.with_extension(outfile_extension);
-            expect_file![path].assert_eq(&actual)
-        }
-    })
+    FileId::reset();
+    for (path, input_code) in collect_graphql_files(test_data_dir, paths) {
+        let mut actual = f(&input_code, &path);
+        actual.push('\n');
+        let path = path.with_extension(outfile_extension);
+        expect_file![path].assert_eq(&actual)
+    }
 }
 
 /// Collects all `.graphql` files from `dir` subdirectories defined by `paths`.

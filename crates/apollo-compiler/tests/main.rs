@@ -4,5 +4,4 @@ mod merge_schemas;
 mod misc;
 mod parser;
 mod schema;
-mod snapshot_tests;
 mod validation;
