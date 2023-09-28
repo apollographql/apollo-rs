@@ -477,4 +477,4 @@
                     - R_CURLY@1262..1263 "}"
             - WHITESPACE@1263..1264 "\n"
             - R_CURLY@1264..1265 "}"
-recursion limit: 4096, high: 8
+recursion limit: 500, high: 8

@@ -8,4 +8,4 @@
         - WHITESPACE@18..19 " "
         - on_KW@19..21 "on"
 - ERROR@21:21 "expected valid Directive Location" EOF
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 0

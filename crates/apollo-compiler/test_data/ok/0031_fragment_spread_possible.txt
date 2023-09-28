@@ -758,4 +758,4 @@
             - WHITESPACE@2066..2067 "\n"
             - R_CURLY@2067..2068 "}"
     - WHITESPACE@2068..2069 "\n"
-recursion limit: 4096, high: 3
+recursion limit: 500, high: 3

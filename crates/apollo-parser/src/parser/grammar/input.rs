@@ -105,7 +105,14 @@ pub(crate) fn input_value_definition(p: &mut Parser, is_input: bool) {
 
                     if p.peek().is_some() {
                         guard.finish_node();
-                        return input_value_definition(p, true);
+                        // TODO: use a loop instead of recursion
+                        if p.recursion_limit.check_and_increment() {
+                            p.limit_err("parser recursion limit reached");
+                            return;
+                        }
+                        input_value_definition(p, true);
+                        p.recursion_limit.decrement();
+                        return;
                     }
                 }
                 _ => p.err("expected a Type"),

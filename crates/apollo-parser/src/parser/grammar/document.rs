@@ -14,9 +14,10 @@ pub(crate) fn document(p: &mut Parser) {
     let doc = p.start_node(SyntaxKind::DOCUMENT);
 
     while let Some(node) = p.peek() {
-        if p.recursion_limit.limited() {
-            break;
-        }
+        assert_eq!(
+            p.recursion_limit.current, 0,
+            "unbalanced limit increment / decrement"
+        );
 
         match node {
             TokenKind::StringValue => {

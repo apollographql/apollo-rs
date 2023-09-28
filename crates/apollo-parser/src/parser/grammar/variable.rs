@@ -40,7 +40,14 @@ pub(crate) fn variable_definition(p: &mut Parser, is_variable: bool) {
                 }
                 if p.peek().is_some() {
                     guard.finish_node();
-                    return variable_definition(p, true);
+                    // TODO: use a loop instead of recursion
+                    if p.recursion_limit.check_and_increment() {
+                        p.limit_err("parser recursion limit reached");
+                        return;
+                    }
+                    variable_definition(p, true);
+                    p.recursion_limit.decrement();
+                    return;
                 }
             }
             p.err("expected a Type");

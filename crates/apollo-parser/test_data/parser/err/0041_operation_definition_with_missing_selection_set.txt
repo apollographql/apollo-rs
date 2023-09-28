@@ -7,4 +7,4 @@
             - IDENT@6..16 "__typename"
         - ERROR@16..16 ""
 - ERROR@16:16 "expected a Selection Set" EOF
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 0

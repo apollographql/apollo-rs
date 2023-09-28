@@ -35,7 +35,6 @@ pub struct Lexer<'a> {
 #[derive(Debug)]
 enum State {
     Start,
-    Done,
     Ident,
     StringLiteralEscapedUnicode(usize),
     StringLiteral,
@@ -43,9 +42,13 @@ enum State {
     BlockStringLiteral,
     BlockStringLiteralBackslash,
     StringLiteralBackslash,
-    IntLiteral,
-    FloatLiteral,
-    ExponentLiteral,
+    LeadingZero,
+    IntegerPart,
+    DecimalPoint,
+    FractionalPart,
+    ExponentIndicator,
+    ExponentSign,
+    ExponentDigit,
     Whitespace,
     Comment,
     SpreadOperator,
@@ -107,8 +110,7 @@ impl<'a> Iterator for Lexer<'a> {
             return None;
         }
 
-        self.limit_tracker.consume();
-        if self.limit_tracker.limited() {
+        if self.limit_tracker.check_and_increment() {
             self.finished = true;
             return Some(Err(Error::limit(
                 "token limit reached, aborting lexing",
@@ -138,7 +140,10 @@ impl<'a> Cursor<'a> {
             index: self.index(),
         };
 
-        while let Some(c) = self.bump() {
+        loop {
+            let Some(c) = self.bump() else {
+                return self.eof(state, token);
+            };
             match state {
                 State::Start => {
                     match c {
@@ -154,11 +159,11 @@ impl<'a> Cursor<'a> {
                             token.kind = TokenKind::Spread;
                             state = State::SpreadOperator;
                         }
-                        c if is_whitespace(c) => {
+                        c if is_whitespace_assimilated(c) => {
                             token.kind = TokenKind::Whitespace;
                             state = State::Whitespace;
                         }
-                        c if is_ident_char(c) => {
+                        c if is_name_start(c) => {
                             token.kind = TokenKind::Name;
                             state = State::Ident;
                         }
@@ -166,9 +171,13 @@ impl<'a> Cursor<'a> {
                             token.kind = TokenKind::Int;
                             state = State::MinusSign;
                         }
+                        '0' => {
+                            token.kind = TokenKind::Int;
+                            state = State::LeadingZero;
+                        }
                         c if c.is_ascii_digit() => {
                             token.kind = TokenKind::Int;
-                            state = State::IntLiteral;
+                            state = State::IntegerPart;
                         }
                         '!' => {
                             token.kind = TokenKind::Bang;
@@ -249,21 +258,17 @@ impl<'a> Cursor<'a> {
                     };
                 }
                 State::Ident => match c {
-                    curr if is_ident_char(curr) || curr.is_ascii_digit() => {}
+                    curr if is_name_continue(curr) => {}
                     _ => {
                         token.data = self.prev_str();
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                 },
                 State::Whitespace => match c {
-                    curr if is_whitespace(curr) => {}
+                    curr if is_whitespace_assimilated(curr) => {}
                     _ => {
                         token.data = self.prev_str();
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                 },
                 State::BlockStringLiteral => match c {
@@ -274,9 +279,7 @@ impl<'a> Cursor<'a> {
                         // Require two additional quotes to complete the triple quote.
                         if self.eatc('"') && self.eatc('"') {
                             token.data = self.current_str();
-
-                            state = State::Done;
-                            break;
+                            return self.done(token);
                         }
                     }
                     _ => {}
@@ -294,9 +297,7 @@ impl<'a> Cursor<'a> {
                         } else {
                             token.data = self.current_str();
                         }
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                     '\\' => {
                         state = State::StringLiteralBackslash;
@@ -314,9 +315,7 @@ impl<'a> Cursor<'a> {
                             c.to_string(),
                         ));
                         token.data = self.current_str();
-                        state = State::Done;
-
-                        break;
+                        return self.done(token);
                     }
                     c if !c.is_ascii_hexdigit() => {
                         self.add_err(Error::new("invalid unicode escape sequence", c.to_string()));
@@ -327,7 +326,24 @@ impl<'a> Cursor<'a> {
                     _ => {
                         if remaining <= 1 {
                             state = State::StringLiteral;
-
+                            let hex_end = self.offset + 1;
+                            let hex_start = hex_end - 4;
+                            let hex = &self.source[hex_start..hex_end];
+                            // `is_ascii_hexdigit()` checks in previous iterations ensures
+                            // this `unwrap()` does not panic:
+                            let code_point = u32::from_str_radix(hex, 16).unwrap();
+                            if char::from_u32(code_point).is_none() {
+                                // TODO: https://github.com/apollographql/apollo-rs/issues/657 needs
+                                // changes both here and in `ast/node_ext.rs`
+                                let escape_sequence_start = hex_start - 2; // include "\u"
+                                let escape_sequence = &self.source[escape_sequence_start..hex_end];
+                                self.add_err(Error::new(
+                                    "surrogate code point is invalid in unicode escape sequence \
+                                     (paired surrogate not supported yet: \
+                                     https://github.com/apollographql/apollo-rs/issues/657)",
+                                    escape_sequence.to_owned(),
+                                ));
+                            }
                             continue;
                         }
 
@@ -337,9 +353,7 @@ impl<'a> Cursor<'a> {
                 State::StringLiteral => match c {
                     '"' => {
                         token.data = self.current_str();
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                     curr if is_line_terminator(curr) => {
                         self.add_err(Error::new("unexpected line terminator", "".to_string()));
@@ -378,106 +392,154 @@ impl<'a> Cursor<'a> {
                         state = State::StringLiteral;
                     }
                 },
-                State::IntLiteral => match c {
-                    curr if curr.is_ascii_digit() => {}
+                State::LeadingZero => match c {
                     '.' => {
                         token.kind = TokenKind::Float;
-                        state = State::FloatLiteral;
+                        state = State::DecimalPoint;
                     }
                     'e' | 'E' => {
                         token.kind = TokenKind::Float;
-                        state = State::ExponentLiteral;
+                        state = State::ExponentIndicator;
                     }
-                    _ => {
-                        token.data = self.prev_str();
-
-                        state = State::Done;
-                        break;
-                    }
-                },
-                State::FloatLiteral => match c {
-                    curr if curr.is_ascii_digit() => {}
-                    '.' => {
-                        self.add_err(Error::new(
-                            format!("Unexpected character `{}`", c),
-                            c.to_string(),
+                    _ if c.is_ascii_digit() => {
+                        return Err(Error::new(
+                            "Numbers must not have non-significant leading zeroes",
+                            self.current_str().to_string(),
                         ));
-
-                        continue;
                     }
-                    'e' | 'E' => {
-                        state = State::ExponentLiteral;
+                    _ if is_name_start(c) => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}` as integer suffix"),
+                            self.current_str().to_string(),
+                        ));
                     }
                     _ => {
                         token.data = self.prev_str();
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                 },
-                State::ExponentLiteral => match c {
+                State::IntegerPart => match c {
+                    curr if curr.is_ascii_digit() => {}
+                    '.' => {
+                        token.kind = TokenKind::Float;
+                        state = State::DecimalPoint;
+                    }
+                    'e' | 'E' => {
+                        token.kind = TokenKind::Float;
+                        state = State::ExponentIndicator;
+                    }
+                    _ if is_name_start(c) => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}` as integer suffix"),
+                            self.current_str().to_string(),
+                        ));
+                    }
+                    _ => {
+                        token.data = self.prev_str();
+                        return self.done(token);
+                    }
+                },
+                State::DecimalPoint => match c {
                     curr if curr.is_ascii_digit() => {
-                        state = State::FloatLiteral;
+                        state = State::FractionalPart;
+                    }
+                    _ => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}`, expected fractional digit"),
+                            self.current_str().to_string(),
+                        ));
+                    }
+                },
+                State::FractionalPart => match c {
+                    curr if curr.is_ascii_digit() => {}
+                    'e' | 'E' => {
+                        state = State::ExponentIndicator;
+                    }
+                    _ if c == '.' || is_name_start(c) => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}` as float suffix"),
+                            self.current_str().to_string(),
+                        ));
+                    }
+                    _ => {
+                        token.data = self.prev_str();
+                        return self.done(token);
+                    }
+                },
+                State::ExponentIndicator => match c {
+                    _ if c.is_ascii_digit() => {
+                        state = State::ExponentDigit;
                     }
                     '+' | '-' => {
-                        state = State::FloatLiteral;
+                        state = State::ExponentSign;
                     }
                     _ => {
-                        let err = self.current_str();
                         return Err(Error::new(
-                            format!("Unexpected character `{}`", err),
-                            err.to_string(),
+                            format!("Unexpected character `{c}`, expected exponent digit or sign"),
+                            self.current_str().to_string(),
+                        ))
+                    }
+                },
+                State::ExponentSign => match c {
+                    _ if c.is_ascii_digit() => {
+                        state = State::ExponentDigit;
+                    }
+                    _ => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}`, expected exponent digit"),
+                            self.current_str().to_string(),
+                        ))
+                    }
+                },
+                State::ExponentDigit => match c {
+                    _ if c.is_ascii_digit() => {
+                        state = State::ExponentDigit;
+                    }
+                    _ if c == '.' || is_name_start(c) => {
+                        return Err(Error::new(
+                            format!("Unexpected character `{c}` as float suffix"),
+                            self.current_str().to_string(),
                         ));
                     }
-                },
-                State::SpreadOperator => match c {
-                    '.' => {
-                        if self.eatc('.') {
-                            token.data = self.current_str();
-                            return Ok(token);
-                        }
-
-                        break;
+                    _ => {
+                        token.data = self.prev_str();
+                        return self.done(token);
                     }
-                    _ => break,
                 },
+                State::SpreadOperator => {
+                    if c == '.' && self.eatc('.') {
+                        token.data = self.current_str();
+                        return Ok(token);
+                    }
+                    return self.unterminated_spread_operator(&token);
+                }
                 State::MinusSign => match c {
+                    '0' => {
+                        state = State::LeadingZero;
+                    }
                     curr if curr.is_ascii_digit() => {
-                        state = State::IntLiteral;
+                        state = State::IntegerPart;
                     }
                     _ => {
-                        let curr = self.current_str();
                         return Err(Error::new(
-                            format!("Unexpected character `{}`", curr),
-                            curr.to_string(),
-                        ));
+                            format!("Unexpected character `{c}`"),
+                            self.current_str().to_string(),
+                        ))
                     }
                 },
                 State::Comment => match c {
                     curr if is_line_terminator(curr) => {
                         token.data = self.prev_str();
-
-                        state = State::Done;
-                        break;
+                        return self.done(token);
                     }
                     _ => {}
                 },
-                State::Done => unreachable!("must finalize loop when State::Done"),
             }
         }
+    }
 
+    fn eof(&mut self, state: State, mut token: Token<'a>) -> Result<Token<'a>, Error> {
         match state {
-            State::Done => {
-                if let Some(mut err) = self.err() {
-                    err.set_data(token.data.to_string());
-                    err.index = token.index;
-                    self.err = None;
-
-                    return Err(err);
-                }
-
-                Ok(token)
-            }
             State::Start => {
                 token.index += 1;
                 Ok(token)
@@ -490,7 +552,11 @@ impl<'a> Cursor<'a> {
                     curr.to_string(),
                 ))
             }
-            State::StringLiteral | State::BlockStringLiteral => {
+            State::StringLiteral
+            | State::BlockStringLiteral
+            | State::StringLiteralEscapedUnicode(_)
+            | State::BlockStringLiteralBackslash
+            | State::StringLiteralBackslash => {
                 let curr = self.drain();
 
                 Err(Error::with_loc(
@@ -499,24 +565,24 @@ impl<'a> Cursor<'a> {
                     token.index,
                 ))
             }
-            State::SpreadOperator => {
-                let data = if self.is_pending() {
-                    self.prev_str()
-                } else {
-                    self.current_str()
-                };
-
-                Err(Error::with_loc(
-                    "Unterminated spread operator",
-                    data.to_string(),
-                    token.index,
-                ))
-            }
+            State::SpreadOperator => self.unterminated_spread_operator(&token),
             State::MinusSign => Err(Error::new(
                 "Unexpected character \"-\"",
                 self.current_str().to_string(),
             )),
-            _ => {
+            State::DecimalPoint | State::ExponentIndicator | State::ExponentSign => {
+                Err(Error::new(
+                    "Unexpected EOF in float value",
+                    self.current_str().to_string(),
+                ))
+            }
+            State::Ident
+            | State::LeadingZero
+            | State::IntegerPart
+            | State::FractionalPart
+            | State::ExponentDigit
+            | State::Whitespace
+            | State::Comment => {
                 if let Some(mut err) = self.err() {
                     err.set_data(self.current_str().to_string());
                     return Err(err);
@@ -528,38 +594,56 @@ impl<'a> Cursor<'a> {
             }
         }
     }
+
+    fn unterminated_spread_operator(&mut self, token: &Token<'a>) -> Result<Token<'a>, Error> {
+        let data = if self.is_pending() {
+            self.prev_str()
+        } else {
+            self.current_str()
+        };
+
+        Err(Error::with_loc(
+            "Unterminated spread operator",
+            data.to_string(),
+            token.index,
+        ))
+    }
+
+    fn done(&mut self, token: Token<'a>) -> Result<Token<'a>, Error> {
+        if let Some(mut err) = self.err() {
+            err.set_data(token.data.to_string());
+            err.index = token.index;
+            self.err = None;
+            return Err(err);
+        }
+        Ok(token)
+    }
 }
 
-fn is_whitespace(c: char) -> bool {
-    // from rust's lexer:
+/// Ignored tokens other than comments and commas are assimilated to whitespace
+/// <https://spec.graphql.org/October2021/#Ignored>
+fn is_whitespace_assimilated(c: char) -> bool {
     matches!(
         c,
-        // ASCII
+        // https://spec.graphql.org/October2021/#WhiteSpace
         '\u{0009}'   // \t
-        | '\u{000A}' // \n
-        | '\u{000B}' // vertical tab
-        | '\u{000C}' // form feed
-        | '\u{000D}' // \r
         | '\u{0020}' // space
-
-        // Unicode BOM (Byte Order Mark)
-        | '\u{FEFF}'
-
-        // NEXT LINE from latin1
-        | '\u{0085}'
-
-        // Bidi markers
-        | '\u{200E}' // LEFT-TO-RIGHT MARK
-        | '\u{200F}' // RIGHT-TO-LEFT MARK
-
-        // Dedicated whitespace characters from Unicode
-        | '\u{2028}' // LINE SEPARATOR
-        | '\u{2029}' // PARAGRAPH SEPARATOR
+        // https://spec.graphql.org/October2021/#LineTerminator
+        | '\u{000A}' // \n
+        | '\u{000D}' // \r
+        // https://spec.graphql.org/October2021/#UnicodeBOM
+        | '\u{FEFF}' // Unicode BOM (Byte Order Mark)
     )
 }
 
-fn is_ident_char(c: char) -> bool {
+/// <https://spec.graphql.org/October2021/#NameStart>
+fn is_name_start(c: char) -> bool {
     matches!(c, 'a'..='z' | 'A'..='Z' | '_')
+}
+
+/// <https://spec.graphql.org/October2021/#NameContinue>
+fn is_name_continue(c: char) -> bool {
+    matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_')
 }
 
 fn is_line_terminator(c: char) -> bool {

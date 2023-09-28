@@ -39,21 +39,11 @@ use std::fmt;
 /// ```
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct LimitTracker {
-    current: usize,
+    pub(crate) current: usize,
     /// High Water mark for this limit
     pub high: usize,
     /// Limit.
     pub limit: usize,
-}
-
-impl Default for LimitTracker {
-    fn default() -> Self {
-        Self {
-            current: 0,
-            high: 0,
-            limit: 4_096, // Recursion limit derived from router experimentation
-        }
-    }
 }
 
 impl LimitTracker {
@@ -65,19 +55,23 @@ impl LimitTracker {
         }
     }
 
-    pub fn limited(&self) -> bool {
-        self.current > self.limit
-    }
-
-    pub fn consume(&mut self) {
+    /// Return whether the limit was reached
+    #[must_use]
+    pub fn check_and_increment(&mut self) -> bool {
         self.current += 1;
         if self.current > self.high {
             self.high = self.current;
         }
+        let reached = self.current > self.limit;
+        if reached {
+            // Caller is gonna return early, keep increments and decrements balanced:
+            self.decrement()
+        }
+        reached
     }
 
-    pub fn reset(&mut self) {
-        self.current = 0;
+    pub fn decrement(&mut self) {
+        self.current -= 1;
     }
 }
 

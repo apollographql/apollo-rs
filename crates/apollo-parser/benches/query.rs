@@ -10,6 +10,7 @@ fn parse_query(query: &str) {
     }
     let document = tree.document();
 
+    // Simulate a basic selection set traversal operation.
     for definition in document.definitions() {
         if let cst::Definition::OperationDefinition(operation) = definition {
             let selection_set = operation
@@ -17,7 +18,7 @@ fn parse_query(query: &str) {
                 .expect("the node SelectionSet is not optional in the spec; qed");
             for selection in selection_set.selections() {
                 if let cst::Selection::Field(field) = selection {
-                    let _selection_set = field.selection_set();
+                    black_box(field.selection_set());
                 }
             }
         }
@@ -38,7 +39,7 @@ fn bench_query_lexer(c: &mut Criterion) {
             let lexer = Lexer::new(query);
 
             for token_res in lexer {
-                let _ = token_res;
+                black_box(token_res.unwrap());
             }
         })
     });

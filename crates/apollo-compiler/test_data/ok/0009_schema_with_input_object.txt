@@ -79,4 +79,4 @@
                         - IDENT@147..152 "Float"
             - WHITESPACE@152..153 "\n"
             - R_CURLY@153..154 "}"
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 2

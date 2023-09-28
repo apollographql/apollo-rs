@@ -29,4 +29,4 @@
                     - BANG@51..52 "!"
             - WHITESPACE@52..53 "\n"
             - R_CURLY@53..54 "}"
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 2

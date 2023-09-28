@@ -6,8 +6,8 @@ fn compile(schema: &str, query: &str) -> ApolloCompiler {
     compiler.add_type_system(schema, "schema.graphql");
     let executable_id = compiler.add_executable(query, "query.graphql");
 
-    black_box(compiler.db.executable_document(executable_id));
-    black_box(compiler.db.schema());
+    black_box(black_box(compiler.db.executable_document(executable_id)));
+    black_box(black_box(compiler.db.schema()));
 
     compiler
 }

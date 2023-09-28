@@ -36,14 +36,20 @@ fn parse<'a>(p: &mut Parser<'a>) -> Result<(), Token<'a>> {
         Some(T!['[']) => {
             let _guard = p.start_node(SyntaxKind::LIST_TYPE);
             p.bump(S!['[']);
-            if let Err(token) = parse(p) {
+
+            if p.recursion_limit.check_and_increment() {
+                p.limit_err("parser recursion limit reached");
+                return Ok(()); // TODO: is this right?
+            }
+            let result = parse(p);
+            p.recursion_limit.decrement();
+
+            if let Err(token) = result {
                 // TODO(@goto-bus-stop) ideally the span here would point to the entire list
                 // type, so both opening and closing brackets `[]`.
                 p.err_at_token(&token, "expected item type");
             }
-            if let Some(T![']']) = p.peek() {
-                p.eat(S![']']);
-            }
+            p.expect(T![']'], S![']']);
         }
         Some(TokenKind::Name) => {
             let _guard = p.start_node(SyntaxKind::NAMED_TYPE);

@@ -47,10 +47,14 @@
     - ERROR@67..68 "}"
     - WHITESPACE@68..69 "\n"
 - ERROR@22:23 "expected item type" ]
+- ERROR@23:24 "expected R_BRACK, got  "  
+- ERROR@60:64 "expected R_BRACK, got Type" Type
+- ERROR@60:64 "expected R_BRACK, got Type" Type
+- ERROR@60:64 "expected R_BRACK, got Type" Type
 - ERROR@64:65 "expected a type" ]
 - ERROR@64:65 "expected R_CURLY, got ]" ]
 - ERROR@64:65 "expected a StringValue, Name or OperationDefinition" ]
 - ERROR@65:66 "expected a StringValue, Name or OperationDefinition" ]
 - ERROR@66:67 "expected a StringValue, Name or OperationDefinition" ]
 - ERROR@68:69 "expected a StringValue, Name or OperationDefinition" }
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 3

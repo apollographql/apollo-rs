@@ -17,7 +17,14 @@ pub(crate) fn argument(p: &mut Parser, mut is_argument: bool) {
             is_argument = true;
             if p.peek().is_some() {
                 guard.finish_node();
-                return argument(p, is_argument);
+                // TODO: use a loop instead of recursion
+                if p.recursion_limit.check_and_increment() {
+                    p.limit_err("parser recursion limit reached");
+                    return;
+                }
+                argument(p, is_argument);
+                p.recursion_limit.decrement();
+                return;
             }
         }
     }

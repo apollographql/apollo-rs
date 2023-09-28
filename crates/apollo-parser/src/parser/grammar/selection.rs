@@ -3,32 +3,25 @@ use crate::{
     Parser, SyntaxKind, TokenKind, S, T,
 };
 
-/// In order to control recursion, we need to have a way to
-/// specify the "top" of a selection_set tree. This is the
-/// function which must be used to do this.
-pub(crate) fn top_selection_set(p: &mut Parser) {
-    p.recursion_limit.reset();
-    selection_set(p)
-}
-
 /// See: https://spec.graphql.org/October2021/#SelectionSet
 ///
 /// *SelectionSet*:
 ///     **{** Selection* **}**
 pub(crate) fn selection_set(p: &mut Parser) {
-    p.recursion_limit.consume();
-
     if let Some(T!['{']) = p.peek() {
         let _g = p.start_node(SyntaxKind::SELECTION_SET);
         p.bump(S!['{']);
+
         // We need to enforce recursion limits to prevent
         // excessive resource consumption or (more seriously)
         // stack overflows.
-        if p.recursion_limit.limited() {
-            p.limit_err(format!("parser limit({}) reached", p.recursion_limit.limit));
+        if p.recursion_limit.check_and_increment() {
+            p.limit_err("parser recursion limit reached");
             return;
         }
         selection(p);
+        p.recursion_limit.decrement();
+
         p.expect(T!['}'], S!['}']);
     }
 }
@@ -43,9 +36,6 @@ pub(crate) fn selection(p: &mut Parser) {
     let mut has_selection = false;
 
     while let Some(node) = p.peek() {
-        if p.recursion_limit.limited() {
-            break;
-        }
         match node {
             T![...] => {
                 let next_token = p.peek_token_n(2);
@@ -415,7 +405,7 @@ query SomeQuery(
 
         assert_eq!(cst.recursion_limit().high, 2);
         assert_eq!(cst.errors().len(), 1);
-        assert_eq!(cst.document().definitions().count(), 1);
+        assert_eq!(cst.document().definitions().count(), 2);
     }
 
     #[test]

@@ -7,4 +7,4 @@
         - NAME@13..31
             - IDENT@13..31 "ExampleInputObject"
 - ERROR@31:31 "expected Directives or an Input Fields Definition" EOF
-recursion limit: 4096, high: 0
+recursion limit: 500, high: 0
