@@ -5,6 +5,32 @@ use crate::database::{InputDatabase, SourceCache};
 use crate::FileId;
 use thiserror::Error;
 
+/// A source location for a GraphQL error.
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
+pub struct GraphQLLocation {
+    pub line: usize,
+    pub column: usize,
+}
+
+/// A serializable GraphQL error.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct GraphQLError {
+    /// The error message.
+    pub message: String,
+
+    /// Locations relevant to the error, if any.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub locations: Vec<GraphQLLocation>,
+
+    /// The operation path where the error occurred.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub path: Option<Vec<serde_json::Value>>,
+
+    /// Additional freeform data.
+    #[serde(default, skip_serializing_if = "serde_json::Map::is_empty")]
+    pub extensions: serde_json::Map<String, serde_json::Value>,
+}
+
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct DiagnosticLocation {
     file_id: FileId,
@@ -412,19 +438,18 @@ impl ApolloDiagnostic {
         builder.finish()
     }
 
-    pub fn to_json(&self) -> serde_json::Value {
+    pub fn to_json(&self) -> GraphQLError {
         let mut locations = vec![];
 
         if let Some((line, column)) = self.get_line_column() {
-            locations.push(serde_json::json!({
-                "line": line,
-                "column": column,
-            }));
+            locations.push(GraphQLLocation { line, column });
         }
 
-        serde_json::json!({
-            "message": self.data.to_string(),
-            "locations": locations,
-        })
+        GraphQLError {
+            message: self.data.to_string(),
+            locations,
+            path: Default::default(),
+            extensions: Default::default(),
+        }
     }
 }
