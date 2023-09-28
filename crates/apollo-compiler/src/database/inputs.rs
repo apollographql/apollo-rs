@@ -9,19 +9,66 @@ use std::sync::Arc;
 #[error("Unknown file ID")]
 struct UnknownFileError;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ByteCharIndex {
+    map: Vec<u32>,
+}
+
+impl ByteCharIndex {
+    fn new(input: &str) -> Self {
+        let mut map = vec![0; input.len() + 1];
+        let mut char_index = 0;
+        for (byte_index, _) in input.char_indices() {
+            map[byte_index] = char_index;
+            char_index += 1;
+        }
+
+        // Support 1 past the end of the string, for use in exclusive ranges.
+        map[input.len()] = char_index;
+
+        Self { map }
+    }
+}
+
+/// Source text structure with a precomputed index from byte offsets to character offsets and to
+/// line/column numbers.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MappedSource {
+    ariadne: AriadneSource,
+    index: ByteCharIndex,
+}
+
+impl MappedSource {
+    fn new(input: &str) -> Self {
+        let ariadne = AriadneSource::from(input);
+        let index = ByteCharIndex::new(input);
+
+        Self { ariadne, index }
+    }
+
+    pub(crate) fn map_index(&self, byte_index: usize) -> usize {
+        self.index.map[byte_index] as usize
+    }
+}
+
 /// A Cache implementation for `ariadne` diagnostics.
 ///
 /// Use [`InputDatabase::source_cache`] to construct one.
 #[derive(Clone, PartialEq, Eq)]
 pub struct SourceCache {
-    sources: HashMap<FileId, Arc<AriadneSource>>,
+    sources: HashMap<FileId, Arc<MappedSource>>,
     paths: HashMap<FileId, PathBuf>,
 }
 
 impl SourceCache {
+    pub(crate) fn get_source(&self, id: FileId) -> Option<&'_ MappedSource> {
+        self.sources.get(&id).map(|arc| arc.as_ref())
+    }
+
     pub fn get_line_column(&self, id: FileId, index: usize) -> Option<(usize, usize)> {
         let source = self.sources.get(&id)?;
-        let (_, line, column) = source.get_offset_line(index)?;
+        let char_index = source.map_index(index);
+        let (_, line, column) = source.ariadne.get_offset_line(char_index)?;
         Some((line, column))
     }
 }
@@ -30,7 +77,7 @@ impl AriadneCache<FileId> for &SourceCache {
     fn fetch(&mut self, id: &FileId) -> Result<&AriadneSource, Box<dyn std::fmt::Debug>> {
         let source = self.sources.get(id);
         source
-            .map(|arc| &**arc)
+            .map(|arc| &arc.ariadne)
             .ok_or_else(|| Box::new(UnknownFileError) as Box<dyn std::fmt::Debug>)
     }
     fn display<'a>(&self, id: &'a FileId) -> Option<Box<dyn std::fmt::Display + 'a>> {
@@ -95,7 +142,7 @@ pub trait InputDatabase {
     /// Get the GraphQL source text for a file, split up into lines for
     /// printing diagnostics.
     #[salsa::invoke(source_with_lines)]
-    fn source_with_lines(&self, file_id: FileId) -> Arc<AriadneSource>;
+    fn source_with_lines(&self, file_id: FileId) -> Arc<MappedSource>;
 
     /// Get all GraphQL sources known to the compiler, split up into lines
     /// for printing diagnostics.
@@ -132,9 +179,9 @@ fn source_type(db: &dyn InputDatabase, file_id: FileId) -> SourceType {
     db.input(file_id).source_type()
 }
 
-fn source_with_lines(db: &dyn InputDatabase, file_id: FileId) -> Arc<AriadneSource> {
+fn source_with_lines(db: &dyn InputDatabase, file_id: FileId) -> Arc<MappedSource> {
     let code = db.source_code(file_id);
-    Arc::new(AriadneSource::from(code))
+    Arc::new(MappedSource::new(&code))
 }
 
 fn source_cache(db: &dyn InputDatabase) -> Arc<SourceCache> {

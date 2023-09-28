@@ -5,24 +5,11 @@ use crate::database::{InputDatabase, SourceCache};
 use crate::FileId;
 use thiserror::Error;
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct DiagnosticLocation {
     file_id: FileId,
     offset: usize,
     length: usize,
-}
-
-impl ariadne::Span for DiagnosticLocation {
-    type SourceId = FileId;
-    fn source(&self) -> &FileId {
-        &self.file_id
-    }
-    fn start(&self) -> usize {
-        self.offset
-    }
-    fn end(&self) -> usize {
-        self.offset + self.length
-    }
 }
 
 impl DiagnosticLocation {
@@ -388,14 +375,17 @@ impl DiagnosticData {
     }
 }
 
-impl From<Label> for ariadne::Label<DiagnosticLocation> {
-    fn from(label: Label) -> Self {
-        Self::new(label.location).with_message(label.text)
-    }
-}
-
+type AriadneSpan = (FileId, std::ops::Range<usize>);
 impl ApolloDiagnostic {
-    pub fn to_report(&self) -> ariadne::Report<'static, DiagnosticLocation> {
+    fn map_location(&self, location: DiagnosticLocation) -> AriadneSpan {
+        let id = location.file_id();
+        let source = self.cache.get_source(id).unwrap();
+        let start = source.map_index(location.offset);
+        let end = source.map_index(location.offset + location.length);
+        (id, start..end)
+    }
+
+    pub fn to_report(&self) -> ariadne::Report<'static, AriadneSpan> {
         use ariadne::{ColorGenerator, Report, ReportKind};
 
         let severity = if self.data.is_advice() {
@@ -405,14 +395,17 @@ impl ApolloDiagnostic {
         } else {
             ReportKind::Error
         };
+
+        let span = self.map_location(self.location);
+
         let mut colors = ColorGenerator::new();
-        let mut builder = Report::build(severity, self.location.file_id(), self.location.offset())
-            .with_message(&self.data);
-        builder.add_labels(
-            self.labels
-                .iter()
-                .map(|label| ariadne::Label::from(label.clone()).with_color(colors.next())),
-        );
+        let mut builder =
+            Report::build(severity, self.location.file_id(), span.1.start).with_message(&self.data);
+        builder.add_labels(self.labels.iter().map(|label| {
+            ariadne::Label::new(self.map_location(label.location))
+                .with_message(&label.text)
+                .with_color(colors.next())
+        }));
         if let Some(help) = &self.help {
             builder = builder.with_help(help);
         }
