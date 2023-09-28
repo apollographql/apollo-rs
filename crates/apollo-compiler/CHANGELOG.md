@@ -40,6 +40,28 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [issue/629]: https://github.com/apollographql/apollo-rs/issues/629
 -->
 
+# [0.11.3] (unreleased) - 2023-mm-dd
+
+## Fixes
+- expose line/column location and JSON format from diagnostics, by [goto-bus-stop] in [pull/668]
+
+  You can now use `diagnostic.get_line_column()` to access the line/column number where a validation error occurred.
+
+  `diagnostic.to_json()` returns a GraphQL error structure that's serializable with serde, matching the [JSON error format].
+
+  ```rust
+  let diagnostics = compiler.db.validate();
+  let errors = diagnostics.into_iter().map(ApolloDiagnostic::to_json).collect::<Vec<_>>();
+
+  let error_response = serde_json::to_string(&serde_json::json!({
+      "errors": errors,
+  }))?;
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/668]: https://github.com/apollographql/apollo-rs/pull/668
+[JSON error format]: https://spec.graphql.org/draft/#sec-Errors.Error-Result-Format
+
 # [0.11.2](https://crates.io/crates/apollo-compiler/0.11.2) - 2023-09-11
 
 ## Fixes
