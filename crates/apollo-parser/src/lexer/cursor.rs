@@ -6,8 +6,8 @@ use crate::Error;
 #[derive(Debug, Clone)]
 pub(crate) struct Cursor<'a> {
     index: usize,
-    offset: usize,
-    source: &'a str,
+    pub(super) offset: usize,
+    pub(super) source: &'a str,
     chars: CharIndices<'a>,
     pending: Option<char>,
     pub(crate) err: Option<Error>,
