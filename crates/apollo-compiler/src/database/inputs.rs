@@ -9,13 +9,18 @@ use std::sync::Arc;
 #[error("Unknown file ID")]
 struct UnknownFileError;
 
+/// Source text structure with a precomputed index from byte offsets to character offsets and to
+/// line/column numbers.
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct ByteCharIndex {
+pub struct MappedSource {
+    ariadne: AriadneSource,
     map: Vec<u32>,
 }
 
-impl ByteCharIndex {
+impl MappedSource {
     fn new(input: &str) -> Self {
+        let ariadne = AriadneSource::from(input);
+
         let mut map = vec![0; input.len() + 1];
         let mut char_index = 0;
         for (byte_index, _) in input.char_indices() {
@@ -26,28 +31,11 @@ impl ByteCharIndex {
         // Support 1 past the end of the string, for use in exclusive ranges.
         map[input.len()] = char_index;
 
-        Self { map }
-    }
-}
-
-/// Source text structure with a precomputed index from byte offsets to character offsets and to
-/// line/column numbers.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MappedSource {
-    ariadne: AriadneSource,
-    index: ByteCharIndex,
-}
-
-impl MappedSource {
-    fn new(input: &str) -> Self {
-        let ariadne = AriadneSource::from(input);
-        let index = ByteCharIndex::new(input);
-
-        Self { ariadne, index }
+        Self { ariadne, map }
     }
 
     pub(crate) fn map_index(&self, byte_index: usize) -> usize {
-        self.index.map[byte_index] as usize
+        self.map[byte_index] as usize
     }
 }
 

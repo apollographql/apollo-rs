@@ -411,4 +411,20 @@ impl ApolloDiagnostic {
         }
         builder.finish()
     }
+
+    pub fn to_json(&self) -> serde_json::Value {
+        let mut locations = vec![];
+
+        if let Some((line, column)) = self.get_line_column() {
+            locations.push(serde_json::json!({
+                "line": line,
+                "column": column,
+            }));
+        }
+
+        serde_json::json!({
+            "message": self.data.to_string(),
+            "locations": locations,
+        })
+    }
 }
