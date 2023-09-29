@@ -24,14 +24,6 @@ pub struct GraphQLError {
     /// Locations relevant to the error, if any.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub locations: Vec<GraphQLLocation>,
-
-    /// The operation path where the error occurred.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub path: Option<Vec<serde_json::Value>>,
-
-    /// Additional freeform data.
-    #[serde(default, skip_serializing_if = "serde_json::Map::is_empty")]
-    pub extensions: serde_json::Map<String, serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -145,7 +137,10 @@ impl ApolloDiagnostic {
         self.cache
             .get_line_column(self.location.file_id, self.location.offset)
             // Make 1-indexed
-            .map(|(line, column)| GraphQLLocation { line: line + 1, column: column + 1 })
+            .map(|(line, column)| GraphQLLocation {
+                line: line + 1,
+                column: column + 1,
+            })
     }
 }
 
@@ -454,8 +449,6 @@ impl ApolloDiagnostic {
         GraphQLError {
             message: self.data.to_string(),
             locations,
-            path: Default::default(),
-            extensions: Default::default(),
         }
     }
 }
