@@ -22,15 +22,15 @@ fuzz_target!(|data: &[u8]| {
 
     debug!("======= OPERATION =======");
     debug!("{}", op);
-    debug!("========================");
+    debug!("========= SCHEMA ===============");
     debug!("{}", ts);
     debug!("========================");
-    let js_diagnostics =
-        router_bridge::validate::validate(&ts, &op).expect("js validation should succeed");
+    let js_diagnostics = router_bridge::validate::validate(&ts, &op)
+        .expect("bridge should return validation result");
 
     // early return if js and rust validation errors don't match
     let mut should_panic = false;
-    match js_diagnostics.errors {
+    match js_diagnostics.errors.clone() {
         Some(js_diag) => match rust_diagnostics {
             Ok(_) => {
                 should_panic = true;
@@ -60,6 +60,15 @@ fuzz_target!(|data: &[u8]| {
             }
         }
     }
+
+    debug!("========== RUST DIAGNOSTICS ==============");
+    debug!("{:?}", rust_diagnostics);
+    // for diag in rust_diagnostics {
+    //     debug!("{}", diag);
+    // }
+
+    debug!("========== JS DIAGNOSTICS ==============");
+    debug!("{:?}", js_diagnostics.errors);
 
     if should_panic {
         panic!("error detected");
