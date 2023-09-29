@@ -8,7 +8,10 @@ use thiserror::Error;
 /// A source location (line + column) for a GraphQL error.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct GraphQLLocation {
+    /// The line number for this location, starting at 1 for the first line.
     pub line: usize,
+    /// The column number for this location, starting at 1 and counting characters (Unicode Scalar
+    /// Values) like [str::chars].
     pub column: usize,
 }
 
@@ -141,7 +144,8 @@ impl ApolloDiagnostic {
     pub fn get_line_column(&self) -> Option<GraphQLLocation> {
         self.cache
             .get_line_column(self.location.file_id, self.location.offset)
-            .map(|(line, column)| GraphQLLocation { line, column })
+            // Make 1-indexed
+            .map(|(line, column)| GraphQLLocation { line: line + 1, column: column + 1 })
     }
 }
 
