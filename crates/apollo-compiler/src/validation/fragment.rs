@@ -85,7 +85,7 @@ fn validate_fragment_spread_type(
 
                 ApolloDiagnostic::new(
                     db,
-                    (spread.location().unwrap()).into(),
+                    spread.location().unwrap(),
                     DiagnosticData::InvalidFragmentSpread {
                         name: Some(spread.fragment_name.to_string()),
                         type_name: against_type.to_string(),
@@ -106,7 +106,7 @@ fn validate_fragment_spread_type(
             }
             ast::Selection::InlineFragment(inline) => ApolloDiagnostic::new(
                 db,
-                (inline.location().unwrap()).into(),
+                inline.location().unwrap(),
                 DiagnosticData::InvalidFragmentSpread {
                     name: None,
                     type_name: against_type.to_string(),
@@ -210,7 +210,7 @@ pub fn validate_fragment_spread(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    (spread.location().unwrap()).into(),
+                    spread.location().unwrap(),
                     DiagnosticData::UndefinedFragment {
                         name: spread.fragment_name.to_string(),
                     },
@@ -331,7 +331,7 @@ pub fn validate_fragment_cycles(
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                (def.location().unwrap()).into(),
+                def.location().unwrap(),
                 DiagnosticData::RecursiveFragmentDefinition {
                     name: def.name.to_string(),
                 },
@@ -375,7 +375,7 @@ pub fn validate_fragment_type_condition(
         if !is_composite {
             let diagnostic = ApolloDiagnostic::new(
                 db,
-                fragment_location.into(),
+                fragment_location,
                 DiagnosticData::InvalidFragmentTarget {
                     ty: type_cond.to_string(),
                 },
@@ -432,7 +432,7 @@ pub fn validate_fragment_used(
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                (fragment.location().unwrap()).into(),
+                fragment.location().unwrap(),
                 DiagnosticData::UnusedFragment {
                     name: fragment_name.to_string(),
                 },

@@ -162,7 +162,7 @@ pub fn validate_directive_definition(
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                definition_location.into(),
+                definition_location,
                 DiagnosticData::RecursiveDirectiveDefinition {
                     name: def.name.to_string(),
                 },
@@ -221,11 +221,11 @@ pub fn validate_directives<'dir>(
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        loc.into(),
+                        loc,
                         DiagnosticData::UniqueDirective {
                             name: name.to_string(),
-                            original_call: original_loc.into(),
-                            conflicting_call: loc.into(),
+                            original_call: original_loc,
+                            conflicting_call: loc,
                         },
                     )
                     .label(Label::new(
@@ -248,11 +248,11 @@ pub fn validate_directives<'dir>(
             if !allowed_loc.contains(&dir_loc) {
                 let mut diag = ApolloDiagnostic::new(
                         db,
-                        loc.into(),
+                        loc,
                         DiagnosticData::UnsupportedLocation {
                             name: name.to_string(),
                             dir_loc,
-                            directive_def: directive_definition.location().unwrap().into(),
+                            directive_def: directive_definition.location().unwrap(),
                         },
                 )
                     .label(Label::new(loc, format!("{dir_loc} is not a valid location")))
@@ -296,7 +296,7 @@ pub fn validate_directives<'dir>(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            argument.location().unwrap().into(),
+                            argument.location().unwrap(),
                             DiagnosticData::UndefinedArgument {
                                 name: argument.name.to_string(),
                             },
@@ -325,7 +325,7 @@ pub fn validate_directives<'dir>(
                 if arg_def.is_required() && is_null {
                     let mut diagnostic = ApolloDiagnostic::new(
                         db,
-                        dir.location().unwrap().into(),
+                        dir.location().unwrap(),
                         DiagnosticData::RequiredArgument {
                             name: arg_def.name.to_string(),
                         },
@@ -345,7 +345,7 @@ pub fn validate_directives<'dir>(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    loc.into(),
+                    loc,
                     DiagnosticData::UndefinedDirective {
                         name: name.to_string(),
                     },

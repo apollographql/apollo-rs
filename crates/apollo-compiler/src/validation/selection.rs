@@ -102,11 +102,11 @@ pub(crate) fn same_response_shape(
     let mismatching_type_diagnostic = || {
         ApolloDiagnostic::new(
             db,
-            (field_b.field.location().unwrap()).into(),
+            field_b.field.location().unwrap(),
             DiagnosticData::ConflictingField {
                 field: field_a.field.name.to_string(),
-                original_selection: (field_a.field.location().unwrap()).into(),
-                redefined_selection: (field_b.field.location().unwrap()).into(),
+                original_selection: (field_a.field.location().unwrap()),
+                redefined_selection: (field_b.field.location().unwrap()),
             },
         )
         .label(Label::new(
@@ -246,11 +246,11 @@ fn identical_arguments(
             return Err(
                 ApolloDiagnostic::new(
                     db,
-                    loc_b.into(),
+                    loc_b,
                     DiagnosticData::ConflictingField {
                         field: field_a.name.to_string(),
-                        original_selection: loc_a.into(),
-                        redefined_selection: loc_b.into(),
+                        original_selection: loc_a,
+                        redefined_selection: loc_b,
                     },
                 )
                 .label(Label::new(arg.location().unwrap(), format!("field `{}` is selected with argument `{}` here", field_a.name, arg.name)))
@@ -263,11 +263,11 @@ fn identical_arguments(
             return Err(
                 ApolloDiagnostic::new(
                     db,
-                    loc_b.into(),
+                    loc_b,
                     DiagnosticData::ConflictingField {
                         field: field_a.name.to_string(),
-                        original_selection: loc_a.into(),
-                        redefined_selection: loc_b.into(),
+                        original_selection: loc_a,
+                        redefined_selection: loc_b,
                     },
                 )
                 .label(Label::new(arg.location().unwrap(), format!("field `{}` provides one argument value here", field_a.name)))
@@ -282,11 +282,11 @@ fn identical_arguments(
             return Err(
                 ApolloDiagnostic::new(
                     db,
-                    loc_b.into(),
+                    loc_b,
                     DiagnosticData::ConflictingField {
                         field: field_a.name.to_string(),
-                        original_selection: loc_a.into(),
-                        redefined_selection: loc_b.into(),
+                        original_selection: loc_a,
+                        redefined_selection: loc_b,
                     },
                 )
                 .label(Label::new(arg.location().unwrap(), format!("field `{}` is selected with argument `{}` here", field_b.name, arg.name)))
@@ -340,11 +340,11 @@ pub(crate) fn fields_in_set_can_merge(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            (field_b.field.location().unwrap()).into(),
+                            field_b.field.location().unwrap(),
                             DiagnosticData::ConflictingField {
                                 field: field_b.field.name.to_string(),
-                                original_selection: (field_a.field.location().unwrap()).into(),
-                                redefined_selection: (field_b.field.location().unwrap()).into(),
+                                original_selection: (field_a.field.location().unwrap()),
+                                redefined_selection: (field_b.field.location().unwrap()),
                             },
                         )
                         .label(Label::new(

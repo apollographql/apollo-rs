@@ -18,11 +18,9 @@ pub fn validate_schema_definition(
     if !has_query {
         if let Some(location) = schema_definition.definition.location() {
             diagnostics.push(
-                ApolloDiagnostic::new(db, location.into(), DiagnosticData::QueryRootOperationType)
-                    .label(Label::new(
-                        location,
-                        "`query` root operation type must be defined here",
-                    )),
+                ApolloDiagnostic::new(db, location, DiagnosticData::QueryRootOperationType).label(
+                    Label::new(location, "`query` root operation type must be defined here"),
+                ),
             );
         }
     }
@@ -71,7 +69,7 @@ pub fn validate_root_operation_definitions(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            op_loc.into(),
+                            op_loc,
                             DiagnosticData::ObjectType {
                                 name: name.to_string(),
                                 ty: kind,
@@ -86,7 +84,7 @@ pub fn validate_root_operation_definitions(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    op_loc.into(),
+                    op_loc,
                     DiagnosticData::UndefinedDefinition {
                         name: name.to_string(),
                     },

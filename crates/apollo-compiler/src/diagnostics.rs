@@ -1,86 +1,17 @@
 use crate::ast::DirectiveLocation;
 use crate::database::{InputDatabase, SourceCache};
 use crate::Arc;
-use crate::FileId;
 use crate::NodeLocation;
 use std::fmt;
 use thiserror::Error;
 
-#[derive(Clone, Hash, PartialEq, Eq)]
-pub struct DiagnosticLocation {
-    file_id: FileId,
-    offset: usize,
-    length: usize,
-}
-
-impl ariadne::Span for DiagnosticLocation {
-    type SourceId = FileId;
-    fn source(&self) -> &FileId {
-        &self.file_id
-    }
-    fn start(&self) -> usize {
-        self.offset
-    }
-    fn end(&self) -> usize {
-        self.offset + self.length
-    }
-}
-
-impl DiagnosticLocation {
-    pub fn file_id(&self) -> FileId {
-        self.file_id
-    }
-    pub fn offset(&self) -> usize {
-        self.offset
-    }
-    pub fn node_len(&self) -> usize {
-        self.length
-    }
-}
-
-impl From<(FileId, rowan::TextRange)> for DiagnosticLocation {
-    fn from((file_id, range): (FileId, rowan::TextRange)) -> Self {
-        Self {
-            file_id,
-            offset: range.start().into(),
-            length: range.len().into(),
-        }
-    }
-}
-
-impl From<(FileId, usize, usize)> for DiagnosticLocation {
-    fn from((file_id, offset, length): (FileId, usize, usize)) -> Self {
-        Self {
-            file_id,
-            offset,
-            length,
-        }
-    }
-}
-
-impl From<NodeLocation> for DiagnosticLocation {
-    fn from(location: NodeLocation) -> Self {
-        Self {
-            file_id: location.file_id(),
-            offset: location.offset(),
-            length: location.node_len(),
-        }
-    }
-}
-
-impl fmt::Debug for DiagnosticLocation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}..+{} @{:?}", self.offset, self.length, self.file_id)
-    }
-}
-
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Label {
-    pub location: DiagnosticLocation,
+    pub location: NodeLocation,
     pub text: String,
 }
 impl Label {
-    pub fn new(location: impl Into<DiagnosticLocation>, text: impl Into<String>) -> Self {
+    pub fn new(location: impl Into<NodeLocation>, text: impl Into<String>) -> Self {
         Self {
             location: location.into(),
             text: text.into(),
@@ -91,7 +22,7 @@ impl Label {
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub struct ApolloDiagnostic {
     cache: Arc<SourceCache>,
-    pub location: DiagnosticLocation,
+    pub location: NodeLocation,
     pub labels: Vec<Label>,
     pub help: Option<String>,
     pub data: Box<DiagnosticData>,
@@ -100,7 +31,7 @@ pub struct ApolloDiagnostic {
 impl ApolloDiagnostic {
     pub fn new<DB: InputDatabase + ?Sized>(
         db: &DB,
-        location: DiagnosticLocation,
+        location: NodeLocation,
         data: DiagnosticData,
     ) -> Self {
         Self {
@@ -158,27 +89,27 @@ pub enum DiagnosticData {
     UniqueDefinition {
         ty: &'static str,
         name: String,
-        original_definition: DiagnosticLocation,
-        redefined_definition: DiagnosticLocation,
+        original_definition: NodeLocation,
+        redefined_definition: NodeLocation,
     },
     #[error("the argument `{name}` is defined multiple times")]
     UniqueArgument {
         name: String,
-        original_definition: DiagnosticLocation,
-        redefined_definition: DiagnosticLocation,
+        original_definition: NodeLocation,
+        redefined_definition: NodeLocation,
     },
     #[error("the value `{name}` is defined multiple times")]
     UniqueInputValue {
         name: String,
-        original_value: DiagnosticLocation,
-        redefined_value: DiagnosticLocation,
+        original_value: NodeLocation,
+        redefined_value: NodeLocation,
     },
     #[error("subscription operations can only have one root field")]
     SingleRootField {
         // TODO(goto-bus-stop) if we keep this it should be a vec of the field names or nodes i think.
         // Else just remove as the labeling is done separately.
         fields: usize,
-        subscription: DiagnosticLocation,
+        subscription: NodeLocation,
     },
     #[error("{ty} root operation type is not defined")]
     UnsupportedOperation {
@@ -226,9 +157,9 @@ pub enum DiagnosticData {
         /// Name of the type being extended
         name: String,
         /// Location of the original definition. This may be None when extending a builtin GraphQL type.
-        definition: DiagnosticLocation,
+        definition: NodeLocation,
         /// Location of the extension
-        extension: DiagnosticLocation,
+        extension: NodeLocation,
     },
     #[error("`{name}` directive definition cannot reference itself")]
     RecursiveDirectiveDefinition { name: String },
@@ -244,8 +175,8 @@ pub enum DiagnosticData {
     UniqueField {
         /// Name of the non-unique field.
         field: String,
-        original_definition: DiagnosticLocation,
-        redefined_definition: DiagnosticLocation,
+        original_definition: NodeLocation,
+        redefined_definition: NodeLocation,
     },
     #[error("type does not satisfy interface `{interface}`: missing field `{field}`")]
     MissingInterfaceField { interface: String, field: String },
@@ -310,7 +241,7 @@ pub enum DiagnosticData {
         /// current location where the directive is used
         dir_loc: DirectiveLocation,
         /// The source location where the directive that's being used was defined.
-        directive_def: DiagnosticLocation,
+        directive_def: NodeLocation,
     },
     #[error("{ty} cannot be represented by a {value} value")]
     UnsupportedValueType {
@@ -333,8 +264,8 @@ pub enum DiagnosticData {
     UniqueDirective {
         /// Name of the non-unique directive.
         name: String,
-        original_call: DiagnosticLocation,
-        conflicting_call: DiagnosticLocation,
+        original_call: NodeLocation,
+        conflicting_call: NodeLocation,
     },
     #[error("subscription operations can not have an introspection field as a root field")]
     IntrospectionField {
@@ -349,8 +280,8 @@ pub enum DiagnosticData {
     ConflictingField {
         /// Name of the non-unique field.
         field: String,
-        original_selection: DiagnosticLocation,
-        redefined_selection: DiagnosticLocation,
+        original_selection: NodeLocation,
+        redefined_selection: NodeLocation,
     },
     #[error("fragments must be specified on types that exist in the schema")]
     InvalidFragment {
@@ -397,17 +328,14 @@ impl DiagnosticData {
     }
 }
 
-impl From<Label> for ariadne::Label<DiagnosticLocation> {
+impl From<Label> for ariadne::Label<NodeLocation> {
     fn from(label: Label) -> Self {
         Self::new(label.location).with_message(label.text)
     }
 }
 
 impl ApolloDiagnostic {
-    pub fn to_report(
-        &self,
-        config: ariadne::Config,
-    ) -> ariadne::Report<'static, DiagnosticLocation> {
+    pub fn to_report(&self, config: ariadne::Config) -> ariadne::Report<'static, NodeLocation> {
         use ariadne::{ColorGenerator, Report, ReportKind};
 
         let severity = if self.data.is_advice() {

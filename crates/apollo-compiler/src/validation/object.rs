@@ -83,7 +83,7 @@ pub fn validate_object_type_definition(
                 };
                 diagnostics.push(ApolloDiagnostic::new(
                     db,
-                    (object.definition.location().unwrap()).into(),
+                    object.definition.location().unwrap(),
                     DiagnosticData::MissingInterfaceField {
                         interface: implements_interface.to_string(),
                         field: interface_field.name.to_string(),

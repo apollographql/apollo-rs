@@ -71,7 +71,7 @@ pub fn validate_field(
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        argument.location().unwrap().into(),
+                        argument.location().unwrap(),
                         DiagnosticData::UndefinedArgument {
                             name: argument.name.to_string(),
                         },
@@ -96,7 +96,7 @@ pub fn validate_field(
             if arg_definition.is_required() && is_null {
                 let mut diagnostic = ApolloDiagnostic::new(
                     db,
-                    field.location().unwrap().into(),
+                    field.location().unwrap(),
                     DiagnosticData::RequiredArgument {
                         name: arg_definition.name.to_string(),
                     },
@@ -175,7 +175,7 @@ pub fn validate_field_definitions(
                     schema::ExtendedType::Object(_) => unreachable!(),
                 };
                 diagnostics.push(
-                    ApolloDiagnostic::new(db, loc.into(), DiagnosticData::OutputType {
+                    ApolloDiagnostic::new(db, loc, DiagnosticData::OutputType {
                         name: field.name.to_string(),
                         ty: kind,
                     })
@@ -187,7 +187,7 @@ pub fn validate_field_definitions(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    field_ty_loc.into(),
+                    field_ty_loc,
                     DiagnosticData::UndefinedDefinition {
                         name: field.name.to_string(),
                     },
@@ -198,7 +198,7 @@ pub fn validate_field_definitions(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    loc.into(),
+                    loc,
                     DiagnosticData::UndefinedDefinition {
                         name: field.ty.to_string(),
                     },
@@ -246,7 +246,7 @@ pub fn validate_leaf_field_selection(
     };
 
     Err(
-        ApolloDiagnostic::new(db, field.location().unwrap().into(), diagnostic_data)
+        ApolloDiagnostic::new(db, field.location().unwrap(), diagnostic_data)
             .label(Label::new(field.location().unwrap(), label))
             .label(Label::new(
                 type_def.location().unwrap(),

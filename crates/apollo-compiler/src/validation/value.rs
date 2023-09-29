@@ -20,7 +20,7 @@ fn unsupported_type(
 
     let mut diagnostic = ApolloDiagnostic::new(
         db,
-        (value.location().unwrap()).into(),
+        value.location().unwrap(),
         DiagnosticData::UnsupportedValueType {
             value: value.kind().into(),
             ty: declared_type.to_string(),
@@ -82,7 +82,7 @@ pub fn value_of_correct_type2(
                         diagnostics.push(
                             ApolloDiagnostic::new(
                                 db,
-                                (arg_value.location().unwrap()).into(),
+                                arg_value.location().unwrap(),
                                 DiagnosticData::IntCoercionError {
                                     value: int.as_str().to_owned(),
                                 },
@@ -99,7 +99,7 @@ pub fn value_of_correct_type2(
                         diagnostics.push(
                             ApolloDiagnostic::new(
                                 db,
-                                (arg_value.location().unwrap()).into(),
+                                arg_value.location().unwrap(),
                                 DiagnosticData::FloatCoercionError {
                                     value: int.as_str().to_owned(),
                                 },
@@ -126,7 +126,7 @@ pub fn value_of_correct_type2(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            (arg_value.location().unwrap()).into(),
+                            arg_value.location().unwrap(),
                             DiagnosticData::FloatCoercionError {
                                 value: float.as_str().to_owned(),
                             },
@@ -215,7 +215,7 @@ pub fn value_of_correct_type2(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            (value.location().unwrap()).into(),
+                            value.location().unwrap(),
                             DiagnosticData::UndefinedValue {
                                 value: value.to_string(),
                                 definition: ty.inner_named_type().to_string(),
@@ -259,7 +259,7 @@ pub fn value_of_correct_type2(
                     diagnostics.push(
                         ApolloDiagnostic::new(
                             db,
-                            (value.location().unwrap()).into(),
+                            value.location().unwrap(),
                             DiagnosticData::UndefinedValue {
                                 value: name.to_string(),
                                 definition: ty.inner_named_type().to_string(),
@@ -286,7 +286,7 @@ pub fn value_of_correct_type2(
                     if (ty.is_non_null() && f.default_value.is_none()) && (is_missing || is_null) {
                         let mut diagnostic = ApolloDiagnostic::new(
                             db,
-                            (arg_value.location().unwrap()).into(),
+                            arg_value.location().unwrap(),
                             DiagnosticData::RequiredArgument {
                                 name: input_name.to_string(),
                             },
