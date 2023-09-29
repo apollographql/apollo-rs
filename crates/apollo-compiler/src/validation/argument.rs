@@ -22,11 +22,11 @@ pub fn validate_arguments(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    redefined_definition.into(),
+                    redefined_definition,
                     DiagnosticData::UniqueArgument {
                         name: name.to_string(),
-                        original_definition: original_definition.into(),
-                        redefined_definition: redefined_definition.into(),
+                        original_definition,
+                        redefined_definition,
                     },
                 )
                 .labels([

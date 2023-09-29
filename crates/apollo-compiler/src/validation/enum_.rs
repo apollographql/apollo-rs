@@ -53,7 +53,7 @@ pub(crate) fn validate_enum_value(
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                location.into(),
+                location,
                 DiagnosticData::CapitalizedValue {
                     value: enum_val.value.to_string(),
                 },

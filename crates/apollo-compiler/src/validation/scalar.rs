@@ -31,15 +31,11 @@ pub fn validate_scalar_definition(
         if !has_specified_by {
             if let Some(location) = scalar_def.location() {
                 diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        location.into(),
-                        DiagnosticData::ScalarSpecificationURL,
-                    )
-                    .label(Label::new(
-                        location,
-                        "consider adding a @specifiedBy directive to this scalar definition",
-                    )),
+                    ApolloDiagnostic::new(db, location, DiagnosticData::ScalarSpecificationURL)
+                        .label(Label::new(
+                            location,
+                            "consider adding a @specifiedBy directive to this scalar definition",
+                        )),
                 );
             }
         }

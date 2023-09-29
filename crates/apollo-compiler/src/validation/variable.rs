@@ -43,7 +43,7 @@ pub fn validate_variable_definitions2(
                         schema::ExtendedType::InputObject(_) => "input object",
                     };
                     diagnostics.push(
-                        ApolloDiagnostic::new(db, (variable.location().unwrap()).into(), DiagnosticData::InputType {
+                        ApolloDiagnostic::new(db, variable.location().unwrap(), DiagnosticData::InputType {
                             name: variable.name.to_string(),
                             ty: kind,
                         })
@@ -54,7 +54,7 @@ pub fn validate_variable_definitions2(
                 None => diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        (variable.location().unwrap()).into(),
+                        variable.location().unwrap(),
                         DiagnosticData::UndefinedDefinition {
                             name: ty.inner_named_type().to_string(),
                         },
@@ -74,12 +74,12 @@ pub fn validate_variable_definitions2(
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        redefined_definition.into(),
+                        redefined_definition,
                         DiagnosticData::UniqueDefinition {
                             ty: "variable",
                             name: variable.name.to_string(),
-                            original_definition: original_definition.into(),
-                            redefined_definition: redefined_definition.into(),
+                            original_definition,
+                            redefined_definition,
                         },
                     )
                     .labels([
@@ -260,7 +260,7 @@ pub fn validate_unused_variables(
         let loc = locations[unused_var].expect("missing location information");
         ApolloDiagnostic::new(
             db,
-            loc.into(),
+            loc,
             DiagnosticData::UnusedVariable {
                 name: unused_var.to_string(),
             },
@@ -286,7 +286,7 @@ pub fn validate_variable_usage2(
             if !is_allowed {
                 return Err(ApolloDiagnostic::new(
                     db,
-                    (argument.location().unwrap()).into(),
+                    argument.location().unwrap(),
                     DiagnosticData::DisallowedVariableUsage {
                         var_name: var_def.name.to_string(),
                         arg_name: argument.name.to_string(),
@@ -312,7 +312,7 @@ pub fn validate_variable_usage2(
         } else {
             return Err(ApolloDiagnostic::new(
                 db,
-                argument.location().unwrap().into(),
+                argument.location().unwrap(),
                 DiagnosticData::UndefinedVariable {
                     name: var_name.to_string(),
                 },

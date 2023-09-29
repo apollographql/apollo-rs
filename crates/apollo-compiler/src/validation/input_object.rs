@@ -94,7 +94,7 @@ pub fn validate_input_object_definition(
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                (input_object.definition.location().unwrap()).into(),
+                input_object.definition.location().unwrap(),
                 DiagnosticData::RecursiveInputObjectDefinition {
                     name: input_object.definition.name.to_string(),
                 },
@@ -133,11 +133,11 @@ pub fn validate_argument_definitions(
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        original_value.into(),
+                        original_value,
                         DiagnosticData::UniqueInputValue {
                             name: name.to_string(),
-                            original_value: original_value.into(),
-                            redefined_value: redefined_value.into(),
+                            original_value,
+                            redefined_value,
                         },
                     )
                     .labels([
@@ -191,7 +191,7 @@ pub fn validate_input_value_definitions(
                     schema::ExtendedType::InputObject(_) => unreachable!(),
                 };
                 diagnostics.push(
-                    ApolloDiagnostic::new(db, loc.into(), DiagnosticData::InputType {
+                    ApolloDiagnostic::new(db, loc, DiagnosticData::InputType {
                         name: input_value.name.to_string(),
                         ty: kind,
                     })
@@ -205,7 +205,7 @@ pub fn validate_input_value_definitions(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    loc.into(),
+                    loc,
                     DiagnosticData::UndefinedDefinition {
                         name: named_type.to_string(),
                     },

@@ -43,10 +43,10 @@ pub(crate) fn validate_operation(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    (operation.location().unwrap()).into(),
+                    operation.location().unwrap(),
                     DiagnosticData::SingleRootField {
                         fields: fields.len(),
-                        subscription: (operation.location().unwrap()).into(),
+                        subscription: (operation.location().unwrap()),
                     },
                 )
                 .label(Label::new(
@@ -78,7 +78,7 @@ pub(crate) fn validate_operation(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    (field.location().unwrap()).into(),
+                    field.location().unwrap(),
                     DiagnosticData::IntrospectionField {
                         field: field.name.to_string(),
                     },

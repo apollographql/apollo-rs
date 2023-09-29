@@ -51,7 +51,7 @@ pub fn validate_interface_definition(
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,
-                    (implements_interface.location().unwrap()).into(),
+                    implements_interface.location().unwrap(),
                     DiagnosticData::RecursiveInterfaceDefinition {
                         name: implements_interface.to_string(),
                     },
@@ -94,7 +94,7 @@ pub fn validate_interface_definition(
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        (interface.definition.location().unwrap()).into(),
+                        interface.definition.location().unwrap(),
                         DiagnosticData::MissingInterfaceField {
                             interface: implements_interface.to_string(),
                             field: super_field.name.to_string(),
@@ -161,7 +161,7 @@ pub fn validate_implements_interfaces(
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                loc.into(),
+                loc,
                 DiagnosticData::UndefinedDefinition {
                     name: interface_name.to_string(),
                 },
@@ -196,7 +196,7 @@ pub fn validate_implements_interfaces(
         diagnostics.push(
             ApolloDiagnostic::new(
                 db,
-                definition_loc.into(),
+                definition_loc,
                 DiagnosticData::TransitiveImplementedInterfaces {
                     missing_interface: transitive_interface.to_string(),
                 },

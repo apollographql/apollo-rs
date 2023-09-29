@@ -38,7 +38,7 @@ pub fn validate_union_definition(
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        member_location.into(),
+                        member_location,
                         DiagnosticData::UndefinedDefinition {
                             name: union_member.to_string(),
                         },
@@ -60,7 +60,7 @@ pub fn validate_union_definition(
                 diagnostics.push(
                     ApolloDiagnostic::new(
                         db,
-                        member_location.into(),
+                        member_location,
                         DiagnosticData::ObjectType {
                             name: union_member.to_string(),
                             ty: kind,
