@@ -5,15 +5,15 @@ use crate::database::{InputDatabase, SourceCache};
 use crate::FileId;
 use thiserror::Error;
 
-/// A source location for a GraphQL error.
-#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
+/// A source location (line + column) for a GraphQL error.
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct GraphQLLocation {
     pub line: usize,
     pub column: usize,
 }
 
 /// A serializable GraphQL error.
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct GraphQLError {
     /// The error message.
     pub message: String,
@@ -137,9 +137,11 @@ impl ApolloDiagnostic {
         self
     }
 
-    pub fn get_line_column(&self) -> Option<(usize, usize)> {
+    /// Get the line and column number where this diagnostic was raised.
+    pub fn get_line_column(&self) -> Option<GraphQLLocation> {
         self.cache
             .get_line_column(self.location.file_id, self.location.offset)
+            .map(|(line, column)| GraphQLLocation { line, column })
     }
 }
 
@@ -441,8 +443,8 @@ impl ApolloDiagnostic {
     pub fn to_json(&self) -> GraphQLError {
         let mut locations = vec![];
 
-        if let Some((line, column)) = self.get_line_column() {
-            locations.push(GraphQLLocation { line, column });
+        if let Some(location) = self.get_line_column() {
+            locations.push(location);
         }
 
         GraphQLError {
