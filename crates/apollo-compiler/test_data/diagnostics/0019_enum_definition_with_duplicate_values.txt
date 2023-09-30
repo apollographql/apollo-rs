@@ -1,52 +1,27 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            19: "0019_enum_definition_with_duplicate_values.graphql",
-        },
-        location: 84..+3 @19,
-        labels: [
-            Label {
-                location: 60..+3 @19,
-                text: "previous definition of `CAT` here",
-            },
-            Label {
-                location: 84..+3 @19,
-                text: "`CAT` redefined here",
-            },
-        ],
-        help: Some(
-            "CAT must only be defined once in this enum.",
-        ),
-        data: UniqueDefinition {
-            ty: "enum value",
-            name: "CAT",
-            original_definition: 60..+3 @19,
-            redefined_definition: 84..+3 @19,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            19: "0019_enum_definition_with_duplicate_values.graphql",
-        },
-        location: 157..+16 @19,
-        labels: [
-            Label {
-                location: 108..+16 @19,
-                text: "previous definition of `THRIVE_PET_FOODS` here",
-            },
-            Label {
-                location: 157..+16 @19,
-                text: "`THRIVE_PET_FOODS` redefined here",
-            },
-        ],
-        help: Some(
-            "THRIVE_PET_FOODS must only be defined once in this enum.",
-        ),
-        data: UniqueDefinition {
-            ty: "enum value",
-            name: "THRIVE_PET_FOODS",
-            original_definition: 108..+16 @19,
-            redefined_definition: 157..+16 @19,
-        },
-    },
-]
+Error: the enum value `CAT` is defined multiple times in the document
+    ╭─[0019_enum_definition_with_duplicate_values.graphql:10:5]
+    │
+  7 │     CAT
+    │     ─┬─  
+    │      ╰─── previous definition of `CAT` here
+    │ 
+ 10 │     CAT
+    │     ─┬─  
+    │      ╰─── `CAT` redefined here
+    │ 
+    │ Help: CAT must only be defined once in this enum.
+────╯
+Error: the enum value `THRIVE_PET_FOODS` is defined multiple times in the document
+    ╭─[0019_enum_definition_with_duplicate_values.graphql:17:5]
+    │
+ 14 │     THRIVE_PET_FOODS
+    │     ────────┬───────  
+    │             ╰───────── previous definition of `THRIVE_PET_FOODS` here
+    │ 
+ 17 │     THRIVE_PET_FOODS
+    │     ────────┬───────  
+    │             ╰───────── `THRIVE_PET_FOODS` redefined here
+    │ 
+    │ Help: THRIVE_PET_FOODS must only be defined once in this enum.
+────╯
+

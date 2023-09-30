@@ -1,18 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            82: "0085_fragment_spread_target_defined.graphql",
-        },
-        location: 70..+20 @82,
-        labels: [
-            Label {
-                location: 70..+20 @82,
-                text: "fragment `undefinedFragment` is not defined",
-            },
-        ],
-        help: None,
-        data: UndefinedFragment {
-            name: "undefinedFragment",
-        },
-    },
-]
+Error: cannot find fragment `undefinedFragment` in this document
+    ╭─[0085_fragment_spread_target_defined.graphql:10:5]
+    │
+ 10 │     ...undefinedFragment
+    │     ──────────┬─────────  
+    │               ╰─────────── fragment `undefinedFragment` is not defined
+────╯
+

@@ -1,27 +1,14 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            1: "0001_duplicate_operatoin_names.graphql",
-        },
-        location: 31..+7 @1,
-        labels: [
-            Label {
-                location: 6..+7 @1,
-                text: "previous definition of `getName` here",
-            },
-            Label {
-                location: 31..+7 @1,
-                text: "`getName` redefined here",
-            },
-        ],
-        help: Some(
-            "`getName` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "operation",
-            name: "getName",
-            original_definition: 6..+7 @1,
-            redefined_definition: 31..+7 @1,
-        },
-    },
-]
+Error: the operation `getName` is defined multiple times in the document
+   ╭─[0001_duplicate_operatoin_names.graphql:5:7]
+   │
+ 1 │ query getName {
+   │       ───┬───  
+   │          ╰───── previous definition of `getName` here
+   │ 
+ 5 │ query getName {
+   │       ───┬───  
+   │          ╰───── `getName` redefined here
+   │ 
+   │ Help: `getName` must only be defined once in this document.
+───╯
+

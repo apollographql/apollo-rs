@@ -1,26 +1,13 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            33: "0033_object_type_definition_with_duplicate_fields.graphql",
-        },
-        location: 15..+12 @33,
-        labels: [
-            Label {
-                location: 15..+12 @33,
-                text: "previous definition of `name` here",
-            },
-            Label {
-                location: 30..+12 @33,
-                text: "`name` redefined here",
-            },
-        ],
-        help: Some(
-            "`name` field must only be defined once in this input object definition.",
-        ),
-        data: UniqueField {
-            field: "name",
-            original_definition: 15..+12 @33,
-            redefined_definition: 30..+12 @33,
-        },
-    },
-]
+Error: fields must be unique in a definition
+   ╭─[0033_object_type_definition_with_duplicate_fields.graphql:2:3]
+   │
+ 2 │   name: String
+   │   ──────┬─────  
+   │         ╰─────── previous definition of `name` here
+ 3 │   name: String
+   │   ──────┬─────  
+   │         ╰─────── `name` redefined here
+   │ 
+   │ Help: `name` field must only be defined once in this input object definition.
+───╯
+

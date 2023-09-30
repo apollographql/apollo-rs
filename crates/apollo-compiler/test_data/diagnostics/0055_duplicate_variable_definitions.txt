@@ -1,27 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            55: "0055_duplicate_variable_definitions.graphql",
-        },
-        location: 48..+22 @55,
-        labels: [
-            Label {
-                location: 24..+22 @55,
-                text: "previous definition of `atOtherHomes` here",
-            },
-            Label {
-                location: 48..+22 @55,
-                text: "`atOtherHomes` redefined here",
-            },
-        ],
-        help: Some(
-            "atOtherHomes must only be defined once in this enum.",
-        ),
-        data: UniqueDefinition {
-            ty: "variable",
-            name: "atOtherHomes",
-            original_definition: 24..+22 @55,
-            redefined_definition: 48..+22 @55,
-        },
-    },
-]
+Error: the variable `atOtherHomes` is defined multiple times in the document
+   ╭─[0055_duplicate_variable_definitions.graphql:1:49]
+   │
+ 1 │ query houseTrainedQuery($atOtherHomes: Boolean, $atOtherHomes: Boolean) {
+   │                         ───────────┬──────────  ───────────┬──────────  
+   │                                    ╰──────────────────────────────────── previous definition of `atOtherHomes` here
+   │                                                            │            
+   │                                                            ╰──────────── `atOtherHomes` redefined here
+   │ 
+   │ Help: atOtherHomes must only be defined once in this enum.
+───╯
+

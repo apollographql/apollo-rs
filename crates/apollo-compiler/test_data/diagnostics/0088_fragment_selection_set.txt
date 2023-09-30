@@ -1,48 +1,33 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            85: "0088_fragment_selection_set.graphql",
-        },
-        location: 138..+45 @85,
-        labels: [
-            Label {
-                location: 138..+45 @85,
-                text: "`topProduct` field is not defined",
-            },
-            Label {
-                location: 0..+52 @85,
-                text: "`Query` declared here",
-            },
-        ],
-        help: Some(
-            "`topProduct` is not defined on `Query` type",
-        ),
-        data: UndefinedField {
-            field: "topProduct",
-            ty: "Query",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            85: "0088_fragment_selection_set.graphql",
-        },
-        location: 278..+16 @85,
-        labels: [
-            Label {
-                location: 278..+16 @85,
-                text: "`notExistingField` field is not defined",
-            },
-            Label {
-                location: 54..+50 @85,
-                text: "`Product` declared here",
-            },
-        ],
-        help: Some(
-            "`notExistingField` is not defined on `Product` type",
-        ),
-        data: UndefinedField {
-            field: "notExistingField",
-            ty: "Product",
-        },
-    },
-]
+Error: cannot query field `topProduct` on type `Query`
+    ╭─[0088_fragment_selection_set.graphql:13:5]
+    │
+  1 │ ╭───▶ type Query {
+    ┆ ┆     
+  4 │ ├───▶ }
+    │ │         
+    │ ╰───────── `Query` declared here
+    │ 
+ 13 │   ╭─▶     topProduct {
+    ┆   ┆   
+ 15 │   ├─▶     }
+    │   │           
+    │   ╰─────────── `topProduct` field is not defined
+    │       
+    │       Help: `topProduct` is not defined on `Query` type
+────╯
+Error: cannot query field `notExistingField` on type `Product`
+    ╭─[0088_fragment_selection_set.graphql:22:3]
+    │
+  6 │ ╭─▶ type Product {
+    ┆ ┆   
+  9 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Product` declared here
+    │ 
+ 22 │       notExistingField
+    │       ────────┬───────  
+    │               ╰───────── `notExistingField` field is not defined
+    │     
+    │     Help: `notExistingField` is not defined on `Product` type
+────╯
+

@@ -1,24 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            93: "0096_schema_extensions.graphql",
-        },
-        location: 213..+14 @93,
-        labels: [
-            Label {
-                location: 165..+14 @93,
-                text: "directive nonRepeatable first called here",
-            },
-            Label {
-                location: 213..+14 @93,
-                text: "directive nonRepeatable called again here",
-            },
-        ],
-        help: None,
-        data: UniqueDirective {
-            name: "nonRepeatable",
-            original_call: 165..+14 @93,
-            conflicting_call: 213..+14 @93,
-        },
-    },
-]
+Error: non-repeatable directive nonRepeatable can only be used once per location
+    ╭─[0096_schema_extensions.graphql:11:15]
+    │
+  8 │ schema @nonRepeatable {
+    │        ───────┬──────  
+    │               ╰──────── directive nonRepeatable first called here
+    │ 
+ 11 │ extend schema @nonRepeatable
+    │               ───────┬──────  
+    │                      ╰──────── directive nonRepeatable called again here
+────╯
+

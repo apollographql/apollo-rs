@@ -1,146 +1,101 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: 476..+26 @87,
-        labels: [
-            Label {
-                location: 476..+26 @87,
-                text: "fragment `catInDogFragmentInvalid` cannot be applied",
-            },
-            Label {
-                location: 638..+77 @87,
-                text: "fragment declared with type condition `Dog` here",
-            },
-            Label {
-                location: 262..+65 @87,
-                text: "type condition `Dog` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: Some(
-                "catInDogFragmentInvalid",
-            ),
-            type_name: "Human",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: 571..+28 @87,
-        labels: [
-            Label {
-                location: 571..+28 @87,
-                text: "fragment `nonIntersectingInterfaces` cannot be applied",
-            },
-            Label {
-                location: 879..+68 @87,
-                text: "fragment declared with type condition `Pet` here",
-            },
-            Label {
-                location: 262..+65 @87,
-                text: "type condition `Pet` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: Some(
-                "nonIntersectingInterfaces",
-            ),
-            type_name: "Human",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: 682..+31 @87,
-        labels: [
-            Label {
-                location: 682..+31 @87,
-                text: "fragment applied with type condition `Cat` here",
-            },
-            Label {
-                location: 108..+61 @87,
-                text: "type condition `Cat` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: None,
-            type_name: "Dog",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: 759..+31 @87,
-        labels: [
-            Label {
-                location: 759..+31 @87,
-                text: "fragment applied with type condition `Dog` here",
-            },
-            Label {
-                location: 33..+38 @87,
-                text: "type condition `Dog` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: None,
-            type_name: "Sentient",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: 844..+31 @87,
-        labels: [
-            Label {
-                location: 844..+31 @87,
-                text: "fragment applied with type condition `Cat` here",
-            },
-            Label {
-                location: 403..+34 @87,
-                text: "type condition `Cat` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: None,
-            type_name: "HumanOrAlien",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            87: "0090_fragment_spread_impossible.graphql",
-        },
-        location: 925..+20 @87,
-        labels: [
-            Label {
-                location: 925..+20 @87,
-                text: "fragment `sentientFragment2` cannot be applied",
-            },
-            Label {
-                location: 949..+49 @87,
-                text: "fragment declared with type condition `Sentient` here",
-            },
-            Label {
-                location: 73..+33 @87,
-                text: "type condition `Sentient` is not assignable to this type",
-            },
-        ],
-        help: None,
-        data: InvalidFragmentSpread {
-            name: Some(
-                "sentientFragment2",
-            ),
-            type_name: "Pet",
-        },
-    },
-]
+Error: fragment cannot be applied to this type
+    ╭─[0090_fragment_spread_impossible.graphql:39:9]
+    │
+ 25 │   ╭─▶ type Human implements Sentient {
+    ┆   ┆   
+ 28 │   ├─▶ }
+    │   │       
+    │   ╰─────── type condition `Dog` is not assignable to this type
+    │ 
+ 39 │               ...catInDogFragmentInvalid
+    │               ─────────────┬────────────  
+    │                            ╰────────────── fragment `catInDogFragmentInvalid` cannot be applied
+    │ 
+ 47 │ ╭───▶ fragment catInDogFragmentInvalid on Dog {
+    ┆ ┆     
+ 51 │ ├───▶ }
+    │ │         
+    │ ╰───────── fragment declared with type condition `Dog` here
+────╯
+Error: fragment cannot be applied to this type
+    ╭─[0090_fragment_spread_impossible.graphql:42:9]
+    │
+ 25 │   ╭─▶ type Human implements Sentient {
+    ┆   ┆   
+ 28 │   ├─▶ }
+    │   │       
+    │   ╰─────── type condition `Pet` is not assignable to this type
+    │ 
+ 42 │               ...nonIntersectingInterfaces
+    │               ──────────────┬─────────────  
+    │                             ╰─────────────── fragment `nonIntersectingInterfaces` cannot be applied
+    │ 
+ 65 │ ╭───▶ fragment nonIntersectingInterfaces on Pet {
+    ┆ ┆     
+ 67 │ ├───▶ }
+    │ │         
+    │ ╰───────── fragment declared with type condition `Pet` here
+────╯
+Error: fragment cannot be applied to this type
+    ╭─[0090_fragment_spread_impossible.graphql:48:3]
+    │
+ 13 │ ╭───▶ type Dog implements Pet {
+    ┆ ┆     
+ 16 │ ├───▶ }
+    │ │         
+    │ ╰───────── type condition `Cat` is not assignable to this type
+    │ 
+ 48 │   ╭─▶   ... on Cat {
+    ┆   ┆   
+ 50 │   ├─▶   }
+    │   │         
+    │   ╰───────── fragment applied with type condition `Cat` here
+────╯
+Error: fragment cannot be applied to this type
+    ╭─[0090_fragment_spread_impossible.graphql:54:3]
+    │
+  5 │ ╭───▶ interface Sentient {
+    ┆ ┆     
+  7 │ ├───▶ }
+    │ │         
+    │ ╰───────── type condition `Dog` is not assignable to this type
+    │ 
+ 54 │   ╭─▶   ... on Dog {
+    ┆   ┆   
+ 56 │   ├─▶   }
+    │   │         
+    │   ╰───────── fragment applied with type condition `Dog` here
+────╯
+Error: fragment cannot be applied to this type
+    ╭─[0090_fragment_spread_impossible.graphql:60:3]
+    │
+ 35 │     union HumanOrAlien = Human | Alien
+    │     ─────────────────┬────────────────  
+    │                      ╰────────────────── type condition `Cat` is not assignable to this type
+    │ 
+ 60 │ ╭─▶   ... on Cat {
+    ┆ ┆   
+ 62 │ ├─▶   }
+    │ │         
+    │ ╰───────── fragment applied with type condition `Cat` here
+────╯
+Error: fragment cannot be applied to this type
+    ╭─[0090_fragment_spread_impossible.graphql:66:3]
+    │
+  9 │   ╭─▶ interface Pet {
+    ┆   ┆   
+ 11 │   ├─▶ }
+    │   │       
+    │   ╰─────── type condition `Sentient` is not assignable to this type
+    │ 
+ 66 │         ...sentientFragment2
+    │         ──────────┬─────────  
+    │                   ╰─────────── fragment `sentientFragment2` cannot be applied
+    │ 
+ 69 │ ╭───▶ fragment sentientFragment2 on Sentient {
+    ┆ ┆     
+ 71 │ ├───▶ }
+    │ │         
+    │ ╰───────── fragment declared with type condition `Sentient` here
+────╯
+

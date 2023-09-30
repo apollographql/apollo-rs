@@ -1,34 +1,23 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            2: "0002_multiple_anonymous_operations.graphql",
-        },
-        location: 0..+15 @2,
-        labels: [
-            Label {
-                location: 0..+15 @2,
-                text: "provide a name for this definition",
-            },
-        ],
-        help: Some(
-            "GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.",
-        ),
-        data: MissingIdent,
-    },
-    ApolloDiagnostic {
-        cache: {
-            2: "0002_multiple_anonymous_operations.graphql",
-        },
-        location: 17..+57 @2,
-        labels: [
-            Label {
-                location: 17..+57 @2,
-                text: "provide a name for this definition",
-            },
-        ],
-        help: Some(
-            "GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.",
-        ),
-        data: MissingIdent,
-    },
-]
+Error: expected identifier
+   ╭─[0002_multiple_anonymous_operations.graphql:1:1]
+   │
+ 1 │ ╭─▶ query {
+   ┆ ┆   
+ 3 │ ├─▶ }
+   │ │       
+   │ ╰─────── provide a name for this definition
+   │     
+   │     Help: GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.
+───╯
+Error: expected identifier
+   ╭─[0002_multiple_anonymous_operations.graphql:5:1]
+   │
+ 5 │ ╭─▶ mutation {
+   ┆ ┆   
+ 9 │ ├─▶ }
+   │ │       
+   │ ╰─────── provide a name for this definition
+   │     
+   │     Help: GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.
+───╯
+

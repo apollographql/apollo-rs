@@ -1,65 +1,38 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            28: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
-        },
-        location: 135..+74 @28,
-        labels: [
-            Label {
-                location: 102..+4 @28,
-                text: "implementation of Node declared by Resource here",
-            },
-            Label {
-                location: 135..+74 @28,
-                text: "Node must also be implemented here",
-            },
-        ],
-        help: None,
-        data: TransitiveImplementedInterfaces {
-            missing_interface: "Node",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            28: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
-        },
-        location: 135..+74 @28,
-        labels: [
-            Label {
-                location: 162..+8 @28,
-                text: "implementation of interface Resource declared here",
-            },
-            Label {
-                location: 121..+10 @28,
-                text: "`width` was originally defined by Resource here",
-            },
-            Label {
-                location: 135..+74 @28,
-                text: "add `width` field to this interface",
-            },
-        ],
-        help: Some(
-            "An interface must be a super-set of all interfaces it implements",
-        ),
-        data: MissingInterfaceField {
-            interface: "Resource",
-            field: "width",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            28: "0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql",
-        },
-        location: 173..+3 @28,
-        labels: [
-            Label {
-                location: 173..+3 @28,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "Url",
-        },
-    },
-]
+Error: Transitively implemented interfaces must also be defined on an implementing interface or object
+    ╭─[0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql:14:1]
+    │
+  9 │     interface Resource implements Node {
+    │                                   ──┬─  
+    │                                     ╰─── implementation of Node declared by Resource here
+    │ 
+ 14 │ ╭─▶ interface Image implements Resource & Url{
+    ┆ ┆   
+ 17 │ ├─▶ }
+    │ │      
+    │ ╰────── Node must also be implemented here
+────╯
+Error: type does not satisfy interface `Resource`: missing field `width`
+    ╭─[0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql:14:1]
+    │
+ 11 │       width: Int
+    │       ─────┬────  
+    │            ╰────── `width` was originally defined by Resource here
+    │ 
+ 14 │ ╭─▶ interface Image implements Resource & Url{
+    │ │                              ────┬───  
+    │ │                                  ╰───── implementation of interface Resource declared here
+    ┆ ┆   
+ 17 │ ├─▶ }
+    │ │      
+    │ ╰────── add `width` field to this interface
+    │     
+    │     Help: An interface must be a super-set of all interfaces it implements
+────╯
+Error: cannot find type `Url` in this document
+    ╭─[0028_interface_definition_with_missing_fields_implements_intrefaces_undefined_interfaces.graphql:14:39]
+    │
+ 14 │ interface Image implements Resource & Url{
+    │                                       ─┬─  
+    │                                        ╰─── not found in this scope
+────╯
+

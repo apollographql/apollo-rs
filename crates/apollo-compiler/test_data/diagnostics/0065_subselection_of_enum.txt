@@ -1,110 +1,79 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: 26..+13 @65,
-        labels: [
-            Label {
-                location: 26..+13 @65,
-                text: "field `pet1` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: 230..+36 @65,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: 42..+13 @65,
-        labels: [
-            Label {
-                location: 42..+13 @65,
-                text: "field `pet2` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: 230..+36 @65,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: 58..+13 @65,
-        labels: [
-            Label {
-                location: 58..+13 @65,
-                text: "field `pet3` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: 230..+36 @65,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: 74..+13 @65,
-        labels: [
-            Label {
-                location: 74..+13 @65,
-                text: "field `pet4` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: 230..+36 @65,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: 90..+13 @65,
-        labels: [
-            Label {
-                location: 90..+13 @65,
-                text: "field `pet5` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: 230..+36 @65,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            65: "0065_subselection_of_enum.graphql",
-        },
-        location: 106..+13 @65,
-        labels: [
-            Label {
-                location: 106..+13 @65,
-                text: "field `pet6` of type `Pet` is an enum and cannot select any fields",
-            },
-            Label {
-                location: 230..+36 @65,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-]
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0065_subselection_of_enum.graphql:2:3]
+    │
+  2 │       pet1 { name }
+    │       ──────┬──────  
+    │             ╰──────── field `pet1` of type `Pet` is an enum and cannot select any fields
+    │ 
+ 19 │ ╭─▶ enum Pet {
+    ┆ ┆   
+ 23 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0065_subselection_of_enum.graphql:3:3]
+    │
+  3 │       pet2 { name }
+    │       ──────┬──────  
+    │             ╰──────── field `pet2` of type `Pet` is an enum and cannot select any fields
+    │ 
+ 19 │ ╭─▶ enum Pet {
+    ┆ ┆   
+ 23 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0065_subselection_of_enum.graphql:4:3]
+    │
+  4 │       pet3 { name }
+    │       ──────┬──────  
+    │             ╰──────── field `pet3` of type `Pet` is an enum and cannot select any fields
+    │ 
+ 19 │ ╭─▶ enum Pet {
+    ┆ ┆   
+ 23 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0065_subselection_of_enum.graphql:5:3]
+    │
+  5 │       pet4 { name }
+    │       ──────┬──────  
+    │             ╰──────── field `pet4` of type `Pet` is an enum and cannot select any fields
+    │ 
+ 19 │ ╭─▶ enum Pet {
+    ┆ ┆   
+ 23 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0065_subselection_of_enum.graphql:6:3]
+    │
+  6 │       pet5 { name }
+    │       ──────┬──────  
+    │             ╰──────── field `pet5` of type `Pet` is an enum and cannot select any fields
+    │ 
+ 19 │ ╭─▶ enum Pet {
+    ┆ ┆   
+ 23 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0065_subselection_of_enum.graphql:7:3]
+    │
+  7 │       pet6 { name }
+    │       ──────┬──────  
+    │             ╰──────── field `pet6` of type `Pet` is an enum and cannot select any fields
+    │ 
+ 19 │ ╭─▶ enum Pet {
+    ┆ ┆   
+ 23 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+

@@ -1,26 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            47: "0047_duplicate_field_arguments.graphql",
-        },
-        location: 84..+10 @47,
-        labels: [
-            Label {
-                location: 73..+9 @47,
-                text: "previously provided `arg` here",
-            },
-            Label {
-                location: 84..+10 @47,
-                text: "`arg` provided again here",
-            },
-        ],
-        help: Some(
-            "`arg` argument must only be provided once.",
-        ),
-        data: UniqueArgument {
-            name: "arg",
-            original_definition: 73..+9 @47,
-            redefined_definition: 84..+10 @47,
-        },
-    },
-]
+Error: the argument `arg` is defined multiple times
+   ╭─[0047_duplicate_field_arguments.graphql:5:21]
+   │
+ 5 │   single(arg: true, arg: false)
+   │          ────┬────  ─────┬────  
+   │              ╰────────────────── previously provided `arg` here
+   │                          │      
+   │                          ╰────── `arg` provided again here
+   │ 
+   │ Help: `arg` argument must only be provided once.
+───╯
+

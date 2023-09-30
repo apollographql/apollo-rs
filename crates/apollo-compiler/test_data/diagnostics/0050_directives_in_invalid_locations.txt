@@ -1,418 +1,208 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 446..+15 @50,
-        labels: [
-            Label {
-                location: 446..+15 @50,
-                text: "INTERFACE is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "skip",
-            dir_loc: "INTERFACE",
-            directive_def: 1957..+187 @-1,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 523..+11 @50,
-        labels: [
-            Label {
-                location: 523..+11 @50,
-                text: "FIELD_DEFINITION is not a valid location",
-            },
-            Label {
-                location: 1398..+29 @50,
-                text: "consider adding FIELD_DEFINITION directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveB",
-            dir_loc: "FIELD_DEFINITION",
-            directive_def: 1398..+29 @50,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 670..+18 @50,
-        labels: [
-            Label {
-                location: 670..+18 @50,
-                text: "INPUT_OBJECT is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "include",
-            dir_loc: "INPUT_OBJECT",
-            directive_def: 2146..+199 @-1,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 707..+18 @50,
-        labels: [
-            Label {
-                location: 707..+18 @50,
-                text: "INPUT_FIELD_DEFINITION is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "include",
-            dir_loc: "INPUT_FIELD_DEFINITION",
-            directive_def: 2146..+199 @-1,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 760..+11 @50,
-        labels: [
-            Label {
-                location: 760..+11 @50,
-                text: "UNION is not a valid location",
-            },
-            Label {
-                location: 1398..+29 @50,
-                text: "consider adding UNION directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveB",
-            dir_loc: "UNION",
-            directive_def: 1398..+29 @50,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 842..+11 @50,
-        labels: [
-            Label {
-                location: 842..+11 @50,
-                text: "ENUM is not a valid location",
-            },
-            Label {
-                location: 1367..+30 @50,
-                text: "consider adding ENUM directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveA",
-            dir_loc: "ENUM",
-            directive_def: 1367..+30 @50,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 864..+11 @50,
-        labels: [
-            Label {
-                location: 864..+11 @50,
-                text: "ENUM_VALUE is not a valid location",
-            },
-            Label {
-                location: 1367..+30 @50,
-                text: "consider adding ENUM_VALUE directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveA",
-            dir_loc: "ENUM_VALUE",
-            directive_def: 1367..+30 @50,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 907..+11 @50,
-        labels: [
-            Label {
-                location: 907..+11 @50,
-                text: "OBJECT is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "deprecated",
-            dir_loc: "OBJECT",
-            directive_def: 2347..+440 @-1,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 979..+56 @50,
-        labels: [
-            Label {
-                location: 979..+56 @50,
-                text: "ARGUMENT_DEFINITION is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "specifiedBy",
-            dir_loc: "ARGUMENT_DEFINITION",
-            directive_def: 2789..+172 @-1,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 1156..+18 @50,
-        labels: [
-            Label {
-                location: 1156..+18 @50,
-                text: "SCHEMA is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "include",
-            dir_loc: "SCHEMA",
-            directive_def: 2146..+199 @-1,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 1307..+11 @50,
-        labels: [
-            Label {
-                location: 1307..+11 @50,
-                text: "SCALAR is not a valid location",
-            },
-            Label {
-                location: 1398..+29 @50,
-                text: "consider adding SCALAR directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveB",
-            dir_loc: "SCALAR",
-            directive_def: 1398..+29 @50,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 29..+15 @50,
-        labels: [
-            Label {
-                location: 29..+15 @50,
-                text: "VARIABLE_DEFINITION is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "skip",
-            dir_loc: "VARIABLE_DEFINITION",
-            directive_def: 1957..+187 @-1,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 46..+16 @50,
-        labels: [
-            Label {
-                location: 46..+16 @50,
-                text: "QUERY is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "skip",
-            dir_loc: "QUERY",
-            directive_def: 1957..+187 @-1,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 100..+11 @50,
-        labels: [
-            Label {
-                location: 100..+11 @50,
-                text: "FIELD is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "deprecated",
-            dir_loc: "FIELD",
-            directive_def: 2347..+440 @-1,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 141..+11 @50,
-        labels: [
-            Label {
-                location: 141..+11 @50,
-                text: "FRAGMENT_SPREAD is not a valid location",
-            },
-            Label {
-                location: 1398..+29 @50,
-                text: "consider adding FRAGMENT_SPREAD directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveB",
-            dir_loc: "FRAGMENT_SPREAD",
-            directive_def: 1398..+29 @50,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 182..+11 @50,
-        labels: [
-            Label {
-                location: 182..+11 @50,
-                text: "FRAGMENT_DEFINITION is not a valid location",
-            },
-            Label {
-                location: 1398..+29 @50,
-                text: "consider adding FRAGMENT_DEFINITION directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveB",
-            dir_loc: "FRAGMENT_DEFINITION",
-            directive_def: 1398..+29 @50,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 222..+11 @50,
-        labels: [
-            Label {
-                location: 222..+11 @50,
-                text: "INLINE_FRAGMENT is not a valid location",
-            },
-            Label {
-                location: 1367..+30 @50,
-                text: "consider adding INLINE_FRAGMENT directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveA",
-            dir_loc: "INLINE_FRAGMENT",
-            directive_def: 1367..+30 @50,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 279..+11 @50,
-        labels: [
-            Label {
-                location: 279..+11 @50,
-                text: "SUBSCRIPTION is not a valid location",
-            },
-            Label {
-                location: 1367..+30 @50,
-                text: "consider adding SUBSCRIPTION directive location here",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "directiveA",
-            dir_loc: "SUBSCRIPTION",
-            directive_def: 1367..+30 @50,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            50: "0050_directives_in_invalid_locations.graphql",
-        },
-        location: 355..+15 @50,
-        labels: [
-            Label {
-                location: 355..+15 @50,
-                text: "MUTATION is not a valid location",
-            },
-        ],
-        help: Some(
-            "the directive must be used in a location that the service has declared support for",
-        ),
-        data: UnsupportedLocation {
-            name: "skip",
-            dir_loc: "MUTATION",
-            directive_def: 1957..+187 @-1,
-        },
-    },
-]
+Error: skip directive is not supported for INTERFACE location
+    ╭─[0050_directives_in_invalid_locations.graphql:27:15]
+    │
+ 27 │ interface Pet @skip(if: true) {
+    │               ───────┬───────  
+    │                      ╰───────── INTERFACE is not a valid location
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: directiveB directive is not supported for FIELD_DEFINITION location
+    ╭─[0050_directives_in_invalid_locations.graphql:32:16]
+    │
+ 32 │   name: String @directiveB
+    │                ─────┬─────  
+    │                     ╰─────── FIELD_DEFINITION is not a valid location
+    │ 
+ 89 │ directive @directiveB on ENUM
+    │ ──────────────┬──────────────  
+    │               ╰──────────────── consider adding FIELD_DEFINITION directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: include directive is not supported for INPUT_OBJECT location
+    ╭─[0050_directives_in_invalid_locations.graphql:43:15]
+    │
+ 43 │ input Example @include(if: true) {
+    │               ─────────┬────────  
+    │                        ╰────────── INPUT_OBJECT is not a valid location
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: include directive is not supported for INPUT_FIELD_DEFINITION location
+    ╭─[0050_directives_in_invalid_locations.graphql:44:17]
+    │
+ 44 │   self: Example @include(if: true)
+    │                 ─────────┬────────  
+    │                          ╰────────── INPUT_FIELD_DEFINITION is not a valid location
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: directiveB directive is not supported for UNION location
+    ╭─[0050_directives_in_invalid_locations.graphql:48:16]
+    │
+ 48 │ union CatOrDog @directiveB = Cat | Dog
+    │                ─────┬─────  
+    │                     ╰─────── UNION is not a valid location
+    │ 
+ 89 │ directive @directiveB on ENUM
+    │ ──────────────┬──────────────  
+    │               ╰──────────────── consider adding UNION directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: directiveA directive is not supported for ENUM location
+    ╭─[0050_directives_in_invalid_locations.graphql:55:13]
+    │
+ 55 │ enum Status @directiveA {
+    │             ─────┬─────  
+    │                  ╰─────── ENUM is not a valid location
+    │ 
+ 88 │ directive @directiveA on UNION
+    │ ───────────────┬──────────────  
+    │                ╰──────────────── consider adding ENUM directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: directiveA directive is not supported for ENUM_VALUE location
+    ╭─[0050_directives_in_invalid_locations.graphql:56:9]
+    │
+ 56 │   GREEN @directiveA,
+    │         ─────┬─────  
+    │              ╰─────── ENUM_VALUE is not a valid location
+    │ 
+ 88 │ directive @directiveA on UNION
+    │ ───────────────┬──────────────  
+    │                ╰──────────────── consider adding ENUM_VALUE directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: deprecated directive is not supported for OBJECT location
+    ╭─[0050_directives_in_invalid_locations.graphql:61:12]
+    │
+ 61 │ type Query @deprecated {
+    │            ─────┬─────  
+    │                 ╰─────── OBJECT is not a valid location
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: specifiedBy directive is not supported for ARGUMENT_DEFINITION location
+    ╭─[0050_directives_in_invalid_locations.graphql:64:27]
+    │
+ 64 │   response(status: String @specifiedBy(url: "https://tools.ietf.org/html/rfc4122")): Status
+    │                           ────────────────────────────┬───────────────────────────  
+    │                                                       ╰───────────────────────────── ARGUMENT_DEFINITION is not a valid location
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: include directive is not supported for SCHEMA location
+    ╭─[0050_directives_in_invalid_locations.graphql:75:8]
+    │
+ 75 │ schema @include(if: true) {
+    │        ─────────┬────────  
+    │                 ╰────────── SCHEMA is not a valid location
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: directiveB directive is not supported for SCALAR location
+    ╭─[0050_directives_in_invalid_locations.graphql:86:13]
+    │
+ 86 │ scalar spec @directiveB @specifiedBy(url: "https://spec.graphql.org/")
+    │             ─────┬─────  
+    │                  ╰─────── SCALAR is not a valid location
+    │ 
+ 89 │ directive @directiveB on ENUM
+    │ ──────────────┬──────────────  
+    │               ╰──────────────── consider adding SCALAR directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: skip directive is not supported for VARIABLE_DEFINITION location
+   ╭─[0050_directives_in_invalid_locations.graphql:1:30]
+   │
+ 1 │ query queryA($status: String @skip(if: true)) @skip(if: false){
+   │                              ───────┬───────  
+   │                                     ╰───────── VARIABLE_DEFINITION is not a valid location
+   │ 
+   │ Help: the directive must be used in a location that the service has declared support for
+───╯
+Error: skip directive is not supported for QUERY location
+   ╭─[0050_directives_in_invalid_locations.graphql:1:47]
+   │
+ 1 │ query queryA($status: String @skip(if: true)) @skip(if: false){
+   │                                               ────────┬───────  
+   │                                                       ╰───────── QUERY is not a valid location
+   │ 
+   │ Help: the directive must be used in a location that the service has declared support for
+───╯
+Error: deprecated directive is not supported for FIELD location
+   ╭─[0050_directives_in_invalid_locations.graphql:3:29]
+   │
+ 3 │   response(status: $status) @deprecated
+   │                             ─────┬─────  
+   │                                  ╰─────── FIELD is not a valid location
+   │ 
+   │ Help: the directive must be used in a location that the service has declared support for
+───╯
+Error: directiveB directive is not supported for FRAGMENT_SPREAD location
+    ╭─[0050_directives_in_invalid_locations.graphql:5:20]
+    │
+  5 │     pets { ... pet @directiveB }
+    │                    ─────┬─────  
+    │                         ╰─────── FRAGMENT_SPREAD is not a valid location
+    │ 
+ 89 │ directive @directiveB on ENUM
+    │ ──────────────┬──────────────  
+    │               ╰──────────────── consider adding FRAGMENT_SPREAD directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: directiveB directive is not supported for FRAGMENT_DEFINITION location
+    ╭─[0050_directives_in_invalid_locations.graphql:9:21]
+    │
+  9 │ fragment pet on Cat @directiveB {
+    │                     ─────┬─────  
+    │                          ╰─────── FRAGMENT_DEFINITION is not a valid location
+    │ 
+ 89 │ directive @directiveB on ENUM
+    │ ──────────────┬──────────────  
+    │               ╰──────────────── consider adding FRAGMENT_DEFINITION directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: directiveA directive is not supported for INLINE_FRAGMENT location
+    ╭─[0050_directives_in_invalid_locations.graphql:11:14]
+    │
+ 11 │   ... on Pet @directiveA {
+    │              ─────┬─────  
+    │                   ╰─────── INLINE_FRAGMENT is not a valid location
+    │ 
+ 88 │ directive @directiveA on UNION
+    │ ───────────────┬──────────────  
+    │                ╰──────────────── consider adding INLINE_FRAGMENT directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: directiveA directive is not supported for SUBSCRIPTION location
+    ╭─[0050_directives_in_invalid_locations.graphql:16:28]
+    │
+ 16 │ subscription subscriptionA @directiveA {
+    │                            ─────┬─────  
+    │                                 ╰─────── SUBSCRIPTION is not a valid location
+    │ 
+ 88 │ directive @directiveA on UNION
+    │ ───────────────┬──────────────  
+    │                ╰──────────────── consider adding SUBSCRIPTION directive location here
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+Error: skip directive is not supported for MUTATION location
+    ╭─[0050_directives_in_invalid_locations.graphql:23:21]
+    │
+ 23 │ mutation myMutation @skip(if: true) {
+    │                     ───────┬───────  
+    │                            ╰───────── MUTATION is not a valid location
+    │ 
+    │ Help: the directive must be used in a location that the service has declared support for
+────╯
+

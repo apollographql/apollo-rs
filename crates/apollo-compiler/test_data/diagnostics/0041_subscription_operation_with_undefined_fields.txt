@@ -1,25 +1,16 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            41: "0041_subscription_operation_with_undefined_fields.graphql",
-        },
-        location: 21..+26 @41,
-        labels: [
-            Label {
-                location: 21..+26 @41,
-                text: "`undefinedSubscriptionField` field is not defined",
-            },
-            Label {
-                location: 51..+42 @41,
-                text: "`Subscription` declared here",
-            },
-        ],
-        help: Some(
-            "`undefinedSubscriptionField` is not defined on `Subscription` type",
-        ),
-        data: UndefinedField {
-            field: "undefinedSubscriptionField",
-            ty: "Subscription",
-        },
-    },
-]
+Error: cannot query field `undefinedSubscriptionField` on type `Subscription`
+   ╭─[0041_subscription_operation_with_undefined_fields.graphql:2:3]
+   │
+ 2 │       undefinedSubscriptionField
+   │       ─────────────┬────────────  
+   │                    ╰────────────── `undefinedSubscriptionField` field is not defined
+   │ 
+ 5 │ ╭─▶ type Subscription {
+   ┆ ┆   
+ 7 │ ├─▶ }
+   │ │       
+   │ ╰─────── `Subscription` declared here
+   │     
+   │     Help: `undefinedSubscriptionField` is not defined on `Subscription` type
+───╯
+

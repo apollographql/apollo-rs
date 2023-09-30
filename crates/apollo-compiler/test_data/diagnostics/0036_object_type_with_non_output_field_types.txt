@@ -1,69 +1,31 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            36: "0036_object_type_with_non_output_field_types.graphql",
-        },
-        location: 240..+4 @36,
-        labels: [
-            Label {
-                location: 240..+4 @36,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "permissions",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            36: "0036_object_type_with_non_output_field_types.graphql",
-        },
-        location: 247..+20 @36,
-        labels: [
-            Label {
-                location: 247..+20 @36,
-                text: "this is an input object",
-            },
-        ],
-        help: Some(
-            "Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.",
-        ),
-        data: OutputType {
-            name: "coordinates",
-            ty: "input object",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            36: "0036_object_type_with_non_output_field_types.graphql",
-        },
-        location: 276..+8 @36,
-        labels: [
-            Label {
-                location: 276..+8 @36,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "main",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            36: "0036_object_type_with_non_output_field_types.graphql",
-        },
-        location: 425..+5 @36,
-        labels: [
-            Label {
-                location: 425..+5 @36,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "Photo",
-        },
-    },
-]
+Error: cannot find type `permissions` in this document
+    ╭─[0036_object_type_with_non_output_field_types.graphql:20:16]
+    │
+ 20 │   permissions: Auth
+    │                ──┬─  
+    │                  ╰─── not found in this scope
+────╯
+Error: `coordinates` field must return an output type
+    ╭─[0036_object_type_with_non_output_field_types.graphql:21:3]
+    │
+ 21 │   coordinates: Point2D
+    │   ──────────┬─────────  
+    │             ╰─────────── this is an input object
+    │ 
+    │ Help: Scalars, Objects, Interfaces, Unions and Enums are output types. Change `coordinates` field to return one of these output types.
+────╯
+Error: cannot find type `main` in this document
+    ╭─[0036_object_type_with_non_output_field_types.graphql:22:9]
+    │
+ 22 │   main: mainPage
+    │         ────┬───  
+    │             ╰───── not found in this scope
+────╯
+Error: cannot find type `Photo` in this document
+    ╭─[0036_object_type_with_non_output_field_types.graphql:39:22]
+    │
+ 39 │ union SearchResult = Photo | Person
+    │                      ──┬──  
+    │                        ╰──── not found in this scope
+────╯
+

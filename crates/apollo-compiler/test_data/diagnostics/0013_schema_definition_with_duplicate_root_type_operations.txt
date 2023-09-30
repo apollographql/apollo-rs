@@ -1,27 +1,13 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            13: "0013_schema_definition_with_duplicate_root_type_operations.graphql",
-        },
-        location: 36..+28 @13,
-        labels: [
-            Label {
-                location: 11..+21 @13,
-                text: "previous definition of `customPetQuery` here",
-            },
-            Label {
-                location: 36..+28 @13,
-                text: "`customPetQuery` redefined here",
-            },
-        ],
-        help: Some(
-            "`customPetQuery` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "root operation type definition",
-            name: "customPetQuery",
-            original_definition: 11..+21 @13,
-            redefined_definition: 36..+28 @13,
-        },
-    },
-]
+Error: the root operation type definition `customPetQuery` is defined multiple times in the document
+   ╭─[0013_schema_definition_with_duplicate_root_type_operations.graphql:3:3]
+   │
+ 2 │   query: customPetQuery,
+   │   ──────────┬──────────  
+   │             ╰──────────── previous definition of `customPetQuery` here
+ 3 │   subscription: customPetQuery
+   │   ──────────────┬─────────────  
+   │                 ╰─────────────── `customPetQuery` redefined here
+   │ 
+   │ Help: `customPetQuery` must only be defined once in this document.
+───╯
+

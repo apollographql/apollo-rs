@@ -1,82 +1,36 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            20: "0020_enum_values_with_uncapitalised_values.graphql",
-        },
-        location: 43..+3 @20,
-        labels: [
-            Label {
-                location: 43..+3 @20,
-                text: "consider capitalizing CAt",
-            },
-        ],
-        help: None,
-        data: CapitalizedValue {
-            value: "CAt",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            20: "0020_enum_values_with_uncapitalised_values.graphql",
-        },
-        location: 51..+6 @20,
-        labels: [
-            Label {
-                location: 51..+6 @20,
-                text: "consider capitalizing DOG_gO",
-            },
-        ],
-        help: None,
-        data: CapitalizedValue {
-            value: "DOG_gO",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            20: "0020_enum_values_with_uncapitalised_values.graphql",
-        },
-        location: 70..+4 @20,
-        labels: [
-            Label {
-                location: 70..+4 @20,
-                text: "consider capitalizing _fox",
-            },
-        ],
-        help: None,
-        data: CapitalizedValue {
-            value: "_fox",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            20: "0020_enum_values_with_uncapitalised_values.graphql",
-        },
-        location: 79..+8 @20,
-        labels: [
-            Label {
-                location: 79..+8 @20,
-                text: "consider capitalizing squirrel",
-            },
-        ],
-        help: None,
-        data: CapitalizedValue {
-            value: "squirrel",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            20: "0020_enum_values_with_uncapitalised_values.graphql",
-        },
-        location: 92..+7 @20,
-        labels: [
-            Label {
-                location: 92..+7 @20,
-                text: "consider capitalizing PARRot1",
-            },
-        ],
-        help: None,
-        data: CapitalizedValue {
-            value: "PARRot1",
-        },
-    },
-]
+Warning: values in an Enum Definition should be capitalized
+   ╭─[0020_enum_values_with_uncapitalised_values.graphql:6:5]
+   │
+ 6 │     CAt
+   │     ─┬─  
+   │      ╰─── consider capitalizing CAt
+───╯
+Warning: values in an Enum Definition should be capitalized
+   ╭─[0020_enum_values_with_uncapitalised_values.graphql:7:5]
+   │
+ 7 │     DOG_gO
+   │     ───┬──  
+   │        ╰──── consider capitalizing DOG_gO
+───╯
+Warning: values in an Enum Definition should be capitalized
+   ╭─[0020_enum_values_with_uncapitalised_values.graphql:9:5]
+   │
+ 9 │     _fox
+   │     ──┬─  
+   │       ╰─── consider capitalizing _fox
+───╯
+Warning: values in an Enum Definition should be capitalized
+    ╭─[0020_enum_values_with_uncapitalised_values.graphql:10:5]
+    │
+ 10 │     squirrel
+    │     ────┬───  
+    │         ╰───── consider capitalizing squirrel
+────╯
+Warning: values in an Enum Definition should be capitalized
+    ╭─[0020_enum_values_with_uncapitalised_values.graphql:11:5]
+    │
+ 11 │     PARRot1
+    │     ───┬───  
+    │        ╰───── consider capitalizing PARRot1
+────╯
+

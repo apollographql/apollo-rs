@@ -1,34 +1,15 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            38: "0038_object_type_with_undefined_field_type.graphql",
-        },
-        location: 33..+3 @38,
-        labels: [
-            Label {
-                location: 33..+3 @38,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "img",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            38: "0038_object_type_with_undefined_field_type.graphql",
-        },
-        location: 53..+6 @38,
-        labels: [
-            Label {
-                location: 53..+6 @38,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "relationship",
-        },
-    },
-]
+Error: cannot find type `img` in this document
+   ╭─[0038_object_type_with_undefined_field_type.graphql:3:8]
+   │
+ 3 │   img: Url
+   │        ─┬─  
+   │         ╰─── not found in this scope
+───╯
+Error: cannot find type `relationship` in this document
+   ╭─[0038_object_type_with_undefined_field_type.graphql:4:17]
+   │
+ 4 │   relationship: Person
+   │                 ───┬──  
+   │                    ╰──── not found in this scope
+───╯
+

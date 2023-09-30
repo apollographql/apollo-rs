@@ -1,82 +1,53 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            81: "0084_circular_non_nullable_input_objects.graphql",
-        },
-        location: 62..+49 @81,
-        labels: [
-            Label {
-                location: 62..+49 @81,
-                text: "cyclical input object definition",
-            },
-            Label {
-                location: 231..+13 @81,
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveInputObjectDefinition {
-            name: "First",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            81: "0084_circular_non_nullable_input_objects.graphql",
-        },
-        location: 113..+48 @81,
-        labels: [
-            Label {
-                location: 113..+48 @81,
-                text: "cyclical input object definition",
-            },
-            Label {
-                location: 78..+15 @81,
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveInputObjectDefinition {
-            name: "Second",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            81: "0084_circular_non_nullable_input_objects.graphql",
-        },
-        location: 163..+49 @81,
-        labels: [
-            Label {
-                location: 163..+49 @81,
-                text: "cyclical input object definition",
-            },
-            Label {
-                location: 130..+13 @81,
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveInputObjectDefinition {
-            name: "Third",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            81: "0084_circular_non_nullable_input_objects.graphql",
-        },
-        location: 214..+32 @81,
-        labels: [
-            Label {
-                location: 214..+32 @81,
-                text: "cyclical input object definition",
-            },
-            Label {
-                location: 179..+15 @81,
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveInputObjectDefinition {
-            name: "Fourth",
-        },
-    },
-]
+Error: `First` input object cannot reference itself
+    ╭─[0084_circular_non_nullable_input_objects.graphql:6:1]
+    │
+  6 │ ╭─▶ input First {
+    ┆ ┆   
+  9 │ ├─▶ }
+    │ │       
+    │ ╰─────── cyclical input object definition
+    │ 
+ 22 │       first: First!
+    │       ──────┬──────  
+    │             ╰──────── refers to itself here
+────╯
+Error: `Second` input object cannot reference itself
+    ╭─[0084_circular_non_nullable_input_objects.graphql:11:1]
+    │
+  7 │       second: Second!
+    │       ───────┬───────  
+    │              ╰───────── refers to itself here
+    │ 
+ 11 │ ╭─▶ input Second {
+    ┆ ┆   
+ 14 │ ├─▶ }
+    │ │       
+    │ ╰─────── cyclical input object definition
+────╯
+Error: `Third` input object cannot reference itself
+    ╭─[0084_circular_non_nullable_input_objects.graphql:16:1]
+    │
+ 12 │       third: Third!
+    │       ──────┬──────  
+    │             ╰──────── refers to itself here
+    │ 
+ 16 │ ╭─▶ input Third {
+    ┆ ┆   
+ 19 │ ├─▶ }
+    │ │       
+    │ ╰─────── cyclical input object definition
+────╯
+Error: `Fourth` input object cannot reference itself
+    ╭─[0084_circular_non_nullable_input_objects.graphql:21:1]
+    │
+ 17 │       fourth: Fourth!
+    │       ───────┬───────  
+    │              ╰───────── refers to itself here
+    │ 
+ 21 │ ╭─▶ input Fourth {
+    ┆ ┆   
+ 23 │ ├─▶ }
+    │ │      
+    │ ╰────── cyclical input object definition
+────╯
+

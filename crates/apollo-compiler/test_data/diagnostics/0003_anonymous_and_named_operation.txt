@@ -1,38 +1,25 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            3: "0003_anonymous_and_named_operation.graphql",
-        },
-        location: 0..+15 @3,
-        labels: [
-            Label {
-                location: 0..+15 @3,
-                text: "provide a name for this definition",
-            },
-        ],
-        help: Some(
-            "GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.",
-        ),
-        data: MissingIdent,
-    },
-    ApolloDiagnostic {
-        cache: {
-            3: "0003_anonymous_and_named_operation.graphql",
-        },
-        location: 38..+25 @3,
-        labels: [
-            Label {
-                location: 38..+25 @3,
-                text: "missing value for argument `name`",
-            },
-            Label {
-                location: 123..+13 @3,
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            name: "name",
-        },
-    },
-]
+Error: expected identifier
+   ╭─[0003_anonymous_and_named_operation.graphql:1:1]
+   │
+ 1 │ ╭─▶ query {
+   ┆ ┆   
+ 3 │ ├─▶ }
+   │ │       
+   │ ╰─────── provide a name for this definition
+   │     
+   │     Help: GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.
+───╯
+Error: the required argument `name` is not provided
+    ╭─[0003_anonymous_and_named_operation.graphql:6:3]
+    │
+  6 │ ╭─▶   addPet {
+    ┆ ┆   
+  8 │ ├─▶   }
+    │ │         
+    │ ╰───────── missing value for argument `name`
+    │ 
+ 16 │       addPet (name: String!, petType: PetType): Result!
+    │               ──────┬──────  
+    │                     ╰──────── argument defined here
+────╯
+

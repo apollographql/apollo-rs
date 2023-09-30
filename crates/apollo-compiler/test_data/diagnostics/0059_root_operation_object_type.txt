@@ -1,21 +1,10 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            59: "0059_root_operation_object_type.graphql",
-        },
-        location: 13..+20 @59,
-        labels: [
-            Label {
-                location: 13..+20 @59,
-                text: "This is an interface",
-            },
-        ],
-        help: Some(
-            "root operation type must be an object type",
-        ),
-        data: ObjectType {
-            name: "SomeInterface",
-            ty: "interface",
-        },
-    },
-]
+Error: `SomeInterface` field must return an object type
+   ╭─[0059_root_operation_object_type.graphql:2:5]
+   │
+ 2 │     query: SomeInterface
+   │     ──────────┬─────────  
+   │               ╰─────────── This is an interface
+   │ 
+   │ Help: root operation type must be an object type
+───╯
+

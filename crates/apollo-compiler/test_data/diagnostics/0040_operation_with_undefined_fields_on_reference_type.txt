@@ -1,48 +1,31 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
-        },
-        location: 21..+4 @40,
-        labels: [
-            Label {
-                location: 21..+4 @40,
-                text: "`size` field is not defined",
-            },
-            Label {
-                location: 38..+52 @40,
-                text: "`Query` declared here",
-            },
-        ],
-        help: Some(
-            "`size` is not defined on `Query` type",
-        ),
-        data: UndefinedField {
-            field: "size",
-            ty: "Query",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            40: "0040_operation_with_undefined_fields_on_reference_type.graphql",
-        },
-        location: 28..+6 @40,
-        labels: [
-            Label {
-                location: 28..+6 @40,
-                text: "`weight` field is not defined",
-            },
-            Label {
-                location: 38..+52 @40,
-                text: "`Query` declared here",
-            },
-        ],
-        help: Some(
-            "`weight` is not defined on `Query` type",
-        ),
-        data: UndefinedField {
-            field: "weight",
-            ty: "Query",
-        },
-    },
-]
+Error: cannot query field `size` on type `Query`
+   ╭─[0040_operation_with_undefined_fields_on_reference_type.graphql:2:3]
+   │
+ 2 │       size
+   │       ──┬─  
+   │         ╰─── `size` field is not defined
+   │ 
+ 6 │ ╭─▶ type Query {
+   ┆ ┆   
+ 9 │ ├─▶ }
+   │ │       
+   │ ╰─────── `Query` declared here
+   │     
+   │     Help: `size` is not defined on `Query` type
+───╯
+Error: cannot query field `weight` on type `Query`
+   ╭─[0040_operation_with_undefined_fields_on_reference_type.graphql:3:3]
+   │
+ 3 │       weight
+   │       ───┬──  
+   │          ╰──── `weight` field is not defined
+   │ 
+ 6 │ ╭─▶ type Query {
+   ┆ ┆   
+ 9 │ ├─▶ }
+   │ │       
+   │ ╰─────── `Query` declared here
+   │     
+   │     Help: `weight` is not defined on `Query` type
+───╯
+

@@ -1,20 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            83: "0086_unused_fragment.graphql",
-        },
-        location: 147..+43 @83,
-        labels: [
-            Label {
-                location: 147..+43 @83,
-                text: "`nameFragment` is defined here",
-            },
-        ],
-        help: Some(
-            "fragment `nameFragment` must be used in an operation",
-        ),
-        data: UnusedFragment {
-            name: "nameFragment",
-        },
-    },
-]
+Error: fragment `nameFragment` must be used in an operation
+    ╭─[0086_unused_fragment.graphql:17:1]
+    │
+ 17 │ ╭─▶ fragment nameFragment on Product {
+    ┆ ┆   
+ 19 │ ├─▶ }
+    │ │      
+    │ ╰────── `nameFragment` is defined here
+    │     
+    │     Help: fragment `nameFragment` must be used in an operation
+────╯
+

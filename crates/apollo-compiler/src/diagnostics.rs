@@ -135,7 +135,7 @@ impl ApolloDiagnostic {
 impl fmt::Display for ApolloDiagnostic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut buf = std::io::Cursor::new(Vec::<u8>::new());
-        self.to_report()
+        self.to_report(ariadne::Config::default())
             .write(self.cache.as_ref(), &mut buf)
             .unwrap();
         writeln!(f, "{}", std::str::from_utf8(&buf.into_inner()).unwrap())
@@ -404,7 +404,10 @@ impl From<Label> for ariadne::Label<DiagnosticLocation> {
 }
 
 impl ApolloDiagnostic {
-    pub fn to_report(&self) -> ariadne::Report<'static, DiagnosticLocation> {
+    pub fn to_report(
+        &self,
+        config: ariadne::Config,
+    ) -> ariadne::Report<'static, DiagnosticLocation> {
         use ariadne::{ColorGenerator, Report, ReportKind};
 
         let severity = if self.data.is_advice() {
@@ -416,6 +419,7 @@ impl ApolloDiagnostic {
         };
         let mut colors = ColorGenerator::new();
         let mut builder = Report::build(severity, self.location.file_id(), self.location.offset())
+            .with_config(config)
             .with_message(&self.data);
         builder.add_labels(
             self.labels
@@ -426,5 +430,13 @@ impl ApolloDiagnostic {
             builder = builder.with_help(help);
         }
         builder.finish()
+    }
+
+    pub fn format_no_color(&self) -> String {
+        let mut buf = std::io::Cursor::new(Vec::<u8>::new());
+        self.to_report(ariadne::Config::default().with_color(false))
+            .write(self.cache.as_ref(), &mut buf)
+            .unwrap();
+        String::from_utf8(buf.into_inner()).unwrap()
     }
 }

@@ -1,18 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            7: "0007_operation_with_undefined_variables.graphql",
-        },
-        location: 35..+25 @7,
-        labels: [
-            Label {
-                location: 42..+18 @7,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedVariable {
-            name: "undefinedVariable",
-        },
-    },
-]
+Error: variable `undefinedVariable` is not defined
+   ╭─[0007_operation_with_undefined_variables.graphql:2:15]
+   │
+ 2 │   topProducts(first: $undefinedVariable) {
+   │                      ─────────┬────────  
+   │                               ╰────────── not found in this scope
+───╯
+

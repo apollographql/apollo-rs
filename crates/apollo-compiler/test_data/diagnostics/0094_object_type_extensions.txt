@@ -1,120 +1,65 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            91: "0094_object_type_extensions.graphql",
-        },
-        location: 64..+8 @91,
-        labels: [
-            Label {
-                location: 64..+8 @91,
-                text: "previous definition of `age` here",
-            },
-            Label {
-                location: 75..+8 @91,
-                text: "`age` redefined here",
-            },
-        ],
-        help: Some(
-            "`age` field must only be defined once in this input object definition.",
-        ),
-        data: UniqueField {
-            field: "age",
-            original_definition: 64..+8 @91,
-            redefined_definition: 75..+8 @91,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            91: "0094_object_type_extensions.graphql",
-        },
-        location: 113..+12 @91,
-        labels: [
-            Label {
-                location: 113..+12 @91,
-                text: "previous definition of `name` here",
-            },
-            Label {
-                location: 161..+12 @91,
-                text: "`name` redefined here",
-            },
-        ],
-        help: Some(
-            "`name` field must only be defined once in this input object definition.",
-        ),
-        data: UniqueField {
-            field: "name",
-            original_definition: 113..+12 @91,
-            redefined_definition: 161..+12 @91,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            91: "0094_object_type_extensions.graphql",
-        },
-        location: 290..+14 @91,
-        labels: [
-            Label {
-                location: 233..+14 @91,
-                text: "directive nonRepeatable first called here",
-            },
-            Label {
-                location: 290..+14 @91,
-                text: "directive nonRepeatable called again here",
-            },
-        ],
-        help: None,
-        data: UniqueDirective {
-            name: "nonRepeatable",
-            original_call: 233..+14 @91,
-            conflicting_call: 290..+14 @91,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            91: "0094_object_type_extensions.graphql",
-        },
-        location: 469..+4 @91,
-        labels: [
-            Label {
-                location: 386..+4 @91,
-                text: "`Base` interface implementation previously declared here",
-            },
-            Label {
-                location: 469..+4 @91,
-                text: "`Base` interface implementation declared again here",
-            },
-        ],
-        help: None,
-        data: DuplicateImplementsInterface {
-            ty: "UniqueInterfaces",
-            interface: "Base",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            91: "0094_object_type_extensions.graphql",
-        },
-        location: 537..+82 @91,
-        labels: [
-            Label {
-                location: 583..+17 @91,
-                text: "implementation of interface ExtendedInterface declared here",
-            },
-            Label {
-                location: 537..+82 @91,
-                text: "add `fail` field to this object",
-            },
-            Label {
-                location: 659..+13 @91,
-                text: "`fail` was originally defined by ExtendedInterface here",
-            },
-        ],
-        help: Some(
-            "An object must provide all fields required by the interfaces it implements",
-        ),
-        data: MissingInterfaceField {
-            interface: "ExtendedInterface",
-            field: "fail",
-        },
-    },
-]
+Error: fields must be unique in a definition
+   ╭─[0094_object_type_extensions.graphql:5:3]
+   │
+ 5 │   age: Int
+   │   ────┬───  
+   │       ╰───── previous definition of `age` here
+ 6 │   age: Int
+   │   ────┬───  
+   │       ╰───── `age` redefined here
+   │ 
+   │ Help: `age` field must only be defined once in this input object definition.
+───╯
+Error: fields must be unique in a definition
+    ╭─[0094_object_type_extensions.graphql:10:3]
+    │
+ 10 │   name: String
+    │   ──────┬─────  
+    │         ╰─────── previous definition of `name` here
+    │ 
+ 13 │   name: String
+    │   ──────┬─────  
+    │         ╰─────── `name` redefined here
+    │ 
+    │ Help: `name` field must only be defined once in this input object definition.
+────╯
+Error: non-repeatable directive nonRepeatable can only be used once per location
+    ╭─[0094_object_type_extensions.graphql:20:29]
+    │
+ 17 │ type UniqueDirective @nonRepeatable {
+    │                      ───────┬──────  
+    │                             ╰──────── directive nonRepeatable first called here
+    │ 
+ 20 │ extend type UniqueDirective @nonRepeatable {
+    │                             ───────┬──────  
+    │                                    ╰──────── directive nonRepeatable called again here
+────╯
+Error: type `UniqueInterfaces` can only implement interface `Base` once
+    ╭─[0094_object_type_extensions.graphql:31:41]
+    │
+ 27 │ type UniqueInterfaces implements Base {
+    │                                  ──┬─  
+    │                                    ╰─── `Base` interface implementation previously declared here
+    │ 
+ 31 │ extend type UniqueInterfaces implements Base {
+    │                                         ──┬─  
+    │                                           ╰─── `Base` interface implementation declared again here
+────╯
+Error: type does not satisfy interface `ExtendedInterface`: missing field `fail`
+    ╭─[0094_object_type_extensions.graphql:38:1]
+    │
+ 38 │ ╭─▶ type ImplementsBaseButNotExtension implements ExtendedInterface {
+    │ │                                                 ────────┬────────  
+    │ │                                                         ╰────────── implementation of interface ExtendedInterface declared here
+    ┆ ┆   
+ 40 │ ├─▶ }
+    │ │       
+    │ ╰─────── add `fail` field to this object
+    │ 
+ 42 │       fail: Boolean
+    │       ──────┬──────  
+    │             ╰──────── `fail` was originally defined by ExtendedInterface here
+    │     
+    │     Help: An object must provide all fields required by the interfaces it implements
+────╯
+

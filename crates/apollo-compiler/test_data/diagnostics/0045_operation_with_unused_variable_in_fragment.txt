@@ -1,36 +1,19 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            45: "0045_operation_with_unused_variable_in_fragment.graphql",
-        },
-        location: 19..+9 @45,
-        labels: [
-            Label {
-                location: 19..+9 @45,
-                text: "this variable is never used",
-            },
-        ],
-        help: None,
-        data: UnusedVariable {
-            name: "variable",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            45: "0045_operation_with_unused_variable_in_fragment.graphql",
-        },
-        location: 69..+83 @45,
-        labels: [
-            Label {
-                location: 69..+83 @45,
-                text: "`unusedFrag` is defined here",
-            },
-        ],
-        help: Some(
-            "fragment `unusedFrag` must be used in an operation",
-        ),
-        data: UnusedFragment {
-            name: "unusedFrag",
-        },
-    },
-]
+Error: unused variable: `variable`
+   ╭─[0045_operation_with_unused_variable_in_fragment.graphql:1:20]
+   │
+ 1 │ query ExampleQuery($variable: Int) {
+   │                    ────┬────  
+   │                        ╰────── this variable is never used
+───╯
+Error: fragment `unusedFrag` must be used in an operation
+    ╭─[0045_operation_with_unused_variable_in_fragment.graphql:7:1]
+    │
+  7 │ ╭─▶ fragment unusedFrag on Query {
+    ┆ ┆   
+ 11 │ ├─▶ }
+    │ │       
+    │ ╰─────── `unusedFrag` is defined here
+    │     
+    │     Help: fragment `unusedFrag` must be used in an operation
+────╯
+

@@ -1,27 +1,12 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            21: "0021_union_definition_with_duplicate_members.graphql",
-        },
-        location: 62..+5 @21,
-        labels: [
-            Label {
-                location: 54..+5 @21,
-                text: "previous definition of `Photo` here",
-            },
-            Label {
-                location: 62..+5 @21,
-                text: "`Photo` redefined here",
-            },
-        ],
-        help: Some(
-            "`Photo` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "union member",
-            name: "Photo",
-            original_definition: 54..+5 @21,
-            redefined_definition: 62..+5 @21,
-        },
-    },
-]
+Error: the union member `Photo` is defined multiple times in the document
+   ╭─[0021_union_definition_with_duplicate_members.graphql:5:30]
+   │
+ 5 │ union SearchResult = Photo | Photo
+   │                      ──┬──   ──┬──  
+   │                        ╰──────────── previous definition of `Photo` here
+   │                                │    
+   │                                ╰──── `Photo` redefined here
+   │ 
+   │ Help: `Photo` must only be defined once in this document.
+───╯
+

@@ -1,18 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            52: "0052_undefined_directive.graphql",
-        },
-        location: 46..+11 @52,
-        labels: [
-            Label {
-                location: 46..+11 @52,
-                text: "directive not defined",
-            },
-        ],
-        help: None,
-        data: UndefinedDirective {
-            name: "directiveA",
-        },
-    },
-]
+Error: cannot find directive `directiveA` in this document
+   ╭─[0052_undefined_directive.graphql:3:17]
+   │
+ 3 │     status: Int @directiveA
+   │                 ─────┬─────  
+   │                      ╰─────── directive not defined
+───╯
+

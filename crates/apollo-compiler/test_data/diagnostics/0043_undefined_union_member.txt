@@ -1,18 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            43: "0043_undefined_union_member.graphql",
-        },
-        location: 132..+3 @43,
-        labels: [
-            Label {
-                location: 132..+3 @43,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "Cat",
-        },
-    },
-]
+Error: cannot find type `Cat` in this document
+    ╭─[0043_undefined_union_member.graphql:11:18]
+    │
+ 11 │ union CatOrDog = Cat | Dog
+    │                  ─┬─  
+    │                   ╰─── not found in this scope
+────╯
+

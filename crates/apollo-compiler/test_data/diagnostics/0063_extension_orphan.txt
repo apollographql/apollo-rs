@@ -1,98 +1,43 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            63: "0063_extension_orphan.graphql",
-        },
-        location: 25..+52 @63,
-        labels: [
-            Label {
-                location: 39..+1 @63,
-                text: "`A` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "A",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            63: "0063_extension_orphan.graphql",
-        },
-        location: 78..+29 @63,
-        labels: [
-            Label {
-                location: 90..+1 @63,
-                text: "`B` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "B",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            63: "0063_extension_orphan.graphql",
-        },
-        location: 141..+23 @63,
-        labels: [
-            Label {
-                location: 154..+1 @63,
-                text: "`C` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "C",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            63: "0063_extension_orphan.graphql",
-        },
-        location: 165..+35 @63,
-        labels: [
-            Label {
-                location: 182..+1 @63,
-                text: "`D` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "D",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            63: "0063_extension_orphan.graphql",
-        },
-        location: 201..+31 @63,
-        labels: [
-            Label {
-                location: 214..+1 @63,
-                text: "`E` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "E",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            63: "0063_extension_orphan.graphql",
-        },
-        location: 233..+26 @63,
-        labels: [
-            Label {
-                location: 245..+1 @63,
-                text: "`F` type definition does not exist",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "F",
-        },
-    },
-]
+Error: cannot find type `A` in this document
+   ╭─[0063_extension_orphan.graphql:5:1]
+   │
+ 5 │ extend scalar A @deprecated(reason: "Use B instead")
+   │               ┬  
+   │               ╰── `A` type definition does not exist
+───╯
+Error: cannot find type `B` in this document
+   ╭─[0063_extension_orphan.graphql:6:1]
+   │
+ 6 │ extend type B { field: Int! }
+   │             ┬  
+   │             ╰── `B` type definition does not exist
+───╯
+Error: cannot find type `C` in this document
+    ╭─[0063_extension_orphan.graphql:10:1]
+    │
+ 10 │ extend union C = String
+    │              ┬  
+    │              ╰── `C` type definition does not exist
+────╯
+Error: cannot find type `D` in this document
+    ╭─[0063_extension_orphan.graphql:11:1]
+    │
+ 11 │ extend interface D {
+    │                  ┬  
+    │                  ╰── `D` type definition does not exist
+────╯
+Error: cannot find type `E` in this document
+    ╭─[0063_extension_orphan.graphql:14:1]
+    │
+ 14 │ extend input E {
+    │              ┬  
+    │              ╰── `E` type definition does not exist
+────╯
+Error: cannot find type `F` in this document
+    ╭─[0063_extension_orphan.graphql:17:1]
+    │
+ 17 │ extend enum F {
+    │             ┬  
+    │             ╰── `F` type definition does not exist
+────╯
+

@@ -1,50 +1,23 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            48: "0048_duplicate_field_argument_definition_names.graphql",
-        },
-        location: 34..+12 @48,
-        labels: [
-            Label {
-                location: 34..+12 @48,
-                text: "previous definition of `arg` here",
-            },
-            Label {
-                location: 48..+12 @48,
-                text: "`arg` redefined here",
-            },
-        ],
-        help: Some(
-            "`arg` field must only be defined once in this input object definition.",
-        ),
-        data: UniqueInputValue {
-            name: "arg",
-            original_value: 34..+12 @48,
-            redefined_value: 48..+12 @48,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            48: "0048_duplicate_field_argument_definition_names.graphql",
-        },
-        location: 144..+12 @48,
-        labels: [
-            Label {
-                location: 144..+12 @48,
-                text: "previous definition of `arg` here",
-            },
-            Label {
-                location: 158..+12 @48,
-                text: "`arg` redefined here",
-            },
-        ],
-        help: Some(
-            "`arg` field must only be defined once in this input object definition.",
-        ),
-        data: UniqueInputValue {
-            name: "arg",
-            original_value: 144..+12 @48,
-            redefined_value: 158..+12 @48,
-        },
-    },
-]
+Error: the value `arg` is defined multiple times
+   ╭─[0048_duplicate_field_argument_definition_names.graphql:2:13]
+   │
+ 2 │   duplicate(arg: Boolean, arg: Boolean): Int
+   │             ──────┬─────  ──────┬─────  
+   │                   ╰───────────────────── previous definition of `arg` here
+   │                                 │       
+   │                                 ╰─────── `arg` redefined here
+   │ 
+   │ Help: `arg` field must only be defined once in this input object definition.
+───╯
+Error: the value `arg` is defined multiple times
+   ╭─[0048_duplicate_field_argument_definition_names.graphql:7:13]
+   │
+ 7 │   duplicate(arg: Boolean, arg: Boolean): Int
+   │             ──────┬─────  ──────┬─────  
+   │                   ╰───────────────────── previous definition of `arg` here
+   │                                 │       
+   │                                 ╰─────── `arg` redefined here
+   │ 
+   │ Help: `arg` field must only be defined once in this input object definition.
+───╯
+

@@ -1,16 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            17: "0017_schema_with_unspecified_scalar.graphql",
-        },
-        location: 31..+10 @17,
-        labels: [
-            Label {
-                location: 31..+10 @17,
-                text: "consider adding a @specifiedBy directive to this scalar definition",
-            },
-        ],
-        help: None,
-        data: ScalarSpecificationURL,
-    },
-]
+Advice: custom scalars should provide a scalar specification URL via the @specifiedBy directive
+   ╭─[0017_schema_with_unspecified_scalar.graphql:5:1]
+   │
+ 5 │ scalar URL
+   │ ─────┬────  
+   │      ╰────── consider adding a @specifiedBy directive to this scalar definition
+───╯
+
