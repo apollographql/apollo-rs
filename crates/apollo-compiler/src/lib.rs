@@ -22,7 +22,7 @@ pub use self::diagnostics::ApolloDiagnostic;
 pub use self::executable::ExecutableDocument;
 pub use self::node::{Node, NodeLocation};
 pub use self::node_str::NodeStr;
-pub use self::parser::{parse_mixed, ParseError, Parser, SourceFile};
+pub use self::parser::{parse_mixed, Parser, SourceFile};
 use self::validation::ValidationDatabase;
 pub use schema::Schema;
 

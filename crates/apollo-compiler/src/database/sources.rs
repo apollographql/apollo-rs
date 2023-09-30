@@ -132,6 +132,9 @@ impl FileId {
     /// The ID of the file implicitly added to type systems, for built-in scalars and introspection types
     pub const BUILT_IN: Self = Self::const_new(-1);
 
+    /// Passed to Ariadne to create a report without a location
+    pub(crate) const NONE: Self = Self::const_new(-2);
+
     // Returning a different value every time does not sound like good `impl Default`
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {

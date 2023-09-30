@@ -1,8 +1,8 @@
 use super::*;
 use crate::node::NodeLocation;
 use crate::schema::SchemaBuilder;
+use crate::validation::Diagnostics;
 use crate::ExecutableDocument;
-use crate::ParseError;
 use crate::Parser;
 use crate::Schema;
 use std::fmt;
@@ -31,12 +31,12 @@ impl Document {
         Self::parser().parse_ast(source_text, path)
     }
 
-    pub fn parse_errors(&self) -> &[ParseError] {
-        if let Some((_id, source)) = &self.source {
-            source.parse_errors()
-        } else {
-            &[]
+    pub fn check_parse_errors(&self) -> Result<(), Diagnostics> {
+        let mut errors = Diagnostics::new(self.source.clone().into_iter().collect());
+        if let Some((file_id, source)) = &self.source {
+            source.validate_parse_errors(&mut errors, *file_id)
         }
+        errors.into_result()
     }
 
     /// Build a schema with this AST document as its sole input.

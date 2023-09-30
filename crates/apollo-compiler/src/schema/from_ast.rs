@@ -49,7 +49,7 @@ impl SchemaBuilder {
             let path = "built_in.graphql".into();
             let id = FileId::BUILT_IN;
             let document = ast::Document::parser().parse_with_file_id(input, path, id);
-            debug_assert!(document.parse_errors().is_empty());
+            debug_assert!(document.check_parse_errors().is_ok());
             document
         });
 

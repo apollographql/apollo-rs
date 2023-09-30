@@ -6,7 +6,6 @@ use crate::schema::Name;
 use crate::ApolloDiagnostic;
 use crate::Arc;
 use crate::FileId;
-use crate::ParseError;
 use crate::SourceFile;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -78,7 +77,7 @@ fn ast_parse_result(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ParseResult> 
     let source_file = Arc::new(SourceFile {
         path: db.input(file_id).filename,
         source_text: String::clone(&db.source_code(file_id)),
-        parse_errors: tree.errors().map(|err| ParseError(err.clone())).collect(),
+        parse_errors: tree.errors().cloned().collect(),
     });
     let document = Arc::new(ast::Document::from_cst(
         tree.document(),
