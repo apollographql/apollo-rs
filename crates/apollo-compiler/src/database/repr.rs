@@ -1,9 +1,7 @@
+use super::sources::SourceType;
 use super::InputDatabase;
 use crate::ast;
-use crate::diagnostics::DiagnosticData;
-use crate::diagnostics::Label;
 use crate::schema::Name;
-use crate::ApolloDiagnostic;
 use crate::Arc;
 use crate::FileId;
 use crate::SourceFile;
@@ -20,10 +18,6 @@ pub trait ReprDatabase: InputDatabase {
     #[salsa::invoke(ast)]
     #[salsa::transparent]
     fn ast(&self, file_id: FileId) -> Arc<ast::Document>;
-
-    #[salsa::invoke(syntax_errors)]
-    #[salsa::transparent]
-    fn syntax_errors(&self, file_id: FileId) -> Arc<Vec<ApolloDiagnostic>>;
 
     #[salsa::invoke(recursion_reached)]
     #[salsa::transparent]
@@ -56,7 +50,6 @@ pub trait ReprDatabase: InputDatabase {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ParseResult {
     document: Arc<ast::Document>,
-    syntax_errors: Arc<Vec<ApolloDiagnostic>>,
     recursion_reached: usize,
     tokens_reached: usize,
 }
@@ -71,7 +64,6 @@ fn ast_parse_result(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ParseResult> 
         parser = parser.token_limit(limit);
     }
     let tree = parser.parse();
-    let syntax_errors = tree.errors();
     let recursion_reached = tree.recursion_limit().high;
     let tokens_reached = tree.token_limit().high;
     let source_file = Arc::new(SourceFile {
@@ -88,46 +80,11 @@ fn ast_parse_result(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ParseResult> 
         document,
         recursion_reached,
         tokens_reached,
-        syntax_errors: Arc::new(
-            syntax_errors
-                .map(|err| {
-                    if err.is_limit() {
-                        ApolloDiagnostic::new(
-                            db,
-                            (file_id, err.index(), err.data().len()).into(),
-                            DiagnosticData::LimitExceeded {
-                                message: err.message().into(),
-                            },
-                        )
-                        .label(Label::new(
-                            (file_id, err.index(), err.data().len()),
-                            err.message(),
-                        ))
-                    } else {
-                        ApolloDiagnostic::new(
-                            db,
-                            (file_id, err.index(), err.data().len()).into(),
-                            DiagnosticData::SyntaxError {
-                                message: err.message().into(),
-                            },
-                        )
-                        .label(Label::new(
-                            (file_id, err.index(), err.data().len()),
-                            err.message(),
-                        ))
-                    }
-                })
-                .collect(),
-        ),
     })
 }
 
 fn ast(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ast::Document> {
     db._ast_parse_result(file_id).document.clone()
-}
-
-fn syntax_errors(db: &dyn ReprDatabase, file_id: FileId) -> Arc<Vec<ApolloDiagnostic>> {
-    db._ast_parse_result(file_id).syntax_errors.clone()
 }
 
 fn recursion_reached(db: &dyn ReprDatabase, file_id: FileId) -> usize {
@@ -144,16 +101,30 @@ fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
     }
 
     let mut builder = crate::Schema::builder();
-    let executable_definitions_are_errors = true;
     for file_id in db.type_definition_files() {
+        let executable_definitions_are_errors = db.source_type(file_id) != SourceType::Document;
         let ast = db.ast(file_id);
-        builder.add_ast_document(&ast, executable_definitions_are_errors)
+        builder.add_ast_document(&ast, executable_definitions_are_errors);
     }
     Arc::new(builder.build())
 }
 
 fn executable_document(db: &dyn ReprDatabase, file_id: FileId) -> Arc<crate::ExecutableDocument> {
-    Arc::new(db.ast(file_id).to_executable(&db.schema()))
+    let source_type = db.source_type(file_id);
+    let type_system_definitions_are_errors = source_type != SourceType::Document;
+    let mut executable = crate::executable::from_ast::document_from_ast(
+        &db.schema(),
+        &db.ast(file_id),
+        type_system_definitions_are_errors,
+    );
+    if source_type == SourceType::Document {
+        if let Some((_, source_file)) = &mut executable.source {
+            // The same parse errors will be in db.schema().sources,
+            // so they would be redundant here.
+            source_file.make_mut().parse_errors = Vec::new()
+        }
+    }
+    Arc::new(executable)
 }
 
 fn implementers_map(db: &dyn ReprDatabase) -> Arc<HashMap<Name, HashSet<Name>>> {

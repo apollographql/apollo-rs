@@ -8,6 +8,7 @@
 // Note: ALL #[test] functions must also have #[serial], to make FileId::reset
 
 use apollo_compiler::ast;
+use apollo_compiler::validation::Diagnostics;
 use apollo_compiler::ApolloCompiler;
 use apollo_compiler::ApolloDiagnostic;
 use apollo_compiler::FileId;
@@ -16,6 +17,7 @@ use expect_test::expect_file;
 use indexmap::IndexMap;
 use serial_test::serial;
 use std::env;
+use std::fmt::Write;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
@@ -34,9 +36,18 @@ fn validation() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
         let mut compiler = ApolloCompiler::new();
         let file_id = compiler.add_document(text, path.file_name().unwrap());
+        let schema = compiler.db.schema();
+        let executable = compiler.db.executable_document(file_id);
 
+        let schema_validation_errors = schema.validate().err();
+        let executable_validation_errors = executable.validate(&schema).err();
         let errors = compiler.validate();
-        assert_diagnostics_are_absent(&errors, path);
+        assert_diagnostics_are_absent(
+            &schema_validation_errors,
+            &executable_validation_errors,
+            &errors,
+            path,
+        );
 
         let ast = compiler.db.ast(file_id);
         format!("{ast:#?}")
@@ -44,29 +55,65 @@ fn validation() {
 
     dir_tests(&test_data_dir(), &["diagnostics"], "txt", |text, path| {
         let mut compiler = ApolloCompiler::new();
-        compiler.add_document(text, path.file_name().unwrap());
+        let file_id = compiler.add_document(text, path.file_name().unwrap());
+        let schema = compiler.db.schema();
+        let executable = compiler.db.executable_document(file_id);
 
-        let diagnostics = compiler.validate();
         let mut formatted = String::new();
+        let schema_validation_errors = schema.validate().err();
+        if let Some(errors) = &schema_validation_errors {
+            write!(&mut formatted, "{errors:#}").unwrap()
+        }
+        let executable_validation_errors = executable.validate(&schema).err();
+        if let Some(errors) = &executable_validation_errors {
+            write!(&mut formatted, "{errors:#}").unwrap()
+        }
+        let diagnostics = compiler.validate();
         for diagnostic in &diagnostics {
             formatted.push_str(&diagnostic.format_no_color())
         }
-        assert_diagnostics_are_present(&diagnostics, path);
+        assert_diagnostics_are_present(
+            &schema_validation_errors,
+            &executable_validation_errors,
+            &diagnostics,
+            path,
+        );
         formatted
     });
 }
 
-fn assert_diagnostics_are_present(errors: &[ApolloDiagnostic], path: &Path) {
+fn assert_diagnostics_are_present(
+    schema_validation_errors: &Option<Diagnostics>,
+    executable_validation_errors: &Option<Diagnostics>,
+    errors: &[ApolloDiagnostic],
+    path: &Path,
+) {
     assert!(
-        !errors.is_empty(),
+        schema_validation_errors.is_some()
+            || executable_validation_errors.is_some()
+            || !errors.is_empty(),
         "There should be diagnostics in the file {:?}",
         path.display()
     );
 }
 
-fn assert_diagnostics_are_absent(errors: &[ApolloDiagnostic], path: &Path) {
-    if !errors.is_empty() {
-        for diagnostic in errors {
+fn assert_diagnostics_are_absent(
+    schema_validation_errors: &Option<Diagnostics>,
+    executable_validation_errors: &Option<Diagnostics>,
+    diagnostics: &[ApolloDiagnostic],
+    path: &Path,
+) {
+    if schema_validation_errors.is_some()
+        || executable_validation_errors.is_some()
+        || !diagnostics.is_empty()
+    {
+        if let Some(errors) = schema_validation_errors {
+            println!("{errors}")
+        }
+        if let Some(errors) = executable_validation_errors {
+            println!("{errors}")
+        }
+        for diagnostic in diagnostics {
             println!("{diagnostic}");
         }
         panic!(

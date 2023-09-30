@@ -18,6 +18,7 @@ use std::sync::OnceLock;
 mod component;
 mod from_ast;
 mod serialize;
+mod validation;
 
 pub use self::component::{Component, ComponentOrigin, ComponentStr, ExtensionId};
 pub use self::from_ast::SchemaBuilder;
@@ -25,6 +26,7 @@ pub use crate::ast::{
     Directive, DirectiveDefinition, DirectiveLocation, EnumValueDefinition, FieldDefinition,
     InputValueDefinition, Name, NamedType, Type, Value,
 };
+use crate::validation::Diagnostics;
 
 /// High-level representation of a GraphQL schema
 #[derive(Debug, Clone)]
@@ -231,6 +233,12 @@ impl Schema {
     /// ```
     pub fn builder() -> SchemaBuilder {
         SchemaBuilder::new()
+    }
+
+    pub fn validate(&self) -> Result<(), Diagnostics> {
+        let mut errors = Diagnostics::new(self.sources.clone());
+        validation::validate_schema(&mut errors, self);
+        errors.into_result()
     }
 
     /// Returns the type with the given name, if it is a scalar type

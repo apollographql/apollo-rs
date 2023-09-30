@@ -19,7 +19,7 @@ pub struct Parser {
     tokens_reached: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SourceFile {
     pub(crate) path: PathBuf,
     pub(crate) source_text: String,
