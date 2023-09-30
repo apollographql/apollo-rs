@@ -16,7 +16,7 @@ fn it_errors_when_selection_set_recursion_limit_exceeded() {
     let id = compiler.add_document(schema, "schema.graphql");
     let ast = compiler.db.ast(id);
     assert_eq!(compiler.db.recursion_reached(id), 2);
-    assert_eq!(ast.parse_errors().len(), 1);
+    assert!(ast.check_parse_errors().is_err());
     assert_eq!(ast.definitions.len(), 1);
 }
 
@@ -37,7 +37,7 @@ fn it_passes_when_selection_set_recursion_limit_is_not_exceeded() {
     let id = compiler.add_document(schema, "schema.graphql");
     let ast = compiler.db.ast(id);
     assert_eq!(compiler.db.recursion_reached(id), 4);
-    assert_eq!(ast.parse_errors().len(), 0);
+    ast.check_parse_errors().unwrap();
     assert_eq!(ast.definitions.len(), 1);
 }
 
@@ -51,11 +51,13 @@ fn it_errors_when_selection_set_token_limit_is_exceeded() {
     let mut compiler = ApolloCompiler::new().token_limit(18);
     let id = compiler.add_document(schema, "schema.graphql");
     let ast = compiler.db.ast(id);
-    assert_eq!(ast.parse_errors().len(), 1);
-    assert_eq!(
-        format!("{:?}", ast.parse_errors()[0]),
-        "ERROR@47:47 \"token limit reached, aborting lexing\" "
+    let errors = ast.check_parse_errors().unwrap_err().to_string();
+    assert!(
+        errors.contains("token limit reached, aborting lexing"),
+        "{}",
+        errors
     );
+    assert!(errors.contains("schema.graphql:3:30"), "{}", errors);
     assert_eq!(ast.definitions.len(), 1);
 }
 
@@ -75,20 +77,24 @@ fn it_errors_with_multiple_limits() {
     let mut compiler = ApolloCompiler::new().token_limit(22).recursion_limit(10);
     let id = compiler.add_document(schema, "schema.graphql");
     let ast = compiler.db.ast(id);
-    assert_eq!(ast.parse_errors().len(), 1);
-    assert_eq!(
-        format!("{:?}", ast.parse_errors()[0]),
-        "ERROR@142:142 \"token limit reached, aborting lexing\" "
+    let errors = ast.check_parse_errors().unwrap_err().to_string();
+    assert!(
+        errors.contains("token limit reached, aborting lexing"),
+        "{}",
+        errors
     );
+    assert!(errors.contains("schema.graphql:8:18"), "{}", errors);
 
     let mut compiler = ApolloCompiler::new().recursion_limit(3).token_limit(200);
     let id = compiler.add_document(schema, "schema.graphql");
     let ast = compiler.db.ast(id);
-    assert_eq!(ast.parse_errors().len(), 1);
-    assert_eq!(
-        format!("{:?}", ast.parse_errors()[0]),
-        "ERROR@101:101 \"parser recursion limit reached\" "
+    let errors = ast.check_parse_errors().unwrap_err().to_string();
+    assert!(
+        errors.contains("parser recursion limit reached"),
+        "{}",
+        errors
     );
+    assert!(errors.contains("schema.graphql:6:25"), "{}", errors);
 }
 
 #[test]
@@ -110,5 +116,5 @@ fn token_limit_with_multiple_sources() {
     let mut compiler2 = ApolloCompiler::from_schema(schema).token_limit(2);
     let id = compiler2.add_executable(query, "query.graphql");
     let ast = compiler2.db.ast(id);
-    assert_eq!(ast.parse_errors().len(), 1);
+    assert!(ast.check_parse_errors().is_err());
 }

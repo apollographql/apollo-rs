@@ -1,10 +1,12 @@
 use crate::ast::Document;
 use crate::schema::SchemaBuilder;
+use crate::validation::Details;
+use crate::validation::Diagnostics;
 use crate::Arc;
 use crate::ExecutableDocument;
 use crate::FileId;
+use crate::NodeLocation;
 use crate::Schema;
-use std::fmt;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -21,11 +23,8 @@ pub struct Parser {
 pub struct SourceFile {
     pub(crate) path: PathBuf,
     pub(crate) source_text: String,
-    pub(crate) parse_errors: Vec<ParseError>,
+    pub(crate) parse_errors: Vec<apollo_parser::Error>,
 }
-
-#[derive(Clone, Eq, PartialEq, Hash)]
-pub struct ParseError(pub(crate) apollo_parser::Error);
 
 /// Parse a schema and executable document from the given source text
 /// containing a mixture of type system definitions and executable definitions.
@@ -97,7 +96,7 @@ impl Parser {
         let source_file = Arc::new(SourceFile {
             path,
             source_text,
-            parse_errors: tree.errors().map(|err| ParseError(err.clone())).collect(),
+            parse_errors: tree.errors().cloned().collect(),
         });
         Document::from_cst(tree.document(), file_id, source_file)
     }
@@ -199,13 +198,31 @@ impl SourceFile {
         &self.source_text
     }
 
-    pub fn parse_errors(&self) -> &[ParseError] {
-        &self.parse_errors
-    }
-}
-
-impl fmt::Debug for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&self.0, f)
+    pub(crate) fn validate_parse_errors(&self, errors: &mut Diagnostics, file_id: FileId) {
+        for err in &self.parse_errors {
+            // Silently skip parse errors at index beyond 4 GiB.
+            // Rowan in apollo-parser might complain about files that large
+            // before we get here anyway.
+            let Ok(index) = err.index().try_into() else {
+                continue;
+            };
+            let Ok(len) = err.data().len().try_into() else {
+                continue;
+            };
+            let location = Some(NodeLocation {
+                file_id,
+                text_range: rowan::TextRange::at(index, len),
+            });
+            let details = if err.is_limit() {
+                Details::ParserLimit {
+                    message: err.message().to_owned(),
+                }
+            } else {
+                Details::SyntaxError {
+                    message: err.message().to_owned(),
+                }
+            };
+            errors.push(location, details)
+        }
     }
 }
