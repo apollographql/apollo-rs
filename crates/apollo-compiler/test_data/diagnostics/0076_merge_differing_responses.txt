@@ -1,46 +1,23 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            73: "0076_merge_differing_responses.graphql",
-        },
-        location: 555..+21 @73,
-        labels: [
-            Label {
-                location: 512..+19 @73,
-                text: "`someValue` has type `String!` here",
-            },
-            Label {
-                location: 555..+21 @73,
-                text: "but the same field name has type `Int!` here",
-            },
-        ],
-        help: None,
-        data: ConflictingField {
-            field: "nickname",
-            original_selection: 512..+19 @73,
-            redefined_selection: 555..+21 @73,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            73: "0076_merge_differing_responses.graphql",
-        },
-        location: 555..+21 @73,
-        labels: [
-            Label {
-                location: 512..+19 @73,
-                text: "`someValue` has type `String!` here",
-            },
-            Label {
-                location: 555..+21 @73,
-                text: "but the same field name has type `Int!` here",
-            },
-        ],
-        help: None,
-        data: ConflictingField {
-            field: "nickname",
-            original_selection: 512..+19 @73,
-            redefined_selection: 555..+21 @73,
-        },
-    },
-]
+Error: operation must not select different types using the same field name `nickname`
+    ╭─[0076_merge_differing_responses.graphql:42:5]
+    │
+ 39 │     someValue: nickname
+    │     ─────────┬─────────  
+    │              ╰─────────── `someValue` has type `String!` here
+    │ 
+ 42 │     someValue: meowVolume
+    │     ──────────┬──────────  
+    │               ╰──────────── but the same field name has type `Int!` here
+────╯
+Error: operation must not select different types using the same field name `nickname`
+    ╭─[0076_merge_differing_responses.graphql:42:5]
+    │
+ 39 │     someValue: nickname
+    │     ─────────┬─────────  
+    │              ╰─────────── `someValue` has type `String!` here
+    │ 
+ 42 │     someValue: meowVolume
+    │     ──────────┬──────────  
+    │               ╰──────────── but the same field name has type `Int!` here
+────╯
+

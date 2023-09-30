@@ -1,102 +1,53 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            57: "0057_duplicate_type_names.graphql",
-        },
-        location: 86..+5 @57,
-        labels: [
-            Label {
-                location: 10..+5 @57,
-                text: "previous definition of `World` here",
-            },
-            Label {
-                location: 86..+5 @57,
-                text: "`World` redefined here",
-            },
-        ],
-        help: Some(
-            "`World` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "type",
-            name: "World",
-            original_definition: 10..+5 @57,
-            redefined_definition: 86..+5 @57,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            57: "0057_duplicate_type_names.graphql",
-        },
-        location: 199..+1 @57,
-        labels: [
-            Label {
-                location: 135..+1 @57,
-                text: "previous definition of `X` here",
-            },
-            Label {
-                location: 199..+1 @57,
-                text: "`X` redefined here",
-            },
-        ],
-        help: Some(
-            "`X` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "type",
-            name: "X",
-            original_definition: 135..+1 @57,
-            redefined_definition: 199..+1 @57,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            57: "0057_duplicate_type_names.graphql",
-        },
-        location: 227..+1 @57,
-        labels: [
-            Label {
-                location: 135..+1 @57,
-                text: "previous definition of `X` here",
-            },
-            Label {
-                location: 227..+1 @57,
-                text: "`X` redefined here",
-            },
-        ],
-        help: Some(
-            "`X` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "type",
-            name: "X",
-            original_definition: 135..+1 @57,
-            redefined_definition: 227..+1 @57,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            57: "0057_duplicate_type_names.graphql",
-        },
-        location: 244..+1 @57,
-        labels: [
-            Label {
-                location: 135..+1 @57,
-                text: "previous definition of `X` here",
-            },
-            Label {
-                location: 244..+1 @57,
-                text: "`X` redefined here",
-            },
-        ],
-        help: Some(
-            "`X` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "type",
-            name: "X",
-            original_definition: 135..+1 @57,
-            redefined_definition: 244..+1 @57,
-        },
-    },
-]
+Error: the type `World` is defined multiple times in the document
+   ╭─[0057_duplicate_type_names.graphql:9:6]
+   │
+ 1 │ interface World {
+   │           ──┬──  
+   │             ╰──── previous definition of `World` here
+   │ 
+ 9 │ type World implements World {
+   │      ──┬──  
+   │        ╰──── `World` redefined here
+   │ 
+   │ Help: `World` must only be defined once in this document.
+───╯
+Error: the type `X` is defined multiple times in the document
+    ╭─[0057_duplicate_type_names.graphql:16:7]
+    │
+ 14 │ scalar X @specifiedBy(url: "https://apollographql.com")
+    │        ┬  
+    │        ╰── previous definition of `X` here
+    │ 
+ 16 │ union X @X = Object
+    │       ┬  
+    │       ╰── `X` redefined here
+    │ 
+    │ Help: `X` must only be defined once in this document.
+────╯
+Error: the type `X` is defined multiple times in the document
+    ╭─[0057_duplicate_type_names.graphql:18:6]
+    │
+ 14 │ scalar X @specifiedBy(url: "https://apollographql.com")
+    │        ┬  
+    │        ╰── previous definition of `X` here
+    │ 
+ 18 │ enum X { Y, Z }
+    │      ┬  
+    │      ╰── `X` redefined here
+    │ 
+    │ Help: `X` must only be defined once in this document.
+────╯
+Error: the type `X` is defined multiple times in the document
+    ╭─[0057_duplicate_type_names.graphql:20:6]
+    │
+ 14 │ scalar X @specifiedBy(url: "https://apollographql.com")
+    │        ┬  
+    │        ╰── previous definition of `X` here
+    │ 
+ 20 │ type X {
+    │      ┬  
+    │      ╰── `X` redefined here
+    │ 
+    │ Help: `X` must only be defined once in this document.
+────╯
+

@@ -1,90 +1,41 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            71: "0074_merge_identical_fields.graphql",
-        },
-        location: 247..+4 @71,
-        labels: [
-            Label {
-                location: 230..+14 @71,
-                text: "`name` has type `String` here",
-            },
-            Label {
-                location: 247..+4 @71,
-                text: "but the same field name has type `String!` here",
-            },
-        ],
-        help: None,
-        data: ConflictingField {
-            field: "nickname",
-            original_selection: 230..+14 @71,
-            redefined_selection: 247..+4 @71,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            71: "0074_merge_identical_fields.graphql",
-        },
-        location: 247..+4 @71,
-        labels: [
-            Label {
-                location: 230..+14 @71,
-                text: "`name` has type `String` here",
-            },
-            Label {
-                location: 247..+4 @71,
-                text: "but the same field name has type `String!` here",
-            },
-        ],
-        help: None,
-        data: ConflictingField {
-            field: "nickname",
-            original_selection: 230..+14 @71,
-            redefined_selection: 247..+4 @71,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            71: "0074_merge_identical_fields.graphql",
-        },
-        location: 325..+14 @71,
-        labels: [
-            Label {
-                location: 312..+10 @71,
-                text: "`fido` has type `String!` here",
-            },
-            Label {
-                location: 325..+14 @71,
-                text: "but the same field name has type `String` here",
-            },
-        ],
-        help: None,
-        data: ConflictingField {
-            field: "name",
-            original_selection: 312..+10 @71,
-            redefined_selection: 325..+14 @71,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            71: "0074_merge_identical_fields.graphql",
-        },
-        location: 325..+14 @71,
-        labels: [
-            Label {
-                location: 312..+10 @71,
-                text: "`fido` has type `String!` here",
-            },
-            Label {
-                location: 325..+14 @71,
-                text: "but the same field name has type `String` here",
-            },
-        ],
-        help: None,
-        data: ConflictingField {
-            field: "name",
-            original_selection: 312..+10 @71,
-            redefined_selection: 325..+14 @71,
-        },
-    },
-]
+Error: operation must not select different types using the same field name `nickname`
+    ╭─[0074_merge_identical_fields.graphql:19:3]
+    │
+ 18 │   name: nickname
+    │   ───────┬──────  
+    │          ╰──────── `name` has type `String` here
+ 19 │   name
+    │   ──┬─  
+    │     ╰─── but the same field name has type `String!` here
+────╯
+Error: operation must not select different types using the same field name `nickname`
+    ╭─[0074_merge_identical_fields.graphql:19:3]
+    │
+ 18 │   name: nickname
+    │   ───────┬──────  
+    │          ╰──────── `name` has type `String` here
+ 19 │   name
+    │   ──┬─  
+    │     ╰─── but the same field name has type `String!` here
+────╯
+Error: operation must not select different types using the same field name `name`
+    ╭─[0074_merge_identical_fields.graphql:24:3]
+    │
+ 23 │   fido: name
+    │   ─────┬────  
+    │        ╰────── `fido` has type `String!` here
+ 24 │   fido: nickname
+    │   ───────┬──────  
+    │          ╰──────── but the same field name has type `String` here
+────╯
+Error: operation must not select different types using the same field name `name`
+    ╭─[0074_merge_identical_fields.graphql:24:3]
+    │
+ 23 │   fido: name
+    │   ─────┬────  
+    │        ╰────── `fido` has type `String!` here
+ 24 │   fido: nickname
+    │   ───────┬──────  
+    │          ╰──────── but the same field name has type `String` here
+────╯
+

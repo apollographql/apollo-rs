@@ -1,242 +1,121 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: 630..+33 @72,
-        labels: [
-            Label {
-                location: 611..+15 @72,
-                text: "field `doesKnowCommand` provides one argument value here",
-            },
-            Label {
-                location: 646..+16 @72,
-                text: "but a different value here",
-            },
-        ],
-        help: Some(
-            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
-        ),
-        data: ConflictingField {
-            field: "doesKnowCommand",
-            original_selection: 595..+32 @72,
-            redefined_selection: 630..+33 @72,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: 630..+33 @72,
-        labels: [
-            Label {
-                location: 611..+15 @72,
-                text: "field `doesKnowCommand` provides one argument value here",
-            },
-            Label {
-                location: 646..+16 @72,
-                text: "but a different value here",
-            },
-        ],
-        help: Some(
-            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
-        ),
-        data: ConflictingField {
-            field: "doesKnowCommand",
-            original_selection: 595..+32 @72,
-            redefined_selection: 630..+33 @72,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: 749..+40 @72,
-        labels: [
-            Label {
-                location: 730..+15 @72,
-                text: "field `doesKnowCommand` provides one argument value here",
-            },
-            Label {
-                location: 765..+23 @72,
-                text: "but a different value here",
-            },
-        ],
-        help: Some(
-            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
-        ),
-        data: ConflictingField {
-            field: "doesKnowCommand",
-            original_selection: 714..+32 @72,
-            redefined_selection: 749..+40 @72,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: 749..+40 @72,
-        labels: [
-            Label {
-                location: 730..+15 @72,
-                text: "field `doesKnowCommand` provides one argument value here",
-            },
-            Label {
-                location: 765..+23 @72,
-                text: "but a different value here",
-            },
-        ],
-        help: Some(
-            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
-        ),
-        data: ConflictingField {
-            field: "doesKnowCommand",
-            original_selection: 714..+32 @72,
-            redefined_selection: 749..+40 @72,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: 876..+36 @72,
-        labels: [
-            Label {
-                location: 853..+19 @72,
-                text: "field `doesKnowCommand` provides one argument value here",
-            },
-            Label {
-                location: 892..+19 @72,
-                text: "but a different value here",
-            },
-        ],
-        help: Some(
-            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
-        ),
-        data: ConflictingField {
-            field: "doesKnowCommand",
-            original_selection: 837..+36 @72,
-            redefined_selection: 876..+36 @72,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: 876..+36 @72,
-        labels: [
-            Label {
-                location: 853..+19 @72,
-                text: "field `doesKnowCommand` provides one argument value here",
-            },
-            Label {
-                location: 892..+19 @72,
-                text: "but a different value here",
-            },
-        ],
-        help: Some(
-            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
-        ),
-        data: ConflictingField {
-            field: "doesKnowCommand",
-            original_selection: 837..+36 @72,
-            redefined_selection: 876..+36 @72,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: 985..+15 @72,
-        labels: [
-            Label {
-                location: 966..+15 @72,
-                text: "field `doesKnowCommand` is selected with argument `dogCommand` here",
-            },
-            Label {
-                location: 985..+15 @72,
-                text: "but argument `dogCommand` is not provided here",
-            },
-        ],
-        help: Some(
-            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
-        ),
-        data: ConflictingField {
-            field: "doesKnowCommand",
-            original_selection: 950..+32 @72,
-            redefined_selection: 985..+15 @72,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: 985..+15 @72,
-        labels: [
-            Label {
-                location: 966..+15 @72,
-                text: "field `doesKnowCommand` is selected with argument `dogCommand` here",
-            },
-            Label {
-                location: 985..+15 @72,
-                text: "but argument `dogCommand` is not provided here",
-            },
-        ],
-        help: Some(
-            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
-        ),
-        data: ConflictingField {
-            field: "doesKnowCommand",
-            original_selection: 950..+32 @72,
-            redefined_selection: 985..+15 @72,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: 1061..+18 @72,
-        labels: [
-            Label {
-                location: 1053..+4 @72,
-                text: "field `isAtLocation` is selected with argument `x` here",
-            },
-            Label {
-                location: 1061..+18 @72,
-                text: "but argument `x` is not provided here",
-            },
-        ],
-        help: Some(
-            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
-        ),
-        data: ConflictingField {
-            field: "isAtLocation",
-            original_selection: 1040..+18 @72,
-            redefined_selection: 1061..+18 @72,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            72: "0075_merge_conflicting_args.graphql",
-        },
-        location: 1061..+18 @72,
-        labels: [
-            Label {
-                location: 1053..+4 @72,
-                text: "field `isAtLocation` is selected with argument `x` here",
-            },
-            Label {
-                location: 1061..+18 @72,
-                text: "but argument `x` is not provided here",
-            },
-        ],
-        help: Some(
-            "Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.",
-        ),
-        data: ConflictingField {
-            field: "isAtLocation",
-            original_selection: 1040..+18 @72,
-            redefined_selection: 1061..+18 @72,
-        },
-    },
-]
+Error: operation must not select different types using the same field name `doesKnowCommand`
+    ╭─[0075_merge_conflicting_args.graphql:47:3]
+    │
+ 46 │   doesKnowCommand(dogCommand: SIT)
+    │                   ───────┬───────  
+    │                          ╰───────── field `doesKnowCommand` provides one argument value here
+ 47 │   doesKnowCommand(dogCommand: HEEL)
+    │                   ────────┬───────  
+    │                           ╰───────── but a different value here
+    │ 
+    │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+────╯
+Error: operation must not select different types using the same field name `doesKnowCommand`
+    ╭─[0075_merge_conflicting_args.graphql:47:3]
+    │
+ 46 │   doesKnowCommand(dogCommand: SIT)
+    │                   ───────┬───────  
+    │                          ╰───────── field `doesKnowCommand` provides one argument value here
+ 47 │   doesKnowCommand(dogCommand: HEEL)
+    │                   ────────┬───────  
+    │                           ╰───────── but a different value here
+    │ 
+    │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+────╯
+Error: operation must not select different types using the same field name `doesKnowCommand`
+    ╭─[0075_merge_conflicting_args.graphql:52:3]
+    │
+ 51 │   doesKnowCommand(dogCommand: SIT)
+    │                   ───────┬───────  
+    │                          ╰───────── field `doesKnowCommand` provides one argument value here
+ 52 │   doesKnowCommand(dogCommand: $dogCommand)
+    │                   ───────────┬───────────  
+    │                              ╰───────────── but a different value here
+    │ 
+    │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+────╯
+Error: operation must not select different types using the same field name `doesKnowCommand`
+    ╭─[0075_merge_conflicting_args.graphql:52:3]
+    │
+ 51 │   doesKnowCommand(dogCommand: SIT)
+    │                   ───────┬───────  
+    │                          ╰───────── field `doesKnowCommand` provides one argument value here
+ 52 │   doesKnowCommand(dogCommand: $dogCommand)
+    │                   ───────────┬───────────  
+    │                              ╰───────────── but a different value here
+    │ 
+    │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+────╯
+Error: operation must not select different types using the same field name `doesKnowCommand`
+    ╭─[0075_merge_conflicting_args.graphql:57:3]
+    │
+ 56 │   doesKnowCommand(dogCommand: $varOne)
+    │                   ─────────┬─────────  
+    │                            ╰─────────── field `doesKnowCommand` provides one argument value here
+ 57 │   doesKnowCommand(dogCommand: $varTwo)
+    │                   ─────────┬─────────  
+    │                            ╰─────────── but a different value here
+    │ 
+    │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+────╯
+Error: operation must not select different types using the same field name `doesKnowCommand`
+    ╭─[0075_merge_conflicting_args.graphql:57:3]
+    │
+ 56 │   doesKnowCommand(dogCommand: $varOne)
+    │                   ─────────┬─────────  
+    │                            ╰─────────── field `doesKnowCommand` provides one argument value here
+ 57 │   doesKnowCommand(dogCommand: $varTwo)
+    │                   ─────────┬─────────  
+    │                            ╰─────────── but a different value here
+    │ 
+    │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+────╯
+Error: operation must not select different types using the same field name `doesKnowCommand`
+    ╭─[0075_merge_conflicting_args.graphql:62:3]
+    │
+ 61 │   doesKnowCommand(dogCommand: SIT)
+    │                   ───────┬───────  
+    │                          ╰───────── field `doesKnowCommand` is selected with argument `dogCommand` here
+ 62 │   doesKnowCommand
+    │   ───────┬───────  
+    │          ╰───────── but argument `dogCommand` is not provided here
+    │ 
+    │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+────╯
+Error: operation must not select different types using the same field name `doesKnowCommand`
+    ╭─[0075_merge_conflicting_args.graphql:62:3]
+    │
+ 61 │   doesKnowCommand(dogCommand: SIT)
+    │                   ───────┬───────  
+    │                          ╰───────── field `doesKnowCommand` is selected with argument `dogCommand` here
+ 62 │   doesKnowCommand
+    │   ───────┬───────  
+    │          ╰───────── but argument `dogCommand` is not provided here
+    │ 
+    │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+────╯
+Error: operation must not select different types using the same field name `isAtLocation`
+    ╭─[0075_merge_conflicting_args.graphql:67:3]
+    │
+ 66 │   isAtLocation(x: 0)
+    │                ──┬─  
+    │                  ╰─── field `isAtLocation` is selected with argument `x` here
+ 67 │   isAtLocation(y: 0)
+    │   ─────────┬────────  
+    │            ╰────────── but argument `x` is not provided here
+    │ 
+    │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+────╯
+Error: operation must not select different types using the same field name `isAtLocation`
+    ╭─[0075_merge_conflicting_args.graphql:67:3]
+    │
+ 66 │   isAtLocation(x: 0)
+    │                ──┬─  
+    │                  ╰─── field `isAtLocation` is selected with argument `x` here
+ 67 │   isAtLocation(y: 0)
+    │   ─────────┬────────  
+    │            ╰────────── but argument `x` is not provided here
+    │ 
+    │ Help: Fields with the same response name must provide the same set of arguments. Consider adding an alias if you need to select fields with different arguments.
+────╯
+

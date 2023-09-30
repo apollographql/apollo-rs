@@ -1,62 +1,28 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: 93..+40 @86,
-        labels: [
-            Label {
-                location: 100..+17 @86,
-                text: "`MissingSecondType` is defined here but not declared in the schema",
-            },
-        ],
-        help: Some(
-            "consider defining `MissingSecondType` in the schema",
-        ),
-        data: InvalidFragment {
-            ty: Some(
-                "MissingSecondType",
-            ),
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: 385..+30 @86,
-        labels: [
-            Label {
-                location: 392..+11 @86,
-                text: "`MissingType` is defined here but not declared in the schema",
-            },
-        ],
-        help: Some(
-            "consider defining `MissingType` in the schema",
-        ),
-        data: InvalidFragment {
-            ty: Some(
-                "MissingType",
-            ),
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            86: "0089_fragment_type_condition_on_non_existent_types.graphql",
-        },
-        location: 419..+55 @86,
-        labels: [
-            Label {
-                location: 456..+10 @86,
-                text: "`Interface2` is defined here but not declared in the schema",
-            },
-        ],
-        help: Some(
-            "consider defining `Interface2` in the schema",
-        ),
-        data: InvalidFragment {
-            ty: Some(
-                "Interface2",
-            ),
-        },
-    },
-]
+Error: fragments must be specified on types that exist in the schema
+   ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:5:5]
+   │
+ 5 │     ... on MissingSecondType {
+   │            ────────┬────────  
+   │                    ╰────────── `MissingSecondType` is defined here but not declared in the schema
+   │ 
+   │ Help: consider defining `MissingSecondType` in the schema
+───╯
+Error: fragments must be specified on types that exist in the schema
+    ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:23:3]
+    │
+ 23 │   ... on MissingType {
+    │          ─────┬─────  
+    │               ╰─────── `MissingType` is defined here but not declared in the schema
+    │ 
+    │ Help: consider defining `MissingType` in the schema
+────╯
+Error: fragments must be specified on types that exist in the schema
+    ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:28:1]
+    │
+ 28 │ fragment invalidFragmentCondition on Interface2 {
+    │                                      ─────┬────  
+    │                                           ╰────── `Interface2` is defined here but not declared in the schema
+    │ 
+    │ Help: consider defining `Interface2` in the schema
+────╯
+

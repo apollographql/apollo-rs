@@ -1,26 +1,13 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            31: "0031_input_object_with_duplicate_fields.graphql",
-        },
-        location: 133..+8 @31,
-        labels: [
-            Label {
-                location: 133..+8 @31,
-                text: "previous definition of `x` here",
-            },
-            Label {
-                location: 144..+8 @31,
-                text: "`x` redefined here",
-            },
-        ],
-        help: Some(
-            "`x` field must only be defined once in this input object definition.",
-        ),
-        data: UniqueInputValue {
-            name: "x",
-            original_value: 133..+8 @31,
-            redefined_value: 144..+8 @31,
-        },
-    },
-]
+Error: the value `x` is defined multiple times
+    ╭─[0031_input_object_with_duplicate_fields.graphql:9:3]
+    │
+  9 │   x: Float
+    │   ────┬───  
+    │       ╰───── previous definition of `x` here
+ 10 │   x: Float
+    │   ────┬───  
+    │       ╰───── `x` redefined here
+    │ 
+    │ Help: `x` field must only be defined once in this input object definition.
+────╯
+

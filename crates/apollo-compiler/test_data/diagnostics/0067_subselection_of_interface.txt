@@ -1,110 +1,79 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            67: "0067_subselection_of_interface.graphql",
-        },
-        location: 31..+4 @67,
-        labels: [
-            Label {
-                location: 31..+4 @67,
-                text: "field `pet1` type `Pet` is an interface and must select fields",
-            },
-            Label {
-                location: 181..+31 @67,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: MissingSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            67: "0067_subselection_of_interface.graphql",
-        },
-        location: 38..+4 @67,
-        labels: [
-            Label {
-                location: 38..+4 @67,
-                text: "field `pet2` type `Pet` is an interface and must select fields",
-            },
-            Label {
-                location: 181..+31 @67,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: MissingSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            67: "0067_subselection_of_interface.graphql",
-        },
-        location: 45..+4 @67,
-        labels: [
-            Label {
-                location: 45..+4 @67,
-                text: "field `pet3` type `Pet` is an interface and must select fields",
-            },
-            Label {
-                location: 181..+31 @67,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: MissingSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            67: "0067_subselection_of_interface.graphql",
-        },
-        location: 52..+4 @67,
-        labels: [
-            Label {
-                location: 52..+4 @67,
-                text: "field `pet4` type `Pet` is an interface and must select fields",
-            },
-            Label {
-                location: 181..+31 @67,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: MissingSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            67: "0067_subselection_of_interface.graphql",
-        },
-        location: 59..+4 @67,
-        labels: [
-            Label {
-                location: 59..+4 @67,
-                text: "field `pet5` type `Pet` is an interface and must select fields",
-            },
-            Label {
-                location: 181..+31 @67,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: MissingSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            67: "0067_subselection_of_interface.graphql",
-        },
-        location: 66..+4 @67,
-        labels: [
-            Label {
-                location: 66..+4 @67,
-                text: "field `pet6` type `Pet` is an interface and must select fields",
-            },
-            Label {
-                location: 181..+31 @67,
-                text: "`Pet` declared here",
-            },
-        ],
-        help: None,
-        data: MissingSubselection,
-    },
-]
+Error: interface, union and object types must have a subselection set
+    ╭─[0067_subselection_of_interface.graphql:2:3]
+    │
+  2 │       pet1
+    │       ──┬─  
+    │         ╰─── field `pet1` type `Pet` is an interface and must select fields
+    │ 
+ 19 │ ╭─▶ interface Pet {
+    ┆ ┆   
+ 21 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+Error: interface, union and object types must have a subselection set
+    ╭─[0067_subselection_of_interface.graphql:3:3]
+    │
+  3 │       pet2
+    │       ──┬─  
+    │         ╰─── field `pet2` type `Pet` is an interface and must select fields
+    │ 
+ 19 │ ╭─▶ interface Pet {
+    ┆ ┆   
+ 21 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+Error: interface, union and object types must have a subselection set
+    ╭─[0067_subselection_of_interface.graphql:4:3]
+    │
+  4 │       pet3
+    │       ──┬─  
+    │         ╰─── field `pet3` type `Pet` is an interface and must select fields
+    │ 
+ 19 │ ╭─▶ interface Pet {
+    ┆ ┆   
+ 21 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+Error: interface, union and object types must have a subselection set
+    ╭─[0067_subselection_of_interface.graphql:5:3]
+    │
+  5 │       pet4
+    │       ──┬─  
+    │         ╰─── field `pet4` type `Pet` is an interface and must select fields
+    │ 
+ 19 │ ╭─▶ interface Pet {
+    ┆ ┆   
+ 21 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+Error: interface, union and object types must have a subselection set
+    ╭─[0067_subselection_of_interface.graphql:6:3]
+    │
+  6 │       pet5
+    │       ──┬─  
+    │         ╰─── field `pet5` type `Pet` is an interface and must select fields
+    │ 
+ 19 │ ╭─▶ interface Pet {
+    ┆ ┆   
+ 21 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+Error: interface, union and object types must have a subselection set
+    ╭─[0067_subselection_of_interface.graphql:7:3]
+    │
+  7 │       pet6
+    │       ──┬─  
+    │         ╰─── field `pet6` type `Pet` is an interface and must select fields
+    │ 
+ 19 │ ╭─▶ interface Pet {
+    ┆ ┆   
+ 21 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Pet` declared here
+────╯
+

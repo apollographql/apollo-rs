@@ -1,182 +1,90 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            54: "0054_argument_not_provided.graphql",
-        },
-        location: 281..+12 @54,
-        labels: [
-            Label {
-                location: 281..+12 @54,
-                text: "missing value for argument `req1`",
-            },
-            Label {
-                location: 38..+10 @54,
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            name: "req1",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            54: "0054_argument_not_provided.graphql",
-        },
-        location: 281..+12 @54,
-        labels: [
-            Label {
-                location: 281..+12 @54,
-                text: "missing value for argument `req2`",
-            },
-            Label {
-                location: 50..+10 @54,
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            name: "req2",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            54: "0054_argument_not_provided.graphql",
-        },
-        location: 332..+33 @54,
-        labels: [
-            Label {
-                location: 332..+33 @54,
-                text: "missing value for argument `req1`",
-            },
-            Label {
-                location: 38..+10 @54,
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            name: "req1",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            54: "0054_argument_not_provided.graphql",
-        },
-        location: 401..+5 @54,
-        labels: [
-            Label {
-                location: 401..+5 @54,
-                text: "missing value for argument `if`",
-            },
-            Label {
-                location: 2062..+35 @-1,
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            name: "if",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            54: "0054_argument_not_provided.graphql",
-        },
-        location: 407..+22 @54,
-        labels: [
-            Label {
-                location: 407..+22 @54,
-                text: "missing value for argument `if`",
-            },
-            Label {
-                location: 2262..+36 @-1,
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            name: "if",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            54: "0054_argument_not_provided.graphql",
-        },
-        location: 416..+12 @54,
-        labels: [
-            Label {
-                location: 416..+5 @54,
-                text: "argument by this name not found",
-            },
-            Label {
-                location: 407..+22 @54,
-                text: "directive declared here",
-            },
-        ],
-        help: None,
-        data: UndefinedArgument {
-            name: "wrong",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            54: "0054_argument_not_provided.graphql",
-        },
-        location: 467..+24 @54,
-        labels: [
-            Label {
-                location: 467..+24 @54,
-                text: "missing value for argument `req1`",
-            },
-            Label {
-                location: 38..+10 @54,
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            name: "req1",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            54: "0054_argument_not_provided.graphql",
-        },
-        location: 496..+29 @54,
-        labels: [
-            Label {
-                location: 496..+29 @54,
-                text: "missing value for argument `req2`",
-            },
-            Label {
-                location: 102..+10 @54,
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            name: "req2",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            54: "0054_argument_not_provided.graphql",
-        },
-        location: 530..+47 @54,
-        labels: [
-            Label {
-                location: 530..+47 @54,
-                text: "missing value for argument `req2`",
-            },
-            Label {
-                location: 102..+10 @54,
-                text: "argument defined here",
-            },
-        ],
-        help: None,
-        data: RequiredArgument {
-            name: "req2",
-        },
-    },
-]
+Error: the required argument `req1` is not provided
+    ╭─[0054_argument_not_provided.graphql:14:5]
+    │
+  2 │   multipleReqs(req1: Int!, req2: Int!): String
+    │                ─────┬────  
+    │                     ╰────── argument defined here
+    │ 
+ 14 │     multipleReqs
+    │     ──────┬─────  
+    │           ╰─────── missing value for argument `req1`
+────╯
+Error: the required argument `req2` is not provided
+    ╭─[0054_argument_not_provided.graphql:14:5]
+    │
+  2 │   multipleReqs(req1: Int!, req2: Int!): String
+    │                            ─────┬────  
+    │                                 ╰────── argument defined here
+    │ 
+ 14 │     multipleReqs
+    │     ──────┬─────  
+    │           ╰─────── missing value for argument `req2`
+────╯
+Error: the required argument `req1` is not provided
+    ╭─[0054_argument_not_provided.graphql:17:5]
+    │
+  2 │   multipleReqs(req1: Int!, req2: Int!): String
+    │                ─────┬────  
+    │                     ╰────── argument defined here
+    │ 
+ 17 │     onlyOneArg: multipleReqs(req2: 1)
+    │     ────────────────┬────────────────  
+    │                     ╰────────────────── missing value for argument `req1`
+────╯
+Error: the required argument `if` is not provided
+    ╭─[0054_argument_not_provided.graphql:21:9]
+    │
+ 21 │   basic @skip @include(wrong: false) {
+    │         ──┬──  
+    │           ╰──── missing value for argument `if`
+────╯
+Error: the required argument `if` is not provided
+    ╭─[0054_argument_not_provided.graphql:21:15]
+    │
+ 21 │   basic @skip @include(wrong: false) {
+    │               ───────────┬──────────  
+    │                          ╰──────────── missing value for argument `if`
+────╯
+Error: the argument `wrong` is not supported
+    ╭─[0054_argument_not_provided.graphql:21:24]
+    │
+ 21 │   basic @skip @include(wrong: false) {
+    │               ───────────┬──────────  
+    │                          ╰──────────── argument by this name not found
+    │                          │            
+    │                          ╰──────────── directive declared here
+────╯
+Error: the required argument `req1` is not provided
+    ╭─[0054_argument_not_provided.graphql:26:5]
+    │
+  2 │   multipleReqs(req1: Int!, req2: Int!): String
+    │                ─────┬────  
+    │                     ╰────── argument defined here
+    │ 
+ 26 │     a: multipleReqs(req2: 1)
+    │     ────────────┬───────────  
+    │                 ╰───────────── missing value for argument `req1`
+────╯
+Error: the required argument `req2` is not provided
+    ╭─[0054_argument_not_provided.graphql:27:5]
+    │
+  3 │   multipleOptAndReq(req1: Int!, req2: Int!, opt1: Int = 0, opt2: Int = 0): String
+    │                                 ─────┬────  
+    │                                      ╰────── argument defined here
+    │ 
+ 27 │     b: multipleOptAndReq(req1: 1)
+    │     ──────────────┬──────────────  
+    │                   ╰──────────────── missing value for argument `req2`
+────╯
+Error: the required argument `req2` is not provided
+    ╭─[0054_argument_not_provided.graphql:28:5]
+    │
+  3 │   multipleOptAndReq(req1: Int!, req2: Int!, opt1: Int = 0, opt2: Int = 0): String
+    │                                 ─────┬────  
+    │                                      ╰────── argument defined here
+    │ 
+ 28 │     c: multipleOptAndReq(opt1: 1, opt2: 1, req1: 1)
+    │     ───────────────────────┬───────────────────────  
+    │                            ╰───────────────────────── missing value for argument `req2`
+────╯
+

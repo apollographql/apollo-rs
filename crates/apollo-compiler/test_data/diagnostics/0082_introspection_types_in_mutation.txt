@@ -1,25 +1,18 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            79: "0082_introspection_types_in_mutation.graphql",
-        },
-        location: 202..+99 @79,
-        labels: [
-            Label {
-                location: 202..+99 @79,
-                text: "`__type` field is not defined",
-            },
-            Label {
-                location: 114..+62 @79,
-                text: "`MyMutationRootType` declared here",
-            },
-        ],
-        help: Some(
-            "`__type` is not defined on `MyMutationRootType` type",
-        ),
-        data: UndefinedField {
-            field: "__type",
-            ty: "MyMutationRootType",
-        },
-    },
-]
+Error: cannot query field `__type` on type `MyMutationRootType`
+    ╭─[0082_introspection_types_in_mutation.graphql:15:3]
+    │
+ 10 │   ╭─▶ type MyMutationRootType {
+    ┆   ┆   
+ 12 │   ├─▶ }
+    │   │       
+    │   ╰─────── `MyMutationRootType` declared here
+    │ 
+ 15 │ ╭───▶   __type(name: "User") {
+    ┆ ┆     
+ 23 │ ├───▶   }
+    │ │           
+    │ ╰─────────── `__type` field is not defined
+    │       
+    │       Help: `__type` is not defined on `MyMutationRootType` type
+────╯
+

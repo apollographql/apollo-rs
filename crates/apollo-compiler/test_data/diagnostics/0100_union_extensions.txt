@@ -1,68 +1,32 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            97: "0100_union_extensions.graphql",
-        },
-        location: 239..+13 @97,
-        labels: [
-            Label {
-                location: 239..+13 @97,
-                text: "This is a a scalar",
-            },
-        ],
-        help: Some(
-            "Union members must be of base Object Type.",
-        ),
-        data: ObjectType {
-            name: "ThisIsAScalar",
-            ty: "scalar",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            97: "0100_union_extensions.graphql",
-        },
-        location: 362..+10 @97,
-        labels: [
-            Label {
-                location: 319..+10 @97,
-                text: "previous definition of `WithFieldA` here",
-            },
-            Label {
-                location: 362..+10 @97,
-                text: "`WithFieldA` redefined here",
-            },
-        ],
-        help: Some(
-            "`WithFieldA` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "union member",
-            name: "WithFieldA",
-            original_definition: 319..+10 @97,
-            redefined_definition: 362..+10 @97,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            97: "0100_union_extensions.graphql",
-        },
-        location: 549..+14 @97,
-        labels: [
-            Label {
-                location: 489..+14 @97,
-                text: "directive nonRepeatable first called here",
-            },
-            Label {
-                location: 549..+14 @97,
-                text: "directive nonRepeatable called again here",
-            },
-        ],
-        help: None,
-        data: UniqueDirective {
-            name: "nonRepeatable",
-            original_call: 489..+14 @97,
-            conflicting_call: 549..+14 @97,
-        },
-    },
-]
+Error: `ThisIsAScalar` field must return an object type
+   ╭─[0100_union_extensions.graphql:8:30]
+   │
+ 8 │ extend union NonObjectType = ThisIsAScalar
+   │                              ──────┬──────  
+   │                                    ╰──────── This is a a scalar
+   │ 
+   │ Help: Union members must be of base Object Type.
+───╯
+Error: the union member `WithFieldA` is defined multiple times in the document
+    ╭─[0100_union_extensions.graphql:12:33]
+    │
+ 11 │ union DuplicateMembers = WithFieldA
+    │                          ─────┬────  
+    │                               ╰────── previous definition of `WithFieldA` here
+ 12 │ extend union DuplicateMembers = WithFieldA | WithFieldB
+    │                                 ─────┬────  
+    │                                      ╰────── `WithFieldA` redefined here
+    │ 
+    │ Help: `WithFieldA` must only be defined once in this document.
+────╯
+Error: non-repeatable directive nonRepeatable can only be used once per location
+    ╭─[0100_union_extensions.graphql:17:33]
+    │
+ 16 │ union DuplicateDirective @nonRepeatable = WithFieldA
+    │                          ───────┬──────  
+    │                                 ╰──────── directive nonRepeatable first called here
+ 17 │ extend union DuplicateDirective @nonRepeatable = WithFieldB
+    │                                 ───────┬──────  
+    │                                        ╰──────── directive nonRepeatable called again here
+────╯
+

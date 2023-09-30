@@ -1,27 +1,14 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            32: "0032_duplicate_object_type_definition.graphql",
-        },
-        location: 36..+5 @32,
-        labels: [
-            Label {
-                location: 5..+5 @32,
-                text: "previous definition of `Query` here",
-            },
-            Label {
-                location: 36..+5 @32,
-                text: "`Query` redefined here",
-            },
-        ],
-        help: Some(
-            "`Query` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "type",
-            name: "Query",
-            original_definition: 5..+5 @32,
-            redefined_definition: 36..+5 @32,
-        },
-    },
-]
+Error: the type `Query` is defined multiple times in the document
+   ╭─[0032_duplicate_object_type_definition.graphql:5:6]
+   │
+ 1 │ type Query {
+   │      ──┬──  
+   │        ╰──── previous definition of `Query` here
+   │ 
+ 5 │ type Query {
+   │      ──┬──  
+   │        ╰──── `Query` redefined here
+   │ 
+   │ Help: `Query` must only be defined once in this document.
+───╯
+

@@ -1,110 +1,67 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: 28..+13 @66,
-        labels: [
-            Label {
-                location: 28..+13 @66,
-                text: "field `url1` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: 232..+67 @66,
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: 44..+13 @66,
-        labels: [
-            Label {
-                location: 44..+13 @66,
-                text: "field `url2` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: 232..+67 @66,
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: 60..+13 @66,
-        labels: [
-            Label {
-                location: 60..+13 @66,
-                text: "field `url3` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: 232..+67 @66,
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: 76..+13 @66,
-        labels: [
-            Label {
-                location: 76..+13 @66,
-                text: "field `url4` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: 232..+67 @66,
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: 92..+13 @66,
-        labels: [
-            Label {
-                location: 92..+13 @66,
-                text: "field `url5` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: 232..+67 @66,
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-    ApolloDiagnostic {
-        cache: {
-            66: "0066_subselection_of_scalar.graphql",
-        },
-        location: 108..+13 @66,
-        labels: [
-            Label {
-                location: 108..+13 @66,
-                text: "field `url6` of type `URL` is a scalar and cannot select any fields",
-            },
-            Label {
-                location: 232..+67 @66,
-                text: "`URL` declared here",
-            },
-        ],
-        help: None,
-        data: DisallowedSubselection,
-    },
-]
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0066_subselection_of_scalar.graphql:2:3]
+    │
+  2 │   url1 { name }
+    │   ──────┬──────  
+    │         ╰──────── field `url1` of type `URL` is a scalar and cannot select any fields
+    │ 
+ 19 │ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+    │ ─────────────────────────────────┬─────────────────────────────────  
+    │                                  ╰─────────────────────────────────── `URL` declared here
+────╯
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0066_subselection_of_scalar.graphql:3:3]
+    │
+  3 │   url2 { name }
+    │   ──────┬──────  
+    │         ╰──────── field `url2` of type `URL` is a scalar and cannot select any fields
+    │ 
+ 19 │ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+    │ ─────────────────────────────────┬─────────────────────────────────  
+    │                                  ╰─────────────────────────────────── `URL` declared here
+────╯
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0066_subselection_of_scalar.graphql:4:3]
+    │
+  4 │   url3 { name }
+    │   ──────┬──────  
+    │         ╰──────── field `url3` of type `URL` is a scalar and cannot select any fields
+    │ 
+ 19 │ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+    │ ─────────────────────────────────┬─────────────────────────────────  
+    │                                  ╰─────────────────────────────────── `URL` declared here
+────╯
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0066_subselection_of_scalar.graphql:5:3]
+    │
+  5 │   url4 { name }
+    │   ──────┬──────  
+    │         ╰──────── field `url4` of type `URL` is a scalar and cannot select any fields
+    │ 
+ 19 │ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+    │ ─────────────────────────────────┬─────────────────────────────────  
+    │                                  ╰─────────────────────────────────── `URL` declared here
+────╯
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0066_subselection_of_scalar.graphql:6:3]
+    │
+  6 │   url5 { name }
+    │   ──────┬──────  
+    │         ╰──────── field `url5` of type `URL` is a scalar and cannot select any fields
+    │ 
+ 19 │ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+    │ ─────────────────────────────────┬─────────────────────────────────  
+    │                                  ╰─────────────────────────────────── `URL` declared here
+────╯
+Error: subselection set for scalar and enum types must be empty
+    ╭─[0066_subselection_of_scalar.graphql:7:3]
+    │
+  7 │   url6 { name }
+    │   ──────┬──────  
+    │         ╰──────── field `url6` of type `URL` is a scalar and cannot select any fields
+    │ 
+ 19 │ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+    │ ─────────────────────────────────┬─────────────────────────────────  
+    │                                  ╰─────────────────────────────────── `URL` declared here
+────╯
+

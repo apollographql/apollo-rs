@@ -1,25 +1,18 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            80: "0083_type_introspection_from_disallowed_type.graphql",
-        },
-        location: 46..+115 @80,
-        labels: [
-            Label {
-                location: 46..+115 @80,
-                text: "`__type` field is not defined",
-            },
-            Label {
-                location: 256..+177 @80,
-                text: "`Product` declared here",
-            },
-        ],
-        help: Some(
-            "`__type` is not defined on `Product` type",
-        ),
-        data: UndefinedField {
-            field: "__type",
-            ty: "Product",
-        },
-    },
-]
+Error: cannot query field `__type` on type `Product`
+    ╭─[0083_type_introspection_from_disallowed_type.graphql:4:5]
+    │
+  4 │   ╭─▶     __type(name: "User") {
+    ┆   ┆   
+ 12 │   ├─▶     }
+    │   │           
+    │   ╰─────────── `__type` field is not defined
+    │ 
+ 24 │ ╭───▶ type Product {
+    ┆ ┆     
+ 31 │ ├───▶ }
+    │ │         
+    │ ╰───────── `Product` declared here
+    │       
+    │       Help: `__type` is not defined on `Product` type
+────╯
+

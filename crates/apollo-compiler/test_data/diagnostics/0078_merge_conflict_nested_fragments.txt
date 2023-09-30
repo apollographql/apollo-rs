@@ -1,50 +1,27 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            75: "0078_merge_conflict_nested_fragments.graphql",
-        },
-        location: 206..+4 @75,
-        labels: [
-            Label {
-                location: 179..+4 @75,
-                text: "field `y` is selected from field `c` here",
-            },
-            Label {
-                location: 206..+4 @75,
-                text: "but the same field `y` is also selected from field `d` here",
-            },
-        ],
-        help: Some(
-            "Alias is already used for a different field",
-        ),
-        data: ConflictingField {
-            field: "d",
-            original_selection: 179..+4 @75,
-            redefined_selection: 206..+4 @75,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            75: "0078_merge_conflict_nested_fragments.graphql",
-        },
-        location: 240..+4 @75,
-        labels: [
-            Label {
-                location: 145..+4 @75,
-                text: "field `x` is selected from field `a` here",
-            },
-            Label {
-                location: 240..+4 @75,
-                text: "but the same field `x` is also selected from field `b` here",
-            },
-        ],
-        help: Some(
-            "Alias is already used for a different field",
-        ),
-        data: ConflictingField {
-            field: "b",
-            original_selection: 145..+4 @75,
-            redefined_selection: 240..+4 @75,
-        },
-    },
-]
+Error: operation must not select different types using the same field name `d`
+    ╭─[0078_merge_conflict_nested_fragments.graphql:28:3]
+    │
+ 25 │   y: c
+    │   ──┬─  
+    │     ╰─── field `y` is selected from field `c` here
+    │ 
+ 28 │   y: d
+    │   ──┬─  
+    │     ╰─── but the same field `y` is also selected from field `d` here
+    │ 
+    │ Help: Alias is already used for a different field
+────╯
+Error: operation must not select different types using the same field name `b`
+    ╭─[0078_merge_conflict_nested_fragments.graphql:32:3]
+    │
+ 21 │   x: a
+    │   ──┬─  
+    │     ╰─── field `x` is selected from field `a` here
+    │ 
+ 32 │   x: b
+    │   ──┬─  
+    │     ╰─── but the same field `x` is also selected from field `b` here
+    │ 
+    │ Help: Alias is already used for a different field
+────╯
+

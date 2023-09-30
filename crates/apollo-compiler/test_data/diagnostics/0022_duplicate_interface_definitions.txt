@@ -1,27 +1,14 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            22: "0022_duplicate_interface_definitions.graphql",
-        },
-        location: 106..+11 @22,
-        labels: [
-            Label {
-                location: 64..+11 @22,
-                text: "previous definition of `NamedEntity` here",
-            },
-            Label {
-                location: 106..+11 @22,
-                text: "`NamedEntity` redefined here",
-            },
-        ],
-        help: Some(
-            "`NamedEntity` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "type",
-            name: "NamedEntity",
-            original_definition: 64..+11 @22,
-            redefined_definition: 106..+11 @22,
-        },
-    },
-]
+Error: the type `NamedEntity` is defined multiple times in the document
+   ╭─[0022_duplicate_interface_definitions.graphql:9:11]
+   │
+ 5 │ interface NamedEntity {
+   │           ─────┬─────  
+   │                ╰─────── previous definition of `NamedEntity` here
+   │ 
+ 9 │ interface NamedEntity {
+   │           ─────┬─────  
+   │                ╰─────── `NamedEntity` redefined here
+   │ 
+   │ Help: `NamedEntity` must only be defined once in this document.
+───╯
+

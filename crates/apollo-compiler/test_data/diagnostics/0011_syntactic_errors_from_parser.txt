@@ -1,18 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            11: "0011_syntactic_errors_from_parser.graphql",
-        },
-        location: 15..+1 @11,
-        labels: [
-            Label {
-                location: 15..+1 @11,
-                text: "expected at least one Selection in Selection Set",
-            },
-        ],
-        help: None,
-        data: SyntaxError {
-            message: "expected at least one Selection in Selection Set",
-        },
-    },
-]
+Error: syntax error: expected at least one Selection in Selection Set
+   ╭─[0011_syntactic_errors_from_parser.graphql:1:16]
+   │
+ 1 │ query getName {}
+   │                ┬  
+   │                ╰── expected at least one Selection in Selection Set
+───╯
+

@@ -1,18 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            51: "0051_subscription_operation_with_root_introspection_field.graphql",
-        },
-        location: 21..+10 @51,
-        labels: [
-            Label {
-                location: 21..+10 @51,
-                text: "__typename is an introspection field",
-            },
-        ],
-        help: None,
-        data: IntrospectionField {
-            field: "__typename",
-        },
-    },
-]
+Error: subscription operations can not have an introspection field as a root field
+   ╭─[0051_subscription_operation_with_root_introspection_field.graphql:2:3]
+   │
+ 2 │   __typename
+   │   ─────┬────  
+   │        ╰────── __typename is an introspection field
+───╯
+

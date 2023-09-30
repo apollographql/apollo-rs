@@ -1,25 +1,16 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            42: "0042_mutation_operation_with_undefined_fields.graphql",
-        },
-        location: 31..+22 @42,
-        labels: [
-            Label {
-                location: 31..+22 @42,
-                text: "`undefinedMutationField` field is not defined",
-            },
-            Label {
-                location: 100..+69 @42,
-                text: "`Mutation` declared here",
-            },
-        ],
-        help: Some(
-            "`undefinedMutationField` is not defined on `Mutation` type",
-        ),
-        data: UndefinedField {
-            field: "undefinedMutationField",
-            ty: "Mutation",
-        },
-    },
-]
+Error: cannot query field `undefinedMutationField` on type `Mutation`
+    ╭─[0042_mutation_operation_with_undefined_fields.graphql:2:3]
+    │
+  2 │       undefinedMutationField
+    │       ───────────┬──────────  
+    │                  ╰──────────── `undefinedMutationField` field is not defined
+    │ 
+ 10 │ ╭─▶ type Mutation {
+    ┆ ┆   
+ 12 │ ├─▶ }
+    │ │       
+    │ ╰─────── `Mutation` declared here
+    │     
+    │     Help: `undefinedMutationField` is not defined on `Mutation` type
+────╯
+

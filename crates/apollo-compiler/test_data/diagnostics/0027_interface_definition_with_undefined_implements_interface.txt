@@ -1,18 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            27: "0027_interface_definition_with_undefined_implements_interface.graphql",
-        },
-        location: 144..+3 @27,
-        labels: [
-            Label {
-                location: 144..+3 @27,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "Url",
-        },
-    },
-]
+Error: cannot find type `Url` in this document
+    ╭─[0027_interface_definition_with_undefined_implements_interface.graphql:11:39]
+    │
+ 11 │ interface Image implements Resource & Url {
+    │                                       ─┬─  
+    │                                        ╰─── not found in this scope
+────╯
+

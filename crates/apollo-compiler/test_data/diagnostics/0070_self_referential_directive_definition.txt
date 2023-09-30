@@ -1,122 +1,62 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: 100..+77 @70,
-        labels: [
-            Label {
-                location: 100..+25 @70,
-                text: "recursive directive definition",
-            },
-            Label {
-                location: 138..+15 @70,
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "invalidExample",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: 290..+88 @70,
-        labels: [
-            Label {
-                location: 290..+25 @70,
-                text: "recursive directive definition",
-            },
-            Label {
-                location: 235..+54 @70,
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "deprecatedType",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: 380..+60 @70,
-        labels: [
-            Label {
-                location: 380..+16 @70,
-                text: "recursive directive definition",
-            },
-            Label {
-                location: 532..+6 @70,
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "loopA",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: 441..+60 @70,
-        labels: [
-            Label {
-                location: 441..+16 @70,
-                text: "recursive directive definition",
-            },
-            Label {
-                location: 410..+6 @70,
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "loopB",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: 502..+60 @70,
-        labels: [
-            Label {
-                location: 502..+16 @70,
-                text: "recursive directive definition",
-            },
-            Label {
-                location: 471..+6 @70,
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "loopC",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            70: "0070_self_referential_directive_definition.graphql",
-        },
-        location: 705..+75 @70,
-        labels: [
-            Label {
-                location: 705..+16 @70,
-                text: "recursive directive definition",
-            },
-            Label {
-                location: 621..+6 @70,
-                text: "refers to itself here",
-            },
-        ],
-        help: None,
-        data: RecursiveDirectiveDefinition {
-            name: "wrong",
-        },
-    },
-]
+Error: `invalidExample` directive definition cannot reference itself
+   ╭─[0070_self_referential_directive_definition.graphql:7:1]
+   │
+ 7 │ directive @invalidExample(arg: String @invalidExample) on ARGUMENT_DEFINITION
+   │ ────────────┬────────────             ───────┬───────  
+   │             ╰────────────────────────────────────────── recursive directive definition
+   │                                              │         
+   │                                              ╰───────── refers to itself here
+───╯
+Error: `deprecatedType` directive definition cannot reference itself
+    ╭─[0070_self_referential_directive_definition.graphql:11:1]
+    │
+ 10 │ extend scalar String @deprecatedType(reason: "use OurCustomString instead")
+    │                      ───────────────────────────┬──────────────────────────  
+    │                                                 ╰──────────────────────────── refers to itself here
+ 11 │ directive @deprecatedType(reason: String!) on OBJECT | INTERFACE | ENUM | SCALAR | UNION
+    │ ────────────┬────────────  
+    │             ╰────────────── recursive directive definition
+────╯
+Error: `loopA` directive definition cannot reference itself
+    ╭─[0070_self_referential_directive_definition.graphql:13:1]
+    │
+ 13 │ directive @loopA(arg: Boolean @loopB) on ARGUMENT_DEFINITION
+    │ ────────┬───────  
+    │         ╰───────── recursive directive definition
+    │ 
+ 15 │ directive @loopC(arg: Boolean @loopA) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── refers to itself here
+────╯
+Error: `loopB` directive definition cannot reference itself
+    ╭─[0070_self_referential_directive_definition.graphql:14:1]
+    │
+ 13 │ directive @loopA(arg: Boolean @loopB) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── refers to itself here
+ 14 │ directive @loopB(arg: Boolean @loopC) on ARGUMENT_DEFINITION
+    │ ────────┬───────  
+    │         ╰───────── recursive directive definition
+────╯
+Error: `loopC` directive definition cannot reference itself
+    ╭─[0070_self_referential_directive_definition.graphql:15:1]
+    │
+ 14 │ directive @loopB(arg: Boolean @loopC) on ARGUMENT_DEFINITION
+    │                               ───┬──  
+    │                                  ╰──── refers to itself here
+ 15 │ directive @loopC(arg: Boolean @loopA) on ARGUMENT_DEFINITION
+    │ ────────┬───────  
+    │         ╰───────── recursive directive definition
+────╯
+Error: `wrong` directive definition cannot reference itself
+    ╭─[0070_self_referential_directive_definition.graphql:21:1]
+    │
+ 18 │ extend enum Enum { RECURSIVE @wrong }
+    │                              ───┬──  
+    │                                 ╰──── refers to itself here
+    │ 
+ 21 │ directive @wrong(input: InputObject) on INPUT_FIELD_DEFINITION | ENUM_VALUE
+    │ ────────┬───────  
+    │         ╰───────── recursive directive definition
+────╯
+

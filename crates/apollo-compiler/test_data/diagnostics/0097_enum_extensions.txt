@@ -1,74 +1,38 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            94: "0097_enum_extensions.graphql",
-        },
-        location: 138..+14 @94,
-        labels: [
-            Label {
-                location: 82..+14 @94,
-                text: "directive nonRepeatable first called here",
-            },
-            Label {
-                location: 138..+14 @94,
-                text: "directive nonRepeatable called again here",
-            },
-        ],
-        help: None,
-        data: UniqueDirective {
-            name: "nonRepeatable",
-            original_call: 82..+14 @94,
-            conflicting_call: 138..+14 @94,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            94: "0097_enum_extensions.graphql",
-        },
-        location: 157..+8 @94,
-        labels: [
-            Label {
-                location: 56..+8 @94,
-                text: "previous definition of `MEMBER_2` here",
-            },
-            Label {
-                location: 157..+8 @94,
-                text: "`MEMBER_2` redefined here",
-            },
-        ],
-        help: Some(
-            "MEMBER_2 must only be defined once in this enum.",
-        ),
-        data: UniqueDefinition {
-            ty: "enum value",
-            name: "MEMBER_2",
-            original_definition: 56..+8 @94,
-            redefined_definition: 157..+8 @94,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            94: "0097_enum_extensions.graphql",
-        },
-        location: 168..+8 @94,
-        labels: [
-            Label {
-                location: 112..+8 @94,
-                text: "previous definition of `MEMBER_4` here",
-            },
-            Label {
-                location: 168..+8 @94,
-                text: "`MEMBER_4` redefined here",
-            },
-        ],
-        help: Some(
-            "MEMBER_4 must only be defined once in this enum.",
-        ),
-        data: UniqueDefinition {
-            ty: "enum value",
-            name: "MEMBER_4",
-            original_definition: 112..+8 @94,
-            redefined_definition: 168..+8 @94,
-        },
-    },
-]
+Error: non-repeatable directive nonRepeatable can only be used once per location
+    ╭─[0097_enum_extensions.graphql:13:15]
+    │
+  8 │ extend enum E @nonRepeatable {
+    │               ───────┬──────  
+    │                      ╰──────── directive nonRepeatable first called here
+    │ 
+ 13 │ extend enum E @nonRepeatable {
+    │               ───────┬──────  
+    │                      ╰──────── directive nonRepeatable called again here
+────╯
+Error: the enum value `MEMBER_2` is defined multiple times in the document
+    ╭─[0097_enum_extensions.graphql:14:3]
+    │
+  5 │   MEMBER_2
+    │   ────┬───  
+    │       ╰───── previous definition of `MEMBER_2` here
+    │ 
+ 14 │   MEMBER_2
+    │   ────┬───  
+    │       ╰───── `MEMBER_2` redefined here
+    │ 
+    │ Help: MEMBER_2 must only be defined once in this enum.
+────╯
+Error: the enum value `MEMBER_4` is defined multiple times in the document
+    ╭─[0097_enum_extensions.graphql:15:3]
+    │
+ 10 │   MEMBER_4
+    │   ────┬───  
+    │       ╰───── previous definition of `MEMBER_4` here
+    │ 
+ 15 │   MEMBER_4
+    │   ────┬───  
+    │       ╰───── `MEMBER_4` redefined here
+    │ 
+    │ Help: MEMBER_4 must only be defined once in this enum.
+────╯
+

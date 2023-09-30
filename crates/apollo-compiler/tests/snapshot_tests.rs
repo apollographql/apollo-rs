@@ -16,6 +16,7 @@ use expect_test::expect_file;
 use indexmap::IndexMap;
 use serial_test::serial;
 use std::env;
+use std::fmt::Write;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
@@ -47,11 +48,12 @@ fn validation() {
         compiler.add_document(text, path.file_name().unwrap());
 
         let diagnostics = compiler.validate();
+        let mut formatted = String::new();
         for diagnostic in &diagnostics {
-            println!("{diagnostic}");
+            formatted.push_str(&diagnostic.format_no_color())
         }
         assert_diagnostics_are_present(&diagnostics, path);
-        format!("{diagnostics:#?}")
+        formatted
     });
 }
 

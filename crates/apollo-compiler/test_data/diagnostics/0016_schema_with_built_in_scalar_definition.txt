@@ -1,16 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            16: "0016_schema_with_built_in_scalar_definition.graphql",
-        },
-        location: 37..+3 @16,
-        labels: [
-            Label {
-                location: 37..+3 @16,
-                text: "remove this scalar definition",
-            },
-        ],
-        help: None,
-        data: BuiltInScalarDefinition,
-    },
-]
+Error: built-in scalars must be omitted for brevity
+   ╭─[0016_schema_with_built_in_scalar_definition.graphql:5:8]
+   │
+ 5 │ scalar Int
+   │        ─┬─  
+   │         ╰─── remove this scalar definition
+───╯
+

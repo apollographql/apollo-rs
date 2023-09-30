@@ -1,75 +1,43 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            95: "0098_interface_extensions.graphql",
-        },
-        location: 26..+12 @95,
-        labels: [
-            Label {
-                location: 26..+12 @95,
-                text: "previous definition of `name` here",
-            },
-            Label {
-                location: 74..+12 @95,
-                text: "`name` redefined here",
-            },
-        ],
-        help: Some(
-            "`name` field must only be defined once in this input object definition.",
-        ),
-        data: UniqueField {
-            field: "name",
-            original_definition: 26..+12 @95,
-            redefined_definition: 74..+12 @95,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            95: "0098_interface_extensions.graphql",
-        },
-        location: 209..+14 @95,
-        labels: [
-            Label {
-                location: 150..+14 @95,
-                text: "directive nonRepeatable first called here",
-            },
-            Label {
-                location: 209..+14 @95,
-                text: "directive nonRepeatable called again here",
-            },
-        ],
-        help: None,
-        data: UniqueDirective {
-            name: "nonRepeatable",
-            original_call: 150..+14 @95,
-            conflicting_call: 209..+14 @95,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            95: "0098_interface_extensions.graphql",
-        },
-        location: 271..+30 @95,
-        labels: [
-            Label {
-                location: 338..+4 @95,
-                text: "implementation of interface Base declared here",
-            },
-            Label {
-                location: 253..+6 @95,
-                text: "`b` was originally defined by Base here",
-            },
-            Label {
-                location: 271..+30 @95,
-                text: "add `b` field to this interface",
-            },
-        ],
-        help: Some(
-            "An interface must be a super-set of all interfaces it implements",
-        ),
-        data: MissingInterfaceField {
-            interface: "Base",
-            field: "b",
-        },
-    },
-]
+Error: fields must be unique in a definition
+   ╭─[0098_interface_extensions.graphql:2:3]
+   │
+ 2 │   name: String
+   │   ──────┬─────  
+   │         ╰─────── previous definition of `name` here
+   │ 
+ 5 │   name: String
+   │   ──────┬─────  
+   │         ╰─────── `name` redefined here
+   │ 
+   │ Help: `name` field must only be defined once in this input object definition.
+───╯
+Error: non-repeatable directive nonRepeatable can only be used once per location
+    ╭─[0098_interface_extensions.graphql:14:29]
+    │
+ 10 │ interface Directives @nonRepeatable {
+    │                      ───────┬──────  
+    │                             ╰──────── directive nonRepeatable first called here
+    │ 
+ 14 │ extend interface Directives @nonRepeatable
+    │                             ───────┬──────  
+    │                                    ╰──────── directive nonRepeatable called again here
+────╯
+Error: type does not satisfy interface `Base`: missing field `b`
+    ╭─[0098_interface_extensions.graphql:21:1]
+    │
+ 18 │       b: Int
+    │       ───┬──  
+    │          ╰──── `b` was originally defined by Base here
+    │ 
+ 21 │ ╭─▶ interface Derived {
+    ┆ ┆   
+ 23 │ ├─▶ }
+    │ │       
+    │ ╰─────── add `b` field to this interface
+ 24 │     extend interface Derived implements Base {
+    │                                         ──┬─  
+    │                                           ╰─── implementation of interface Base declared here
+    │     
+    │     Help: An interface must be a super-set of all interfaces it implements
+────╯
+

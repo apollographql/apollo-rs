@@ -1,16 +1,10 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            12: "0012_schema_definition_with_missing_query_operation_type.graphql",
-        },
-        location: 0..+45 @12,
-        labels: [
-            Label {
-                location: 0..+45 @12,
-                text: "`query` root operation type must be defined here",
-            },
-        ],
-        help: None,
-        data: QueryRootOperationType,
-    },
-]
+Error: missing query root operation type in schema definition
+   ╭─[0012_schema_definition_with_missing_query_operation_type.graphql:1:1]
+   │
+ 1 │ ╭─▶ schema {
+   ┆ ┆   
+ 3 │ ├─▶ }
+   │ │       
+   │ ╰─────── `query` root operation type must be defined here
+───╯
+

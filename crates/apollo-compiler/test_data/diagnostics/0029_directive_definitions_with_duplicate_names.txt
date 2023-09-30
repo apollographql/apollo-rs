@@ -1,27 +1,13 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            29: "0029_directive_definitions_with_duplicate_names.graphql",
-        },
-        location: 116..+3 @29,
-        labels: [
-            Label {
-                location: 91..+3 @29,
-                text: "previous definition of `foo` here",
-            },
-            Label {
-                location: 116..+3 @29,
-                text: "`foo` redefined here",
-            },
-        ],
-        help: Some(
-            "`foo` must only be defined once in this document.",
-        ),
-        data: UniqueDefinition {
-            ty: "directive",
-            name: "foo",
-            original_definition: 91..+3 @29,
-            redefined_definition: 116..+3 @29,
-        },
-    },
-]
+Error: the directive `foo` is defined multiple times in the document
+    ╭─[0029_directive_definitions_with_duplicate_names.graphql:11:12]
+    │
+ 10 │ directive @foo on SCHEMA
+    │            ─┬─  
+    │             ╰─── previous definition of `foo` here
+ 11 │ directive @foo on SCHEMA
+    │            ─┬─  
+    │             ╰─── `foo` redefined here
+    │ 
+    │ Help: `foo` must only be defined once in this document.
+────╯
+

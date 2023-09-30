@@ -1,18 +1,8 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            60: "0060_root_operation_definition_undefined_operation_type.graphql",
-        },
-        location: 13..+16 @60,
-        labels: [
-            Label {
-                location: 13..+16 @60,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "SomeQuery",
-        },
-    },
-]
+Error: cannot find type `SomeQuery` in this document
+   ╭─[0060_root_operation_definition_undefined_operation_type.graphql:2:5]
+   │
+ 2 │     query: SomeQuery
+   │     ────────┬───────  
+   │             ╰───────── not found in this scope
+───╯
+

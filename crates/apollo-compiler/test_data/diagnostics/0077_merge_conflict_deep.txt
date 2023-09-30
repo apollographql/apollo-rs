@@ -1,26 +1,14 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            74: "0077_merge_conflict_deep.graphql",
-        },
-        location: 97..+4 @74,
-        labels: [
-            Label {
-                location: 73..+4 @74,
-                text: "field `x` is selected from field `a` here",
-            },
-            Label {
-                location: 97..+4 @74,
-                text: "but the same field `x` is also selected from field `b` here",
-            },
-        ],
-        help: Some(
-            "Alias is already used for a different field",
-        ),
-        data: ConflictingField {
-            field: "b",
-            original_selection: 73..+4 @74,
-            redefined_selection: 97..+4 @74,
-        },
-    },
-]
+Error: operation must not select different types using the same field name `b`
+    ╭─[0077_merge_conflict_deep.graphql:14:5]
+    │
+ 11 │     x: a
+    │     ──┬─  
+    │       ╰─── field `x` is selected from field `a` here
+    │ 
+ 14 │     x: b
+    │     ──┬─  
+    │       ╰─── but the same field `x` is also selected from field `b` here
+    │ 
+    │ Help: Alias is already used for a different field
+────╯
+

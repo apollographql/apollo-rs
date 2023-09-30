@@ -1,131 +1,81 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: 138..+6 @64,
-        labels: [
-            Label {
-                location: 138..+6 @64,
-                text: "This is a a scalar",
-            },
-        ],
-        help: Some(
-            "Union members must be of base Object Type.",
-        ),
-        data: ObjectType {
-            name: "Scalar",
-            ty: "scalar",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: 208..+28 @64,
-        labels: [
-            Label {
-                location: 208..+28 @64,
-                text: "adding an UnionTypeExtension, but `Scalar` is a Scalar",
-            },
-            Label {
-                location: 0..+60 @64,
-                text: "original type defined here",
-            },
-        ],
-        help: None,
-        data: WrongTypeExtension {
-            name: "Scalar",
-            definition: 0..+60 @64,
-            extension: 208..+28 @64,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: 237..+45 @64,
-        labels: [
-            Label {
-                location: 237..+45 @64,
-                text: "adding an InterfaceTypeExtension, but `Object` is an Object",
-            },
-            Label {
-                location: 94..+29 @64,
-                text: "original type defined here",
-            },
-        ],
-        help: None,
-        data: WrongTypeExtension {
-            name: "Object",
-            definition: 94..+29 @64,
-            extension: 237..+45 @64,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: 283..+31 @64,
-        labels: [
-            Label {
-                location: 283..+31 @64,
-                text: "adding an EnumTypeExtension, but `Intf` is an Interface",
-            },
-            Label {
-                location: 61..+32 @64,
-                text: "original type defined here",
-            },
-        ],
-        help: None,
-        data: WrongTypeExtension {
-            name: "Intf",
-            definition: 61..+32 @64,
-            extension: 283..+31 @64,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: 315..+39 @64,
-        labels: [
-            Label {
-                location: 315..+39 @64,
-                text: "adding an ObjectTypeExtension, but `Input` is an InputObject",
-            },
-            Label {
-                location: 154..+29 @64,
-                text: "original type defined here",
-            },
-        ],
-        help: None,
-        data: WrongTypeExtension {
-            name: "Input",
-            definition: 154..+29 @64,
-            extension: 315..+39 @64,
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            64: "0064_extension_wrong_type.graphql",
-        },
-        location: 355..+39 @64,
-        labels: [
-            Label {
-                location: 355..+39 @64,
-                text: "adding an InputObjectTypeExtension, but `Enum` is an Enum",
-            },
-            Label {
-                location: 184..+22 @64,
-                text: "original type defined here",
-            },
-        ],
-        help: None,
-        data: WrongTypeExtension {
-            name: "Enum",
-            definition: 184..+22 @64,
-            extension: 355..+39 @64,
-        },
-    },
-]
+Error: `Scalar` field must return an object type
+   ╭─[0064_extension_wrong_type.graphql:8:15]
+   │
+ 8 │ union Union = Scalar | Object
+   │               ───┬──  
+   │                  ╰──── This is a a scalar
+   │ 
+   │ Help: Union members must be of base Object Type.
+───╯
+Error: type extension for `Scalar` is the wrong kind
+    ╭─[0064_extension_wrong_type.graphql:16:1]
+    │
+  1 │ scalar Scalar @specifiedBy(url: "https://apollographql.com")
+    │ ──────────────────────────────┬─────────────────────────────  
+    │                               ╰─────────────────────────────── original type defined here
+    │ 
+ 16 │ extend union Scalar = String
+    │ ──────────────┬─────────────  
+    │               ╰─────────────── adding an UnionTypeExtension, but `Scalar` is a Scalar
+────╯
+Error: type extension for `Object` is the wrong kind
+    ╭─[0064_extension_wrong_type.graphql:17:1]
+    │
+  5 │   ╭─▶ type Object {
+    ┆   ┆   
+  7 │   ├─▶ }
+    │   │       
+    │   ╰─────── original type defined here
+    │ 
+ 17 │ ╭───▶ extend interface Object {
+    ┆ ┆     
+ 19 │ ├───▶ }
+    │ │         
+    │ ╰───────── adding an InterfaceTypeExtension, but `Object` is an Object
+────╯
+Error: type extension for `Intf` is the wrong kind
+    ╭─[0064_extension_wrong_type.graphql:20:1]
+    │
+  2 │ ╭───▶ interface Intf {
+    ┆ ┆     
+  4 │ ├───▶ }
+    │ │         
+    │ ╰───────── original type defined here
+    │ 
+ 20 │   ╭─▶ extend enum Intf {
+    ┆   ┆   
+ 22 │   ├─▶ }
+    │   │       
+    │   ╰─────── adding an EnumTypeExtension, but `Intf` is an Interface
+────╯
+Error: type extension for `Input` is the wrong kind
+    ╭─[0064_extension_wrong_type.graphql:23:1]
+    │
+  9 │   ╭─▶ input Input {
+    ┆   ┆   
+ 11 │   ├─▶ }
+    │   │       
+    │   ╰─────── original type defined here
+    │ 
+ 23 │ ╭───▶ extend type Input {
+    ┆ ┆     
+ 25 │ ├───▶ }
+    │ │         
+    │ ╰───────── adding an ObjectTypeExtension, but `Input` is an InputObject
+────╯
+Error: type extension for `Enum` is the wrong kind
+    ╭─[0064_extension_wrong_type.graphql:26:1]
+    │
+ 12 │   ╭─▶ enum Enum {
+    ┆   ┆   
+ 14 │   ├─▶ }
+    │   │       
+    │   ╰─────── original type defined here
+    │ 
+ 26 │ ╭───▶ extend input Enum {
+    ┆ ┆     
+ 28 │ ├───▶ }
+    │ │         
+    │ ╰───────── adding an InputObjectTypeExtension, but `Enum` is an Enum
+────╯
+

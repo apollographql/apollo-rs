@@ -1,24 +1,10 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            76: "0079_directive_is_unique.graphql",
-        },
-        location: 172..+7 @76,
-        labels: [
-            Label {
-                location: 164..+7 @76,
-                text: "directive unique first called here",
-            },
-            Label {
-                location: 172..+7 @76,
-                text: "directive unique called again here",
-            },
-        ],
-        help: None,
-        data: UniqueDirective {
-            name: "unique",
-            original_call: 164..+7 @76,
-            conflicting_call: 172..+7 @76,
-        },
-    },
-]
+Error: non-repeatable directive unique can only be used once per location
+    ╭─[0079_directive_is_unique.graphql:11:18]
+    │
+ 11 │   fieldB @unique @unique
+    │          ───┬─── ───┬───  
+    │             ╰───────────── directive unique first called here
+    │                     │     
+    │                     ╰───── directive unique called again here
+────╯
+

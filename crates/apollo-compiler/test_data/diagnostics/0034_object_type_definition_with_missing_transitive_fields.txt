@@ -1,56 +1,35 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
-        },
-        location: 0..+56 @34,
-        labels: [
-            Label {
-                location: 22..+4 @34,
-                text: "implementation of interface Node declared here",
-            },
-            Label {
-                location: 0..+56 @34,
-                text: "add `id` field to this object",
-            },
-            Label {
-                location: 77..+7 @34,
-                text: "`id` was originally defined by Node here",
-            },
-        ],
-        help: Some(
-            "An object must provide all fields required by the interfaces it implements",
-        ),
-        data: MissingInterfaceField {
-            interface: "Node",
-            field: "id",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            34: "0034_object_type_definition_with_missing_transitive_fields.graphql",
-        },
-        location: 0..+56 @34,
-        labels: [
-            Label {
-                location: 29..+8 @34,
-                text: "implementation of interface Resource declared here",
-            },
-            Label {
-                location: 0..+56 @34,
-                text: "add `width` field to this object",
-            },
-            Label {
-                location: 111..+10 @34,
-                text: "`width` was originally defined by Resource here",
-            },
-        ],
-        help: Some(
-            "An object must provide all fields required by the interfaces it implements",
-        ),
-        data: MissingInterfaceField {
-            interface: "Resource",
-            field: "width",
-        },
-    },
-]
+Error: type does not satisfy interface `Node`: missing field `id`
+   ╭─[0034_object_type_definition_with_missing_transitive_fields.graphql:1:1]
+   │
+ 1 │ ╭─▶ type Query implements Node & Resource {
+   │ │                         ──┬─  
+   │ │                           ╰─── implementation of interface Node declared here
+   ┆ ┆   
+ 3 │ ├─▶ }
+   │ │       
+   │ ╰─────── add `id` field to this object
+   │ 
+ 6 │       id: ID!
+   │       ───┬───  
+   │          ╰───── `id` was originally defined by Node here
+   │     
+   │     Help: An object must provide all fields required by the interfaces it implements
+───╯
+Error: type does not satisfy interface `Resource`: missing field `width`
+    ╭─[0034_object_type_definition_with_missing_transitive_fields.graphql:1:1]
+    │
+  1 │ ╭─▶ type Query implements Node & Resource {
+    │ │                                ────┬───  
+    │ │                                    ╰───── implementation of interface Resource declared here
+    ┆ ┆   
+  3 │ ├─▶ }
+    │ │       
+    │ ╰─────── add `width` field to this object
+    │ 
+ 10 │       width: Int
+    │       ─────┬────  
+    │            ╰────── `width` was originally defined by Resource here
+    │     
+    │     Help: An object must provide all fields required by the interfaces it implements
+────╯
+

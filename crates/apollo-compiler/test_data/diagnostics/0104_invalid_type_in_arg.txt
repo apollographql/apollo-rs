@@ -1,91 +1,42 @@
-[
-    ApolloDiagnostic {
-        cache: {
-            101: "0104_invalid_type_in_arg.graphql",
-        },
-        location: 135..+23 @101,
-        labels: [
-            Label {
-                location: 135..+23 @101,
-                text: "this is an object",
-            },
-        ],
-        help: Some(
-            "Scalars, Enums, and Input Objects are input types. Change `thisIsWrong` field to take one of these input types.",
-        ),
-        data: InputType {
-            name: "thisIsWrong",
-            ty: "object",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            101: "0104_invalid_type_in_arg.graphql",
-        },
-        location: 204..+6 @101,
-        labels: [
-            Label {
-                location: 204..+6 @101,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "number",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            101: "0104_invalid_type_in_arg.graphql",
-        },
-        location: 215..+6 @101,
-        labels: [
-            Label {
-                location: 215..+6 @101,
-                text: "not found in this scope",
-            },
-        ],
-        help: None,
-        data: UndefinedDefinition {
-            name: "number",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            101: "0104_invalid_type_in_arg.graphql",
-        },
-        location: 255..+13 @101,
-        labels: [
-            Label {
-                location: 255..+13 @101,
-                text: "this is an object",
-            },
-        ],
-        help: Some(
-            "Scalars, Enums, and Input Objects are input types. Change `a` field to take one of these input types.",
-        ),
-        data: InputType {
-            name: "a",
-            ty: "object",
-        },
-    },
-    ApolloDiagnostic {
-        cache: {
-            101: "0104_invalid_type_in_arg.graphql",
-        },
-        location: 270..+18 @101,
-        labels: [
-            Label {
-                location: 270..+18 @101,
-                text: "this is a union",
-            },
-        ],
-        help: Some(
-            "Scalars, Enums, and Input Objects are input types. Change `b` field to take one of these input types.",
-        ),
-        data: InputType {
-            name: "b",
-            ty: "union",
-        },
-    },
-]
+Error: `thisIsWrong` field must be of an input type
+   ╭─[0104_invalid_type_in_arg.graphql:7:3]
+   │
+ 7 │   thisIsWrong: OutputType
+   │   ───────────┬───────────  
+   │              ╰───────────── this is an object
+   │ 
+   │ Help: Scalars, Enums, and Input Objects are input types. Change `thisIsWrong` field to take one of these input types.
+───╯
+Error: cannot find type `number` in this document
+    ╭─[0104_invalid_type_in_arg.graphql:12:21]
+    │
+ 12 │   undefinedTypes(a: number, b: number): OperationResult!
+    │                     ───┬──  
+    │                        ╰──── not found in this scope
+────╯
+Error: cannot find type `number` in this document
+    ╭─[0104_invalid_type_in_arg.graphql:12:32]
+    │
+ 12 │   undefinedTypes(a: number, b: number): OperationResult!
+    │                                ───┬──  
+    │                                   ╰──── not found in this scope
+────╯
+Error: `a` field must be of an input type
+    ╭─[0104_invalid_type_in_arg.graphql:13:15]
+    │
+ 13 │   outputTypes(a: OutputType, b: OperationResult): ID!
+    │               ──────┬──────  
+    │                     ╰──────── this is an object
+    │ 
+    │ Help: Scalars, Enums, and Input Objects are input types. Change `a` field to take one of these input types.
+────╯
+Error: `b` field must be of an input type
+    ╭─[0104_invalid_type_in_arg.graphql:13:30]
+    │
+ 13 │   outputTypes(a: OutputType, b: OperationResult): ID!
+    │                              ─────────┬────────  
+    │                                       ╰────────── this is a union
+    │ 
+    │ Help: Scalars, Enums, and Input Objects are input types. Change `b` field to take one of these input types.
+────╯
+
