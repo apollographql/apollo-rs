@@ -82,6 +82,9 @@ impl SchemaBuilder {
         document: &ast::Document,
         executable_definitions_are_errors: bool,
     ) {
+        if let Some((file_id, source_file)) = document.source.clone() {
+            self.schema.sources.insert(file_id, source_file);
+        }
         for definition in &document.definitions {
             match definition {
                 ast::Definition::SchemaDefinition(def) => {

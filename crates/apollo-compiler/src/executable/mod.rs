@@ -13,11 +13,13 @@ use std::path::Path;
 
 pub(crate) mod from_ast;
 mod serialize;
+mod validation;
 
 pub use crate::ast::{
     Argument, Directive, Directives, Name, NamedType, OperationType, Type, Value,
     VariableDefinition,
 };
+use crate::validation::Diagnostics;
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone, Default)]
@@ -172,6 +174,12 @@ impl ExecutableDocument {
     /// Create a [`Parser`] to use different parser configuration.
     pub fn parse(schema: &Schema, source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
         Parser::new().parse_executable(schema, source_text, path)
+    }
+
+    pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
+        let mut errors = Diagnostics::new(self.source.clone().into_iter().collect());
+        validation::validate_executable_document(&mut errors, schema, self);
+        errors.into_result()
     }
 
     /// Returns an iterator of operations, both anonymous and named

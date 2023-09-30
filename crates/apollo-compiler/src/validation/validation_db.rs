@@ -306,9 +306,6 @@ pub fn ast_named_fragments(
 
 pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-    for file_id in db.source_files() {
-        diagnostics.extend(db.syntax_errors(file_id).iter().cloned());
-    }
 
     diagnostics.extend(db.validate_type_system());
 
