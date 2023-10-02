@@ -34,7 +34,7 @@ fuzz_target!(|input: &str| {
     if ENABLE_SCHEMA || ENABLE_EXECUTABLE {
         let (schema, executable) = doc.to_mixed();
         let schema_serialized = schema.to_string();
-        let executable_serialized = schema.to_string();
+        let executable_serialized = executable.to_string();
 
         let schema2 = Schema::parse(&schema_serialized, "schema_reparsed.graphql");
         if ENABLE_SCHEMA && schema != schema2 {

@@ -37,14 +37,28 @@ Error: the required argument `if` is not provided
  21 │   basic @skip @include(wrong: false) {
     │         ──┬──  
     │           ╰──── missing value for argument `if`
+    │
+    ├─[built_in.graphql:98:3]
+    │
+ 98 │ ╭─▶   "Skipped when true."
+ 99 │ ├─▶   if: Boolean!
+    │ │                    
+    │ ╰──────────────────── argument defined here
 ────╯
 Error: the required argument `if` is not provided
-    ╭─[0054_argument_not_provided.graphql:21:15]
-    │
- 21 │   basic @skip @include(wrong: false) {
-    │               ───────────┬──────────  
-    │                          ╰──────────── missing value for argument `if`
-────╯
+     ╭─[0054_argument_not_provided.graphql:21:15]
+     │
+  21 │   basic @skip @include(wrong: false) {
+     │               ───────────┬──────────  
+     │                          ╰──────────── missing value for argument `if`
+     │
+     ├─[built_in.graphql:104:3]
+     │
+ 104 │ ╭─▶   "Included when true."
+ 105 │ ├─▶   if: Boolean!
+     │ │                    
+     │ ╰──────────────────── argument defined here
+─────╯
 Error: the argument `wrong` is not supported
     ╭─[0054_argument_not_provided.graphql:21:24]
     │

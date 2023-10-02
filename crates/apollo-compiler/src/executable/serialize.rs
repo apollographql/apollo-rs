@@ -9,7 +9,7 @@ impl ExecutableDocument {
         self.to_ast().serialize_impl(state)
     }
 
-    fn to_ast(&self) -> ast::Document {
+    pub(crate) fn to_ast(&self) -> ast::Document {
         let mut doc = ast::Document::new();
         if let Some(operation) = &self.anonymous_operation {
             doc.definitions.push(operation.to_ast(None))
@@ -24,9 +24,9 @@ impl ExecutableDocument {
     }
 }
 
-impl Operation {
+impl Node<Operation> {
     fn to_ast(&self, name: Option<&Name>) -> ast::Definition {
-        ast::Definition::OperationDefinition(Node::new(ast::OperationDefinition {
+        ast::Definition::OperationDefinition(self.same_location(ast::OperationDefinition {
             operation_type: self.operation_type,
             name: name.cloned(),
             variables: self.variables.clone(),
@@ -36,9 +36,9 @@ impl Operation {
     }
 }
 
-impl Fragment {
+impl Node<Fragment> {
     fn to_ast(&self, name: &Name) -> ast::Definition {
-        ast::Definition::FragmentDefinition(Node::new(ast::FragmentDefinition {
+        ast::Definition::FragmentDefinition(self.same_location(ast::FragmentDefinition {
             name: name.clone(),
             type_condition: self.selection_set.ty.clone(),
             directives: self.directives.clone(),
@@ -52,26 +52,26 @@ impl SelectionSet {
         self.selections
             .iter()
             .map(|selection| match selection {
-                Selection::Field(field) => ast::Selection::Field(Node::new(ast::Field {
+                Selection::Field(field) => ast::Selection::Field(field.same_location(ast::Field {
                     alias: field.alias.clone(),
                     name: field.name.clone(),
                     arguments: field.arguments.clone(),
                     directives: field.directives.clone(),
                     selection_set: field.selection_set.to_ast(),
                 })),
-                Selection::FragmentSpread(fragment_spread) => {
-                    ast::Selection::FragmentSpread(Node::new(ast::FragmentSpread {
+                Selection::FragmentSpread(fragment_spread) => ast::Selection::FragmentSpread(
+                    fragment_spread.same_location(ast::FragmentSpread {
                         fragment_name: fragment_spread.fragment_name.clone(),
                         directives: fragment_spread.directives.clone(),
-                    }))
-                }
-                Selection::InlineFragment(inline_fragment) => {
-                    ast::Selection::InlineFragment(Node::new(ast::InlineFragment {
+                    }),
+                ),
+                Selection::InlineFragment(inline_fragment) => ast::Selection::InlineFragment(
+                    inline_fragment.same_location(ast::InlineFragment {
                         type_condition: inline_fragment.type_condition.clone(),
                         directives: inline_fragment.directives.clone(),
                         selection_set: inline_fragment.selection_set.to_ast(),
-                    }))
-                }
+                    }),
+                ),
             })
             .collect()
     }

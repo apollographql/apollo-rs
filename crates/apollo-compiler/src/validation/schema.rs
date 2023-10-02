@@ -57,7 +57,7 @@ pub fn validate_root_operation_definitions(
         let type_def = schema.types.get(name);
         if let Some(type_def) = type_def {
             if !matches!(type_def, schema::ExtendedType::Object(_)) {
-                if let Some(op_loc) = op.location() {
+                if let Some(op_loc) = name.location() {
                     let (particle, kind) = match type_def {
                         schema::ExtendedType::Scalar(_) => ("an", "scalar"),
                         schema::ExtendedType::Union(_) => ("an", "union"),
@@ -80,7 +80,7 @@ pub fn validate_root_operation_definitions(
                     );
                 }
             }
-        } else if let Some(op_loc) = op.location() {
+        } else if let Some(op_loc) = name.location() {
             diagnostics.push(
                 ApolloDiagnostic::new(
                     db,

@@ -44,6 +44,10 @@ impl ExtensionId {
     pub fn location(&self) -> Option<NodeLocation> {
         *self.arc
     }
+
+    pub fn same_location<T>(&self, node: T) -> Node<T> {
+        Node::new_opt_location(node, self.location())
+    }
 }
 
 impl PartialEq for ExtensionId {

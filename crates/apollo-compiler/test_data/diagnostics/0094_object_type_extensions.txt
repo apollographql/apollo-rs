@@ -19,17 +19,6 @@ Error: duplicate definitions for the `name` field of object type `ConflictingNam
     │   ──────┬─────  
     │         ╰─────── `name` redefined here
 ────╯
-Error: object type `UniqueInterfaces` implements interface `Base` more than once
-    ╭─[0094_object_type_extensions.graphql:31:41]
-    │
- 27 │ type UniqueInterfaces implements Base {
-    │                                  ──┬─  
-    │                                    ╰─── previous implementation of `Base` here
-    │ 
- 31 │ extend type UniqueInterfaces implements Base {
-    │                                         ──┬─  
-    │                                           ╰─── `Base` implemented again here
-────╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
     ╭─[0094_object_type_extensions.graphql:20:29]
     │
@@ -40,6 +29,17 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
  20 │ extend type UniqueDirective @nonRepeatable {
     │                             ───────┬──────  
     │                                    ╰──────── directive nonRepeatable called again here
+────╯
+Error: object type `UniqueInterfaces` implements interface `Base` more than once
+    ╭─[0094_object_type_extensions.graphql:31:41]
+    │
+ 27 │ type UniqueInterfaces implements Base {
+    │                                  ──┬─  
+    │                                    ╰─── previous implementation of `Base` here
+    │ 
+ 31 │ extend type UniqueInterfaces implements Base {
+    │                                         ──┬─  
+    │                                           ╰─── `Base` implemented again here
 ────╯
 Error: type does not satisfy interface `ExtendedInterface`: missing field `fail`
     ╭─[0094_object_type_extensions.graphql:38:1]

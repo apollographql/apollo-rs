@@ -7,6 +7,25 @@ Error: field selection of scalar type `Int` must not have subselections
    │ 
    │ Note: path to the field: `query Query → products → price`
 ───╯
+Error: fragments can not be declared on primitive types
+     ╭─[0087_fragment_type_condition_on_composite_types.graphql:7:5]
+     │
+   7 │ ╭─▶     ... on Int {
+     ┆ ┆   
+   9 │ ├─▶     }
+     │ │           
+     │ ╰─────────── fragment declares unsupported type condition `Int`
+     │
+     ├─[built_in.graphql:125:1]
+     │
+ 125 │ ╭─▶ """
+     ┆ ┆   
+ 129 │ ├─▶ scalar Int
+     │ │                
+     │ ╰──────────────── `Int` is defined here
+     │     
+     │     Help: fragments cannot be defined on enums, scalars and input objects
+─────╯
 Error: type `Int` does not have a field `name`
      ╭─[0087_fragment_type_condition_on_composite_types.graphql:8:7]
      │
@@ -22,6 +41,17 @@ Error: type `Int` does not have a field `name`
      │ 
      │ Note: path to the field: `query Query → products → name`
 ─────╯
+Error: fragment `fragOnScalar` must be used in an operation
+    ╭─[0087_fragment_type_condition_on_composite_types.graphql:21:1]
+    │
+ 21 │ ╭─▶ fragment fragOnScalar on Int {
+    ┆ ┆   
+ 23 │ ├─▶ }
+    │ │       
+    │ ╰─────── `fragOnScalar` is defined here
+    │     
+    │     Help: fragment `fragOnScalar` must be used in an operation
+────╯
 Error: type `Int` does not have a field `name`
      ╭─[0087_fragment_type_condition_on_composite_types.graphql:22:3]
      │
@@ -36,6 +66,25 @@ Error: type `Int` does not have a field `name`
      │         ╰─── type `Int` defined here
      │ 
      │ Note: path to the field: `fragment fragOnScalar → name`
+─────╯
+Error: fragments can not be declared on primitive types
+     ╭─[0087_fragment_type_condition_on_composite_types.graphql:26:3]
+     │
+  26 │ ╭─▶   ... on Int {
+     ┆ ┆   
+  28 │ ├─▶   }
+     │ │         
+     │ ╰───────── fragment declares unsupported type condition `Int`
+     │
+     ├─[built_in.graphql:125:1]
+     │
+ 125 │ ╭─▶ """
+     ┆ ┆   
+ 129 │ ├─▶ scalar Int
+     │ │                
+     │ ╰──────────────── `Int` is defined here
+     │     
+     │     Help: fragments cannot be defined on enums, scalars and input objects
 ─────╯
 Error: type `Int` does not have a field `name`
      ╭─[0087_fragment_type_condition_on_composite_types.graphql:27:5]
@@ -52,50 +101,4 @@ Error: type `Int` does not have a field `name`
      │ 
      │ Note: path to the field: `fragment inlineFragOnScalar → name`
 ─────╯
-Error: fragment cannot be applied to this type
-    ╭─[0087_fragment_type_condition_on_composite_types.graphql:5:13]
-    │
-  5 │         price { ...fragOnScalar }
-    │                 ───────┬───────  
-    │                        ╰───────── fragment `fragOnScalar` cannot be applied
-    │ 
- 21 │ ╭─▶ fragment fragOnScalar on Int {
-    ┆ ┆   
- 23 │ ├─▶ }
-    │ │       
-    │ ╰─────── fragment declared with type condition `Int` here
-────╯
-Error: fragments can not be declared on primitive types
-   ╭─[0087_fragment_type_condition_on_composite_types.graphql:7:5]
-   │
- 7 │ ╭─▶     ... on Int {
-   ┆ ┆   
- 9 │ ├─▶     }
-   │ │           
-   │ ╰─────────── fragment declares unsupported type condition `Int`
-   │     
-   │     Help: fragments cannot be defined on enums, scalars and input objects
-───╯
-Error: fragments can not be declared on primitive types
-    ╭─[0087_fragment_type_condition_on_composite_types.graphql:21:1]
-    │
- 21 │ ╭─▶ fragment fragOnScalar on Int {
-    ┆ ┆   
- 23 │ ├─▶ }
-    │ │       
-    │ ╰─────── fragment declares unsupported type condition `Int`
-    │     
-    │     Help: fragments cannot be defined on enums, scalars and input objects
-────╯
-Error: fragments can not be declared on primitive types
-    ╭─[0087_fragment_type_condition_on_composite_types.graphql:26:3]
-    │
- 26 │ ╭─▶   ... on Int {
-    ┆ ┆   
- 28 │ ├─▶   }
-    │ │         
-    │ ╰───────── fragment declares unsupported type condition `Int`
-    │     
-    │     Help: fragments cannot be defined on enums, scalars and input objects
-────╯
 

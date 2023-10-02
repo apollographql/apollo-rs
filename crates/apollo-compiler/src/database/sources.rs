@@ -12,6 +12,7 @@ pub enum SourceType {
     Executable,
     Document,
     BuiltIn,
+    TextOnly,
 }
 
 impl SourceType {
@@ -51,9 +52,10 @@ impl SourceType {
 /// Represents a GraphQL source file.
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Source {
-    ty: SourceType,
+    pub(crate) ty: SourceType,
     pub(crate) filename: PathBuf,
-    text: Arc<String>,
+    pub(crate) text: Arc<String>,
+    pub(crate) ast: Option<Arc<crate::ast::Document>>,
 }
 
 impl Source {
@@ -63,6 +65,7 @@ impl Source {
             ty: SourceType::Schema,
             filename,
             text: Arc::new(text.into()),
+            ast: None,
         }
     }
 
@@ -72,6 +75,7 @@ impl Source {
             ty: SourceType::Executable,
             filename,
             text: Arc::new(text.into()),
+            ast: None,
         }
     }
 
@@ -84,6 +88,7 @@ impl Source {
             ty: SourceType::Document,
             filename,
             text: Arc::new(text.into()),
+            ast: None,
         }
     }
 
@@ -96,6 +101,7 @@ impl Source {
             ty: SourceType::BuiltIn,
             filename,
             text: Arc::new(text.into()),
+            ast: None,
         }
     }
 
@@ -109,6 +115,17 @@ impl Source {
 
     pub fn text(&self) -> &Arc<String> {
         &self.text
+    }
+}
+
+impl From<&'_ crate::Arc<crate::SourceFile>> for Source {
+    fn from(file: &'_ crate::Arc<crate::SourceFile>) -> Self {
+        Self {
+            ty: crate::database::SourceType::TextOnly,
+            filename: file.path.clone(),
+            text: Arc::new(file.source_text.clone()),
+            ast: None,
+        }
     }
 }
 
@@ -134,6 +151,9 @@ impl FileId {
 
     /// Passed to Ariadne to create a report without a location
     pub(crate) const NONE: Self = Self::const_new(-2);
+
+    pub(crate) const HACK_TMP: Self = Self::const_new(-3);
+    pub(crate) const HACK_TMP_2: Self = Self::const_new(-4);
 
     // Returning a different value every time does not sound like good `impl Default`
     #[allow(clippy::new_without_default)]

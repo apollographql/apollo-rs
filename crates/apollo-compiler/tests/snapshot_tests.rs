@@ -10,7 +10,6 @@
 use apollo_compiler::ast;
 use apollo_compiler::validation::Diagnostics;
 use apollo_compiler::ApolloCompiler;
-use apollo_compiler::ApolloDiagnostic;
 use apollo_compiler::FileId;
 use apollo_compiler::ReprDatabase;
 use expect_test::expect_file;
@@ -41,11 +40,9 @@ fn validation() {
 
         let schema_validation_errors = schema.validate().err();
         let executable_validation_errors = executable.validate(&schema).err();
-        let errors = compiler.validate();
         assert_diagnostics_are_absent(
             &schema_validation_errors,
             &executable_validation_errors,
-            &errors,
             path,
         );
 
@@ -89,14 +86,9 @@ fn validation() {
         if let Some(errors) = &executable_validation_errors {
             write!(&mut formatted, "{errors:#}").unwrap()
         }
-        let diagnostics = compiler.validate();
-        for diagnostic in &diagnostics {
-            formatted.push_str(&diagnostic.format_no_color())
-        }
         assert_diagnostics_are_present(
             &schema_validation_errors,
             &executable_validation_errors,
-            &diagnostics,
             path,
         );
         formatted
@@ -106,13 +98,10 @@ fn validation() {
 fn assert_diagnostics_are_present(
     schema_validation_errors: &Option<Diagnostics>,
     executable_validation_errors: &Option<Diagnostics>,
-    errors: &[ApolloDiagnostic],
     path: &Path,
 ) {
     assert!(
-        schema_validation_errors.is_some()
-            || executable_validation_errors.is_some()
-            || !errors.is_empty(),
+        schema_validation_errors.is_some() || executable_validation_errors.is_some(),
         "There should be diagnostics in the file {:?}",
         path.display()
     );
@@ -121,21 +110,14 @@ fn assert_diagnostics_are_present(
 fn assert_diagnostics_are_absent(
     schema_validation_errors: &Option<Diagnostics>,
     executable_validation_errors: &Option<Diagnostics>,
-    diagnostics: &[ApolloDiagnostic],
     path: &Path,
 ) {
-    if schema_validation_errors.is_some()
-        || executable_validation_errors.is_some()
-        || !diagnostics.is_empty()
-    {
+    if schema_validation_errors.is_some() || executable_validation_errors.is_some() {
         if let Some(errors) = schema_validation_errors {
             println!("{errors}")
         }
         if let Some(errors) = executable_validation_errors {
             println!("{errors}")
-        }
-        for diagnostic in diagnostics {
-            println!("{diagnostic}");
         }
         panic!(
             "There should be no diagnostics in the file {:?}",

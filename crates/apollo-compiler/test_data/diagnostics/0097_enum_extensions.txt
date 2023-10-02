@@ -1,3 +1,14 @@
+Error: non-repeatable directive nonRepeatable can only be used once per location
+    ╭─[0097_enum_extensions.graphql:13:15]
+    │
+  8 │ extend enum E @nonRepeatable {
+    │               ───────┬──────  
+    │                      ╰──────── directive nonRepeatable first called here
+    │ 
+ 13 │ extend enum E @nonRepeatable {
+    │               ───────┬──────  
+    │                      ╰──────── directive nonRepeatable called again here
+────╯
 Error: duplicate definitions for the `MEMBER_2` value of enum type `E`
     ╭─[0097_enum_extensions.graphql:14:3]
     │
@@ -19,16 +30,5 @@ Error: duplicate definitions for the `MEMBER_4` value of enum type `E`
  15 │   MEMBER_4
     │   ────┬───  
     │       ╰───── `MEMBER_4` redefined here
-────╯
-Error: non-repeatable directive nonRepeatable can only be used once per location
-    ╭─[0097_enum_extensions.graphql:13:15]
-    │
-  8 │ extend enum E @nonRepeatable {
-    │               ───────┬──────  
-    │                      ╰──────── directive nonRepeatable first called here
-    │ 
- 13 │ extend enum E @nonRepeatable {
-    │               ───────┬──────  
-    │                      ╰──────── directive nonRepeatable called again here
 ────╯
 

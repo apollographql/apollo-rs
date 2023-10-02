@@ -49,6 +49,10 @@ impl<T> Node<T> {
         }))
     }
 
+    pub(crate) fn new_opt_location(node: T, location: Option<NodeLocation>) -> Self {
+        Self(Arc::new(NodeInner { location, node }))
+    }
+
     pub fn location(&self) -> Option<NodeLocation> {
         self.0.location
     }

@@ -84,7 +84,10 @@ fn ast_parse_result(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ParseResult> 
 }
 
 fn ast(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ast::Document> {
-    db._ast_parse_result(file_id).document.clone()
+    db.input(file_id)
+        .ast
+        .clone()
+        .unwrap_or_else(|| db._ast_parse_result(file_id).document.clone())
 }
 
 fn recursion_reached(db: &dyn ReprDatabase, file_id: FileId) -> usize {
