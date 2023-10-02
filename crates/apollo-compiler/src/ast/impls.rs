@@ -157,7 +157,7 @@ impl Definition {
         )
     }
 
-    pub fn kind(&self) -> &'static str {
+    pub(crate) fn kind(&self) -> &'static str {
         match self {
             Self::OperationDefinition(_) => "OperationDefinition",
             Self::FragmentDefinition(_) => "FragmentDefinition",
@@ -176,6 +176,28 @@ impl Definition {
             Self::UnionTypeExtension(_) => "UnionTypeExtension",
             Self::EnumTypeExtension(_) => "EnumTypeExtension",
             Self::InputObjectTypeExtension(_) => "InputObjectTypeExtension",
+        }
+    }
+
+    pub(crate) fn describe(&self) -> &'static str {
+        match self {
+            Self::OperationDefinition(_) => "an operation definition",
+            Self::FragmentDefinition(_) => "a fragment definition",
+            Self::DirectiveDefinition(_) => "a directive definition",
+            Self::ScalarTypeDefinition(_) => "a scalar type definition",
+            Self::ObjectTypeDefinition(_) => "an object type definition",
+            Self::InterfaceTypeDefinition(_) => "an interface type definition",
+            Self::UnionTypeDefinition(_) => "a union type definition",
+            Self::EnumTypeDefinition(_) => "an enum type definition",
+            Self::InputObjectTypeDefinition(_) => "an input object type definition",
+            Self::SchemaDefinition(_) => "a schema definition",
+            Self::SchemaExtension(_) => "a schema extension",
+            Self::ScalarTypeExtension(_) => "a scalar type extension",
+            Self::ObjectTypeExtension(_) => "an object type extension",
+            Self::InterfaceTypeExtension(_) => "an interface type extension",
+            Self::UnionTypeExtension(_) => "a union type extension",
+            Self::EnumTypeExtension(_) => "an enum type extension",
+            Self::InputObjectTypeExtension(_) => "an input object type extension",
         }
     }
 

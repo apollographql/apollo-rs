@@ -20,6 +20,7 @@ pub use crate::ast::{
     VariableDefinition,
 };
 use crate::validation::Diagnostics;
+use crate::NodeLocation;
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone, Default)]
@@ -32,7 +33,7 @@ pub struct ExecutableDocument {
 
     /// Errors that occurred when building this document,
     /// either parsing a source file or converting from AST.
-    pub build_errors: Vec<BuildError>,
+    build_errors: Vec<BuildError>,
 
     pub anonymous_operation: Option<Node<Operation>>,
     pub named_operations: IndexMap<Name, Node<Operation>>,
@@ -96,28 +97,34 @@ pub struct InlineFragment {
 }
 
 /// AST node that has been skipped during conversion to `ExecutableDocument`
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BuildError {
-    /// Found a type system definition, which is unexpected when building an executable document.
-    ///
-    /// If this is intended, use `parse_mixed`.
-    UnexpectedTypeSystemDefinition(ast::Definition),
+#[derive(thiserror::Error, Debug, Clone)]
+pub(crate) enum BuildError {
+    #[error("an executable document must not contain {describe}")]
+    TypeSystemDefinition {
+        location: Option<NodeLocation>,
+        describe: &'static str,
+    },
 
     /// Found multiple operations without a name
+    #[error("TODO")]
     DuplicateAnonymousOperation(Node<ast::OperationDefinition>),
 
     /// Found multiple operations with the same name
+    #[error("TODO")]
     OperationNameCollision(Node<ast::OperationDefinition>),
 
     /// Found multiple fragments with the same name
+    #[error("TODO")]
     FragmentNameCollision(Node<ast::FragmentDefinition>),
 
     /// The schema does not define a root operation
     /// for the operation type of this operation definition
+    #[error("TODO")]
     UndefinedRootOperation(Node<ast::OperationDefinition>),
 
     /// Could not resolve the type of this field because the schema does not define
     /// the type of its parent selection set
+    #[error("TODO")]
     UndefinedType {
         /// Which top-level executable definition contains this error
         top_level: ExecutableDefinitionName,
@@ -129,6 +136,7 @@ pub enum BuildError {
     },
 
     /// Could not resolve the type of this field because the schema does not define it
+    #[error("TODO")]
     UndefinedField {
         /// Which top-level executable definition contains this error
         top_level: ExecutableDefinitionName,

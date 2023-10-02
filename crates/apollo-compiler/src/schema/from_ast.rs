@@ -280,9 +280,10 @@ impl SchemaBuilder {
                     if executable_definitions_are_errors {
                         self.schema
                             .build_errors
-                            .push(BuildError::UnexpectedExecutableDefinition(
-                                definition.clone(),
-                            ))
+                            .push(BuildError::ExecutableDefinition {
+                                location: definition.location(),
+                                describe: definition.describe(),
+                            })
                     }
                 }
             }
