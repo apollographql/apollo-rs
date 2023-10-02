@@ -1,3 +1,12 @@
+Error: `ThisIsAScalar` field must return an object type
+   ╭─[0100_union_extensions.graphql:8:30]
+   │
+ 8 │ extend union NonObjectType = ThisIsAScalar
+   │                              ──────┬──────  
+   │                                    ╰──────── This is a a scalar
+   │ 
+   │ Help: Union members must be of base Object Type.
+───╯
 Error: duplicate definitions for the `WithFieldA` member of union type `DuplicateMembers`
     ╭─[0100_union_extensions.graphql:12:33]
     │
@@ -8,15 +17,6 @@ Error: duplicate definitions for the `WithFieldA` member of union type `Duplicat
     │                                 ─────┬────  
     │                                      ╰────── `WithFieldA` redefined here
 ────╯
-Error: `ThisIsAScalar` field must return an object type
-   ╭─[0100_union_extensions.graphql:8:30]
-   │
- 8 │ extend union NonObjectType = ThisIsAScalar
-   │                              ──────┬──────  
-   │                                    ╰──────── This is a a scalar
-   │ 
-   │ Help: Union members must be of base Object Type.
-───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
     ╭─[0100_union_extensions.graphql:17:33]
     │

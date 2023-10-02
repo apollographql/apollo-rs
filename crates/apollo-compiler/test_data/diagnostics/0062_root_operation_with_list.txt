@@ -1,3 +1,11 @@
+Error: missing query root operation type in schema definition
+   ╭─[0062_root_operation_with_list.graphql:1:1]
+   │
+ 1 │ ╭─▶ schema {
+ 2 │ ├─▶   query: [Object]
+   │ │                       
+   │ ╰─────────────────────── `query` root operation type must be defined here
+───╯
 Error: syntax error: expected R_CURLY, got [
    ╭─[0062_root_operation_with_list.graphql:2:10]
    │
@@ -32,13 +40,5 @@ Error: syntax error: expected a StringValue, Name or OperationDefinition
  3 │ }
    │ ┬  
    │ ╰── expected a StringValue, Name or OperationDefinition
-───╯
-Error: missing query root operation type in schema definition
-   ╭─[0062_root_operation_with_list.graphql:1:1]
-   │
- 1 │ ╭─▶ schema {
- 2 │ ├─▶   query: [Object]
-   │ │                       
-   │ ╰─────────────────────── `query` root operation type must be defined here
 ───╯
 

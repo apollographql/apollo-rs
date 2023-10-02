@@ -61,10 +61,17 @@ pub(crate) enum Details {
     SchemaBuildError(SchemaBuildError),
     #[error("{0}")]
     ExecutableBuildError(ExecutableBuildError),
+    #[error("syntax error: {0}")]
+    CompilerDiagnostic(crate::ApolloDiagnostic),
 }
 
 impl Error {
     fn report(&self, color: bool) -> ariadne::Report<'static, NodeLocation> {
+        let config = ariadne::Config::default().with_color(color);
+        if let Details::CompilerDiagnostic(diagnostic) = &self.details {
+            return diagnostic.to_report(config);
+        }
+
         let (id, offset) = if let Some(location) = self.location {
             (location.file_id(), location.offset())
         } else {
@@ -72,7 +79,7 @@ impl Error {
         };
 
         let mut report = ariadne::Report::build::<FileId>(ariadne::ReportKind::Error, id, offset)
-            .with_config(ariadne::Config::default().with_color(color));
+            .with_config(config);
         let mut colors = ariadne::ColorGenerator::new();
         macro_rules! opt_label {
             ($location: expr, $message: literal $(, $args: expr )* $(,)?) => {
@@ -96,6 +103,7 @@ impl Error {
         // Labels are always optional because locations are always optional,
         // so essential information should be in the main message.
         match &self.details {
+            Details::CompilerDiagnostic(_) => unreachable!(),
             Details::ParserLimit { message, .. } => opt_label!("{message}"),
             Details::SyntaxError { message, .. } => opt_label!("{message}"),
             Details::SchemaBuildError(err) => match err {
@@ -321,7 +329,10 @@ impl ariadne::Cache<FileId> for SourceCache {
         match self.cache.entry(*file_id) {
             Entry::Occupied(entry) => Ok(entry.into_mut()),
             Entry::Vacant(entry) => {
-                let source_text = if *file_id == FileId::NONE {
+                let source_text = if *file_id == FileId::NONE
+                    || *file_id == FileId::HACK_TMP
+                    || *file_id == FileId::HACK_TMP_2
+                {
                     ""
                 } else if let Some(file) = self.sources.get(file_id) {
                     file.source_text()

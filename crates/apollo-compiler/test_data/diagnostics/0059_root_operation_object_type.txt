@@ -1,9 +1,9 @@
 Error: `SomeInterface` field must return an object type
-   ╭─[0059_root_operation_object_type.graphql:2:5]
+   ╭─[0059_root_operation_object_type.graphql:2:12]
    │
  2 │     query: SomeInterface
-   │     ──────────┬─────────  
-   │               ╰─────────── This is an interface
+   │            ──────┬──────  
+   │                  ╰──────── This is an interface
    │ 
    │ Help: root operation type must be an object type
 ───╯

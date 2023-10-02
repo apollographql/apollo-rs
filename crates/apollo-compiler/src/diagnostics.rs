@@ -65,11 +65,7 @@ impl ApolloDiagnostic {
 
 impl fmt::Display for ApolloDiagnostic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut buf = std::io::Cursor::new(Vec::<u8>::new());
-        self.to_report(ariadne::Config::default())
-            .write(self.cache.as_ref(), &mut buf)
-            .unwrap();
-        writeln!(f, "{}", std::str::from_utf8(&buf.into_inner()).unwrap())
+        self.data.fmt(f)
     }
 }
 

@@ -13,7 +13,7 @@ impl Schema {
 }
 
 impl Schema {
-    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
+    pub(crate) fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         self.root_operations
             .as_ref()
             .into_iter()
@@ -24,16 +24,18 @@ impl Schema {
                     .filter(|def| !def.is_built_in())
                     .map(|def| ast::Definition::DirectiveDefinition(def.clone())),
             )
-            .chain(
-                self.types
-                    .iter()
-                    .filter(|(_name, def)| !def.is_built_in())
-                    .flat_map(|(name, def)| def.to_ast(name)),
-            )
+            .chain(self.types.iter().flat_map(|(name, def)| {
+                let mut iter = def.to_ast(name);
+                // skip the definition of built-in scalars but keep extensions if any
+                if def.is_built_in() {
+                    iter.next();
+                }
+                iter
+            }))
     }
 }
 
-impl RootOperations {
+impl Node<RootOperations> {
     fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {
             let root_op = |op: &Option<ComponentStr>, ty| {
@@ -47,7 +49,7 @@ impl RootOperations {
                 .chain(root_op(&self.subscription, OperationType::Subscription))
                 .collect()
         };
-        std::iter::once(ast::Definition::SchemaDefinition(Node::new(
+        std::iter::once(ast::Definition::SchemaDefinition(self.same_location(
             ast::SchemaDefinition {
                 description: self.description.clone(),
                 directives: ast::Directives(components(&self.directives, None)),
@@ -55,7 +57,7 @@ impl RootOperations {
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::SchemaExtension(Node::new(ast::SchemaExtension {
+            ast::Definition::SchemaExtension(ext.same_location(ast::SchemaExtension {
                 directives: ast::Directives(components(&self.directives, Some(ext))),
                 root_operations: root_ops(Some(ext)),
             }))
@@ -76,9 +78,9 @@ impl ExtendedType {
     }
 }
 
-impl ScalarType {
+impl Node<ScalarType> {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::ScalarTypeDefinition(Node::new(
+        std::iter::once(ast::Definition::ScalarTypeDefinition(self.same_location(
             ast::ScalarTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
@@ -86,7 +88,7 @@ impl ScalarType {
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::ScalarTypeExtension(Node::new(ast::ScalarTypeExtension {
+            ast::Definition::ScalarTypeExtension(ext.same_location(ast::ScalarTypeExtension {
                 name: name.clone(),
                 directives: ast::Directives(components(&self.directives, Some(ext))),
             }))
@@ -94,9 +96,9 @@ impl ScalarType {
     }
 }
 
-impl ObjectType {
+impl Node<ObjectType> {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::ObjectTypeDefinition(Node::new(
+        std::iter::once(ast::Definition::ObjectTypeDefinition(self.same_location(
             ast::ObjectTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
@@ -106,7 +108,7 @@ impl ObjectType {
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::ObjectTypeExtension(Node::new(ast::ObjectTypeExtension {
+            ast::Definition::ObjectTypeExtension(ext.same_location(ast::ObjectTypeExtension {
                 name: name.clone(),
                 implements_interfaces: names(&self.implements_interfaces, Some(ext)),
                 directives: ast::Directives(components(&self.directives, Some(ext))),
@@ -116,31 +118,33 @@ impl ObjectType {
     }
 }
 
-impl InterfaceType {
+impl Node<InterfaceType> {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::InterfaceTypeDefinition(Node::new(
-            ast::InterfaceTypeDefinition {
+        std::iter::once(ast::Definition::InterfaceTypeDefinition(
+            self.same_location(ast::InterfaceTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
                 implements_interfaces: names(&self.implements_interfaces, None),
                 directives: ast::Directives(components(&self.directives, None)),
                 fields: components(self.fields.values(), None),
-            },
-        )))
+            }),
+        ))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::InterfaceTypeExtension(Node::new(ast::InterfaceTypeExtension {
-                name: name.clone(),
-                implements_interfaces: names(&self.implements_interfaces, Some(ext)),
-                directives: ast::Directives(components(&self.directives, Some(ext))),
-                fields: components(self.fields.values(), Some(ext)),
-            }))
+            ast::Definition::InterfaceTypeExtension(ext.same_location(
+                ast::InterfaceTypeExtension {
+                    name: name.clone(),
+                    implements_interfaces: names(&self.implements_interfaces, Some(ext)),
+                    directives: ast::Directives(components(&self.directives, Some(ext))),
+                    fields: components(self.fields.values(), Some(ext)),
+                },
+            ))
         }))
     }
 }
 
-impl UnionType {
+impl Node<UnionType> {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::UnionTypeDefinition(Node::new(
+        std::iter::once(ast::Definition::UnionTypeDefinition(self.same_location(
             ast::UnionTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
@@ -149,7 +153,7 @@ impl UnionType {
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::UnionTypeExtension(Node::new(ast::UnionTypeExtension {
+            ast::Definition::UnionTypeExtension(ext.same_location(ast::UnionTypeExtension {
                 name: name.clone(),
                 directives: ast::Directives(components(&self.directives, Some(ext))),
                 members: names(&self.members, Some(ext)),
@@ -158,9 +162,9 @@ impl UnionType {
     }
 }
 
-impl EnumType {
+impl Node<EnumType> {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::EnumTypeDefinition(Node::new(
+        std::iter::once(ast::Definition::EnumTypeDefinition(self.same_location(
             ast::EnumTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
@@ -169,7 +173,7 @@ impl EnumType {
             },
         )))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::EnumTypeExtension(Node::new(ast::EnumTypeExtension {
+            ast::Definition::EnumTypeExtension(ext.same_location(ast::EnumTypeExtension {
                 name: name.clone(),
                 directives: ast::Directives(components(&self.directives, Some(ext))),
                 values: components(self.values.values(), Some(ext)),
@@ -178,22 +182,24 @@ impl EnumType {
     }
 }
 
-impl InputObjectType {
+impl Node<InputObjectType> {
     fn to_ast<'a>(&'a self, name: &'a Name) -> impl Iterator<Item = ast::Definition> + 'a {
-        std::iter::once(ast::Definition::InputObjectTypeDefinition(Node::new(
-            ast::InputObjectTypeDefinition {
+        std::iter::once(ast::Definition::InputObjectTypeDefinition(
+            self.same_location(ast::InputObjectTypeDefinition {
                 description: self.description.clone(),
                 name: name.clone(),
                 directives: ast::Directives(components(&self.directives, None)),
                 fields: components(self.fields.values(), None),
-            },
-        )))
+            }),
+        ))
         .chain(self.extensions().into_iter().map(move |ext| {
-            ast::Definition::InputObjectTypeExtension(Node::new(ast::InputObjectTypeExtension {
-                name: name.clone(),
-                directives: ast::Directives(components(&self.directives, Some(ext))),
-                fields: components(self.fields.values(), Some(ext)),
-            }))
+            ast::Definition::InputObjectTypeExtension(ext.same_location(
+                ast::InputObjectTypeExtension {
+                    name: name.clone(),
+                    directives: ast::Directives(components(&self.directives, Some(ext))),
+                    fields: components(self.fields.values(), Some(ext)),
+                },
+            ))
         }))
     }
 }

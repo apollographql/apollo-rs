@@ -1,16 +1,3 @@
-Error: the type `Intf` is defined multiple times in the schema
-    ╭─[0080_directive_is_unique_with_extensions.graphql:12:11]
-    │
-  9 │ interface Intf @nonRepeatable {
-    │           ──┬─  
-    │             ╰─── previous definition of `Intf` here
-    │ 
- 12 │ interface Intf @nonRepeatable
-    │           ──┬─  
-    │             ╰─── `Intf` redefined here
-    │ 
-    │ Help: remove or rename one of the definitions, or use `extend`
-────╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
    ╭─[0080_directive_is_unique_with_extensions.graphql:2:24]
    │
@@ -41,4 +28,17 @@ Error: non-repeatable directive nonRepeatable can only be used once per location
    │                      ───────┬──────  
    │                             ╰──────── directive nonRepeatable called again here
 ───╯
+Error: the type `Intf` is defined multiple times in the schema
+    ╭─[0080_directive_is_unique_with_extensions.graphql:12:11]
+    │
+  9 │ interface Intf @nonRepeatable {
+    │           ──┬─  
+    │             ╰─── previous definition of `Intf` here
+    │ 
+ 12 │ interface Intf @nonRepeatable
+    │           ──┬─  
+    │             ╰─── `Intf` redefined here
+    │ 
+    │ Help: remove or rename one of the definitions, or use `extend`
+────╯
 
