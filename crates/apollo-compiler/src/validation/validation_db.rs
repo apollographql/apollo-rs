@@ -517,29 +517,6 @@ fn validate_executable_inner(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
-    if db.source_type(file_id).is_executable() {
-        let document = db.ast(file_id);
-        for def in &document.definitions {
-            if def.is_executable_definition() {
-                continue;
-            }
-            let Some(location) = def.location() else {
-                continue;
-            };
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    location.into(),
-                    DiagnosticData::ExecutableDefinition { kind: def.kind() },
-                )
-                .label(Label::new(
-                    location,
-                    "not supported in executable documents",
-                )),
-            );
-        }
-    }
-
     diagnostics.extend(db.validate_executable_names(file_id));
 
     diagnostics.extend(super::operation::validate_operation_definitions_inner(

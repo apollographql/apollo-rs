@@ -55,16 +55,37 @@ fn validation() {
 
     dir_tests(&test_data_dir(), &["diagnostics"], "txt", |text, path| {
         let mut compiler = ApolloCompiler::new();
-        let file_id = compiler.add_document(text, path.file_name().unwrap());
-        let schema = compiler.db.schema();
-        let executable = compiler.db.executable_document(file_id);
-
+        let filename = path.file_name().unwrap().to_str().unwrap();
+        let is_type_system = filename.contains("type_system_document");
+        let is_executable = filename.contains("executable_document");
+        let schema_validation_errors;
+        let executable_validation_errors;
+        if is_type_system {
+            compiler.add_type_system(text, filename);
+            schema_validation_errors = compiler.db.schema().validate().err();
+            executable_validation_errors = None;
+        } else if is_executable {
+            let file_id = compiler.add_executable(text, filename);
+            executable_validation_errors = compiler
+                .db
+                .ast(file_id)
+                .validate_standalone_excutable()
+                .err();
+            schema_validation_errors = None;
+        } else {
+            let file_id = compiler.add_document(text, filename);
+            let schema = compiler.db.schema();
+            schema_validation_errors = schema.validate().err();
+            executable_validation_errors = compiler
+                .db
+                .executable_document(file_id)
+                .validate(&schema)
+                .err();
+        };
         let mut formatted = String::new();
-        let schema_validation_errors = schema.validate().err();
         if let Some(errors) = &schema_validation_errors {
             write!(&mut formatted, "{errors:#}").unwrap()
         }
-        let executable_validation_errors = executable.validate(&schema).err();
         if let Some(errors) = &executable_validation_errors {
             write!(&mut formatted, "{errors:#}").unwrap()
         }

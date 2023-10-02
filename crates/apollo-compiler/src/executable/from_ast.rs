@@ -65,11 +65,10 @@ pub(crate) fn document_from_ast(
             }
             _ => {
                 if type_system_definitions_are_errors {
-                    errors
-                        .errors
-                        .push(BuildError::UnexpectedTypeSystemDefinition(
-                            definition.clone(),
-                        ))
+                    errors.errors.push(BuildError::TypeSystemDefinition {
+                        location: definition.location(),
+                        describe: definition.describe(),
+                    })
                 }
             }
         }

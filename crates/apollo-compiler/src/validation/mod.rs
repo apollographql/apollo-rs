@@ -17,6 +17,8 @@ mod union_;
 mod value;
 mod variable;
 
+use crate::executable::BuildError as ExecutableBuildError;
+use crate::schema::BuildError as SchemaBuildError;
 use crate::Arc;
 use crate::FileId;
 use crate::NodeLocation;
@@ -56,6 +58,10 @@ pub(crate) enum Details {
     ParserLimit { message: String },
     #[error("syntax error: {message}")]
     SyntaxError { message: String },
+    #[error("{0}")]
+    SchemaBuildError(SchemaBuildError),
+    #[error("{0}")]
+    ExecutableBuildError(ExecutableBuildError),
 }
 
 impl Error {
@@ -87,6 +93,86 @@ impl Error {
         match &self.details {
             Details::ParserLimit { message, .. } => opt_label!(message),
             Details::SyntaxError { message, .. } => opt_label!(message),
+            Details::SchemaBuildError(err) => match err {
+                SchemaBuildError::ExecutableDefinition { .. } => {
+                    opt_label!("remove this definition, or use `parse_mixed()`")
+                }
+                SchemaBuildError::DefinitionCollision(_) => {
+                    // TODO
+                }
+                SchemaBuildError::OrphanExtension(_) => {
+                    // TODO
+                }
+                SchemaBuildError::DuplicateRootOperation {
+                    operation_type: _,
+                    object_type: _,
+                } => {
+                    // TODO
+                }
+                SchemaBuildError::DuplicateImplementsInterface {
+                    implementer_name: _,
+                    interface_name: _,
+                } => {
+                    // TODO
+                }
+                SchemaBuildError::FieldNameCollision {
+                    type_name: _,
+                    field: _,
+                } => {
+                    // TODO
+                }
+                SchemaBuildError::EnumValueNameCollision {
+                    enum_name: _,
+                    value: _,
+                } => {
+                    // TODO
+                }
+                SchemaBuildError::UnionMemberNameCollision {
+                    union_name: _,
+                    member: _,
+                } => {
+                    // TODO
+                }
+                SchemaBuildError::InputFieldNameCollision {
+                    type_name: _,
+                    field: _,
+                } => {
+                    // TODO
+                }
+            },
+            Details::ExecutableBuildError(err) => match err {
+                ExecutableBuildError::TypeSystemDefinition { .. } => {
+                    opt_label!("remove this definition, or use `parse_mixed()`")
+                }
+                ExecutableBuildError::DuplicateAnonymousOperation(_) => {
+                    // TODO
+                }
+                ExecutableBuildError::OperationNameCollision(_) => {
+                    // TODO
+                }
+                ExecutableBuildError::FragmentNameCollision(_) => {
+                    // TODO
+                }
+                ExecutableBuildError::UndefinedRootOperation(_) => {
+                    // TODO
+                }
+                ExecutableBuildError::UndefinedType {
+                    top_level: _,
+                    ancestor_fields: _,
+                    type_name: _,
+                    field: _,
+                } => {
+                    // TODO
+                }
+                ExecutableBuildError::UndefinedField {
+                    top_level: _,
+                    ancestor_fields: _,
+                    type_name: _,
+                    field: _,
+                } => {
+                    // TODO
+                }
+            },
         }
         report.finish()
     }

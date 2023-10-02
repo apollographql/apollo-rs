@@ -38,7 +38,7 @@ pub struct Schema {
 
     /// Errors that occurred when building this schema,
     /// either parsing a source file or converting from AST.
-    pub build_errors: Vec<BuildError>,
+    build_errors: Vec<BuildError>,
 
     /// The description of the `schema` definition
     pub description: Option<NodeStr>,
@@ -148,50 +148,59 @@ pub struct InputObjectType {
 }
 
 /// AST node that has been skipped during conversion to `Schema`
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BuildError {
-    /// Found an executable definition, which is unexpected when building a schema.
-    ///
-    /// If this is intended, use `parse_mixed`.
-    UnexpectedExecutableDefinition(ast::Definition),
+#[derive(thiserror::Error, Debug, Clone)]
+pub(crate) enum BuildError {
+    #[error("a schema document must not contain {describe}")]
+    ExecutableDefinition {
+        location: Option<NodeLocation>,
+        describe: &'static str,
+    },
 
     /// Found multiple `schema` definitions,
     /// or multiple type or directive definitions with the same name.
     ///
     /// `Definition::*Definition` variant
+    #[error("TODO")]
     DefinitionCollision(ast::Definition),
 
     /// Found an extension without a corresponding definition to extend
     ///
     /// `Definition::*Extension` variant
+    #[error("TODO")]
     OrphanExtension(ast::Definition),
 
+    #[error("TODO")]
     DuplicateRootOperation {
         operation_type: ast::OperationType,
         object_type: NamedType,
     },
 
+    #[error("TODO")]
     DuplicateImplementsInterface {
         implementer_name: NamedType,
         interface_name: Name,
     },
 
+    #[error("TODO")]
     FieldNameCollision {
         /// Object type or interface type
         type_name: NamedType,
         field: Node<ast::FieldDefinition>,
     },
 
+    #[error("TODO")]
     EnumValueNameCollision {
         enum_name: NamedType,
         value: Node<ast::EnumValueDefinition>,
     },
 
+    #[error("TODO")]
     UnionMemberNameCollision {
         union_name: NamedType,
         member: NamedType,
     },
 
+    #[error("TODO")]
     InputFieldNameCollision {
         type_name: NamedType,
         field: Node<ast::InputValueDefinition>,

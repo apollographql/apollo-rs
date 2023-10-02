@@ -48,13 +48,17 @@ query {
 
     let mut compiler = ApolloCompiler::new();
     compiler.add_type_system(input_type_system, "schema.graphql");
-    compiler.add_executable(input_executable, "query.graphql");
+    let id = compiler.add_executable(input_executable, "query.graphql");
 
-    let diagnostics = compiler.validate();
-    assert_eq!(diagnostics.len(), 1);
-    assert_eq!(
-        diagnostics[0].data.to_string(),
-        "executable documents must not contain ObjectTypeDefinition"
+    let schema = compiler.db.schema();
+    let diagnostics = compiler
+        .db
+        .executable_document(id)
+        .validate(&schema)
+        .unwrap_err()
+        .to_string();
+    assert!(
+        diagnostics.contains("an executable document must not contain an object type definition")
     );
 }
 
