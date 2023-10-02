@@ -13,7 +13,7 @@ use std::path::Path;
 
 pub(crate) mod from_ast;
 mod serialize;
-mod validation;
+pub(crate) mod validation;
 
 pub use crate::ast::{
     Argument, Directive, Directives, Name, NamedType, OperationType, Type, Value,

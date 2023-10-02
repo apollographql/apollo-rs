@@ -113,7 +113,7 @@ fn executable_document(db: &dyn ReprDatabase, file_id: FileId) -> Arc<crate::Exe
     let source_type = db.source_type(file_id);
     let type_system_definitions_are_errors = source_type != SourceType::Document;
     let mut executable = crate::executable::from_ast::document_from_ast(
-        &db.schema(),
+        Some(&db.schema()),
         &db.ast(file_id),
         type_system_definitions_are_errors,
     );
