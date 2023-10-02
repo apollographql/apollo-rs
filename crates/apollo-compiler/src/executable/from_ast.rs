@@ -7,7 +7,7 @@ struct BuildErrors {
 }
 
 pub(crate) fn document_from_ast(
-    schema: &Schema,
+    schema: Option<&Schema>,
     document: &ast::Document,
     type_system_definitions_are_errors: bool,
 ) -> ExecutableDocument {
@@ -85,11 +85,16 @@ pub(crate) fn document_from_ast(
 
 impl Operation {
     fn from_ast(
-        schema: &Schema,
+        schema: Option<&Schema>,
         errors: &mut BuildErrors,
         ast: &ast::OperationDefinition,
     ) -> Option<Self> {
-        let ty = schema.root_operation(ast.operation_type)?.node.clone();
+        let ty = if let Some(s) = schema {
+            s.root_operation(ast.operation_type)?.node.clone()
+        } else {
+            // Hack for validate_standalone_excutable
+            ast.operation_type.default_type_name().into()
+        };
         let mut selection_set = SelectionSet::new(ty);
         selection_set.extend_from_ast(schema, errors, &ast.selection_set);
         Some(Self {
@@ -102,7 +107,11 @@ impl Operation {
 }
 
 impl Fragment {
-    fn from_ast(schema: &Schema, errors: &mut BuildErrors, ast: &ast::FragmentDefinition) -> Self {
+    fn from_ast(
+        schema: Option<&Schema>,
+        errors: &mut BuildErrors,
+        ast: &ast::FragmentDefinition,
+    ) -> Self {
         let mut selection_set = SelectionSet::new(ast.type_condition.clone());
         selection_set.extend_from_ast(schema, errors, &ast.selection_set);
         Self {
@@ -115,45 +124,58 @@ impl Fragment {
 impl SelectionSet {
     fn extend_from_ast(
         &mut self,
-        schema: &Schema,
+        schema: Option<&Schema>,
         errors: &mut BuildErrors,
         ast_selections: &[ast::Selection],
     ) {
         for selection in ast_selections {
             match selection {
-                ast::Selection::Field(ast) => match self.new_field(schema, ast.name.clone()) {
-                    Ok(field) => {
-                        errors
-                            .ancestor_fields
-                            .push(ast.alias.clone().unwrap_or_else(|| ast.name.clone()));
-                        self.push(
-                            ast.same_location(
-                                field
-                                    .with_opt_alias(ast.alias.clone())
-                                    .with_arguments(ast.arguments.iter().cloned())
-                                    .with_directives(ast.directives.iter().cloned())
-                                    .with_ast_selections(schema, errors, &ast.selection_set),
-                            ),
-                        );
-                        errors.ancestor_fields.pop();
+                ast::Selection::Field(ast) => {
+                    let field_def_result = if let Some(s) = schema {
+                        s.type_field(&self.ty, &ast.name).map(|c| c.node.clone())
+                    } else {
+                        Ok(Node::new(ast::FieldDefinition {
+                            description: None,
+                            name: ast.name.clone(),
+                            arguments: Vec::new(),
+                            ty: Type::new_named("UNKNOWN"),
+                            directives: Default::default(),
+                        }))
+                    };
+                    match field_def_result {
+                        Ok(field_def) => {
+                            errors
+                                .ancestor_fields
+                                .push(ast.alias.clone().unwrap_or_else(|| ast.name.clone()));
+                            self.push(
+                                ast.same_location(
+                                    Field::new(ast.name.clone(), field_def)
+                                        .with_opt_alias(ast.alias.clone())
+                                        .with_arguments(ast.arguments.iter().cloned())
+                                        .with_directives(ast.directives.iter().cloned())
+                                        .with_ast_selections(schema, errors, &ast.selection_set),
+                                ),
+                            );
+                            errors.ancestor_fields.pop();
+                        }
+                        Err(schema::FieldLookupError::NoSuchField) => {
+                            errors.errors.push(BuildError::UndefinedField {
+                                top_level: errors.top_level.clone(),
+                                ancestor_fields: errors.ancestor_fields.clone(),
+                                type_name: self.ty.clone(),
+                                field: ast.clone(),
+                            })
+                        }
+                        Err(schema::FieldLookupError::NoSuchType) => {
+                            errors.errors.push(BuildError::UndefinedType {
+                                top_level: errors.top_level.clone(),
+                                ancestor_fields: errors.ancestor_fields.clone(),
+                                type_name: self.ty.clone(),
+                                field: ast.clone(),
+                            })
+                        }
                     }
-                    Err(schema::FieldLookupError::NoSuchField) => {
-                        errors.errors.push(BuildError::UndefinedField {
-                            top_level: errors.top_level.clone(),
-                            ancestor_fields: errors.ancestor_fields.clone(),
-                            type_name: self.ty.clone(),
-                            field: ast.clone(),
-                        })
-                    }
-                    Err(schema::FieldLookupError::NoSuchType) => {
-                        errors.errors.push(BuildError::UndefinedType {
-                            top_level: errors.top_level.clone(),
-                            ancestor_fields: errors.ancestor_fields.clone(),
-                            type_name: self.ty.clone(),
-                            field: ast.clone(),
-                        })
-                    }
-                },
+                }
                 ast::Selection::FragmentSpread(ast) => self.push(
                     ast.same_location(
                         self.new_fragment_spread(ast.fragment_name.clone())
@@ -175,7 +197,7 @@ impl SelectionSet {
 impl Field {
     fn with_ast_selections(
         mut self,
-        schema: &Schema,
+        schema: Option<&Schema>,
         errors: &mut BuildErrors,
         ast_selections: &[ast::Selection],
     ) -> Self {
@@ -188,7 +210,7 @@ impl Field {
 impl InlineFragment {
     fn with_ast_selections(
         mut self,
-        schema: &Schema,
+        schema: Option<&Schema>,
         errors: &mut BuildErrors,
         ast_selections: &[ast::Selection],
     ) -> Self {

@@ -31,11 +31,28 @@ impl Document {
         Self::parser().parse_ast(source_text, path)
     }
 
+    /// Returns [`Diagnostics`] for cases where parsed input does not match
+    /// the GraphQL grammar or where the parser reached a token limit or recursion limit.
+    ///
+    /// Does not perform any validation beyond this syntactic level.
     pub fn check_parse_errors(&self) -> Result<(), Diagnostics> {
         let mut errors = Diagnostics::new(self.source.clone().into_iter().collect());
         if let Some((file_id, source)) = &self.source {
             source.validate_parse_errors(&mut errors, *file_id)
         }
+        errors.into_result()
+    }
+
+    /// Validate as an executable document, as much as possible without a schema
+    pub fn validate_standalone_excutable(&self) -> Result<(), Diagnostics> {
+        let type_system_definitions_are_errors = true;
+        let executable = crate::executable::from_ast::document_from_ast(
+            None,
+            self,
+            type_system_definitions_are_errors,
+        );
+        let mut errors = Diagnostics::new(self.source.clone().into_iter().collect());
+        crate::executable::validation::validate_standalone_executable(&mut errors, &executable);
         errors.into_result()
     }
 
@@ -59,7 +76,7 @@ impl Document {
     pub fn to_executable(&self, schema: &Schema) -> ExecutableDocument {
         let type_system_definitions_are_errors = true;
         crate::executable::from_ast::document_from_ast(
-            schema,
+            Some(schema),
             self,
             type_system_definitions_are_errors,
         )
@@ -75,7 +92,7 @@ impl Document {
         builder.add_ast_document(self, executable_definitions_are_errors);
         let schema = builder.build();
         let executable = crate::executable::from_ast::document_from_ast(
-            &schema,
+            Some(&schema),
             self,
             type_system_definitions_are_errors,
         );
