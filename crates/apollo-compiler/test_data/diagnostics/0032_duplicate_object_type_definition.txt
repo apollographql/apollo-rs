@@ -9,6 +9,6 @@ Error: the type `Query` is defined multiple times in the document
    │      ──┬──  
    │        ╰──── `Query` redefined here
    │ 
-   │ Help: `Query` must only be defined once in this document.
+   │ Help: remove or rename one of the definitions, or use `extend`
 ───╯
 

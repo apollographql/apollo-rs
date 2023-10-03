@@ -8,11 +8,9 @@ use crate::{
     },
     Arc, FileId, InputDatabase, Node, ReprDatabase,
 };
-use std::collections::{hash_map::Entry, HashMap, HashSet};
+use std::collections::{hash_map::Entry, HashMap};
 
 use super::field;
-
-const BUILT_IN_SCALARS: [&str; 5] = ["Int", "Float", "Boolean", "String", "ID"];
 
 #[salsa::query_group(ValidationStorage)]
 pub trait ValidationDatabase: InputDatabase + ReprDatabase {
@@ -40,10 +38,6 @@ pub trait ValidationDatabase: InputDatabase + ReprDatabase {
     /// This runs a subset of the validations from `validate_executable`.
     #[salsa::invoke(validate_standalone_executable)]
     fn validate_standalone_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
-
-    /// Validate the names of all type definitions known to the compiler are unique.
-    #[salsa::invoke(validate_type_system_names)]
-    fn validate_type_system_names(&self) -> Vec<ApolloDiagnostic>;
 
     /// Validate names of operations and fragments in an executable document are unique.
     #[salsa::invoke(validate_executable_names)]
@@ -316,108 +310,6 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     diagnostics
 }
 
-fn validate_type_system_names(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    // Different node types use different namespaces.
-    let mut directive_scope = HashSet::<ast::Name>::new();
-    let mut type_scope = HashSet::<ast::Name>::new();
-
-    let all_asts = db
-        .type_definition_files()
-        .into_iter()
-        .map(|file_id| db.ast(file_id))
-        .collect::<Vec<_>>();
-
-    let all_types = all_asts
-        .iter()
-        .flat_map(|ast| ast.definitions.iter())
-        // Extension names are allowed to be duplicates,
-        // and schema definitions don't have names.
-        .filter(|def| {
-            !def.is_extension_definition()
-                && !def.is_executable_definition()
-                && !matches!(def, ast::Definition::SchemaDefinition(_))
-        });
-
-    for ast_def in all_types {
-        let ty_ = match ast_def {
-            ast::Definition::DirectiveDefinition(_) => "directive",
-            ast::Definition::ScalarTypeDefinition(_)
-            | ast::Definition::ObjectTypeDefinition(_)
-            | ast::Definition::InterfaceTypeDefinition(_)
-            | ast::Definition::UnionTypeDefinition(_)
-            | ast::Definition::EnumTypeDefinition(_)
-            | ast::Definition::InputObjectTypeDefinition(_) => "type",
-            // Only validate type system definitions.
-            ast::Definition::OperationDefinition(_) | ast::Definition::FragmentDefinition(_) => {
-                unreachable!()
-            }
-            // Schemas do not have a name.
-            ast::Definition::SchemaDefinition(_) => unreachable!(),
-            // Extension names are always duplicate.
-            ast::Definition::SchemaExtension(_)
-            | ast::Definition::ScalarTypeExtension(_)
-            | ast::Definition::ObjectTypeExtension(_)
-            | ast::Definition::InterfaceTypeExtension(_)
-            | ast::Definition::UnionTypeExtension(_)
-            | ast::Definition::EnumTypeExtension(_)
-            | ast::Definition::InputObjectTypeExtension(_) => unreachable!(),
-        };
-        let scope = match ast_def {
-            ast::Definition::DirectiveDefinition(_) => &mut directive_scope,
-            _ => &mut type_scope,
-        };
-
-        if let Some(name) = ast_def.name() {
-            let is_custom_scalar = matches!(ast_def, ast::Definition::ScalarTypeDefinition(scalar) if !scalar.is_built_in());
-            let redefined_definition = name.location().unwrap();
-
-            // TODO(@goto-bus-stop) Check if this is a validation that we should actually do
-            if is_custom_scalar && BUILT_IN_SCALARS.contains(&name.as_str()) {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        redefined_definition.into(),
-                        DiagnosticData::BuiltInScalarDefinition,
-                    )
-                    .label(Label::new(
-                        redefined_definition,
-                        "remove this scalar definition",
-                    )),
-                );
-            } else if !scope.insert(name.clone()) {
-                let original = scope.get(name).unwrap();
-                let original_definition = original.location().unwrap();
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        redefined_definition.into(),
-                        DiagnosticData::UniqueDefinition {
-                            ty: ty_,
-                            name: name.to_string(),
-                            original_definition: original_definition.into(),
-                            redefined_definition: redefined_definition.into(),
-                        },
-                    )
-                    .labels([
-                        Label::new(
-                            original_definition,
-                            format!("previous definition of `{name}` here"),
-                        ),
-                        Label::new(redefined_definition, format!("`{name}` redefined here")),
-                    ])
-                    .help(format!(
-                        "`{name}` must only be defined once in this document."
-                    )),
-                );
-            }
-        }
-    }
-
-    diagnostics
-}
-
 fn validate_executable_names(
     db: &dyn ValidationDatabase,
     file_id: FileId,
@@ -489,8 +381,6 @@ fn location_sort_key(diagnostic: &ApolloDiagnostic) -> (FileId, usize) {
 
 pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-
-    diagnostics.extend(db.validate_type_system_names());
 
     let schema = db.ast_types().schema.clone();
     diagnostics.extend(db.validate_schema_definition(schema));

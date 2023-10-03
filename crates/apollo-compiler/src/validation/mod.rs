@@ -73,32 +73,65 @@ impl Error {
         };
 
         let mut report = ariadne::Report::build::<FileId>(ariadne::ReportKind::Error, id, offset)
-            .with_config(ariadne::Config::default().with_color(color))
-            .with_message(&self.details);
+            .with_config(ariadne::Config::default().with_color(color));
         let mut colors = ariadne::ColorGenerator::new();
         macro_rules! opt_label {
-            ($location: expr, $message: expr) => {
+            ($location: expr, $message: literal $(, $args: expr )* $(,)?) => {
                 if let Some(location) = $location {
                     report.add_label(
-                        ariadne::Label::new(location)
-                            .with_message($message)
+                        ariadne::Label::new(*location)
+                            .with_message(format_args!($message $(, $args)*))
                             .with_color(colors.next()),
                     )
                 }
             };
-            ($message: expr) => {
-                opt_label!(self.location, $message)
+            ($message: literal $(, $args: expr )* $(,)?) => {
+                opt_label!(&self.location, $message $(, $args)*)
             };
         }
+        // Main message from `derive(thiserror::Error)` based on `#[error("…")]` attributes:
+        report.set_message(&self.details);
+        // Every case should also have a label at the main location
+        // (preferably saying something not completely redundant with the main message)
+        // and may have additional labels.
+        // Labels are always optional because locations are always optional,
+        // so essential information should be in the main message.
         match &self.details {
-            Details::ParserLimit { message, .. } => opt_label!(message),
-            Details::SyntaxError { message, .. } => opt_label!(message),
+            Details::ParserLimit { message, .. } => opt_label!("{message}"),
+            Details::SyntaxError { message, .. } => opt_label!("{message}"),
             Details::SchemaBuildError(err) => match err {
                 SchemaBuildError::ExecutableDefinition { .. } => {
                     opt_label!("remove this definition, or use `parse_mixed()`")
                 }
-                SchemaBuildError::DefinitionCollision(_) => {
-                    // TODO
+                SchemaBuildError::SchemaDefinitionCollision {
+                    previous_location, ..
+                } => {
+                    opt_label!(previous_location, "previous `schema` definition here");
+                    opt_label!("`schema` redefined here");
+                    report.set_help(
+                        "merge this definition with the previous one, or use `extend schema`",
+                    );
+                }
+                SchemaBuildError::DirectiveDefinitionCollision {
+                    previous_location,
+                    name,
+                    ..
+                } => {
+                    opt_label!(previous_location, "previous definition of `@{name}` here");
+                    opt_label!("`@{name}` redefined here");
+                    report.set_help("remove or rename one of the definitions");
+                }
+                SchemaBuildError::TypeDefinitionCollision {
+                    previous_location,
+                    name,
+                    ..
+                } => {
+                    opt_label!(previous_location, "previous definition of `{name}` here");
+                    opt_label!("`{name}` redefined here");
+                    report.set_help("remove or rename one of the definitions, or use `extend`");
+                }
+                SchemaBuildError::BuiltInScalarTypeRedefinition { .. } => {
+                    opt_label!("remove this scalar definition");
                 }
                 SchemaBuildError::OrphanExtension(_) => {
                     // TODO

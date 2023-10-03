@@ -160,12 +160,28 @@ pub(crate) enum BuildError {
         describe: &'static str,
     },
 
-    /// Found multiple `schema` definitions,
-    /// or multiple type or directive definitions with the same name.
-    ///
-    /// `Definition::*Definition` variant
-    #[error("TODO")]
-    DefinitionCollision(ast::Definition),
+    #[error("must not have multiple `schema` definitions")]
+    SchemaDefinitionCollision {
+        location: Option<NodeLocation>,
+        previous_location: Option<NodeLocation>,
+    },
+
+    #[error("the directive `@{name}` is defined multiple times in the document")]
+    DirectiveDefinitionCollision {
+        location: Option<NodeLocation>,
+        previous_location: Option<NodeLocation>,
+        name: Name,
+    },
+
+    #[error("the type `{name}` is defined multiple times in the document")]
+    TypeDefinitionCollision {
+        location: Option<NodeLocation>,
+        previous_location: Option<NodeLocation>,
+        name: Name,
+    },
+
+    #[error("built-in scalar definitions must be omitted")]
+    BuiltInScalarTypeRedefinition { location: Option<NodeLocation> },
 
     /// Found an extension without a corresponding definition to extend
     ///

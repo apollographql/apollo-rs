@@ -9,6 +9,6 @@ Error: the type `NamedEntity` is defined multiple times in the document
    │           ─────┬─────  
    │                ╰─────── `NamedEntity` redefined here
    │ 
-   │ Help: `NamedEntity` must only be defined once in this document.
+   │ Help: remove or rename one of the definitions, or use `extend`
 ───╯
 

@@ -15,7 +15,11 @@ pub(crate) fn validate_schema(errors: &mut Diagnostics, schema: &Schema) {
 
 fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
     let location = match build_error {
-        BuildError::ExecutableDefinition { location, .. } => *location,
+        BuildError::ExecutableDefinition { location, .. }
+        | BuildError::SchemaDefinitionCollision { location, .. }
+        | BuildError::DirectiveDefinitionCollision { location, .. }
+        | BuildError::TypeDefinitionCollision { location, .. }
+        | BuildError::BuiltInScalarTypeRedefinition { location, .. } => *location,
         _ => return, // TODO
     };
     errors.push(location, Details::SchemaBuildError(build_error.clone()))

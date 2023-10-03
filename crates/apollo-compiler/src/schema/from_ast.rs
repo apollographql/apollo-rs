@@ -70,31 +70,41 @@ impl SchemaBuilder {
         }
         for definition in &document.definitions {
             match definition {
-                ast::Definition::SchemaDefinition(def) => {
-                    if self.schema.root_operations.is_none() {
+                ast::Definition::SchemaDefinition(def) => match &self.schema.root_operations {
+                    None => {
                         self.schema.root_operations = Some(RootOperations::from_ast(
                             &mut self.schema.build_errors,
                             def,
                             &self.orphan_schema_extensions,
                         ));
                         self.orphan_schema_extensions = Vec::new();
-                    } else {
-                        self.schema
-                            .build_errors
-                            .push(BuildError::DefinitionCollision(definition.clone()))
                     }
-                }
-                ast::Definition::DirectiveDefinition(def) => {
-                    if !insert_sticky(&mut self.schema.directive_definitions, &def.name, || {
-                        def.clone()
-                    }) {
+                    Some(previous) => {
                         self.schema
                             .build_errors
-                            .push(BuildError::DefinitionCollision(definition.clone()))
+                            .push(BuildError::SchemaDefinitionCollision {
+                                location: def.location(),
+                                previous_location: previous.location(),
+                            })
+                    }
+                },
+                ast::Definition::DirectiveDefinition(def) => {
+                    if let Err(previous) =
+                        insert_sticky(&mut self.schema.directive_definitions, &def.name, || {
+                            def.clone()
+                        })
+                    {
+                        self.schema
+                            .build_errors
+                            .push(BuildError::DirectiveDefinitionCollision {
+                                location: def.name.location(),
+                                previous_location: previous.name.location(),
+                                name: def.name.clone(),
+                            })
                     }
                 }
                 ast::Definition::ScalarTypeDefinition(def) => {
-                    if !insert_sticky(&mut self.schema.types, &def.name, || {
+                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Scalar(ScalarType::from_ast(
                             def,
                             self.orphan_type_extensions
@@ -102,13 +112,21 @@ impl SchemaBuilder {
                                 .unwrap_or_default(),
                         ))
                     }) {
-                        self.schema
-                            .build_errors
-                            .push(BuildError::DefinitionCollision(definition.clone()))
+                        self.schema.build_errors.push(if previous.is_built_in() {
+                            BuildError::BuiltInScalarTypeRedefinition {
+                                location: def.location(),
+                            }
+                        } else {
+                            BuildError::TypeDefinitionCollision {
+                                location: def.name.location(),
+                                previous_location: previous.name().location(),
+                                name: def.name.clone(),
+                            }
+                        })
                     }
                 }
                 ast::Definition::ObjectTypeDefinition(def) => {
-                    if !insert_sticky(&mut self.schema.types, &def.name, || {
+                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Object(ObjectType::from_ast(
                             &mut self.schema.build_errors,
                             def,
@@ -119,11 +137,15 @@ impl SchemaBuilder {
                     }) {
                         self.schema
                             .build_errors
-                            .push(BuildError::DefinitionCollision(definition.clone()))
+                            .push(BuildError::TypeDefinitionCollision {
+                                location: def.name.location(),
+                                previous_location: previous.name().location(),
+                                name: def.name.clone(),
+                            })
                     }
                 }
                 ast::Definition::InterfaceTypeDefinition(def) => {
-                    if !insert_sticky(&mut self.schema.types, &def.name, || {
+                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Interface(InterfaceType::from_ast(
                             &mut self.schema.build_errors,
                             def,
@@ -134,11 +156,15 @@ impl SchemaBuilder {
                     }) {
                         self.schema
                             .build_errors
-                            .push(BuildError::DefinitionCollision(definition.clone()))
+                            .push(BuildError::TypeDefinitionCollision {
+                                location: def.name.location(),
+                                previous_location: previous.name().location(),
+                                name: def.name.clone(),
+                            })
                     }
                 }
                 ast::Definition::UnionTypeDefinition(def) => {
-                    if !insert_sticky(&mut self.schema.types, &def.name, || {
+                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Union(UnionType::from_ast(
                             &mut self.schema.build_errors,
                             def,
@@ -149,11 +175,15 @@ impl SchemaBuilder {
                     }) {
                         self.schema
                             .build_errors
-                            .push(BuildError::DefinitionCollision(definition.clone()))
+                            .push(BuildError::TypeDefinitionCollision {
+                                location: def.name.location(),
+                                previous_location: previous.name().location(),
+                                name: def.name.clone(),
+                            })
                     }
                 }
                 ast::Definition::EnumTypeDefinition(def) => {
-                    if !insert_sticky(&mut self.schema.types, &def.name, || {
+                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::Enum(EnumType::from_ast(
                             &mut self.schema.build_errors,
                             def,
@@ -164,11 +194,15 @@ impl SchemaBuilder {
                     }) {
                         self.schema
                             .build_errors
-                            .push(BuildError::DefinitionCollision(definition.clone()))
+                            .push(BuildError::TypeDefinitionCollision {
+                                location: def.name.location(),
+                                previous_location: previous.name().location(),
+                                name: def.name.clone(),
+                            })
                     }
                 }
                 ast::Definition::InputObjectTypeDefinition(def) => {
-                    if !insert_sticky(&mut self.schema.types, &def.name, || {
+                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
                         ExtendedType::InputObject(InputObjectType::from_ast(
                             &mut self.schema.build_errors,
                             def,
@@ -179,7 +213,11 @@ impl SchemaBuilder {
                     }) {
                         self.schema
                             .build_errors
-                            .push(BuildError::DefinitionCollision(definition.clone()))
+                            .push(BuildError::TypeDefinitionCollision {
+                                location: def.name.location(),
+                                previous_location: previous.name().location(),
+                                name: def.name.clone(),
+                            })
                     }
                 }
                 ast::Definition::SchemaExtension(ext) => {
@@ -774,16 +812,16 @@ fn insert_sticky<K, V>(
     map: &mut IndexMap<K, V>,
     key: impl Into<K>,
     make_value: impl FnOnce() -> V,
-) -> bool
+) -> Result<(), &V>
 where
     K: std::hash::Hash + Eq,
 {
     match map.entry(key.into()) {
         Entry::Vacant(entry) => {
             entry.insert(make_value());
-            true
+            Ok(())
         }
-        Entry::Occupied(_) => false,
+        Entry::Occupied(entry) => Err(entry.into_mut()),
     }
 }
 

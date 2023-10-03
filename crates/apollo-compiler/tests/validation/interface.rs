@@ -1,4 +1,5 @@
 use apollo_compiler::ApolloCompiler;
+use apollo_compiler::ReprDatabase;
 
 #[test]
 fn it_fails_validation_with_duplicate_operation_fields() {
@@ -56,11 +57,12 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
     let mut compiler = ApolloCompiler::new();
     compiler.add_document(input, "schema.graphql");
 
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}")
-    }
-    assert_eq!(diagnostics.len(), 1);
+    let diagnostics = compiler.db.schema().validate().unwrap_err();
+    let diagnostics = format!("{diagnostics:#}");
+    assert!(
+        diagnostics.contains("the type `NamedEntity` is defined multiple times"),
+        "{diagnostics}"
+    );
 }
 
 #[test]
