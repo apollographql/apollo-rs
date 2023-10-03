@@ -1,3 +1,58 @@
+Error: adding a union type extension, but `Scalar` is a scalar type
+    ╭─[0064_extension_wrong_type.graphql:16:14]
+    │
+  1 │ scalar Scalar @specifiedBy(url: "https://apollographql.com")
+    │        ───┬──  
+    │           ╰──── type definition
+    │ 
+ 16 │ extend union Scalar = String
+    │              ───┬──  
+    │                 ╰──── extension here
+────╯
+Error: adding an interface type extension, but `Object` is an object type
+    ╭─[0064_extension_wrong_type.graphql:17:18]
+    │
+  5 │ type Object {
+    │      ───┬──  
+    │         ╰──── type definition
+    │ 
+ 17 │ extend interface Object {
+    │                  ───┬──  
+    │                     ╰──── extension here
+────╯
+Error: adding an enum type extension, but `Intf` is an interface type
+    ╭─[0064_extension_wrong_type.graphql:20:13]
+    │
+  2 │ interface Intf {
+    │           ──┬─  
+    │             ╰─── type definition
+    │ 
+ 20 │ extend enum Intf {
+    │             ──┬─  
+    │               ╰─── extension here
+────╯
+Error: adding an object type extension, but `Input` is an input object type
+    ╭─[0064_extension_wrong_type.graphql:23:13]
+    │
+  9 │ input Input {
+    │       ──┬──  
+    │         ╰──── type definition
+    │ 
+ 23 │ extend type Input {
+    │             ──┬──  
+    │               ╰──── extension here
+────╯
+Error: adding an input object type extension, but `Enum` is an enum type
+    ╭─[0064_extension_wrong_type.graphql:26:14]
+    │
+ 12 │ enum Enum {
+    │      ──┬─  
+    │        ╰─── type definition
+    │ 
+ 26 │ extend input Enum {
+    │              ──┬─  
+    │                ╰─── extension here
+────╯
 Error: `Scalar` field must return an object type
    ╭─[0064_extension_wrong_type.graphql:8:15]
    │
@@ -7,75 +62,4 @@ Error: `Scalar` field must return an object type
    │ 
    │ Help: Union members must be of base Object Type.
 ───╯
-Error: type extension for `Scalar` is the wrong kind
-    ╭─[0064_extension_wrong_type.graphql:16:1]
-    │
-  1 │ scalar Scalar @specifiedBy(url: "https://apollographql.com")
-    │ ──────────────────────────────┬─────────────────────────────  
-    │                               ╰─────────────────────────────── original type defined here
-    │ 
- 16 │ extend union Scalar = String
-    │ ──────────────┬─────────────  
-    │               ╰─────────────── adding an UnionTypeExtension, but `Scalar` is a Scalar
-────╯
-Error: type extension for `Object` is the wrong kind
-    ╭─[0064_extension_wrong_type.graphql:17:1]
-    │
-  5 │   ╭─▶ type Object {
-    ┆   ┆   
-  7 │   ├─▶ }
-    │   │       
-    │   ╰─────── original type defined here
-    │ 
- 17 │ ╭───▶ extend interface Object {
-    ┆ ┆     
- 19 │ ├───▶ }
-    │ │         
-    │ ╰───────── adding an InterfaceTypeExtension, but `Object` is an Object
-────╯
-Error: type extension for `Intf` is the wrong kind
-    ╭─[0064_extension_wrong_type.graphql:20:1]
-    │
-  2 │ ╭───▶ interface Intf {
-    ┆ ┆     
-  4 │ ├───▶ }
-    │ │         
-    │ ╰───────── original type defined here
-    │ 
- 20 │   ╭─▶ extend enum Intf {
-    ┆   ┆   
- 22 │   ├─▶ }
-    │   │       
-    │   ╰─────── adding an EnumTypeExtension, but `Intf` is an Interface
-────╯
-Error: type extension for `Input` is the wrong kind
-    ╭─[0064_extension_wrong_type.graphql:23:1]
-    │
-  9 │   ╭─▶ input Input {
-    ┆   ┆   
- 11 │   ├─▶ }
-    │   │       
-    │   ╰─────── original type defined here
-    │ 
- 23 │ ╭───▶ extend type Input {
-    ┆ ┆     
- 25 │ ├───▶ }
-    │ │         
-    │ ╰───────── adding an ObjectTypeExtension, but `Input` is an InputObject
-────╯
-Error: type extension for `Enum` is the wrong kind
-    ╭─[0064_extension_wrong_type.graphql:26:1]
-    │
- 12 │   ╭─▶ enum Enum {
-    ┆   ┆   
- 14 │   ├─▶ }
-    │   │       
-    │   ╰─────── original type defined here
-    │ 
- 26 │ ╭───▶ extend input Enum {
-    ┆ ┆     
- 28 │ ├───▶ }
-    │ │         
-    │ ╰───────── adding an InputObjectTypeExtension, but `Enum` is an Enum
-────╯
 

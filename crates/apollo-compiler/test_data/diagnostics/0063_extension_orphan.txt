@@ -1,43 +1,52 @@
-Error: cannot find type `A` in this document
-   ╭─[0063_extension_orphan.graphql:5:1]
+Error: type extension for undefined type `A`
+   ╭─[0063_extension_orphan.graphql:5:15]
    │
  5 │ extend scalar A @deprecated(reason: "Use B instead")
    │               ┬  
-   │               ╰── `A` type definition does not exist
+   │               ╰── extension here
 ───╯
-Error: cannot find type `B` in this document
-   ╭─[0063_extension_orphan.graphql:6:1]
+Error: type extension for undefined type `B`
+   ╭─[0063_extension_orphan.graphql:6:13]
    │
  6 │ extend type B { field: Int! }
    │             ┬  
-   │             ╰── `B` type definition does not exist
+   │             ╰── extension here
 ───╯
-Error: cannot find type `C` in this document
-    ╭─[0063_extension_orphan.graphql:10:1]
+Error: schema extension without a schema definition
+   ╭─[0063_extension_orphan.graphql:7:1]
+   │
+ 7 │ ╭─▶ extend schema {
+   ┆ ┆   
+ 9 │ ├─▶ }
+   │ │       
+   │ ╰─────── extension here
+───╯
+Error: type extension for undefined type `C`
+    ╭─[0063_extension_orphan.graphql:10:14]
     │
  10 │ extend union C = String
     │              ┬  
-    │              ╰── `C` type definition does not exist
+    │              ╰── extension here
 ────╯
-Error: cannot find type `D` in this document
-    ╭─[0063_extension_orphan.graphql:11:1]
+Error: type extension for undefined type `D`
+    ╭─[0063_extension_orphan.graphql:11:18]
     │
  11 │ extend interface D {
     │                  ┬  
-    │                  ╰── `D` type definition does not exist
+    │                  ╰── extension here
 ────╯
-Error: cannot find type `E` in this document
-    ╭─[0063_extension_orphan.graphql:14:1]
+Error: type extension for undefined type `E`
+    ╭─[0063_extension_orphan.graphql:14:14]
     │
  14 │ extend input E {
     │              ┬  
-    │              ╰── `E` type definition does not exist
+    │              ╰── extension here
 ────╯
-Error: cannot find type `F` in this document
-    ╭─[0063_extension_orphan.graphql:17:1]
+Error: type extension for undefined type `F`
+    ╭─[0063_extension_orphan.graphql:17:13]
     │
  17 │ extend enum F {
     │             ┬  
-    │             ╰── `F` type definition does not exist
+    │             ╰── extension here
 ────╯
 

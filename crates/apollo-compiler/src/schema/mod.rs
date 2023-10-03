@@ -183,11 +183,23 @@ pub(crate) enum BuildError {
     #[error("built-in scalar definitions must be omitted")]
     BuiltInScalarTypeRedefinition { location: Option<NodeLocation> },
 
-    /// Found an extension without a corresponding definition to extend
-    ///
-    /// `Definition::*Extension` variant
-    #[error("TODO")]
-    OrphanExtension(ast::Definition),
+    #[error("schema extension without a schema definition")]
+    OrphanSchemaExtension { location: Option<NodeLocation> },
+
+    #[error("type extension for undefined type `{name}`")]
+    OrphanTypeExtension {
+        location: Option<NodeLocation>,
+        name: Name,
+    },
+
+    #[error("adding {describe_ext}, but `{name}` is {describe_def}")]
+    TypeExtensionKindMismatch {
+        location: Option<NodeLocation>,
+        name: Name,
+        describe_ext: &'static str,
+        def_location: Option<NodeLocation>,
+        describe_def: &'static str,
+    },
 
     #[error("TODO")]
     DuplicateRootOperation {
@@ -568,6 +580,17 @@ impl ExtendedType {
             Self::Union(ty) => ty.location(),
             Self::Enum(ty) => ty.location(),
             Self::InputObject(ty) => ty.location(),
+        }
+    }
+
+    pub(crate) fn describe(&self) -> &'static str {
+        match self {
+            Self::Scalar(_) => "a scalar type",
+            Self::Object(_) => "an object type",
+            Self::Interface(_) => "an interface type",
+            Self::Union(_) => "a union type",
+            Self::Enum(_) => "an enum type",
+            Self::InputObject(_) => "an input object type",
         }
     }
 

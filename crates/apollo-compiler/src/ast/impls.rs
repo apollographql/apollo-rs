@@ -157,28 +157,6 @@ impl Definition {
         )
     }
 
-    pub(crate) fn kind(&self) -> &'static str {
-        match self {
-            Self::OperationDefinition(_) => "OperationDefinition",
-            Self::FragmentDefinition(_) => "FragmentDefinition",
-            Self::DirectiveDefinition(_) => "DirectiveDefinition",
-            Self::ScalarTypeDefinition(_) => "ScalarTypeDefinition",
-            Self::ObjectTypeDefinition(_) => "ObjectTypeDefinition",
-            Self::InterfaceTypeDefinition(_) => "InterfaceTypeDefinition",
-            Self::UnionTypeDefinition(_) => "UnionTypeDefinition",
-            Self::EnumTypeDefinition(_) => "EnumTypeDefinition",
-            Self::InputObjectTypeDefinition(_) => "InputObjectTypeDefinition",
-            Self::SchemaDefinition(_) => "SchemaDefinition",
-            Self::SchemaExtension(_) => "SchemaExtension",
-            Self::ScalarTypeExtension(_) => "ScalarTypeExtension",
-            Self::ObjectTypeExtension(_) => "ObjectTypeExtension",
-            Self::InterfaceTypeExtension(_) => "InterfaceTypeExtension",
-            Self::UnionTypeExtension(_) => "UnionTypeExtension",
-            Self::EnumTypeExtension(_) => "EnumTypeExtension",
-            Self::InputObjectTypeExtension(_) => "InputObjectTypeExtension",
-        }
-    }
-
     pub(crate) fn describe(&self) -> &'static str {
         match self {
             Self::OperationDefinition(_) => "an operation definition",
