@@ -1,13 +1,11 @@
-Error: fields must be unique in a definition
-   ╭─[0024_interface_definition_with_duplicate_fields.graphql:6:3]
+Error: duplicate definitions for the `name` field of interface type `NamedEntity`
+   ╭─[0024_interface_definition_with_duplicate_fields.graphql:7:3]
    │
  6 │   name: String
-   │   ──────┬─────  
-   │         ╰─────── previous definition of `name` here
+   │   ──┬─  
+   │     ╰─── previous definition of `name` here
  7 │   name: String
    │   ──────┬─────  
    │         ╰─────── `name` redefined here
-   │ 
-   │ Help: `name` field must only be defined once in this input object definition.
 ───╯
 

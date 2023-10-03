@@ -14,7 +14,7 @@ pub(crate) fn validate_schema(errors: &mut Diagnostics, schema: &Schema) {
 }
 
 fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
-    let location = match build_error {
+    match build_error {
         BuildError::ExecutableDefinition { location, .. }
         | BuildError::SchemaDefinitionCollision { location, .. }
         | BuildError::DirectiveDefinitionCollision { location, .. }
@@ -22,8 +22,16 @@ fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
         | BuildError::BuiltInScalarTypeRedefinition { location, .. }
         | BuildError::OrphanSchemaExtension { location, .. }
         | BuildError::OrphanTypeExtension { location, .. }
-        | BuildError::TypeExtensionKindMismatch { location, .. } => *location,
-        _ => return, // TODO
-    };
-    errors.push(location, Details::SchemaBuildError(build_error.clone()))
+        | BuildError::TypeExtensionKindMismatch { location, .. }
+        | BuildError::DuplicateRootOperation { location, .. }
+        | BuildError::DuplicateImplementsInterfaceInObject { location, .. }
+        | BuildError::DuplicateImplementsInterfaceInInterface { location, .. }
+        | BuildError::ObjectFieldNameCollision { location, .. }
+        | BuildError::InterfaceFieldNameCollision { location, .. }
+        | BuildError::EnumValueNameCollision { location, .. }
+        | BuildError::UnionMemberNameCollision { location, .. }
+        | BuildError::InputFieldNameCollision { location, .. } => {
+            errors.push(*location, Details::SchemaBuildError(build_error.clone()))
+        }
+    }
 }

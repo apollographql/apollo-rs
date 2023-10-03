@@ -3,7 +3,6 @@ use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     Node, ValidationDatabase,
 };
-use std::collections::HashMap;
 
 pub fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
@@ -27,45 +26,8 @@ pub fn validate_enum_definition(
         Default::default(),
     );
 
-    let mut seen: HashMap<ast::Name, &Node<ast::EnumValueDefinition>> = HashMap::new();
     for enum_val in enum_def.values() {
         diagnostics.extend(validate_enum_value(db, enum_val));
-
-        // An Enum type must define one or more unique enum values.
-        //
-        // Return a Unique Definition error in case of a duplicate value.
-        if let Some(prev_def) = seen.get(&enum_val.value) {
-            let original_definition = prev_def.location().unwrap();
-            let redefined_definition = enum_val.location().unwrap();
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    redefined_definition.into(),
-                    DiagnosticData::UniqueDefinition {
-                        ty: "enum value",
-                        name: enum_val.value.to_string(),
-                        original_definition: original_definition.into(),
-                        redefined_definition: redefined_definition.into(),
-                    },
-                )
-                .labels([
-                    Label::new(
-                        original_definition,
-                        format!("previous definition of `{}` here", enum_val.value),
-                    ),
-                    Label::new(
-                        redefined_definition,
-                        format!("`{}` redefined here", enum_val.value),
-                    ),
-                ])
-                .help(format!(
-                    "{} must only be defined once in this enum.",
-                    enum_val.value
-                )),
-            );
-        } else {
-            seen.insert(enum_val.value.clone(), enum_val);
-        }
     }
 
     diagnostics

@@ -458,13 +458,13 @@ impl RootOperations {
                 ast::OperationType::Mutation => &mut self.mutation,
                 ast::OperationType::Subscription => &mut self.subscription,
             };
-            if entry.is_none() {
-                *entry = Some(object_type_name.to_component(origin.clone()))
-            } else {
-                errors.push(BuildError::DuplicateRootOperation {
-                    operation_type: *operation_type,
-                    object_type: object_type_name.clone(),
-                })
+            match entry {
+                None => *entry = Some(object_type_name.to_component(origin.clone())),
+                Some(previous) => errors.push(BuildError::DuplicateRootOperation {
+                    location: op.location(),
+                    previous_location: previous.location(),
+                    operation_type: operation_type.name(),
+                }),
             }
         }
     }
@@ -517,10 +517,11 @@ impl ObjectType {
                     .implements_interfaces
                     .iter()
                     .map(|name| name.to_component(ComponentOrigin::Definition)),
-                |dup| {
-                    errors.push(BuildError::DuplicateImplementsInterface {
-                        implementer_name: definition.name.clone(),
-                        interface_name: dup.node,
+                |prev, dup| {
+                    errors.push(BuildError::DuplicateImplementsInterfaceInObject {
+                        location: dup.location(),
+                        name_at_previous_location: prev.node.clone(),
+                        type_name: definition.name.clone(),
                     })
                 },
             ),
@@ -534,10 +535,11 @@ impl ObjectType {
                     .fields
                     .iter()
                     .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
-                |_, dup_value| {
-                    errors.push(BuildError::FieldNameCollision {
+                |prev_key, dup_value| {
+                    errors.push(BuildError::ObjectFieldNameCollision {
+                        location: dup_value.location(),
+                        name_at_previous_location: prev_key.clone(),
                         type_name: definition.name.clone(),
-                        field: dup_value.node,
                     })
                 },
             ),
@@ -568,10 +570,11 @@ impl ObjectType {
                 .implements_interfaces
                 .iter()
                 .map(|name| name.to_component(origin.clone())),
-            |dup| {
-                errors.push(BuildError::DuplicateImplementsInterface {
-                    implementer_name: extension.name.clone(),
-                    interface_name: dup.node,
+            |prev, dup| {
+                errors.push(BuildError::DuplicateImplementsInterfaceInObject {
+                    location: dup.location(),
+                    name_at_previous_location: prev.node.clone(),
+                    type_name: extension.name.clone(),
                 })
             },
         );
@@ -581,10 +584,11 @@ impl ObjectType {
                 .fields
                 .iter()
                 .map(|field| (&field.name, field.to_component(origin.clone()))),
-            |_, dup_value| {
-                errors.push(BuildError::FieldNameCollision {
+            |prev_key, dup_value| {
+                errors.push(BuildError::ObjectFieldNameCollision {
+                    location: dup_value.location(),
+                    name_at_previous_location: prev_key.clone(),
                     type_name: extension.name.clone(),
-                    field: dup_value.node,
                 })
             },
         );
@@ -605,10 +609,11 @@ impl InterfaceType {
                     .implements_interfaces
                     .iter()
                     .map(|name| name.to_component(ComponentOrigin::Definition)),
-                |dup| {
-                    errors.push(BuildError::DuplicateImplementsInterface {
-                        implementer_name: definition.name.clone(),
-                        interface_name: dup.node,
+                |prev, dup| {
+                    errors.push(BuildError::DuplicateImplementsInterfaceInInterface {
+                        location: dup.location(),
+                        name_at_previous_location: prev.node.clone(),
+                        type_name: definition.name.clone(),
                     })
                 },
             ),
@@ -622,10 +627,11 @@ impl InterfaceType {
                     .fields
                     .iter()
                     .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
-                |_, dup_value| {
-                    errors.push(BuildError::FieldNameCollision {
+                |prev_key, dup_value| {
+                    errors.push(BuildError::InterfaceFieldNameCollision {
+                        location: dup_value.location(),
+                        name_at_previous_location: prev_key.clone(),
                         type_name: definition.name.clone(),
-                        field: dup_value.node,
                     })
                 },
             ),
@@ -656,10 +662,11 @@ impl InterfaceType {
                 .implements_interfaces
                 .iter()
                 .map(|name| name.to_component(origin.clone())),
-            |dup| {
-                errors.push(BuildError::DuplicateImplementsInterface {
-                    implementer_name: extension.name.clone(),
-                    interface_name: dup.node,
+            |prev, dup| {
+                errors.push(BuildError::DuplicateImplementsInterfaceInInterface {
+                    location: dup.location(),
+                    name_at_previous_location: prev.node.clone(),
+                    type_name: extension.name.clone(),
                 })
             },
         );
@@ -669,10 +676,11 @@ impl InterfaceType {
                 .fields
                 .iter()
                 .map(|field| (&field.name, field.to_component(origin.clone()))),
-            |_, dup_value| {
-                errors.push(BuildError::FieldNameCollision {
+            |prev_key, dup_value| {
+                errors.push(BuildError::InterfaceFieldNameCollision {
+                    location: dup_value.location(),
+                    name_at_previous_location: prev_key.clone(),
                     type_name: extension.name.clone(),
-                    field: dup_value.node,
                 })
             },
         );
@@ -698,10 +706,11 @@ impl UnionType {
                     .members
                     .iter()
                     .map(|name| name.to_component(ComponentOrigin::Definition)),
-                |dup| {
+                |prev, dup| {
                     errors.push(BuildError::UnionMemberNameCollision {
-                        union_name: definition.name.clone(),
-                        member: dup.node,
+                        location: dup.location(),
+                        name_at_previous_location: prev.node.clone(),
+                        type_name: definition.name.clone(),
                     })
                 },
             ),
@@ -732,10 +741,11 @@ impl UnionType {
                 .members
                 .iter()
                 .map(|name| name.to_component(origin.clone())),
-            |dup| {
+            |prev, dup| {
                 errors.push(BuildError::UnionMemberNameCollision {
-                    union_name: extension.name.clone(),
-                    member: dup.node,
+                    location: dup.location(),
+                    name_at_previous_location: prev.node.clone(),
+                    type_name: extension.name.clone(),
                 })
             },
         );
@@ -763,10 +773,11 @@ impl EnumType {
                         value_def.to_component(ComponentOrigin::Definition),
                     )
                 }),
-                |_, dup_value| {
+                |prev_key, dup_value| {
                     errors.push(BuildError::EnumValueNameCollision {
-                        enum_name: definition.name.clone(),
-                        value: dup_value.node,
+                        location: dup_value.location(),
+                        name_at_previous_location: prev_key.clone(),
+                        type_name: definition.name.clone(),
                     })
                 },
             ),
@@ -797,10 +808,11 @@ impl EnumType {
                 .values
                 .iter()
                 .map(|value_def| (&value_def.value, value_def.to_component(origin.clone()))),
-            |_, dup_value| {
+            |prev_key, dup_value| {
                 errors.push(BuildError::EnumValueNameCollision {
-                    enum_name: extension.name.clone(),
-                    value: dup_value.node,
+                    location: dup_value.location(),
+                    name_at_previous_location: prev_key.clone(),
+                    type_name: extension.name.clone(),
                 })
             },
         )
@@ -826,10 +838,11 @@ impl InputObjectType {
                     .fields
                     .iter()
                     .map(|field| (&field.name, field.to_component(ComponentOrigin::Definition))),
-                |_, dup_value| {
+                |prev_key, dup_value| {
                     errors.push(BuildError::InputFieldNameCollision {
+                        location: dup_value.location(),
+                        name_at_previous_location: prev_key.clone(),
                         type_name: definition.name.clone(),
-                        field: dup_value.node,
                     })
                 },
             ),
@@ -860,10 +873,11 @@ impl InputObjectType {
                 .fields
                 .iter()
                 .map(|field| (&field.name, field.to_component(origin.clone()))),
-            |_, dup_value| {
+            |prev_key, dup_value| {
                 errors.push(BuildError::InputFieldNameCollision {
+                    location: dup_value.location(),
+                    name_at_previous_location: prev_key.clone(),
                     type_name: extension.name.clone(),
-                    field: dup_value.node,
                 })
             },
         )
@@ -892,25 +906,25 @@ where
 
 /// Like `IndexMap::extend`, but does not replace a value if an equivalent key is already in the map.
 ///
-/// Calls `duplicate` with values not inserted
+/// On collision, calls `duplicate` with the previous key and the value not inserted
 fn extend_sticky<'a, V>(
     map: &mut IndexMap<Name, V>,
     iter: impl IntoIterator<Item = (&'a Name, V)>,
     mut duplicate: impl FnMut(&Name, V),
 ) {
     for (key, value) in iter.into_iter() {
-        match map.entry(key.clone()) {
-            Entry::Vacant(entry) => {
-                entry.insert(value);
+        match map.get_key_value(key) {
+            None => {
+                map.insert(key.clone(), value);
             }
-            Entry::Occupied(_) => duplicate(key, value),
+            Some((prev_key, _)) => duplicate(prev_key, value),
         }
     }
 }
 
 /// Like `IndexMap::from_iterator`, but does not replace a value if an equivalent key is already in the map.
 ///
-/// Calls `duplicate` with values not inserted
+/// On collision, calls `duplicate` with the previous key and the value not inserted
 fn collect_sticky<'a, V>(
     iter: impl IntoIterator<Item = (&'a Name, V)>,
     duplicate: impl FnMut(&Name, V),
@@ -923,19 +937,20 @@ fn collect_sticky<'a, V>(
 fn extend_sticky_set(
     set: &mut IndexSet<ComponentStr>,
     iter: impl IntoIterator<Item = ComponentStr>,
-    mut duplicate: impl FnMut(ComponentStr),
+    mut duplicate: impl FnMut(&ComponentStr, ComponentStr),
 ) {
     for value in iter.into_iter() {
-        if !set.contains(&value) {
-            set.insert(value);
-        } else {
-            duplicate(value)
+        match set.get(&value) {
+            None => {
+                set.insert(value);
+            }
+            Some(previous) => duplicate(previous, value),
         }
     }
 }
 fn collect_sticky_set(
     iter: impl IntoIterator<Item = ComponentStr>,
-    duplicate: impl FnMut(ComponentStr),
+    duplicate: impl FnMut(&ComponentStr, ComponentStr),
 ) -> IndexSet<ComponentStr> {
     let mut set = IndexSet::new();
     extend_sticky_set(&mut set, iter, duplicate);

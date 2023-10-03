@@ -46,7 +46,6 @@ pub fn validate_object_type_definition(
     let implements_interfaces: Vec<_> = object.implements_interfaces().cloned().collect();
     diagnostics.extend(super::interface::validate_implements_interfaces(
         db,
-        &object.definition.name,
         &object.definition.clone().into(),
         &implements_interfaces,
     ));

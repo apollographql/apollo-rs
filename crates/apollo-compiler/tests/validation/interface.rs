@@ -22,12 +22,13 @@ scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
     let mut compiler = ApolloCompiler::new();
     compiler.add_document(input, "schema.graphql");
-
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}")
-    }
-    assert_eq!(diagnostics.len(), 1);
+    let diagnostics = compiler.db.schema().validate().unwrap_err();
+    let diagnostics = format!("{diagnostics:#}");
+    assert!(
+        diagnostics
+            .contains("duplicate definitions for the `name` field of interface type `NamedEntity`"),
+        "{diagnostics}"
+    );
 }
 
 #[test]

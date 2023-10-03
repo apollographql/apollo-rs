@@ -116,25 +116,16 @@ pub fn validate_input_object_definition(
     diagnostics
 }
 
-pub fn validate_input_value_definitions(
+pub fn validate_argument_definitions(
     db: &dyn ValidationDatabase,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
 ) -> Vec<ApolloDiagnostic> {
-    let schema = db.schema();
-
-    let mut diagnostics = Vec::new();
+    let mut diagnostics = validate_input_value_definitions(db, input_values, directive_location);
 
     let mut seen: HashMap<ast::Name, &Node<ast::InputValueDefinition>> = HashMap::new();
     for input_value in input_values {
         let name = &input_value.name;
-        diagnostics.extend(super::directive::validate_directives(
-            db,
-            input_value.directives.iter(),
-            directive_location,
-            Default::default(), // No variables in an input value definition
-        ));
-
         if let Some(prev_value) = seen.get(name) {
             if let (Some(original_value), Some(redefined_value)) =
                 (prev_value.location(), input_value.location())
@@ -164,7 +155,27 @@ pub fn validate_input_value_definitions(
         } else {
             seen.insert(name.clone(), input_value);
         }
+    }
 
+    diagnostics
+}
+
+pub fn validate_input_value_definitions(
+    db: &dyn ValidationDatabase,
+    input_values: &[Node<ast::InputValueDefinition>],
+    directive_location: ast::DirectiveLocation,
+) -> Vec<ApolloDiagnostic> {
+    let schema = db.schema();
+
+    let mut diagnostics = Vec::new();
+
+    for input_value in input_values {
+        diagnostics.extend(super::directive::validate_directives(
+            db,
+            input_value.directives.iter(),
+            directive_location,
+            Default::default(), // No variables in an input value definition
+        ));
         // Input values must only contain input types.
         let loc = input_value
             .location()

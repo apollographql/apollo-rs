@@ -1,13 +1,11 @@
-Error: fields must be unique in a definition
-   ╭─[0033_object_type_definition_with_duplicate_fields.graphql:2:3]
+Error: duplicate definitions for the `name` field of object type `Query`
+   ╭─[0033_object_type_definition_with_duplicate_fields.graphql:3:3]
    │
  2 │   name: String
-   │   ──────┬─────  
-   │         ╰─────── previous definition of `name` here
+   │   ──┬─  
+   │     ╰─── previous definition of `name` here
  3 │   name: String
    │   ──────┬─────  
    │         ╰─────── `name` redefined here
-   │ 
-   │ Help: `name` field must only be defined once in this input object definition.
 ───╯
 

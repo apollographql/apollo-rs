@@ -1,3 +1,13 @@
+Error: duplicate definitions for the `WithFieldA` member of union type `DuplicateMembers`
+    ╭─[0100_union_extensions.graphql:12:33]
+    │
+ 11 │ union DuplicateMembers = WithFieldA
+    │                          ─────┬────  
+    │                               ╰────── previous definition of `WithFieldA` here
+ 12 │ extend union DuplicateMembers = WithFieldA | WithFieldB
+    │                                 ─────┬────  
+    │                                      ╰────── `WithFieldA` redefined here
+────╯
 Error: `ThisIsAScalar` field must return an object type
    ╭─[0100_union_extensions.graphql:8:30]
    │
@@ -7,18 +17,6 @@ Error: `ThisIsAScalar` field must return an object type
    │ 
    │ Help: Union members must be of base Object Type.
 ───╯
-Error: the union member `WithFieldA` is defined multiple times in the document
-    ╭─[0100_union_extensions.graphql:12:33]
-    │
- 11 │ union DuplicateMembers = WithFieldA
-    │                          ─────┬────  
-    │                               ╰────── previous definition of `WithFieldA` here
- 12 │ extend union DuplicateMembers = WithFieldA | WithFieldB
-    │                                 ─────┬────  
-    │                                      ╰────── `WithFieldA` redefined here
-    │ 
-    │ Help: `WithFieldA` must only be defined once in this document.
-────╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
     ╭─[0100_union_extensions.graphql:17:33]
     │

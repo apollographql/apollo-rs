@@ -139,40 +139,56 @@ impl Error {
                     opt_label!("extension here")
                 }
                 SchemaBuildError::DuplicateRootOperation {
-                    operation_type: _,
-                    object_type: _,
+                    previous_location,
+                    operation_type,
+                    ..
                 } => {
-                    // TODO
+                    opt_label!(
+                        previous_location,
+                        "previous definition of `{operation_type}` here"
+                    );
+                    opt_label!("`{operation_type}` redefined here");
                 }
-                SchemaBuildError::DuplicateImplementsInterface {
-                    implementer_name: _,
-                    interface_name: _,
-                } => {
-                    // TODO
+                SchemaBuildError::DuplicateImplementsInterfaceInObject {
+                    name_at_previous_location,
+                    ..
                 }
-                SchemaBuildError::FieldNameCollision {
-                    type_name: _,
-                    field: _,
+                | SchemaBuildError::DuplicateImplementsInterfaceInInterface {
+                    name_at_previous_location,
+                    ..
                 } => {
-                    // TODO
+                    let previous_location = &name_at_previous_location.location();
+                    let name = name_at_previous_location;
+                    opt_label!(
+                        previous_location,
+                        "previous implementation of `{name}` here"
+                    );
+                    opt_label!("`{name}` implemented again here");
                 }
-                SchemaBuildError::EnumValueNameCollision {
-                    enum_name: _,
-                    value: _,
-                } => {
-                    // TODO
+                SchemaBuildError::ObjectFieldNameCollision {
+                    name_at_previous_location,
+                    ..
                 }
-                SchemaBuildError::UnionMemberNameCollision {
-                    union_name: _,
-                    member: _,
-                } => {
-                    // TODO
+                | SchemaBuildError::InterfaceFieldNameCollision {
+                    name_at_previous_location,
+                    ..
                 }
-                SchemaBuildError::InputFieldNameCollision {
-                    type_name: _,
-                    field: _,
+                | SchemaBuildError::EnumValueNameCollision {
+                    name_at_previous_location,
+                    ..
+                }
+                | SchemaBuildError::UnionMemberNameCollision {
+                    name_at_previous_location,
+                    ..
+                }
+                | SchemaBuildError::InputFieldNameCollision {
+                    name_at_previous_location,
+                    ..
                 } => {
-                    // TODO
+                    let previous_location = &name_at_previous_location.location();
+                    let name = name_at_previous_location;
+                    opt_label!(previous_location, "previous definition of `{name}` here");
+                    opt_label!("`{name}` redefined here");
                 }
             },
             Details::ExecutableBuildError(err) => match err {
