@@ -23,12 +23,31 @@ pub(crate) fn validate_standalone_executable(
     for build_error in &document.build_errors {
         validate_build_error(errors, build_error)
     }
+    if let Some(operation) = &document.anonymous_operation {
+        if !document.named_operations.is_empty()
+            || document
+                .build_errors
+                .iter()
+                .any(|e| matches!(e, BuildError::AmbiguousAnonymousOperation { .. }))
+        {
+            let location = operation.location();
+            // Not actually a build error from converting from AST,
+            // but reuses the same message formatting
+            errors.push(
+                location,
+                Details::ExecutableBuildError(BuildError::AmbiguousAnonymousOperation { location }),
+            )
+        }
+    }
     // TODO
 }
 
 fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
     let location = match build_error {
-        BuildError::TypeSystemDefinition { location, .. } => *location,
+        BuildError::TypeSystemDefinition { location, .. }
+        | BuildError::AmbiguousAnonymousOperation { location }
+        | BuildError::OperationNameCollision { location, .. }
+        | BuildError::FragmentNameCollision { location, .. } => *location,
         _ => return, // TODO
     };
     errors.push(location, Details::ExecutableBuildError(build_error.clone()))

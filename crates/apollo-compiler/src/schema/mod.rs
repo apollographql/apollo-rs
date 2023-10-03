@@ -166,14 +166,14 @@ pub(crate) enum BuildError {
         previous_location: Option<NodeLocation>,
     },
 
-    #[error("the directive `@{name}` is defined multiple times in the document")]
+    #[error("the directive `@{name}` is defined multiple times in the schema")]
     DirectiveDefinitionCollision {
         location: Option<NodeLocation>,
         previous_location: Option<NodeLocation>,
         name: Name,
     },
 
-    #[error("the type `{name}` is defined multiple times in the document")]
+    #[error("the type `{name}` is defined multiple times in the schema")]
     TypeDefinitionCollision {
         location: Option<NodeLocation>,
         previous_location: Option<NodeLocation>,

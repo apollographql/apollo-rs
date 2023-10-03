@@ -196,11 +196,15 @@ fn validation_without_type_system() {
         "#,
         "dupe_frag.graphql",
     );
-    let diagnostics = compiler.db.validate_standalone_executable(dupe_frag_id);
-    assert_eq!(diagnostics.len(), 1);
-    assert_eq!(
-        diagnostics[0].data.to_string(),
-        "the fragment `A` is defined multiple times in the document"
+    let diagnostics = compiler
+        .db
+        .ast(dupe_frag_id)
+        .validate_standalone_executable()
+        .unwrap_err();
+    let diagnostics = format!("{diagnostics:#}");
+    assert!(
+        diagnostics.contains("the fragment `A` is defined multiple times in the document"),
+        "{diagnostics}"
     );
 
     let unknown_frag_id = compiler.add_executable(r#"{ ...A }"#, "unknown_frag.graphql");

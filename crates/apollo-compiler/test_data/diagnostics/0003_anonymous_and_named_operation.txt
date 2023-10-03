@@ -1,4 +1,4 @@
-Error: expected identifier
+Error: anonymous operation cannot be selected when the document contains other operations
    ╭─[0003_anonymous_and_named_operation.graphql:1:1]
    │
  1 │ ╭─▶ query {
@@ -7,7 +7,7 @@ Error: expected identifier
    │ │       
    │ ╰─────── provide a name for this definition
    │     
-   │     Help: GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.
+   │     Help: GraphQL requires operations to be named if the document has more than one
 ───╯
 Error: the required argument `name` is not provided
     ╭─[0003_anonymous_and_named_operation.graphql:6:3]

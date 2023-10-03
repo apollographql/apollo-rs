@@ -1,4 +1,4 @@
-Error: the type `World` is defined multiple times in the document
+Error: the type `World` is defined multiple times in the schema
    ╭─[0057_duplicate_type_names.graphql:9:6]
    │
  1 │ interface World {
@@ -11,7 +11,7 @@ Error: the type `World` is defined multiple times in the document
    │ 
    │ Help: remove or rename one of the definitions, or use `extend`
 ───╯
-Error: the type `X` is defined multiple times in the document
+Error: the type `X` is defined multiple times in the schema
     ╭─[0057_duplicate_type_names.graphql:16:7]
     │
  14 │ scalar X @specifiedBy(url: "https://apollographql.com")
@@ -24,7 +24,7 @@ Error: the type `X` is defined multiple times in the document
     │ 
     │ Help: remove or rename one of the definitions, or use `extend`
 ────╯
-Error: the type `X` is defined multiple times in the document
+Error: the type `X` is defined multiple times in the schema
     ╭─[0057_duplicate_type_names.graphql:18:6]
     │
  14 │ scalar X @specifiedBy(url: "https://apollographql.com")
@@ -37,7 +37,7 @@ Error: the type `X` is defined multiple times in the document
     │ 
     │ Help: remove or rename one of the definitions, or use `extend`
 ────╯
-Error: the type `X` is defined multiple times in the document
+Error: the type `X` is defined multiple times in the schema
     ╭─[0057_duplicate_type_names.graphql:20:6]
     │
  14 │ scalar X @specifiedBy(url: "https://apollographql.com")

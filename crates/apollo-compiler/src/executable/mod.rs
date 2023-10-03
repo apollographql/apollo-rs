@@ -105,17 +105,24 @@ pub(crate) enum BuildError {
         describe: &'static str,
     },
 
-    /// Found multiple operations without a name
-    #[error("TODO")]
-    DuplicateAnonymousOperation(Node<ast::OperationDefinition>),
+    #[error("anonymous operation cannot be selected when the document contains other operations")]
+    AmbiguousAnonymousOperation { location: Option<NodeLocation> },
 
-    /// Found multiple operations with the same name
-    #[error("TODO")]
-    OperationNameCollision(Node<ast::OperationDefinition>),
+    #[error(
+        "the operation `{name_at_previous_location}` is defined multiple times in the document"
+    )]
+    OperationNameCollision {
+        location: Option<NodeLocation>,
+        name_at_previous_location: Name,
+    },
 
-    /// Found multiple fragments with the same name
-    #[error("TODO")]
-    FragmentNameCollision(Node<ast::FragmentDefinition>),
+    #[error(
+        "the fragment `{name_at_previous_location}` is defined multiple times in the document"
+    )]
+    FragmentNameCollision {
+        location: Option<NodeLocation>,
+        name_at_previous_location: Name,
+    },
 
     /// The schema does not define a root operation
     /// for the operation type of this operation definition

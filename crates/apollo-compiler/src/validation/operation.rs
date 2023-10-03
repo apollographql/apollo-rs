@@ -167,30 +167,12 @@ pub(crate) fn validate_operation_definitions_inner(
     has_schema: bool,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-    let mut anonymous_definitions: Vec<&Node<ast::OperationDefinition>> = vec![];
-    let mut num_definitions = 0;
-
     let document = db.ast(file_id);
 
     for definition in &document.definitions {
         if let ast::Definition::OperationDefinition(operation) = definition {
             diagnostics.extend(validate_operation(db, operation.clone(), has_schema));
-
-            num_definitions += 1;
-            if operation.name.is_none() {
-                anonymous_definitions.push(operation);
-            }
         }
-    }
-
-    if num_definitions > 1 {
-        diagnostics.extend(
-            anonymous_definitions.into_iter().map(|operation| {
-                ApolloDiagnostic::new(db, operation.location().unwrap().into(), DiagnosticData::MissingIdent)
-                    .label(Label::new(operation.location().unwrap(), "provide a name for this definition"))
-                    .help("GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.")
-            }),
-        );
     }
 
     diagnostics
