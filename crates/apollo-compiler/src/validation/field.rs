@@ -5,7 +5,6 @@ use crate::{
     validation::ValidationDatabase,
     Node,
 };
-use std::collections::HashMap;
 
 use super::operation::OperationValidationConfig;
 
@@ -171,7 +170,7 @@ pub fn validate_field_definition(
         Default::default(),
     );
 
-    diagnostics.extend(super::input_object::validate_input_value_definitions(
+    diagnostics.extend(super::input_object::validate_argument_definitions(
         db,
         &field.arguments,
         ast::DirectiveLocation::ArgumentDefinition,
@@ -188,48 +187,8 @@ pub fn validate_field_definitions(
 
     let schema = db.schema();
 
-    let mut seen: HashMap<ast::Name, &Node<ast::FieldDefinition>> = HashMap::new();
-
     for field in &fields {
         diagnostics.extend(validate_field_definition(db, field));
-
-        // Fields must be unique.
-        //
-        // Returns Unique Field error.
-        let fname = &field.name;
-        let redefined_definition = field
-            .location()
-            .expect("undefined field definition location");
-
-        if let Some(prev_field) = seen.get(fname) {
-            let original_definition = prev_field
-                .location()
-                .expect("undefined field definition location");
-
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    original_definition.into(),
-                    DiagnosticData::UniqueField {
-                        field: fname.to_string(),
-                        original_definition: original_definition.into(),
-                        redefined_definition: redefined_definition.into(),
-                    },
-                )
-                .labels([
-                    Label::new(
-                        original_definition,
-                        format!("previous definition of `{fname}` here"),
-                    ),
-                    Label::new(redefined_definition, format!("`{fname}` redefined here")),
-                ])
-                .help(format!(
-                    "`{fname}` field must only be defined once in this input object definition."
-                )),
-            );
-        } else {
-            seen.insert(fname.clone(), field);
-        }
 
         // Field types in Object Types must be of output type
         let loc = field

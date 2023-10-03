@@ -1,13 +1,11 @@
-Error: the value `x` is defined multiple times
-    ╭─[0031_input_object_with_duplicate_fields.graphql:9:3]
+Error: duplicate definitions for the `x` field of input object type `Point2D`
+    ╭─[0031_input_object_with_duplicate_fields.graphql:10:3]
     │
   9 │   x: Float
-    │   ────┬───  
-    │       ╰───── previous definition of `x` here
+    │   ┬  
+    │   ╰── previous definition of `x` here
  10 │   x: Float
     │   ────┬───  
     │       ╰───── `x` redefined here
-    │ 
-    │ Help: `x` field must only be defined once in this input object definition.
 ────╯
 

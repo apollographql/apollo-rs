@@ -1,4 +1,4 @@
-Error: the union member `Photo` is defined multiple times in the document
+Error: duplicate definitions for the `Photo` member of union type `SearchResult`
    ╭─[0021_union_definition_with_duplicate_members.graphql:5:30]
    │
  5 │ union SearchResult = Photo | Photo
@@ -6,7 +6,5 @@ Error: the union member `Photo` is defined multiple times in the document
    │                        ╰──────────── previous definition of `Photo` here
    │                                │    
    │                                ╰──── `Photo` redefined here
-   │ 
-   │ Help: `Photo` must only be defined once in this document.
 ───╯
 

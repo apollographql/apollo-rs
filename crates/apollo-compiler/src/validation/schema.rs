@@ -1,9 +1,8 @@
 use crate::{
     ast,
     diagnostics::{DiagnosticData, Label},
-    schema, ApolloDiagnostic, Node, NodeLocation, ValidationDatabase,
+    schema, ApolloDiagnostic, Node, ValidationDatabase,
 };
-use std::collections::HashMap;
 
 pub fn validate_schema_definition(
     db: &dyn ValidationDatabase,
@@ -51,38 +50,8 @@ pub fn validate_root_operation_definitions(
 
     let schema = db.schema();
 
-    let mut seen: HashMap<_, NodeLocation> = HashMap::new();
-
     for op in root_op_defs {
         let (_op_type, name) = &**op;
-        if let Some(loc) = op.location() {
-            // All root operations in a schema definition must be unique.
-            //
-            // Return a Unique Operation Definition error in case of a duplicate name.
-            if let Some(&prev_loc) = seen.get(name) {
-                diagnostics.push(
-                    ApolloDiagnostic::new(
-                        db,
-                        loc.into(),
-                        DiagnosticData::UniqueDefinition {
-                            ty: "root operation type definition",
-                            name: name.to_string(),
-                            original_definition: prev_loc.into(),
-                            redefined_definition: loc.into(),
-                        },
-                    )
-                    .labels([
-                        Label::new(prev_loc, format!("previous definition of `{name}` here")),
-                        Label::new(loc, format!("`{name}` redefined here")),
-                    ])
-                    .help(format!(
-                        "`{name}` must only be defined once in this document."
-                    )),
-                );
-            } else {
-                seen.insert(name, loc);
-            }
-        }
 
         // Root Operation Named Type must be of Object Type.
         //

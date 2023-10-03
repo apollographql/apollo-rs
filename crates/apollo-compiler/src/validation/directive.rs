@@ -137,7 +137,7 @@ pub fn validate_directive_definition(
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = vec![];
 
-    diagnostics.extend(super::input_object::validate_input_value_definitions(
+    diagnostics.extend(super::input_object::validate_argument_definitions(
         db,
         &def.arguments,
         ast::DirectiveLocation::ArgumentDefinition,

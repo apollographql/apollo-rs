@@ -1,15 +1,13 @@
-Error: fields must be unique in a definition
-   ╭─[0098_interface_extensions.graphql:2:3]
+Error: duplicate definitions for the `name` field of interface type `UniqueNames`
+   ╭─[0098_interface_extensions.graphql:5:3]
    │
  2 │   name: String
-   │   ──────┬─────  
-   │         ╰─────── previous definition of `name` here
+   │   ──┬─  
+   │     ╰─── previous definition of `name` here
    │ 
  5 │   name: String
    │   ──────┬─────  
    │         ╰─────── `name` redefined here
-   │ 
-   │ Help: `name` field must only be defined once in this input object definition.
 ───╯
 Error: non-repeatable directive nonRepeatable can only be used once per location
     ╭─[0098_interface_extensions.graphql:14:29]

@@ -1,13 +1,11 @@
-Error: the root operation type definition `customPetQuery` is defined multiple times in the document
+Error: duplicate definitions for the `query` root operation type
    ╭─[0013_schema_definition_with_duplicate_root_type_operations.graphql:3:3]
    │
- 2 │   query: customPetQuery,
+ 2 │   query: customPetQuery
+   │          ───────┬──────  
+   │                 ╰──────── previous definition of `query` here
+ 3 │   query: thatOtherQuery
    │   ──────────┬──────────  
-   │             ╰──────────── previous definition of `customPetQuery` here
- 3 │   subscription: customPetQuery
-   │   ──────────────┬─────────────  
-   │                 ╰─────────────── `customPetQuery` redefined here
-   │ 
-   │ Help: `customPetQuery` must only be defined once in this document.
+   │             ╰──────────── `query` redefined here
 ───╯
 

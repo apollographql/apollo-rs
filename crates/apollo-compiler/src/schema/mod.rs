@@ -201,41 +201,81 @@ pub(crate) enum BuildError {
         describe_def: &'static str,
     },
 
-    #[error("TODO")]
+    #[error("duplicate definitions for the `{operation_type}` root operation type")]
     DuplicateRootOperation {
-        operation_type: ast::OperationType,
-        object_type: NamedType,
+        location: Option<NodeLocation>,
+        previous_location: Option<NodeLocation>,
+        operation_type: &'static str,
     },
 
-    #[error("TODO")]
-    DuplicateImplementsInterface {
-        implementer_name: NamedType,
-        interface_name: Name,
+    #[error(
+        "object type `{type_name}` implements interface `{name_at_previous_location}` \
+         more than once"
+    )]
+    DuplicateImplementsInterfaceInObject {
+        location: Option<NodeLocation>,
+        name_at_previous_location: Name,
+        type_name: Name,
     },
 
-    #[error("TODO")]
-    FieldNameCollision {
-        /// Object type or interface type
-        type_name: NamedType,
-        field: Node<ast::FieldDefinition>,
+    #[error(
+        "interface type `{type_name}` implements interface `{name_at_previous_location}` \
+         more than once"
+    )]
+    DuplicateImplementsInterfaceInInterface {
+        location: Option<NodeLocation>,
+        name_at_previous_location: Name,
+        type_name: Name,
     },
 
-    #[error("TODO")]
+    #[error(
+        "duplicate definitions for the `{name_at_previous_location}` \
+         field of object type `{type_name}`"
+    )]
+    ObjectFieldNameCollision {
+        location: Option<NodeLocation>,
+        name_at_previous_location: Name,
+        type_name: Name,
+    },
+
+    #[error(
+        "duplicate definitions for the `{name_at_previous_location}` \
+         field of interface type `{type_name}`"
+    )]
+    InterfaceFieldNameCollision {
+        location: Option<NodeLocation>,
+        name_at_previous_location: Name,
+        type_name: Name,
+    },
+
+    #[error(
+        "duplicate definitions for the `{name_at_previous_location}` \
+         value of enum type `{type_name}`"
+    )]
     EnumValueNameCollision {
-        enum_name: NamedType,
-        value: Node<ast::EnumValueDefinition>,
+        location: Option<NodeLocation>,
+        name_at_previous_location: Name,
+        type_name: Name,
     },
 
-    #[error("TODO")]
+    #[error(
+        "duplicate definitions for the `{name_at_previous_location}` \
+         member of union type `{type_name}`"
+    )]
     UnionMemberNameCollision {
-        union_name: NamedType,
-        member: NamedType,
+        location: Option<NodeLocation>,
+        name_at_previous_location: Name,
+        type_name: Name,
     },
 
-    #[error("TODO")]
+    #[error(
+        "duplicate definitions for the `{name_at_previous_location}` \
+         field of input object type `{type_name}`"
+    )]
     InputFieldNameCollision {
-        type_name: NamedType,
-        field: Node<ast::InputValueDefinition>,
+        location: Option<NodeLocation>,
+        name_at_previous_location: Name,
+        type_name: Name,
     },
 }
 

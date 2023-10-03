@@ -72,7 +72,6 @@ pub fn validate_interface_definition(
     let implements_interfaces: Vec<_> = interface.implements_interfaces().cloned().collect();
     diagnostics.extend(validate_implements_interfaces(
         db,
-        &interface.definition.name,
         &interface.definition.clone().into(),
         &implements_interfaces,
     ));
@@ -131,7 +130,6 @@ pub fn validate_interface_definition(
 
 pub fn validate_implements_interfaces(
     db: &dyn ValidationDatabase,
-    implementor_name: &ast::Name,
     implementor: &ast::Definition,
     implements_interfaces: &[ast::Name],
 ) -> Vec<ApolloDiagnostic> {
@@ -214,32 +212,6 @@ pub fn validate_implements_interfaces(
                 format!("{transitive_interface} must also be implemented here"),
             )),
         );
-    }
-
-    let mut seen: HashSet<&ast::Name> = HashSet::new();
-    for name in implements_interfaces {
-        if let Some(original) = seen.get(&name) {
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    (name.location().unwrap()).into(),
-                    DiagnosticData::DuplicateImplementsInterface {
-                        ty: implementor_name.to_string(),
-                        interface: name.to_string(),
-                    },
-                )
-                .label(Label::new(
-                    original.location().unwrap(),
-                    format!("`{name}` interface implementation previously declared here"),
-                ))
-                .label(Label::new(
-                    name.location().unwrap(),
-                    format!("`{name}` interface implementation declared again here"),
-                )),
-            );
-        } else {
-            seen.insert(name);
-        }
     }
 
     diagnostics

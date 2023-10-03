@@ -3,7 +3,6 @@ use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema, ValidationDatabase,
 };
-use std::collections::HashSet;
 
 pub fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
@@ -29,40 +28,9 @@ pub fn validate_union_definition(
 
     let schema = db.schema();
 
-    let mut seen: HashSet<ast::Name> = HashSet::new();
     for union_member in union_def.members() {
         let member_location = union_member.location().unwrap();
-        // A Union type must include one or more unique member types.
-        //
-        // Return a Unique Definition error in case of a duplicate member.
-        if let Some(prev_def) = seen.get(union_member) {
-            let original_definition = prev_def.location().unwrap();
-
-            diagnostics.push(
-                ApolloDiagnostic::new(
-                    db,
-                    member_location.into(),
-                    DiagnosticData::UniqueDefinition {
-                        ty: "union member",
-                        name: union_member.to_string(),
-                        original_definition: original_definition.into(),
-                        redefined_definition: member_location.into(),
-                    },
-                )
-                .labels([
-                    Label::new(
-                        original_definition,
-                        format!("previous definition of `{union_member}` here"),
-                    ),
-                    Label::new(member_location, format!("`{union_member}` redefined here")),
-                ])
-                .help(format!(
-                    "`{union_member}` must only be defined once in this document."
-                )),
-            );
-        } else {
-            seen.insert(union_member.clone());
-        }
+        // TODO: (?) A Union type must include one or more unique member types.
 
         match schema.types.get(union_member) {
             None => {
