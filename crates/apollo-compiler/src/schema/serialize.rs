@@ -14,17 +14,27 @@ impl Schema {
 
 impl Schema {
     fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
-        let implicit_op = |opt: &Option<ComponentStr>, ty: OperationType| match opt {
-            Some(name) => name.as_str() == ty.default_type_name(),
-            None => true,
-        };
-        let schema_extensions = self.extensions();
-        let implicit_schema = self.description.is_none()
-            && self.directives.is_empty()
-            && schema_extensions.is_empty()
-            && implicit_op(&self.query_type, OperationType::Query)
-            && implicit_op(&self.mutation_type, OperationType::Mutation)
-            && implicit_op(&self.subscription_type, OperationType::Subscription);
+        self.root_operations
+            .as_ref()
+            .into_iter()
+            .flat_map(|root| root.to_ast())
+            .chain(
+                self.directive_definitions
+                    .values()
+                    .filter(|def| !def.is_built_in())
+                    .map(|def| ast::Definition::DirectiveDefinition(def.clone())),
+            )
+            .chain(
+                self.types
+                    .iter()
+                    .filter(|(_name, def)| !def.is_built_in())
+                    .flat_map(|(name, def)| def.to_ast(name)),
+            )
+    }
+}
+
+impl RootOperations {
+    fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {
             let root_op = |op: &Option<ComponentStr>, ty| {
                 op.as_ref()
@@ -32,44 +42,24 @@ impl Schema {
                     .map(|name| (ty, name.node.clone()).into())
                     .into_iter()
             };
-            root_op(&self.query_type, OperationType::Query)
-                .chain(root_op(&self.mutation_type, OperationType::Mutation))
-                .chain(root_op(
-                    &self.subscription_type,
-                    OperationType::Subscription,
-                ))
+            root_op(&self.query, OperationType::Query)
+                .chain(root_op(&self.mutation, OperationType::Mutation))
+                .chain(root_op(&self.subscription, OperationType::Subscription))
                 .collect()
         };
-        if implicit_schema {
-            None
-        } else {
-            Some(ast::Definition::SchemaDefinition(Node::new(
-                ast::SchemaDefinition {
-                    description: self.description.clone(),
-                    directives: ast::Directives(components(&self.directives, None)),
-                    root_operations: root_ops(None),
-                },
-            )))
-        }
-        .into_iter()
-        .chain(schema_extensions.into_iter().map(move |ext| {
+        std::iter::once(ast::Definition::SchemaDefinition(Node::new(
+            ast::SchemaDefinition {
+                description: self.description.clone(),
+                directives: ast::Directives(components(&self.directives, None)),
+                root_operations: root_ops(None),
+            },
+        )))
+        .chain(self.extensions().into_iter().map(move |ext| {
             ast::Definition::SchemaExtension(Node::new(ast::SchemaExtension {
                 directives: ast::Directives(components(&self.directives, Some(ext))),
                 root_operations: root_ops(Some(ext)),
             }))
         }))
-        .chain(
-            self.directive_definitions
-                .values()
-                .filter(|def| !def.is_built_in())
-                .map(|def| ast::Definition::DirectiveDefinition(def.clone())),
-        )
-        .chain(
-            self.types
-                .iter()
-                .filter(|(_name, def)| !def.is_built_in())
-                .flat_map(|(name, def)| def.to_ast(name)),
-        )
     }
 }
 

@@ -481,7 +481,7 @@ impl OperationType {
     }
 
     /// Get the default name of the object type for this operation type
-    pub fn default_type_name(self) -> &'static str {
+    pub const fn default_type_name(self) -> &'static str {
         match self {
             OperationType::Query => "Query",
             OperationType::Mutation => "Mutation",

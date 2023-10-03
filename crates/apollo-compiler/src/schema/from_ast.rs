@@ -1,18 +1,10 @@
 use super::*;
-use crate::ast::OperationType;
 use indexmap::map::Entry;
 
 pub struct SchemaBuilder {
     schema: Schema,
-    schema_definition_status: SchemaDefinitionStatus,
+    orphan_schema_extensions: Vec<Node<ast::SchemaExtension>>,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
-}
-
-enum SchemaDefinitionStatus {
-    Found,
-    NoneSoFar {
-        orphan_extensions: Vec<Node<ast::SchemaExtension>>,
-    },
 }
 
 impl Default for SchemaBuilder {
@@ -29,17 +21,11 @@ impl SchemaBuilder {
             schema: Schema {
                 sources: IndexMap::new(),
                 build_errors: Vec::new(),
-                description: None,
-                directives: Directives::new(),
+                root_operations: None,
                 directive_definitions: IndexMap::new(),
                 types: IndexMap::new(),
-                query_type: None,
-                mutation_type: None,
-                subscription_type: None,
             },
-            schema_definition_status: SchemaDefinitionStatus::NoneSoFar {
-                orphan_extensions: Vec::new(),
-            },
+            orphan_schema_extensions: Vec::new(),
             orphan_type_extensions: IndexMap::new(),
         };
 
@@ -58,11 +44,8 @@ impl SchemaBuilder {
         debug_assert!(
             builder.schema.build_errors.is_empty()
                 && builder.orphan_type_extensions.is_empty()
-                && matches!(
-                    &builder.schema_definition_status,
-                    SchemaDefinitionStatus::NoneSoFar { orphan_extensions }
-                    if orphan_extensions.is_empty()
-                )
+                && builder.orphan_schema_extensions.is_empty()
+                && builder.schema.root_operations.is_none(),
         );
         builder
     }
@@ -88,11 +71,13 @@ impl SchemaBuilder {
         for definition in &document.definitions {
             match definition {
                 ast::Definition::SchemaDefinition(def) => {
-                    if let SchemaDefinitionStatus::NoneSoFar { orphan_extensions } =
-                        &self.schema_definition_status
-                    {
-                        self.schema.set_ast(def, orphan_extensions);
-                        self.schema_definition_status = SchemaDefinitionStatus::Found;
+                    if self.schema.root_operations.is_none() {
+                        self.schema.root_operations = Some(RootOperations::from_ast(
+                            &mut self.schema.build_errors,
+                            def,
+                            &self.orphan_schema_extensions,
+                        ));
+                        self.orphan_schema_extensions = Vec::new();
                     } else {
                         self.schema
                             .build_errors
@@ -197,12 +182,14 @@ impl SchemaBuilder {
                             .push(BuildError::DefinitionCollision(definition.clone()))
                     }
                 }
-                ast::Definition::SchemaExtension(ext) => match &mut self.schema_definition_status {
-                    SchemaDefinitionStatus::Found => self.schema.extend_ast(ext),
-                    SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
-                        orphan_extensions.push(ext.clone())
+                ast::Definition::SchemaExtension(ext) => {
+                    if let Some(root) = &mut self.schema.root_operations {
+                        root.make_mut()
+                            .extend_ast(&mut self.schema.build_errors, ext)
+                    } else {
+                        self.orphan_schema_extensions.push(ext.clone())
                     }
-                },
+                }
                 ast::Definition::ScalarTypeExtension(ext) => {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Scalar(ty) = ty {
@@ -295,61 +282,56 @@ impl SchemaBuilder {
     /// * `Definition::SchemaExtension` variants if no `Definition::SchemaDefinition` was found
     /// * `Definition::*TypeExtension` if no `Definition::*TypeDefinition` with the same name
     ///   was found, or if it is a different kind of type
-    pub fn build(mut self) -> Schema {
-        let orphan_schema_extensions =
-            if let SchemaDefinitionStatus::NoneSoFar { orphan_extensions } =
-                self.schema_definition_status
-            {
-                // Implict `schema`, ignoring extensions
-                let if_has_object_type = |ty: OperationType| {
-                    let name = ty.default_type_name();
-                    self.schema
-                        .types
-                        .get(name)?
-                        .is_object()
-                        .then(|| Name::new(name).to_component(ComponentOrigin::Definition))
-                };
-                self.schema.query_type = if_has_object_type(OperationType::Query);
-                self.schema.mutation_type = if_has_object_type(OperationType::Mutation);
-                self.schema.subscription_type = if_has_object_type(OperationType::Subscription);
-                orphan_extensions
-            } else {
-                Vec::new()
-            };
-        self.schema.build_errors.extend(
+    pub fn build(self) -> Schema {
+        let SchemaBuilder {
+            mut schema,
+            orphan_schema_extensions,
+            orphan_type_extensions,
+        } = self;
+        schema.build_errors.extend(
             orphan_schema_extensions
                 .into_iter()
                 .map(|ext| BuildError::OrphanExtension(ast::Definition::SchemaExtension(ext))),
         );
-        self.schema.build_errors.extend(
-            self.orphan_type_extensions
+        schema.build_errors.extend(
+            orphan_type_extensions
                 .into_values()
                 .flatten()
                 .map(BuildError::OrphanExtension),
         );
-        self.schema
+        schema
     }
 }
 
-impl Schema {
-    fn set_ast(
-        &mut self,
+impl RootOperations {
+    fn from_ast(
+        errors: &mut Vec<BuildError>,
         definition: &Node<ast::SchemaDefinition>,
         extensions: &[Node<ast::SchemaExtension>],
-    ) {
-        self.description = definition.description.clone();
-        self.directives = definition
-            .directives
-            .iter()
-            .map(|d| d.to_component(ComponentOrigin::Definition))
-            .collect();
-        self.add_root_operations(ComponentOrigin::Definition, &definition.root_operations);
+    ) -> Node<Self> {
+        let mut root = Self {
+            description: definition.description.clone(),
+            directives: definition
+                .directives
+                .iter()
+                .map(|d| d.to_component(ComponentOrigin::Definition))
+                .collect(),
+            query: None,
+            mutation: None,
+            subscription: None,
+        };
+        root.add_root_operations(
+            errors,
+            ComponentOrigin::Definition,
+            &definition.root_operations,
+        );
         for ext in extensions {
-            self.extend_ast(ext)
+            root.extend_ast(errors, ext)
         }
+        definition.same_location(root)
     }
 
-    fn extend_ast(&mut self, extension: &Node<ast::SchemaExtension>) {
+    fn extend_ast(&mut self, errors: &mut Vec<BuildError>, extension: &Node<ast::SchemaExtension>) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
         self.directives.extend(
             extension
@@ -357,25 +339,26 @@ impl Schema {
                 .iter()
                 .map(|d| d.to_component(origin.clone())),
         );
-        self.add_root_operations(origin, &extension.root_operations)
+        self.add_root_operations(errors, origin, &extension.root_operations)
     }
 
     fn add_root_operations(
         &mut self,
+        errors: &mut Vec<BuildError>,
         origin: ComponentOrigin,
         root_operations: &[Node<(ast::OperationType, Name)>],
     ) {
         for op in root_operations {
             let (operation_type, object_type_name) = &**op;
             let entry = match operation_type {
-                ast::OperationType::Query => &mut self.query_type,
-                ast::OperationType::Mutation => &mut self.mutation_type,
-                ast::OperationType::Subscription => &mut self.subscription_type,
+                ast::OperationType::Query => &mut self.query,
+                ast::OperationType::Mutation => &mut self.mutation,
+                ast::OperationType::Subscription => &mut self.subscription,
             };
             if entry.is_none() {
                 *entry = Some(object_type_name.to_component(origin.clone()))
             } else {
-                self.build_errors.push(BuildError::DuplicateRootOperation {
+                errors.push(BuildError::DuplicateRootOperation {
                     operation_type: *operation_type,
                     object_type: object_type_name.clone(),
                 })

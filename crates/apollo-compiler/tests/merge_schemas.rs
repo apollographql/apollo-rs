@@ -24,8 +24,18 @@ fn merge_schemas(inputs: &[&str]) -> Result<String, MergeError> {
         .collect();
     let mut merged = Schema::new();
     for schema in schemas {
-        merge_options(&mut merged.description, &schema.description)?;
-        merge_vecs(&mut merged.directives, &schema.directives)?;
+        merge_options_or(
+            &mut merged.root_operations,
+            &schema.root_operations,
+            |merged, new| {
+                let merged = merged.make_mut();
+                merge_options(&mut merged.description, &new.description)?;
+                merge_vecs(&mut merged.directives, &new.directives)?;
+                merge_options(&mut merged.query, &new.query)?;
+                merge_options(&mut merged.mutation, &new.mutation)?;
+                merge_options(&mut merged.subscription, &new.subscription)
+            },
+        )?;
         merge_maps(
             &mut merged.directive_definitions,
             &schema.directive_definitions,
@@ -36,20 +46,25 @@ fn merge_schemas(inputs: &[&str]) -> Result<String, MergeError> {
             },
         )?;
         merge_maps(&mut merged.types, &schema.types, merge_type_definitions)?;
-        merge_options(&mut merged.query_type, &schema.query_type)?;
-        merge_options(&mut merged.mutation_type, &schema.mutation_type)?;
-        merge_options(&mut merged.subscription_type, &schema.subscription_type)?;
     }
     Ok(merged.to_string())
 }
 
 fn merge_options<T: Eq + Clone>(merged: &mut Option<T>, new: &Option<T>) -> Result<(), MergeError> {
+    merge_options_or(merged, new, |_, _| Err("conflicting optional values"))
+}
+
+fn merge_options_or<T: Eq + Clone>(
+    merged: &mut Option<T>,
+    new: &Option<T>,
+    merge_values: impl Fn(&mut T, &T) -> Result<(), MergeError>,
+) -> Result<(), MergeError> {
     match (&mut *merged, new) {
         (_, None) => {}
         (None, Some(_)) => *merged = new.clone(),
         (Some(a), Some(b)) => {
             if a != b {
-                return Err("conflicting optional values");
+                merge_values(a, b)?
             }
         }
     }

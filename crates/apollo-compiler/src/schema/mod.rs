@@ -40,11 +40,8 @@ pub struct Schema {
     /// either parsing a source file or converting from AST.
     build_errors: Vec<BuildError>,
 
-    /// The description of the `schema` definition
-    pub description: Option<NodeStr>,
-
-    /// Directives applied to the `schema` definition or a `schema` extension
-    pub directives: Directives,
+    /// The `schema` definition and its extensions, defining root operations
+    pub root_operations: Option<Node<RootOperations>>,
 
     /// Built-in and explicit directive definitions
     pub directive_definitions: IndexMap<Name, Node<DirectiveDefinition>>,
@@ -52,15 +49,22 @@ pub struct Schema {
     /// Definitions and extensions of built-in scalars, introspection types,
     /// and explicit types
     pub types: IndexMap<NamedType, ExtendedType>,
+}
+
+/// The `schema` definition and its extensions, defining root operations
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RootOperations {
+    pub description: Option<NodeStr>,
+    pub directives: Directives,
 
     /// Name of the object type for the `query` root operation
-    pub query_type: Option<ComponentStr>,
+    pub query: Option<ComponentStr>,
 
     /// Name of the object type for the `mutation` root operation
-    pub mutation_type: Option<ComponentStr>,
+    pub mutation: Option<ComponentStr>,
 
     /// Name of the object type for the `subscription` root operation
-    pub subscription_type: Option<ComponentStr>,
+    pub subscription: Option<ComponentStr>,
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Default)]
@@ -306,38 +310,30 @@ impl Schema {
 
     /// Returns the name of the object type for the root operation with the given operation kind
     pub fn root_operation(&self, operation_type: ast::OperationType) -> Option<&ComponentStr> {
-        match operation_type {
-            ast::OperationType::Query => &self.query_type,
-            ast::OperationType::Mutation => &self.mutation_type,
-            ast::OperationType::Subscription => &self.subscription_type,
+        if let Some(root_operations) = &self.root_operations {
+            match operation_type {
+                ast::OperationType::Query => &root_operations.query,
+                ast::OperationType::Mutation => &root_operations.mutation,
+                ast::OperationType::Subscription => &root_operations.subscription,
+            }
+            .as_ref()
+        } else {
+            let name = operation_type.default_type_name();
+            macro_rules! as_static {
+                () => {{
+                    static OBJECT_TYPE_NAME: OnceLock<ComponentStr> = OnceLock::new();
+                    OBJECT_TYPE_NAME
+                        .get_or_init(|| Name::new(name).to_component(ComponentOrigin::Definition))
+                }};
+            }
+            self.get_object(name)
+                .is_some()
+                .then(|| match operation_type {
+                    ast::OperationType::Query => as_static!(),
+                    ast::OperationType::Mutation => as_static!(),
+                    ast::OperationType::Subscription => as_static!(),
+                })
         }
-        .as_ref()
-    }
-
-    /// Collect `schema` extensions that contribute any component
-    ///
-    /// The order of the returned set is unspecified but deterministic
-    /// for a given apollo-compiler version.
-    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
-        self.directives
-            .iter()
-            .flat_map(|dir| dir.origin.extension_id())
-            .chain(
-                self.query_type
-                    .as_ref()
-                    .and_then(|name| name.origin.extension_id()),
-            )
-            .chain(
-                self.mutation_type
-                    .as_ref()
-                    .and_then(|name| name.origin.extension_id()),
-            )
-            .chain(
-                self.subscription_type
-                    .as_ref()
-                    .and_then(|name| name.origin.extension_id()),
-            )
-            .collect()
     }
 
     /// Returns the definition of a type’s explicit field or meta-field.
@@ -459,8 +455,7 @@ impl Schema {
             ]
         });
         if self
-            .query_type
-            .as_ref()
+            .root_operation(ast::OperationType::Query)
             .is_some_and(|n| n.node == type_name)
         {
             // __typename: String!
@@ -503,6 +498,34 @@ impl Schema {
     }
 
     serialize_method!();
+}
+
+impl RootOperations {
+    /// Collect `schema` extensions that contribute any component
+    ///
+    /// The order of the returned set is unspecified but deterministic
+    /// for a given apollo-compiler version.
+    pub fn extensions(&self) -> IndexSet<&ExtensionId> {
+        self.directives
+            .iter()
+            .flat_map(|dir| dir.origin.extension_id())
+            .chain(
+                self.query
+                    .as_ref()
+                    .and_then(|name| name.origin.extension_id()),
+            )
+            .chain(
+                self.mutation
+                    .as_ref()
+                    .and_then(|name| name.origin.extension_id()),
+            )
+            .chain(
+                self.subscription
+                    .as_ref()
+                    .and_then(|name| name.origin.extension_id()),
+            )
+            .collect()
+    }
 }
 
 impl ExtendedType {
@@ -823,23 +846,15 @@ impl Eq for Schema {}
 impl PartialEq for Schema {
     fn eq(&self, other: &Self) -> bool {
         let Self {
-            sources: _,
-            build_errors: _,
-            description,
-            directives,
+            sources: _,      // ignored
+            build_errors: _, // ignored
+            root_operations,
             directive_definitions,
             types,
-            query_type,
-            mutation_type,
-            subscription_type,
         } = self;
-        *description == other.description
-            && *directives == other.directives
+        *root_operations == other.root_operations
             && *directive_definitions == other.directive_definitions
             && *types == other.types
-            && *query_type == other.query_type
-            && *mutation_type == other.mutation_type
-            && *subscription_type == other.subscription_type
     }
 }
 
