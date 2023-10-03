@@ -8,7 +8,5 @@ Error: the operation `getName` is defined multiple times in the document
  5 │ query getName {
    │       ───┬───  
    │          ╰───── `getName` redefined here
-   │ 
-   │ Help: `getName` must only be defined once in this document.
 ───╯
 

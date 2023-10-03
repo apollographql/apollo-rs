@@ -1,4 +1,4 @@
-Error: expected identifier
+Error: anonymous operation cannot be selected when the document contains other operations
    ╭─[0002_multiple_anonymous_operations.graphql:1:1]
    │
  1 │ ╭─▶ query {
@@ -7,9 +7,9 @@ Error: expected identifier
    │ │       
    │ ╰─────── provide a name for this definition
    │     
-   │     Help: GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.
+   │     Help: GraphQL requires operations to be named if the document has more than one
 ───╯
-Error: expected identifier
+Error: anonymous operation cannot be selected when the document contains other operations
    ╭─[0002_multiple_anonymous_operations.graphql:5:1]
    │
  5 │ ╭─▶ mutation {
@@ -18,6 +18,6 @@ Error: expected identifier
    │ │       
    │ ╰─────── provide a name for this definition
    │     
-   │     Help: GraphQL only allows a short-hand form for defining query operations when only that one operation exists in the document.
+   │     Help: GraphQL requires operations to be named if the document has more than one
 ───╯
 

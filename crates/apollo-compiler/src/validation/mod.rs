@@ -195,14 +195,24 @@ impl Error {
                 ExecutableBuildError::TypeSystemDefinition { .. } => {
                     opt_label!("remove this definition, or use `parse_mixed()`")
                 }
-                ExecutableBuildError::DuplicateAnonymousOperation(_) => {
-                    // TODO
+                ExecutableBuildError::AmbiguousAnonymousOperation { .. } => {
+                    opt_label!("provide a name for this definition");
+                    report.set_help(
+                        "GraphQL requires operations to be named if the document has more than one",
+                    );
                 }
-                ExecutableBuildError::OperationNameCollision(_) => {
-                    // TODO
+                ExecutableBuildError::OperationNameCollision {
+                    name_at_previous_location,
+                    ..
                 }
-                ExecutableBuildError::FragmentNameCollision(_) => {
-                    // TODO
+                | ExecutableBuildError::FragmentNameCollision {
+                    name_at_previous_location,
+                    ..
+                } => {
+                    let previous_location = &name_at_previous_location.location();
+                    let name = name_at_previous_location;
+                    opt_label!(previous_location, "previous definition of `{name}` here");
+                    opt_label!("`{name}` redefined here");
                 }
                 ExecutableBuildError::UndefinedRootOperation(_) => {
                     // TODO

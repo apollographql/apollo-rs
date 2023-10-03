@@ -1,13 +1,13 @@
 use crate::{
     ast,
-    diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
+    diagnostics::ApolloDiagnostic,
     schema,
     validation::{
         self, directive, enum_, input_object, interface, object, operation, scalar, union_,
     },
     Arc, FileId, InputDatabase, Node, ReprDatabase,
 };
-use std::collections::{hash_map::Entry, HashMap};
+use std::collections::HashMap;
 
 use super::field;
 
@@ -37,10 +37,6 @@ pub trait ValidationDatabase: InputDatabase + ReprDatabase {
     /// This runs a subset of the validations from `validate_executable`.
     #[salsa::invoke(validate_standalone_executable)]
     fn validate_standalone_executable(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
-
-    /// Validate names of operations and fragments in an executable document are unique.
-    #[salsa::invoke(validate_executable_names)]
-    fn validate_executable_names(&self, file_id: FileId) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(validation::schema::validate_schema_definition)]
     fn validate_schema_definition(
@@ -306,71 +302,6 @@ pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     diagnostics
 }
 
-fn validate_executable_names(
-    db: &dyn ValidationDatabase,
-    file_id: FileId,
-) -> Vec<ApolloDiagnostic> {
-    let mut diagnostics = Vec::new();
-
-    // Different node types use different namespaces.
-    let mut fragment_scope = HashMap::new();
-    let mut operation_scope = HashMap::new();
-
-    for ast_def in &db.ast(file_id).definitions {
-        let ty_ = match ast_def {
-            ast::Definition::OperationDefinition(_) => "operation",
-            ast::Definition::FragmentDefinition(_) => "fragment",
-            // Type system definitions are not checked here.
-            _ => continue,
-        };
-        let scope = match ast_def {
-            ast::Definition::OperationDefinition(_) => &mut operation_scope,
-            ast::Definition::FragmentDefinition(_) => &mut fragment_scope,
-            // Type system definitions are not checked here.
-            _ => unreachable!(),
-        };
-
-        if let Some(name_node) = ast_def.name() {
-            let name = name_node.as_str();
-            match scope.entry(name_node) {
-                Entry::Occupied(entry) => {
-                    let original: &&ast::Name = entry.get();
-                    let original_definition = original.location().unwrap();
-                    let redefined_definition = name_node.location().unwrap();
-
-                    diagnostics.push(
-                        ApolloDiagnostic::new(
-                            db,
-                            redefined_definition.into(),
-                            DiagnosticData::UniqueDefinition {
-                                ty: ty_,
-                                name: name.to_owned(),
-                                original_definition: original_definition.into(),
-                                redefined_definition: redefined_definition.into(),
-                            },
-                        )
-                        .labels([
-                            Label::new(
-                                original_definition,
-                                format!("previous definition of `{name}` here"),
-                            ),
-                            Label::new(redefined_definition, format!("`{name}` redefined here")),
-                        ])
-                        .help(format!(
-                            "`{name}` must only be defined once in this document."
-                        )),
-                    );
-                }
-                Entry::Vacant(entry) => {
-                    entry.insert(name_node);
-                }
-            }
-        }
-    }
-
-    diagnostics
-}
-
 fn location_sort_key(diagnostic: &ApolloDiagnostic) -> (FileId, usize) {
     (diagnostic.location.file_id(), diagnostic.location.offset())
 }
@@ -400,8 +331,6 @@ fn validate_executable_inner(
     has_schema: bool,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
-
-    diagnostics.extend(db.validate_executable_names(file_id));
 
     diagnostics.extend(super::operation::validate_operation_definitions_inner(
         db, file_id, has_schema,

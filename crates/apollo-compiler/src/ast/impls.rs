@@ -44,7 +44,7 @@ impl Document {
     }
 
     /// Validate as an executable document, as much as possible without a schema
-    pub fn validate_standalone_excutable(&self) -> Result<(), Diagnostics> {
+    pub fn validate_standalone_executable(&self) -> Result<(), Diagnostics> {
         let type_system_definitions_are_errors = true;
         let executable = crate::executable::from_ast::document_from_ast(
             None,

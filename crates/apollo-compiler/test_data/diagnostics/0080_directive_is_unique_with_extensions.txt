@@ -1,4 +1,4 @@
-Error: the type `Intf` is defined multiple times in the document
+Error: the type `Intf` is defined multiple times in the schema
     ╭─[0080_directive_is_unique_with_extensions.graphql:12:11]
     │
   9 │ interface Intf @nonRepeatable {

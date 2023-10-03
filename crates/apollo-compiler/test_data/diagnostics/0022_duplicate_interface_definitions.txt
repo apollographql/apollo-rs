@@ -1,4 +1,4 @@
-Error: the type `NamedEntity` is defined multiple times in the document
+Error: the type `NamedEntity` is defined multiple times in the schema
    ╭─[0022_duplicate_interface_definitions.graphql:9:11]
    │
  5 │ interface NamedEntity {

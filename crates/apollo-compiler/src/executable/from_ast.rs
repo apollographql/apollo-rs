@@ -34,9 +34,11 @@ pub(crate) fn document_from_ast(
                                 .push(BuildError::UndefinedRootOperation(operation.clone()))
                         }
                     } else {
-                        errors
-                            .errors
-                            .push(BuildError::OperationNameCollision(operation.clone()));
+                        let (key, _) = named_operations.get_key_value(name).unwrap();
+                        errors.errors.push(BuildError::OperationNameCollision {
+                            location: name.location(),
+                            name_at_previous_location: key.clone(),
+                        });
                     }
                 } else if anonymous_operation.is_none() {
                     errors.top_level = ExecutableDefinitionName::AnonymousOperation;
@@ -44,9 +46,9 @@ pub(crate) fn document_from_ast(
                         anonymous_operation = Some(operation.same_location(op));
                     }
                 } else {
-                    errors
-                        .errors
-                        .push(BuildError::DuplicateAnonymousOperation(operation.clone()))
+                    errors.errors.push(BuildError::AmbiguousAnonymousOperation {
+                        location: operation.location(),
+                    })
                 }
             }
             ast::Definition::FragmentDefinition(fragment) => {
@@ -58,9 +60,11 @@ pub(crate) fn document_from_ast(
                         fragment,
                     )));
                 } else {
-                    errors
-                        .errors
-                        .push(BuildError::FragmentNameCollision(fragment.clone()))
+                    let (key, _) = fragments.get_key_value(&fragment.name).unwrap();
+                    errors.errors.push(BuildError::FragmentNameCollision {
+                        location: fragment.name.location(),
+                        name_at_previous_location: key.clone(),
+                    })
                 }
             }
             _ => {

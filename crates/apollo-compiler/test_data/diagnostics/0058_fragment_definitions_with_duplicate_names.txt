@@ -8,7 +8,5 @@ Error: the fragment `petFragment` is defined multiple times in the document
  22 │ fragment petFragment on Pet {
     │          ─────┬─────  
     │               ╰─────── `petFragment` redefined here
-    │ 
-    │ Help: `petFragment` must only be defined once in this document.
 ────╯
 

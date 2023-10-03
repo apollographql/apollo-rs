@@ -235,6 +235,7 @@ fn main() -> Result<()> {
 #### Printing diagnostics for a faulty GraphQL document
 ```rust
 use apollo_compiler::ApolloCompiler;
+use apollo_compiler::ReprDatabase;
 
 let input = r#"
 query {
@@ -293,13 +294,16 @@ union CatOrDog = Cat | Dog
 "#;
 
 let mut compiler = ApolloCompiler::new();
-compiler.add_document(input, "document.graphql");
+let id = compiler.add_document(input, "document.graphql");
 
-let diagnostics = compiler.validate();
-for diagnostic in &diagnostics {
-    println!("{}", diagnostic)
+let schema = compiler.db.schema();
+let executable = compiler.db.executable_document(id);
+if let Err(diagnostics) = schema.validate() {
+    println!("{diagnostics}")
 }
-assert_eq!(diagnostics.len(), 9)
+if let Err(diagnostics) = executable.validate(&schema) {
+    println!("{diagnostics}")
+}
 ```
 
 ## License

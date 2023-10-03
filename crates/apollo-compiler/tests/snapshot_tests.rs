@@ -69,7 +69,7 @@ fn validation() {
             executable_validation_errors = compiler
                 .db
                 .ast(file_id)
-                .validate_standalone_excutable()
+                .validate_standalone_executable()
                 .err();
             schema_validation_errors = None;
         } else {
