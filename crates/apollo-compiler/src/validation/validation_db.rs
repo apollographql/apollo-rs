@@ -3,8 +3,7 @@ use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
     validation::{
-        self, directive, enum_, extension, input_object, interface, object, operation, scalar,
-        union_,
+        self, directive, enum_, input_object, interface, object, operation, scalar, union_,
     },
     Arc, FileId, InputDatabase, Node, ReprDatabase,
 };
@@ -105,9 +104,6 @@ pub trait ValidationDatabase: InputDatabase + ReprDatabase {
 
     #[salsa::invoke(object::validate_object_type_definitions)]
     fn validate_object_type_definitions(&self) -> Vec<ApolloDiagnostic>;
-
-    #[salsa::invoke(extension::validate_extensions)]
-    fn validate_extensions(&self) -> Vec<ApolloDiagnostic>;
 
     #[salsa::invoke(object::validate_object_type_definition)]
     fn validate_object_type_definition(
@@ -393,8 +389,6 @@ pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic
     diagnostics.extend(db.validate_directive_definitions());
     diagnostics.extend(db.validate_input_object_definitions());
     diagnostics.extend(db.validate_object_type_definitions());
-
-    diagnostics.extend(db.validate_extensions());
 
     diagnostics.sort_by_key(location_sort_key);
     diagnostics

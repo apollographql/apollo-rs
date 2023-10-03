@@ -3,7 +3,6 @@ mod validation_db;
 mod argument;
 mod directive;
 mod enum_;
-mod extension;
 mod field;
 mod fragment;
 mod input_object;
@@ -133,8 +132,11 @@ impl Error {
                 SchemaBuildError::BuiltInScalarTypeRedefinition { .. } => {
                     opt_label!("remove this scalar definition");
                 }
-                SchemaBuildError::OrphanExtension(_) => {
-                    // TODO
+                SchemaBuildError::OrphanSchemaExtension { .. } => opt_label!("extension here"),
+                SchemaBuildError::OrphanTypeExtension { .. } => opt_label!("extension here"),
+                SchemaBuildError::TypeExtensionKindMismatch { def_location, .. } => {
+                    opt_label!(def_location, "type definition");
+                    opt_label!("extension here")
                 }
                 SchemaBuildError::DuplicateRootOperation {
                     operation_type: _,

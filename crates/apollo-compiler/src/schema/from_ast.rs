@@ -232,6 +232,16 @@ impl SchemaBuilder {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Scalar(ty) = ty {
                             ty.make_mut().extend_ast(ext)
+                        } else {
+                            self.schema
+                                .build_errors
+                                .push(BuildError::TypeExtensionKindMismatch {
+                                    location: ext.name.location(),
+                                    name: ext.name.clone(),
+                                    describe_ext: definition.describe(),
+                                    def_location: ty.name().location(),
+                                    describe_def: ty.describe(),
+                                })
                         }
                     } else {
                         self.orphan_type_extensions
@@ -244,6 +254,16 @@ impl SchemaBuilder {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Object(ty) = ty {
                             ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
+                        } else {
+                            self.schema
+                                .build_errors
+                                .push(BuildError::TypeExtensionKindMismatch {
+                                    location: ext.name.location(),
+                                    name: ext.name.clone(),
+                                    describe_ext: definition.describe(),
+                                    def_location: ty.name().location(),
+                                    describe_def: ty.describe(),
+                                })
                         }
                     } else {
                         self.orphan_type_extensions
@@ -256,6 +276,16 @@ impl SchemaBuilder {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Interface(ty) = ty {
                             ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
+                        } else {
+                            self.schema
+                                .build_errors
+                                .push(BuildError::TypeExtensionKindMismatch {
+                                    location: ext.name.location(),
+                                    name: ext.name.clone(),
+                                    describe_ext: definition.describe(),
+                                    def_location: ty.name().location(),
+                                    describe_def: ty.describe(),
+                                })
                         }
                     } else {
                         self.orphan_type_extensions
@@ -268,6 +298,16 @@ impl SchemaBuilder {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Union(ty) = ty {
                             ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
+                        } else {
+                            self.schema
+                                .build_errors
+                                .push(BuildError::TypeExtensionKindMismatch {
+                                    location: ext.name.location(),
+                                    name: ext.name.clone(),
+                                    describe_ext: definition.describe(),
+                                    def_location: ty.name().location(),
+                                    describe_def: ty.describe(),
+                                })
                         }
                     } else {
                         self.orphan_type_extensions
@@ -280,6 +320,16 @@ impl SchemaBuilder {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::Enum(ty) = ty {
                             ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
+                        } else {
+                            self.schema
+                                .build_errors
+                                .push(BuildError::TypeExtensionKindMismatch {
+                                    location: ext.name.location(),
+                                    name: ext.name.clone(),
+                                    describe_ext: definition.describe(),
+                                    def_location: ty.name().location(),
+                                    describe_def: ty.describe(),
+                                })
                         }
                     } else {
                         self.orphan_type_extensions
@@ -292,6 +342,16 @@ impl SchemaBuilder {
                     if let Some(ty) = self.schema.types.get_mut(&ext.name) {
                         if let ExtendedType::InputObject(ty) = ty {
                             ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
+                        } else {
+                            self.schema
+                                .build_errors
+                                .push(BuildError::TypeExtensionKindMismatch {
+                                    location: ext.name.location(),
+                                    name: ext.name.clone(),
+                                    describe_ext: definition.describe(),
+                                    def_location: ty.name().location(),
+                                    describe_def: ty.describe(),
+                                })
                         }
                     } else {
                         self.orphan_type_extensions
@@ -326,17 +386,22 @@ impl SchemaBuilder {
             orphan_schema_extensions,
             orphan_type_extensions,
         } = self;
-        schema.build_errors.extend(
-            orphan_schema_extensions
-                .into_iter()
-                .map(|ext| BuildError::OrphanExtension(ast::Definition::SchemaExtension(ext))),
-        );
-        schema.build_errors.extend(
-            orphan_type_extensions
-                .into_values()
-                .flatten()
-                .map(BuildError::OrphanExtension),
-        );
+        schema
+            .build_errors
+            .extend(orphan_schema_extensions.into_iter().map(|ext| {
+                BuildError::OrphanSchemaExtension {
+                    location: ext.location(),
+                }
+            }));
+        schema
+            .build_errors
+            .extend(orphan_type_extensions.into_values().flatten().map(|ext| {
+                let name = ext.name().unwrap().clone();
+                BuildError::OrphanTypeExtension {
+                    location: name.location(),
+                    name,
+                }
+            }));
         schema
     }
 }

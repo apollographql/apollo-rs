@@ -19,7 +19,10 @@ fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
         | BuildError::SchemaDefinitionCollision { location, .. }
         | BuildError::DirectiveDefinitionCollision { location, .. }
         | BuildError::TypeDefinitionCollision { location, .. }
-        | BuildError::BuiltInScalarTypeRedefinition { location, .. } => *location,
+        | BuildError::BuiltInScalarTypeRedefinition { location, .. }
+        | BuildError::OrphanSchemaExtension { location, .. }
+        | BuildError::OrphanTypeExtension { location, .. }
+        | BuildError::TypeExtensionKindMismatch { location, .. } => *location,
         _ => return, // TODO
     };
     errors.push(location, Details::SchemaBuildError(build_error.clone()))
