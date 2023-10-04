@@ -1,10 +1,52 @@
-Error: subselection set for scalar and enum types must be empty
+Error: field selection of scalar type `Int` must not have subselections
    ╭─[0087_fragment_type_condition_on_composite_types.graphql:5:5]
    │
  5 │     price { ...fragOnScalar }
    │     ────────────┬────────────  
-   │                 ╰────────────── field `price` of type `Int` is a scalar and cannot select any fields
+   │                 ╰────────────── remove subselections here
+   │ 
+   │ Note: path to the field: `query Query → products → price`
 ───╯
+Error: type `Int` does not have a field `name`
+   ╭─[0087_fragment_type_condition_on_composite_types.graphql:8:7]
+   │
+ 8 │       name
+   │       ──┬─  
+   │         ╰─── field `name` selected here
+   │ 
+   │ Note: path to the field: `query Query → products → name`
+───╯
+Error: type `Int` does not have a field `name`
+    ╭─[0087_fragment_type_condition_on_composite_types.graphql:22:3]
+    │
+ 22 │   name
+    │   ──┬─  
+    │     ╰─── field `name` selected here
+    │ 
+    │ Note: path to the field: `fragment fragOnScalar → name`
+────╯
+Error: type `Int` does not have a field `name`
+    ╭─[0087_fragment_type_condition_on_composite_types.graphql:27:5]
+    │
+ 27 │     name
+    │     ──┬─  
+    │       ╰─── field `name` selected here
+    │ 
+    │ Note: path to the field: `fragment inlineFragOnScalar → name`
+────╯
+Error: fragment cannot be applied to this type
+    ╭─[0087_fragment_type_condition_on_composite_types.graphql:5:13]
+    │
+  5 │         price { ...fragOnScalar }
+    │                 ───────┬───────  
+    │                        ╰───────── fragment `fragOnScalar` cannot be applied
+    │ 
+ 21 │ ╭─▶ fragment fragOnScalar on Int {
+    ┆ ┆   
+ 23 │ ├─▶ }
+    │ │       
+    │ ╰─────── fragment declared with type condition `Int` here
+────╯
 Error: fragments can not be declared on primitive types
    ╭─[0087_fragment_type_condition_on_composite_types.graphql:7:5]
    │
@@ -16,6 +58,17 @@ Error: fragments can not be declared on primitive types
    │     
    │     Help: fragments cannot be defined on enums, scalars and input objects
 ───╯
+Error: fragments can not be declared on primitive types
+    ╭─[0087_fragment_type_condition_on_composite_types.graphql:21:1]
+    │
+ 21 │ ╭─▶ fragment fragOnScalar on Int {
+    ┆ ┆   
+ 23 │ ├─▶ }
+    │ │       
+    │ ╰─────── fragment declares unsupported type condition `Int`
+    │     
+    │     Help: fragments cannot be defined on enums, scalars and input objects
+────╯
 Error: fragments can not be declared on primitive types
     ╭─[0087_fragment_type_condition_on_composite_types.graphql:26:3]
     │

@@ -1,9 +1,8 @@
 use super::*;
 
 struct BuildErrors {
-    top_level: ExecutableDefinitionName,
-    ancestor_fields: Vec<Name>,
     errors: Vec<BuildError>,
+    path: SelectionPath,
 }
 
 pub(crate) fn document_from_ast(
@@ -15,17 +14,23 @@ pub(crate) fn document_from_ast(
     let mut anonymous_operation = None;
     let mut fragments = IndexMap::new();
     let mut errors = BuildErrors {
-        top_level: ExecutableDefinitionName::AnonymousOperation, // overwritten
-        ancestor_fields: Vec::new(),
         errors: Vec::new(),
+        path: SelectionPath {
+            nested_fields: Vec::new(),
+            // overwritten:
+            root: ExecutableDefinitionName::AnonymousOperation(ast::OperationType::Query),
+        },
     };
     for definition in &document.definitions {
-        debug_assert!(errors.ancestor_fields.is_empty());
+        debug_assert!(errors.path.nested_fields.is_empty());
         match definition {
             ast::Definition::OperationDefinition(operation) => {
                 if let Some(name) = &operation.name {
                     if let Entry::Vacant(entry) = named_operations.entry(name.clone()) {
-                        errors.top_level = ExecutableDefinitionName::NamedOperation(name.clone());
+                        errors.path.root = ExecutableDefinitionName::NamedOperation(
+                            operation.operation_type,
+                            name.clone(),
+                        );
                         if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
                             entry.insert(operation.same_location(op));
                         } else {
@@ -42,7 +47,8 @@ pub(crate) fn document_from_ast(
                         });
                     }
                 } else if anonymous_operation.is_none() {
-                    errors.top_level = ExecutableDefinitionName::AnonymousOperation;
+                    errors.path.root =
+                        ExecutableDefinitionName::AnonymousOperation(operation.operation_type);
                     if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
                         anonymous_operation = Some(operation.same_location(op));
                     } else {
@@ -59,12 +65,10 @@ pub(crate) fn document_from_ast(
             }
             ast::Definition::FragmentDefinition(fragment) => {
                 if let Entry::Vacant(entry) = fragments.entry(fragment.name.clone()) {
-                    errors.top_level = ExecutableDefinitionName::Fragment(fragment.name.clone());
-                    entry.insert(fragment.same_location(Fragment::from_ast(
-                        schema,
-                        &mut errors,
-                        fragment,
-                    )));
+                    errors.path.root = ExecutableDefinitionName::Fragment(fragment.name.clone());
+                    if let Some(node) = Fragment::from_ast(schema, &mut errors, fragment) {
+                        entry.insert(fragment.same_location(node));
+                    }
                 } else {
                     let (key, _) = fragments.get_key_value(&fragment.name).unwrap();
                     errors.errors.push(BuildError::FragmentNameCollision {
@@ -120,13 +124,25 @@ impl Fragment {
         schema: Option<&Schema>,
         errors: &mut BuildErrors,
         ast: &ast::FragmentDefinition,
-    ) -> Self {
+    ) -> Option<Self> {
+        if let Some(schema) = schema {
+            if !schema.types.contains_key(&ast.type_condition) {
+                errors
+                    .errors
+                    .push(BuildError::UndefinedTypeInNamedFragmentTypeCondition {
+                        location: ast.type_condition.location(),
+                        type_name: ast.type_condition.clone(),
+                        fragment_name: ast.name.clone(),
+                    });
+                return None;
+            }
+        }
         let mut selection_set = SelectionSet::new(ast.type_condition.clone());
         selection_set.extend_from_ast(schema, errors, &ast.selection_set);
-        Self {
+        Some(Self {
             selection_set,
             directives: ast.directives.clone(),
-        }
+        })
     }
 }
 
@@ -151,39 +167,67 @@ impl SelectionSet {
                             directives: Default::default(),
                         }))
                     };
+                    errors
+                        .path
+                        .nested_fields
+                        .push(ast.alias.clone().unwrap_or_else(|| ast.name.clone()));
                     match field_def_result {
                         Ok(field_def) => {
-                            errors
-                                .ancestor_fields
-                                .push(ast.alias.clone().unwrap_or_else(|| ast.name.clone()));
-                            self.push(
-                                ast.same_location(
-                                    Field::new(ast.name.clone(), field_def)
-                                        .with_opt_alias(ast.alias.clone())
-                                        .with_arguments(ast.arguments.iter().cloned())
-                                        .with_directives(ast.directives.iter().cloned())
-                                        .with_ast_selections(schema, errors, &ast.selection_set),
+                            let leaf = ast.selection_set.is_empty();
+                            let type_name = field_def.ty.inner_named_type();
+                            match schema
+                                .as_ref()
+                                .and_then(|schema| schema.types.get(type_name))
+                            {
+                                Some(schema::ExtendedType::Scalar(_)) if !leaf => {
+                                    errors.errors.push(BuildError::SubselectionOnScalarType {
+                                        location: ast.location(),
+                                        type_name: type_name.clone(),
+                                        path: errors.path.clone(),
+                                    })
+                                }
+                                Some(schema::ExtendedType::Enum(_)) if !leaf => {
+                                    errors.errors.push(BuildError::SubselectionOnEnumType {
+                                        location: ast.location(),
+                                        type_name: type_name.clone(),
+                                        path: errors.path.clone(),
+                                    })
+                                }
+                                _ => self.push(
+                                    ast.same_location(
+                                        Field::new(ast.name.clone(), field_def)
+                                            .with_opt_alias(ast.alias.clone())
+                                            .with_arguments(ast.arguments.iter().cloned())
+                                            .with_directives(ast.directives.iter().cloned())
+                                            .with_ast_selections(
+                                                schema,
+                                                errors,
+                                                &ast.selection_set,
+                                            ),
+                                    ),
                                 ),
-                            );
-                            errors.ancestor_fields.pop();
+                            }
                         }
-                        Err(schema::FieldLookupError::NoSuchField) => {
+                        Err(schema::FieldLookupError::NoSuchField(type_def)) => {
                             errors.errors.push(BuildError::UndefinedField {
-                                top_level: errors.top_level.clone(),
-                                ancestor_fields: errors.ancestor_fields.clone(),
-                                type_name: self.ty.clone(),
-                                field: ast.clone(),
+                                location: ast.name.location(),
+                                type_name: type_def.name().clone(),
+                                field_name: ast.name.clone(),
+                                path: errors.path.clone(),
                             })
                         }
                         Err(schema::FieldLookupError::NoSuchType) => {
-                            errors.errors.push(BuildError::UndefinedType {
-                                top_level: errors.top_level.clone(),
-                                ancestor_fields: errors.ancestor_fields.clone(),
-                                type_name: self.ty.clone(),
-                                field: ast.clone(),
-                            })
+                            // `self.ty` is the name of a type not definied in the schema.
+                            // It can come from:
+                            // * A root operation type, or a field definition:
+                            //   the schema is invalid, no need to record another error here.
+                            // * An inline fragment with a type condition:
+                            //   we emitted `UndefinedTypeInInlineFragmentTypeCondition` already
+                            // * The type condition of a named fragment definition:
+                            //   we emitted `UndefinedTypeInNamedFragmentTypeCondition` already
                         }
                     }
+                    errors.path.nested_fields.pop();
                 }
                 ast::Selection::FragmentSpread(ast) => self.push(
                     ast.same_location(
@@ -191,13 +235,29 @@ impl SelectionSet {
                             .with_directives(ast.directives.iter().cloned()),
                     ),
                 ),
-                ast::Selection::InlineFragment(ast) => self.push(
-                    ast.same_location(
-                        self.new_inline_fragment(ast.type_condition.clone())
-                            .with_directives(ast.directives.iter().cloned())
-                            .with_ast_selections(schema, errors, &ast.selection_set),
-                    ),
-                ),
+                ast::Selection::InlineFragment(ast) => {
+                    let opt_type_condition = ast.type_condition.clone();
+                    match (&opt_type_condition, schema) {
+                        (Some(type_condition), Some(schema))
+                            if !schema.types.contains_key(type_condition) =>
+                        {
+                            errors.errors.push(
+                                BuildError::UndefinedTypeInInlineFragmentTypeCondition {
+                                    location: type_condition.location(),
+                                    type_name: type_condition.clone(),
+                                    path: errors.path.clone(),
+                                },
+                            )
+                        }
+                        _ => self.push(
+                            ast.same_location(
+                                self.new_inline_fragment(opt_type_condition)
+                                    .with_directives(ast.directives.iter().cloned())
+                                    .with_ast_selections(schema, errors, &ast.selection_set),
+                            ),
+                        ),
+                    }
+                }
             }
         }
     }

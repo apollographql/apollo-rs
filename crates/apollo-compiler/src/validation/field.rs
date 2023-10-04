@@ -122,37 +122,6 @@ pub fn validate_field(
                 context,
             )),
         }
-    } else {
-        let fname = &field.name;
-        let help = format!("`{fname}` is not defined on `{against_type}` type");
-        let diagnostic = ApolloDiagnostic::new(
-            db,
-            field.location().unwrap().into(),
-            DiagnosticData::UndefinedField {
-                field: fname.to_string(),
-                ty: against_type.to_string(),
-            },
-        )
-        .label(Label::new(
-            field.location().unwrap(),
-            format!("`{fname}` field is not defined"),
-        ))
-        .help(help);
-
-        let parent_type_loc = schema
-            .types
-            .get(against_type)
-            .and_then(|type_def| type_def.location());
-
-        let diagnostic = if let Some(parent_type_loc) = parent_type_loc {
-            diagnostic.label(Label::new(
-                parent_type_loc,
-                format!("`{against_type}` declared here"),
-            ))
-        } else {
-            diagnostic
-        };
-        diagnostics.push(diagnostic);
     }
 
     diagnostics
@@ -273,16 +242,7 @@ pub fn validate_leaf_field_selection(
         };
         (label, DiagnosticData::MissingSubselection)
     } else {
-        let label = match type_def {
-            schema::ExtendedType::Enum(_) => {
-                format!("field `{fname}` of type `{tname}` is an enum and cannot select any fields")
-            }
-            schema::ExtendedType::Scalar(_) => format!(
-                "field `{fname}` of type `{tname}` is a scalar and cannot select any fields"
-            ),
-            _ => return Ok(()),
-        };
-        (label, DiagnosticData::DisallowedSubselection)
+        return Ok(());
     };
 
     Err(

@@ -130,42 +130,6 @@ fragment q on TestObject {
 }
 
 #[test]
-fn validation_with_precomputed_schema() {
-    let input_type_system = r#"
-type Query {
-    obj: TestObject
-}
-
-type TestObject {
-    name: String
-}
-"#;
-
-    let input_executable = r#"
-{
-    obj {
-        name
-        nickname
-    }
-}
-"#;
-
-    let mut root_compiler = ApolloCompiler::new();
-    root_compiler.add_type_system(input_type_system, "schema.graphql");
-    assert!(root_compiler.validate().is_empty());
-
-    let mut child_compiler = ApolloCompiler::from_schema(root_compiler.db.schema());
-    let executable_id = child_compiler.add_executable(input_executable, "query.graphql");
-    let diagnostics = child_compiler.db.validate_executable(executable_id);
-
-    assert_eq!(diagnostics.len(), 1);
-    assert_eq!(
-        diagnostics[0].data.to_string(),
-        "cannot query field `nickname` on type `TestObject`"
-    );
-}
-
-#[test]
 fn validation_without_type_system() {
     let mut compiler = ApolloCompiler::new();
 
