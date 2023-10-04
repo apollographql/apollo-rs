@@ -281,11 +281,19 @@ impl Diagnostics {
         if self.0.errors.is_empty() {
             Ok(())
         } else {
-            self.0
-                .errors
-                .sort_by_key(|err| err.location.map(|loc| (loc.file_id(), loc.offset())));
+            self.sort();
             Err(self)
         }
+    }
+
+    pub(crate) fn sort(&mut self) {
+        self.0
+            .errors
+            .sort_by_key(|err| err.location.map(|loc| (loc.file_id(), loc.offset())))
+    }
+
+    pub(crate) fn is_empty(&self) -> bool {
+        self.0.errors.is_empty()
     }
 }
 
