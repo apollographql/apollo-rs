@@ -8,32 +8,50 @@ Error: field selection of scalar type `Int` must not have subselections
    │ Note: path to the field: `query Query → products → price`
 ───╯
 Error: type `Int` does not have a field `name`
-   ╭─[0087_fragment_type_condition_on_composite_types.graphql:8:7]
-   │
- 8 │       name
-   │       ──┬─  
-   │         ╰─── field `name` selected here
-   │ 
-   │ Note: path to the field: `query Query → products → name`
-───╯
+     ╭─[0087_fragment_type_condition_on_composite_types.graphql:8:7]
+     │
+   8 │       name
+     │       ──┬─  
+     │         ╰─── field `name` selected here
+     │
+     ├─[built_in.graphql:129:8]
+     │
+ 129 │ scalar Int
+     │        ─┬─  
+     │         ╰─── type `Int` defined here
+     │ 
+     │ Note: path to the field: `query Query → products → name`
+─────╯
 Error: type `Int` does not have a field `name`
-    ╭─[0087_fragment_type_condition_on_composite_types.graphql:22:3]
-    │
- 22 │   name
-    │   ──┬─  
-    │     ╰─── field `name` selected here
-    │ 
-    │ Note: path to the field: `fragment fragOnScalar → name`
-────╯
+     ╭─[0087_fragment_type_condition_on_composite_types.graphql:22:3]
+     │
+  22 │   name
+     │   ──┬─  
+     │     ╰─── field `name` selected here
+     │
+     ├─[built_in.graphql:129:8]
+     │
+ 129 │ scalar Int
+     │        ─┬─  
+     │         ╰─── type `Int` defined here
+     │ 
+     │ Note: path to the field: `fragment fragOnScalar → name`
+─────╯
 Error: type `Int` does not have a field `name`
-    ╭─[0087_fragment_type_condition_on_composite_types.graphql:27:5]
-    │
- 27 │     name
-    │     ──┬─  
-    │       ╰─── field `name` selected here
-    │ 
-    │ Note: path to the field: `fragment inlineFragOnScalar → name`
-────╯
+     ╭─[0087_fragment_type_condition_on_composite_types.graphql:27:5]
+     │
+  27 │     name
+     │     ──┬─  
+     │       ╰─── field `name` selected here
+     │
+     ├─[built_in.graphql:129:8]
+     │
+ 129 │ scalar Int
+     │        ─┬─  
+     │         ╰─── type `Int` defined here
+     │ 
+     │ Note: path to the field: `fragment inlineFragOnScalar → name`
+─────╯
 Error: fragment cannot be applied to this type
     ╭─[0087_fragment_type_condition_on_composite_types.graphql:5:13]
     │

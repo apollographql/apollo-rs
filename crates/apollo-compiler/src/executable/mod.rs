@@ -214,7 +214,9 @@ impl ExecutableDocument {
     }
 
     pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
-        let mut errors = Diagnostics::new(self.source.clone().into_iter().collect());
+        let mut sources = schema.sources.clone();
+        sources.extend(self.source.clone());
+        let mut errors = Diagnostics::new(sources);
         validation::validate_executable_document(&mut errors, schema, self);
         errors.into_result()
     }
