@@ -18,7 +18,6 @@ mod variable;
 
 use crate::executable::BuildError as ExecutableBuildError;
 use crate::schema::BuildError as SchemaBuildError;
-use crate::Arc;
 use crate::FileId;
 use crate::NodeLocation;
 use crate::NodeStr;
@@ -30,6 +29,7 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fmt;
 use std::io;
+use std::sync::Arc;
 pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 
 pub struct Diagnostics(Box<DiagnosticsBoxed>);

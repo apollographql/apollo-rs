@@ -1,6 +1,5 @@
 use crate::ast;
 use crate::schema;
-use crate::Arc;
 use crate::FileId;
 use crate::Node;
 use crate::Parser;
@@ -10,6 +9,7 @@ use indexmap::map::Entry;
 use indexmap::IndexMap;
 use std::collections::HashSet;
 use std::path::Path;
+use std::sync::Arc;
 
 pub(crate) mod from_ast;
 mod serialize;

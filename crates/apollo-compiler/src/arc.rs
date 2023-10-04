@@ -18,7 +18,7 @@ use std::sync::OnceLock;
 ///
 /// This `Arc` cannot implement [`Borrow<T>`][std::borrow::Borrow] because `Arc<T> as Hash`
 /// produces a result (the hash of the cached hash) different from `T as Hash`.
-pub struct Arc<T>(triomphe::Arc<ArcInner<T>>);
+pub struct ArcWithHashCache<T>(triomphe::Arc<ArcInner<T>>);
 
 #[derive(Clone)]
 struct ArcInner<T> {
@@ -28,7 +28,7 @@ struct ArcInner<T> {
 
 pub(crate) struct HashCache(AtomicU64);
 
-impl<T> Arc<T> {
+impl<T> ArcWithHashCache<T> {
     pub fn new(value: T) -> Self {
         Self(triomphe::Arc::new(ArcInner {
             hash_cache: HashCache::new(),
@@ -70,7 +70,7 @@ impl<T> Arc<T> {
     }
 }
 
-impl<T> std::ops::Deref for Arc<T> {
+impl<T> std::ops::Deref for ArcWithHashCache<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -78,22 +78,22 @@ impl<T> std::ops::Deref for Arc<T> {
     }
 }
 
-impl<T> Clone for Arc<T> {
+impl<T> Clone for ArcWithHashCache<T> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl<T: Eq> Eq for Arc<T> {}
+impl<T: Eq> Eq for ArcWithHashCache<T> {}
 
-impl<T: PartialEq> PartialEq for Arc<T> {
+impl<T: PartialEq> PartialEq for ArcWithHashCache<T> {
     fn eq(&self, other: &Self) -> bool {
         self.ptr_eq(other) // fast path
         || self.0.value == other.0.value // hash cache not included
     }
 }
 
-impl<T: Hash> Hash for Arc<T> {
+impl<T: Hash> Hash for ArcWithHashCache<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.0.hash_cache.get(&self.0.value).hash(state)
     }
@@ -149,25 +149,25 @@ impl Clone for HashCache {
     }
 }
 
-impl<T: fmt::Debug> fmt::Debug for Arc<T> {
+impl<T: fmt::Debug> fmt::Debug for ArcWithHashCache<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.value.fmt(f)
     }
 }
 
-impl<T: Default> Default for Arc<T> {
+impl<T: Default> Default for ArcWithHashCache<T> {
     fn default() -> Self {
         Self::new(Default::default())
     }
 }
 
-impl<T> AsRef<T> for Arc<T> {
+impl<T> AsRef<T> for ArcWithHashCache<T> {
     fn as_ref(&self) -> &T {
         self
     }
 }
 
-impl AsRef<str> for Arc<String> {
+impl AsRef<str> for ArcWithHashCache<String> {
     fn as_ref(&self) -> &str {
         self
     }

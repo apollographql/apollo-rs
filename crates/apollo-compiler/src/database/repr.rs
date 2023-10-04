@@ -2,10 +2,10 @@ use super::sources::SourceType;
 use super::InputDatabase;
 use crate::ast;
 use crate::schema::Name;
-use crate::Arc;
 use crate::FileId;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 
 /// Queries for parsing into the various in-memory representations of GraphQL documents
 #[salsa::query_group(ReprStorage)]
@@ -60,7 +60,7 @@ fn executable_document(db: &dyn ReprDatabase, file_id: FileId) -> Arc<crate::Exe
         if let Some((_, source_file)) = &mut executable.source {
             // The same parse errors will be in db.schema().sources,
             // so they would be redundant here.
-            source_file.make_mut().parse_errors = Vec::new()
+            Arc::make_mut(source_file).parse_errors = Vec::new()
         }
     }
     Arc::new(executable)

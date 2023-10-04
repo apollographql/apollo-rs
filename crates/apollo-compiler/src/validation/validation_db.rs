@@ -5,9 +5,10 @@ use crate::{
     validation::{
         self, directive, enum_, input_object, interface, object, operation, scalar, union_,
     },
-    Arc, FileId, InputDatabase, Node, ReprDatabase,
+    FileId, InputDatabase, Node, ReprDatabase,
 };
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use super::field;
 

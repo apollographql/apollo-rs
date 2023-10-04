@@ -1,6 +1,5 @@
 use crate::ast;
 use crate::ast::Document;
-use crate::Arc;
 use crate::FileId;
 use crate::Node;
 use crate::NodeLocation;
@@ -9,6 +8,7 @@ use apollo_parser::cst;
 use apollo_parser::cst::CstNode;
 use apollo_parser::SyntaxNode;
 use apollo_parser::S;
+use std::sync::Arc;
 
 impl Document {
     pub(crate) fn from_cst(

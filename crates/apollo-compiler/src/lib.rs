@@ -17,7 +17,6 @@ use crate::database::{InputDatabase, ReprDatabase, RootDatabase, Source};
 use crate::diagnostics::ApolloDiagnostic;
 use crate::validation::ValidationDatabase;
 
-pub use self::arc::Arc;
 pub use self::database::FileId;
 pub use self::executable::ExecutableDocument;
 pub use self::node::{Node, NodeLocation};
