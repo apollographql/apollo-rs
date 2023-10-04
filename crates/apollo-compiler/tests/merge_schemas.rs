@@ -3,8 +3,6 @@ use apollo_compiler::schema;
 use apollo_compiler::schema::Component;
 use apollo_compiler::schema::ComponentStr;
 use apollo_compiler::schema::ExtendedType;
-use apollo_compiler::ApolloCompiler;
-use apollo_compiler::ReprDatabase;
 use apollo_compiler::Schema;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
@@ -13,17 +11,9 @@ type MergeError = &'static str;
 
 /// Naively merge multiple schemas into one
 fn merge_schemas(inputs: &[&str]) -> Result<String, MergeError> {
-    let mut compiler = ApolloCompiler::new();
-    let id = compiler.add_document("", "");
-    let schemas: Vec<_> = inputs
-        .iter()
-        .map(|input| {
-            compiler.update_document(id, input);
-            compiler.db.schema()
-        })
-        .collect();
     let mut merged = Schema::new();
-    for schema in schemas {
+    for &input in inputs {
+        let schema = Schema::parse(input, "schema.graphql");
         merge_options_or(
             &mut merged.root_operations,
             &schema.root_operations,

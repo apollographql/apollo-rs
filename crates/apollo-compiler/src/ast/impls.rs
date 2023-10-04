@@ -91,11 +91,16 @@ impl Document {
         let mut builder = Schema::builder();
         builder.add_ast_document(self, executable_definitions_are_errors);
         let schema = builder.build();
-        let executable = crate::executable::from_ast::document_from_ast(
+
+        let mut executable = crate::executable::from_ast::document_from_ast(
             Some(&schema),
             self,
             type_system_definitions_are_errors,
         );
+        if let Some((_id, file)) = &mut executable.source {
+            // The same parse errors are in `schema.sources`, so they would be redundant here.
+            file.make_mut().parse_errors = Vec::new()
+        }
         (schema, executable)
     }
 

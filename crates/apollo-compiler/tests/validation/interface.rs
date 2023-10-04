@@ -1,5 +1,5 @@
-use apollo_compiler::ApolloCompiler;
-use apollo_compiler::ReprDatabase;
+use apollo_compiler::parse_mixed;
+use apollo_compiler::Schema;
 
 #[test]
 fn it_fails_validation_with_duplicate_operation_fields() {
@@ -20,14 +20,13 @@ interface NamedEntity {
 
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "schema.graphql");
-    let diagnostics = compiler.db.schema().validate().unwrap_err();
-    let diagnostics = format!("{diagnostics:#}");
+    let schema = Schema::parse(input, "schema.graphql");
+    let errors = schema.validate().unwrap_err();
+    let errors = format!("{errors:#}");
     assert!(
-        diagnostics
+        errors
             .contains("duplicate definitions for the `name` field of interface type `NamedEntity`"),
-        "{diagnostics}"
+        "{errors}"
     );
 }
 
@@ -55,14 +54,13 @@ interface NamedEntity {
 
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "schema.graphql");
+    let schema = Schema::parse(input, "schema.graphql");
 
-    let diagnostics = compiler.db.schema().validate().unwrap_err();
-    let diagnostics = format!("{diagnostics:#}");
+    let errors = schema.validate().unwrap_err();
+    let errors = format!("{errors:#}");
     assert!(
-        diagnostics.contains("the type `NamedEntity` is defined multiple times"),
-        "{diagnostics}"
+        errors.contains("the type `NamedEntity` is defined multiple times"),
+        "{errors}"
     );
 }
 
@@ -84,14 +82,14 @@ interface NamedEntity implements NamedEntity {
 
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "schema.graphql");
+    let schema = Schema::parse(input, "schema.graphql");
 
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}")
-    }
-    assert_eq!(diagnostics.len(), 1);
+    let errors = schema.validate().unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("interface NamedEntity cannot implement itself"),
+        "{errors}"
+    );
 }
 
 #[test]
@@ -105,14 +103,14 @@ interface NamedEntity implements NewEntity {
 
 scalar URL @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "schema.graphql");
+    let schema = Schema::parse(input, "schema.graphql");
 
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}")
-    }
-    assert_eq!(diagnostics.len(), 1);
+    let errors = schema.validate().unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("cannot find type `NewEntity` in this document"),
+        "{errors}"
+    );
 }
 
 #[test]
@@ -136,14 +134,14 @@ interface Image implements Resource & Node {
   thumbnail: String
 }
 "#;
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "schema.graphql");
+    let schema = Schema::parse(input, "schema.graphql");
 
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}")
-    }
-    assert_eq!(diagnostics.len(), 1);
+    let errors = schema.validate().unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("type does not satisfy interface `Resource`: missing field `width`"),
+        "{errors}"
+    );
 }
 
 #[test]
@@ -201,12 +199,12 @@ input Point2D {
 
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "schema.graphql");
+    let (schema, _executable) = parse_mixed(input, "doc.graphql");
 
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}")
-    }
-    assert_eq!(diagnostics.len(), 3);
+    let errors = schema.validate().unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("`coordinates` field must return an output type"),
+        "{errors}"
+    );
 }

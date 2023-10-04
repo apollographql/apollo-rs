@@ -1,5 +1,4 @@
-use apollo_compiler::ApolloCompiler;
-use apollo_compiler::ReprDatabase;
+use apollo_compiler::parse_mixed;
 
 #[test]
 fn it_fails_validation_with_missing_ident() {
@@ -32,21 +31,17 @@ type Cat {
   meowVolume: Int
 }
 "#;
-    let mut compiler = ApolloCompiler::new();
-    let id = compiler.add_document(input, "doc.graphql");
 
-    let schema = compiler.db.schema();
-    let diagnostics = compiler
-        .db
-        .executable_document(id)
-        .validate(&schema)
-        .unwrap_err();
-    let diagnostics = format!("{diagnostics:#}");
+    let (schema, executable) = parse_mixed(input, "schema.graphql");
+
+    schema.validate().unwrap();
+    let errors = executable.validate(&schema).unwrap_err();
+    let errors = format!("{errors:#}");
     assert!(
-        diagnostics.contains(
+        errors.contains(
             "anonymous operation cannot be selected when the document contains other operations"
         ),
-        "{diagnostics}"
+        "{errors}"
     );
 }
 
@@ -89,19 +84,15 @@ type Cat implements Pet {
   meowVolume: Int
 }
 "#;
-    let mut compiler = ApolloCompiler::new();
-    let id = compiler.add_document(input, "doc.graphql");
 
-    let schema = compiler.db.schema();
-    let diagnostics = compiler
-        .db
-        .executable_document(id)
-        .validate(&schema)
-        .unwrap_err();
-    let diagnostics = format!("{diagnostics:#}");
+    let (schema, executable) = parse_mixed(input, "schema.graphql");
+
+    schema.validate().unwrap();
+    let errors = executable.validate(&schema).unwrap_err();
+    let errors = format!("{errors:#}");
     assert!(
-        diagnostics.contains("the operation `getName` is defined multiple times in the document"),
-        "{diagnostics}"
+        errors.contains("the operation `getName` is defined multiple times in the document"),
+        "{errors}"
     );
 }
 
@@ -143,14 +134,11 @@ type Cat implements Pet {
   meowVolume: Int
 }
 "#;
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "schema.graphql");
 
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}")
-    }
-    assert!(diagnostics.is_empty());
+    let (schema, executable) = parse_mixed(input, "schema.graphql");
+
+    schema.validate().unwrap();
+    executable.validate(&schema).unwrap();
 }
 
 #[test]
@@ -185,20 +173,16 @@ type Cat implements Pet {
   meowVolume: Int
 }
 "#;
-    let mut compiler = ApolloCompiler::new();
-    let id = compiler.add_document(input, "doc.graphql");
 
-    let schema = compiler.db.schema();
-    let diagnostics = compiler
-        .db
-        .executable_document(id)
-        .validate(&schema)
-        .unwrap_err();
-    let diagnostics = format!("{diagnostics:#}");
+    let (schema, executable) = parse_mixed(input, "schema.graphql");
+
+    schema.validate().unwrap();
+    let errors = executable.validate(&schema).unwrap_err();
+    let errors = format!("{errors:#}");
     assert!(
-        diagnostics
+        errors
             .contains("`subscription` is not defined in the schema and is therefore not supported"),
-        "{diagnostics}"
+        "{errors}"
     );
 }
 
@@ -225,22 +209,17 @@ type Product {
 }
 "#;
 
-    let mut compiler = ApolloCompiler::new();
-    let id = compiler.add_document(input, "doc.graphql");
+    let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    let schema = compiler.db.schema();
-    let diagnostics = compiler
-        .db
-        .executable_document(id)
-        .validate(&schema)
-        .unwrap_err();
-    let diagnostics = format!("{diagnostics:#}");
+    schema.validate().unwrap();
+    let errors = executable.validate(&schema).unwrap_err();
+    let errors = format!("{errors:#}");
     assert!(
-        diagnostics.contains("`Query` does not have a field `noName`"),
-        "{diagnostics}"
+        errors.contains("`Query` does not have a field `noName`"),
+        "{errors}"
     );
     assert!(
-        diagnostics.contains("type `Product` does not have a field `price`"),
-        "{diagnostics}"
+        errors.contains("type `Product` does not have a field `price`"),
+        "{errors}"
     );
 }

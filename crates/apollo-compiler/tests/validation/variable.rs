@@ -1,4 +1,4 @@
-use apollo_compiler::ApolloCompiler;
+use apollo_compiler::parse_mixed;
 
 #[test]
 fn it_raises_undefined_variable_in_query_error() {
@@ -37,16 +37,19 @@ type Products {
 }
 "#;
 
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "document.graphql");
+    let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    let diagnostics = compiler.validate();
-
-    for error in &diagnostics {
-        println!("{error}")
-    }
-
-    assert_eq!(diagnostics.len(), 2);
+    schema.validate().unwrap();
+    let errors = executable.validate(&schema).unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("variable `undefinedVariable` is not defined"),
+        "{errors}"
+    );
+    assert!(
+        errors.contains("variable `dimensions` is not defined"),
+        "{errors}"
+    );
 }
 
 #[test]
@@ -69,14 +72,15 @@ type Product {
 }
 "#;
 
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "document.graphql");
+    let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    let diagnostics = compiler.validate();
-
-    for error in diagnostics {
-        println!("{error}")
-    }
+    schema.validate().unwrap();
+    let errors = executable.validate(&schema).unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("unused variable: `unusedVariable`"),
+        "{errors}"
+    );
 }
 
 #[test]
@@ -120,14 +124,17 @@ type Product {
 }
 "#;
 
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "document.graphql");
+    let (schema, executable) = parse_mixed(input, "schema.graphql");
 
-    let diagnostics = compiler.validate();
-
-    for error in &diagnostics {
-        println!("{error}")
-    }
-
-    assert_eq!(diagnostics.len(), 2);
+    schema.validate().unwrap();
+    let errors = executable.validate(&schema).unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("variable `goldStatus` is not defined"),
+        "{errors}"
+    );
+    assert!(
+        errors.contains("variable `dimensions` is not defined"),
+        "{errors}"
+    );
 }

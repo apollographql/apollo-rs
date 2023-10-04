@@ -1,5 +1,3 @@
-use apollo_compiler::ApolloCompiler;
-use apollo_compiler::ReprDatabase;
 use apollo_compiler::Schema;
 
 #[test]
@@ -20,10 +18,8 @@ fn find_definitions_with_directive() {
         }
     "#;
 
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(schema, "schema.graphql");
+    let schema = Schema::parse(schema, "schema.graphql");
 
-    let schema = compiler.db.schema();
     let mut key_definition_names: Vec<&str> = schema
         .types
         .iter()
@@ -86,9 +82,8 @@ interface Inter {
 
 #[test]
 fn is_subtype() {
-    fn gen_schema_types(schema: &str) -> ApolloCompiler {
-        let base_schema = with_supergraph_boilerplate(
-            r#"
+    fn gen_schema_types(schema: &str) -> Schema {
+        let base_schema = r#"
             type Query {
                 me: String
             }
@@ -103,17 +98,16 @@ fn is_subtype() {
             }
 
             union UnionType2 = Foo | Bar
-            "#,
-        );
-        let schema = format!("{base_schema}\n{schema}");
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_document(&schema, "schema.graphql");
-        compiler
+            "#;
+        Schema::builder()
+            .parse(SUPERGRAPH_BOILERPLATE, "boilerplate")
+            .parse(base_schema, "base")
+            .parse(schema, "schema")
+            .build()
     }
 
-    fn gen_schema_interfaces(schema: &str) -> ApolloCompiler {
-        let base_schema = with_supergraph_boilerplate(
-            r#"
+    fn gen_schema_interfaces(schema: &str) -> Schema {
+        let base_schema = r#"
             type Query {
                 me: String
             }
@@ -129,16 +123,15 @@ fn is_subtype() {
 
             type ObjectType2 implements Foo & Bar { me: String }
             interface InterfaceType2 implements Foo & Bar { me: String }
-            "#,
-        );
-        let schema = format!("{base_schema}\n{schema}");
-        let mut compiler = ApolloCompiler::new();
-        compiler.add_document(&schema, "schema.graphql");
-        compiler
+            "#;
+        Schema::builder()
+            .parse(SUPERGRAPH_BOILERPLATE, "boilerplate")
+            .parse(base_schema, "base")
+            .parse(schema, "schema")
+            .build()
     }
 
-    let ctx = gen_schema_types("union UnionType = Foo | Bar | Baz");
-    let schema = ctx.db.schema();
+    let schema = gen_schema_types("union UnionType = Foo | Bar | Baz");
     assert!(schema.is_subtype("UnionType", "Foo"));
     assert!(schema.is_subtype("UnionType", "Bar"));
     assert!(schema.is_subtype("UnionType", "Baz"));
@@ -148,8 +141,7 @@ fn is_subtype() {
     assert!(!schema.is_subtype("NotAType", "Foo"));
     assert!(!schema.is_subtype("Foo", "UnionType"));
 
-    let ctx = gen_schema_interfaces("type ObjectType implements Foo & Bar & Baz { me: String }");
-    let schema = ctx.db.schema();
+    let schema = gen_schema_interfaces("type ObjectType implements Foo & Bar & Baz { me: String }");
     assert!(schema.is_subtype("Foo", "ObjectType"));
     assert!(schema.is_subtype("Bar", "ObjectType"));
     assert!(schema.is_subtype("Baz", "ObjectType"));
@@ -159,9 +151,8 @@ fn is_subtype() {
     assert!(!schema.is_subtype("Foo", "NotAType"));
     assert!(!schema.is_subtype("ObjectType", "Foo"));
 
-    let ctx =
+    let schema =
         gen_schema_interfaces("interface InterfaceType implements Foo & Bar & Baz { me: String }");
-    let schema = ctx.db.schema();
     assert!(schema.is_subtype("Foo", "InterfaceType"));
     assert!(schema.is_subtype("Bar", "InterfaceType"));
     assert!(schema.is_subtype("Baz", "InterfaceType"));
@@ -171,30 +162,24 @@ fn is_subtype() {
     assert!(!schema.is_subtype("Foo", "NotAType"));
     assert!(!schema.is_subtype("InterfaceType", "Foo"));
 
-    let ctx = gen_schema_types("extend union UnionType2 = Baz");
-    let schema = ctx.db.schema();
+    let schema = gen_schema_types("extend union UnionType2 = Baz");
     assert!(schema.is_subtype("UnionType2", "Foo"));
     assert!(schema.is_subtype("UnionType2", "Bar"));
     assert!(schema.is_subtype("UnionType2", "Baz"));
 
-    let ctx = gen_schema_interfaces("extend type ObjectType2 implements Baz { me2: String }");
-    let schema = ctx.db.schema();
+    let schema = gen_schema_interfaces("extend type ObjectType2 implements Baz { me2: String }");
     assert!(schema.is_subtype("Foo", "ObjectType2"));
     assert!(schema.is_subtype("Bar", "ObjectType2"));
     assert!(schema.is_subtype("Baz", "ObjectType2"));
 
-    let ctx =
+    let schema =
         gen_schema_interfaces("extend interface InterfaceType2 implements Baz { me2: String }");
-    let schema = ctx.db.schema();
     assert!(schema.is_subtype("Foo", "InterfaceType2"));
     assert!(schema.is_subtype("Bar", "InterfaceType2"));
     assert!(schema.is_subtype("Baz", "InterfaceType2"));
 }
 
-fn with_supergraph_boilerplate(content: &str) -> String {
-    format!(
-        "{}\n{}",
-        r#"
+const SUPERGRAPH_BOILERPLATE: &str = r#"
         schema
             @core(feature: "https://specs.apollo.dev/core/v0.1")
             @core(feature: "https://specs.apollo.dev/join/v0.1") {
@@ -206,7 +191,4 @@ fn with_supergraph_boilerplate(content: &str) -> String {
             TEST @join__graph(name: "test", url: "http://localhost:4001/graphql")
         }
 
-        "#,
-        content
-    )
-}
+        "#;

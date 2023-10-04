@@ -3,9 +3,9 @@ mod object;
 mod operation;
 mod variable;
 
-use apollo_compiler::validation::ValidationDatabase;
-use apollo_compiler::ApolloCompiler;
-use apollo_compiler::ReprDatabase;
+use apollo_compiler::ast;
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Schema;
 
 #[test]
 fn executable_and_type_system_definitions() {
@@ -21,12 +21,11 @@ query {
 }
 "#;
 
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_type_system(input_type_system, "schema.graphql");
-    compiler.add_executable(input_executable, "query.graphql");
+    let schema = Schema::parse(input_type_system, "schema.graphql");
+    let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
 
-    let diagnostics = compiler.validate();
-    assert!(diagnostics.is_empty());
+    schema.validate().unwrap();
+    executable.validate(&schema).unwrap();
 }
 
 #[test]
@@ -46,19 +45,15 @@ query {
 }
 "#;
 
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_type_system(input_type_system, "schema.graphql");
-    let id = compiler.add_executable(input_executable, "query.graphql");
+    let schema = Schema::parse(input_type_system, "schema.graphql");
+    let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
 
-    let schema = compiler.db.schema();
-    let diagnostics = compiler
-        .db
-        .executable_document(id)
-        .validate(&schema)
-        .unwrap_err()
-        .to_string();
+    schema.validate().unwrap();
+    let errors = executable.validate(&schema).unwrap_err();
+    let errors = format!("{errors:#}");
     assert!(
-        diagnostics.contains("an executable document must not contain an object type definition")
+        errors.contains("an executable document must not contain an object type definition"),
+        "{errors}"
     );
 }
 
@@ -79,16 +74,15 @@ fragment q on Query {
 }
 "#;
 
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_type_system(input_type_system, "schema.graphql");
-    compiler.add_executable(input_executable, "query.graphql");
+    let schema = Schema::parse(input_type_system, "schema.graphql");
+    let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
 
-    let diagnostics = compiler.validate();
-
-    assert_eq!(diagnostics.len(), 1);
-    assert_eq!(
-        diagnostics[0].data.to_string(),
-        "`q` fragment cannot reference itself"
+    schema.validate().unwrap();
+    let errors = executable.validate(&schema).unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("`q` fragment cannot reference itself"),
+        "{errors}"
     );
 }
 
@@ -116,43 +110,39 @@ fragment q on TestObject {
 }
 "#;
 
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_type_system(input_type_system, "schema.graphql");
-    compiler.add_executable(input_executable, "query.graphql");
+    let schema = Schema::parse(input_type_system, "schema.graphql");
+    let executable = ExecutableDocument::parse(&schema, input_executable, "query.graphql");
 
-    let diagnostics = compiler.validate();
-
-    assert_eq!(diagnostics.len(), 1);
-    assert_eq!(
-        diagnostics[0].data.to_string(),
-        "`q` fragment cannot reference itself"
+    schema.validate().unwrap();
+    let errors = executable.validate(&schema).unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("`q` fragment cannot reference itself"),
+        "{errors}"
     );
 }
 
 #[test]
 fn validation_without_type_system() {
-    let mut compiler = ApolloCompiler::new();
-
-    let valid_id = compiler.add_executable(r#"{ obj { name nickname } }"#, "valid.graphql");
-    let diagnostics = compiler.db.validate_standalone_executable(valid_id);
+    let doc = ast::Document::parse(r#"{ obj { name nickname } }"#, "valid.graphql");
     // We don't know what `obj` refers to, so assume it is valid.
-    assert!(diagnostics.is_empty());
+    doc.validate_standalone_executable().unwrap();
 
-    let unused_frag_id = compiler.add_executable(
+    let doc = ast::Document::parse(
         r#"
             fragment A on Type { a }
             query { b }
         "#,
         "dupe_frag.graphql",
     );
-    let diagnostics = compiler.db.validate_standalone_executable(unused_frag_id);
-    assert_eq!(diagnostics.len(), 1);
-    assert_eq!(
-        diagnostics[0].data.to_string(),
-        "fragment `A` must be used in an operation"
+    let errors = doc.validate_standalone_executable().unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("fragment `A` must be used in an operation"),
+        "{errors}"
     );
 
-    let dupe_frag_id = compiler.add_executable(
+    let doc = ast::Document::parse(
         r#"
             fragment A on Type { a }
             fragment A on Type { b }
@@ -160,42 +150,33 @@ fn validation_without_type_system() {
         "#,
         "dupe_frag.graphql",
     );
-    let diagnostics = compiler
-        .db
-        .ast(dupe_frag_id)
-        .validate_standalone_executable()
-        .unwrap_err();
-    let diagnostics = format!("{diagnostics:#}");
+    let errors = doc.validate_standalone_executable().unwrap_err();
+    let errors = format!("{errors:#}");
     assert!(
-        diagnostics.contains("the fragment `A` is defined multiple times in the document"),
-        "{diagnostics}"
+        errors.contains("the fragment `A` is defined multiple times in the document"),
+        "{errors}"
     );
 
-    let unknown_frag_id = compiler.add_executable(r#"{ ...A }"#, "unknown_frag.graphql");
-    let diagnostics = compiler.db.validate_standalone_executable(unknown_frag_id);
-    assert_eq!(diagnostics.len(), 1);
-    assert_eq!(
-        diagnostics[0].data.to_string(),
-        "cannot find fragment `A` in this document"
+    let doc = ast::Document::parse(r#"{ ...A }"#, "unknown_frag.graphql");
+    let errors = doc.validate_standalone_executable().unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("cannot find fragment `A` in this document"),
+        "{errors}"
     );
 }
 
 #[test]
 fn validate_variable_usage_without_type_system() {
-    let mut compiler = ApolloCompiler::new();
-    let id = compiler.add_executable(r#"
-query nullableStringArg($nonNullableVar: String!, $nonNullableList: [String!]!, $nonNullableListList: [[Int!]!]) {
-  arguments {
-    nullableString(nullableString: $nonNullableVar)
-    nullableList(nullableList: $nonNullableList)
-    nullableListList(nullableListList: $nonNullableListList)
-  }
-}
-"#, "query.graphql");
-
-    let diagnostics = compiler.db.validate_standalone_executable(id);
-    for diag in &diagnostics {
-        println!("{diag}")
+    let input = r#"
+    query nullableStringArg($nonNullableVar: String!, $nonNullableList: [String!]!, $nonNullableListList: [[Int!]!]) {
+      arguments {
+        nullableString(nullableString: $nonNullableVar)
+        nullableList(nullableList: $nonNullableList)
+        nullableListList(nullableListList: $nonNullableListList)
+      }
     }
-    assert_eq!(diagnostics.len(), 0);
+    "#;
+    let doc = ast::Document::parse(input, "query.graphql");
+    doc.validate_standalone_executable().unwrap()
 }

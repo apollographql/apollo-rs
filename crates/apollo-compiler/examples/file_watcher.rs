@@ -7,7 +7,8 @@ use std::{
 };
 
 use anyhow::{anyhow, Result};
-use apollo_compiler::{ApolloCompiler, FileId};
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Schema;
 use notify::{Config, EventKind, PollWatcher, RecursiveMode, Watcher};
 
 fn main() -> Result<()> {
@@ -17,32 +18,30 @@ fn main() -> Result<()> {
 }
 
 pub struct FileWatcher {
-    compiler: ApolloCompiler,
-    manifest: HashMap<PathBuf, FileId>,
+    manifest: HashMap<PathBuf, (Schema, ExecutableDocument)>,
 }
 
 #[allow(clippy::new_without_default)]
 impl FileWatcher {
     pub fn new() -> Self {
         Self {
-            compiler: ApolloCompiler::new(),
             manifest: HashMap::new(),
         }
     }
 
-    // The `watch` fn first goes over every document in a given directory and
-    // creates it as a new document with compiler's
-    // `compiler.add_document()`.
+    // The `watch` fn first goes over every document in a given directory, and
+    // parse them all, and validate them all.
     //
-    // We then watch for file changes, and update
-    // each changed document with `compiler.update_document()`.
+    // We then watch for file changes, and reparse and revalidates relevant files.
     pub fn watch(&mut self, dir: impl AsRef<Path>) -> Result<()> {
         for entry in fs::read_dir(&dir)? {
             let (proposed_document, src_path) = get_schema_and_maybe_path(entry?)?;
             self.add_document(proposed_document, src_path)?;
         }
 
-        self.validate();
+        for entry in self.manifest.values() {
+            self.validate(entry);
+        }
 
         self.watch_broadcast(dir.as_ref())
     }
@@ -73,13 +72,8 @@ impl FileWatcher {
                                 match fs::read_to_string(&path) {
                                     Ok(contents) => {
                                         println!("changes detected in {}", path.display());
-                                        let file_id = self.manifest.get(&fs::canonicalize(&path)?);
-                                        if let Some(file_id) = file_id {
-                                            self.compiler.update_document(*file_id, &contents);
-                                        } else {
-                                            self.add_document(contents, path)?;
-                                        }
-                                        self.validate();
+                                        let path = self.add_document(contents, path)?;
+                                        self.validate(&self.manifest[&path]);
                                     }
                                     Err(e) => {
                                         println!(
@@ -116,17 +110,19 @@ impl FileWatcher {
         &mut self,
         proposed_document: String,
         src_path: PathBuf,
-    ) -> Result<(), anyhow::Error> {
-        let file_id = self.compiler.add_document(&proposed_document, &src_path);
+    ) -> Result<PathBuf, anyhow::Error> {
         let full_path = fs::canonicalize(&src_path)?;
-        self.manifest.insert(full_path, file_id);
-        Ok(())
+        let doc = apollo_compiler::parse_mixed(proposed_document, src_path);
+        self.manifest.insert(full_path.clone(), doc);
+        Ok(full_path)
     }
 
-    fn validate(&self) {
-        let diagnostics = self.compiler.validate();
-        for diag in diagnostics {
-            println!("{diag}")
+    fn validate(&self, (schema, executable): &(Schema, ExecutableDocument)) {
+        if let Err(err) = schema.validate() {
+            println!("{err}")
+        }
+        if let Err(err) = executable.validate(schema) {
+            println!("{err}")
         }
     }
 }

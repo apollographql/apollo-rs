@@ -48,7 +48,7 @@ impl Parser {
     }
 
     /// Configure the recursion to use while parsing.
-    pub fn recursion_limit(&mut self, value: usize) -> &mut Self {
+    pub fn recursion_limit(mut self, value: usize) -> Self {
         self.recursion_limit = Some(value);
         self
     }
@@ -56,7 +56,7 @@ impl Parser {
     /// Configure the limit on the number of tokens to parse.
     /// If an input document is too big, parsing will be aborted.
     /// By default, there is no limit.
-    pub fn token_limit(&mut self, value: usize) -> &mut Self {
+    pub fn token_limit(mut self, value: usize) -> Self {
         self.token_limit = Some(value);
         self
     }
