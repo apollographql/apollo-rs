@@ -5,7 +5,7 @@ use crate::{
 };
 use std::collections::HashSet;
 
-pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for interface in db.ast_types().interfaces.values() {
@@ -15,7 +15,7 @@ pub fn validate_interface_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
     diagnostics
 }
 
-pub fn validate_interface_definition(
+pub(crate) fn validate_interface_definition(
     db: &dyn ValidationDatabase,
     interface: ast::TypeWithExtensions<ast::InterfaceTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
@@ -128,7 +128,7 @@ pub fn validate_interface_definition(
     diagnostics
 }
 
-pub fn validate_implements_interfaces(
+pub(crate) fn validate_implements_interfaces(
     db: &dyn ValidationDatabase,
     implementor: &ast::Definition,
     implements_interfaces: &[ast::Name],

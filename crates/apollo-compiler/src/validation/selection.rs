@@ -5,7 +5,7 @@ use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
     validation::ValidationDatabase,
-    Node,
+    FileId, Node,
 };
 
 use super::operation::OperationValidationConfig;
@@ -84,6 +84,7 @@ pub(crate) fn operation_fields<'a>(
 /// Spec: https://spec.graphql.org/October2021/#SameResponseShape()
 pub(crate) fn same_response_shape(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     field_a: FieldAgainstType<'_>,
     field_b: FieldAgainstType<'_>,
 ) -> Result<(), ApolloDiagnostic> {
@@ -179,8 +180,7 @@ pub(crate) fn same_response_shape(
         }
         // 6. Assert: typeA and typeB are both composite types.
         (def_a, def_b) if is_composite(def_a) && is_composite(def_b) => {
-            let named_fragments =
-                db.ast_named_fragments(field_a.field.location().unwrap().file_id());
+            let named_fragments = db.ast_named_fragments(file_id);
             let mut merged_set = operation_fields(
                 &named_fragments,
                 field_a.against_type,
@@ -200,7 +200,7 @@ pub(crate) fn same_response_shape(
                 };
                 for subfield_b in rest {
                     // 9a. If SameResponseShape(subfieldA, subfieldB) is false, return false.
-                    same_response_shape(db, *subfield_a, *subfield_b)?;
+                    same_response_shape(db, file_id, *subfield_a, *subfield_b)?;
                 }
             }
 
@@ -306,6 +306,7 @@ fn identical_arguments(
 /// Spec: https://spec.graphql.org/October2021/#FieldsInSetCanMerge()
 pub(crate) fn fields_in_set_can_merge(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     named_fragments: &HashMap<ast::Name, Node<ast::FragmentDefinition>>,
     against_type: &ast::NamedType,
     selection_set: &[ast::Selection],
@@ -329,7 +330,7 @@ pub(crate) fn fields_in_set_can_merge(
         // 2. Given each pair of members fieldA and fieldB in fieldsForName:
         for field_b in rest {
             // 2a. SameResponseShape(fieldA, fieldB) must be true.
-            if let Err(diagnostic) = same_response_shape(db, *field_a, *field_b) {
+            if let Err(diagnostic) = same_response_shape(db, file_id, *field_a, *field_b) {
                 diagnostics.push(diagnostic);
                 continue;
             }
@@ -378,6 +379,7 @@ pub(crate) fn fields_in_set_can_merge(
                 // 2biv. FieldsInSetCanMerge(mergedSet) must be true.
                 if let Err(sub_diagnostics) = fields_in_set_can_merge(
                     db,
+                    file_id,
                     named_fragments,
                     parent_a.ty.inner_named_type(),
                     &merged_set,
@@ -396,25 +398,23 @@ pub(crate) fn fields_in_set_can_merge(
     }
 }
 
-pub fn validate_selection_set2(
+pub(crate) fn validate_selection_set2(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     against_type: Option<&ast::NamedType>,
     selection_set: &[ast::Selection],
     context: OperationValidationConfig<'_>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = vec![];
 
-    // TODO(@goto-bus-stop) named fragments for synthetic ASTs
-    let named_fragments = selection_set
-        .get(0)
-        .and_then(|field| Some(db.ast_named_fragments(field.location()?.file_id())));
+    let named_fragments = Some(db.ast_named_fragments(file_id));
     // `named_fragments` will be None if we have 0 fields, where this validation is irrelevant
     // anyways.
     // If `against_type` is None, we don't know the actual type of anything, so we cannot run this
     // validation.
     if let (Some(named_fragments), Some(against_type)) = (named_fragments, against_type) {
         if let Err(diagnostic) =
-            fields_in_set_can_merge(db, &named_fragments, against_type, selection_set)
+            fields_in_set_can_merge(db, file_id, &named_fragments, against_type, selection_set)
         {
             diagnostics.extend(diagnostic);
         }
@@ -422,6 +422,7 @@ pub fn validate_selection_set2(
 
     diagnostics.extend(validate_selections(
         db,
+        file_id,
         against_type,
         selection_set,
         context,
@@ -430,8 +431,9 @@ pub fn validate_selection_set2(
     diagnostics
 }
 
-pub fn validate_selections(
+pub(crate) fn validate_selections(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     against_type: Option<&ast::NamedType>,
     selection_set: &[ast::Selection],
     context: OperationValidationConfig<'_>,
@@ -442,6 +444,7 @@ pub fn validate_selections(
         match selection {
             ast::Selection::Field(field) => diagnostics.extend(super::field::validate_field(
                 db,
+                file_id,
                 against_type,
                 field.clone(),
                 context.clone(),
@@ -449,6 +452,7 @@ pub fn validate_selections(
             ast::Selection::FragmentSpread(fragment) => {
                 diagnostics.extend(super::fragment::validate_fragment_spread(
                     db,
+                    file_id,
                     against_type,
                     fragment.clone(),
                     context.clone(),
@@ -457,6 +461,7 @@ pub fn validate_selections(
             ast::Selection::InlineFragment(inline) => {
                 diagnostics.extend(super::fragment::validate_inline_fragment(
                     db,
+                    file_id,
                     against_type,
                     inline.clone(),
                     context.clone(),

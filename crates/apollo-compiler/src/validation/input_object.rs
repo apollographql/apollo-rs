@@ -61,7 +61,9 @@ impl FindRecursiveInputValue<'_> {
     }
 }
 
-pub fn validate_input_object_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_input_object_definitions(
+    db: &dyn ValidationDatabase,
+) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for input_object in db.ast_types().input_objects.values() {
@@ -71,7 +73,7 @@ pub fn validate_input_object_definitions(db: &dyn ValidationDatabase) -> Vec<Apo
     diagnostics
 }
 
-pub fn validate_input_object_definition(
+pub(crate) fn validate_input_object_definition(
     db: &dyn ValidationDatabase,
     input_object: ast::TypeWithExtensions<ast::InputObjectTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {
@@ -116,7 +118,7 @@ pub fn validate_input_object_definition(
     diagnostics
 }
 
-pub fn validate_argument_definitions(
+pub(crate) fn validate_argument_definitions(
     db: &dyn ValidationDatabase,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,
@@ -160,7 +162,7 @@ pub fn validate_argument_definitions(
     diagnostics
 }
 
-pub fn validate_input_value_definitions(
+pub(crate) fn validate_input_value_definitions(
     db: &dyn ValidationDatabase,
     input_values: &[Node<ast::InputValueDefinition>],
     directive_location: ast::DirectiveLocation,

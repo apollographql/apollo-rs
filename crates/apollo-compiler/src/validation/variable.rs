@@ -1,12 +1,12 @@
 use crate::{
     ast,
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
-    schema, Node, NodeLocation, ValidationDatabase,
+    schema, FileId, Node, NodeLocation, ValidationDatabase,
 };
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 
-pub fn validate_variable_definitions2(
+pub(crate) fn validate_variable_definitions2(
     db: &dyn ValidationDatabase,
     variables: &[Node<ast::VariableDefinition>],
     has_schema: bool,
@@ -215,8 +215,9 @@ fn variables_in_directives(
 //   a: field (arg: $var1)
 //   a: field (arg: $var2)
 // }
-pub fn validate_unused_variables(
+pub(crate) fn validate_unused_variables(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     operation: Node<ast::OperationDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let defined_vars: HashSet<_> = operation
@@ -236,7 +237,7 @@ pub fn validate_unused_variables(
         .collect();
     let mut used_vars = HashSet::<ast::Name>::new();
     walk_selections(
-        &db.ast(operation.location().unwrap().file_id()),
+        &db.ast(file_id),
         &operation.selection_set,
         |selection| match selection {
             ast::Selection::Field(field) => {
@@ -271,7 +272,7 @@ pub fn validate_unused_variables(
     diagnostics
 }
 
-pub fn validate_variable_usage2(
+pub(crate) fn validate_variable_usage2(
     db: &dyn ValidationDatabase,
     var_usage: Node<ast::InputValueDefinition>,
     var_defs: &[Node<ast::VariableDefinition>],

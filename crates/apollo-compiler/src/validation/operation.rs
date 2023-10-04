@@ -14,6 +14,7 @@ pub struct OperationValidationConfig<'vars> {
 
 pub(crate) fn validate_operation(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     operation: Node<ast::OperationDefinition>,
     has_schema: bool,
 ) -> Vec<ApolloDiagnostic> {
@@ -27,7 +28,7 @@ pub(crate) fn validate_operation(
     let schema = db.schema();
     let against_type = schema.root_operation(operation.operation_type);
 
-    let named_fragments = db.ast_named_fragments(operation.location().unwrap().file_id());
+    let named_fragments = db.ast_named_fragments(file_id);
     let q = ast::NamedType::new("Query");
 
     if operation.operation_type == ast::OperationType::Subscription {
@@ -105,10 +106,12 @@ pub(crate) fn validate_operation(
 
     diagnostics.extend(super::variable::validate_unused_variables(
         db,
+        file_id,
         operation.clone(),
     ));
     diagnostics.extend(super::selection::validate_selection_set2(
         db,
+        file_id,
         against_type.map(|component| &component.node),
         &operation.selection_set,
         config,
@@ -127,14 +130,19 @@ pub(crate) fn validate_operation_definitions_inner(
 
     for definition in &document.definitions {
         if let ast::Definition::OperationDefinition(operation) = definition {
-            diagnostics.extend(validate_operation(db, operation.clone(), has_schema));
+            diagnostics.extend(validate_operation(
+                db,
+                file_id,
+                operation.clone(),
+                has_schema,
+            ));
         }
     }
 
     diagnostics
 }
 
-pub fn validate_operation_definitions(
+pub(crate) fn validate_operation_definitions(
     db: &dyn ValidationDatabase,
     file_id: FileId,
 ) -> Vec<ApolloDiagnostic> {

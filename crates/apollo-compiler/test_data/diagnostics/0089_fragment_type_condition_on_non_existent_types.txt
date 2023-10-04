@@ -1,3 +1,10 @@
+Error: cannot find fragment `invalidFragmentCondition` in this document
+   ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:3:5]
+   │
+ 3 │     ...invalidFragmentCondition
+   │     ─────────────┬─────────────  
+   │                  ╰─────────────── fragment `invalidFragmentCondition` is not defined
+───╯
 Error: type condition `MissingSecondType` of inline fragment is not a type defined in the schema
    ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:5:12]
    │

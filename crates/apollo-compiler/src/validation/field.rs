@@ -3,13 +3,14 @@ use crate::{
     diagnostics::{ApolloDiagnostic, DiagnosticData, Label},
     schema,
     validation::ValidationDatabase,
-    Node,
+    FileId, Node,
 };
 
 use super::operation::OperationValidationConfig;
 
-pub fn validate_field(
+pub(crate) fn validate_field(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     // May be None if a parent selection was invalid
     against_type: Option<&ast::NamedType>,
     field: Node<ast::Field>,
@@ -117,6 +118,7 @@ pub fn validate_field(
             Err(diag) => diagnostics.push(diag),
             Ok(_) => diagnostics.extend(super::selection::validate_selection_set2(
                 db,
+                file_id,
                 Some(field_definition.ty.inner_named_type()),
                 &field.selection_set,
                 context,
@@ -127,7 +129,7 @@ pub fn validate_field(
     diagnostics
 }
 
-pub fn validate_field_definition(
+pub(crate) fn validate_field_definition(
     db: &dyn ValidationDatabase,
     field: &Node<ast::FieldDefinition>,
 ) -> Vec<ApolloDiagnostic> {
@@ -148,7 +150,7 @@ pub fn validate_field_definition(
     diagnostics
 }
 
-pub fn validate_field_definitions(
+pub(crate) fn validate_field_definitions(
     db: &dyn ValidationDatabase,
     fields: Vec<Node<ast::FieldDefinition>>,
 ) -> Vec<ApolloDiagnostic> {
@@ -211,7 +213,7 @@ pub fn validate_field_definitions(
     diagnostics
 }
 
-pub fn validate_leaf_field_selection(
+pub(crate) fn validate_leaf_field_selection(
     db: &dyn ValidationDatabase,
     field: Node<ast::Field>,
     field_type: &ast::Type,

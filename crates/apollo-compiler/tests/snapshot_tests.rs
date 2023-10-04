@@ -8,7 +8,7 @@
 // Note: ALL #[test] functions must also have #[serial], to make FileId::reset
 
 use apollo_compiler::ast;
-use apollo_compiler::validation::Diagnostics;
+use apollo_compiler::Diagnostics;
 use apollo_compiler::FileId;
 use apollo_compiler::Schema;
 use expect_test::expect_file;

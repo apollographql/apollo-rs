@@ -4,7 +4,7 @@ use crate::{
     schema, ValidationDatabase,
 };
 
-pub fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for def in db.ast_types().unions.values() {
@@ -14,7 +14,7 @@ pub fn validate_union_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiag
     diagnostics
 }
 
-pub fn validate_union_definition(
+pub(crate) fn validate_union_definition(
     db: &dyn ValidationDatabase,
     union_def: ast::TypeWithExtensions<ast::UnionTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {

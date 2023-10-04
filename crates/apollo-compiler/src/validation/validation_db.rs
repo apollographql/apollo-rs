@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use super::field;
 
 #[salsa::query_group(ValidationStorage)]
-pub trait ValidationDatabase: InputDatabase + ReprDatabase {
+pub(crate) trait ValidationDatabase: InputDatabase + ReprDatabase {
     fn ast_types(&self) -> Arc<ast::TypeSystem>;
     fn ast_named_fragments(
         &self,
@@ -274,7 +274,7 @@ fn ast_types(db: &dyn ValidationDatabase) -> Arc<ast::TypeSystem> {
     })
 }
 
-pub fn ast_named_fragments(
+pub(crate) fn ast_named_fragments(
     db: &dyn ValidationDatabase,
     file_id: FileId,
 ) -> Arc<HashMap<ast::Name, Node<ast::FragmentDefinition>>> {
@@ -290,7 +290,7 @@ pub fn ast_named_fragments(
     Arc::new(named_fragments)
 }
 
-pub fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     diagnostics.extend(db.validate_type_system());
@@ -306,7 +306,7 @@ fn location_sort_key(diagnostic: &ApolloDiagnostic) -> (FileId, usize) {
     (diagnostic.location.file_id(), diagnostic.location.offset())
 }
 
-pub fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_type_system(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     let schema = db.ast_types().schema.clone();
@@ -347,13 +347,16 @@ fn validate_executable_inner(
     diagnostics
 }
 
-pub fn validate_standalone_executable(
+pub(crate) fn validate_standalone_executable(
     db: &dyn ValidationDatabase,
     file_id: FileId,
 ) -> Vec<ApolloDiagnostic> {
     validate_executable_inner(db, file_id, false)
 }
 
-pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_executable(
+    db: &dyn ValidationDatabase,
+    file_id: FileId,
+) -> Vec<ApolloDiagnostic> {
     validate_executable_inner(db, file_id, true)
 }

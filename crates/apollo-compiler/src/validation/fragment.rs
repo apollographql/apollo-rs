@@ -12,7 +12,7 @@ use super::operation::OperationValidationConfig;
 /// Given a type definition, find all the type names that can be used for fragment spreading.
 ///
 /// Spec: https://spec.graphql.org/October2021/#GetPossibleTypes()
-pub fn get_possible_types<'a>(
+pub(crate) fn get_possible_types<'a>(
     schema: &'a schema::Schema,
     type_name: &'a ast::Name,
 ) -> HashSet<&'a ast::NamedType> {
@@ -51,6 +51,7 @@ pub fn get_possible_types<'a>(
 
 fn validate_fragment_spread_type(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     against_type: &ast::NamedType,
     type_condition: &ast::NamedType,
     selection: &ast::Selection,
@@ -78,8 +79,7 @@ fn validate_fragment_spread_type(
         let diagnostic = match selection {
             ast::Selection::Field(_) => unreachable!(),
             ast::Selection::FragmentSpread(spread) => {
-                let named_fragments =
-                    db.ast_named_fragments(selection.location().unwrap().file_id());
+                let named_fragments = db.ast_named_fragments(file_id);
                 // TODO(@goto-bus-stop) Can we guarantee this unwrap()?
                 let fragment_definition = named_fragments.get(&spread.fragment_name).unwrap();
 
@@ -128,8 +128,9 @@ fn validate_fragment_spread_type(
     diagnostics
 }
 
-pub fn validate_inline_fragment(
+pub(crate) fn validate_inline_fragment(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     against_type: Option<&ast::NamedType>,
     inline: Node<ast::InlineFragment>,
     context: OperationValidationConfig<'_>,
@@ -162,6 +163,7 @@ pub fn validate_inline_fragment(
         if let (Some(against_type), Some(type_condition)) = (against_type, &inline.type_condition) {
             diagnostics.extend(validate_fragment_spread_type(
                 db,
+                file_id,
                 against_type,
                 type_condition,
                 &ast::Selection::InlineFragment(inline.clone()),
@@ -169,6 +171,7 @@ pub fn validate_inline_fragment(
         }
         diagnostics.extend(super::selection::validate_selection_set2(
             db,
+            file_id,
             inline.type_condition.as_ref().or(against_type),
             &inline.selection_set,
             context,
@@ -178,8 +181,9 @@ pub fn validate_inline_fragment(
     diagnostics
 }
 
-pub fn validate_fragment_spread(
+pub(crate) fn validate_fragment_spread(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     against_type: Option<&ast::NamedType>,
     spread: Node<ast::FragmentSpread>,
     context: OperationValidationConfig<'_>,
@@ -193,18 +197,24 @@ pub fn validate_fragment_spread(
         context.variables.clone(),
     ));
 
-    let named_fragments = db.ast_named_fragments(spread.location().unwrap().file_id());
+    let named_fragments = db.ast_named_fragments(file_id);
     match named_fragments.get(&spread.fragment_name) {
         Some(def) => {
             if let Some(against_type) = against_type {
                 diagnostics.extend(validate_fragment_spread_type(
                     db,
+                    file_id,
                     against_type,
                     &def.type_condition,
                     &ast::Selection::FragmentSpread(spread.clone()),
                 ));
             }
-            diagnostics.extend(validate_fragment_definition(db, def.clone(), context));
+            diagnostics.extend(validate_fragment_definition(
+                db,
+                file_id,
+                def.clone(),
+                context,
+            ));
         }
         None => {
             diagnostics.push(
@@ -226,8 +236,9 @@ pub fn validate_fragment_spread(
     diagnostics
 }
 
-pub fn validate_fragment_definition(
+pub(crate) fn validate_fragment_definition(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     fragment: Node<ast::FragmentDefinition>,
     context: OperationValidationConfig<'_>,
 ) -> Vec<ApolloDiagnostic> {
@@ -254,7 +265,7 @@ pub fn validate_fragment_definition(
         false
     };
 
-    let fragment_cycles_diagnostics = validate_fragment_cycles(db, &fragment);
+    let fragment_cycles_diagnostics = validate_fragment_cycles(db, file_id, &fragment);
     let has_cycles = !fragment_cycles_diagnostics.is_empty();
     diagnostics.extend(fragment_cycles_diagnostics);
 
@@ -269,6 +280,7 @@ pub fn validate_fragment_definition(
 
         diagnostics.extend(super::selection::validate_selection_set2(
             db,
+            file_id,
             type_condition,
             &fragment.selection_set,
             context,
@@ -278,15 +290,16 @@ pub fn validate_fragment_definition(
     diagnostics
 }
 
-pub fn validate_fragment_cycles(
+pub(crate) fn validate_fragment_cycles(
     db: &dyn ValidationDatabase,
+    file_id: FileId,
     def: &Node<ast::FragmentDefinition>,
 ) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     // TODO pass in named fragments from outside this function, so it can be used on fully
     // synthetic trees.
-    let named_fragments = db.ast_named_fragments(def.location().unwrap().file_id());
+    let named_fragments = db.ast_named_fragments(file_id);
 
     fn detect_fragment_cycles(
         named_fragments: &HashMap<ast::Name, Node<ast::FragmentDefinition>>,
@@ -350,7 +363,7 @@ pub fn validate_fragment_cycles(
     diagnostics
 }
 
-pub fn validate_fragment_type_condition(
+pub(crate) fn validate_fragment_type_condition(
     db: &dyn ValidationDatabase,
     type_cond: &ast::NamedType,
     fragment_location: NodeLocation,
@@ -396,7 +409,7 @@ pub fn validate_fragment_type_condition(
     diagnostics
 }
 
-pub fn validate_fragment_used(
+pub(crate) fn validate_fragment_used(
     db: &dyn ValidationDatabase,
     fragment: Node<ast::FragmentDefinition>,
     file_id: FileId,
