@@ -1,23 +1,29 @@
+use crate::arc::ArcWithHashCache;
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
-use crate::Arc;
 use crate::FileId;
 use apollo_parser::SyntaxNode;
 use rowan::TextRange;
 use std::fmt;
 use std::hash;
 
-/// Smart pointer to some GraphQL node.
+/// A thread-safe reference-counted smart pointer for GraphQL nodes.
 ///
-/// Similar to [`apollo_compiler::Arc`][Arc] (thread-safe, reference-counted, cached `Hash`)
-/// but additionally carries an optional [`NodeLocation`].
-/// This location notably allows diagnostics to point to relevant parts of parsed input files.
+/// Similar to [std::sync::Arc<T>] but:
 ///
-/// Like `Arc`, `Node<T>` cannot implement [`Borrow<T>`][std::borrow::Borrow]
-/// because `Node<T> as Hash` produces a result (the hash of the cached hash)
-/// different from `T as Hash`.
+/// * In addition to `T`, contains an optional [`NodeLocation`].
+///   This location notably allows diagnostics to point to relevant parts of parsed input files.
+/// * [`std::hash::Hash`] is implemented by caching the result of hashing `T`.
+/// * Weak references are not supported.
+///
+/// For the cache to be correct, **`T` is expected to have a stable hash**
+/// a long as no `&mut T` exclusive reference to it is given out.
+/// Generally this excludes interior mutability.
+///
+/// `Node<T>` cannot implement [`Borrow<T>`][std::borrow::Borrow] because `Node<T> as Hash`
+/// produces a result (the hash of the cached hash) different from `T as Hash`.
 #[derive(Hash, Eq, PartialEq)]
-pub struct Node<T>(Arc<NodeInner<T>>);
+pub struct Node<T>(ArcWithHashCache<NodeInner<T>>);
 
 #[derive(Clone)]
 struct NodeInner<T> {
@@ -35,7 +41,7 @@ pub struct NodeLocation {
 impl<T> Node<T> {
     /// Create a new `Node` for something parsed from the given source location
     pub fn new_parsed(node: T, location: NodeLocation) -> Self {
-        Self(Arc::new(NodeInner {
+        Self(ArcWithHashCache::new(NodeInner {
             location: Some(location),
             node,
         }))
@@ -43,14 +49,14 @@ impl<T> Node<T> {
 
     /// Create a new `Node` for something created programatically, not parsed from a source file
     pub fn new(node: T) -> Self {
-        Self(Arc::new(NodeInner {
+        Self(ArcWithHashCache::new(NodeInner {
             location: None,
             node,
         }))
     }
 
     pub(crate) fn new_opt_location(node: T, location: Option<NodeLocation>) -> Self {
-        Self(Arc::new(NodeInner { location, node }))
+        Self(ArcWithHashCache::new(NodeInner { location, node }))
     }
 
     pub fn location(&self) -> Option<NodeLocation> {
@@ -65,7 +71,7 @@ impl<T> Node<T> {
 
     /// Returns the given `node` at the same location as `self` (e.g. for a type conversion).
     pub fn same_location<U>(&self, node: U) -> Node<U> {
-        Node(Arc::new(NodeInner {
+        Node(ArcWithHashCache::new(NodeInner {
             location: self.0.location,
             node,
         }))

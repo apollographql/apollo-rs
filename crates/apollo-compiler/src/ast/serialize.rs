@@ -870,13 +870,6 @@ macro_rules! impl_display {
                 }
             }
 
-            /// Serialize to GraphQL syntax with the default configuration
-            impl Display for crate::Arc<$ty> {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    self.serialize().fmt(f)
-                }
-            }
-
             /// Serialize to GraphQL syntax
             impl Display for Serialize<'_, $ty> {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

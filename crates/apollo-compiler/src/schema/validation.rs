@@ -1,11 +1,11 @@
 use super::BuildError;
 use crate::validation::Details;
 use crate::validation::Diagnostics;
-use crate::Arc;
 use crate::FileId;
 use crate::InputDatabase;
 use crate::Schema;
 use crate::ValidationDatabase;
+use std::sync::Arc;
 
 pub(crate) fn validate_schema(
     errors: &mut Diagnostics,

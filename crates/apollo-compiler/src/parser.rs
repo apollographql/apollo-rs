@@ -2,13 +2,13 @@ use crate::ast::Document;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::Diagnostics;
-use crate::Arc;
 use crate::ExecutableDocument;
 use crate::FileId;
 use crate::NodeLocation;
 use crate::Schema;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 /// Configuration for parsing an input string as GraphQL syntax
 #[derive(Default, Debug, Clone)]

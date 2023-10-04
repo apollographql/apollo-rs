@@ -1,7 +1,6 @@
 //! High-level representation of a GraphQL schema
 
 use crate::ast;
-use crate::Arc;
 use crate::FileId;
 use crate::Node;
 use crate::NodeLocation;
@@ -13,6 +12,7 @@ use indexmap::IndexSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::Path;
+use std::sync::Arc;
 use std::sync::OnceLock;
 
 mod component;

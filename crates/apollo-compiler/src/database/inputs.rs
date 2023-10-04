@@ -1,8 +1,8 @@
 use super::sources::{FileId, Source, SourceType};
-use crate::Arc;
 use ariadne::{Cache as AriadneCache, Source as AriadneSource};
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 #[derive(Debug, thiserror::Error)]
 #[error("Unknown file ID")]

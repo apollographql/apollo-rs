@@ -1,4 +1,4 @@
-use crate::Arc;
+use std::sync::Arc;
 use std::{fmt, num::NonZeroI64, path::PathBuf, sync::atomic};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -28,8 +28,8 @@ impl Source {
     }
 }
 
-impl From<&'_ crate::Arc<crate::SourceFile>> for Source {
-    fn from(file: &'_ crate::Arc<crate::SourceFile>) -> Self {
+impl From<&'_ Arc<crate::SourceFile>> for Source {
+    fn from(file: &'_ Arc<crate::SourceFile>) -> Self {
         Self {
             ty: crate::database::SourceType::TextOnly,
             filename: file.path.clone(),

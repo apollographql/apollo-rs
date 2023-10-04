@@ -99,7 +99,7 @@ impl Document {
         );
         if let Some((_id, file)) = &mut executable.source {
             // The same parse errors are in `schema.sources`, so they would be redundant here.
-            file.make_mut().parse_errors = Vec::new()
+            Arc::make_mut(file).parse_errors = Vec::new()
         }
         (schema, executable)
     }

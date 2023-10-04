@@ -30,12 +30,12 @@
 //! that has chaining methods for setting serialization configuration,
 //! and also implements `Display` and `ToString`.
 
-use crate::Arc;
 use crate::FileId;
 use crate::Node;
 use crate::NodeStr;
 use crate::SourceFile;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 mod from_cst;
 pub(crate) mod impls;
