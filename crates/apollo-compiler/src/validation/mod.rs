@@ -312,18 +312,24 @@ impl fmt::Display for Diagnostics {
 
 impl ariadne::Cache<FileId> for SourceCache {
     fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
-        struct NotFound;
+        struct NotFound(FileId);
         impl fmt::Debug for NotFound {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                f.write_str("source file not found")
+                write!(f, "source file not found: {:?}", self.0)
             }
         }
         match self.cache.entry(*file_id) {
             Entry::Occupied(entry) => Ok(entry.into_mut()),
-            Entry::Vacant(entry) => match self.sources.get(file_id) {
-                Some(file) => Ok(entry.insert(ariadne::Source::from(file.source_text()))),
-                None => Err(Box::new(NotFound)),
-            },
+            Entry::Vacant(entry) => {
+                let source_text = if *file_id == FileId::NONE {
+                    ""
+                } else if let Some(file) = self.sources.get(file_id) {
+                    file.source_text()
+                } else {
+                    return Err(Box::new(NotFound(*file_id)));
+                };
+                Ok(entry.insert(ariadne::Source::from(source_text)))
+            }
         }
     }
 
