@@ -53,8 +53,9 @@ impl SchemaBuilder {
     /// Parse an input file with the default configuration as an additional input for this schema.
     ///
     /// Create a [`Parser`] to use different parser configuration.
-    pub fn parse(&mut self, source_text: impl Into<String>, path: impl AsRef<Path>) {
-        Parser::new().parse_into_schema_builder(source_text, path, self)
+    pub fn parse(mut self, source_text: impl Into<String>, path: impl AsRef<Path>) -> Self {
+        Parser::new().parse_into_schema_builder(source_text, path, &mut self);
+        self
     }
 
     /// Add an AST document to the schema being built

@@ -35,51 +35,6 @@ pub type Snapshot = salsa::Snapshot<RootDatabase>;
 
 /// Apollo compiler creates a context around your GraphQL. It creates references
 /// between various GraphQL types in scope.
-///
-/// ## Example
-///
-/// ```rust
-/// use apollo_compiler::ApolloCompiler;
-///
-/// let input = r#"
-///   interface Pet {
-///     name: String
-///   }
-///
-///   type Dog implements Pet {
-///     name: String
-///     nickname: String
-///     barkVolume: Int
-///   }
-///
-///   type Cat implements Pet {
-///     name: String
-///     nickname: String
-///     meowVolume: Int
-///   }
-///
-///   union CatOrDog = Cat | Dog
-///
-///   type Human {
-///     name: String
-///     pets: [Pet]
-///   }
-///
-///   type Query {
-///     human: Human
-///   }
-/// "#;
-///
-/// let mut compiler = ApolloCompiler::new();
-/// compiler.add_type_system(input, "schema.graphql");
-///
-/// let diagnostics = compiler.validate();
-/// for diagnostic in &diagnostics {
-///     // this will pretty-print diagnostics using the miette crate.
-///     println!("{}", diagnostic);
-/// }
-/// assert!(diagnostics.is_empty());
-/// ```
 #[allow(clippy::new_without_default)]
 impl ApolloCompiler {
     /// Create a new instance of Apollo Compiler.
@@ -224,26 +179,6 @@ impl ApolloCompiler {
     }
 
     /// Validate your GraphQL input. Returns Diagnostics that you can pretty-print.
-    ///
-    /// ## Example
-    /// ```rust
-    /// use apollo_compiler::ApolloCompiler;
-    /// let input = r#"
-    /// type Query {
-    ///   website: URL,
-    ///   amount: Int
-    /// }
-    /// "#;
-    ///
-    /// let mut compiler = ApolloCompiler::new();
-    /// compiler.add_document(input, "document.graphql");
-    ///
-    /// let diagnostics = compiler.validate();
-    /// for diagnostic in &diagnostics {
-    ///     println!("{}", diagnostic);
-    /// }
-    /// assert_eq!(diagnostics.len(), 1);
-    /// ```
     pub fn validate(&self) -> Vec<ApolloDiagnostic> {
         self.db.validate()
     }

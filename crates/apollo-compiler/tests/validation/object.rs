@@ -1,4 +1,4 @@
-use apollo_compiler::ApolloCompiler;
+use apollo_compiler::parse_mixed;
 
 #[test]
 fn it_generates_diagnostics_for_non_output_field_types() {
@@ -57,12 +57,12 @@ input Point2D {
 
 scalar Url @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
 "#;
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "schema.graphql");
+    let (schema, _executable) = parse_mixed(input, "doc.graphql");
 
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}")
-    }
-    assert_eq!(diagnostics.len(), 3);
+    let errors = schema.validate().unwrap_err();
+    let errors = format!("{errors:#}");
+    assert!(
+        errors.contains("`coordinates` field must return an output type"),
+        "{errors}"
+    );
 }

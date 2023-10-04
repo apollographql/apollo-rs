@@ -1,4 +1,3 @@
-use apollo_compiler::ApolloCompiler;
 use std::io::Read;
 
 /// A simple program to run the validations implemented by apollo-compiler
@@ -11,7 +10,7 @@ fn main() {
         Some("-") | None => {
             let mut source = String::new();
             std::io::stdin().read_to_string(&mut source).unwrap();
-            (source, "input.graphql".to_string())
+            (source, "stdin.graphql".to_string())
         }
         Some(filename) => (
             std::fs::read_to_string(filename).unwrap(),
@@ -19,14 +18,18 @@ fn main() {
         ),
     };
 
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_document(&source, &filename);
-
-    let diagnostics = compiler.validate();
-
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}");
+    let (schema, executable) = apollo_compiler::parse_mixed(source, filename);
+    let schema_result = schema.validate();
+    let executable_result = executable.validate(&schema);
+    let has_errors = schema_result.is_err() || executable_result.is_err();
+    match schema_result {
+        Ok(warnings) => println!("{warnings}"),
+        Err(errors) => println!("{errors}"),
+    }
+    match executable_result {
+        Ok(()) => {}
+        Err(errors) => println!("{errors}"),
     }
 
-    std::process::exit(if diagnostics.is_empty() { 0 } else { 1 });
+    std::process::exit(if has_errors { 1 } else { 0 });
 }

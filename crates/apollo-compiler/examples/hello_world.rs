@@ -1,7 +1,5 @@
 use apollo_compiler::executable;
-use apollo_compiler::ApolloCompiler;
 use apollo_compiler::Node;
-use apollo_compiler::ReprDatabase;
 use std::fs;
 use std::path::Path;
 
@@ -9,11 +7,7 @@ fn compile_query() -> Option<Node<executable::Fragment>> {
     let file = Path::new("crates/apollo-compiler/examples/query_with_errors.graphql");
     let src = fs::read_to_string(file).expect("Could not read schema file.");
 
-    let mut compiler = ApolloCompiler::new();
-    let document_id = compiler.add_document(&src, file);
-    // let errors = ctx.validate();
-
-    let document = compiler.db.executable_document(document_id);
+    let (_, document) = apollo_compiler::parse_mixed(src, file);
     let operation_names: Vec<_> = document
         .named_operations
         .keys()

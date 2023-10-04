@@ -1,23 +1,18 @@
-use apollo_compiler::{ApolloCompiler, ReprDatabase};
+use apollo_compiler::ExecutableDocument;
+use apollo_compiler::Schema;
 use criterion::*;
 
-fn compile(schema: &str, query: &str) -> ApolloCompiler {
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_type_system(schema, "schema.graphql");
-    let executable_id = compiler.add_executable(query, "query.graphql");
-
-    black_box(black_box(compiler.db.executable_document(executable_id)));
-    black_box(black_box(compiler.db.schema()));
-
-    compiler
+fn compile(schema: &str, query: &str) -> (Schema, ExecutableDocument) {
+    let schema = Schema::parse(schema, "schema.graphql");
+    let doc = ExecutableDocument::parse(&schema, query, "query.graphql");
+    black_box((schema, doc))
 }
 
 fn compile_and_validate(schema: &str, query: &str) {
-    let mut compiler = ApolloCompiler::new();
-    compiler.add_type_system(schema, "schema.graphql");
-    compiler.add_executable(query, "query.graphql");
-
-    black_box(compiler.validate());
+    let schema = Schema::parse(schema, "schema.graphql");
+    let doc = ExecutableDocument::parse(&schema, query, "query.graphql");
+    let _ = black_box(schema.validate());
+    let _ = black_box(doc.validate(&schema));
 }
 
 fn bench_simple_query_compiler(c: &mut Criterion) {

@@ -9,9 +9,8 @@
 
 use apollo_compiler::ast;
 use apollo_compiler::validation::Diagnostics;
-use apollo_compiler::ApolloCompiler;
 use apollo_compiler::FileId;
-use apollo_compiler::ReprDatabase;
+use apollo_compiler::Schema;
 use expect_test::expect_file;
 use indexmap::IndexMap;
 use serial_test::serial;
@@ -33,10 +32,8 @@ use std::path::PathBuf;
 #[serial]
 fn validation() {
     dir_tests(&test_data_dir(), &["ok"], "txt", |text, path| {
-        let mut compiler = ApolloCompiler::new();
-        let file_id = compiler.add_document(text, path.file_name().unwrap());
-        let schema = compiler.db.schema();
-        let executable = compiler.db.executable_document(file_id);
+        let ast = ast::Document::parse(text, path.file_name().unwrap());
+        let (schema, executable) = ast.to_mixed();
 
         let schema_validation_errors = schema.validate().err();
         let executable_validation_errors = executable.validate(&schema).err();
@@ -46,32 +43,25 @@ fn validation() {
             path,
         );
 
-        let ast = compiler.db.ast(file_id);
         format!("{ast:#?}")
     });
 
     dir_tests(&test_data_dir(), &["diagnostics"], "txt", |text, path| {
-        let mut compiler = ApolloCompiler::new();
         let filename = path.file_name().unwrap().to_str().unwrap();
         let is_type_system = filename.contains("type_system_document");
         let is_executable = filename.contains("executable_document");
         let schema_validation_errors;
         let executable_validation_errors;
         if is_type_system {
-            compiler.add_type_system(text, filename);
-            schema_validation_errors = compiler.db.schema().validate().err();
+            schema_validation_errors = Schema::parse(text, filename).validate().err();
             executable_validation_errors = None;
         } else if is_executable {
-            let file_id = compiler.add_executable(text, filename);
-            executable_validation_errors = compiler
-                .db
-                .ast(file_id)
+            executable_validation_errors = ast::Document::parse(text, filename)
                 .validate_standalone_executable()
                 .err();
             schema_validation_errors = None;
         } else {
-            let file_id = compiler.add_document(text, filename);
-            let schema = compiler.db.schema();
+            let (schema, executable) = apollo_compiler::parse_mixed(text, filename);
             schema_validation_errors = match schema.validate() {
                 Ok(warnings) => {
                     if warnings.to_string().is_empty() {
@@ -82,11 +72,7 @@ fn validation() {
                 }
                 Err(e) => Some(e),
             };
-            executable_validation_errors = compiler
-                .db
-                .executable_document(file_id)
-                .validate(&schema)
-                .err();
+            executable_validation_errors = executable.validate(&schema).err();
         };
         let mut formatted = String::new();
         if let Some(errors) = &schema_validation_errors {
