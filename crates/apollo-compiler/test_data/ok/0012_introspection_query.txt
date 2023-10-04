@@ -635,4 +635,21 @@
         ),
     ],
 }
+1266..1293 @12 ObjectTypeDefinition {
+    description: None,
+    name: "Query",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        1281..1291 @12 FieldDefinition {
+            description: None,
+            name: "field",
+            arguments: [],
+            ty: Named(
+                "Int",
+            ),
+            directives: [],
+        },
+    ],
+}
 

@@ -97,3 +97,7 @@ fragment TypeRef on __Type {
     }
   }
 }
+
+type Query {
+  field: Int
+}

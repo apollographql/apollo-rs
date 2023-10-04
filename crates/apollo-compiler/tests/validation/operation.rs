@@ -186,14 +186,20 @@ type Cat implements Pet {
 }
 "#;
     let mut compiler = ApolloCompiler::new();
-    compiler.add_document(input, "schema.graphql");
+    let id = compiler.add_document(input, "doc.graphql");
 
-    let diagnostics = compiler.validate();
-    for diagnostic in &diagnostics {
-        println!("{diagnostic}")
-    }
-
-    assert_eq!(diagnostics.len(), 1)
+    let schema = compiler.db.schema();
+    let diagnostics = compiler
+        .db
+        .executable_document(id)
+        .validate(&schema)
+        .unwrap_err();
+    let diagnostics = format!("{diagnostics:#}");
+    assert!(
+        diagnostics
+            .contains("`subscription` is not defined in the schema and is therefore not supported"),
+        "{diagnostics}"
+    );
 }
 
 #[test]
