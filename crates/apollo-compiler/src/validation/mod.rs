@@ -30,7 +30,7 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fmt;
 use std::io;
-pub use validation_db::{ValidationDatabase, ValidationStorage};
+pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 
 pub struct Diagnostics(Box<DiagnosticsBoxed>);
 
@@ -409,7 +409,7 @@ impl RecursionStack {
     }
 
     /// Return the actual API for tracking recursive uses.
-    pub fn guard(&mut self) -> RecursionGuard<'_> {
+    pub(crate) fn guard(&mut self) -> RecursionGuard<'_> {
         RecursionGuard(&mut self.seen)
     }
 }

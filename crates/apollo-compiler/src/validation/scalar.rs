@@ -4,7 +4,7 @@ use crate::{
     schema, Node, ValidationDatabase,
 };
 
-pub fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     let schema = db.schema();
@@ -17,7 +17,7 @@ pub fn validate_scalar_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDia
     diagnostics
 }
 
-pub fn validate_scalar_definition(
+pub(crate) fn validate_scalar_definition(
     db: &dyn ValidationDatabase,
     scalar_def: Node<schema::ScalarType>,
 ) -> Vec<ApolloDiagnostic> {

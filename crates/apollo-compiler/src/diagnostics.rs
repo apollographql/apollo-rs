@@ -1,6 +1,4 @@
 use crate::ast::DirectiveLocation;
-use crate::database::{InputDatabase, SourceCache};
-use crate::Arc;
 use crate::NodeLocation;
 use std::fmt;
 use thiserror::Error;
@@ -21,7 +19,6 @@ impl Label {
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub struct ApolloDiagnostic {
-    cache: Arc<SourceCache>,
     pub location: NodeLocation,
     pub labels: Vec<Label>,
     pub help: Option<String>,
@@ -29,13 +26,8 @@ pub struct ApolloDiagnostic {
 }
 
 impl ApolloDiagnostic {
-    pub fn new<DB: InputDatabase + ?Sized>(
-        db: &DB,
-        location: NodeLocation,
-        data: DiagnosticData,
-    ) -> Self {
+    pub fn new<DB: ?Sized>(_db: &DB, location: NodeLocation, data: DiagnosticData) -> Self {
         Self {
-            cache: db.source_cache(),
             location,
             labels: vec![],
             help: None,
@@ -73,14 +65,6 @@ impl fmt::Display for ApolloDiagnostic {
 #[derive(Debug, Error, Clone, Hash, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum DiagnosticData {
-    #[error("syntax error: {message}")]
-    SyntaxError { message: String },
-    #[error("limit exceeded: {message}")]
-    LimitExceeded { message: String },
-    #[error("expected identifier")]
-    MissingIdent,
-    #[error("executable documents must not contain {kind}")]
-    ExecutableDefinition { kind: &'static str },
     #[error("the {ty} `{name}` is defined multiple times in the document")]
     UniqueDefinition {
         ty: &'static str,
@@ -106,18 +90,6 @@ pub enum DiagnosticData {
         // Else just remove as the labeling is done separately.
         fields: usize,
         subscription: NodeLocation,
-    },
-    #[error("{ty} root operation type is not defined")]
-    UnsupportedOperation {
-        // current operation type: subscription, mutation, query
-        ty: &'static str,
-    },
-    #[error("cannot query field `{field}` on type `{ty}`")]
-    UndefinedField {
-        /// Field name
-        field: String,
-        /// Type name being queried
-        ty: String,
     },
     #[error("the argument `{name}` is not supported")]
     UndefinedArgument { name: String },
@@ -148,15 +120,6 @@ pub enum DiagnosticData {
         /// type definition
         definition: String,
     },
-    #[error("type extension for `{name}` is the wrong kind")]
-    WrongTypeExtension {
-        /// Name of the type being extended
-        name: String,
-        /// Location of the original definition. This may be None when extending a builtin GraphQL type.
-        definition: NodeLocation,
-        /// Location of the extension
-        extension: NodeLocation,
-    },
     #[error("`{name}` directive definition cannot reference itself")]
     RecursiveDirectiveDefinition { name: String },
     #[error("interface {name} cannot implement itself")]
@@ -167,24 +130,10 @@ pub enum DiagnosticData {
     RecursiveFragmentDefinition { name: String },
     #[error("values in an Enum Definition should be capitalized")]
     CapitalizedValue { value: String },
-    #[error("fields must be unique in a definition")]
-    UniqueField {
-        /// Name of the non-unique field.
-        field: String,
-        original_definition: NodeLocation,
-        redefined_definition: NodeLocation,
-    },
     #[error("type does not satisfy interface `{interface}`: missing field `{field}`")]
     MissingInterfaceField { interface: String, field: String },
-    #[error("missing `{field}` field")]
-    MissingField {
-        // current field that should be defined
-        field: String,
-    },
     #[error("the required argument `{name}` is not provided")]
     RequiredArgument { name: String },
-    #[error("type `{ty}` can only implement interface `{interface}` once")]
-    DuplicateImplementsInterface { ty: String, interface: String },
     #[error(
         "Transitively implemented interfaces must also be defined on an implementing interface or object"
     )]
@@ -212,15 +161,6 @@ pub enum DiagnosticData {
     ScalarSpecificationURL,
     #[error("missing query root operation type in schema definition")]
     QueryRootOperationType,
-    #[error("built-in scalars must be omitted for brevity")]
-    BuiltInScalarDefinition,
-    #[error("`${name}` variable must be of an input type")]
-    VariableInputType {
-        /// Varialbe name.
-        name: String,
-        /// The kind of type that the variable is declared with.
-        ty: &'static str,
-    },
     #[error("unused variable: `{name}`")]
     UnusedVariable { name: String },
     #[error("`{name}` field must return an object type")]
@@ -268,8 +208,6 @@ pub enum DiagnosticData {
         /// Name of the field
         field: String,
     },
-    #[error("subselection set for scalar and enum types must be empty")]
-    DisallowedSubselection,
     #[error("interface, union and object types must have a subselection set")]
     MissingSubselection,
     #[error("operation must not select different types using the same field name `{field}`")]
@@ -278,11 +216,6 @@ pub enum DiagnosticData {
         field: String,
         original_selection: NodeLocation,
         redefined_selection: NodeLocation,
-    },
-    #[error("fragments must be specified on types that exist in the schema")]
-    InvalidFragment {
-        /// Name of the type on which the fragment is declared
-        ty: Option<String>,
     },
     #[error("fragments can not be declared on primitive types")]
     InvalidFragmentTarget {
@@ -331,7 +264,10 @@ impl From<Label> for ariadne::Label<NodeLocation> {
 }
 
 impl ApolloDiagnostic {
-    pub fn to_report(&self, config: ariadne::Config) -> ariadne::Report<'static, NodeLocation> {
+    pub(crate) fn to_report(
+        &self,
+        config: ariadne::Config,
+    ) -> ariadne::Report<'static, NodeLocation> {
         use ariadne::{ColorGenerator, Report, ReportKind};
 
         let severity = if self.data.is_advice() {
@@ -354,13 +290,5 @@ impl ApolloDiagnostic {
             builder = builder.with_help(help);
         }
         builder.finish()
-    }
-
-    pub fn format_no_color(&self) -> String {
-        let mut buf = std::io::Cursor::new(Vec::<u8>::new());
-        self.to_report(ariadne::Config::default().with_color(false))
-            .write(self.cache.as_ref(), &mut buf)
-            .unwrap();
-        String::from_utf8(buf.into_inner()).unwrap()
     }
 }

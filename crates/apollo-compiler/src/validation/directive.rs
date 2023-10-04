@@ -131,7 +131,7 @@ impl FindRecursiveDirective<'_> {
     }
 }
 
-pub fn validate_directive_definition(
+pub(crate) fn validate_directive_definition(
     db: &dyn ValidationDatabase,
     def: Node<ast::DirectiveDefinition>,
 ) -> Vec<ApolloDiagnostic> {
@@ -175,7 +175,7 @@ pub fn validate_directive_definition(
     diagnostics
 }
 
-pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for file_id in db.type_definition_files() {
@@ -191,7 +191,7 @@ pub fn validate_directive_definitions(db: &dyn ValidationDatabase) -> Vec<Apollo
 
 // TODO(@goto-bus-stop) This is a big function: should probably not be generic over the iterator
 // type
-pub fn validate_directives<'dir>(
+pub(crate) fn validate_directives<'dir>(
     db: &dyn ValidationDatabase,
     dirs: impl Iterator<Item = &'dir Node<ast::Directive>>,
     dir_loc: ast::DirectiveLocation,

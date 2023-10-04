@@ -4,7 +4,7 @@ use crate::{
     schema, ApolloDiagnostic, Node, ValidationDatabase,
 };
 
-pub fn validate_schema_definition(
+pub(crate) fn validate_schema_definition(
     db: &dyn ValidationDatabase,
     schema_definition: ast::TypeWithExtensions<ast::SchemaDefinition>,
 ) -> Vec<ApolloDiagnostic> {
@@ -40,7 +40,7 @@ pub fn validate_schema_definition(
 // All root operations in a schema definition must be unique.
 //
 // Return a Unique Operation Definition error in case of a duplicate name.
-pub fn validate_root_operation_definitions(
+pub(crate) fn validate_root_operation_definitions(
     db: &dyn ValidationDatabase,
     root_op_defs: &[Node<(ast::OperationType, ast::NamedType)>],
 ) -> Vec<ApolloDiagnostic> {

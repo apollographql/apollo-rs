@@ -4,7 +4,7 @@ use crate::{
     Node, ValidationDatabase,
 };
 
-pub fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = Vec::new();
 
     for enum_ in db.ast_types().enums.values() {
@@ -14,7 +14,7 @@ pub fn validate_enum_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagn
     diagnostics
 }
 
-pub fn validate_enum_definition(
+pub(crate) fn validate_enum_definition(
     db: &dyn ValidationDatabase,
     enum_def: ast::TypeWithExtensions<ast::EnumTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {

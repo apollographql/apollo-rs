@@ -5,7 +5,9 @@ use crate::{
 };
 use std::collections::HashSet;
 
-pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<ApolloDiagnostic> {
+pub(crate) fn validate_object_type_definitions(
+    db: &dyn ValidationDatabase,
+) -> Vec<ApolloDiagnostic> {
     let mut diagnostics = vec![];
 
     let defs = &db.ast_types().objects;
@@ -16,7 +18,7 @@ pub fn validate_object_type_definitions(db: &dyn ValidationDatabase) -> Vec<Apol
     diagnostics
 }
 
-pub fn validate_object_type_definition(
+pub(crate) fn validate_object_type_definition(
     db: &dyn ValidationDatabase,
     object: ast::TypeWithExtensions<ast::ObjectTypeDefinition>,
 ) -> Vec<ApolloDiagnostic> {

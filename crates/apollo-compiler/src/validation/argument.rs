@@ -7,7 +7,7 @@ use crate::{
     Node, NodeLocation,
 };
 
-pub fn validate_arguments(
+pub(crate) fn validate_arguments(
     db: &dyn ValidationDatabase,
     arguments: &[Node<ast::Argument>],
 ) -> Vec<ApolloDiagnostic> {

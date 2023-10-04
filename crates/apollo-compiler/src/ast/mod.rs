@@ -363,12 +363,12 @@ pub struct FloatOverflowError {}
 
 /// Trait implemented by extensible type definitions, to associate the extension type with the base
 /// definition type.
-pub trait Extensible {
+pub(crate) trait Extensible {
     type Extension;
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct TypeWithExtensions<T: Extensible> {
+pub(crate) struct TypeWithExtensions<T: Extensible> {
     pub definition: Node<T>,
     pub extensions: Vec<Node<T::Extension>>,
 }
@@ -376,7 +376,7 @@ pub struct TypeWithExtensions<T: Extensible> {
 // TODO(@goto-bus-stop): may have to do Arc<TypeWithExtensions> as we need to clone
 // it for salsa reasons. OR pass (object|scalar|etc, Name) tuples to the salsa queries.
 #[derive(Debug, PartialEq, Eq)]
-pub struct TypeSystem {
+pub(crate) struct TypeSystem {
     pub schema: TypeWithExtensions<SchemaDefinition>,
     pub objects: HashMap<Name, TypeWithExtensions<ObjectTypeDefinition>>,
     pub scalars: HashMap<Name, TypeWithExtensions<ScalarTypeDefinition>>,

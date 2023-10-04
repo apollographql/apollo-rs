@@ -4,28 +4,15 @@ use crate::ast;
 use crate::schema::Name;
 use crate::Arc;
 use crate::FileId;
-use crate::SourceFile;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
 /// Queries for parsing into the various in-memory representations of GraphQL documents
 #[salsa::query_group(ReprStorage)]
 pub trait ReprDatabase: InputDatabase {
-    #[salsa::invoke(ast_parse_result)]
-    #[doc(hidden)]
-    fn _ast_parse_result(&self, file_id: FileId) -> Arc<ParseResult>;
-
     #[salsa::invoke(ast)]
     #[salsa::transparent]
     fn ast(&self, file_id: FileId) -> Arc<ast::Document>;
-
-    #[salsa::invoke(recursion_reached)]
-    #[salsa::transparent]
-    fn recursion_reached(&self, file_id: FileId) -> usize;
-
-    #[salsa::invoke(tokens_reached)]
-    #[salsa::transparent]
-    fn tokens_reached(&self, file_id: FileId) -> usize;
 
     #[salsa::invoke(schema)]
     fn schema(&self) -> Arc<crate::Schema>;
@@ -47,62 +34,11 @@ pub trait ReprDatabase: InputDatabase {
     fn implementers_map(&self) -> Arc<HashMap<Name, HashSet<Name>>>;
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParseResult {
-    document: Arc<ast::Document>,
-    recursion_reached: usize,
-    tokens_reached: usize,
-}
-
-fn ast_parse_result(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ParseResult> {
-    let input = db.source_code(file_id);
-    let mut parser = apollo_parser::Parser::new(&input);
-    if let Some(limit) = db.recursion_limit() {
-        parser = parser.recursion_limit(limit);
-    }
-    if let Some(limit) = db.token_limit() {
-        parser = parser.token_limit(limit);
-    }
-    let tree = parser.parse();
-    let recursion_reached = tree.recursion_limit().high;
-    let tokens_reached = tree.token_limit().high;
-    let source_file = Arc::new(SourceFile {
-        path: db.input(file_id).filename,
-        source_text: String::clone(&db.source_code(file_id)),
-        parse_errors: tree.errors().cloned().collect(),
-    });
-    let document = Arc::new(ast::Document::from_cst(
-        tree.document(),
-        file_id,
-        source_file,
-    ));
-    Arc::new(ParseResult {
-        document,
-        recursion_reached,
-        tokens_reached,
-    })
-}
-
 fn ast(db: &dyn ReprDatabase, file_id: FileId) -> Arc<ast::Document> {
-    db.input(file_id)
-        .ast
-        .clone()
-        .unwrap_or_else(|| db._ast_parse_result(file_id).document.clone())
-}
-
-fn recursion_reached(db: &dyn ReprDatabase, file_id: FileId) -> usize {
-    db._ast_parse_result(file_id).recursion_reached
-}
-
-fn tokens_reached(db: &dyn ReprDatabase, file_id: FileId) -> usize {
-    db._ast_parse_result(file_id).tokens_reached
+    db.input(file_id).ast.clone().unwrap()
 }
 
 fn schema(db: &dyn ReprDatabase) -> Arc<crate::Schema> {
-    if let Some(schema) = db.schema_input() {
-        return schema;
-    }
-
     let mut builder = crate::Schema::builder();
     for file_id in db.type_definition_files() {
         let executable_definitions_are_errors = db.source_type(file_id) != SourceType::Document;

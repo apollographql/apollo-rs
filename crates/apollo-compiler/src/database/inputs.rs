@@ -1,6 +1,5 @@
 use super::sources::{FileId, Source, SourceType};
 use crate::Arc;
-use crate::Schema;
 use ariadne::{Cache as AriadneCache, Source as AriadneSource};
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -56,17 +55,6 @@ impl std::fmt::Debug for SourceCache {
 
 #[salsa::query_group(InputStorage)]
 pub trait InputDatabase {
-    /// Get the currently set recursion limit.
-    #[salsa::input]
-    fn recursion_limit(&self) -> Option<usize>;
-
-    /// Get the currently set token limit.
-    #[salsa::input]
-    fn token_limit(&self) -> Option<usize>;
-
-    #[salsa::input]
-    fn schema_input(&self) -> Option<Arc<Schema>>;
-
     /// Get input source of the corresponding file.
     #[salsa::input]
     fn input(&self, file_id: FileId) -> Source;
@@ -83,19 +71,6 @@ pub trait InputDatabase {
     #[salsa::input]
     fn source_files(&self) -> Vec<FileId>;
 
-    /// Find source file by file name.
-    fn source_file(&self, path: PathBuf) -> Option<FileId>;
-
-    /// Get the GraphQL source text for a file, split up into lines for
-    /// printing diagnostics.
-    #[salsa::invoke(source_with_lines)]
-    fn source_with_lines(&self, file_id: FileId) -> Arc<AriadneSource>;
-
-    /// Get all GraphQL sources known to the compiler, split up into lines
-    /// for printing diagnostics.
-    #[salsa::invoke(source_cache)]
-    fn source_cache(&self) -> Arc<SourceCache>;
-
     /// Get all type system definition (GraphQL schema) files.
     #[salsa::invoke(type_definition_files)]
     fn type_definition_files(&self) -> Vec<FileId>;
@@ -109,33 +84,8 @@ fn source_code(db: &dyn InputDatabase, file_id: FileId) -> Arc<String> {
     db.input(file_id).text().clone()
 }
 
-fn source_file(db: &dyn InputDatabase, path: PathBuf) -> Option<FileId> {
-    db.source_files()
-        .iter()
-        .find(|id| db.input(**id).filename() == path)
-        .copied()
-}
-
 fn source_type(db: &dyn InputDatabase, file_id: FileId) -> SourceType {
     db.input(file_id).source_type()
-}
-
-fn source_with_lines(db: &dyn InputDatabase, file_id: FileId) -> Arc<AriadneSource> {
-    let code = db.source_code(file_id);
-    Arc::new(AriadneSource::from(code))
-}
-
-fn source_cache(db: &dyn InputDatabase) -> Arc<SourceCache> {
-    let file_ids = db.source_files();
-    let sources = file_ids
-        .iter()
-        .map(|&id| (id, db.source_with_lines(id)))
-        .collect();
-    let paths = file_ids
-        .iter()
-        .map(|&id| (id, db.input(id).filename().to_owned()))
-        .collect();
-    Arc::new(SourceCache { sources, paths })
 }
 
 fn type_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {
@@ -144,7 +94,7 @@ fn type_definition_files(db: &dyn InputDatabase) -> Vec<FileId> {
         .filter(|source| {
             matches!(
                 db.source_type(*source),
-                SourceType::Schema | SourceType::Document | SourceType::BuiltIn
+                SourceType::Schema | SourceType::Document
             )
         })
         .collect()

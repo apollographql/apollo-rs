@@ -41,7 +41,7 @@ fn unsupported_type(
 //for bigint
 /*
 */
-pub fn validate_values2(
+pub(crate) fn validate_values2(
     db: &dyn ValidationDatabase,
     ty: &Node<ast::Type>,
     argument: &Node<ast::Argument>,
@@ -52,7 +52,7 @@ pub fn validate_values2(
     diagnostics
 }
 
-pub fn value_of_correct_type2(
+pub(crate) fn value_of_correct_type2(
     db: &dyn ValidationDatabase,
     ty: &Node<ast::Type>,
     arg_value: &Node<ast::Value>,
