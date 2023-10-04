@@ -19,6 +19,7 @@ pub struct Parser {
     tokens_reached: usize,
 }
 
+/// Records for validation information about a file that was parsed
 #[derive(Debug, Clone)]
 pub struct SourceFile {
     pub(crate) path: PathBuf,
@@ -67,7 +68,7 @@ impl Parser {
     /// to identify this source file to users.
     ///
     /// Parsing is fault-tolerant, so a document is always returned.
-    /// In case of a parse error, [`Document::parse_errors`] will return relevant information
+    /// In case of a parse error, [`Document::check_parse_errors`] will return relevant information
     /// and some nodes may be missing in the built document.
     pub fn parse_ast(
         &mut self,

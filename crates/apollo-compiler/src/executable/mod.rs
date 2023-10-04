@@ -1,3 +1,6 @@
+//! High-level representation of an executable document,
+//! which can contain operations and fragments.
+
 use crate::ast;
 use crate::schema;
 use crate::FileId;
