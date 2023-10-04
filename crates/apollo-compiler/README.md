@@ -18,9 +18,15 @@
 </div>
 
 ## Features
-* Ergonomic API on top the CST created by `apollo-parser`
-* GraphQL validation and diagnostics reporting
-    * Validation is a work in progress, stay tuned for further validation rules implementation.
+
+* A (comparatively) low-level AST for GraphQL grammar, 
+  and high-level representation of `Schema` and `ExecutableDocument`.
+* All three can be parsed (using `apollo-parser` internally), 
+  created or modified programatically,
+  and serialized.
+* Validation of schemas and executable documents, as defined [in the GraphQL specification][val].
+
+[val]: https://spec.graphql.org/October2021/#sec-Validation
 
 ## Getting started
 Add the dependency to start using `apollo-compiler`:
@@ -42,9 +48,6 @@ apollo-compiler = "0.11.0"
 Older version may or may not be compatible.
 
 ## Usage
-`apollo-compiler` is built using [`salsa`] to provide a
-memoised query system on top of the CST produced by `apollo-parser`.
-The idea is that all relationships between GraphQL types are pre-established and pre-computed, so you are able to always find the reference to say a field Type, or a Directive.
 
 You can get started with `apollo-compiler`:
 ```rust
@@ -280,8 +283,8 @@ if let Err(diagnostics) = executable.validate(&schema) {
 ## License
 Licensed under either of
 
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or https://opensource.org/licenses/MIT)
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or <https://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or <https://opensource.org/licenses/MIT>)
 
 at your option.
 

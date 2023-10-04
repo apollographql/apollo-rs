@@ -1,4 +1,6 @@
-//! *Abstract Syntax Tree* for GraphQL documents
+//! *Abstract Syntax Tree* for GraphQL documents.
+//! Lower-level than [`Schema`][crate::Schema]
+//! or [`ExecutableDocument`][crate::ExecutableDocument].
 //!
 //! This AST aims to faithfully represent documents that conform to the GraphQL
 //! [syntactic grammar], except for their [ignored tokens].
@@ -13,8 +15,7 @@
 //!
 //! ## Parsing
 //!
-//! When parsing an input string, use [`Parser`] to obtain a [`ParseResult`]
-//! which contains a [`Document`].
+//! Start with [`Document::parse`], or [`Parser`][crate::Parser] to change the parser configuration.
 //!
 //! ## Structural sharing and mutation
 //!

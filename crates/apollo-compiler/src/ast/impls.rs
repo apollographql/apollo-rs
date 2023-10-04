@@ -378,8 +378,8 @@ impl Directives {
 
     /// Returns an iterator of directives with the given name.
     ///
-    /// This method is best for repeatable directives. For non-repeatable directives,
-    /// see [`directive_by_name`][Self::directive_by_name] (singular)
+    /// This method is best for repeatable directives.
+    /// See also [`get`][Self::get] for non-repeatable directives.
     pub fn get_all<'def: 'name, 'name>(
         &'def self,
         name: &'name str,
@@ -389,8 +389,8 @@ impl Directives {
 
     /// Returns the first directive with the given name, if any.
     ///
-    /// This method is best for non-repeatable directives. For repeatable directives,
-    /// see [`directives_by_name`][Self::directives_by_name] (plural)
+    /// This method is best for non-repeatable directives.
+    /// See also [`get_all`][Self::get_all] for repeatable directives.
     pub fn get(&self, name: &str) -> Option<&Node<Directive>> {
         self.get_all(name).next()
     }

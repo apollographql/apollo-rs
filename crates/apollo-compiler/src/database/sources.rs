@@ -39,6 +39,10 @@ impl From<&'_ Arc<crate::SourceFile>> for Source {
     }
 }
 
+/// Integer identifier for a parsed source file.
+///
+/// Used internally to support validating for example a schema built from multiple source files,
+/// and having diagnostics point to relevant sources.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct FileId {
     id: NonZeroI64,

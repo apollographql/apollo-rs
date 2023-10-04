@@ -14,7 +14,7 @@ use std::sync::OnceLock;
 
 /// A thread-safe reference-counted smart pointer for GraphQL nodes.
 ///
-/// Similar to [std::sync::Arc<T>] but:
+/// Similar to [`std::sync::Arc<T>`] but:
 ///
 /// * In addition to `T`, contains an optional [`NodeLocation`].
 ///   This location notably allows diagnostics to point to relevant parts of parsed input files.
