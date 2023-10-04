@@ -7,14 +7,17 @@ use crate::InputDatabase;
 use crate::Schema;
 use crate::ValidationDatabase;
 
-pub(crate) fn validate_schema(errors: &mut Diagnostics, schema: &Schema) {
+pub(crate) fn validate_schema(
+    errors: &mut Diagnostics,
+    schema: &Schema,
+) -> Vec<crate::ApolloDiagnostic> {
     for (&file_id, source) in &schema.sources {
         source.validate_parse_errors(errors, file_id)
     }
     for build_error in &schema.build_errors {
         validate_build_error(errors, build_error)
     }
-    compiler_validation(errors, schema);
+    compiler_validation(errors, schema)
 }
 
 fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
@@ -41,7 +44,7 @@ fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
 }
 
 /// TODO: replace this with validation based on `Schema` without a database
-fn compiler_validation(errors: &mut Diagnostics, schema: &Schema) {
+fn compiler_validation(errors: &mut Diagnostics, schema: &Schema) -> Vec<crate::ApolloDiagnostic> {
     let mut compiler = crate::ApolloCompiler::new();
     let mut ids = Vec::new();
     for (id, source) in &schema.sources {
@@ -62,10 +65,16 @@ fn compiler_validation(errors: &mut Diagnostics, schema: &Schema) {
         },
     );
     compiler.db.set_source_files(ids);
+    let mut warnings_and_advice = Vec::new();
     for diagnostic in compiler.db.validate_type_system() {
-        errors.push(
-            Some(diagnostic.location),
-            Details::CompilerDiagnostic(diagnostic),
-        )
+        if diagnostic.data.is_error() {
+            errors.push(
+                Some(diagnostic.location),
+                Details::CompilerDiagnostic(diagnostic),
+            )
+        } else {
+            warnings_and_advice.push(diagnostic)
+        }
     }
+    warnings_and_advice
 }

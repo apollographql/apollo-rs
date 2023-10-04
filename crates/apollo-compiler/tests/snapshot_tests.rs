@@ -72,7 +72,16 @@ fn validation() {
         } else {
             let file_id = compiler.add_document(text, filename);
             let schema = compiler.db.schema();
-            schema_validation_errors = schema.validate().err();
+            schema_validation_errors = match schema.validate() {
+                Ok(warnings) => {
+                    if warnings.to_string().is_empty() {
+                        None
+                    } else {
+                        Some(warnings)
+                    }
+                }
+                Err(e) => Some(e),
+            };
             executable_validation_errors = compiler
                 .db
                 .executable_document(file_id)
