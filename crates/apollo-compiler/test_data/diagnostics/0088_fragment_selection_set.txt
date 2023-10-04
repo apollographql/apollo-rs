@@ -1,33 +1,27 @@
-Error: cannot query field `topProduct` on type `Query`
+Error: type `Query` does not have a field `topProduct`
     ╭─[0088_fragment_selection_set.graphql:13:5]
     │
-  1 │ ╭───▶ type Query {
-    ┆ ┆     
-  4 │ ├───▶ }
-    │ │         
-    │ ╰───────── `Query` declared here
+  1 │ type Query {
+    │      ──┬──  
+    │        ╰──── type `Query` defined here
     │ 
- 13 │   ╭─▶     topProduct {
-    ┆   ┆   
- 15 │   ├─▶     }
-    │   │           
-    │   ╰─────────── `topProduct` field is not defined
-    │       
-    │       Help: `topProduct` is not defined on `Query` type
+ 13 │     topProduct {
+    │     ─────┬────  
+    │          ╰────── field `topProduct` selected here
+    │ 
+    │ Note: path to the field: `query getProduct → topProduct`
 ────╯
-Error: cannot query field `notExistingField` on type `Product`
+Error: type `Product` does not have a field `notExistingField`
     ╭─[0088_fragment_selection_set.graphql:22:3]
     │
-  6 │ ╭─▶ type Product {
-    ┆ ┆   
-  9 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Product` declared here
+  6 │ type Product {
+    │      ───┬───  
+    │         ╰───── type `Product` defined here
     │ 
- 22 │       notExistingField
-    │       ────────┬───────  
-    │               ╰───────── `notExistingField` field is not defined
-    │     
-    │     Help: `notExistingField` is not defined on `Product` type
+ 22 │   notExistingField
+    │   ────────┬───────  
+    │           ╰───────── field `notExistingField` selected here
+    │ 
+    │ Note: path to the field: `fragment productFragment → notExistingField`
 ────╯
 

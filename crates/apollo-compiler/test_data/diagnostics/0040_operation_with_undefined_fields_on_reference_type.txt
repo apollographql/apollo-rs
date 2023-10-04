@@ -1,31 +1,27 @@
-Error: cannot query field `size` on type `Query`
+Error: type `Query` does not have a field `size`
    ╭─[0040_operation_with_undefined_fields_on_reference_type.graphql:2:3]
    │
- 2 │       size
-   │       ──┬─  
-   │         ╰─── `size` field is not defined
+ 2 │   size
+   │   ──┬─  
+   │     ╰─── field `size` selected here
    │ 
- 6 │ ╭─▶ type Query {
-   ┆ ┆   
- 9 │ ├─▶ }
-   │ │       
-   │ ╰─────── `Query` declared here
-   │     
-   │     Help: `size` is not defined on `Query` type
+ 6 │ type Query {
+   │      ──┬──  
+   │        ╰──── type `Query` defined here
+   │ 
+   │ Note: path to the field: `query getProduct → size`
 ───╯
-Error: cannot query field `weight` on type `Query`
+Error: type `Query` does not have a field `weight`
    ╭─[0040_operation_with_undefined_fields_on_reference_type.graphql:3:3]
    │
- 3 │       weight
-   │       ───┬──  
-   │          ╰──── `weight` field is not defined
+ 3 │   weight
+   │   ───┬──  
+   │      ╰──── field `weight` selected here
    │ 
- 6 │ ╭─▶ type Query {
-   ┆ ┆   
- 9 │ ├─▶ }
-   │ │       
-   │ ╰─────── `Query` declared here
-   │     
-   │     Help: `weight` is not defined on `Query` type
+ 6 │ type Query {
+   │      ──┬──  
+   │        ╰──── type `Query` defined here
+   │ 
+   │ Note: path to the field: `query getProduct → weight`
 ───╯
 

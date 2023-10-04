@@ -1,16 +1,14 @@
-Error: cannot query field `undefinedSubscriptionField` on type `Subscription`
+Error: type `Subscription` does not have a field `undefinedSubscriptionField`
    ╭─[0041_subscription_operation_with_undefined_fields.graphql:2:3]
    │
- 2 │       undefinedSubscriptionField
-   │       ─────────────┬────────────  
-   │                    ╰────────────── `undefinedSubscriptionField` field is not defined
+ 2 │   undefinedSubscriptionField
+   │   ─────────────┬────────────  
+   │                ╰────────────── field `undefinedSubscriptionField` selected here
    │ 
- 5 │ ╭─▶ type Subscription {
-   ┆ ┆   
- 7 │ ├─▶ }
-   │ │       
-   │ ╰─────── `Subscription` declared here
-   │     
-   │     Help: `undefinedSubscriptionField` is not defined on `Subscription` type
+ 5 │ type Subscription {
+   │      ──────┬─────  
+   │            ╰─────── type `Subscription` defined here
+   │ 
+   │ Note: path to the field: `subscription sub → undefinedSubscriptionField`
 ───╯
 

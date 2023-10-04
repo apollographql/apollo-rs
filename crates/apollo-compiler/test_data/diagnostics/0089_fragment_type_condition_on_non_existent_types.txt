@@ -1,28 +1,26 @@
-Error: fragments must be specified on types that exist in the schema
-   ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:5:5]
+Error: type condition `MissingSecondType` of inline fragment is not a type defined in the schema
+   ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:5:12]
    │
  5 │     ... on MissingSecondType {
    │            ────────┬────────  
-   │                    ╰────────── `MissingSecondType` is defined here but not declared in the schema
+   │                    ╰────────── type condition here
    │ 
-   │ Help: consider defining `MissingSecondType` in the schema
+   │ Note: path to the inline fragment: `query Query → interface → ...`
 ───╯
-Error: fragments must be specified on types that exist in the schema
-    ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:23:3]
+Error: type condition `MissingType` of inline fragment is not a type defined in the schema
+    ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:23:10]
     │
  23 │   ... on MissingType {
     │          ─────┬─────  
-    │               ╰─────── `MissingType` is defined here but not declared in the schema
+    │               ╰─────── type condition here
     │ 
-    │ Help: consider defining `MissingType` in the schema
+    │ Note: path to the inline fragment: `fragment invalidInlineFragment → ...`
 ────╯
-Error: fragments must be specified on types that exist in the schema
-    ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:28:1]
+Error: type condition `Interface2` of fragment `invalidFragmentCondition` is not a type defined in the schema
+    ╭─[0089_fragment_type_condition_on_non_existent_types.graphql:28:38]
     │
  28 │ fragment invalidFragmentCondition on Interface2 {
     │                                      ─────┬────  
-    │                                           ╰────── `Interface2` is defined here but not declared in the schema
-    │ 
-    │ Help: consider defining `Interface2` in the schema
+    │                                           ╰────── type condition here
 ────╯
 

@@ -1,16 +1,14 @@
-Error: cannot query field `undefinedMutationField` on type `Mutation`
+Error: type `Mutation` does not have a field `undefinedMutationField`
     ╭─[0042_mutation_operation_with_undefined_fields.graphql:2:3]
     │
-  2 │       undefinedMutationField
-    │       ───────────┬──────────  
-    │                  ╰──────────── `undefinedMutationField` field is not defined
+  2 │   undefinedMutationField
+    │   ───────────┬──────────  
+    │              ╰──────────── field `undefinedMutationField` selected here
     │ 
- 10 │ ╭─▶ type Mutation {
-    ┆ ┆   
- 12 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Mutation` declared here
-    │     
-    │     Help: `undefinedMutationField` is not defined on `Mutation` type
+ 10 │ type Mutation {
+    │      ────┬───  
+    │          ╰───── type `Mutation` defined here
+    │ 
+    │ Note: path to the field: `mutation adoptAPetMutation → undefinedMutationField`
 ────╯
 

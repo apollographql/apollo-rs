@@ -1,79 +1,55 @@
-Error: subselection set for scalar and enum types must be empty
-    ╭─[0065_subselection_of_enum.graphql:2:3]
-    │
-  2 │       pet1 { name }
-    │       ──────┬──────  
-    │             ╰──────── field `pet1` of type `Pet` is an enum and cannot select any fields
-    │ 
- 19 │ ╭─▶ enum Pet {
-    ┆ ┆   
- 23 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
-Error: subselection set for scalar and enum types must be empty
-    ╭─[0065_subselection_of_enum.graphql:3:3]
-    │
-  3 │       pet2 { name }
-    │       ──────┬──────  
-    │             ╰──────── field `pet2` of type `Pet` is an enum and cannot select any fields
-    │ 
- 19 │ ╭─▶ enum Pet {
-    ┆ ┆   
- 23 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
-Error: subselection set for scalar and enum types must be empty
-    ╭─[0065_subselection_of_enum.graphql:4:3]
-    │
-  4 │       pet3 { name }
-    │       ──────┬──────  
-    │             ╰──────── field `pet3` of type `Pet` is an enum and cannot select any fields
-    │ 
- 19 │ ╭─▶ enum Pet {
-    ┆ ┆   
- 23 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
-Error: subselection set for scalar and enum types must be empty
-    ╭─[0065_subselection_of_enum.graphql:5:3]
-    │
-  5 │       pet4 { name }
-    │       ──────┬──────  
-    │             ╰──────── field `pet4` of type `Pet` is an enum and cannot select any fields
-    │ 
- 19 │ ╭─▶ enum Pet {
-    ┆ ┆   
- 23 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
-Error: subselection set for scalar and enum types must be empty
-    ╭─[0065_subselection_of_enum.graphql:6:3]
-    │
-  6 │       pet5 { name }
-    │       ──────┬──────  
-    │             ╰──────── field `pet5` of type `Pet` is an enum and cannot select any fields
-    │ 
- 19 │ ╭─▶ enum Pet {
-    ┆ ┆   
- 23 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
-Error: subselection set for scalar and enum types must be empty
-    ╭─[0065_subselection_of_enum.graphql:7:3]
-    │
-  7 │       pet6 { name }
-    │       ──────┬──────  
-    │             ╰──────── field `pet6` of type `Pet` is an enum and cannot select any fields
-    │ 
- 19 │ ╭─▶ enum Pet {
-    ┆ ┆   
- 23 │ ├─▶ }
-    │ │       
-    │ ╰─────── `Pet` declared here
-────╯
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:2:3]
+   │
+ 2 │   pet1 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet1`
+───╯
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:3:3]
+   │
+ 3 │   pet2 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet2`
+───╯
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:4:3]
+   │
+ 4 │   pet3 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet3`
+───╯
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:5:3]
+   │
+ 5 │   pet4 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet4`
+───╯
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:6:3]
+   │
+ 6 │   pet5 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet5`
+───╯
+Error: field selection of enum type `Pet` must not have subselections
+   ╭─[0065_subselection_of_enum.graphql:7:3]
+   │
+ 7 │   pet6 { name }
+   │   ──────┬──────  
+   │         ╰──────── remove subselections here
+   │ 
+   │ Note: path to the field: `query SelectionOfEnum → pet6`
+───╯
 

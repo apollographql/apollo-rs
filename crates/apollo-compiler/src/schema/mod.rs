@@ -281,9 +281,9 @@ pub(crate) enum BuildError {
 
 /// Could not find the requested field definition
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FieldLookupError {
+pub enum FieldLookupError<'schema> {
     NoSuchType,
-    NoSuchField,
+    NoSuchField(&'schema ExtendedType),
 }
 
 impl Schema {
@@ -409,7 +409,7 @@ impl Schema {
         &self,
         type_name: &str,
         field_name: &str,
-    ) -> Result<&Component<FieldDefinition>, FieldLookupError> {
+    ) -> Result<&Component<FieldDefinition>, FieldLookupError<'_>> {
         let ty_def = self
             .types
             .get(type_name)
@@ -425,7 +425,7 @@ impl Schema {
                 | ExtendedType::Enum(_)
                 | ExtendedType::InputObject(_) => None,
             })
-            .ok_or(FieldLookupError::NoSuchField)
+            .ok_or(FieldLookupError::NoSuchField(ty_def))
     }
 
     /// Returns a map of interface names to names of types that implement that interface

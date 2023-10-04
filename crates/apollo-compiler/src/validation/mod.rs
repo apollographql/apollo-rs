@@ -224,21 +224,29 @@ impl Error {
                          in your schema"
                     ))
                 }
-                ExecutableBuildError::UndefinedType {
-                    top_level: _,
-                    ancestor_fields: _,
-                    type_name: _,
-                    field: _,
+                ExecutableBuildError::UndefinedTypeInNamedFragmentTypeCondition { .. } => {
+                    opt_label!("type condition here")
+                }
+                ExecutableBuildError::UndefinedTypeInInlineFragmentTypeCondition {
+                    path, ..
                 } => {
-                    // TODO
+                    opt_label!("type condition here");
+                    report.set_note(format_args!("path to the inline fragment: `{path} → ...`"))
+                }
+                ExecutableBuildError::SubselectionOnScalarType { path, .. }
+                | ExecutableBuildError::SubselectionOnEnumType { path, .. } => {
+                    opt_label!("remove subselections here");
+                    report.set_note(format_args!("path to the field: `{path}`"))
                 }
                 ExecutableBuildError::UndefinedField {
-                    top_level: _,
-                    ancestor_fields: _,
-                    type_name: _,
-                    field: _,
+                    field_name,
+                    type_name,
+                    path,
+                    ..
                 } => {
-                    // TODO
+                    opt_label!("field `{field_name}` selected here");
+                    opt_label!(&type_name.location(), "type `{type_name}` defined here");
+                    report.set_note(format_args!("path to the field: `{path}`"))
                 }
             },
         }

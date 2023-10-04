@@ -21,6 +21,7 @@ pub use crate::ast::{
 };
 use crate::validation::Diagnostics;
 use crate::NodeLocation;
+use std::fmt;
 
 /// Executable definitions, annotated with type information
 #[derive(Debug, Clone, Default)]
@@ -130,37 +131,57 @@ pub(crate) enum BuildError {
         operation_type: &'static str,
     },
 
-    /// Could not resolve the type of this field because the schema does not define
-    /// the type of its parent selection set
-    #[error("TODO")]
-    UndefinedType {
-        /// Which top-level executable definition contains this error
-        top_level: ExecutableDefinitionName,
-        /// Response keys (alias or name) of nested fields that contain the field with the error,
-        /// outer-most to inner-most.
-        ancestor_fields: Vec<Name>,
+    #[error(
+        "type condition `{type_name}` of fragment `{fragment_name}` \
+         is not a type defined in the schema"
+    )]
+    UndefinedTypeInNamedFragmentTypeCondition {
+        location: Option<NodeLocation>,
         type_name: NamedType,
-        field: Node<ast::Field>,
+        fragment_name: Name,
     },
 
-    /// Could not resolve the type of this field because the schema does not define it
-    #[error("TODO")]
-    UndefinedField {
-        /// Which top-level executable definition contains this error
-        top_level: ExecutableDefinitionName,
-        /// Response keys (alias or name) of nested fields that contain the field with the error,
-        /// outer-most to inner-most.
-        ancestor_fields: Vec<Name>,
+    #[error("type condition `{type_name}` of inline fragment is not a type defined in the schema")]
+    UndefinedTypeInInlineFragmentTypeCondition {
+        location: Option<NodeLocation>,
         type_name: NamedType,
-        field: Node<ast::Field>,
+        path: SelectionPath,
     },
+
+    #[error("field selection of scalar type `{type_name}` must not have subselections")]
+    SubselectionOnScalarType {
+        location: Option<NodeLocation>,
+        type_name: NamedType,
+        path: SelectionPath,
+    },
+
+    #[error("field selection of enum type `{type_name}` must not have subselections")]
+    SubselectionOnEnumType {
+        location: Option<NodeLocation>,
+        type_name: NamedType,
+        path: SelectionPath,
+    },
+
+    #[error("type `{type_name}` does not have a field `{field_name}`")]
+    UndefinedField {
+        location: Option<NodeLocation>,
+        type_name: NamedType,
+        field_name: Name,
+        path: SelectionPath,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct SelectionPath {
+    root: ExecutableDefinitionName,
+    nested_fields: Vec<Name>,
 }
 
 /// Designates by name a top-level definition in an executable document
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ExecutableDefinitionName {
-    AnonymousOperation,
-    NamedOperation(Name),
+pub(crate) enum ExecutableDefinitionName {
+    AnonymousOperation(ast::OperationType),
+    NamedOperation(ast::OperationType, Name),
     Fragment(Name),
 }
 
@@ -388,11 +409,11 @@ impl SelectionSet {
     ///
     /// Returns an error if the type of this selection set is not defined
     /// or does not have a field named `name`.
-    pub fn new_field(
+    pub fn new_field<'schema>(
         &self,
-        schema: &Schema,
+        schema: &'schema Schema,
         name: impl Into<Name>,
-    ) -> Result<Field, schema::FieldLookupError> {
+    ) -> Result<Field, schema::FieldLookupError<'schema>> {
         let name = name.into();
         let definition = schema.type_field(&self.ty, &name)?.node.clone();
         Ok(Field::new(name, definition))
@@ -644,5 +665,23 @@ impl FragmentSpread {
 
     pub fn fragment_def<'a>(&self, document: &'a ExecutableDocument) -> Option<&'a Node<Fragment>> {
         document.fragments.get(&self.fragment_name)
+    }
+}
+
+impl fmt::Display for SelectionPath {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.root {
+            ExecutableDefinitionName::AnonymousOperation(operation_type) => {
+                write!(f, "{operation_type}")?
+            }
+            ExecutableDefinitionName::NamedOperation(operation_type, name) => {
+                write!(f, "{operation_type} {name}")?
+            }
+            ExecutableDefinitionName::Fragment(name) => write!(f, "fragment {name}")?,
+        }
+        for name in &self.nested_fields {
+            write!(f, " → {name}")?
+        }
+        Ok(())
     }
 }

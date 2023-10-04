@@ -1,18 +1,14 @@
-Error: cannot query field `__type` on type `MyMutationRootType`
+Error: type `MyMutationRootType` does not have a field `__type`
     ╭─[0082_introspection_types_in_mutation.graphql:15:3]
     │
- 10 │   ╭─▶ type MyMutationRootType {
-    ┆   ┆   
- 12 │   ├─▶ }
-    │   │       
-    │   ╰─────── `MyMutationRootType` declared here
+ 10 │ type MyMutationRootType {
+    │      ─────────┬────────  
+    │               ╰────────── type `MyMutationRootType` defined here
     │ 
- 15 │ ╭───▶   __type(name: "User") {
-    ┆ ┆     
- 23 │ ├───▶   }
-    │ │           
-    │ ╰─────────── `__type` field is not defined
-    │       
-    │       Help: `__type` is not defined on `MyMutationRootType` type
+ 15 │   __type(name: "User") {
+    │   ───┬──  
+    │      ╰──── field `__type` selected here
+    │ 
+    │ Note: path to the field: `mutation introspect → __type`
 ────╯
 

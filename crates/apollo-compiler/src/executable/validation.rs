@@ -48,8 +48,12 @@ fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
         | BuildError::AmbiguousAnonymousOperation { location }
         | BuildError::OperationNameCollision { location, .. }
         | BuildError::FragmentNameCollision { location, .. }
-        | BuildError::UndefinedRootOperation { location, .. } => *location,
-        _ => return, // TODO
+        | BuildError::UndefinedRootOperation { location, .. }
+        | BuildError::UndefinedField { location, .. }
+        | BuildError::UndefinedTypeInNamedFragmentTypeCondition { location, .. }
+        | BuildError::UndefinedTypeInInlineFragmentTypeCondition { location, .. }
+        | BuildError::SubselectionOnScalarType { location, .. }
+        | BuildError::SubselectionOnEnumType { location, .. } => *location,
     };
     errors.push(location, Details::ExecutableBuildError(build_error.clone()))
 }
