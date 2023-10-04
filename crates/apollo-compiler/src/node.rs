@@ -1,11 +1,16 @@
-use crate::arc::ArcWithHashCache;
 use crate::schema::Component;
 use crate::schema::ComponentOrigin;
 use crate::FileId;
 use apollo_parser::SyntaxNode;
 use rowan::TextRange;
+use std::collections::hash_map::RandomState;
 use std::fmt;
-use std::hash;
+use std::hash::BuildHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
+use std::sync::atomic::AtomicU64;
+use std::sync::atomic::Ordering;
+use std::sync::OnceLock;
 
 /// A thread-safe reference-counted smart pointer for GraphQL nodes.
 ///
@@ -22,14 +27,15 @@ use std::hash;
 ///
 /// `Node<T>` cannot implement [`Borrow<T>`][std::borrow::Borrow] because `Node<T> as Hash`
 /// produces a result (the hash of the cached hash) different from `T as Hash`.
-#[derive(Hash, Eq, PartialEq)]
-pub struct Node<T>(ArcWithHashCache<NodeInner<T>>);
+pub struct Node<T>(triomphe::Arc<NodeInner<T>>);
 
-#[derive(Clone)]
 struct NodeInner<T> {
     location: Option<NodeLocation>,
+    hash_cache: AtomicU64,
     node: T,
 }
+
+const HASH_NOT_COMPUTED_YET: u64 = 0;
 
 /// The source location of a parsed node: file ID and range within that file.
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
@@ -40,23 +46,23 @@ pub struct NodeLocation {
 
 impl<T> Node<T> {
     /// Create a new `Node` for something parsed from the given source location
+    #[inline]
     pub fn new_parsed(node: T, location: NodeLocation) -> Self {
-        Self(ArcWithHashCache::new(NodeInner {
-            location: Some(location),
-            node,
-        }))
+        Self::new_opt_location(node, Some(location))
     }
 
     /// Create a new `Node` for something created programatically, not parsed from a source file
+    #[inline]
     pub fn new(node: T) -> Self {
-        Self(ArcWithHashCache::new(NodeInner {
-            location: None,
-            node,
-        }))
+        Self::new_opt_location(node, None)
     }
 
     pub(crate) fn new_opt_location(node: T, location: Option<NodeLocation>) -> Self {
-        Self(ArcWithHashCache::new(NodeInner { location, node }))
+        Self(triomphe::Arc::new(NodeInner {
+            location,
+            node,
+            hash_cache: AtomicU64::new(HASH_NOT_COMPUTED_YET),
+        }))
     }
 
     pub fn location(&self) -> Option<NodeLocation> {
@@ -71,10 +77,7 @@ impl<T> Node<T> {
 
     /// Returns the given `node` at the same location as `self` (e.g. for a type conversion).
     pub fn same_location<U>(&self, node: U) -> Node<U> {
-        Node(ArcWithHashCache::new(NodeInner {
-            location: self.0.location,
-            node,
-        }))
+        Node::new_opt_location(node, self.0.location)
     }
 
     pub fn to_component(&self, origin: ComponentOrigin) -> Component<T> {
@@ -88,17 +91,29 @@ impl<T> Node<T> {
 
     /// Returns whether two `Node`s point to the same memory allocation
     pub fn ptr_eq(&self, other: &Self) -> bool {
-        self.0.ptr_eq(&other.0)
+        triomphe::Arc::ptr_eq(&self.0, &other.0)
     }
 
     /// Returns a mutable reference to `T`, cloning it if necessary
     ///
-    /// See [`Arc::make_mut`].
+    /// This is functionally equivalent to [`Arc::make_mut`][mm] from the standard library.
+    ///
+    /// If this `Node` is uniquely owned, `make_mut()` will provide a mutable
+    /// reference to the contents. If not, `make_mut()` will create a _new_ `Node`
+    /// with a clone of the contents, update `self` to point to it, and provide
+    /// a mutable reference to its contents.
+    ///
+    /// This is useful for implementing copy-on-write schemes where you wish to
+    /// avoid copying things if your `Node` is not shared.
+    ///
+    /// [mm]: https://doc.rust-lang.org/stable/std/sync/struct.Arc.html#method.make_mut
     pub fn make_mut(&mut self) -> &mut T
     where
         T: Clone,
     {
-        let inner = self.0.make_mut();
+        let inner = triomphe::Arc::make_mut(&mut self.0);
+        // Clear the cache as mutation through the returned `&mut T` may invalidate it
+        *inner.hash_cache.get_mut() = HASH_NOT_COMPUTED_YET;
         // TODO: should the `inner.location` be set to `None` here?
         // After a node is mutated it is kind of not from that source location anymore
         &mut inner.node
@@ -106,7 +121,7 @@ impl<T> Node<T> {
 
     /// Returns a mutable reference to `T` if this `Node` is uniquely owned
     pub fn get_mut(&mut self) -> Option<&mut T> {
-        self.0.get_mut().map(|inner| &mut inner.node)
+        triomphe::Arc::get_mut(&mut self.0).map(|inner| &mut inner.node)
     }
 }
 
@@ -139,18 +154,48 @@ impl<T: fmt::Display> fmt::Display for Node<T> {
     }
 }
 
-impl<T: Eq> Eq for NodeInner<T> {}
+impl<T: Eq> Eq for Node<T> {}
 
-impl<T: PartialEq> PartialEq for NodeInner<T> {
+impl<T: PartialEq> PartialEq for Node<T> {
     fn eq(&self, other: &Self) -> bool {
-        self.node == other.node // location not included
+        self.ptr_eq(other) // fast path
+        || self.0.node == other.0.node // location and hash_cache not included
     }
 }
 
-impl<T: hash::Hash> hash::Hash for NodeInner<T> {
-    fn hash<H: hash::Hasher>(&self, state: &mut H) {
-        self.node.hash(state) // location not included
+impl<T: Hash> Hash for Node<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        let hash = self.0.hash_cache.load(Ordering::Relaxed);
+        if hash != HASH_NOT_COMPUTED_YET {
+            // cache hit
+            hash
+        } else {
+            hash_slow_path(&self.0)
+        }
+        .hash(state)
     }
+}
+
+// It is possible for multiple threads to race and take this path for the same `NodeInner`.
+// This is ok as they should compute the same result.
+// We save on the extra space that `OnceLock<u64>` would occupy,
+// at the cost of extra computation in the unlikely case of this race.
+#[cold]
+#[inline(never)]
+fn hash_slow_path<T: Hash>(inner: &NodeInner<T>) -> u64 {
+    /// We share a single `BuildHasher` process-wide,
+    /// not only for the race described above but also
+    /// so that multiple `HarcInner`’s with the same contents have the same hash.
+    static SHARED_RANDOM: OnceLock<RandomState> = OnceLock::new();
+    let mut hasher = SHARED_RANDOM.get_or_init(RandomState::new).build_hasher();
+    inner.node.hash(&mut hasher);
+    let mut hash = hasher.finish();
+    // Don’t use the marker value for an actual hash
+    if hash == HASH_NOT_COMPUTED_YET {
+        hash += 1
+    }
+    inner.hash_cache.store(hash, Ordering::Relaxed);
+    hash
 }
 
 impl<T> AsRef<T> for Node<T> {
@@ -162,6 +207,16 @@ impl<T> AsRef<T> for Node<T> {
 impl<T> From<T> for Node<T> {
     fn from(node: T) -> Self {
         Self::new(node)
+    }
+}
+
+impl<T: Clone> Clone for NodeInner<T> {
+    fn clone(&self) -> Self {
+        Self {
+            location: self.location,
+            hash_cache: AtomicU64::new(self.hash_cache.load(Ordering::Relaxed)),
+            node: self.node.clone(),
+        }
     }
 }
 

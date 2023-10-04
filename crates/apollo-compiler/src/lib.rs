@@ -2,7 +2,6 @@
 
 #[macro_use]
 mod macros;
-mod arc;
 pub mod ast;
 mod database;
 mod diagnostics;
