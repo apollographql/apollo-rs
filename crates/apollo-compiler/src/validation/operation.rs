@@ -29,50 +29,6 @@ pub(crate) fn validate_operation(
 
     let named_fragments = db.ast_named_fragments(operation.location().unwrap().file_id());
     let q = ast::NamedType::new("Query");
-    let is_introspection_query = operation.operation_type == ast::OperationType::Query
-        && super::selection::operation_fields(
-            &named_fragments,
-            against_type
-                .map(|component| &component.node)
-                .unwrap_or_else(|| &q),
-            &operation.selection_set,
-        )
-        .iter()
-        .all(|field| {
-            matches!(
-                field.field.name.as_str(),
-                "__type" | "__schema" | "__typename"
-            )
-        });
-
-    if against_type.is_none() && config.has_schema && !is_introspection_query {
-        let operation_word = match operation.operation_type {
-            ast::OperationType::Query => "query",
-            ast::OperationType::Mutation => "mutation",
-            ast::OperationType::Subscription => "subscription",
-        };
-
-        let diagnostic = ApolloDiagnostic::new(
-            db,
-            operation.location().unwrap().into(),
-            DiagnosticData::UnsupportedOperation { ty: operation_word },
-        )
-        .label(Label::new(
-            operation.location().unwrap(),
-            format!(
-                "{} operation is not defined in the schema and is therefore not supported",
-                match operation.operation_type {
-                    ast::OperationType::Query => "Query",
-                    ast::OperationType::Mutation => "Mutation",
-                    ast::OperationType::Subscription => "Subscription",
-                }
-            ),
-        ))
-        .help(format!(
-            "consider defining a `{operation_word}` root operation type in your schema"
-        ));
-        diagnostics.push(diagnostic);
-    }
 
     if operation.operation_type == ast::OperationType::Subscription {
         let fields = super::selection::operation_fields(

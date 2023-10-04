@@ -29,9 +29,10 @@ pub(crate) fn document_from_ast(
                         if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
                             entry.insert(operation.same_location(op));
                         } else {
-                            errors
-                                .errors
-                                .push(BuildError::UndefinedRootOperation(operation.clone()))
+                            errors.errors.push(BuildError::UndefinedRootOperation {
+                                location: operation.location(),
+                                operation_type: operation.operation_type.name(),
+                            })
                         }
                     } else {
                         let (key, _) = named_operations.get_key_value(name).unwrap();
@@ -44,6 +45,11 @@ pub(crate) fn document_from_ast(
                     errors.top_level = ExecutableDefinitionName::AnonymousOperation;
                     if let Some(op) = Operation::from_ast(schema, &mut errors, operation) {
                         anonymous_operation = Some(operation.same_location(op));
+                    } else {
+                        errors.errors.push(BuildError::UndefinedRootOperation {
+                            location: operation.location(),
+                            operation_type: operation.operation_type.name(),
+                        })
                     }
                 } else {
                     errors.errors.push(BuildError::AmbiguousAnonymousOperation {

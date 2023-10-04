@@ -47,7 +47,8 @@ fn validate_build_error(errors: &mut Diagnostics, build_error: &BuildError) {
         BuildError::TypeSystemDefinition { location, .. }
         | BuildError::AmbiguousAnonymousOperation { location }
         | BuildError::OperationNameCollision { location, .. }
-        | BuildError::FragmentNameCollision { location, .. } => *location,
+        | BuildError::FragmentNameCollision { location, .. }
+        | BuildError::UndefinedRootOperation { location, .. } => *location,
         _ => return, // TODO
     };
     errors.push(location, Details::ExecutableBuildError(build_error.clone()))

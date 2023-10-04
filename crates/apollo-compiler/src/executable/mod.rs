@@ -124,10 +124,11 @@ pub(crate) enum BuildError {
         name_at_previous_location: Name,
     },
 
-    /// The schema does not define a root operation
-    /// for the operation type of this operation definition
-    #[error("TODO")]
-    UndefinedRootOperation(Node<ast::OperationDefinition>),
+    #[error("`{operation_type}` root operation type is not defined")]
+    UndefinedRootOperation {
+        location: Option<NodeLocation>,
+        operation_type: &'static str,
+    },
 
     /// Could not resolve the type of this field because the schema does not define
     /// the type of its parent selection set

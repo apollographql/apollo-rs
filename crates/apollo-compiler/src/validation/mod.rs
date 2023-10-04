@@ -214,8 +214,15 @@ impl Error {
                     opt_label!(previous_location, "previous definition of `{name}` here");
                     opt_label!("`{name}` redefined here");
                 }
-                ExecutableBuildError::UndefinedRootOperation(_) => {
-                    // TODO
+                ExecutableBuildError::UndefinedRootOperation { operation_type, .. } => {
+                    opt_label!(
+                        "`{operation_type}` is not defined in the schema \
+                         and is therefore not supported"
+                    );
+                    report.set_help(format_args!(
+                        "consider defining a `{operation_type}` root operation type \
+                         in your schema"
+                    ))
                 }
                 ExecutableBuildError::UndefinedType {
                     top_level: _,
