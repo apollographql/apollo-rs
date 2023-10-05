@@ -1002,6 +1002,42 @@ impl From<Node<InputObjectType>> for ExtendedType {
     }
 }
 
+impl From<ScalarType> for ExtendedType {
+    fn from(ty: ScalarType) -> Self {
+        Self::Scalar(ty.into())
+    }
+}
+
+impl From<ObjectType> for ExtendedType {
+    fn from(ty: ObjectType) -> Self {
+        Self::Object(ty.into())
+    }
+}
+
+impl From<InterfaceType> for ExtendedType {
+    fn from(ty: InterfaceType) -> Self {
+        Self::Interface(ty.into())
+    }
+}
+
+impl From<UnionType> for ExtendedType {
+    fn from(ty: UnionType) -> Self {
+        Self::Union(ty.into())
+    }
+}
+
+impl From<EnumType> for ExtendedType {
+    fn from(ty: EnumType) -> Self {
+        Self::Enum(ty.into())
+    }
+}
+
+impl From<InputObjectType> for ExtendedType {
+    fn from(ty: InputObjectType) -> Self {
+        Self::InputObject(ty.into())
+    }
+}
+
 // TODO: use `std::sync::LazyLock` when available https://github.com/rust-lang/rust/issues/109736
 struct LazyLock<T> {
     value: OnceLock<T>,
