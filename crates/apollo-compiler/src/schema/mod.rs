@@ -401,8 +401,44 @@ impl Schema {
         }
     }
 
+    /// Returns the name of the object type for the `query` root operation
+    pub fn query_root_operation(&self) -> Option<&NamedType> {
+        if let Some(root_operations) = &self.schema_definition {
+            root_operations
+                .query
+                .as_ref()
+                .map(|component| &component.node)
+        } else {
+            self.default_root_operation(ast::OperationType::Query)
+        }
+    }
+
+    /// Returns the name of the object type for the `mutation` root operation
+    pub fn mutation_root_operation(&self) -> Option<&NamedType> {
+        if let Some(root_operations) = &self.schema_definition {
+            root_operations
+                .mutation
+                .as_ref()
+                .map(|component| &component.node)
+        } else {
+            self.default_root_operation(ast::OperationType::Mutation)
+        }
+    }
+
+    /// Returns the name of the object type for the `subscription` root operation
+    pub fn subscription_root_operation(&self) -> Option<&NamedType> {
+        if let Some(root_operations) = &self.schema_definition {
+            root_operations
+                .subscription
+                .as_ref()
+                .map(|component| &component.node)
+        } else {
+            self.default_root_operation(ast::OperationType::Subscription)
+        }
+    }
+
     /// Returns the name of the object type for the root operation with the given operation kind
-    pub fn root_operation(&self, operation_type: ast::OperationType) -> Option<&ComponentStr> {
+    pub fn root_operation(&self, operation_type: ast::OperationType) -> Option<&NamedType> {
         if let Some(root_operations) = &self.schema_definition {
             match operation_type {
                 ast::OperationType::Query => &root_operations.query,
@@ -410,23 +446,27 @@ impl Schema {
                 ast::OperationType::Subscription => &root_operations.subscription,
             }
             .as_ref()
+            .map(|component| &component.node)
         } else {
-            let name = operation_type.default_type_name();
-            macro_rules! as_static {
-                () => {{
-                    static OBJECT_TYPE_NAME: OnceLock<ComponentStr> = OnceLock::new();
-                    OBJECT_TYPE_NAME
-                        .get_or_init(|| Name::new(name).to_component(ComponentOrigin::Definition))
-                }};
-            }
-            self.get_object(name)
-                .is_some()
-                .then(|| match operation_type {
-                    ast::OperationType::Query => as_static!(),
-                    ast::OperationType::Mutation => as_static!(),
-                    ast::OperationType::Subscription => as_static!(),
-                })
+            self.default_root_operation(operation_type)
         }
+    }
+
+    fn default_root_operation(&self, operation_type: ast::OperationType) -> Option<&NamedType> {
+        let name = operation_type.default_type_name();
+        macro_rules! as_static {
+            () => {{
+                static OBJECT_TYPE_NAME: OnceLock<Name> = OnceLock::new();
+                OBJECT_TYPE_NAME.get_or_init(|| Name::new(name))
+            }};
+        }
+        self.get_object(name)
+            .is_some()
+            .then(|| match operation_type {
+                ast::OperationType::Query => as_static!(),
+                ast::OperationType::Mutation => as_static!(),
+                ast::OperationType::Subscription => as_static!(),
+            })
     }
 
     /// Returns the definition of a type’s explicit field or meta-field.
@@ -547,10 +587,7 @@ impl Schema {
                 }),
             ]
         });
-        if self
-            .root_operation(ast::OperationType::Query)
-            .is_some_and(|n| n.node == type_name)
-        {
+        if self.query_root_operation().is_some_and(|n| n == type_name) {
             // __typename: String!
             // __schema: __Schema!
             // __type(name: String!): __Type

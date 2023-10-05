@@ -34,9 +34,7 @@ pub(crate) fn validate_operation(
     if operation.operation_type == ast::OperationType::Subscription {
         let fields = super::selection::operation_fields(
             &named_fragments,
-            against_type
-                .map(|component| &component.node)
-                .unwrap_or_else(|| &q),
+            against_type.unwrap_or(&q),
             &operation.selection_set,
         );
 
@@ -112,7 +110,7 @@ pub(crate) fn validate_operation(
     diagnostics.extend(super::selection::validate_selection_set2(
         db,
         file_id,
-        against_type.map(|component| &component.node),
+        against_type,
         &operation.selection_set,
         config,
     ));
