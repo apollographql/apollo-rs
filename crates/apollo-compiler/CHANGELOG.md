@@ -64,7 +64,7 @@ These types are serializable
 (through `Display`, `.to_string()`, and a `.serialize()` config builder), 
 integrating the functionality of the apollo-encoder crate.
 
-They are also mutable, and can be created programatically out of thin air.
+They are also mutable, and can be created programmatically out of thin air.
 `Node<T>` is a thread-safe reference-counted smart pointer
 that provides structural sharing and copy-on-write semantics.
 
