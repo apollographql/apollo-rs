@@ -90,7 +90,7 @@ impl SchemaBuilder {
                     }
                 },
                 ast::Definition::DirectiveDefinition(def) => {
-                    if let Err(previous) =
+                    if let Err((_prev_name, previous)) =
                         insert_sticky(&mut self.schema.directive_definitions, &def.name, || {
                             def.clone()
                         })
@@ -105,14 +105,16 @@ impl SchemaBuilder {
                     }
                 }
                 ast::Definition::ScalarTypeDefinition(def) => {
-                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
-                        ExtendedType::Scalar(ScalarType::from_ast(
-                            def,
-                            self.orphan_type_extensions
-                                .remove(&def.name)
-                                .unwrap_or_default(),
-                        ))
-                    }) {
+                    if let Err((prev_name, previous)) =
+                        insert_sticky(&mut self.schema.types, &def.name, || {
+                            ExtendedType::Scalar(ScalarType::from_ast(
+                                def,
+                                self.orphan_type_extensions
+                                    .remove(&def.name)
+                                    .unwrap_or_default(),
+                            ))
+                        })
+                    {
                         self.schema.build_errors.push(if previous.is_built_in() {
                             BuildError::BuiltInScalarTypeRedefinition {
                                 location: def.location(),
@@ -120,103 +122,113 @@ impl SchemaBuilder {
                         } else {
                             BuildError::TypeDefinitionCollision {
                                 location: def.name.location(),
-                                previous_location: previous.name().location(),
+                                previous_location: prev_name.location(),
                                 name: def.name.clone(),
                             }
                         })
                     }
                 }
                 ast::Definition::ObjectTypeDefinition(def) => {
-                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
-                        ExtendedType::Object(ObjectType::from_ast(
-                            &mut self.schema.build_errors,
-                            def,
-                            self.orphan_type_extensions
-                                .remove(&def.name)
-                                .unwrap_or_default(),
-                        ))
-                    }) {
+                    if let Err((prev_name, _previous)) =
+                        insert_sticky(&mut self.schema.types, &def.name, || {
+                            ExtendedType::Object(ObjectType::from_ast(
+                                &mut self.schema.build_errors,
+                                def,
+                                self.orphan_type_extensions
+                                    .remove(&def.name)
+                                    .unwrap_or_default(),
+                            ))
+                        })
+                    {
                         self.schema
                             .build_errors
                             .push(BuildError::TypeDefinitionCollision {
                                 location: def.name.location(),
-                                previous_location: previous.name().location(),
+                                previous_location: prev_name.location(),
                                 name: def.name.clone(),
                             })
                     }
                 }
                 ast::Definition::InterfaceTypeDefinition(def) => {
-                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
-                        ExtendedType::Interface(InterfaceType::from_ast(
-                            &mut self.schema.build_errors,
-                            def,
-                            self.orphan_type_extensions
-                                .remove(&def.name)
-                                .unwrap_or_default(),
-                        ))
-                    }) {
+                    if let Err((prev_name, _previous)) =
+                        insert_sticky(&mut self.schema.types, &def.name, || {
+                            ExtendedType::Interface(InterfaceType::from_ast(
+                                &mut self.schema.build_errors,
+                                def,
+                                self.orphan_type_extensions
+                                    .remove(&def.name)
+                                    .unwrap_or_default(),
+                            ))
+                        })
+                    {
                         self.schema
                             .build_errors
                             .push(BuildError::TypeDefinitionCollision {
                                 location: def.name.location(),
-                                previous_location: previous.name().location(),
+                                previous_location: prev_name.location(),
                                 name: def.name.clone(),
                             })
                     }
                 }
                 ast::Definition::UnionTypeDefinition(def) => {
-                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
-                        ExtendedType::Union(UnionType::from_ast(
-                            &mut self.schema.build_errors,
-                            def,
-                            self.orphan_type_extensions
-                                .remove(&def.name)
-                                .unwrap_or_default(),
-                        ))
-                    }) {
+                    if let Err((prev_name, _)) =
+                        insert_sticky(&mut self.schema.types, &def.name, || {
+                            ExtendedType::Union(UnionType::from_ast(
+                                &mut self.schema.build_errors,
+                                def,
+                                self.orphan_type_extensions
+                                    .remove(&def.name)
+                                    .unwrap_or_default(),
+                            ))
+                        })
+                    {
                         self.schema
                             .build_errors
                             .push(BuildError::TypeDefinitionCollision {
                                 location: def.name.location(),
-                                previous_location: previous.name().location(),
+                                previous_location: prev_name.location(),
                                 name: def.name.clone(),
                             })
                     }
                 }
                 ast::Definition::EnumTypeDefinition(def) => {
-                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
-                        ExtendedType::Enum(EnumType::from_ast(
-                            &mut self.schema.build_errors,
-                            def,
-                            self.orphan_type_extensions
-                                .remove(&def.name)
-                                .unwrap_or_default(),
-                        ))
-                    }) {
+                    if let Err((prev_name, _previous)) =
+                        insert_sticky(&mut self.schema.types, &def.name, || {
+                            ExtendedType::Enum(EnumType::from_ast(
+                                &mut self.schema.build_errors,
+                                def,
+                                self.orphan_type_extensions
+                                    .remove(&def.name)
+                                    .unwrap_or_default(),
+                            ))
+                        })
+                    {
                         self.schema
                             .build_errors
                             .push(BuildError::TypeDefinitionCollision {
                                 location: def.name.location(),
-                                previous_location: previous.name().location(),
+                                previous_location: prev_name.location(),
                                 name: def.name.clone(),
                             })
                     }
                 }
                 ast::Definition::InputObjectTypeDefinition(def) => {
-                    if let Err(previous) = insert_sticky(&mut self.schema.types, &def.name, || {
-                        ExtendedType::InputObject(InputObjectType::from_ast(
-                            &mut self.schema.build_errors,
-                            def,
-                            self.orphan_type_extensions
-                                .remove(&def.name)
-                                .unwrap_or_default(),
-                        ))
-                    }) {
+                    if let Err((prev_name, _previous)) =
+                        insert_sticky(&mut self.schema.types, &def.name, || {
+                            ExtendedType::InputObject(InputObjectType::from_ast(
+                                &mut self.schema.build_errors,
+                                def,
+                                self.orphan_type_extensions
+                                    .remove(&def.name)
+                                    .unwrap_or_default(),
+                            ))
+                        })
+                    {
                         self.schema
                             .build_errors
                             .push(BuildError::TypeDefinitionCollision {
                                 location: def.name.location(),
-                                previous_location: previous.name().location(),
+                                previous_location: prev_name.location(),
                                 name: def.name.clone(),
                             })
                     }
@@ -230,7 +242,7 @@ impl SchemaBuilder {
                     }
                 }
                 ast::Definition::ScalarTypeExtension(ext) => {
-                    if let Some(ty) = self.schema.types.get_mut(&ext.name) {
+                    if let Some((_, ty_name, ty)) = self.schema.types.get_full_mut(&ext.name) {
                         if let ExtendedType::Scalar(ty) = ty {
                             ty.make_mut().extend_ast(ext)
                         } else {
@@ -240,7 +252,7 @@ impl SchemaBuilder {
                                     location: ext.name.location(),
                                     name: ext.name.clone(),
                                     describe_ext: definition.describe(),
-                                    def_location: ty.name().location(),
+                                    def_location: ty_name.location(),
                                     describe_def: ty.describe(),
                                 })
                         }
@@ -252,7 +264,7 @@ impl SchemaBuilder {
                     }
                 }
                 ast::Definition::ObjectTypeExtension(ext) => {
-                    if let Some(ty) = self.schema.types.get_mut(&ext.name) {
+                    if let Some((_, ty_name, ty)) = self.schema.types.get_full_mut(&ext.name) {
                         if let ExtendedType::Object(ty) = ty {
                             ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
                         } else {
@@ -262,7 +274,7 @@ impl SchemaBuilder {
                                     location: ext.name.location(),
                                     name: ext.name.clone(),
                                     describe_ext: definition.describe(),
-                                    def_location: ty.name().location(),
+                                    def_location: ty_name.location(),
                                     describe_def: ty.describe(),
                                 })
                         }
@@ -274,7 +286,7 @@ impl SchemaBuilder {
                     }
                 }
                 ast::Definition::InterfaceTypeExtension(ext) => {
-                    if let Some(ty) = self.schema.types.get_mut(&ext.name) {
+                    if let Some((_, ty_name, ty)) = self.schema.types.get_full_mut(&ext.name) {
                         if let ExtendedType::Interface(ty) = ty {
                             ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
                         } else {
@@ -284,7 +296,7 @@ impl SchemaBuilder {
                                     location: ext.name.location(),
                                     name: ext.name.clone(),
                                     describe_ext: definition.describe(),
-                                    def_location: ty.name().location(),
+                                    def_location: ty_name.location(),
                                     describe_def: ty.describe(),
                                 })
                         }
@@ -296,7 +308,7 @@ impl SchemaBuilder {
                     }
                 }
                 ast::Definition::UnionTypeExtension(ext) => {
-                    if let Some(ty) = self.schema.types.get_mut(&ext.name) {
+                    if let Some((_, ty_name, ty)) = self.schema.types.get_full_mut(&ext.name) {
                         if let ExtendedType::Union(ty) = ty {
                             ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
                         } else {
@@ -306,7 +318,7 @@ impl SchemaBuilder {
                                     location: ext.name.location(),
                                     name: ext.name.clone(),
                                     describe_ext: definition.describe(),
-                                    def_location: ty.name().location(),
+                                    def_location: ty_name.location(),
                                     describe_def: ty.describe(),
                                 })
                         }
@@ -318,7 +330,7 @@ impl SchemaBuilder {
                     }
                 }
                 ast::Definition::EnumTypeExtension(ext) => {
-                    if let Some(ty) = self.schema.types.get_mut(&ext.name) {
+                    if let Some((_, ty_name, ty)) = self.schema.types.get_full_mut(&ext.name) {
                         if let ExtendedType::Enum(ty) = ty {
                             ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
                         } else {
@@ -328,7 +340,7 @@ impl SchemaBuilder {
                                     location: ext.name.location(),
                                     name: ext.name.clone(),
                                     describe_ext: definition.describe(),
-                                    def_location: ty.name().location(),
+                                    def_location: ty_name.location(),
                                     describe_def: ty.describe(),
                                 })
                         }
@@ -340,7 +352,7 @@ impl SchemaBuilder {
                     }
                 }
                 ast::Definition::InputObjectTypeExtension(ext) => {
-                    if let Some(ty) = self.schema.types.get_mut(&ext.name) {
+                    if let Some((_, ty_name, ty)) = self.schema.types.get_full_mut(&ext.name) {
                         if let ExtendedType::InputObject(ty) = ty {
                             ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
                         } else {
@@ -350,7 +362,7 @@ impl SchemaBuilder {
                                     location: ext.name.location(),
                                     name: ext.name.clone(),
                                     describe_ext: definition.describe(),
-                                    def_location: ty.name().location(),
+                                    def_location: ty_name.location(),
                                     describe_def: ty.describe(),
                                 })
                         }
@@ -477,7 +489,6 @@ impl ScalarType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
-            name: definition.name.clone(),
             description: definition.description.clone(),
             directives: definition
                 .directives
@@ -511,7 +522,6 @@ impl ObjectType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
-            name: definition.name.clone(),
             description: definition.description.clone(),
             implements_interfaces: collect_sticky_set(
                 definition
@@ -603,7 +613,6 @@ impl InterfaceType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
-            name: definition.name.clone(),
             description: definition.description.clone(),
             implements_interfaces: collect_sticky_set(
                 definition
@@ -695,7 +704,6 @@ impl UnionType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
-            name: definition.name.clone(),
             description: definition.description.clone(),
             directives: definition
                 .directives
@@ -760,7 +768,6 @@ impl EnumType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
-            name: definition.name.clone(),
             description: definition.description.clone(),
             directives: definition
                 .directives
@@ -827,7 +834,6 @@ impl InputObjectType {
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
         let mut ty = Self {
-            name: definition.name.clone(),
             description: definition.description.clone(),
             directives: definition
                 .directives
@@ -885,23 +891,21 @@ impl InputObjectType {
     }
 }
 
-/// Like `IndexMap::insert`, but does not replace the value if an equivalent key is already in the map.
+/// Like `IndexMap::insert`, but does not replace the value
+/// if an equivalent key is already in the map.
 ///
-/// Returns wether the value was inserted
-fn insert_sticky<K, V>(
-    map: &mut IndexMap<K, V>,
-    key: impl Into<K>,
+/// In that (error) case, returns the existing key and value
+fn insert_sticky<'map, V>(
+    map: &'map mut IndexMap<Name, V>,
+    key: &Name,
     make_value: impl FnOnce() -> V,
-) -> Result<(), &V>
-where
-    K: std::hash::Hash + Eq,
-{
-    match map.entry(key.into()) {
+) -> Result<(), (&'map Name, &'map V)> {
+    match map.entry(key.clone()) {
         Entry::Vacant(entry) => {
             entry.insert(make_value());
             Ok(())
         }
-        Entry::Occupied(entry) => Err(entry.into_mut()),
+        Entry::Occupied(_) => Err(map.get_key_value(key).unwrap()),
     }
 }
 
