@@ -20,7 +20,7 @@ pub(crate) fn get_possible_types<'a>(
         // 1. If `type` is an object type, return a set containing `type`.
         Some(schema::ExtendedType::Object(_)) => std::iter::once(type_name).collect(),
         // 2. If `type` is an interface type, return the set of types implementing `type`.
-        Some(schema::ExtendedType::Interface(intf)) => {
+        Some(schema::ExtendedType::Interface(_)) => {
             // TODO(@goto-bus-stop): use db.implementers_map()
             schema
                 .types
@@ -31,7 +31,7 @@ pub(crate) fn get_possible_types<'a>(
                         _ => return None,
                     };
 
-                    if implements.contains(&intf.name) {
+                    if implements.contains(type_name) {
                         Some(name)
                     } else {
                         None

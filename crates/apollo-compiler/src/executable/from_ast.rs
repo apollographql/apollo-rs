@@ -208,10 +208,10 @@ impl SelectionSet {
                                 ),
                             }
                         }
-                        Err(schema::FieldLookupError::NoSuchField(type_def)) => {
+                        Err(schema::FieldLookupError::NoSuchField(type_name, _)) => {
                             errors.errors.push(BuildError::UndefinedField {
                                 location: ast.name.location(),
-                                type_name: type_def.name().clone(),
+                                type_name: type_name.clone(),
                                 field_name: ast.name.clone(),
                                 path: errors.path.clone(),
                             })

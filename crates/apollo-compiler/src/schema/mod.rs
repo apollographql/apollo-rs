@@ -88,14 +88,12 @@ pub enum ExtendedType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarType {
-    pub name: Name,
     pub description: Option<NodeStr>,
     pub directives: Directives,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectType {
-    pub name: Name,
     pub description: Option<NodeStr>,
     pub implements_interfaces: IndexSet<ComponentStr>,
     pub directives: Directives,
@@ -109,7 +107,6 @@ pub struct ObjectType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InterfaceType {
-    pub name: Name,
     pub description: Option<NodeStr>,
 
     /// * Key: name of an implemented interface
@@ -128,7 +125,6 @@ pub struct InterfaceType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnionType {
-    pub name: Name,
     pub description: Option<NodeStr>,
     pub directives: Directives,
 
@@ -140,7 +136,6 @@ pub struct UnionType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnumType {
-    pub name: Name,
     pub description: Option<NodeStr>,
     pub directives: Directives,
     pub values: IndexMap<Name, Component<EnumValueDefinition>>,
@@ -148,7 +143,6 @@ pub struct EnumType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InputObjectType {
-    pub name: Name,
     pub description: Option<NodeStr>,
     pub directives: Directives,
     pub fields: IndexMap<Name, Component<InputValueDefinition>>,
@@ -286,7 +280,7 @@ pub(crate) enum BuildError {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FieldLookupError<'schema> {
     NoSuchType,
-    NoSuchField(&'schema ExtendedType),
+    NoSuchField(&'schema NamedType, &'schema ExtendedType),
 }
 
 impl Schema {
@@ -475,9 +469,9 @@ impl Schema {
         type_name: &str,
         field_name: &str,
     ) -> Result<&Component<FieldDefinition>, FieldLookupError<'_>> {
-        let ty_def = self
+        let (ty_def_name, ty_def) = self
             .types
-            .get(type_name)
+            .get_key_value(type_name)
             .ok_or(FieldLookupError::NoSuchType)?;
         self.meta_fields_definitions(type_name)
             .iter()
@@ -490,7 +484,7 @@ impl Schema {
                 | ExtendedType::Enum(_)
                 | ExtendedType::InputObject(_) => None,
             })
-            .ok_or(FieldLookupError::NoSuchField(ty_def))
+            .ok_or(FieldLookupError::NoSuchField(ty_def_name, ty_def))
     }
 
     /// Returns a map of interface names to names of types that implement that interface
@@ -659,18 +653,6 @@ impl SchemaDefinition {
 }
 
 impl ExtendedType {
-    /// Return the name of the type.
-    pub fn name(&self) -> &ast::Name {
-        match self {
-            Self::Scalar(ty) => &ty.name,
-            Self::Object(ty) => &ty.name,
-            Self::Interface(ty) => &ty.name,
-            Self::Union(ty) => &ty.name,
-            Self::Enum(ty) => &ty.name,
-            Self::InputObject(ty) => &ty.name,
-        }
-    }
-
     /// Return the source location of the type's base definition.
     ///
     /// If the type has extensions, those are not covered by this location.
