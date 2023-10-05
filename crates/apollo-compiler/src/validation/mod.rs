@@ -263,6 +263,14 @@ impl Error {
 }
 
 impl Diagnostics {
+    /// Returns a human-readable string formatting, without color codes regardless of stderr.
+    ///
+    /// `Display` and `.to_string()` are meant for printing to stderr,
+    /// and will include ANSI color codes if stderr is detected to be a terminal.
+    pub fn to_string_no_color(&self) -> String {
+        format!("{self:#}")
+    }
+
     pub(crate) fn new(sources: IndexMap<FileId, Arc<SourceFile>>) -> Self {
         Self(Box::new(DiagnosticsBoxed {
             errors: Vec::new(),

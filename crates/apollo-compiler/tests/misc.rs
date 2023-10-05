@@ -750,8 +750,7 @@ type User
 "#;
 
     let schema = Schema::parse(input, "document.graphql");
-    let warnings = schema.validate().unwrap();
-    let warnings = format!("{warnings:#}");
+    let warnings = schema.validate().unwrap().to_string_no_color();
     assert!(
         warnings.contains(
             "Advice: custom scalars should provide a scalar specification URL \
