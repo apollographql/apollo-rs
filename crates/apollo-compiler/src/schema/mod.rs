@@ -41,6 +41,9 @@ pub struct Schema {
     build_errors: Vec<BuildError>,
 
     /// The `schema` definition and its extensions, defining root operations
+    ///
+    /// For more convenient access to its directives regardless of `Option`,
+    /// see [`schema_definition_directives`][Self::schema_definition_directives]
     pub schema_definition: Option<Node<SchemaDefinition>>,
 
     /// Built-in and explicit directive definitions
@@ -332,6 +335,15 @@ impl Schema {
             Ok(errors)
         } else {
             Err(errors)
+        }
+    }
+
+    /// Directives of the `schema` definition and its extensions
+    pub fn schema_definition_directives(&self) -> &Directives {
+        if let Some(def) = &self.schema_definition {
+            &def.directives
+        } else {
+            Directives::EMPTY
         }
     }
 
@@ -855,6 +867,8 @@ impl InputObjectType {
 }
 
 impl Directives {
+    const EMPTY: &Self = &Self::new();
+
     pub const fn new() -> Self {
         Self(Vec::new())
     }
