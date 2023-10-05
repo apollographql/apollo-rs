@@ -103,7 +103,7 @@ impl Operation {
         ast: &ast::OperationDefinition,
     ) -> Option<Self> {
         let ty = if let Some(s) = schema {
-            s.root_operation(ast.operation_type)?.node.clone()
+            s.root_operation(ast.operation_type)?.clone()
         } else {
             // Hack for validate_standalone_excutable
             ast.operation_type.default_type_name().into()
