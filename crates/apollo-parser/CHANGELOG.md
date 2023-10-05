@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [0.7.0] (unreleased) - 2023-mm-dd
+# [0.7.0](https://crates.io/crates/apollo-parser/0.7.0) - 2023-10-05
 
 ## BREAKING
 
@@ -26,11 +26,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Abstract Syntax Tree (AST) but is in fact not very abstract: it preserves
   text input losslessly, and all tree leaves are string-based tokens.
   This renames it to Concrete Syntax Tree (CST) and renames various APIs accordingly.
-  This leaves the AST name available for a new tree representation (coming soon).
+  This leaves the name available for a new AST in apollo-compiler 1.0.
 
-[pull/???]: https://github.com/apollographql/apollo-rs/pull/???
-
-# [x.x.x] (unreleased) - 2023-mm-dd
 ## Fixes
 - **apply recursion limit where needed, reduce its default from 4096 to 500 - [SimonSapin], [pull/662]**
   The limit was only tracked for nested selection sets, but the parser turns out
