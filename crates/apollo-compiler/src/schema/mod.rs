@@ -41,7 +41,7 @@ pub struct Schema {
     build_errors: Vec<BuildError>,
 
     /// The `schema` definition and its extensions, defining root operations
-    pub root_operations: Option<Node<RootOperations>>,
+    pub schema_definition: Option<Node<SchemaDefinition>>,
 
     /// Built-in and explicit directive definitions
     pub directive_definitions: IndexMap<Name, Node<DirectiveDefinition>>,
@@ -53,7 +53,7 @@ pub struct Schema {
 
 /// The `schema` definition and its extensions, defining root operations
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RootOperations {
+pub struct SchemaDefinition {
     pub description: Option<NodeStr>,
     pub directives: Directives,
 
@@ -391,7 +391,7 @@ impl Schema {
 
     /// Returns the name of the object type for the root operation with the given operation kind
     pub fn root_operation(&self, operation_type: ast::OperationType) -> Option<&ComponentStr> {
-        if let Some(root_operations) = &self.root_operations {
+        if let Some(root_operations) = &self.schema_definition {
             match operation_type {
                 ast::OperationType::Query => &root_operations.query,
                 ast::OperationType::Mutation => &root_operations.mutation,
@@ -581,7 +581,7 @@ impl Schema {
     serialize_method!();
 }
 
-impl RootOperations {
+impl SchemaDefinition {
     /// Collect `schema` extensions that contribute any component
     ///
     /// The order of the returned set is unspecified but deterministic
@@ -855,7 +855,7 @@ impl InputObjectType {
 }
 
 impl Directives {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(Vec::new())
     }
 
@@ -942,11 +942,11 @@ impl PartialEq for Schema {
         let Self {
             sources: _,      // ignored
             build_errors: _, // ignored
-            root_operations,
+            schema_definition: root_operations,
             directive_definitions,
             types,
         } = self;
-        *root_operations == other.root_operations
+        *root_operations == other.schema_definition
             && *directive_definitions == other.directive_definitions
             && *types == other.types
     }

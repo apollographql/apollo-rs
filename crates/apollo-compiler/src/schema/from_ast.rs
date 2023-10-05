@@ -21,7 +21,7 @@ impl SchemaBuilder {
             schema: Schema {
                 sources: IndexMap::new(),
                 build_errors: Vec::new(),
-                root_operations: None,
+                schema_definition: None,
                 directive_definitions: IndexMap::new(),
                 types: IndexMap::new(),
             },
@@ -45,7 +45,7 @@ impl SchemaBuilder {
             builder.schema.build_errors.is_empty()
                 && builder.orphan_type_extensions.is_empty()
                 && builder.orphan_schema_extensions.is_empty()
-                && builder.schema.root_operations.is_none(),
+                && builder.schema.schema_definition.is_none(),
         );
         builder
     }
@@ -71,9 +71,9 @@ impl SchemaBuilder {
         }
         for definition in &document.definitions {
             match definition {
-                ast::Definition::SchemaDefinition(def) => match &self.schema.root_operations {
+                ast::Definition::SchemaDefinition(def) => match &self.schema.schema_definition {
                     None => {
-                        self.schema.root_operations = Some(RootOperations::from_ast(
+                        self.schema.schema_definition = Some(SchemaDefinition::from_ast(
                             &mut self.schema.build_errors,
                             def,
                             &self.orphan_schema_extensions,
@@ -222,7 +222,7 @@ impl SchemaBuilder {
                     }
                 }
                 ast::Definition::SchemaExtension(ext) => {
-                    if let Some(root) = &mut self.schema.root_operations {
+                    if let Some(root) = &mut self.schema.schema_definition {
                         root.make_mut()
                             .extend_ast(&mut self.schema.build_errors, ext)
                     } else {
@@ -407,7 +407,7 @@ impl SchemaBuilder {
     }
 }
 
-impl RootOperations {
+impl SchemaDefinition {
     fn from_ast(
         errors: &mut Vec<BuildError>,
         definition: &Node<ast::SchemaDefinition>,
