@@ -40,6 +40,35 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [issue/629]: https://github.com/apollographql/apollo-rs/issues/629
 -->
 
+# [1.0.0-beta.1](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-05
+
+## BREAKING
+
+Compared to 0.11, version 1.0 is a near-complete rewrite of the library
+and revamp of the public API.
+While in beta, there may still be breaking changes (though not as dramatic)
+until 1.0.0 “final”. 
+If using a beta version, we recommend specifying an exact dependency in `Cargo.toml`:
+
+```toml
+apollo-compiler = "=1.0.0-beta.1"
+```
+
+## Features
+
+The API is now centered on `Schema` and `ExecutableDocument` types.
+Users no longer need to create a compiler, add inputs to it, and track them by ID.
+Validation is now a method of these types, and returns a `Result` to indicate errors.
+
+These types are serializable 
+(through `Display`, `.to_string()`, and a `.serialize()` config builder), 
+integrating the functionality of the apollo-encoder crate.
+
+They are also mutable, and can be created programatically out of thin air.
+`Node<T>` is a thread-safe reference-counted smart pointer
+that provides structural sharing and copy-on-write semantics.
+
+
 # [0.11.2](https://crates.io/crates/apollo-compiler/0.11.2) - 2023-09-11
 
 ## Fixes
