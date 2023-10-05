@@ -15,8 +15,8 @@ fn merge_schemas(inputs: &[&str]) -> Result<String, MergeError> {
     for &input in inputs {
         let schema = Schema::parse(input, "schema.graphql");
         merge_options_or(
-            &mut merged.root_operations,
-            &schema.root_operations,
+            &mut merged.schema_definition,
+            &schema.schema_definition,
             |merged, new| {
                 let merged = merged.make_mut();
                 merge_options(&mut merged.description, &new.description)?;

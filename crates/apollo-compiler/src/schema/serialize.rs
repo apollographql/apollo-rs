@@ -14,7 +14,7 @@ impl Schema {
 
 impl Schema {
     pub(crate) fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
-        self.root_operations
+        self.schema_definition
             .as_ref()
             .into_iter()
             .flat_map(|root| root.to_ast())
@@ -35,7 +35,7 @@ impl Schema {
     }
 }
 
-impl Node<RootOperations> {
+impl Node<SchemaDefinition> {
     fn to_ast(&self) -> impl Iterator<Item = ast::Definition> + '_ {
         let root_ops = |ext: Option<&ExtensionId>| -> Vec<Node<(OperationType, Name)>> {
             let root_op = |op: &Option<ComponentStr>, ty| {
