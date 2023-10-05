@@ -1,6 +1,6 @@
 [package]
 name = "apollo-compiler"
-version = "0.11.2"
+version = "1.0.0-beta.1"
 authors = ["Irina Shestak <shestak.irina@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/apollographql/apollo-rs"
