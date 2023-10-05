@@ -55,7 +55,7 @@ pub struct Schema {
 }
 
 /// The `schema` definition and its extensions, defining root operations
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SchemaDefinition {
     pub description: Option<NodeStr>,
     pub directives: Directives,

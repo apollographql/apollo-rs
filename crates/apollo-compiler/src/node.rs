@@ -139,6 +139,12 @@ impl<T> Clone for Node<T> {
     }
 }
 
+impl<T: Default> Default for Node<T> {
+    fn default() -> Self {
+        Self::new(T::default())
+    }
+}
+
 impl<T: fmt::Debug> fmt::Debug for Node<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(location) = self.location() {
