@@ -14,8 +14,7 @@ fn it_errors_when_selection_set_recursion_limit_exceeded() {
     let mut parser = Parser::new().recursion_limit(1);
     let ast = parser.parse_ast(input, "doc.graphql");
     assert_eq!(parser.recursion_reached(), 2);
-    let errors = ast.check_parse_errors().unwrap_err();
-    let errors = format!("{errors:#}");
+    let errors = ast.check_parse_errors().unwrap_err().to_string_no_color();
     assert!(
         errors.contains("parser recursion limit reached"),
         "{errors}"
@@ -53,8 +52,7 @@ fn it_errors_when_selection_set_token_limit_is_exceeded() {
     let ast = Parser::new()
         .token_limit(18)
         .parse_ast(schema, "doc.graphql");
-    let errors = ast.check_parse_errors().unwrap_err();
-    let errors = format!("{errors:#}");
+    let errors = ast.check_parse_errors().unwrap_err().to_string_no_color();
     assert!(
         errors.contains("token limit reached, aborting lexing"),
         "{errors}"
@@ -80,8 +78,7 @@ fn it_errors_with_multiple_limits() {
         .token_limit(22)
         .recursion_limit(10)
         .parse_ast(input, "doc.graphql");
-    let errors = ast.check_parse_errors().unwrap_err();
-    let errors = format!("{errors:#}");
+    let errors = ast.check_parse_errors().unwrap_err().to_string_no_color();
     assert!(
         errors.contains("token limit reached, aborting lexing"),
         "{errors}"
@@ -92,8 +89,7 @@ fn it_errors_with_multiple_limits() {
         .token_limit(200)
         .recursion_limit(3)
         .parse_ast(input, "doc.graphql");
-    let errors = ast.check_parse_errors().unwrap_err();
-    let errors = format!("{errors:#}");
+    let errors = ast.check_parse_errors().unwrap_err().to_string_no_color();
     assert!(
         errors.contains("parser recursion limit reached"),
         "{errors}"

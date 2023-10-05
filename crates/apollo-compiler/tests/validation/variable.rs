@@ -40,8 +40,10 @@ type Products {
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
     schema.validate().unwrap();
-    let errors = executable.validate(&schema).unwrap_err();
-    let errors = format!("{errors:#}");
+    let errors = executable
+        .validate(&schema)
+        .unwrap_err()
+        .to_string_no_color();
     assert!(
         errors.contains("variable `undefinedVariable` is not defined"),
         "{errors}"
@@ -75,8 +77,10 @@ type Product {
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
     schema.validate().unwrap();
-    let errors = executable.validate(&schema).unwrap_err();
-    let errors = format!("{errors:#}");
+    let errors = executable
+        .validate(&schema)
+        .unwrap_err()
+        .to_string_no_color();
     assert!(
         errors.contains("unused variable: `unusedVariable`"),
         "{errors}"
@@ -127,8 +131,10 @@ type Product {
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
     schema.validate().unwrap();
-    let errors = executable.validate(&schema).unwrap_err();
-    let errors = format!("{errors:#}");
+    let errors = executable
+        .validate(&schema)
+        .unwrap_err()
+        .to_string_no_color();
     assert!(
         errors.contains("variable `goldStatus` is not defined"),
         "{errors}"

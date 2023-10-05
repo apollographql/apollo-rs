@@ -35,8 +35,10 @@ type Cat {
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
     schema.validate().unwrap();
-    let errors = executable.validate(&schema).unwrap_err();
-    let errors = format!("{errors:#}");
+    let errors = executable
+        .validate(&schema)
+        .unwrap_err()
+        .to_string_no_color();
     assert!(
         errors.contains(
             "anonymous operation cannot be selected when the document contains other operations"
@@ -88,8 +90,10 @@ type Cat implements Pet {
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
     schema.validate().unwrap();
-    let errors = executable.validate(&schema).unwrap_err();
-    let errors = format!("{errors:#}");
+    let errors = executable
+        .validate(&schema)
+        .unwrap_err()
+        .to_string_no_color();
     assert!(
         errors.contains("the operation `getName` is defined multiple times in the document"),
         "{errors}"
@@ -177,8 +181,10 @@ type Cat implements Pet {
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
     schema.validate().unwrap();
-    let errors = executable.validate(&schema).unwrap_err();
-    let errors = format!("{errors:#}");
+    let errors = executable
+        .validate(&schema)
+        .unwrap_err()
+        .to_string_no_color();
     assert!(
         errors
             .contains("`subscription` is not defined in the schema and is therefore not supported"),
@@ -212,8 +218,10 @@ type Product {
     let (schema, executable) = parse_mixed(input, "schema.graphql");
 
     schema.validate().unwrap();
-    let errors = executable.validate(&schema).unwrap_err();
-    let errors = format!("{errors:#}");
+    let errors = executable
+        .validate(&schema)
+        .unwrap_err()
+        .to_string_no_color();
     assert!(
         errors.contains("`Query` does not have a field `noName`"),
         "{errors}"
