@@ -288,11 +288,17 @@ pub fn validate_leaf_field_selection(
                 format!("field `{fname}` type `{tname}` is an interface and must select fields")
             }
             hir::TypeDefinition::UnionTypeDefinition(_) => {
-                format!("field `{fname}` type `{tname}` is an union and must select fields")
+                format!("field `{fname}` type `{tname}` is a union and must select fields")
             }
             _ => return Ok(()),
         };
-        (label, DiagnosticData::MissingSubselection)
+        (
+            label,
+            DiagnosticData::MissingSubselection {
+                field: fname,
+                ty: tname.clone(),
+            },
+        )
     } else {
         let label = match type_def {
             hir::TypeDefinition::EnumTypeDefinition(_) => {
@@ -303,7 +309,13 @@ pub fn validate_leaf_field_selection(
             ),
             _ => return Ok(()),
         };
-        (label, DiagnosticData::DisallowedSubselection)
+        (
+            label,
+            DiagnosticData::DisallowedSubselection {
+                field: fname,
+                ty: tname.clone(),
+            },
+        )
     };
 
     Err(ApolloDiagnostic::new(db, field.loc.into(), diagnostic_data)

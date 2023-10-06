@@ -366,10 +366,20 @@ pub enum DiagnosticData {
         /// Name of the field
         field: String,
     },
-    #[error("subselection set for scalar and enum types must be empty")]
-    DisallowedSubselection,
-    #[error("interface, union and object types must have a subselection set")]
-    MissingSubselection,
+    #[error("field `{field}` has a subselection but its type `{ty}` is not a composite type")]
+    DisallowedSubselection {
+        /// Name of the field
+        field: String,
+        /// Name of the type
+        ty: String,
+    },
+    #[error("field `{field}` selects a composite type `{ty}` but does not have a subselection")]
+    MissingSubselection {
+        /// Name of the field
+        field: String,
+        /// Name of the type
+        ty: String,
+    },
     #[error("operation selects different types into the same field name `{field}`")]
     ConflictingField {
         /// Name of the non-unique field.
