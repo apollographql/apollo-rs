@@ -40,7 +40,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 [issue/629]: https://github.com/apollographql/apollo-rs/issues/629
 -->
 
-# [0.11.3] (unreleased) - 2023-mm-dd
+# [0.11.3](https://crates.io/crates/apollo-compiler/0.11.3) - 2023-10-06
 
 ## Features
 - expose line/column location and JSON format from diagnostics, by [goto-bus-stop] in [pull/668]
