@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [x.x.x] (unreleased) - 2023-mm-dd
+# [0.6.3](https://crates.io/crates/apollo-parser/0.6.3) - 2023-10-06
 ## Fixes
 - **apply recursion limit where needed, reduce its default from 4096 to 500 - [SimonSapin], [pull/662]**
   The limit was only tracked for nested selection sets, but the parser turns out
