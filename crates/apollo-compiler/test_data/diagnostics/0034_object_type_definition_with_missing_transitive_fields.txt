@@ -37,6 +37,8 @@
             "An object must provide all fields required by the interfaces it implements",
         ),
         data: MissingField {
+            name: "Query",
+            interface: "Node",
             field: "id",
         },
     },
@@ -78,6 +80,8 @@
             "An object must provide all fields required by the interfaces it implements",
         ),
         data: MissingField {
+            name: "Query",
+            interface: "Resource",
             field: "width",
         },
     },

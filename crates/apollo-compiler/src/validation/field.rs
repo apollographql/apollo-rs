@@ -58,6 +58,13 @@ pub fn validate_field(
                             arg.loc.into(),
                             DiagnosticData::UndefinedArgument {
                                 name: arg.name().into(),
+                                coordinate: format!(
+                                    "{}.{}",
+                                    // Guaranteed to exist because `field.field_definition()`
+                                    // worked.
+                                    field.parent_obj.as_ref().unwrap(),
+                                    field.name.src(),
+                                ),
                             },
                         )
                         .labels(labels),
@@ -84,7 +91,14 @@ pub fn validate_field(
                     db,
                     field.loc.into(),
                     DiagnosticData::RequiredArgument {
-                        name: arg_def.name().into(),
+                        coordinate: format!(
+                            "{}.{}({}:)",
+                            // Guaranteed to exist as we wouldn't know about the expected arguments
+                            // for this field otherwise.
+                            field.parent_obj.as_ref().unwrap(),
+                            field.name(),
+                            arg_def.name()
+                        ),
                     },
                 );
                 diagnostic = diagnostic.label(Label::new(

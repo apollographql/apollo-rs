@@ -547,7 +547,10 @@ fn validate_executable_inner(
                     ApolloDiagnostic::new(
                         db,
                         (file_id, def.syntax().text_range()).into(),
-                        DiagnosticData::ExecutableDefinition { kind: def.kind() },
+                        DiagnosticData::ExecutableDefinition {
+                            name: def.name().map(|node| node.text().to_string()),
+                            kind: def.kind(),
+                        },
                     )
                     .label(Label::new(
                         (file_id, def.syntax().text_range()),
@@ -636,7 +639,7 @@ query {
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(
             diagnostics[0].data.to_string(),
-            "executable documents must not contain ObjectTypeDefinition"
+            "executable documents can only contain executable definitions, but `Object` is a(n) ObjectTypeDefinition"
         );
         assert_eq!(
             diagnostics[0].get_line_column(),
@@ -670,7 +673,7 @@ fragment q on Query {
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(
             diagnostics[0].data.to_string(),
-            "`q` fragment cannot reference itself"
+            "fragment `q` references itself"
         );
     }
 
@@ -707,7 +710,7 @@ fragment q on TestObject {
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(
             diagnostics[0].data.to_string(),
-            "`q` fragment cannot reference itself"
+            "fragment `q` references itself"
         );
     }
 
@@ -781,10 +784,7 @@ type TestObject {
         );
         let diagnostics = compiler.db.validate_standalone_executable(unused_frag_id);
         assert_eq!(diagnostics.len(), 1);
-        assert_eq!(
-            diagnostics[0].data.to_string(),
-            "fragment `A` must be used in an operation"
-        );
+        assert_eq!(diagnostics[0].data.to_string(), "fragment `A` is unused");
 
         let dupe_frag_id = compiler.add_executable(
             r#"
@@ -798,7 +798,7 @@ type TestObject {
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(
             diagnostics[0].data.to_string(),
-            "the fragment `A` is defined multiple times in the document"
+            "fragment `A` is defined multiple times"
         );
 
         let unknown_frag_id = compiler.add_executable(r#"{ ...A }"#, "unknown_frag.graphql");
@@ -806,7 +806,7 @@ type TestObject {
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(
             diagnostics[0].data.to_string(),
-            "cannot find fragment `A` in this document"
+            "fragment `A` is not defined"
         );
     }
 

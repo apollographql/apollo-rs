@@ -243,7 +243,7 @@ pub fn value_of_correct_type(
                                 db,
                                 val.loc().into(),
                                 DiagnosticData::RequiredArgument {
-                                    name: f.name().into(),
+                                    coordinate: format!("{}.{}", input_obj.name(), f.name()),
                                 },
                             );
                             diagnostic = diagnostic.label(Label::new(
