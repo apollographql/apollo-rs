@@ -1,4 +1,5 @@
 mod executable;
+mod extensions;
 mod merge_schemas;
 /// Formerly in src/lib.rs
 mod misc;

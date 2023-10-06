@@ -2,6 +2,7 @@ use super::*;
 use indexmap::map::Entry;
 
 pub struct SchemaBuilder {
+    adopt_orphan_extensions: bool,
     schema: Schema,
     orphan_schema_extensions: Vec<Node<ast::SchemaExtension>>,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
@@ -18,6 +19,7 @@ impl SchemaBuilder {
     /// and introspection types
     pub fn new() -> Self {
         let mut builder = SchemaBuilder {
+            adopt_orphan_extensions: false,
             schema: Schema {
                 sources: IndexMap::new(),
                 build_errors: Vec::new(),
@@ -50,6 +52,14 @@ impl SchemaBuilder {
         builder
     }
 
+    /// Configure the builder so that “orphan” schema extensions and type extensions
+    /// (without a corresponding definition) are “adopted”:
+    /// accepted as if extending an empty definition instead of being rejected as errors.
+    pub fn adopt_orphan_extensions(mut self) -> Self {
+        self.adopt_orphan_extensions = true;
+        self
+    }
+
     /// Parse an input file with the default configuration as an additional input for this schema.
     ///
     /// Create a [`Parser`] to use different parser configuration.
@@ -61,6 +71,12 @@ impl SchemaBuilder {
     /// Add an AST document to the schema being built
     ///
     /// Executable definitions, if any, will be silently ignored.
+    pub fn add_ast(mut self, document: &ast::Document) -> Self {
+        let executable_definitions_are_errors = true;
+        self.add_ast_document(document, executable_definitions_are_errors);
+        self
+    }
+
     pub(crate) fn add_ast_document(
         &mut self,
         document: &ast::Document,
@@ -116,6 +132,7 @@ impl SchemaBuilder {
                     if let Err((prev_name, previous)) =
                         insert_sticky(&mut self.schema.types, &def.name, || {
                             ExtendedType::Scalar(ScalarType::from_ast(
+                                &mut self.schema.build_errors,
                                 def,
                                 self.orphan_type_extensions
                                     .remove(&def.name)
@@ -252,7 +269,7 @@ impl SchemaBuilder {
                 ast::Definition::ScalarTypeExtension(ext) => {
                     if let Some((_, ty_name, ty)) = self.schema.types.get_full_mut(&ext.name) {
                         if let ExtendedType::Scalar(ty) = ty {
-                            ty.make_mut().extend_ast(ext)
+                            ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
                         } else {
                             self.schema
                                 .build_errors
@@ -403,27 +420,115 @@ impl SchemaBuilder {
     ///   was found, or if it is a different kind of type
     pub fn build(self) -> Schema {
         let SchemaBuilder {
+            adopt_orphan_extensions,
             mut schema,
             orphan_schema_extensions,
             orphan_type_extensions,
         } = self;
-        schema
-            .build_errors
-            .extend(orphan_schema_extensions.into_iter().map(|ext| {
-                BuildError::OrphanSchemaExtension {
-                    location: ext.location(),
+        if adopt_orphan_extensions {
+            if !orphan_schema_extensions.is_empty() {
+                assert!(schema.schema_definition.is_none());
+                let schema_def = schema
+                    .schema_definition
+                    .get_or_insert_with(Default::default)
+                    .make_mut();
+                for ext in &orphan_schema_extensions {
+                    schema_def.extend_ast(&mut schema.build_errors, ext)
                 }
-            }));
+            }
+            for (type_name, extensions) in orphan_type_extensions {
+                let type_def = adopt_type_extensions(&mut schema, &type_name, &extensions);
+                let previous = schema.types.insert(type_name, type_def);
+                assert!(previous.is_none());
+            }
+        } else {
+            schema
+                .build_errors
+                .extend(orphan_schema_extensions.into_iter().map(|ext| {
+                    BuildError::OrphanSchemaExtension {
+                        location: ext.location(),
+                    }
+                }));
+            schema
+                .build_errors
+                .extend(orphan_type_extensions.into_values().flatten().map(|ext| {
+                    let name = ext.name().unwrap().clone();
+                    BuildError::OrphanTypeExtension {
+                        location: name.location(),
+                        name,
+                    }
+                }));
+        }
         schema
-            .build_errors
-            .extend(orphan_type_extensions.into_values().flatten().map(|ext| {
-                let name = ext.name().unwrap().clone();
-                BuildError::OrphanTypeExtension {
-                    location: name.location(),
-                    name,
-                }
-            }));
-        schema
+    }
+}
+
+fn adopt_type_extensions(
+    schema: &mut Schema,
+    type_name: &NodeStr,
+    extensions: &[ast::Definition],
+) -> ExtendedType {
+    macro_rules! extend {
+        ($( $ExtensionVariant: path => $describe: literal $empty_def: expr )+) => {
+            match &extensions[0] {
+                $(
+                    $ExtensionVariant(_) => {
+                        let mut def = $empty_def;
+                        for ext in extensions {
+                            if let $ExtensionVariant(ext) = ext {
+                                def.extend_ast(&mut schema.build_errors, ext)
+                            } else {
+                                let ext_name = ext.name().unwrap();
+                                schema
+                                    .build_errors
+                                    .push(BuildError::TypeExtensionKindMismatch {
+                                        location: ext_name.location(),
+                                        name: ext_name.clone(),
+                                        describe_ext: ext.describe(),
+                                        def_location: type_name.location(),
+                                        describe_def: $describe,
+                                    })
+                            }
+                        }
+                        def.into()
+                    }
+                )+
+                _ => unreachable!(),
+            }
+        };
+    }
+    extend! {
+        ast::Definition::ScalarTypeExtension => "a scalar type" ScalarType {
+            description: Default::default(),
+            directives: Default::default(),
+        }
+        ast::Definition::ObjectTypeExtension => "an object type" ObjectType {
+            description: Default::default(),
+            implements_interfaces: Default::default(),
+            directives: Default::default(),
+            fields: Default::default(),
+        }
+        ast::Definition::InterfaceTypeExtension => "an interface type" InterfaceType {
+            description: Default::default(),
+            implements_interfaces: Default::default(),
+            directives: Default::default(),
+            fields: Default::default(),
+        }
+        ast::Definition::UnionTypeExtension => "a union type" UnionType {
+            description: Default::default(),
+            directives: Default::default(),
+            members: Default::default(),
+        }
+        ast::Definition::EnumTypeExtension => "an enum type" EnumType {
+            description: Default::default(),
+            directives: Default::default(),
+            values: Default::default(),
+        }
+        ast::Definition::InputObjectTypeExtension => "an input object type" InputObjectType {
+            description: Default::default(),
+            directives: Default::default(),
+            fields: Default::default(),
+        }
     }
 }
 
@@ -493,6 +598,7 @@ impl SchemaDefinition {
 
 impl ScalarType {
     fn from_ast(
+        errors: &mut [BuildError],
         definition: &Node<ast::ScalarTypeDefinition>,
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
@@ -506,13 +612,17 @@ impl ScalarType {
         };
         for def in &extensions {
             if let ast::Definition::ScalarTypeExtension(ext) = def {
-                ty.extend_ast(ext)
+                ty.extend_ast(errors, ext)
             }
         }
         definition.same_location(ty)
     }
 
-    fn extend_ast(&mut self, extension: &Node<ast::ScalarTypeExtension>) {
+    fn extend_ast(
+        &mut self,
+        _errors: &mut [BuildError],
+        extension: &Node<ast::ScalarTypeExtension>,
+    ) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
         self.directives.extend(
             extension
