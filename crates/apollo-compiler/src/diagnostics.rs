@@ -164,35 +164,49 @@ pub enum DiagnosticData {
     LimitExceeded { message: String },
     #[error("expected identifier")]
     MissingIdent,
-    #[error("executable documents must not contain {kind}")]
-    ExecutableDefinition { kind: &'static str },
-    #[error("the {ty} `{name}` is defined multiple times in the document")]
+    #[error(
+        "executable documents can only contain executable definitions, {}",
+        name.as_ref().map(|name| format!("but `{name}` is a(n) {kind}"))
+            .unwrap_or_else(|| format!("got {kind}"))
+    )]
+    ExecutableDefinition {
+        name: Option<String>,
+        kind: &'static str,
+    },
+    #[error("{ty} `{name}` is defined multiple times")]
     UniqueDefinition {
         ty: &'static str,
         name: String,
         original_definition: DiagnosticLocation,
         redefined_definition: DiagnosticLocation,
     },
-    #[error("the argument `{name}` is defined multiple times")]
+    #[error("argument `{name}` is defined multiple times")]
     UniqueArgument {
         name: String,
         original_definition: DiagnosticLocation,
         redefined_definition: DiagnosticLocation,
     },
-    #[error("the value `{name}` is defined multiple times")]
+    #[error("value `{name}` is defined multiple times")]
     UniqueInputValue {
         name: String,
         original_value: DiagnosticLocation,
         redefined_value: DiagnosticLocation,
     },
-    #[error("subscription operations can only have one root field")]
+    #[error("enum member `{name}` is defined multiple times in `{coordinate}`")]
+    UniqueEnumValue {
+        name: String,
+        coordinate: String,
+        original_definition: DiagnosticLocation,
+        redefined_definition: DiagnosticLocation,
+    },
+    #[error("subscription operation has multiple root fields")]
     SingleRootField {
         // TODO(goto-bus-stop) if we keep this it should be a vec of the field names or nodes i think.
         // Else just remove as the labeling is done separately.
         fields: usize,
         subscription: DiagnosticLocation,
     },
-    #[error("{ty} root operation type is not defined")]
+    #[error("operation type {ty} is not defined")]
     UnsupportedOperation {
         // current operation type: subscription, mutation, query
         ty: &'static str,
@@ -204,14 +218,14 @@ pub enum DiagnosticData {
         /// Type name being queried
         ty: String,
     },
-    #[error("the argument `{name}` is not supported")]
-    UndefinedArgument { name: String },
-    #[error("cannot find type `{name}` in this document")]
+    #[error("the argument `{name}` is not supported by {coordinate}")]
+    UndefinedArgument { name: String, coordinate: String },
+    #[error("type `{name}` is not defined")]
     UndefinedDefinition {
         /// Name of the type not in scope
         name: String,
     },
-    #[error("cannot find directive `{name}` in this document")]
+    #[error("directive `@{name}` is not defined")]
     UndefinedDirective {
         /// Name of the missing directive
         name: String,
@@ -221,7 +235,7 @@ pub enum DiagnosticData {
         /// Name of the variable not in scope
         name: String,
     },
-    #[error("cannot find fragment `{name}` in this document")]
+    #[error("fragment `{name}` is not defined")]
     UndefinedFragment {
         /// Name of the fragment not in scope
         name: String,
@@ -242,87 +256,93 @@ pub enum DiagnosticData {
         /// Location of the extension
         extension: DiagnosticLocation,
     },
-    #[error("`{name}` directive definition cannot reference itself")]
+    #[error("directive definition `{name}` references itself")]
     RecursiveDirectiveDefinition { name: String },
-    #[error("interface {name} cannot implement itself")]
+    #[error("interface `{name}` implements itself")]
     RecursiveInterfaceDefinition { name: String },
-    #[error("`{name}` input object cannot reference itself")]
+    #[error("input object `{name}` references itself")]
     RecursiveInputObjectDefinition { name: String },
-    #[error("`{name}` fragment cannot reference itself")]
+    #[error("fragment `{name}` references itself")]
     RecursiveFragmentDefinition { name: String },
-    #[error("values in an Enum Definition should be capitalized")]
+    #[error("enum value `{value}` does not have a conventional all-caps name")]
     CapitalizedValue { value: String },
-    #[error("fields must be unique in a definition")]
+    #[error("field `{field}` is declared multiple times")]
     UniqueField {
         /// Name of the non-unique field.
         field: String,
         original_definition: DiagnosticLocation,
         redefined_definition: DiagnosticLocation,
     },
-    #[error("missing `{field}` field")]
+    #[error("type `{name}` does not satisfy interface `{interface}` because it is missing field `{field}`")]
     MissingField {
+        name: String,
+        interface: String,
         // current field that should be defined
         field: String,
     },
-    #[error("the required argument `{name}` is not provided")]
-    RequiredArgument { name: String },
-    #[error("type `{ty}` can only implement interface `{interface}` once")]
+    #[error("required argument `{coordinate}` is not provided")]
+    RequiredArgument { coordinate: String },
+    #[error("type `{ty}` implements interface `{interface}` multiple times")]
     DuplicateImplementsInterface { ty: String, interface: String },
-    #[error(
-        "Transitively implemented interfaces must also be defined on an implementing interface or object"
-    )]
+    // XXX(@goto-bus-stop): This error message would be better if it listed which other interface
+    // is responsible for `missing_interface` being required. It would require code changes in
+    // validation to pass that information on, so not doing it in 0.11.x--we should do it in 1.0 :)
+    #[error("type `{ty}` must implement `{missing_interface}`")]
     TransitiveImplementedInterfaces {
+        /// Name of the affected type
+        ty: String,
         // interface that should be defined
         missing_interface: String,
     },
-    #[error("`{name}` field must return an output type")]
+    #[error("`{name}` field does not return an output type")]
     OutputType {
         // field name
         name: String,
         // field type
         ty: &'static str,
     },
-    #[error("`{name}` field must be of an input type")]
+    #[error("type `{ty}` for input field or argument `{name}` is not an input type")]
     InputType {
         /// Field name.
         name: String,
-        /// The kind of type that the field is declared with.
-        ty: &'static str,
+        /// Declared type.
+        ty: String,
     },
-    #[error(
-        "custom scalars should provide a scalar specification URL via the @specifiedBy directive"
-    )]
-    ScalarSpecificationURL,
+    #[error("custom scalar `{ty}` does not have an @specifiedBy directive")]
+    ScalarSpecificationURL {
+        /// Name of the scalar.
+        ty: String,
+    },
     #[error("missing query root operation type in schema definition")]
     QueryRootOperationType,
     #[error("built-in scalars must be omitted for brevity")]
     BuiltInScalarDefinition,
-    #[error("`${name}` variable must be of an input type")]
+    #[error("type `{ty}` for variable `${name}` is not an input type")]
     VariableInputType {
-        /// Varialbe name.
+        /// Variable name.
         name: String,
-        /// The kind of type that the variable is declared with.
-        ty: &'static str,
+        /// Declared type.
+        ty: String,
     },
-    #[error("unused variable: `{name}`")]
+    #[error("variable `{name}` is unused")]
     UnusedVariable { name: String },
-    #[error("`{name}` field must return an object type")]
+    #[error("field `{name}` does not return an object type")]
     ObjectType {
         // union member
         name: String,
         // actual type
         ty: &'static str,
     },
-    #[error("{name} directive is not supported for {dir_loc} location")]
-    UnsupportedLocation {
-        /// current directive definition
+    #[error("directive `@{name}` can not be used on {dir_loc}")]
+    UnsupportedDirectiveLocation {
+        /// name of the directive
         name: String,
         /// current location where the directive is used
         dir_loc: DirectiveLocation,
         /// The source location where the directive that's being used was defined.
         directive_def: DiagnosticLocation,
     },
-    #[error("{ty} cannot be represented by a {value} value")]
+    #[error("`{value}` cannot be assigned to type `{ty}`")]
     UnsupportedValueType {
         // input value
         value: String,
@@ -341,16 +361,26 @@ pub enum DiagnosticData {
         original_call: DiagnosticLocation,
         conflicting_call: DiagnosticLocation,
     },
-    #[error("subscription operations can not have an introspection field as a root field")]
+    #[error("subscription operation uses introspection field `{field}` as a root field")]
     IntrospectionField {
         /// Name of the field
         field: String,
     },
-    #[error("subselection set for scalar and enum types must be empty")]
-    DisallowedSubselection,
-    #[error("interface, union and object types must have a subselection set")]
-    MissingSubselection,
-    #[error("operation must not select different types using the same field name `{field}`")]
+    #[error("field `{field}` has a subselection but its type `{ty}` is not a composite type")]
+    DisallowedSubselection {
+        /// Name of the field
+        field: String,
+        /// Name of the type
+        ty: String,
+    },
+    #[error("field `{field}` selects a composite type `{ty}` but does not have a subselection")]
+    MissingSubselection {
+        /// Name of the field
+        field: String,
+        /// Name of the type
+        ty: String,
+    },
+    #[error("operation selects different types into the same field name `{field}`")]
     ConflictingField {
         /// Name of the non-unique field.
         field: String,
@@ -362,19 +392,23 @@ pub enum DiagnosticData {
         /// Name of the type on which the fragment is declared
         ty: Option<String>,
     },
-    #[error("fragments can not be declared on primitive types")]
+    #[error("type condition `{ty}` is not a composite type")]
     InvalidFragmentTarget {
         /// Name of the type on which the fragment is declared
         ty: String,
     },
-    #[error("fragment cannot be applied to this type")]
+    #[error(
+        "{} cannot be applied to type `{type_name}`",
+        name.as_ref().map(|name| format!("fragment `{name}`"))
+            .unwrap_or_else(|| "anonymous fragment".to_string()),
+    )]
     InvalidFragmentSpread {
         /// Fragment name or None if it's an inline fragment
         name: Option<String>,
         /// Type name the fragment is being applied to
         type_name: String,
     },
-    #[error("fragment `{name}` must be used in an operation")]
+    #[error("fragment `{name}` is unused")]
     UnusedFragment {
         /// Name of the fragment
         name: String,
@@ -398,7 +432,7 @@ impl DiagnosticData {
         matches!(self, Self::CapitalizedValue { .. })
     }
     pub fn is_advice(&self) -> bool {
-        matches!(self, Self::ScalarSpecificationURL)
+        matches!(self, Self::ScalarSpecificationURL { .. })
     }
 }
 

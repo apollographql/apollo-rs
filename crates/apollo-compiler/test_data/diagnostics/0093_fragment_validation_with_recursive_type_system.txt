@@ -25,6 +25,7 @@
         ],
         help: None,
         data: TransitiveImplementedInterfaces {
+            ty: "A",
             missing_interface: "A",
         },
     },
@@ -54,6 +55,7 @@
         ],
         help: None,
         data: TransitiveImplementedInterfaces {
+            ty: "B",
             missing_interface: "B",
         },
     },

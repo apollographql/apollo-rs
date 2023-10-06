@@ -36,9 +36,9 @@
         help: Some(
             "CAT must only be defined once in this enum.",
         ),
-        data: UniqueDefinition {
-            ty: "enum value",
+        data: UniqueEnumValue {
             name: "CAT",
+            coordinate: "Pet",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 19,
@@ -92,9 +92,9 @@
         help: Some(
             "THRIVE_PET_FOODS must only be defined once in this enum.",
         ),
-        data: UniqueDefinition {
-            ty: "enum value",
+        data: UniqueEnumValue {
             name: "THRIVE_PET_FOODS",
+            coordinate: "Snack",
             original_definition: DiagnosticLocation {
                 file_id: FileId {
                     id: 19,

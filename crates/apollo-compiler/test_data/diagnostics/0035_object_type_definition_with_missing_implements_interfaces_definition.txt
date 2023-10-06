@@ -25,6 +25,7 @@
         ],
         help: None,
         data: TransitiveImplementedInterfaces {
+            ty: "Query",
             missing_interface: "Resource",
         },
     },
@@ -54,6 +55,7 @@
         ],
         help: None,
         data: TransitiveImplementedInterfaces {
+            ty: "Image",
             missing_interface: "Node",
         },
     },

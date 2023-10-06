@@ -34,7 +34,10 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection,
+        data: DisallowedSubselection {
+            field: "pet1",
+            ty: "Pet",
+        },
     },
     ApolloDiagnostic {
         cache: {
@@ -71,7 +74,10 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection,
+        data: DisallowedSubselection {
+            field: "pet2",
+            ty: "Pet",
+        },
     },
     ApolloDiagnostic {
         cache: {
@@ -108,7 +114,10 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection,
+        data: DisallowedSubselection {
+            field: "pet3",
+            ty: "Pet",
+        },
     },
     ApolloDiagnostic {
         cache: {
@@ -145,7 +154,10 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection,
+        data: DisallowedSubselection {
+            field: "pet4",
+            ty: "Pet",
+        },
     },
     ApolloDiagnostic {
         cache: {
@@ -182,7 +194,10 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection,
+        data: DisallowedSubselection {
+            field: "pet5",
+            ty: "Pet",
+        },
     },
     ApolloDiagnostic {
         cache: {
@@ -219,6 +234,9 @@
             },
         ],
         help: None,
-        data: DisallowedSubselection,
+        data: DisallowedSubselection {
+            field: "pet6",
+            ty: "Pet",
+        },
     },
 ]

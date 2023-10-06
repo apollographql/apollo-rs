@@ -28,7 +28,7 @@
         ),
         data: InputType {
             name: "thisIsWrong",
-            ty: "ObjectTypeDefinition",
+            ty: "OutputType",
         },
     },
     ApolloDiagnostic {
@@ -118,7 +118,7 @@
         ),
         data: InputType {
             name: "a",
-            ty: "ObjectTypeDefinition",
+            ty: "OutputType",
         },
     },
     ApolloDiagnostic {
@@ -150,7 +150,7 @@
         ),
         data: InputType {
             name: "b",
-            ty: "UnionTypeDefinition",
+            ty: "OperationResult",
         },
     },
 ]

@@ -20,7 +20,7 @@
                     offset: 27,
                     length: 4,
                 },
-                text: "field `pet1` type `CatOrDog` is an union and must select fields",
+                text: "field `pet1` type `CatOrDog` is a union and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -34,7 +34,10 @@
             },
         ],
         help: None,
-        data: MissingSubselection,
+        data: MissingSubselection {
+            field: "pet1",
+            ty: "CatOrDog",
+        },
     },
     ApolloDiagnostic {
         cache: {
@@ -57,7 +60,7 @@
                     offset: 34,
                     length: 4,
                 },
-                text: "field `pet2` type `CatOrDog` is an union and must select fields",
+                text: "field `pet2` type `CatOrDog` is a union and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -71,7 +74,10 @@
             },
         ],
         help: None,
-        data: MissingSubselection,
+        data: MissingSubselection {
+            field: "pet2",
+            ty: "CatOrDog",
+        },
     },
     ApolloDiagnostic {
         cache: {
@@ -94,7 +100,7 @@
                     offset: 41,
                     length: 4,
                 },
-                text: "field `pet3` type `CatOrDog` is an union and must select fields",
+                text: "field `pet3` type `CatOrDog` is a union and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -108,7 +114,10 @@
             },
         ],
         help: None,
-        data: MissingSubselection,
+        data: MissingSubselection {
+            field: "pet3",
+            ty: "CatOrDog",
+        },
     },
     ApolloDiagnostic {
         cache: {
@@ -131,7 +140,7 @@
                     offset: 48,
                     length: 4,
                 },
-                text: "field `pet4` type `CatOrDog` is an union and must select fields",
+                text: "field `pet4` type `CatOrDog` is a union and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -145,7 +154,10 @@
             },
         ],
         help: None,
-        data: MissingSubselection,
+        data: MissingSubselection {
+            field: "pet4",
+            ty: "CatOrDog",
+        },
     },
     ApolloDiagnostic {
         cache: {
@@ -168,7 +180,7 @@
                     offset: 55,
                     length: 4,
                 },
-                text: "field `pet5` type `CatOrDog` is an union and must select fields",
+                text: "field `pet5` type `CatOrDog` is a union and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -182,7 +194,10 @@
             },
         ],
         help: None,
-        data: MissingSubselection,
+        data: MissingSubselection {
+            field: "pet5",
+            ty: "CatOrDog",
+        },
     },
     ApolloDiagnostic {
         cache: {
@@ -205,7 +220,7 @@
                     offset: 62,
                     length: 4,
                 },
-                text: "field `pet6` type `CatOrDog` is an union and must select fields",
+                text: "field `pet6` type `CatOrDog` is a union and must select fields",
             },
             Label {
                 location: DiagnosticLocation {
@@ -219,6 +234,9 @@
             },
         ],
         help: None,
-        data: MissingSubselection,
+        data: MissingSubselection {
+            field: "pet6",
+            ty: "CatOrDog",
+        },
     },
 ]

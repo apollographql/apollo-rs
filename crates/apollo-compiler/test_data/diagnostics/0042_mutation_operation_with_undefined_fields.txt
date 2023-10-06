@@ -28,7 +28,7 @@
         ),
         data: InputType {
             name: "petType",
-            ty: "UnionTypeDefinition",
+            ty: "PetType",
         },
     },
     ApolloDiagnostic {
