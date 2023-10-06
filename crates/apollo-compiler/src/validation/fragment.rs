@@ -141,7 +141,7 @@ pub(crate) fn validate_inline_fragment(
         db,
         inline.directives.iter(),
         ast::DirectiveLocation::InlineFragment,
-        context.variables.clone(),
+        context.variables,
     ));
 
     let has_type_error = if context.has_schema {
@@ -194,7 +194,7 @@ pub(crate) fn validate_fragment_spread(
         db,
         spread.directives.iter(),
         ast::DirectiveLocation::FragmentSpread,
-        context.variables.clone(),
+        context.variables,
     ));
 
     let named_fragments = db.ast_named_fragments(file_id);
