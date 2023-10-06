@@ -19,6 +19,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2023-mm-dd
 
+## Features
+
+- Add opt-in configuration for “orphan” extensions to be “adopted”, by [SimonSapin] in [pull/678]
+
+  Type extensions and schema extensions without a corresponding definition
+  are normally ignored except for recording a validation error.
+  In this new mode, an implicit empty definition to extend is generated instead.
+  Because this behavior is non-standard it is not the default.
+  Configure a schema builder to opt in:
+  ```rust
+  let input = "extend type Query { x: Int }";
+  let schema = apollo_compiler::Schema::builder()
+      .adopt_orphan_extensions()
+      .parse(input, "schema.graphql")
+      .build();
+  schema.validate()?;
+  ```
+
+[pull/678]: https://github.com/apollographql/apollo-rs/pull/678
+
 ## Fixes
 
 - Allow built-in directives to be redefined, by [SimonSapin] in [pull/684], [issue/656]
