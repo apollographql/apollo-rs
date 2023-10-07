@@ -22,7 +22,7 @@ pub(crate) fn validate_field(
         db,
         field.directives.iter(),
         ast::DirectiveLocation::Field,
-        context.variables.clone(),
+        context.variables,
     );
 
     diagnostics.extend(super::argument::validate_arguments(db, &field.arguments));
@@ -47,7 +47,7 @@ pub(crate) fn validate_field(
                 if let Some(diag) = super::variable::validate_variable_usage2(
                     db,
                     arg_definition.clone(),
-                    context.variables.clone(),
+                    context.variables,
                     argument,
                 )
                 .err()
