@@ -24,12 +24,10 @@ use crate::NodeStr;
 use crate::SourceFile;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
-use std::cell::RefCell;
-use std::collections::hash_map::Entry;
-use std::collections::HashMap;
 use std::fmt;
 use std::io;
 use std::sync::Arc;
+use std::sync::OnceLock;
 pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 
 pub struct Diagnostics(Box<DiagnosticsBoxed>);
@@ -37,13 +35,8 @@ pub struct Diagnostics(Box<DiagnosticsBoxed>);
 /// Box indirection to avoid large `Err` values:
 /// <https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err>
 struct DiagnosticsBoxed {
-    source_cache: RefCell<SourceCache>,
-    errors: Vec<Error>,
-}
-
-struct SourceCache {
     sources: IndexMap<FileId, Arc<SourceFile>>,
-    cache: HashMap<FileId, ariadne::Source>,
+    errors: Vec<Error>,
 }
 
 struct Error {
@@ -273,11 +266,8 @@ impl Diagnostics {
 
     pub(crate) fn new(sources: IndexMap<FileId, Arc<SourceFile>>) -> Self {
         Self(Box::new(DiagnosticsBoxed {
+            sources,
             errors: Vec::new(),
-            source_cache: RefCell::new(SourceCache {
-                sources,
-                cache: HashMap::new(),
-            }),
         }))
     }
 
@@ -322,19 +312,18 @@ impl fmt::Display for Diagnostics {
             }
         }
 
-        let mut cache = self.0.source_cache.borrow_mut();
         let color = !f.alternate();
         for error in &self.0.errors {
             error
                 .report(color)
-                .write(&mut *cache, Adaptor(f))
+                .write(&self.0.sources, Adaptor(f))
                 .map_err(|_| fmt::Error)?
         }
         Ok(())
     }
 }
 
-impl ariadne::Cache<FileId> for SourceCache {
+impl ariadne::Cache<FileId> for &'_ IndexMap<FileId, Arc<SourceFile>> {
     fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
         struct NotFound(FileId);
         impl fmt::Debug for NotFound {
@@ -342,21 +331,16 @@ impl ariadne::Cache<FileId> for SourceCache {
                 write!(f, "source file not found: {:?}", self.0)
             }
         }
-        match self.cache.entry(*file_id) {
-            Entry::Occupied(entry) => Ok(entry.into_mut()),
-            Entry::Vacant(entry) => {
-                let source_text = if *file_id == FileId::NONE
-                    || *file_id == FileId::HACK_TMP
-                    || *file_id == FileId::HACK_TMP_2
-                {
-                    ""
-                } else if let Some(file) = self.sources.get(file_id) {
-                    file.source_text()
-                } else {
-                    return Err(Box::new(NotFound(*file_id)));
-                };
-                Ok(entry.insert(ariadne::Source::from(source_text)))
-            }
+        if let Some(source_file) = self.get(file_id) {
+            Ok(source_file.ariadne())
+        } else if *file_id == FileId::NONE
+            || *file_id == FileId::HACK_TMP
+            || *file_id == FileId::HACK_TMP_2
+        {
+            static EMPTY: OnceLock<ariadne::Source> = OnceLock::new();
+            Ok(EMPTY.get_or_init(|| ariadne::Source::from("")))
+        } else {
+            Err(Box::new(NotFound(*file_id)))
         }
     }
 
@@ -368,7 +352,7 @@ impl ariadne::Cache<FileId> for SourceCache {
                     self.0.path().display().fmt(f)
                 }
             }
-            let source_file = self.sources.get(file_id)?;
+            let source_file = self.get(file_id)?;
             Some(Box::new(Path(source_file.clone())))
         } else {
             struct NoSourceFile;
