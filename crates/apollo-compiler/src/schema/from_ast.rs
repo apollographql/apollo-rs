@@ -95,13 +95,21 @@ impl SchemaBuilder {
                             def.clone()
                         })
                     {
-                        self.schema
-                            .build_errors
-                            .push(BuildError::DirectiveDefinitionCollision {
-                                location: def.name.location(),
-                                previous_location: previous.name.location(),
-                                name: def.name.clone(),
-                            })
+                        if previous.is_built_in() {
+                            // https://github.com/apollographql/apollo-rs/issues/656
+                            // Re-defining a built-in definition is allowed, but only once.
+                            // (`is_built_in` is based on file ID, not directive name,
+                            // so the new definition won’t be considered built-in.)
+                            *previous = def.clone()
+                        } else {
+                            self.schema.build_errors.push(
+                                BuildError::DirectiveDefinitionCollision {
+                                    location: def.name.location(),
+                                    previous_location: previous.name.location(),
+                                    name: def.name.clone(),
+                                },
+                            )
+                        }
                     }
                 }
                 ast::Definition::ScalarTypeDefinition(def) => {
@@ -899,13 +907,16 @@ fn insert_sticky<'map, V>(
     map: &'map mut IndexMap<Name, V>,
     key: &Name,
     make_value: impl FnOnce() -> V,
-) -> Result<(), (&'map Name, &'map V)> {
+) -> Result<(), (&'map Name, &'map mut V)> {
     match map.entry(key.clone()) {
         Entry::Vacant(entry) => {
             entry.insert(make_value());
             Ok(())
         }
-        Entry::Occupied(_) => Err(map.get_key_value(key).unwrap()),
+        Entry::Occupied(_) => {
+            let (_index, key, value) = map.get_full_mut(key).unwrap();
+            Err((key, value))
+        }
     }
 }
 

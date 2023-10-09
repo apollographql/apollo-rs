@@ -1,0 +1,24 @@
+schema
+  # No error here (the *first* redefinition is used, allowing SCHEMA location)
+  @deprecated(
+    reason: """
+    The person who got promoted by shipping this product has moved on to another team.
+    The service will shut down next month.
+    """
+  ) {
+  query: Query
+}
+
+type Query {
+  importantData: Int
+}
+
+# No error at first redefinition
+directive @deprecated(
+  reason: String = "No longer supported"
+) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | SCHEMA
+
+# Error (name collision) at the second redefinition
+directive @deprecated(
+  reason: String = "No longer supported"
+) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT
