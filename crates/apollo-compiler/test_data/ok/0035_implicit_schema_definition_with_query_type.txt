@@ -68,16 +68,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            34,
-            SourceFile {
-                path: "0035_implicit_schema_definition_with_query_type.graphql",
-                source_text: "type Query {\n    name: String\n}",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        34: SourceFile {
+            path: "0035_implicit_schema_definition_with_query_type.graphql",
+            source_text: "type Query {\n    name: String\n}",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {},

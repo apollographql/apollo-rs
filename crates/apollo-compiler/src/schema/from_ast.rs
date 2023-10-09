@@ -1,5 +1,6 @@
 use super::*;
 use indexmap::map::Entry;
+use std::sync::Arc;
 
 pub struct SchemaBuilder {
     adopt_orphan_extensions: bool,
@@ -28,7 +29,7 @@ impl SchemaBuilder {
         let mut builder = SchemaBuilder {
             adopt_orphan_extensions: false,
             schema: Schema {
-                sources: IndexMap::new(),
+                sources: Default::default(),
                 build_errors: Vec::new(),
                 schema_definition: Node::new(SchemaDefinition {
                     description: None,
@@ -100,8 +101,9 @@ impl SchemaBuilder {
         document: &ast::Document,
         executable_definitions_are_errors: bool,
     ) {
-        if let Some((file_id, source_file)) = document.source.clone() {
-            self.schema.sources.insert(file_id, source_file);
+        let sources = Arc::make_mut(&mut self.schema.sources);
+        for (file_id, source_file) in document.sources.iter() {
+            sources.insert(*file_id, source_file.clone());
         }
         for definition in &document.definitions {
             match definition {

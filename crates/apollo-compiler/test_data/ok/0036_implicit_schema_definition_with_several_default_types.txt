@@ -125,16 +125,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            35,
-            SourceFile {
-                path: "0036_implicit_schema_definition_with_several_default_types.graphql",
-                source_text: "type Query {\n    name: String\n}\n\ntype Mutation {\n   add(name: String!): Result!\n}\n\ntype Result {\n  id: String\n}\n\n",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        35: SourceFile {
+            path: "0036_implicit_schema_definition_with_several_default_types.graphql",
+            source_text: "type Query {\n    name: String\n}\n\ntype Mutation {\n   add(name: String!): Result!\n}\n\ntype Result {\n  id: String\n}\n\n",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {},

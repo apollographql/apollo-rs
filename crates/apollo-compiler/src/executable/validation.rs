@@ -29,7 +29,7 @@ pub(crate) fn validate_standalone_executable(
 }
 
 pub(crate) fn validate_common(errors: &mut Diagnostics, document: &ExecutableDocument) {
-    if let Some((file_id, source)) = &document.source {
+    for (file_id, source) in document.sources.iter() {
         source.validate_parse_errors(errors, *file_id)
     }
     for build_error in &document.build_errors {
@@ -79,12 +79,12 @@ fn compiler_validation(
     let mut compiler = crate::ApolloCompiler::new();
     let mut ids = Vec::new();
     if let Some(schema) = schema {
-        for (id, source) in &schema.sources {
+        for (id, source) in schema.sources.iter() {
             ids.push(*id);
             compiler.db.set_input(*id, source.into());
         }
     }
-    if let Some((id, source)) = &document.source {
+    for (id, source) in document.sources.iter() {
         ids.push(*id);
         compiler.db.set_input(*id, source.into());
     }
@@ -132,7 +132,7 @@ fn compiler_validation(
 }
 
 pub(crate) fn validate_field_set(errors: &mut Diagnostics, schema: &Schema, field_set: &FieldSet) {
-    if let Some((file_id, source)) = &field_set.source {
+    for (file_id, source) in &*field_set.sources {
         source.validate_parse_errors(errors, *file_id)
     }
     for build_error in &field_set.build_errors {
@@ -140,11 +140,8 @@ pub(crate) fn validate_field_set(errors: &mut Diagnostics, schema: &Schema, fiel
     }
     let mut compiler = crate::ApolloCompiler::new();
     let mut ids = Vec::new();
-    for (id, source) in &schema.sources {
-        ids.push(*id);
-        compiler.db.set_input(*id, source.into());
-    }
-    if let Some((id, source)) = &field_set.source {
+    // Includes schema sources already:
+    for (id, source) in &*field_set.sources {
         ids.push(*id);
         compiler.db.set_input(*id, source.into());
     }

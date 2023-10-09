@@ -17,11 +17,32 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
+# [x.x.x] (unreleased) - 2023-mm-dd
+
+## BREAKING
+
+- **Keep source files in `Arc<Map<…>>` everywhere - [SimonSapin], [pull/696]:**
+  Change struct fields from `sources: IndexMap<FileId, Arc<SourceFile>>` (in `Schema`)
+  or `source: Option<(FileId, Arc<SourceFile>)>` (in `Document`, `ExecutablDocument`, `FieldSet`)
+  to `sources: SourceMap`, with:
+  ```rust
+  pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
+  ```
+  Cases other than `Schema` still only have zero or one source when created by apollo-compiler,
+  but it is now possible to make more sources available to diagnostics,
+  for example when merging documents:
+  ```rust
+  Arc::make_mut(&mut doc1.sources).extend(doc2.sources.iter().map(|(k, v)| (*k, v.clone())));
+  ```
+
+[SimonSapin]: https://github.com/SimonSapin
+[pull/696]: https://github.com/apollographql/apollo-rs/pull/696
+
 # [1.0.0-beta.2](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-10
 
 ## BREAKING
 
-Assorted `Schema` API changes by [SimonSapin] in [pull/678]:
+**Assorted `Schema` API changes - [SimonSapin], [pull/678]:**
 - Type of the `schema_definition` field changed
   from `Option<SchemaDefinition>` to `SchemaDefinition`.
   Default root operations based on object type names

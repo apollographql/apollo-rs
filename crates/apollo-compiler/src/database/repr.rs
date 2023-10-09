@@ -56,11 +56,18 @@ fn executable_document(db: &dyn ReprDatabase, file_id: FileId) -> Arc<crate::Exe
         &db.ast(file_id),
         type_system_definitions_are_errors,
     );
-    if source_type == SourceType::Document {
-        if let Some((_, source_file)) = &mut executable.source {
-            // The same parse errors will be in db.schema().sources,
-            // so they would be redundant here.
-            Arc::make_mut(source_file).parse_errors = Vec::new()
+    if source_type == SourceType::Document
+        && executable
+            .sources
+            .iter()
+            .any(|(_id, file)| !file.parse_errors.is_empty())
+    {
+        // Remove parse errors from `executable`, redudant as `schema` has the same ones
+        let sources = Arc::make_mut(&mut executable.sources);
+        for (_id, file) in sources.iter_mut() {
+            if !file.parse_errors.is_empty() {
+                Arc::make_mut(file).parse_errors = Vec::new()
+            }
         }
     }
     Arc::new(executable)

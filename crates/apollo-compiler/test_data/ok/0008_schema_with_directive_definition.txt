@@ -138,16 +138,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            8,
-            SourceFile {
-                path: "0008_schema_with_directive_definition.graphql",
-                source_text: "type Query {\n    literature: Book\n}\n\ndirective @delegateField(name: String!) repeatable on OBJECT | INTERFACE\n\ntype Book @delegateField(name: \"pageCount\") @delegateField(name: \"author\") {\n  id: ID!\n}",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        8: SourceFile {
+            path: "0008_schema_with_directive_definition.graphql",
+            source_text: "type Query {\n    literature: Book\n}\n\ndirective @delegateField(name: String!) repeatable on OBJECT | INTERFACE\n\ntype Book @delegateField(name: \"pageCount\") @delegateField(name: \"author\") {\n  id: ID!\n}",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {},

@@ -89,16 +89,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            1,
-            SourceFile {
-                path: "0001_annonymous_operation_definition.graphql",
-                source_text: "\nquery {\n  cat {\n    name\n  }\n}\n\ntype Query {\n  cat: Pet\n}\n\ntype Pet {\n  name: String\n}",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        1: SourceFile {
+            path: "0001_annonymous_operation_definition.graphql",
+            source_text: "\nquery {\n  cat {\n    name\n  }\n}\n\ntype Query {\n  cat: Pet\n}\n\ntype Pet {\n  name: String\n}",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: Some(
         1..31 @1 Operation {

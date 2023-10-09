@@ -113,16 +113,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            26,
-            SourceFile {
-                path: "0027_typename_introspection_in_object.graphql",
-                source_text: "type Query {\n  id: String\n  name: String\n  birthday: Date\n}\n\nscalar Date @specifiedBy(url: \"datespec.com\")\n\n{\n    name\n    __typename\n}",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        26: SourceFile {
+            path: "0027_typename_introspection_in_object.graphql",
+            source_text: "type Query {\n  id: String\n  name: String\n  birthday: Date\n}\n\nscalar Date @specifiedBy(url: \"datespec.com\")\n\n{\n    name\n    __typename\n}",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: Some(
         108..135 @26 Operation {

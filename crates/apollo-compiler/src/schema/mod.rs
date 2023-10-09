@@ -6,13 +6,11 @@ use crate::Node;
 use crate::NodeLocation;
 use crate::NodeStr;
 use crate::Parser;
-use crate::SourceFile;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::Path;
-use std::sync::Arc;
 use std::sync::OnceLock;
 
 mod component;
@@ -34,7 +32,7 @@ pub struct Schema {
     /// Source files, if any, that were parsed to contribute to this schema.
     ///
     /// The schema (including parsed definitions) may have been modified since parsing.
-    pub sources: IndexMap<FileId, Arc<SourceFile>>,
+    pub sources: crate::SourceMap,
 
     /// Errors that occurred when building this schema,
     /// either parsing a source file or converting from AST.
@@ -312,7 +310,7 @@ impl Schema {
 
     /// Returns `Err` if invalid, or `Ok` for potential warnings or advice
     pub fn validate(&self) -> Result<Diagnostics, Diagnostics> {
-        let mut errors = Diagnostics::new(self.sources.clone());
+        let mut errors = Diagnostics::new(None, self.sources.clone());
         let warnings_and_advice = validation::validate_schema(&mut errors, self);
         let valid = errors.is_empty();
         for diagnostic in warnings_and_advice {

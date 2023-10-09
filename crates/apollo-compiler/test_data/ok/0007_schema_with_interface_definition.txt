@@ -210,16 +210,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            7,
-            SourceFile {
-                path: "0007_schema_with_interface_definition.graphql",
-                source_text: "type Query implements Node {\n    id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n  height: Int\n}\n\ninterface Image implements Resource & Node {\n  id: ID!\n  width: Int\n  height: Int\n  thumbnail: String\n}",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        7: SourceFile {
+            path: "0007_schema_with_interface_definition.graphql",
+            source_text: "type Query implements Node {\n    id: ID!\n}\n\ninterface Node {\n  id: ID!\n}\n\ninterface Resource implements Node {\n  id: ID!\n  width: Int\n  height: Int\n}\n\ninterface Image implements Resource & Node {\n  id: ID!\n  width: Int\n  height: Int\n  thumbnail: String\n}",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {},

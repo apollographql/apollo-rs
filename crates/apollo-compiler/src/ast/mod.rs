@@ -31,10 +31,8 @@
 //! that has chaining methods for setting serialization configuration,
 //! and also implements `Display` and `ToString`.
 
-use crate::FileId;
 use crate::Node;
 use crate::NodeStr;
-use crate::SourceFile;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -47,10 +45,10 @@ pub use self::serialize::Serialize;
 #[derive(Clone)]
 pub struct Document {
     /// If this document was originally parsed from a source file,
-    /// that file and its ID.
+    /// this map contains one entry for that file and its ID.
     ///
     /// The document may have been modified since.
-    pub source: Option<(FileId, Arc<SourceFile>)>,
+    pub sources: crate::SourceMap,
 
     pub definitions: Vec<Definition>,
 }

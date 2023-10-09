@@ -109,16 +109,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            33,
-            SourceFile {
-                path: "0034_built_in_directive_redefinition.graphql",
-                source_text: "schema\n  @deprecated(\n    reason: \"\"\"\n    The person who got promoted by shipping this product has moved on to another team.\n    The service will shut down next month.\n    \"\"\"\n  ) {\n  query: Query\n}\n\ntype Query {\n  importantData: Int\n}\n\ndirective @deprecated(\n  reason: String = \"No longer supported\"\n) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | SCHEMA\n",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        33: SourceFile {
+            path: "0034_built_in_directive_redefinition.graphql",
+            source_text: "schema\n  @deprecated(\n    reason: \"\"\"\n    The person who got promoted by shipping this product has moved on to another team.\n    The service will shut down next month.\n    \"\"\"\n  ) {\n  query: Query\n}\n\ntype Query {\n  importantData: Int\n}\n\ndirective @deprecated(\n  reason: String = \"No longer supported\"\n) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | SCHEMA\n",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {},

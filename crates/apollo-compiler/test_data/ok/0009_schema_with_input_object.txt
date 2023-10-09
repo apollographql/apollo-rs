@@ -133,16 +133,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            9,
-            SourceFile {
-                path: "0009_schema_with_input_object.graphql",
-                source_text: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")\n\ninput Point2D {\n  x: Float\n  y: Float\n}",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        9: SourceFile {
+            path: "0009_schema_with_input_object.graphql",
+            source_text: "type Query {\n  website: URL,\n  amount: Int\n}\n\nscalar URL @specifiedBy(url: \"https://tools.ietf.org/html/rfc3986\")\n\ninput Point2D {\n  x: Float\n  y: Float\n}",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {},

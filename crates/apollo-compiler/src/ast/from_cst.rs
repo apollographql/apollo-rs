@@ -17,7 +17,7 @@ impl Document {
         source_file: Arc<SourceFile>,
     ) -> Self {
         Self {
-            source: Some((file_id, source_file)),
+            sources: Arc::new([(file_id, source_file)].into()),
             definitions: document
                 .definitions()
                 .filter_map(|def| def.convert(file_id))

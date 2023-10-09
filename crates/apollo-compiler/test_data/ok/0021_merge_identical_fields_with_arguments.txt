@@ -123,16 +123,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            21,
-            SourceFile {
-                path: "0021_merge_identical_fields_with_arguments.graphql",
-                source_text: "enum DogCommand {\n  SIT\n  HEEL\n}\n\ntype Dog {\n  doesKnowCommand(dogCommand: DogCommand): Boolean\n}\n\ntype Query {\n  pet: Dog\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalArgs\n  }\n}\n\nquery queryPupperAgain($dogCommand: DogCommand) {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalValues\n  }\n}\n\nfragment mergeIdenticalFieldsWithIdenticalArgs on Dog {\n  doesKnowCommand(dogCommand: SIT)\n  doesKnowCommand(dogCommand: SIT)\n}\n\nfragment mergeIdenticalFieldsWithIdenticalValues on Dog {\n  doesKnowCommand(dogCommand: $dogCommand)\n  doesKnowCommand(dogCommand: $dogCommand)\n}\n",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        21: SourceFile {
+            path: "0021_merge_identical_fields_with_arguments.graphql",
+            source_text: "enum DogCommand {\n  SIT\n  HEEL\n}\n\ntype Dog {\n  doesKnowCommand(dogCommand: DogCommand): Boolean\n}\n\ntype Query {\n  pet: Dog\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalArgs\n  }\n}\n\nquery queryPupperAgain($dogCommand: DogCommand) {\n  pet {\n    ...mergeIdenticalFieldsWithIdenticalValues\n  }\n}\n\nfragment mergeIdenticalFieldsWithIdenticalArgs on Dog {\n  doesKnowCommand(dogCommand: SIT)\n  doesKnowCommand(dogCommand: SIT)\n}\n\nfragment mergeIdenticalFieldsWithIdenticalValues on Dog {\n  doesKnowCommand(dogCommand: $dogCommand)\n  doesKnowCommand(dogCommand: $dogCommand)\n}\n",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {

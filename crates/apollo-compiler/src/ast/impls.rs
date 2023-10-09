@@ -13,7 +13,7 @@ impl Document {
     /// Create an empty document
     pub fn new() -> Self {
         Self {
-            source: None,
+            sources: Default::default(),
             definitions: Vec::new(),
         }
     }
@@ -36,8 +36,8 @@ impl Document {
     ///
     /// Does not perform any validation beyond this syntactic level.
     pub fn check_parse_errors(&self) -> Result<(), Diagnostics> {
-        let mut errors = Diagnostics::new(self.source.clone().into_iter().collect());
-        if let Some((file_id, source)) = &self.source {
+        let mut errors = Diagnostics::new(None, self.sources.clone());
+        for (file_id, source) in self.sources.iter() {
             source.validate_parse_errors(&mut errors, *file_id)
         }
         errors.into_result()
@@ -51,7 +51,7 @@ impl Document {
             self,
             type_system_definitions_are_errors,
         );
-        let mut errors = Diagnostics::new(self.source.clone().into_iter().collect());
+        let mut errors = Diagnostics::new(None, self.sources.clone());
         crate::executable::validation::validate_standalone_executable(&mut errors, &executable);
         errors.into_result()
     }
@@ -97,9 +97,18 @@ impl Document {
             self,
             type_system_definitions_are_errors,
         );
-        if let Some((_id, file)) = &mut executable.source {
-            // The same parse errors are in `schema.sources`, so they would be redundant here.
-            Arc::make_mut(file).parse_errors = Vec::new()
+        if executable
+            .sources
+            .iter()
+            .any(|(_id, file)| !file.parse_errors.is_empty())
+        {
+            // Remove parse errors from `executable`, redudant as `schema` has the same ones
+            let sources = Arc::make_mut(&mut executable.sources);
+            for (_id, file) in sources.iter_mut() {
+                if !file.parse_errors.is_empty() {
+                    Arc::make_mut(file).parse_errors = Vec::new()
+                }
+            }
         }
         (schema, executable)
     }

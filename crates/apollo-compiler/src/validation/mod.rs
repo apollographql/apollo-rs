@@ -22,7 +22,7 @@ use crate::FileId;
 use crate::NodeLocation;
 use crate::NodeStr;
 use crate::SourceFile;
-use indexmap::IndexMap;
+use crate::SourceMap;
 use indexmap::IndexSet;
 use std::fmt;
 use std::io;
@@ -35,8 +35,13 @@ pub struct Diagnostics(Box<DiagnosticsBoxed>);
 /// Box indirection to avoid large `Err` values:
 /// <https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err>
 struct DiagnosticsBoxed {
-    sources: IndexMap<FileId, Arc<SourceFile>>,
+    sources: Sources,
     errors: Vec<Error>,
+}
+
+struct Sources {
+    schema_sources: Option<SourceMap>,
+    self_sources: SourceMap,
 }
 
 struct Error {
@@ -264,9 +269,12 @@ impl Diagnostics {
         format!("{self:#}")
     }
 
-    pub(crate) fn new(sources: IndexMap<FileId, Arc<SourceFile>>) -> Self {
+    pub(crate) fn new(schema_sources: Option<SourceMap>, self_sources: SourceMap) -> Self {
         Self(Box::new(DiagnosticsBoxed {
-            sources,
+            sources: Sources {
+                schema_sources,
+                self_sources,
+            },
             errors: Vec::new(),
         }))
     }
@@ -323,7 +331,15 @@ impl fmt::Display for Diagnostics {
     }
 }
 
-impl ariadne::Cache<FileId> for &'_ IndexMap<FileId, Arc<SourceFile>> {
+impl Sources {
+    pub(crate) fn get(&self, file_id: &FileId) -> Option<&Arc<SourceFile>> {
+        self.self_sources
+            .get(file_id)
+            .or_else(|| self.schema_sources.as_ref()?.get(file_id))
+    }
+}
+
+impl ariadne::Cache<FileId> for &'_ Sources {
     fn fetch(&mut self, file_id: &FileId) -> Result<&ariadne::Source, Box<dyn fmt::Debug + '_>> {
         struct NotFound(FileId);
         impl fmt::Debug for NotFound {

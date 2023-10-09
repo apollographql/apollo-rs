@@ -8,6 +8,7 @@ use crate::ExecutableDocument;
 use crate::FileId;
 use crate::NodeLocation;
 use crate::Schema;
+use indexmap::IndexMap;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -30,6 +31,8 @@ pub struct SourceFile {
     pub(crate) parse_errors: Vec<apollo_parser::Error>,
     pub(crate) ariadne: OnceLock<ariadne::Source>,
 }
+
+pub type SourceMap = Arc<IndexMap<FileId, Arc<SourceFile>>>;
 
 /// Parse a schema and executable document from the given source text
 /// containing a mixture of type system definitions and executable definitions.
@@ -219,7 +222,7 @@ impl Parser {
         };
         selection_set.extend_from_ast(Some(schema), &mut build_errors, &ast);
         executable::FieldSet {
-            source: Some((file_id, source_file)),
+            sources: Arc::new([(file_id, source_file)].into()),
             build_errors: build_errors.errors,
             selection_set,
         }
