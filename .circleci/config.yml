@@ -6,6 +6,7 @@ version: 2.1
 orbs:
   rust: circleci/rust@1.6.0
   gh: circleci/github-cli@2.2.0
+  secops: apollo/circleci-secops-orb@2.0.0
 
 # We run jobs on the following platforms: linux, macos and windows.
 # These are their specifications:
@@ -56,6 +57,15 @@ workflows:
             parameters:
               platform: [linux, macos, windows]
               rust_channel: [stable, nightly]
+  security-scans:
+    jobs:
+      - secops/gitleaks:
+          context:
+            - platform-docker-ro
+            - github-orb
+            - secops-oidc
+          git-base-revision: <<#pipeline.git.base_revision>><<pipeline.git.base_revision>><</pipeline.git.base_revision >>
+          git-revision: << pipeline.git.revision >>
 
 
 
