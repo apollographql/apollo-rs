@@ -17,28 +17,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-<!--
 # [x.x.x] (unreleased) - 2023-mm-dd
 
-## Features
-- Add `validate_standalone_executable` function to validate an executable document without access to a schema, by [goto-bus-stop] in [pull/631], [issue/629]
+## Fixes
 
-  This runs just those validations that can be done on operations without knowing the types of things.
-  ```rust
-  let compiler = ApolloCompiler::new();
-  let file_id = compiler.add_executable(r#"
-  {
-    user { ...userData }
-  }
-  "#, "query.graphql");
-  let diagnostics = compiler.db.validate_standalone_executable(file_id);
-  // Complains about `userData` fragment not existing, but does not complain about `user` being an unknown query.
-  ```
+- Allow built-in directives to be redefined, by [SimonSapin] in [pull/684], [issue/656]
 
-[goto-bus-stop]: https://github.com/goto-bus-stop
-[pull/631]: https://github.com/apollographql/apollo-rs/pull/631
-[issue/629]: https://github.com/apollographql/apollo-rs/issues/629
--->
+[pull/684]: https://github.com/apollographql/apollo-rs/pull/684
+[issue/656]: https://github.com/apollographql/apollo-rs/issues/656
 
 # [1.0.0-beta.1](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-05
 
@@ -70,6 +56,25 @@ that provides structural sharing and copy-on-write semantics.
 
 
 # [0.11.2](https://crates.io/crates/apollo-compiler/0.11.2) - 2023-09-11
+
+## Features
+- Add `validate_standalone_executable` function to validate an executable document without access to a schema, by [goto-bus-stop] in [pull/631], [issue/629]
+
+  This runs just those validations that can be done on operations without knowing the types of things.
+  ```rust
+  let compiler = ApolloCompiler::new();
+  let file_id = compiler.add_executable(r#"
+  {
+    user { ...userData }
+  }
+  "#, "query.graphql");
+  let diagnostics = compiler.db.validate_standalone_executable(file_id);
+  // Complains about `userData` fragment not existing, but does not complain about `user` being an unknown query.
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/631]: https://github.com/apollographql/apollo-rs/pull/631
+[issue/629]: https://github.com/apollographql/apollo-rs/issues/629
 
 ## Fixes
 - validate input value types, by [goto-bus-stop] in [pull/642]
