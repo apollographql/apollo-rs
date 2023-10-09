@@ -7,7 +7,11 @@ pub(crate) mod grammar;
 
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{lexer::Lexer, Error, LimitTracker, Token, TokenKind};
+use crate::{
+    cst::{Document, SelectionSet},
+    lexer::Lexer,
+    Error, LimitTracker, Token, TokenKind,
+};
 
 pub use generated::syntax_kind::SyntaxKind;
 pub use language::{SyntaxElement, SyntaxNode, SyntaxNodeChildren, SyntaxNodePtr, SyntaxToken};
@@ -131,13 +135,46 @@ impl<'a> Parser<'a> {
     }
 
     /// Parse the current tokens.
-    pub fn parse(mut self) -> SyntaxTree {
+    pub fn parse(mut self) -> SyntaxTree<Document> {
         grammar::document::document(&mut self);
 
         let builder = Rc::try_unwrap(self.builder)
             .expect("More than one reference to builder left")
             .into_inner();
-        builder.finish(self.errors, self.recursion_limit, self.lexer.limit_tracker)
+        let builder = builder.finish(
+            false,
+            self.errors,
+            self.recursion_limit,
+            self.lexer.limit_tracker,
+        );
+
+        match builder {
+            syntax_tree::SyntaxTreeWrapper::Document(tree) => tree,
+            syntax_tree::SyntaxTreeWrapper::FieldSet(_) => {
+                unreachable!("parse constructor can only construct a document")
+            }
+        }
+    }
+
+    pub fn parse_fieldset(mut self) -> SyntaxTree<SelectionSet> {
+        grammar::selection::selection_set(&mut self);
+
+        let builder = Rc::try_unwrap(self.builder)
+            .expect("More than one reference to builder left")
+            .into_inner();
+        let builder = builder.finish(
+            true,
+            self.errors,
+            self.recursion_limit,
+            self.lexer.limit_tracker,
+        );
+
+        match builder {
+            syntax_tree::SyntaxTreeWrapper::FieldSet(tree) => tree,
+            syntax_tree::SyntaxTreeWrapper::Document(_) => {
+                unreachable!("parse constructor can only construct a selection set")
+            }
+        }
     }
 
     /// Check if the current token is `kind`.
@@ -467,7 +504,7 @@ impl Checkpoint {
 #[cfg(test)]
 mod tests {
     use super::DEFAULT_RECURSION_LIMIT;
-    use crate::{Error, Parser, SyntaxTree};
+    use crate::{cst, Error, Parser, SyntaxTree};
     use expect_test::expect;
 
     #[test]
@@ -649,7 +686,7 @@ mod tests {
             assert!(ast.errors[0].message.contains("recursion limit reached"));
         });
 
-        fn deep(count: usize, each: impl Fn(SyntaxTree)) {
+        fn deep(count: usize, each: impl Fn(SyntaxTree<cst::Document>)) {
             let check = |input: String| each(Parser::new(&input).parse());
 
             // Nested list type
@@ -689,7 +726,7 @@ mod tests {
             check(doc);
         }
 
-        fn wide(count: usize, each: impl Fn(SyntaxTree)) {
+        fn wide(count: usize, each: impl Fn(SyntaxTree<cst::Document>)) {
             let check = |input: String| each(Parser::new(&input).parse());
 
             // Repeated top-level definitions
@@ -785,5 +822,22 @@ mod tests {
             doc.push_str(" ) { f }");
             check(doc);
         }
+    }
+
+    #[test]
+    fn parse_field_set() {
+        let source = r#"{ a }"#;
+
+        let parser = Parser::new(source);
+        let cst: SyntaxTree<cst::SelectionSet> = parser.parse_fieldset();
+        let errors = cst.errors().collect::<Vec<_>>();
+        assert_eq!(errors.len(), 0);
+
+        let sel_set: cst::SelectionSet = cst.selection_set();
+        let _ = sel_set.selections().map(|sel| {
+            if let cst::Selection::Field(f) = sel {
+                assert_eq!(f.name().unwrap().text().as_ref(), "a")
+            }
+        });
     }
 }
