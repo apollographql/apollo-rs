@@ -139,16 +139,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            28,
-            SourceFile {
-                path: "0029_used_variable_in_list_and_input.graphql",
-                source_text: "type Product {\n  attributes(includeNames: [String!]): [String!]\n}\n\ninput Opts {\n  prop: [[Int]!]!\n}\n\ntype Query {\n  field(\n    opts: Opts\n  ): [Product]\n}\n\nquery ($attributeName: String!, $v: Int) {\n  field(opts: {\n    prop: [[2], [$v], [4]],\n  }) {\n    attributes(includeNames: [$attributeName])\n  }\n}\n",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        28: SourceFile {
+            path: "0029_used_variable_in_list_and_input.graphql",
+            source_text: "type Product {\n  attributes(includeNames: [String!]): [String!]\n}\n\ninput Opts {\n  prop: [[Int]!]!\n}\n\ntype Query {\n  field(\n    opts: Opts\n  ): [Product]\n}\n\nquery ($attributeName: String!, $v: Int) {\n  field(opts: {\n    prop: [[2], [$v], [4]],\n  }) {\n    attributes(includeNames: [$attributeName])\n  }\n}\n",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: Some(
         156..302 @28 Operation {

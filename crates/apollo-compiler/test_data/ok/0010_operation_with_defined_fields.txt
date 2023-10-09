@@ -240,16 +240,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            10,
-            SourceFile {
-                path: "0010_operation_with_defined_fields.graphql",
-                source_text: "query getProduct {\n  size\n  topProducts {\n    name\n    inStock\n  }\n}\n\ntype Query {\n  topProducts: Product\n  name: String\n  size: Int\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n  price: Int\n  shippingEstimate: Int\n  upc: String!\n  weight: Int\n}\n\ndirective @join__field(graph: join__Graph) on FIELD_DEFINITION\nenum join__Graph {\n  INVENTORY,\n  PRODUCTS,\n}\n",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        10: SourceFile {
+            path: "0010_operation_with_defined_fields.graphql",
+            source_text: "query getProduct {\n  size\n  topProducts {\n    name\n    inStock\n  }\n}\n\ntype Query {\n  topProducts: Product\n  name: String\n  size: Int\n}\n\ntype Product {\n  inStock: Boolean @join__field(graph: INVENTORY)\n  name: String @join__field(graph: PRODUCTS)\n  price: Int\n  shippingEstimate: Int\n  upc: String!\n  weight: Int\n}\n\ndirective @join__field(graph: join__Graph) on FIELD_DEFINITION\nenum join__Graph {\n  INVENTORY,\n  PRODUCTS,\n}\n",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {

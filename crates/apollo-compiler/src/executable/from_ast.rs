@@ -88,7 +88,7 @@ pub(crate) fn document_from_ast(
         }
     }
     ExecutableDocument {
-        source: document.source.clone(),
+        sources: document.sources.clone(),
         build_errors: errors.errors,
         named_operations,
         anonymous_operation,

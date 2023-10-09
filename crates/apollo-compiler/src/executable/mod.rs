@@ -3,16 +3,13 @@
 
 use crate::ast;
 use crate::schema;
-use crate::FileId;
 use crate::Node;
 use crate::Parser;
 use crate::Schema;
-use crate::SourceFile;
 use indexmap::map::Entry;
 use indexmap::IndexMap;
 use std::collections::HashSet;
 use std::path::Path;
-use std::sync::Arc;
 
 pub(crate) mod from_ast;
 mod serialize;
@@ -30,10 +27,10 @@ use std::fmt;
 #[derive(Debug, Clone, Default)]
 pub struct ExecutableDocument {
     /// If this document was originally parsed from a source file,
-    /// that file and its ID.
+    /// this map contains one entry for that file and its ID.
     ///
     /// The document may have been modified since.
-    pub source: Option<(FileId, Arc<SourceFile>)>,
+    pub sources: crate::SourceMap,
 
     /// Errors that occurred when building this document,
     /// either parsing a source file or converting from AST.
@@ -49,10 +46,10 @@ pub struct ExecutableDocument {
 #[derive(Debug, Clone)]
 pub struct FieldSet {
     /// If this document was originally parsed from a source file,
-    /// that file and its ID.
+    /// this map contains one entry for that file and its ID.
     ///
     /// The document may have been modified since.
-    pub source: Option<(FileId, Arc<SourceFile>)>,
+    pub sources: crate::SourceMap,
 
     /// Errors that occurred when building this FieldSet,
     /// either parsing a source file or converting from AST.
@@ -234,9 +231,7 @@ impl ExecutableDocument {
     }
 
     pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
-        let mut sources = schema.sources.clone();
-        sources.extend(self.source.clone());
-        let mut errors = Diagnostics::new(sources);
+        let mut errors = Diagnostics::new(Some(schema.sources.clone()), self.sources.clone());
         validation::validate_executable_document(&mut errors, schema, self);
         errors.into_result()
     }
@@ -315,11 +310,11 @@ impl ExecutableDocument {
 
 impl Eq for ExecutableDocument {}
 
-/// `source` and `build_errors` are ignored for comparison
+/// `sources` and `build_errors` are ignored for comparison
 impl PartialEq for ExecutableDocument {
     fn eq(&self, other: &Self) -> bool {
         let Self {
-            source: _,
+            sources: _,
             build_errors: _,
             anonymous_operation,
             named_operations,
@@ -707,9 +702,7 @@ impl FieldSet {
     }
 
     pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
-        let mut sources = schema.sources.clone();
-        sources.extend(self.source.clone());
-        let mut errors = Diagnostics::new(sources);
+        let mut errors = Diagnostics::new(Some(schema.sources.clone()), self.sources.clone());
         validation::validate_field_set(&mut errors, schema, self);
         errors.into_result()
     }

@@ -150,16 +150,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            6,
-            SourceFile {
-                path: "0006_schema_with_valid_union.graphql",
-                source_text: "schema {\n  query: SearchQuery\n}\n\nunion SearchResult = Photo | Person\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype SearchQuery {\n  firstSearchResult: SearchResult\n}",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        6: SourceFile {
+            path: "0006_schema_with_valid_union.graphql",
+            source_text: "schema {\n  query: SearchQuery\n}\n\nunion SearchResult = Photo | Person\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype SearchQuery {\n  firstSearchResult: SearchResult\n}",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {},

@@ -149,16 +149,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            32,
-            SourceFile {
-                path: "0033_valid_variable_usage.graphql",
-                source_text: "query nullableStringArg($nonNullableVar: String!, $nonNullableList: [String!]!, $nonNullableListList: [[Int!]!]) {\n  arguments {\n    nullableString(nullableString: $nonNullableVar)\n    nullableList(nullableList: $nonNullableList)\n    nullableListList(nullableListList: $nonNullableListList)\n  }\n}\n\ntype Query {\n    arguments: Arguments\n}\n\ntype Arguments {\n    nullableString(nullableString: String): String\n    nullableList(nullableList: [String]): String\n    nullableListList(nullableListList: [[Int]]): Int\n}\n\n",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        32: SourceFile {
+            path: "0033_valid_variable_usage.graphql",
+            source_text: "query nullableStringArg($nonNullableVar: String!, $nonNullableList: [String!]!, $nonNullableListList: [[Int!]!]) {\n  arguments {\n    nullableString(nullableString: $nonNullableVar)\n    nullableList(nullableList: $nonNullableList)\n    nullableListList(nullableListList: $nonNullableListList)\n  }\n}\n\ntype Query {\n    arguments: Arguments\n}\n\ntype Arguments {\n    nullableString(nullableString: String): String\n    nullableList(nullableList: [String]): String\n    nullableListList(nullableListList: [[Int]]): Int\n}\n\n",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {

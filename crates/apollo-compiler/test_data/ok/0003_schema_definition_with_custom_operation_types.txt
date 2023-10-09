@@ -196,16 +196,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            3,
-            SourceFile {
-                path: "0003_schema_definition_with_custom_operation_types.graphql",
-                source_text: "schema {\n  query: customPetQuery,\n  subscription: customPetSubscription\n  mutation: customPetMutation\n}\n\nenum PetType {\n  CAT,\n  DOG,\n}\n\ntype customPetQuery {\n  name: String,\n  age: Int\n}\n\ntype customPetSubscription {\n  changeInPetHousehold: Result\n}\n\ntype customPetMutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        3: SourceFile {
+            path: "0003_schema_definition_with_custom_operation_types.graphql",
+            source_text: "schema {\n  query: customPetQuery,\n  subscription: customPetSubscription\n  mutation: customPetMutation\n}\n\nenum PetType {\n  CAT,\n  DOG,\n}\n\ntype customPetQuery {\n  name: String,\n  age: Int\n}\n\ntype customPetSubscription {\n  changeInPetHousehold: Result\n}\n\ntype customPetMutation {\n  addPet (name: String!, petType: PetType): Result!\n}\n\ntype Result {\n  id: String\n}\n",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {},

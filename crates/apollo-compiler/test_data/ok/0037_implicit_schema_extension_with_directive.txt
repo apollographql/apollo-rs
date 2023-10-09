@@ -91,16 +91,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            36,
-            SourceFile {
-                path: "0037_implicit_schema_extension_with_directive.graphql",
-                source_text: "type Query {\n    name: String\n}\n\nextend schema @dir\ndirective @dir on SCHEMA",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        36: SourceFile {
+            path: "0037_implicit_schema_extension_with_directive.graphql",
+            source_text: "type Query {\n    name: String\n}\n\nextend schema @dir\ndirective @dir on SCHEMA",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {},

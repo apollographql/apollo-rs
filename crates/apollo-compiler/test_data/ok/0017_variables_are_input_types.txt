@@ -213,16 +213,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            17,
-            SourceFile {
-                path: "0017_variables_are_input_types.graphql",
-                source_text: "query takesBoolean($atOtherHomes: Boolean) {\n  dog {\n    isHouseTrained(atOtherHomes: $atOtherHomes)\n  }\n}\n\nquery takesComplexInput($complexInput: ComplexInput) {\n  findDog(complex: $complexInput) {\n    name\n  }\n}\n\nquery TakesListOfBooleanBang($booleans: [Boolean!]) {\n  booleanList(booleanListArg: $booleans)\n}\n\n\ntype Dog {\n  name: String!\n  nickname: String\n  barkVolume: Int\n  isHouseTrained(atOtherHomes: Boolean): Boolean!\n}\n\ninput ComplexInput {\n  name: String\n  owner: String\n}\n\ntype Query {\n  dog: Dog\n  findDog(complex: ComplexInput): Dog\n  booleanList(booleanListArg: [Boolean!]): Boolean\n}",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        17: SourceFile {
+            path: "0017_variables_are_input_types.graphql",
+            source_text: "query takesBoolean($atOtherHomes: Boolean) {\n  dog {\n    isHouseTrained(atOtherHomes: $atOtherHomes)\n  }\n}\n\nquery takesComplexInput($complexInput: ComplexInput) {\n  findDog(complex: $complexInput) {\n    name\n  }\n}\n\nquery TakesListOfBooleanBang($booleans: [Boolean!]) {\n  booleanList(booleanListArg: $booleans)\n}\n\n\ntype Dog {\n  name: String!\n  nickname: String\n  barkVolume: Int\n  isHouseTrained(atOtherHomes: Boolean): Boolean!\n}\n\ninput ComplexInput {\n  name: String\n  owner: String\n}\n\ntype Query {\n  dog: Dog\n  findDog(complex: ComplexInput): Dog\n  booleanList(booleanListArg: [Boolean!]): Boolean\n}",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {

@@ -150,16 +150,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            27,
-            SourceFile {
-                path: "0028_typename_introspection_in_union.graphql",
-                source_text: "union SearchResult = Photo | Person\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype Query {\n  firstSearchResult: SearchResult\n}\n\n{\n  firstSearchResult {\n    __typename\n    ... on Person {\n      name\n    }\n    ... on Photo {\n      height\n    }\n  }\n}",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        27: SourceFile {
+            path: "0028_typename_introspection_in_union.graphql",
+            source_text: "union SearchResult = Photo | Person\n\ntype Person {\n  name: String\n  age: Int\n}\n\ntype Photo {\n  height: Int\n  width: Int\n}\n\ntype Query {\n  firstSearchResult: SearchResult\n}\n\n{\n  firstSearchResult {\n    __typename\n    ... on Person {\n      name\n    }\n    ... on Photo {\n      height\n    }\n  }\n}",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: Some(
         173..292 @27 Operation {

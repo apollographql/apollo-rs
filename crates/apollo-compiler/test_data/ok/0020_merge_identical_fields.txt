@@ -101,16 +101,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            20,
-            SourceFile {
-                path: "0020_merge_identical_fields.graphql",
-                source_text: "type Query {\n  pet: Dog\n}\n\ntype Dog {\n  nickname: String\n  name: String!\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFields\n    ...mergeIdenticalAliasesAndFields\n  }\n}\n\nfragment mergeIdenticalFields on Dog {\n  name\n  name\n}\n\nfragment mergeIdenticalAliasesAndFields on Dog {\n  otherName: name\n  otherName: name\n}\n",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        20: SourceFile {
+            path: "0020_merge_identical_fields.graphql",
+            source_text: "type Query {\n  pet: Dog\n}\n\ntype Dog {\n  nickname: String\n  name: String!\n}\n\nquery queryPupper {\n  pet {\n    ...mergeIdenticalFields\n    ...mergeIdenticalAliasesAndFields\n  }\n}\n\nfragment mergeIdenticalFields on Dog {\n  name\n  name\n}\n\nfragment mergeIdenticalAliasesAndFields on Dog {\n  otherName: name\n  otherName: name\n}\n",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {

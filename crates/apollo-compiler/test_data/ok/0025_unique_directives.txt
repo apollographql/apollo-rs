@@ -86,16 +86,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            24,
-            SourceFile {
-                path: "0025_unique_directives.graphql",
-                source_text: "directive @repeatable repeatable on FIELD\ndirective @unique on FIELD\n\ntype Query {\n  field: Int\n}\n\n{\n  field @repeatable @repeatable\n  field @unique\n  field @unique\n}\n",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        24: SourceFile {
+            path: "0025_unique_directives.graphql",
+            source_text: "directive @repeatable repeatable on FIELD\ndirective @unique on FIELD\n\ntype Query {\n  field: Int\n}\n\n{\n  field @repeatable @repeatable\n  field @unique\n  field @unique\n}\n",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: Some(
         99..166 @24 Operation {

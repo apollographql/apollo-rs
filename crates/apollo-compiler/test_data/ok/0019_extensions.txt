@@ -246,16 +246,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            19,
-            SourceFile {
-                path: "0019_extensions.graphql",
-                source_text: "scalar Scalar\n\ntype Object implements Intf {\n  field: Int,\n}\n\ninterface Intf {\n  field: Int,\n}\n\ninput Input {\n  field: Enum,\n}\nenum Enum {\n  MEMBER,\n}\n\nextend scalar Scalar @specifiedBy(url: \"https://apollographql.com\")\nextend interface Intf {\n  field2: Scalar,\n}\nextend type Object {\n  field2: Scalar,\n}\nextend enum Enum {\n  MEMBER_2,\n}\nextend input Input {\n  field2: Int,\n}\n\ntype Query {\n  object: Object,\n}\n",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        19: SourceFile {
+            path: "0019_extensions.graphql",
+            source_text: "scalar Scalar\n\ntype Object implements Intf {\n  field: Int,\n}\n\ninterface Intf {\n  field: Int,\n}\n\ninput Input {\n  field: Enum,\n}\nenum Enum {\n  MEMBER,\n}\n\nextend scalar Scalar @specifiedBy(url: \"https://apollographql.com\")\nextend interface Intf {\n  field2: Scalar,\n}\nextend type Object {\n  field2: Scalar,\n}\nextend enum Enum {\n  MEMBER_2,\n}\nextend input Input {\n  field2: Int,\n}\n\ntype Query {\n  object: Object,\n}\n",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {},

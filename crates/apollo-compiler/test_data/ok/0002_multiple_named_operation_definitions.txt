@@ -122,16 +122,13 @@ Schema {
     },
 }
 ExecutableDocument {
-    source: Some(
-        (
-            2,
-            SourceFile {
-                path: "0002_multiple_named_operation_definitions.graphql",
-                source_text: "query getCatName {\n  cat {\n    name\n  }\n}\n\nquery getOwnerName {\n  cat {\n    owner {\n      name\n    }\n  }\n}\n\n\ntype Query {\n  cat: Pet\n}\n\ntype Pet {\n  name: String,\n  owner: PetOwner\n}\n\ntype PetOwner {\n  name: String\n}\n",
-                parse_errors: [],
-            },
-        ),
-    ),
+    sources: {
+        2: SourceFile {
+            path: "0002_multiple_named_operation_definitions.graphql",
+            source_text: "query getCatName {\n  cat {\n    name\n  }\n}\n\nquery getOwnerName {\n  cat {\n    owner {\n      name\n    }\n  }\n}\n\n\ntype Query {\n  cat: Pet\n}\n\ntype Pet {\n  name: String,\n  owner: PetOwner\n}\n\ntype PetOwner {\n  name: String\n}\n",
+            parse_errors: [],
+        },
+    },
     build_errors: [],
     anonymous_operation: None,
     named_operations: {
