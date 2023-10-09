@@ -11,6 +11,7 @@ use crate::Schema;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::sync::OnceLock;
 
 /// Configuration for parsing an input string as GraphQL syntax
 #[derive(Default, Debug, Clone)]
@@ -27,6 +28,7 @@ pub struct SourceFile {
     pub(crate) path: PathBuf,
     pub(crate) source_text: String,
     pub(crate) parse_errors: Vec<apollo_parser::Error>,
+    pub(crate) ariadne: OnceLock<ariadne::Source>,
 }
 
 /// Parse a schema and executable document from the given source text
@@ -110,6 +112,7 @@ impl Parser {
             path,
             source_text,
             parse_errors: tree.errors().cloned().collect(),
+            ariadne: OnceLock::new(),
         });
         (tree, source_file)
     }
@@ -250,6 +253,11 @@ impl SourceFile {
         &self.source_text
     }
 
+    pub fn ariadne(&self) -> &ariadne::Source {
+        self.ariadne
+            .get_or_init(|| ariadne::Source::from(&self.source_text))
+    }
+
     pub(crate) fn validate_parse_errors(&self, errors: &mut Diagnostics, file_id: FileId) {
         for err in &self.parse_errors {
             // Silently skip parse errors at index beyond 4 GiB.
@@ -285,6 +293,7 @@ impl std::fmt::Debug for SourceFile {
             path,
             source_text,
             parse_errors,
+            ariadne: _, // Skipped: it’s a cache and would make debugging other things noisy
         } = self;
         let mut debug_struct = f.debug_struct("SourceFile");
         debug_struct.field("path", path);
