@@ -23,7 +23,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **`parse_field_set` parses a selection set with optional outer brackets - [lrlna], [pull/685] fixing [issue/681]**
   This returns a `SyntaxTree<SelectionSet>` which instead of `.document() -> cst::Document`
   has `.field_set() -> cst::SelectionSet`.
-  This is intended to the parse string value of a [`FieldSet` custom scalar][fieldset]
+  This is intended to parse string value of a [`FieldSet` custom scalar][fieldset]
   used in some Apollo Federation directives.
 
 [lrlna]: https://github.com/lrlna

@@ -36,8 +36,8 @@ Assorted `Schema` API changes by [SimonSapin] in [pull/678]:
 
 - **Add `executable::FieldSet` for a selection set with optional outer brackets - [lrlna], [pull/685] fixing [issue/681]**
   This is intended to parse string value of a [`FieldSet` custom scalar][fieldset]
-  used in some Apollo Federation directives, in the context of a specific schema and type.
-  Its `validate` method calls the subset of validation rules relevan to a selection set
+  used in some Apollo Federation directives in the context of a specific schema and type.
+  Its `validate` method calls a subset of validation rules relevant to selection sets.
   which is not part of a document.
 
 - **Add opt-in configuration for “orphan” extensions to be “adopted” - [SimonSapin], [pull/678]**
