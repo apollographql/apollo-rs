@@ -4,8 +4,15 @@ use indexmap::map::Entry;
 pub struct SchemaBuilder {
     adopt_orphan_extensions: bool,
     schema: Schema,
-    orphan_schema_extensions: Vec<Node<ast::SchemaExtension>>,
+    schema_definition: SchemaDefinitionStatus,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
+}
+
+enum SchemaDefinitionStatus {
+    Found,
+    NoneSoFar {
+        orphan_extensions: Vec<Node<ast::SchemaExtension>>,
+    },
 }
 
 impl Default for SchemaBuilder {
@@ -23,11 +30,19 @@ impl SchemaBuilder {
             schema: Schema {
                 sources: IndexMap::new(),
                 build_errors: Vec::new(),
-                schema_definition: None,
+                schema_definition: Node::new(SchemaDefinition {
+                    description: None,
+                    directives: Directives::default(),
+                    query: None,
+                    mutation: None,
+                    subscription: None,
+                }),
                 directive_definitions: IndexMap::new(),
                 types: IndexMap::new(),
             },
-            orphan_schema_extensions: Vec::new(),
+            schema_definition: SchemaDefinitionStatus::NoneSoFar {
+                orphan_extensions: Vec::new(),
+            },
             orphan_type_extensions: IndexMap::new(),
         };
 
@@ -46,8 +61,11 @@ impl SchemaBuilder {
         debug_assert!(
             builder.schema.build_errors.is_empty()
                 && builder.orphan_type_extensions.is_empty()
-                && builder.orphan_schema_extensions.is_empty()
-                && builder.schema.schema_definition.is_none(),
+                && matches!(
+                    &builder.schema_definition,
+                    SchemaDefinitionStatus::NoneSoFar { orphan_extensions }
+                    if orphan_extensions.is_empty()
+                )
         );
         builder
     }
@@ -87,21 +105,21 @@ impl SchemaBuilder {
         }
         for definition in &document.definitions {
             match definition {
-                ast::Definition::SchemaDefinition(def) => match &self.schema.schema_definition {
-                    None => {
-                        self.schema.schema_definition = Some(SchemaDefinition::from_ast(
+                ast::Definition::SchemaDefinition(def) => match &self.schema_definition {
+                    SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
+                        self.schema.schema_definition = SchemaDefinition::from_ast(
                             &mut self.schema.build_errors,
                             def,
-                            &self.orphan_schema_extensions,
-                        ));
-                        self.orphan_schema_extensions = Vec::new();
+                            orphan_extensions,
+                        );
+                        self.schema_definition = SchemaDefinitionStatus::Found;
                     }
-                    Some(previous) => {
+                    SchemaDefinitionStatus::Found => {
                         self.schema
                             .build_errors
                             .push(BuildError::SchemaDefinitionCollision {
                                 location: def.location(),
-                                previous_location: previous.location(),
+                                previous_location: self.schema.schema_definition.location(),
                             })
                     }
                 },
@@ -258,14 +276,16 @@ impl SchemaBuilder {
                             })
                     }
                 }
-                ast::Definition::SchemaExtension(ext) => {
-                    if let Some(root) = &mut self.schema.schema_definition {
-                        root.make_mut()
-                            .extend_ast(&mut self.schema.build_errors, ext)
-                    } else {
-                        self.orphan_schema_extensions.push(ext.clone())
+                ast::Definition::SchemaExtension(ext) => match &mut self.schema_definition {
+                    SchemaDefinitionStatus::Found => self
+                        .schema
+                        .schema_definition
+                        .make_mut()
+                        .extend_ast(&mut self.schema.build_errors, ext),
+                    SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
+                        orphan_extensions.push(ext.clone())
                     }
-                }
+                },
                 ast::Definition::ScalarTypeExtension(ext) => {
                     if let Some((_, ty_name, ty)) = self.schema.types.get_full_mut(&ext.name) {
                         if let ExtendedType::Scalar(ty) = ty {
@@ -413,42 +433,74 @@ impl SchemaBuilder {
         }
     }
 
-    /// Returns the schema built from all added documents, and orphan extensions:
-    ///
-    /// * `Definition::SchemaExtension` variants if no `Definition::SchemaDefinition` was found
-    /// * `Definition::*TypeExtension` if no `Definition::*TypeDefinition` with the same name
-    ///   was found, or if it is a different kind of type
+    /// Returns the schema built from all added documents
     pub fn build(self) -> Schema {
         let SchemaBuilder {
             adopt_orphan_extensions,
             mut schema,
-            orphan_schema_extensions,
+            schema_definition,
             orphan_type_extensions,
         } = self;
-        if adopt_orphan_extensions {
-            if !orphan_schema_extensions.is_empty() {
-                assert!(schema.schema_definition.is_none());
-                let schema_def = schema
-                    .schema_definition
-                    .get_or_insert_with(Default::default)
-                    .make_mut();
-                for ext in &orphan_schema_extensions {
-                    schema_def.extend_ast(&mut schema.build_errors, ext)
+        match schema_definition {
+            SchemaDefinitionStatus::Found => {}
+            SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
+                // This a macro rather than a closure to generate separate `static`s
+                let mut has_implicit_root_operation = false;
+                macro_rules! default_root_operation {
+                    ($($operation_type: path: $root_operation: expr,)+) => {{
+                        $(
+                            let name = $operation_type.default_type_name();
+                            if let Some(ExtendedType::Object(_)) = schema.types.get(name) {
+                                static OBJECT_TYPE_NAME: OnceLock<ComponentStr> = OnceLock::new();
+                                $root_operation = Some(OBJECT_TYPE_NAME.get_or_init(|| {
+                                    Name::new(name).to_component(ComponentOrigin::Definition)
+                                }).clone());
+                                has_implicit_root_operation = true;
+                            }
+                        )+
+                    }};
+                }
+                let schema_def = schema.schema_definition.make_mut();
+                default_root_operation!(
+                    ast::OperationType::Query: schema_def.query,
+                    ast::OperationType::Mutation: schema_def.mutation,
+                    ast::OperationType::Subscription: schema_def.subscription,
+                );
+
+                let apply_schema_extensions =
+                    // https://github.com/apollographql/apollo-rs/issues/682
+                    // If we have no explict `schema` definition but do have object type(s)
+                    // with a default type name for root operations,
+                    // an implicit schema definition is generated with those root operations.
+                    // That implict definition can be extended:
+                    has_implicit_root_operation ||
+                    // https://github.com/apollographql/apollo-rs/pull/678
+                    // In this opt-in mode we unconditionally assume
+                    // an implicit schema definition to extend
+                    adopt_orphan_extensions;
+                if apply_schema_extensions {
+                    for ext in &orphan_extensions {
+                        schema_def.extend_ast(&mut schema.build_errors, ext)
+                    }
+                } else {
+                    schema
+                        .build_errors
+                        .extend(orphan_extensions.into_iter().map(|ext| {
+                            BuildError::OrphanSchemaExtension {
+                                location: ext.location(),
+                            }
+                        }));
                 }
             }
+        }
+        // https://github.com/apollographql/apollo-rs/pull/678
+        if adopt_orphan_extensions {
             for (type_name, extensions) in orphan_type_extensions {
                 let type_def = adopt_type_extensions(&mut schema, &type_name, &extensions);
                 let previous = schema.types.insert(type_name, type_def);
                 assert!(previous.is_none());
             }
         } else {
-            schema
-                .build_errors
-                .extend(orphan_schema_extensions.into_iter().map(|ext| {
-                    BuildError::OrphanSchemaExtension {
-                        location: ext.location(),
-                    }
-                }));
             schema
                 .build_errors
                 .extend(orphan_type_extensions.into_values().flatten().map(|ext| {

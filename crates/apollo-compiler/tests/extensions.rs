@@ -10,7 +10,7 @@ fn test_orphan_extensions() {
 
     // By default, orphan extensions are errors:
     let schema = Schema::parse(input, "schema.graphql");
-    assert!(!schema.schema_definition_directives().has("dir"));
+    assert!(!schema.schema_definition.directives.has("dir"));
     assert!(!schema.types.contains_key("Obj"));
     let err = schema.validate().unwrap_err().to_string_no_color();
     assert!(
@@ -27,7 +27,7 @@ fn test_orphan_extensions() {
         .adopt_orphan_extensions()
         .parse(input, "schema.graphql")
         .build();
-    assert!(schema2.schema_definition_directives().has("dir"));
+    assert!(schema2.schema_definition.directives.has("dir"));
     assert!(schema2.types["Obj"].directives().has("dir"));
     schema2.validate().unwrap();
 }
@@ -52,4 +52,18 @@ fn test_orphan_extensions_kind_mismatch() {
         err.contains("adding an interface type extension, but `T` is an object type"),
         "{err}"
     );
+}
+
+/// https://github.com/apollographql/apollo-rs/issues/682
+#[test]
+fn test_extend_implicit_schema() {
+    let input = r#"
+    type Query { field: Int } # creates an implicit schema definition that can be extended
+    extend schema @dir
+    directive @dir on SCHEMA
+"#;
+
+    let schema = Schema::parse(input, "schema.graphql");
+    schema.validate().unwrap();
+    assert!(schema.schema_definition.directives.has("dir"));
 }

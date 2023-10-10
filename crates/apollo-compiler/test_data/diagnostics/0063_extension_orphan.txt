@@ -12,14 +12,12 @@ Error: type extension for undefined type `B`
    │             ┬  
    │             ╰── extension here
 ───╯
-Error: schema extension without a schema definition
-   ╭─[0063_extension_orphan.graphql:7:1]
+Error: duplicate definitions for the `query` root operation type
+   ╭─[0063_extension_orphan.graphql:8:3]
    │
- 7 │ ╭─▶ extend schema {
-   ┆ ┆   
- 9 │ ├─▶ }
-   │ │       
-   │ ╰─────── extension here
+ 8 │   query: Query
+   │   ──────┬─────  
+   │         ╰─────── `query` redefined here
 ───╯
 Error: type extension for undefined type `C`
     ╭─[0063_extension_orphan.graphql:10:14]
