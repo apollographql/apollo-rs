@@ -38,7 +38,7 @@ use crate::SourceFile;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-mod from_cst;
+pub(crate) mod from_cst;
 pub(crate) mod impls;
 pub(crate) mod serialize;
 

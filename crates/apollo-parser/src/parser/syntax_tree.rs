@@ -1,8 +1,11 @@
-use std::{fmt, slice::Iter};
+use std::{fmt, marker::PhantomData, slice::Iter};
 
 use rowan::{GreenNode, GreenNodeBuilder};
 
-use crate::{cst::Document, Error, SyntaxElement, SyntaxKind, SyntaxNode};
+use crate::{
+    cst::{self, CstNode},
+    Error, SyntaxElement, SyntaxKind, SyntaxNode,
+};
 
 use super::LimitTracker;
 
@@ -38,15 +41,26 @@ use super::LimitTracker;
 /// assert_eq!(nodes.len(), 1);
 /// ```
 
+// NOTE(@lrlna): This enum helps us setup a type state for document and field
+// set parsing.  Without the wrapper we'd have to add type annotations to
+// SyntaxTreeBuilder, which then annotates the vast majority of the parser's
+// function with the same type parameter. This is tedious and makes for a more
+// complex design than necessary.
+pub(crate) enum SyntaxTreeWrapper {
+    Document(SyntaxTree<cst::Document>),
+    FieldSet(SyntaxTree<cst::SelectionSet>),
+}
+
 #[derive(PartialEq, Eq, Clone)]
-pub struct SyntaxTree {
+pub struct SyntaxTree<T: CstNode = cst::Document> {
     pub(crate) green: GreenNode,
     pub(crate) errors: Vec<crate::Error>,
     pub(crate) recursion_limit: LimitTracker,
     pub(crate) token_limit: LimitTracker,
+    _phantom: PhantomData<T>,
 }
 
-impl SyntaxTree {
+impl<T: CstNode> SyntaxTree<T> {
     /// Get a reference to the syntax tree's errors.
     pub fn errors(&self) -> Iter<'_, crate::Error> {
         self.errors.iter()
@@ -69,16 +83,28 @@ impl SyntaxTree {
     pub(crate) fn syntax_node(&self) -> SyntaxNode {
         rowan::SyntaxNode::new_root(self.green.clone())
     }
+}
 
+impl SyntaxTree<cst::Document> {
     /// Return the root typed `Document` node.
-    pub fn document(&self) -> Document {
-        Document {
+    pub fn document(&self) -> cst::Document {
+        cst::Document {
             syntax: self.syntax_node(),
         }
     }
 }
 
-impl fmt::Debug for SyntaxTree {
+impl SyntaxTree<cst::SelectionSet> {
+    /// Return the root typed `SelectionSet` node. This is used for parsing
+    /// selection sets defined by @requires directive.
+    pub fn field_set(&self) -> cst::SelectionSet {
+        cst::SelectionSet {
+            syntax: self.syntax_node(),
+        }
+    }
+}
+
+impl<T: CstNode> fmt::Debug for SyntaxTree<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fn print(f: &mut fmt::Formatter<'_>, indent: usize, element: SyntaxElement) -> fmt::Result {
             let kind: SyntaxKind = element.kind();
@@ -162,20 +188,38 @@ impl SyntaxTreeBuilder {
         self.builder.token(rowan::SyntaxKind(kind as u16), text);
     }
 
-    pub(crate) fn finish(
+    pub(crate) fn finish_document(
         self,
         errors: Vec<Error>,
         recursion_limit: LimitTracker,
         token_limit: LimitTracker,
-    ) -> SyntaxTree {
-        SyntaxTree {
+    ) -> SyntaxTreeWrapper {
+        SyntaxTreeWrapper::Document(SyntaxTree {
             green: self.builder.finish(),
             // TODO: keep the errors in the builder rather than pass it in here?
             errors,
             // TODO: keep the recursion and token limits in the builder rather than pass it in here?
             recursion_limit,
             token_limit,
-        }
+            _phantom: PhantomData,
+        })
+    }
+
+    pub(crate) fn finish_selection_set(
+        self,
+        errors: Vec<Error>,
+        recursion_limit: LimitTracker,
+        token_limit: LimitTracker,
+    ) -> SyntaxTreeWrapper {
+        SyntaxTreeWrapper::FieldSet(SyntaxTree {
+            green: self.builder.finish(),
+            // TODO: keep the errors in the builder rather than pass it in here?
+            errors,
+            // TODO: keep the recursion and token limits in the builder rather than pass it in here?
+            recursion_limit,
+            token_limit,
+            _phantom: PhantomData,
+        })
     }
 }
 

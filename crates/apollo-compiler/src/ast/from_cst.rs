@@ -641,12 +641,18 @@ impl Convert for cst::SelectionSet {
     type Target = Vec<ast::Selection>;
 
     fn convert(&self, file_id: FileId) -> Option<Self::Target> {
-        Some(
-            self.selections()
-                .filter_map(|selection| selection.convert(file_id))
-                .collect(),
-        )
+        Some(convert_selection_set(self, file_id))
     }
+}
+
+pub(crate) fn convert_selection_set(
+    selection_set: &cst::SelectionSet,
+    file_id: FileId,
+) -> Vec<ast::Selection> {
+    selection_set
+        .selections()
+        .filter_map(|selection| selection.convert(file_id))
+        .collect()
 }
 
 impl Convert for cst::Selection {

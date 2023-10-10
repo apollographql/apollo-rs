@@ -1,4 +1,6 @@
+use crate::ast;
 use crate::ast::Document;
+use crate::executable;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::Diagnostics;
@@ -84,6 +86,16 @@ impl Parser {
         path: PathBuf,
         file_id: FileId,
     ) -> Document {
+        let (tree, source_file) = self.parse_common(source_text, path, |parser| parser.parse());
+        Document::from_cst(tree.document(), file_id, source_file)
+    }
+
+    pub(crate) fn parse_common<T: apollo_parser::cst::CstNode>(
+        &mut self,
+        source_text: String,
+        path: PathBuf,
+        parse: impl FnOnce(apollo_parser::Parser) -> apollo_parser::SyntaxTree<T>,
+    ) -> (apollo_parser::SyntaxTree<T>, Arc<SourceFile>) {
         let mut parser = apollo_parser::Parser::new(&source_text);
         if let Some(value) = self.recursion_limit {
             parser = parser.recursion_limit(value)
@@ -91,7 +103,7 @@ impl Parser {
         if let Some(value) = self.token_limit {
             parser = parser.token_limit(value)
         }
-        let tree = parser.parse();
+        let tree = parse(parser);
         self.recursion_reached = tree.recursion_limit().high;
         self.tokens_reached = tree.token_limit().high;
         let source_file = Arc::new(SourceFile {
@@ -99,7 +111,7 @@ impl Parser {
             source_text,
             parse_errors: tree.errors().cloned().collect(),
         });
-        Document::from_cst(tree.document(), file_id, source_file)
+        (tree, source_file)
     }
 
     /// Parse the given source text as the sole input file of a schema.
@@ -169,6 +181,45 @@ impl Parser {
         path: impl AsRef<Path>,
     ) -> (Schema, ExecutableDocument) {
         self.parse_ast(source_text, path).to_mixed()
+    }
+
+    /// Parse the given source a selection set with optional outer brackets.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// Parsing is fault-tolerant, so a selection set node is always returned.
+    /// TODO: document how to validate
+    pub fn parse_field_set(
+        &mut self,
+        schema: &Schema,
+        type_name: impl Into<ast::NamedType>,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> executable::FieldSet {
+        let (tree, source_file) =
+            self.parse_common(source_text.into(), path.as_ref().to_owned(), |parser| {
+                parser.parse_selection_set()
+            });
+        let file_id = FileId::new();
+        let ast = ast::from_cst::convert_selection_set(&tree.field_set(), file_id);
+        let mut selection_set = executable::SelectionSet::new(type_name);
+        let mut build_errors = executable::from_ast::BuildErrors {
+            errors: Vec::new(),
+            path: executable::SelectionPath {
+                nested_fields: Vec::new(),
+                // 🤷
+                root: executable::ExecutableDefinitionName::AnonymousOperation(
+                    ast::OperationType::Query,
+                ),
+            },
+        };
+        selection_set.extend_from_ast(Some(schema), &mut build_errors, &ast);
+        executable::FieldSet {
+            source: Some((file_id, source_file)),
+            build_errors: build_errors.errors,
+            selection_set,
+        }
     }
 
     /// What level of recursion was reached during the last call to a `parse_*` method.

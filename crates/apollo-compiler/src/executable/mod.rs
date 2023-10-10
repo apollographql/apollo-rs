@@ -44,6 +44,23 @@ pub struct ExecutableDocument {
     pub fragments: IndexMap<Name, Node<Fragment>>,
 }
 
+/// FieldSet information created for FieldSet parsing in `@requires` directive.
+/// Annotated with type information.
+#[derive(Debug, Clone)]
+pub struct FieldSet {
+    /// If this document was originally parsed from a source file,
+    /// that file and its ID.
+    ///
+    /// The document may have been modified since.
+    pub source: Option<(FileId, Arc<SourceFile>)>,
+
+    /// Errors that occurred when building this FieldSet,
+    /// either parsing a source file or converting from AST.
+    pub(crate) build_errors: Vec<BuildError>,
+
+    pub selection_set: SelectionSet,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operation {
     pub operation_type: OperationType,
@@ -176,8 +193,8 @@ pub(crate) enum BuildError {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct SelectionPath {
-    root: ExecutableDefinitionName,
-    nested_fields: Vec<Name>,
+    pub(crate) root: ExecutableDefinitionName,
+    pub(crate) nested_fields: Vec<Name>,
 }
 
 /// Designates by name a top-level definition in an executable document
@@ -670,6 +687,31 @@ impl FragmentSpread {
 
     pub fn fragment_def<'a>(&self, document: &'a ExecutableDocument) -> Option<&'a Node<Fragment>> {
         document.fragments.get(&self.fragment_name)
+    }
+}
+
+impl FieldSet {
+    /// Parse the given source a selection set with optional outer brackets.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// Create a [`Parser`] to use different parser configuration.
+    pub fn parse(
+        schema: &Schema,
+        type_name: impl Into<NamedType>,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> Self {
+        Parser::new().parse_field_set(schema, type_name, source_text, path)
+    }
+
+    pub fn validate(&self, schema: &Schema) -> Result<(), Diagnostics> {
+        let mut sources = schema.sources.clone();
+        sources.extend(self.source.clone());
+        let mut errors = Diagnostics::new(sources);
+        validation::validate_field_set(&mut errors, schema, self);
+        errors.into_result()
     }
 }
 
