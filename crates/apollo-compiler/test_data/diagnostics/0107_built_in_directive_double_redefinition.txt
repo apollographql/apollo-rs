@@ -1,0 +1,14 @@
+Error: the directive `@deprecated` is defined multiple times in the schema
+    ╭─[0107_built_in_directive_double_redefinition.graphql:22:12]
+    │
+ 17 │ directive @deprecated(
+    │            ─────┬────  
+    │                 ╰────── previous definition of `@deprecated` here
+    │ 
+ 22 │ directive @deprecated(
+    │            ─────┬────  
+    │                 ╰────── `@deprecated` redefined here
+    │ 
+    │ Help: remove or rename one of the definitions
+────╯
+

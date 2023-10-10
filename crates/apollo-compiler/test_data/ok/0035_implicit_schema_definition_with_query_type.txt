@@ -1,0 +1,18 @@
+0..31 @34 ObjectTypeDefinition {
+    description: None,
+    name: "Query",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        17..29 @34 FieldDefinition {
+            description: None,
+            name: "name",
+            arguments: [],
+            ty: Named(
+                "String",
+            ),
+            directives: [],
+        },
+    ],
+}
+

@@ -1,0 +1,11 @@
+schema @deprecated(reason: "The person who got promoted by shipping this product has moved on to another team.\nThe service will shut down next month.") {
+  query: Query
+}
+
+type Query {
+  importantData: Int
+}
+
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | SCHEMA
+
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT

@@ -14,18 +14,15 @@ fn merge_schemas(inputs: &[&str]) -> Result<String, MergeError> {
     let mut merged = Schema::new();
     for &input in inputs {
         let schema = Schema::parse(input, "schema.graphql");
-        merge_options_or(
-            &mut merged.schema_definition,
-            &schema.schema_definition,
-            |merged, new| {
-                let merged = merged.make_mut();
-                merge_options(&mut merged.description, &new.description)?;
-                merge_vecs(&mut merged.directives, &new.directives)?;
-                merge_options(&mut merged.query, &new.query)?;
-                merge_options(&mut merged.mutation, &new.mutation)?;
-                merge_options(&mut merged.subscription, &new.subscription)
-            },
-        )?;
+        {
+            let merged = merged.schema_definition.make_mut();
+            let new = &schema.schema_definition;
+            merge_options(&mut merged.description, &new.description)?;
+            merge_vecs(&mut merged.directives, &new.directives)?;
+            merge_options(&mut merged.query, &new.query)?;
+            merge_options(&mut merged.mutation, &new.mutation)?;
+            merge_options(&mut merged.subscription, &new.subscription)?
+        }
         merge_maps(
             &mut merged.directive_definitions,
             &schema.directive_definitions,
@@ -258,7 +255,8 @@ fn test_ok() {
             }
         "#,
     ];
-    let expected = r#"type Query {
+    let expected = expect_test::expect![
+        r#"type Query {
   t: T
 }
 
@@ -278,6 +276,7 @@ enum E {
   V1
   V2
 }
-"#;
-    assert_eq!(merge_schemas(&inputs).as_deref(), Ok(expected))
+"#
+    ];
+    expected.assert_eq(&merge_schemas(&inputs).unwrap());
 }

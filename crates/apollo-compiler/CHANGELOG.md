@@ -17,28 +17,50 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-<!--
 # [x.x.x] (unreleased) - 2023-mm-dd
 
-## Features
-- Add `validate_standalone_executable` function to validate an executable document without access to a schema, by [goto-bus-stop] in [pull/631], [issue/629]
+## BREAKING
 
-  This runs just those validations that can be done on operations without knowing the types of things.
+Assorted `Schema` API changes by [SimonSapin] in [pull/678]:
+- Type of the `schema_definition` field changed 
+  from `Option<SchemaDefinition>` to `SchemaDefinition`.
+  Default root operations based on object type names 
+  are now stored explicitly in `SchemaDefinition`.
+  Serialization relies on a heuristic to decide on implicit schema definition.
+- Removed `schema_definition_directives` method: no longer having an `Option` allows 
+  field `schema.schema_definition.directives` to be accessed directly
+- Removed `query_root_operation`, `mutation_root_operation`, and `subscription_root_operation`
+  methods. Instead `schema.schema_definition.query` etc can be accessed directly.
+
+## Features
+
+- Add opt-in configuration for “orphan” extensions to be “adopted”, by [SimonSapin] in [pull/678]
+
+  Type extensions and schema extensions without a corresponding definition
+  are normally ignored except for recording a validation error.
+  In this new mode, an implicit empty definition to extend is generated instead.
+  Because this behavior is non-standard it is not the default.
+  Configure a schema builder to opt in:
   ```rust
-  let compiler = ApolloCompiler::new();
-  let file_id = compiler.add_executable(r#"
-  {
-    user { ...userData }
-  }
-  "#, "query.graphql");
-  let diagnostics = compiler.db.validate_standalone_executable(file_id);
-  // Complains about `userData` fragment not existing, but does not complain about `user` being an unknown query.
+  let input = "extend type Query { x: Int }";
+  let schema = apollo_compiler::Schema::builder()
+      .adopt_orphan_extensions()
+      .parse(input, "schema.graphql")
+      .build();
+  schema.validate()?;
   ```
 
-[goto-bus-stop]: https://github.com/goto-bus-stop
-[pull/631]: https://github.com/apollographql/apollo-rs/pull/631
-[issue/629]: https://github.com/apollographql/apollo-rs/issues/629
--->
+
+## Fixes
+
+- Allow built-in directives to be redefined, by [SimonSapin] in [pull/684], [issue/656]
+- Allow schema extensions to extend a schema definition implied by object types named after default root operations, by [SimonSapin] in [pull/678], [issues/682]
+
+[SimonSapin]: https://github.com/SimonSapin
+[issue/656]: https://github.com/apollographql/apollo-rs/issues/656
+[issue/682]: https://github.com/apollographql/apollo-rs/issues/682
+[pull/678]: https://github.com/apollographql/apollo-rs/pull/678
+[pull/684]: https://github.com/apollographql/apollo-rs/pull/684
 
 # [1.0.0-beta.1](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-05
 
@@ -70,6 +92,25 @@ that provides structural sharing and copy-on-write semantics.
 
 
 # [0.11.2](https://crates.io/crates/apollo-compiler/0.11.2) - 2023-09-11
+
+## Features
+- Add `validate_standalone_executable` function to validate an executable document without access to a schema, by [goto-bus-stop] in [pull/631], [issue/629]
+
+  This runs just those validations that can be done on operations without knowing the types of things.
+  ```rust
+  let compiler = ApolloCompiler::new();
+  let file_id = compiler.add_executable(r#"
+  {
+    user { ...userData }
+  }
+  "#, "query.graphql");
+  let diagnostics = compiler.db.validate_standalone_executable(file_id);
+  // Complains about `userData` fragment not existing, but does not complain about `user` being an unknown query.
+  ```
+
+[goto-bus-stop]: https://github.com/goto-bus-stop
+[pull/631]: https://github.com/apollographql/apollo-rs/pull/631
+[issue/629]: https://github.com/apollographql/apollo-rs/issues/629
 
 ## Fixes
 - validate input value types, by [goto-bus-stop] in [pull/642]

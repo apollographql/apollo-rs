@@ -41,10 +41,7 @@ pub struct Schema {
     build_errors: Vec<BuildError>,
 
     /// The `schema` definition and its extensions, defining root operations
-    ///
-    /// For more convenient access to its directives regardless of `Option`,
-    /// see [`schema_definition_directives`][Self::schema_definition_directives]
-    pub schema_definition: Option<Node<SchemaDefinition>>,
+    pub schema_definition: Node<SchemaDefinition>,
 
     /// Built-in and explicit directive definitions
     pub directive_definitions: IndexMap<Name, Node<DirectiveDefinition>>,
@@ -332,15 +329,6 @@ impl Schema {
         }
     }
 
-    /// Directives of the `schema` definition and its extensions
-    pub fn schema_definition_directives(&self) -> &Directives {
-        if let Some(def) = &self.schema_definition {
-            &def.directives
-        } else {
-            Directives::EMPTY
-        }
-    }
-
     /// Returns the type with the given name, if it is a scalar type
     pub fn get_scalar(&self, name: &str) -> Option<&Node<ScalarType>> {
         if let Some(ExtendedType::Scalar(ty)) = self.types.get(name) {
@@ -395,72 +383,15 @@ impl Schema {
         }
     }
 
-    /// Returns the name of the object type for the `query` root operation
-    pub fn query_root_operation(&self) -> Option<&NamedType> {
-        if let Some(root_operations) = &self.schema_definition {
-            root_operations
-                .query
-                .as_ref()
-                .map(|component| &component.node)
-        } else {
-            self.default_root_operation(ast::OperationType::Query)
-        }
-    }
-
-    /// Returns the name of the object type for the `mutation` root operation
-    pub fn mutation_root_operation(&self) -> Option<&NamedType> {
-        if let Some(root_operations) = &self.schema_definition {
-            root_operations
-                .mutation
-                .as_ref()
-                .map(|component| &component.node)
-        } else {
-            self.default_root_operation(ast::OperationType::Mutation)
-        }
-    }
-
-    /// Returns the name of the object type for the `subscription` root operation
-    pub fn subscription_root_operation(&self) -> Option<&NamedType> {
-        if let Some(root_operations) = &self.schema_definition {
-            root_operations
-                .subscription
-                .as_ref()
-                .map(|component| &component.node)
-        } else {
-            self.default_root_operation(ast::OperationType::Subscription)
-        }
-    }
-
     /// Returns the name of the object type for the root operation with the given operation kind
     pub fn root_operation(&self, operation_type: ast::OperationType) -> Option<&NamedType> {
-        if let Some(root_operations) = &self.schema_definition {
-            match operation_type {
-                ast::OperationType::Query => &root_operations.query,
-                ast::OperationType::Mutation => &root_operations.mutation,
-                ast::OperationType::Subscription => &root_operations.subscription,
-            }
-            .as_ref()
-            .map(|component| &component.node)
-        } else {
-            self.default_root_operation(operation_type)
+        match operation_type {
+            ast::OperationType::Query => &self.schema_definition.query,
+            ast::OperationType::Mutation => &self.schema_definition.mutation,
+            ast::OperationType::Subscription => &self.schema_definition.subscription,
         }
-    }
-
-    fn default_root_operation(&self, operation_type: ast::OperationType) -> Option<&NamedType> {
-        let name = operation_type.default_type_name();
-        macro_rules! as_static {
-            () => {{
-                static OBJECT_TYPE_NAME: OnceLock<Name> = OnceLock::new();
-                OBJECT_TYPE_NAME.get_or_init(|| Name::new(name))
-            }};
-        }
-        self.get_object(name)
-            .is_some()
-            .then(|| match operation_type {
-                ast::OperationType::Query => as_static!(),
-                ast::OperationType::Mutation => as_static!(),
-                ast::OperationType::Subscription => as_static!(),
-            })
+        .as_ref()
+        .map(|component| &component.node)
     }
 
     /// Returns the definition of a type’s explicit field or meta-field.
@@ -581,7 +512,12 @@ impl Schema {
                 }),
             ]
         });
-        if self.query_root_operation().is_some_and(|n| n == type_name) {
+        if self
+            .schema_definition
+            .query
+            .as_ref()
+            .is_some_and(|n| n == type_name)
+        {
             // __typename: String!
             // __schema: __Schema!
             // __type(name: String!): __Type
@@ -886,8 +822,6 @@ impl InputObjectType {
 }
 
 impl Directives {
-    const EMPTY: &Self = &Self::new();
-
     pub const fn new() -> Self {
         Self(Vec::new())
     }

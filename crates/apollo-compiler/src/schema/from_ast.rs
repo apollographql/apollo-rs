@@ -2,9 +2,17 @@ use super::*;
 use indexmap::map::Entry;
 
 pub struct SchemaBuilder {
+    adopt_orphan_extensions: bool,
     schema: Schema,
-    orphan_schema_extensions: Vec<Node<ast::SchemaExtension>>,
+    schema_definition: SchemaDefinitionStatus,
     orphan_type_extensions: IndexMap<Name, Vec<ast::Definition>>,
+}
+
+enum SchemaDefinitionStatus {
+    Found,
+    NoneSoFar {
+        orphan_extensions: Vec<Node<ast::SchemaExtension>>,
+    },
 }
 
 impl Default for SchemaBuilder {
@@ -18,14 +26,23 @@ impl SchemaBuilder {
     /// and introspection types
     pub fn new() -> Self {
         let mut builder = SchemaBuilder {
+            adopt_orphan_extensions: false,
             schema: Schema {
                 sources: IndexMap::new(),
                 build_errors: Vec::new(),
-                schema_definition: None,
+                schema_definition: Node::new(SchemaDefinition {
+                    description: None,
+                    directives: Directives::default(),
+                    query: None,
+                    mutation: None,
+                    subscription: None,
+                }),
                 directive_definitions: IndexMap::new(),
                 types: IndexMap::new(),
             },
-            orphan_schema_extensions: Vec::new(),
+            schema_definition: SchemaDefinitionStatus::NoneSoFar {
+                orphan_extensions: Vec::new(),
+            },
             orphan_type_extensions: IndexMap::new(),
         };
 
@@ -44,10 +61,21 @@ impl SchemaBuilder {
         debug_assert!(
             builder.schema.build_errors.is_empty()
                 && builder.orphan_type_extensions.is_empty()
-                && builder.orphan_schema_extensions.is_empty()
-                && builder.schema.schema_definition.is_none(),
+                && matches!(
+                    &builder.schema_definition,
+                    SchemaDefinitionStatus::NoneSoFar { orphan_extensions }
+                    if orphan_extensions.is_empty()
+                )
         );
         builder
+    }
+
+    /// Configure the builder so that “orphan” schema extensions and type extensions
+    /// (without a corresponding definition) are “adopted”:
+    /// accepted as if extending an empty definition instead of being rejected as errors.
+    pub fn adopt_orphan_extensions(mut self) -> Self {
+        self.adopt_orphan_extensions = true;
+        self
     }
 
     /// Parse an input file with the default configuration as an additional input for this schema.
@@ -61,6 +89,12 @@ impl SchemaBuilder {
     /// Add an AST document to the schema being built
     ///
     /// Executable definitions, if any, will be silently ignored.
+    pub fn add_ast(mut self, document: &ast::Document) -> Self {
+        let executable_definitions_are_errors = true;
+        self.add_ast_document(document, executable_definitions_are_errors);
+        self
+    }
+
     pub(crate) fn add_ast_document(
         &mut self,
         document: &ast::Document,
@@ -71,21 +105,21 @@ impl SchemaBuilder {
         }
         for definition in &document.definitions {
             match definition {
-                ast::Definition::SchemaDefinition(def) => match &self.schema.schema_definition {
-                    None => {
-                        self.schema.schema_definition = Some(SchemaDefinition::from_ast(
+                ast::Definition::SchemaDefinition(def) => match &self.schema_definition {
+                    SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
+                        self.schema.schema_definition = SchemaDefinition::from_ast(
                             &mut self.schema.build_errors,
                             def,
-                            &self.orphan_schema_extensions,
-                        ));
-                        self.orphan_schema_extensions = Vec::new();
+                            orphan_extensions,
+                        );
+                        self.schema_definition = SchemaDefinitionStatus::Found;
                     }
-                    Some(previous) => {
+                    SchemaDefinitionStatus::Found => {
                         self.schema
                             .build_errors
                             .push(BuildError::SchemaDefinitionCollision {
                                 location: def.location(),
-                                previous_location: previous.location(),
+                                previous_location: self.schema.schema_definition.location(),
                             })
                     }
                 },
@@ -95,19 +129,28 @@ impl SchemaBuilder {
                             def.clone()
                         })
                     {
-                        self.schema
-                            .build_errors
-                            .push(BuildError::DirectiveDefinitionCollision {
-                                location: def.name.location(),
-                                previous_location: previous.name.location(),
-                                name: def.name.clone(),
-                            })
+                        if previous.is_built_in() {
+                            // https://github.com/apollographql/apollo-rs/issues/656
+                            // Re-defining a built-in definition is allowed, but only once.
+                            // (`is_built_in` is based on file ID, not directive name,
+                            // so the new definition won’t be considered built-in.)
+                            *previous = def.clone()
+                        } else {
+                            self.schema.build_errors.push(
+                                BuildError::DirectiveDefinitionCollision {
+                                    location: def.name.location(),
+                                    previous_location: previous.name.location(),
+                                    name: def.name.clone(),
+                                },
+                            )
+                        }
                     }
                 }
                 ast::Definition::ScalarTypeDefinition(def) => {
                     if let Err((prev_name, previous)) =
                         insert_sticky(&mut self.schema.types, &def.name, || {
                             ExtendedType::Scalar(ScalarType::from_ast(
+                                &mut self.schema.build_errors,
                                 def,
                                 self.orphan_type_extensions
                                     .remove(&def.name)
@@ -233,18 +276,20 @@ impl SchemaBuilder {
                             })
                     }
                 }
-                ast::Definition::SchemaExtension(ext) => {
-                    if let Some(root) = &mut self.schema.schema_definition {
-                        root.make_mut()
-                            .extend_ast(&mut self.schema.build_errors, ext)
-                    } else {
-                        self.orphan_schema_extensions.push(ext.clone())
+                ast::Definition::SchemaExtension(ext) => match &mut self.schema_definition {
+                    SchemaDefinitionStatus::Found => self
+                        .schema
+                        .schema_definition
+                        .make_mut()
+                        .extend_ast(&mut self.schema.build_errors, ext),
+                    SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
+                        orphan_extensions.push(ext.clone())
                     }
-                }
+                },
                 ast::Definition::ScalarTypeExtension(ext) => {
                     if let Some((_, ty_name, ty)) = self.schema.types.get_full_mut(&ext.name) {
                         if let ExtendedType::Scalar(ty) = ty {
-                            ty.make_mut().extend_ast(ext)
+                            ty.make_mut().extend_ast(&mut self.schema.build_errors, ext)
                         } else {
                             self.schema
                                 .build_errors
@@ -388,34 +433,154 @@ impl SchemaBuilder {
         }
     }
 
-    /// Returns the schema built from all added documents, and orphan extensions:
-    ///
-    /// * `Definition::SchemaExtension` variants if no `Definition::SchemaDefinition` was found
-    /// * `Definition::*TypeExtension` if no `Definition::*TypeDefinition` with the same name
-    ///   was found, or if it is a different kind of type
+    /// Returns the schema built from all added documents
     pub fn build(self) -> Schema {
         let SchemaBuilder {
+            adopt_orphan_extensions,
             mut schema,
-            orphan_schema_extensions,
+            schema_definition,
             orphan_type_extensions,
         } = self;
-        schema
-            .build_errors
-            .extend(orphan_schema_extensions.into_iter().map(|ext| {
-                BuildError::OrphanSchemaExtension {
-                    location: ext.location(),
+        match schema_definition {
+            SchemaDefinitionStatus::Found => {}
+            SchemaDefinitionStatus::NoneSoFar { orphan_extensions } => {
+                // This a macro rather than a closure to generate separate `static`s
+                let mut has_implicit_root_operation = false;
+                macro_rules! default_root_operation {
+                    ($($operation_type: path: $root_operation: expr,)+) => {{
+                        $(
+                            let name = $operation_type.default_type_name();
+                            if let Some(ExtendedType::Object(_)) = schema.types.get(name) {
+                                static OBJECT_TYPE_NAME: OnceLock<ComponentStr> = OnceLock::new();
+                                $root_operation = Some(OBJECT_TYPE_NAME.get_or_init(|| {
+                                    Name::new(name).to_component(ComponentOrigin::Definition)
+                                }).clone());
+                                has_implicit_root_operation = true;
+                            }
+                        )+
+                    }};
                 }
-            }));
-        schema
-            .build_errors
-            .extend(orphan_type_extensions.into_values().flatten().map(|ext| {
-                let name = ext.name().unwrap().clone();
-                BuildError::OrphanTypeExtension {
-                    location: name.location(),
-                    name,
+                let schema_def = schema.schema_definition.make_mut();
+                default_root_operation!(
+                    ast::OperationType::Query: schema_def.query,
+                    ast::OperationType::Mutation: schema_def.mutation,
+                    ast::OperationType::Subscription: schema_def.subscription,
+                );
+
+                let apply_schema_extensions =
+                    // https://github.com/apollographql/apollo-rs/issues/682
+                    // If we have no explict `schema` definition but do have object type(s)
+                    // with a default type name for root operations,
+                    // an implicit schema definition is generated with those root operations.
+                    // That implict definition can be extended:
+                    has_implicit_root_operation ||
+                    // https://github.com/apollographql/apollo-rs/pull/678
+                    // In this opt-in mode we unconditionally assume
+                    // an implicit schema definition to extend
+                    adopt_orphan_extensions;
+                if apply_schema_extensions {
+                    for ext in &orphan_extensions {
+                        schema_def.extend_ast(&mut schema.build_errors, ext)
+                    }
+                } else {
+                    schema
+                        .build_errors
+                        .extend(orphan_extensions.into_iter().map(|ext| {
+                            BuildError::OrphanSchemaExtension {
+                                location: ext.location(),
+                            }
+                        }));
                 }
-            }));
+            }
+        }
+        // https://github.com/apollographql/apollo-rs/pull/678
+        if adopt_orphan_extensions {
+            for (type_name, extensions) in orphan_type_extensions {
+                let type_def = adopt_type_extensions(&mut schema, &type_name, &extensions);
+                let previous = schema.types.insert(type_name, type_def);
+                assert!(previous.is_none());
+            }
+        } else {
+            schema
+                .build_errors
+                .extend(orphan_type_extensions.into_values().flatten().map(|ext| {
+                    let name = ext.name().unwrap().clone();
+                    BuildError::OrphanTypeExtension {
+                        location: name.location(),
+                        name,
+                    }
+                }));
+        }
         schema
+    }
+}
+
+fn adopt_type_extensions(
+    schema: &mut Schema,
+    type_name: &NodeStr,
+    extensions: &[ast::Definition],
+) -> ExtendedType {
+    macro_rules! extend {
+        ($( $ExtensionVariant: path => $describe: literal $empty_def: expr )+) => {
+            match &extensions[0] {
+                $(
+                    $ExtensionVariant(_) => {
+                        let mut def = $empty_def;
+                        for ext in extensions {
+                            if let $ExtensionVariant(ext) = ext {
+                                def.extend_ast(&mut schema.build_errors, ext)
+                            } else {
+                                let ext_name = ext.name().unwrap();
+                                schema
+                                    .build_errors
+                                    .push(BuildError::TypeExtensionKindMismatch {
+                                        location: ext_name.location(),
+                                        name: ext_name.clone(),
+                                        describe_ext: ext.describe(),
+                                        def_location: type_name.location(),
+                                        describe_def: $describe,
+                                    })
+                            }
+                        }
+                        def.into()
+                    }
+                )+
+                _ => unreachable!(),
+            }
+        };
+    }
+    extend! {
+        ast::Definition::ScalarTypeExtension => "a scalar type" ScalarType {
+            description: Default::default(),
+            directives: Default::default(),
+        }
+        ast::Definition::ObjectTypeExtension => "an object type" ObjectType {
+            description: Default::default(),
+            implements_interfaces: Default::default(),
+            directives: Default::default(),
+            fields: Default::default(),
+        }
+        ast::Definition::InterfaceTypeExtension => "an interface type" InterfaceType {
+            description: Default::default(),
+            implements_interfaces: Default::default(),
+            directives: Default::default(),
+            fields: Default::default(),
+        }
+        ast::Definition::UnionTypeExtension => "a union type" UnionType {
+            description: Default::default(),
+            directives: Default::default(),
+            members: Default::default(),
+        }
+        ast::Definition::EnumTypeExtension => "an enum type" EnumType {
+            description: Default::default(),
+            directives: Default::default(),
+            values: Default::default(),
+        }
+        ast::Definition::InputObjectTypeExtension => "an input object type" InputObjectType {
+            description: Default::default(),
+            directives: Default::default(),
+            fields: Default::default(),
+        }
     }
 }
 
@@ -485,6 +650,7 @@ impl SchemaDefinition {
 
 impl ScalarType {
     fn from_ast(
+        errors: &mut [BuildError],
         definition: &Node<ast::ScalarTypeDefinition>,
         extensions: Vec<ast::Definition>,
     ) -> Node<Self> {
@@ -498,13 +664,17 @@ impl ScalarType {
         };
         for def in &extensions {
             if let ast::Definition::ScalarTypeExtension(ext) = def {
-                ty.extend_ast(ext)
+                ty.extend_ast(errors, ext)
             }
         }
         definition.same_location(ty)
     }
 
-    fn extend_ast(&mut self, extension: &Node<ast::ScalarTypeExtension>) {
+    fn extend_ast(
+        &mut self,
+        _errors: &mut [BuildError],
+        extension: &Node<ast::ScalarTypeExtension>,
+    ) {
         let origin = ComponentOrigin::Extension(ExtensionId::new(extension));
         self.directives.extend(
             extension
@@ -899,13 +1069,16 @@ fn insert_sticky<'map, V>(
     map: &'map mut IndexMap<Name, V>,
     key: &Name,
     make_value: impl FnOnce() -> V,
-) -> Result<(), (&'map Name, &'map V)> {
+) -> Result<(), (&'map Name, &'map mut V)> {
     match map.entry(key.clone()) {
         Entry::Vacant(entry) => {
             entry.insert(make_value());
             Ok(())
         }
-        Entry::Occupied(_) => Err(map.get_key_value(key).unwrap()),
+        Entry::Occupied(_) => {
+            let (_index, key, value) = map.get_full_mut(key).unwrap();
+            Err((key, value))
+        }
     }
 }
 
