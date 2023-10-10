@@ -1,0 +1,36 @@
+0..31 @36 ObjectTypeDefinition {
+    description: None,
+    name: "Query",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        17..29 @36 FieldDefinition {
+            description: None,
+            name: "name",
+            arguments: [],
+            ty: Named(
+                "String",
+            ),
+            directives: [],
+        },
+    ],
+}
+33..51 @36 SchemaExtension {
+    directives: [
+        47..51 @36 Directive {
+            name: "dir",
+            arguments: [],
+        },
+    ],
+    root_operations: [],
+}
+52..76 @36 DirectiveDefinition {
+    description: None,
+    name: "dir",
+    arguments: [],
+    repeatable: false,
+    locations: [
+        "SCHEMA",
+    ],
+}
+
