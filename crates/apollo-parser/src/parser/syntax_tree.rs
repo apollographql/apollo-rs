@@ -52,7 +52,7 @@ pub(crate) enum SyntaxTreeWrapper {
 }
 
 #[derive(PartialEq, Eq, Clone)]
-pub struct SyntaxTree<T: CstNode> {
+pub struct SyntaxTree<T: CstNode = cst::Document> {
     pub(crate) green: GreenNode,
     pub(crate) errors: Vec<crate::Error>,
     pub(crate) recursion_limit: LimitTracker,

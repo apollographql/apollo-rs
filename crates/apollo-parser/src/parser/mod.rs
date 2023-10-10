@@ -681,7 +681,7 @@ mod tests {
             assert!(ast.errors[0].message.contains("recursion limit reached"));
         });
 
-        fn deep(count: usize, each: impl Fn(SyntaxTree<cst::Document>)) {
+        fn deep(count: usize, each: impl Fn(SyntaxTree)) {
             let check = |input: String| each(Parser::new(&input).parse());
 
             // Nested list type
@@ -721,7 +721,7 @@ mod tests {
             check(doc);
         }
 
-        fn wide(count: usize, each: impl Fn(SyntaxTree<cst::Document>)) {
+        fn wide(count: usize, each: impl Fn(SyntaxTree)) {
             let check = |input: String| each(Parser::new(&input).parse());
 
             // Repeated top-level definitions
