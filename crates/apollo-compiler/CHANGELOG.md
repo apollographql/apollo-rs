@@ -19,6 +19,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 # [x.x.x] (unreleased) - 2023-mm-dd
 
+## BREAKING
+
+Assorted `Schema` API changes by [SimonSapin] in [pull/678]:
+- Type of the `schema_definition` field changed 
+  from `Option<SchemaDefinition>` to `SchemaDefinition`.
+  Default root operations based on object type names 
+  are now stored explicitly in `SchemaDefinition`.
+  Serialization relies on a heuristic to decide on implicit schema definition.
+- Removed `schema_definition_directives` method: no longer having an `Option` allows 
+  field `schema.schema_definition.directives` to be accessed directly
+- Removed `query_root_operation`, `mutation_root_operation`, and `subscription_root_operation`
+  methods. Instead `schema.schema_definition.query` etc can be accessed directly.
+
 ## Features
 
 - Add opt-in configuration for “orphan” extensions to be “adopted”, by [SimonSapin] in [pull/678]
@@ -37,14 +50,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   schema.validate()?;
   ```
 
-[pull/678]: https://github.com/apollographql/apollo-rs/pull/678
 
 ## Fixes
 
 - Allow built-in directives to be redefined, by [SimonSapin] in [pull/684], [issue/656]
+- Allow schema extensions to extend a schema definition implied by object types named after default root operations, by [SimonSapin] in [pull/678], [issues/682]
 
-[pull/684]: https://github.com/apollographql/apollo-rs/pull/684
+[SimonSapin]: https://github.com/SimonSapin
 [issue/656]: https://github.com/apollographql/apollo-rs/issues/656
+[issue/682]: https://github.com/apollographql/apollo-rs/issues/682
+[pull/678]: https://github.com/apollographql/apollo-rs/pull/678
+[pull/684]: https://github.com/apollographql/apollo-rs/pull/684
 
 # [1.0.0-beta.1](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-05
 
