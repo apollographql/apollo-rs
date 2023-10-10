@@ -1,0 +1,7 @@
+type Query {
+  name: String
+}
+
+extend schema {
+  query: Query
+}

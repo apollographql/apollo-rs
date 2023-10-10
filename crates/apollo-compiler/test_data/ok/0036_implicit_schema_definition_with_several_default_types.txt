@@ -1,0 +1,62 @@
+0..31 @35 ObjectTypeDefinition {
+    description: None,
+    name: "Query",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        17..29 @35 FieldDefinition {
+            description: None,
+            name: "name",
+            arguments: [],
+            ty: Named(
+                "String",
+            ),
+            directives: [],
+        },
+    ],
+}
+33..81 @35 ObjectTypeDefinition {
+    description: None,
+    name: "Mutation",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        52..79 @35 FieldDefinition {
+            description: None,
+            name: "add",
+            arguments: [
+                56..69 @35 InputValueDefinition {
+                    description: None,
+                    name: "name",
+                    ty: 62..69 @35 NonNullNamed(
+                        "String",
+                    ),
+                    default_value: None,
+                    directives: [],
+                },
+            ],
+            ty: NonNullNamed(
+                "Result",
+            ),
+            directives: [],
+        },
+    ],
+}
+83..111 @35 ObjectTypeDefinition {
+    description: None,
+    name: "Result",
+    implements_interfaces: [],
+    directives: [],
+    fields: [
+        99..109 @35 FieldDefinition {
+            description: None,
+            name: "id",
+            arguments: [],
+            ty: Named(
+                "String",
+            ),
+            directives: [],
+        },
+    ],
+}
+
