@@ -17,17 +17,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Maintenance
 ## Documentation-->
 
-# [x.x.x] (unreleased) - 2023-mm-dd
+# [1.0.0-beta.2](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-10
 
 ## BREAKING
 
 Assorted `Schema` API changes by [SimonSapin] in [pull/678]:
-- Type of the `schema_definition` field changed 
+- Type of the `schema_definition` field changed
   from `Option<SchemaDefinition>` to `SchemaDefinition`.
-  Default root operations based on object type names 
+  Default root operations based on object type names
   are now stored explicitly in `SchemaDefinition`.
   Serialization relies on a heuristic to decide on implicit schema definition.
-- Removed `schema_definition_directives` method: no longer having an `Option` allows 
+- Removed `schema_definition_directives` method: no longer having an `Option` allows
   field `schema.schema_definition.directives` to be accessed directly
 - Removed `query_root_operation`, `mutation_root_operation`, and `subscription_root_operation`
   methods. Instead `schema.schema_definition.query` etc can be accessed directly.
@@ -39,13 +39,29 @@ Assorted `Schema` API changes by [SimonSapin] in [pull/678]:
   used in some Apollo Federation directives in the context of a specific schema and type.
   Its `validate` method calls a subset of validation rules relevant to selection sets.
   which is not part of a document.
+  ```rust
+  let input = r#"
+    type Query {
+      id: ID
+      organization: Org
+    }
+    type Org {
+      id: ID
+    }
+  "#;
+  let schema = Schema::parse(input, "schema.graphql");
+  schema.validate().unwrap();
+  let input = "id organization { id }";
+  let field_set = FieldSet::parse(&schema, "Query", input, "field_set.graphql");
+  field_set.validate(&schema).unwrap();
+  ```
 
 - **Add opt-in configuration for “orphan” extensions to be “adopted” - [SimonSapin], [pull/678]**
 
   Type extensions and schema extensions without a corresponding definition
   are normally ignored except for recording a validation error.
   In this new mode, an implicit empty definition to extend is generated instead.
-  Because this behavior is non-standard it is not the default.
+  This behavious is not the default, as it's non-standard.
   Configure a schema builder to opt in:
   ```rust
   let input = "extend type Query { x: Int }";
@@ -78,7 +94,7 @@ Assorted `Schema` API changes by [SimonSapin] in [pull/678]:
 Compared to 0.11, version 1.0 is a near-complete rewrite of the library
 and revamp of the public API.
 While in beta, there may still be breaking changes (though not as dramatic)
-until 1.0.0 “final”. 
+until 1.0.0 “final”.
 If using a beta version, we recommend specifying an exact dependency in `Cargo.toml`:
 
 ```toml
@@ -91,8 +107,8 @@ The API is now centered on `Schema` and `ExecutableDocument` types.
 Users no longer need to create a compiler, add inputs to it, and track them by ID.
 Validation is now a method of these types, and returns a `Result` to indicate errors.
 
-These types are serializable 
-(through `Display`, `.to_string()`, and a `.serialize()` config builder), 
+These types are serializable
+(through `Display`, `.to_string()`, and a `.serialize()` config builder),
 integrating the functionality of the apollo-encoder crate.
 
 They are also mutable, and can be created programmatically out of thin air.
