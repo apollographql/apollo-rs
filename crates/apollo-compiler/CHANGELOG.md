@@ -34,7 +34,13 @@ Assorted `Schema` API changes by [SimonSapin] in [pull/678]:
 
 ## Features
 
-- Add opt-in configuration for “orphan” extensions to be “adopted”, by [SimonSapin] in [pull/678]
+- **Add `executable::FieldSet` for a selection set with optional outer brackets - [lrlna], [pull/685] fixing [issue/681]**
+  This is intended to parse string value of a [`FieldSet` custom scalar][fieldset]
+  used in some Apollo Federation directives, in the context of a specific schema and type.
+  Its `validate` method calls the subset of validation rules relevan to a selection set
+  which is not part of a document.
+
+- **Add opt-in configuration for “orphan” extensions to be “adopted” - [SimonSapin], [pull/678]**
 
   Type extensions and schema extensions without a corresponding definition
   are normally ignored except for recording a validation error.
@@ -50,17 +56,20 @@ Assorted `Schema` API changes by [SimonSapin] in [pull/678]:
   schema.validate()?;
   ```
 
-
 ## Fixes
 
-- Allow built-in directives to be redefined, by [SimonSapin] in [pull/684], [issue/656]
-- Allow schema extensions to extend a schema definition implied by object types named after default root operations, by [SimonSapin] in [pull/678], [issues/682]
+- **Allow built-in directives to be redefined - [SimonSapin], [pull/684] fixing [issue/656]**
+- **Allow schema extensions to extend a schema definition implied by object types named after default root operations - [SimonSapin], [pull/678] fixing [issues/682]**
 
+[lrlna]: https://github.com/lrlna
 [SimonSapin]: https://github.com/SimonSapin
 [issue/656]: https://github.com/apollographql/apollo-rs/issues/656
 [issue/682]: https://github.com/apollographql/apollo-rs/issues/682
+[issue/681]: https://github.com/apollographql/apollo-rs/issues/681
 [pull/678]: https://github.com/apollographql/apollo-rs/pull/678
 [pull/684]: https://github.com/apollographql/apollo-rs/pull/684
+[pull/685]: https://github.com/apollographql/apollo-rs/pull/685
+[fieldset]: https://www.apollographql.com/docs/federation/subgraph-spec/#scalar-fieldset
 
 # [1.0.0-beta.1](https://crates.io/crates/apollo-compiler/1.0.0-beta.1) - 2023-10-05
 
