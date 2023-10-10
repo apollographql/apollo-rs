@@ -19,9 +19,9 @@
 
 ## Features
 
-* A (comparatively) low-level AST for GraphQL grammar, 
+* A (comparatively) low-level AST for GraphQL grammar,
   and high-level representation of `Schema` and `ExecutableDocument`.
-* All three can be parsed (using `apollo-parser` internally), 
+* All three can be parsed (using `apollo-parser` internally),
   created or modified programatically,
   and serialized.
 * Validation of schemas and executable documents, as defined [in the GraphQL specification][val].
@@ -39,7 +39,7 @@ Or add this to your `Cargo.toml` for a manual installation:
 ```toml
 # Just an example, change to the necessary package version.
 [dependencies]
-apollo-compiler = "0.11.0"
+apollo-compiler = "1.0.0-beta.2"
 ```
 
 ## Rust versions
