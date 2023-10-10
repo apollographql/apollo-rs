@@ -306,6 +306,16 @@ pub struct EnumValueDefinition {
     pub directives: Directives,
 }
 
+#[derive(Clone)]
+pub struct FieldSet {
+    /// If this document was originally parsed from a source file,
+    /// that file and its ID.
+    ///
+    /// The document may have been modified since.
+    pub source: Option<(FileId, Arc<SourceFile>)>,
+    pub selections: Vec<Selection>,
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Selection {
     Field(Node<Field>),

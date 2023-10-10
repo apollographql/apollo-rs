@@ -1,5 +1,6 @@
 use crate::ast;
 use crate::ast::Document;
+use crate::ast::FieldSet;
 use crate::FileId;
 use crate::Node;
 use crate::NodeLocation;
@@ -21,6 +22,22 @@ impl Document {
             definitions: document
                 .definitions()
                 .filter_map(|def| def.convert(file_id))
+                .collect(),
+        }
+    }
+}
+
+impl FieldSet {
+    pub(crate) fn from_cst(
+        selection_set: cst::SelectionSet,
+        file_id: FileId,
+        source_file: Arc<SourceFile>,
+    ) -> Self {
+        Self {
+            source: Some((file_id, source_file)),
+            selections: selection_set
+                .selections()
+                .filter_map(|sel_set| sel_set.convert(file_id))
                 .collect(),
         }
     }

@@ -44,6 +44,23 @@ pub struct ExecutableDocument {
     pub fragments: IndexMap<Name, Node<Fragment>>,
 }
 
+/// FieldSet information created for FieldSet parsing in `@requires` directive.
+/// Annotated with type information.
+#[derive(Debug, Clone, Default)]
+pub struct FieldSet {
+    /// If this document was originally parsed from a source file,
+    /// that file and its ID.
+    ///
+    /// The document may have been modified since.
+    pub source: Option<(FileId, Arc<SourceFile>)>,
+
+    /// Errors that occurred when building this FieldSet,
+    /// either parsing a source file or converting from AST.
+    build_errors: Vec<BuildError>,
+
+    pub selection_set: Vec<Selection>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Operation {
     pub operation_type: OperationType,

@@ -1,4 +1,6 @@
 use crate::ast::Document;
+use crate::ast::FieldSet;
+use crate::executable;
 use crate::schema::SchemaBuilder;
 use crate::validation::Details;
 use crate::validation::Diagnostics;
@@ -78,6 +80,33 @@ impl Parser {
         self.parse_with_file_id(source_text.into(), path.as_ref().to_owned(), FileId::new())
     }
 
+    pub(crate) fn parse_field_set_ast(
+        &mut self,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> FieldSet {
+        let mut path = path.as_ref().to_owned();
+        let source_text = source_text.into();
+        let file_id = FileId::new();
+        let mut parser = apollo_parser::Parser::new(&source_text);
+        let mut parser = apollo_parser::Parser::new(&source_text);
+        if let Some(value) = self.recursion_limit {
+            parser = parser.recursion_limit(value)
+        }
+        if let Some(value) = self.token_limit {
+            parser = parser.token_limit(value)
+        }
+        let tree = parser.parse_selection_set();
+        self.recursion_reached = tree.recursion_limit().high;
+        self.tokens_reached = tree.token_limit().high;
+        let source_file = Arc::new(SourceFile {
+            path,
+            source_text,
+            parse_errors: tree.errors().cloned().collect(),
+        });
+        FieldSet::from_cst(tree.field_set(), file_id, source_file)
+    }
+
     pub(crate) fn parse_with_file_id(
         &mut self,
         source_text: String,
@@ -152,6 +181,23 @@ impl Parser {
         path: impl AsRef<Path>,
     ) -> ExecutableDocument {
         self.parse_ast(source_text, path).to_executable(schema)
+    }
+
+    /// Parse the given source text into a selection set, with the given schema.
+    ///
+    /// `path` is the filesystem path (or arbitrary string) used in diagnostics
+    /// to identify this source file to users.
+    ///
+    /// Parsing is fault-tolerant, so a selection set node is always returned.
+    /// TODO: document how to validate
+    pub fn parse_field_set(
+        &mut self,
+        schema: &Schema,
+        source_text: impl Into<String>,
+        path: impl AsRef<Path>,
+    ) -> executable::FieldSet {
+        self.parse_field_set_ast(source_text, path)
+            .to_field_set(schema)
     }
 
     /// Parse a schema and executable document from the given source text
