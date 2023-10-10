@@ -38,7 +38,7 @@ use crate::SourceFile;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-mod from_cst;
+pub(crate) mod from_cst;
 pub(crate) mod impls;
 pub(crate) mod serialize;
 
@@ -304,16 +304,6 @@ pub struct EnumValueDefinition {
     pub description: Option<NodeStr>,
     pub value: Name,
     pub directives: Directives,
-}
-
-#[derive(Clone)]
-pub struct FieldSet {
-    /// If this document was originally parsed from a source file,
-    /// that file and its ID.
-    ///
-    /// The document may have been modified since.
-    pub source: Option<(FileId, Arc<SourceFile>)>,
-    pub selections: Vec<Selection>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]

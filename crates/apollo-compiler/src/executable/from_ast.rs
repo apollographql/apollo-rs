@@ -1,8 +1,8 @@
 use super::*;
 
-struct BuildErrors {
-    errors: Vec<BuildError>,
-    path: SelectionPath,
+pub(crate) struct BuildErrors {
+    pub(crate) errors: Vec<BuildError>,
+    pub(crate) path: SelectionPath,
 }
 
 pub(crate) fn document_from_ast(
@@ -96,30 +96,6 @@ pub(crate) fn document_from_ast(
     }
 }
 
-pub(crate) fn field_set_from_ast(
-    schema: Option<&Schema>,
-    field_set: &ast::FieldSet,
-    type_system_definitions_are_errors: bool,
-) -> FieldSet {
-    let mut errors = BuildErrors {
-        errors: Vec::new(),
-        path: SelectionPath {
-            nested_fields: Vec::new(),
-            // overwritten:
-            root: ExecutableDefinitionName::AnonymousOperation(ast::OperationType::Query),
-        },
-    };
-
-    let selection_set =
-        SelectionSet::extend_from_ast(&mut self, schema, &mut errors, &field_set.selections);
-
-    FieldSet {
-        source: field_set.source.clone(),
-        build_errors: errors.errors,
-        selection_set: todo!(),
-    }
-}
-
 impl Operation {
     fn from_ast(
         schema: Option<&Schema>,
@@ -171,7 +147,7 @@ impl Fragment {
 }
 
 impl SelectionSet {
-    fn extend_from_ast(
+    pub(crate) fn extend_from_ast(
         &mut self,
         schema: Option<&Schema>,
         errors: &mut BuildErrors,

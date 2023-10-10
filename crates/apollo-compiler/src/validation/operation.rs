@@ -5,7 +5,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct OperationValidationConfig<'vars> {
+pub(crate) struct OperationValidationConfig<'vars> {
     /// When false, rules that require a schema to validate are disabled.
     pub has_schema: bool,
     /// The variables defined for this operation.

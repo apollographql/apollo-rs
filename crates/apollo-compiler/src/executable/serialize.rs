@@ -48,7 +48,7 @@ impl Node<Fragment> {
 }
 
 impl SelectionSet {
-    fn to_ast(&self) -> Vec<ast::Selection> {
+    pub(crate) fn to_ast(&self) -> Vec<ast::Selection> {
         self.selections
             .iter()
             .map(|selection| match selection {

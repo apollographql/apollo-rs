@@ -1,6 +1,4 @@
 use super::*;
-use crate::ast::FieldSet;
-use crate::executable;
 use crate::node::NodeLocation;
 use crate::schema::SchemaBuilder;
 use crate::validation::Diagnostics;
@@ -619,17 +617,6 @@ impl InputValueDefinition {
 
 impl EnumValueDefinition {
     serialize_method!();
-}
-
-impl FieldSet {
-    pub fn to_field_set(&self, schema: &Schema) -> executable::FieldSet {
-        let type_system_definitions_are_errors = true;
-        crate::executable::from_ast::field_set_from_ast(
-            Some(schema),
-            self,
-            type_system_definitions_are_errors,
-        )
-    }
 }
 
 impl Selection {
