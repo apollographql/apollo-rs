@@ -48,7 +48,7 @@ use super::LimitTracker;
 // complex design than necessary.
 pub(crate) enum SyntaxTreeWrapper {
     Document(SyntaxTree<cst::Document>),
-    FieldSet(SyntaxTree<cst::SelectionSet>),
+    SelectionSet(SyntaxTree<cst::SelectionSet>),
 }
 
 #[derive(PartialEq, Eq, Clone)]
@@ -188,33 +188,38 @@ impl SyntaxTreeBuilder {
         self.builder.token(rowan::SyntaxKind(kind as u16), text);
     }
 
-    pub(crate) fn finish(
+    pub(crate) fn finish_document(
         self,
-        field_set: bool,
         errors: Vec<Error>,
         recursion_limit: LimitTracker,
         token_limit: LimitTracker,
     ) -> SyntaxTreeWrapper {
-        match field_set {
-            true => SyntaxTreeWrapper::FieldSet(SyntaxTree {
-                green: self.builder.finish(),
-                // TODO: keep the errors in the builder rather than pass it in here?
-                errors,
-                // TODO: keep the recursion and token limits in the builder rather than pass it in here?
-                recursion_limit,
-                token_limit,
-                _phantom: PhantomData,
-            }),
-            false => SyntaxTreeWrapper::Document(SyntaxTree {
-                green: self.builder.finish(),
-                // TODO: keep the errors in the builder rather than pass it in here?
-                errors,
-                // TODO: keep the recursion and token limits in the builder rather than pass it in here?
-                recursion_limit,
-                token_limit,
-                _phantom: PhantomData,
-            }),
-        }
+        SyntaxTreeWrapper::Document(SyntaxTree {
+            green: self.builder.finish(),
+            // TODO: keep the errors in the builder rather than pass it in here?
+            errors,
+            // TODO: keep the recursion and token limits in the builder rather than pass it in here?
+            recursion_limit,
+            token_limit,
+            _phantom: PhantomData,
+        })
+    }
+
+    pub(crate) fn finish_selection_set(
+        self,
+        errors: Vec<Error>,
+        recursion_limit: LimitTracker,
+        token_limit: LimitTracker,
+    ) -> SyntaxTreeWrapper {
+        SyntaxTreeWrapper::SelectionSet(SyntaxTree {
+            green: self.builder.finish(),
+            // TODO: keep the errors in the builder rather than pass it in here?
+            errors,
+            // TODO: keep the recursion and token limits in the builder rather than pass it in here?
+            recursion_limit,
+            token_limit,
+            _phantom: PhantomData,
+        })
     }
 }
 
