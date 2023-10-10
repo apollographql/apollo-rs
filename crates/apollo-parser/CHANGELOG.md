@@ -17,7 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Documentation -->
 
-# [x.x.x] (unreleased) - 2022-mm-dd
+# [0.7.1](https://crates.io/crates/apollo-parser/0.7.1) - 2023-10-10
 
 ## Features
 - **`parse_field_set` parses a selection set with optional outer brackets - [lrlna], [pull/685] fixing [issue/681]**
@@ -25,6 +25,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   has `.field_set() -> cst::SelectionSet`.
   This is intended to parse string value of a [`FieldSet` custom scalar][fieldset]
   used in some Apollo Federation directives.
+  ```rust
+  let source = r#"a { a }"#;
+
+  let parser = Parser::new(source);
+  let cst: SyntaxTree<cst::SelectionSet> = parser.parse_selection_set();
+  let errors = cst.errors().collect::<Vec<_>>();
+  assert_eq!(errors.len(), 0);
+  ```
 
 [lrlna]: https://github.com/lrlna
 [pull/685]: https://github.com/apollographql/apollo-rs/pull/685
