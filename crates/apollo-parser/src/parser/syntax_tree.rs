@@ -48,7 +48,7 @@ use super::LimitTracker;
 // complex design than necessary.
 pub(crate) enum SyntaxTreeWrapper {
     Document(SyntaxTree<cst::Document>),
-    SelectionSet(SyntaxTree<cst::SelectionSet>),
+    FieldSet(SyntaxTree<cst::SelectionSet>),
 }
 
 #[derive(PartialEq, Eq, Clone)]
@@ -97,7 +97,7 @@ impl SyntaxTree<cst::Document> {
 impl SyntaxTree<cst::SelectionSet> {
     /// Return the root typed `SelectionSet` node. This is used for parsing
     /// selection sets defined by @requires directive.
-    pub fn selection_set(&self) -> cst::SelectionSet {
+    pub fn field_set(&self) -> cst::SelectionSet {
         cst::SelectionSet {
             syntax: self.syntax_node(),
         }
@@ -211,7 +211,7 @@ impl SyntaxTreeBuilder {
         recursion_limit: LimitTracker,
         token_limit: LimitTracker,
     ) -> SyntaxTreeWrapper {
-        SyntaxTreeWrapper::SelectionSet(SyntaxTree {
+        SyntaxTreeWrapper::FieldSet(SyntaxTree {
             green: self.builder.finish(),
             // TODO: keep the errors in the builder rather than pass it in here?
             errors,

@@ -146,14 +146,14 @@ impl<'a> Parser<'a> {
 
         match builder {
             syntax_tree::SyntaxTreeWrapper::Document(tree) => tree,
-            syntax_tree::SyntaxTreeWrapper::SelectionSet(_) => {
+            syntax_tree::SyntaxTreeWrapper::FieldSet(_) => {
                 unreachable!("parse constructor can only construct a document")
             }
         }
     }
 
     pub fn parse_selection_set(mut self) -> SyntaxTree<SelectionSet> {
-        grammar::selection::selection_set(&mut self);
+        grammar::selection::field_set(&mut self);
 
         let builder = Rc::try_unwrap(self.builder)
             .expect("More than one reference to builder left")
@@ -165,7 +165,7 @@ impl<'a> Parser<'a> {
         );
 
         match builder {
-            syntax_tree::SyntaxTreeWrapper::SelectionSet(tree) => tree,
+            syntax_tree::SyntaxTreeWrapper::FieldSet(tree) => tree,
             syntax_tree::SyntaxTreeWrapper::Document(_) => {
                 unreachable!("parse constructor can only construct a selection set")
             }
@@ -828,10 +828,28 @@ mod tests {
         let errors = cst.errors().collect::<Vec<_>>();
         assert_eq!(errors.len(), 0);
 
-        let sel_set: cst::SelectionSet = cst.selection_set();
+        let sel_set: cst::SelectionSet = cst.field_set();
         let _ = sel_set.selections().map(|sel| {
             if let cst::Selection::Field(f) = sel {
                 assert_eq!(f.name().unwrap().text().as_ref(), "a")
+            } else {
+                panic!("no field a in field set selection")
+            }
+        });
+
+        let source = r#"a { a }"#;
+
+        let parser = Parser::new(source);
+        let cst: SyntaxTree<cst::SelectionSet> = parser.parse_selection_set();
+        let errors = cst.errors().collect::<Vec<_>>();
+        assert_eq!(errors.len(), 0);
+
+        let sel_set: cst::SelectionSet = cst.field_set();
+        let _ = sel_set.selections().map(|sel| {
+            if let cst::Selection::Field(f) = sel {
+                assert_eq!(f.name().unwrap().text().as_ref(), "a")
+            } else {
+                panic!("no field a in field set selection")
             }
         });
     }
