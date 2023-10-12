@@ -35,7 +35,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleReqs(req1:)",
+            name: "req1",
         },
     },
     ApolloDiagnostic {
@@ -74,7 +74,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleReqs(req2:)",
+            name: "req2",
         },
     },
     ApolloDiagnostic {
@@ -168,7 +168,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleReqs(req1:)",
+            name: "req1",
         },
     },
     ApolloDiagnostic {
@@ -207,7 +207,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "@skip(if:)",
+            name: "if",
         },
     },
     ApolloDiagnostic {
@@ -246,7 +246,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "@include(if:)",
+            name: "if",
         },
     },
     ApolloDiagnostic {
@@ -286,7 +286,6 @@
         help: None,
         data: UndefinedArgument {
             name: "wrong",
-            coordinate: "@include",
         },
     },
     ApolloDiagnostic {
@@ -325,7 +324,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleReqs(req1:)",
+            name: "req1",
         },
     },
     ApolloDiagnostic {
@@ -364,7 +363,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleOptAndReq(req2:)",
+            name: "req2",
         },
     },
     ApolloDiagnostic {
@@ -403,7 +402,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleOptAndReq(req2:)",
+            name: "req2",
         },
     },
 ]

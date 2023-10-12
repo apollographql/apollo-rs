@@ -1164,7 +1164,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleReqs(req2:)",
+            name: "req2",
         },
     },
     ApolloDiagnostic {
@@ -1243,7 +1243,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleReqs(req1:)",
+            name: "req1",
         },
     },
     ApolloDiagnostic {
@@ -1282,7 +1282,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplicatedArgs.multipleReqs(req2:)",
+            name: "req2",
         },
     },
     ApolloDiagnostic {
@@ -1321,7 +1321,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplexInput.requiredField",
+            name: "requiredField",
         },
     },
     ApolloDiagnostic {
@@ -1590,7 +1590,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplexInput.requiredField",
+            name: "requiredField",
         },
     },
     ApolloDiagnostic {
@@ -1829,7 +1829,7 @@
         ],
         help: None,
         data: RequiredArgument {
-            coordinate: "ComplexInput.requiredField",
+            name: "requiredField",
         },
     },
     ApolloDiagnostic {

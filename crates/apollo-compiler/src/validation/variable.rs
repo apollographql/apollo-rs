@@ -35,8 +35,8 @@ pub fn validate_variable_definitions(
                     let ty_name = type_def.kind();
                     diagnostics.push(
                     ApolloDiagnostic::new(db, variable.loc().into(), DiagnosticData::VariableInputType {
-                        name: variable.name().to_string(),
-                        ty: type_def.name().to_string(),
+                        name: variable.name().into(),
+                        ty: ty_name,
                     })
                     .label(Label::new(ty.loc().unwrap(), format!("this is of `{ty_name}` type")))
                     .help("objects, unions, and interfaces cannot be used because variables can only be of input type"),

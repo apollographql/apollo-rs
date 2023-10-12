@@ -58,9 +58,9 @@ pub fn validate_enum_definition(
                 ApolloDiagnostic::new(
                     db,
                     redefined_definition.into(),
-                    DiagnosticData::UniqueEnumValue {
+                    DiagnosticData::UniqueDefinition {
+                        ty: "enum value",
                         name: value.into(),
-                        coordinate: enum_def.name().to_string(),
                         original_definition: original_definition.into(),
                         redefined_definition: redefined_definition.into(),
                     },

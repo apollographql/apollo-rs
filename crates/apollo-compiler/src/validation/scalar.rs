@@ -35,9 +35,7 @@ pub fn validate_scalar_definition(
                 ApolloDiagnostic::new(
                     db,
                     scalar_def.loc.into(),
-                    DiagnosticData::ScalarSpecificationURL {
-                        ty: scalar_def.name().into(),
-                    },
+                    DiagnosticData::ScalarSpecificationURL,
                 )
                 .label(Label::new(
                     scalar_def.loc,

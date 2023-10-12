@@ -204,7 +204,7 @@ pub fn validate_directives(
                 let mut diag = ApolloDiagnostic::new(
                         db,
                         loc.into(),
-                        DiagnosticData::UnsupportedDirectiveLocation {
+                        DiagnosticData::UnsupportedLocation {
                             name: name.into(),
                             dir_loc,
                             directive_def: directive_definition.loc.into(),
@@ -251,7 +251,6 @@ pub fn validate_directives(
                             arg.loc.into(),
                             DiagnosticData::UndefinedArgument {
                                 name: arg.name().into(),
-                                coordinate: format!("@{}", dir.name.src()),
                             },
                         )
                         .label(Label::new(arg.loc, "argument by this name not found"))
@@ -277,11 +276,7 @@ pub fn validate_directives(
                         db,
                         dir.loc.into(),
                         DiagnosticData::RequiredArgument {
-                            coordinate: format!(
-                                "@{}({}:)",
-                                directive_definition.name(),
-                                arg_def.name()
-                            ),
+                            name: arg_def.name().into(),
                         },
                     );
                     diagnostic = diagnostic.label(Label::new(

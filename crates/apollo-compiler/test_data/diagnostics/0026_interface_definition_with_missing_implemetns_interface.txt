@@ -25,7 +25,6 @@
         ],
         help: None,
         data: TransitiveImplementedInterfaces {
-            ty: "Image",
             missing_interface: "Node",
         },
     },

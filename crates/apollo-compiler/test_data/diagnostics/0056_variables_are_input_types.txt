@@ -28,7 +28,7 @@
         ),
         data: VariableInputType {
             name: "cat",
-            ty: "Cat",
+            ty: "ObjectTypeDefinition",
         },
     },
     ApolloDiagnostic {
@@ -100,7 +100,7 @@
         ),
         data: VariableInputType {
             name: "dog",
-            ty: "Dog",
+            ty: "ObjectTypeDefinition",
         },
     },
     ApolloDiagnostic {
@@ -172,7 +172,7 @@
         ),
         data: VariableInputType {
             name: "pets",
-            ty: "Pet",
+            ty: "InterfaceTypeDefinition",
         },
     },
     ApolloDiagnostic {
@@ -244,7 +244,7 @@
         ),
         data: VariableInputType {
             name: "catOrDog",
-            ty: "CatOrDog",
+            ty: "UnionTypeDefinition",
         },
     },
     ApolloDiagnostic {

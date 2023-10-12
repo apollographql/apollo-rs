@@ -103,8 +103,6 @@ pub fn validate_object_type_definition(
                     db,
                     object.loc().into(),
                     DiagnosticData::MissingField {
-                        name: object.name().to_string(),
-                        interface: interface.name().to_string(),
                         field: name.to_string(),
                     },
                 )
