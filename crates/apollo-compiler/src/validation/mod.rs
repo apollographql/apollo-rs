@@ -30,13 +30,14 @@ use std::sync::Arc;
 use std::sync::OnceLock;
 pub(crate) use validation_db::{ValidationDatabase, ValidationStorage};
 
+/// A collection of diagnostics returned by some validation method
 pub struct Diagnostics(Box<DiagnosticsBoxed>);
 
 /// Box indirection to avoid large `Err` values:
 /// <https://rust-lang.github.io/rust-clippy/master/index.html#result_large_err>
 struct DiagnosticsBoxed {
     sources: Sources,
-    errors: Vec<Error>,
+    diagnostics_data: Vec<DiagnosticData>,
 }
 
 struct Sources {
@@ -44,9 +45,14 @@ struct Sources {
     self_sources: SourceMap,
 }
 
-struct Error {
+struct DiagnosticData {
     location: Option<NodeLocation>,
     details: Details,
+}
+
+pub struct Diagnostic<'a> {
+    sources: &'a Sources,
+    data: &'a DiagnosticData,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -63,7 +69,7 @@ pub(crate) enum Details {
     CompilerDiagnostic(crate::ApolloDiagnostic),
 }
 
-impl Error {
+impl DiagnosticData {
     fn report(&self, color: bool) -> ariadne::Report<'static, NodeLocation> {
         let config = ariadne::Config::default().with_color(color);
         if let Details::CompilerDiagnostic(diagnostic) = &self.details {
@@ -261,6 +267,23 @@ impl Error {
 }
 
 impl Diagnostics {
+    pub fn is_empty(&self) -> bool {
+        self.0.diagnostics_data.is_empty()
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.diagnostics_data.len()
+    }
+
+    pub fn iter(
+        &self,
+    ) -> impl Iterator<Item = Diagnostic<'_>> + DoubleEndedIterator + ExactSizeIterator {
+        self.0.diagnostics_data.iter().map(|data| Diagnostic {
+            sources: &self.0.sources,
+            data,
+        })
+    }
+
     /// Returns a human-readable string formatting, without color codes regardless of stderr.
     ///
     /// `Display` and `.to_string()` are meant for printing to stderr,
@@ -275,16 +298,18 @@ impl Diagnostics {
                 schema_sources,
                 self_sources,
             },
-            errors: Vec::new(),
+            diagnostics_data: Vec::new(),
         }))
     }
 
     pub(crate) fn push(&mut self, location: Option<NodeLocation>, details: Details) {
-        self.0.errors.push(Error { location, details })
+        self.0
+            .diagnostics_data
+            .push(DiagnosticData { location, details })
     }
 
     pub(crate) fn into_result(mut self) -> Result<(), Self> {
-        if self.0.errors.is_empty() {
+        if self.0.diagnostics_data.is_empty() {
             Ok(())
         } else {
             self.sort();
@@ -294,17 +319,27 @@ impl Diagnostics {
 
     pub(crate) fn sort(&mut self) {
         self.0
-            .errors
+            .diagnostics_data
             .sort_by_key(|err| err.location.map(|loc| (loc.file_id(), loc.offset())))
-    }
-
-    pub(crate) fn is_empty(&self) -> bool {
-        self.0.errors.is_empty()
     }
 }
 
-/// Use alternate formatting to disable colors: `format!("{validation_errors:#}")`
+/// Defaults to ANSI color codes if stderr is a terminal.
+///
+/// Use alternate formatting to never use colors: `format!("{diagnostics:#}")`
 impl fmt::Display for Diagnostics {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for diagnostic in self.iter() {
+            diagnostic.fmt(f)?
+        }
+        Ok(())
+    }
+}
+
+/// Defaults to ANSI color codes if stderr is a terminal.
+///
+/// Use alternate formatting to never use colors: `format!("{diagnostic:#}")`
+impl fmt::Display for Diagnostic<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         struct Adaptor<'a, 'b>(&'a mut fmt::Formatter<'b>);
 
@@ -321,13 +356,10 @@ impl fmt::Display for Diagnostics {
         }
 
         let color = !f.alternate();
-        for error in &self.0.errors {
-            error
-                .report(color)
-                .write(&self.0.sources, Adaptor(f))
-                .map_err(|_| fmt::Error)?
-        }
-        Ok(())
+        self.data
+            .report(color)
+            .write(self.sources, Adaptor(f))
+            .map_err(|_| fmt::Error)
     }
 }
 

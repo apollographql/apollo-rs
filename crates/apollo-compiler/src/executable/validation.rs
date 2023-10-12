@@ -140,7 +140,10 @@ pub(crate) fn validate_field_set(errors: &mut Diagnostics, schema: &Schema, fiel
     }
     let mut compiler = crate::ApolloCompiler::new();
     let mut ids = Vec::new();
-    // Includes schema sources already:
+    for (id, source) in &*schema.sources {
+        ids.push(*id);
+        compiler.db.set_input(*id, source.into());
+    }
     for (id, source) in &*field_set.sources {
         ids.push(*id);
         compiler.db.set_input(*id, source.into());
