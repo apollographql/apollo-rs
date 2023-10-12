@@ -35,6 +35,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Arc::make_mut(&mut doc1.sources).extend(doc2.sources.iter().map(|(k, v)| (*k, v.clone())));
   ```
 
+## Features
+
+- **Add iteration over individual diagnostics - [SimonSapin], [pull/696]:**
+  ```rust
+  let schema = Schema::parse(input, "schema.graphql");
+  if let Err(errors) = schema.validate() {
+      for error in errors.iter() {
+          eprintln!("{error}")
+      }
+  }
+  ```
+
 [SimonSapin]: https://github.com/SimonSapin
 [pull/696]: https://github.com/apollographql/apollo-rs/pull/696
 
