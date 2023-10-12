@@ -12,7 +12,7 @@ use salsa::ParallelDatabase;
 use validation::ValidationDatabase;
 
 pub use database::{hir, AstDatabase, FileId, HirDatabase, InputDatabase, RootDatabase, Source};
-pub use diagnostics::{ApolloDiagnostic, GraphQLError, GraphQLLocation};
+pub use diagnostics::ApolloDiagnostic;
 
 pub struct ApolloCompiler {
     pub db: RootDatabase,

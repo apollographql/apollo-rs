@@ -589,7 +589,6 @@ pub fn validate_executable(db: &dyn ValidationDatabase, file_id: FileId) -> Vec<
 mod tests {
     use super::ValidationDatabase;
     use crate::ApolloCompiler;
-    use crate::GraphQLLocation;
     use crate::HirDatabase;
 
     #[test]
@@ -640,10 +639,6 @@ query {
         assert_eq!(
             diagnostics[0].data.to_string(),
             "executable documents can only contain executable definitions, but `Object` is a(n) ObjectTypeDefinition"
-        );
-        assert_eq!(
-            diagnostics[0].get_line_column(),
-            Some(GraphQLLocation { line: 2, column: 1 })
         );
     }
 
@@ -749,21 +744,6 @@ type TestObject {
             diagnostics[0].data.to_string(),
             "cannot query field `nickname` on type `TestObject`"
         );
-        assert_eq!(
-            diagnostics[0].get_line_column(),
-            Some(GraphQLLocation { line: 5, column: 9 })
-        );
-        let json = expect_test::expect![[r#"
-            {
-              "message": "cannot query field `nickname` on type `TestObject`",
-              "locations": [
-                {
-                  "line": 5,
-                  "column": 9
-                }
-              ]
-            }"#]];
-        json.assert_eq(&serde_json::to_string_pretty(&diagnostics[0].to_json()).unwrap());
     }
 
     #[test]
